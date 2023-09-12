@@ -1,0 +1,609 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style type="text/css">
+	.image-container{
+		max-width: 250px;
+		height: auto;
+	}
+	.field-heading{
+		color: var(--secondary-text-color);
+	}
+	.icon-container:hover {
+		opacity: 0.3;
+		cursor: pointer;
+	}
+	.friends-icon{
+		color: #4287f5;
+		font-size: 40px;
+	}
+	.person-add-icon{
+		color: #4287f5;
+		font-size: 40px;
+	}
+	.friend-text{
+		font-weight: 500;
+		color: black;
+	}
+	.friends-btn{
+		background-color: #cccccc;
+		border-color: #cccccc;
+		color: #000;
+		font-weight: 500;
+	}
+	.friends-btn:hover {
+		background-color: #bfbfbf;
+		border-color: #bfbfbf;
+	}
+	.dropdown-toggle::after { 
+		content: none; 
+	}
+	.card{
+		border-radius: 10px;
+    height: auto;
+    /*width: 100%;*/
+	}
+	.material-icons{
+		font-size: 30px;
+	}
+	.material-icons:hover{
+		cursor: pointer;
+	}
+	.confirm-friend-request{
+		color: green;
+	}
+	.confirm-friend-request:hover {
+		opacity: 0.3;
+	}
+	.decline-friend-request:hover {
+		opacity: 0.3;
+	}
+	.decline-friend-request{
+		color: red;
+	}
+	.message-btn-text{
+		font-weight: 500;
+	}
+
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+
+  #profile_pic {
+    width: 210px;
+    max-height: 250px;
+    margin-top: -210px;
+    border-radius: 0% 30% 0% 20%;
+    border: solid 3px white;
+    box-shadow: black;
+    box-shadow: 5px 5px 15px 5px #000000 ;
+    position: left;
+  }
+
+  #username {
+    background-color: black;
+    color: white;
+    /*font-size:25px;*/
+    align-items: center;
+    text-align: left;
+    width: 15%;
+    /*margin-top: -110px;*/
+    /*margin-left: 220px;*/
+    box-shadow: 5px 5px 15px 5px #000000 ;
+  }
+
+  #menu_btn {
+    background-color: #fff;
+    color: black;
+    width: 100px;
+    display: inline-block;
+    font-size: 20px;
+  }
+
+  #menu_btn:hover {
+  	background-color: limegreen;
+    color: white;
+    outline: none;
+    -webkit-text-decoration: none;
+    -moz-text-decoration: none;
+    -ms-text-decoration: none;
+    -o-text-decoration: none;
+    text-decoration: none;
+    justify-content: ;
+  }
+
+a,
+a:hover,
+a:focus,
+a:active {
+    color: inherit;
+    outline: none;
+    -webkit-text-decoration: none;
+    -moz-text-decoration: none;
+    -ms-text-decoration: none;
+    -o-text-decoration: none;
+    text-decoration: none;
+}
+
+  #friends_img {
+    width: 75px;
+    float: left;
+    margin: 4px;
+  }
+
+  .card #personal_infos {
+    background-color: white;
+    height: 50%;
+    min-height: 400px;
+    margin-top: 20px;
+    color: #aaa;
+    padding: 0px;
+  }
+
+  .personal_infos_content {
+    margin-left: 0px;
+
+  }
+
+  #friends {
+    clear: both;
+    font-size: 12px;
+    color: #405d9b;
+  }
+
+  textarea {
+    width: 100%;
+    border: none;
+    font-family: tahin;
+    font-size: 14px;
+    height: 80px;
+  }
+
+  #post-area {
+    width: 100%;
+  }
+
+  #post_btn {
+    float: right;
+    background-color: #405d9b;
+    border: none;
+    color: white;
+    padding: 4px;
+    font-size: 14px;
+    border-radius: 2px;
+    width: 50px;
+  }
+
+  #post_bar {
+    margin-top: 20px;
+    background-color: white;
+    padding: 10px;
+  }
+
+  #post {
+    padding: 4px;
+    font-size: 13px;
+    display: flex;
+  }
+
+  .footer {
+    min-height: 100px;
+    background-color: #fff;
+    text-align: center;
+
+  }
+
+  .btn {
+    background-color: royalblue;
+    text-align: left;
+  }
+
+  button a{
+    font-weight: bold;
+    color: black;
+  }
+
+/* =======================================+===========
+    MEDIA QUERIES FOR SMALL LAPTOPS AND BIG TABLETS
+ =================================================== */
+
+ @media screen and (max-width: 1200px) {
+    .container {
+        width: 100%;
+    }
+
+    .card #personal_infos {
+        display: none;
+
+    }
+
+
+
+
+/* =======================================+===========
+    MEDIA QUERIES FOR SMALL SCREEN AND MOBILE PHONES
+ =================================================== */
+
+ @media screen and (max-width: 920px) {
+    .container {
+        width: 100%;
+    }
+
+    #personal_infos {
+        display: none;
+
+    }
+
+
+
+</style>
+
+<div class="container m-auto" style="background-color:  hsl(252, 30%, 95%);">
+  <!---- cover area ------->
+  <div class="body" style="width:100%; margin: auto; font-size: 20px; margin-right: 400px;">
+     <div style="background-color: white; text-align: center; color: #405d9b;">
+         <img src="{% static 'images/kali.png' %}" style="width:100%; height:450px;">
+
+         {% if user.profile_image %}
+         <div class="Profile_info" style="display: flex; margin-left: 15px;">
+         <img id='profile_pic' src="{{ profile_image }}">
+         <div id="username">@ {{ username }}</div>
+         </div>
+         {% else %}
+         <img id='profile_pic' src="{% static 'images/profile_pic.png' %}">
+         {% endif %}
+
+
+         <br><br>
+
+         <div>{{ user.bio }}</div> 
+
+
+
+        <form action="#" method="POST">
+          {% csrf_token %}
+          <div class="add-btn">
+
+          <!------------------------------------------------------------------
+          {% if user_post_length == 0 %}
+          <span style="color: white; font-size: 27px;"><b>No Post</b></span>
+          {% elif user_post_length == 1 %}
+          <span style="color: white; font-size: 27px;"><b>{{user_post_length}} Post</b></span>
+          {% else %}
+          <span style="color: white; font-size: 27px;"><b>{{user_post_length}} Posts</b></span>
+          {% endif %}
+
+          {% if user_followers == 0 or user_followers == 1 %}
+          <span style="color: white; font-size: 27px;"><b>{{user_followers}} follower</b></span>
+          {% else %}
+          <span style="color: white; font-size: 27px;"><b>{{user_followers}} followers</b></span>
+          {% endif %}
+
+          <span style="color: white; font-size: 27px;"><b>{{user_following}} following</b></span>
+
+          <input type="hidden" value="{{user.username}}" name="follower" />
+          <input type="hidden" value="{{user_object.username}}" name="user" />
+
+          {% if user_object.username == user.username %}
+          <a href="/settings" data-ripple="">Account Settings</a>
+          {% else %}
+          <a data-ripple=""><button type="submit" style="background-color: #ffc0cb; border: #ffc0cb;">{{button_text}}</button></a>
+          {% endif %}
+			--------------------------------------------------------------->
+
+          </div>
+        </form>
+
+         <br><hr>
+         <div id='menu_btn'><a href="{% url 'home' %}" style="text-decoration: none;">Home</a></div> 
+         <div id='menu_btn'><a href="{% url 'post:post_view' %}">Timeline</a></div> 
+         <div id='menu_btn'>About</div> 
+         <div id='menu_btn'><span class="friend-text">Photos</span></div> 
+
+         <div id='menu_btn'>
+         	<a href="{% url 'friend:list' user_id=id %}">
+				<div class="d-flex flex-row align-items-right justify-content-right icon-container"> <!-- align_items-right dia lasa centre ilay menu_btn, center => lasa ambany -->
+					({{friends|length}})<span class="material-icons mr-1 friends-icon"><!--contact_page--></span><span class="friend-text" style="width: 55px; margin-right: 95px;">Friends  </span>
+				</div>
+			</a>
+		</div> 
+
+         <div id='menu_btn'><a href="{% url 'account:edit' user_id=request.user.id %}" style="text-decoration: none;">Settings</a></div>
+
+     </div>
+
+
+
+     <!------ content area ---------------->
+     <div style="display: flex;">
+
+      <!------ Friends area ---------------->
+
+       <div id="personal_infos" style=" min-height: 400px; flex: 1; margin-top: 22px;">
+             <div class="personal_infos_content">
+              <div class="card profile-card m-1" style="text-align: center; background: white; width: 95%; margin-right: 0px;">Personal Infos</div>
+
+            				<div class="card profile-card m-3">
+            				  <div class="card-body">
+            				  	<div class="d-flex flex-column justify-content-center p-4">
+
+            				  		<p class="mt-1 mb-1 field-heading">Email</p>
+            				  		{%  if is_self %}
+            				  			<h5>{{email}}</h5>
+            				  		{% else %}
+            				  			{% if hide_email %}
+            					  			<h5>**********</h5>
+            					  		{% else %}
+            					  			<h5>{{email}}</h5>
+            					  		{% endif %}
+            					  	{% endif %}
+            				  		<p class="mt-4 mb-1 field-heading">Username</p>
+            				  		<h5>{{username}}</h5>
+
+            				  		<!-- If Auth user is viewing their own profile -->
+            				  		{% if is_self %}
+            				  		<a  class="mt-4 btn btn-primary" href="{% url 'account:edit' user_id=id %}">Update</a>
+            						<div class="d-flex flex-column mt-4">
+            							<a class="m-auto" href="{% url 'password_change' %}">Change password</a>
+            						</div>
+            				  		{% endif %}
+            				  	</div>
+            				  </div>
+            				</div>
+
+    				{% if request.user.is_authenticated %}
+    				<div class="d-flex flex-column mb-4">
+
+    					<!-- THEM to YOU -->
+    					{% if request_sent == 0 %}
+    					<div class="card m-2 p-4">
+    						<div class="d-flex flex-row align-items-center">
+    							<span class="friend-text align-items-center mr-2">Accept Friend Request</span>
+    							<span id="id_cancel_{{id}}" class="decline-friend-request material-icons p-1" onclick='triggerDeclineFriendRequest("{{pending_friend_request_id}}")'>cancel</span>
+    		  					<span id="id_confirm_{{id}}" class="confirm-friend-request material-icons p-1" onclick='triggerAcceptFriendRequest("{{pending_friend_request_id}}")'>check</span>
+    						</div>
+    					</div>
+    					{% endif %}
+
+    					<div class="card m-2 px-4 pb-4">
+    						<!-- Cancel Friend Request / Send Friend Request / Remove Friend -->
+    						{% if is_friend == False and is_self == False %}
+    								<!-- You sent them a request -->
+    								{% if request_sent == 1 %}
+    								<div class="d-flex flex-column align-items-center pt-4">
+    									<button class="btn btn-danger" id="id_cancel_friend_request_btn">
+    										Cancel Friend Request
+    									</button>
+    								</div>
+    								{% endif %}
+    								<!-- No requests have been sent -->
+    								{% if request_sent == -1 %}
+    								<div class="d-flex flex-column align-items-center pt-4">
+    									<button class="btn btn-primary" id="id_send_friend_request_btn">
+    										Send Friend Request
+    									</button>
+    								</div>
+    								{% endif %}
+    						{% endif %}
+    							
+    							
+    						{% if is_friend %}
+    							<div class="dropdown pt-4 m-auto">
+    								<button class="btn btn-secondary dropdown-toggle friends-btn" type="button" id="id_friends_toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    								Friends
+    								</button>
+    								<div class="dropdown-menu" aria-labelledby="id_friends_toggle">
+    									<a class="dropdown-item" href="#" onclick="removeFriend('{{id}}', onFriendRemoved)">Unfriend</a>
+    								</div>
+    							</div>
+    						{% endif %}
+    						
+    						<!-- Friend list link -->
+    				  		<div class="d-flex flex-column m-0 pt-4">
+    							<a href="{% url 'friend:list' user_id=id %}">
+    								<div class="d-flex flex-row align-items-center justify-content-center icon-container">
+    									<span class="material-icons mr-2 friends-icon">contact_page</span><span class="friend-text">Friends ({{friends|length}})</span>
+    								</div>
+    							</a>
+    						</div>
+
+    					</div>
+
+    					{% if friend_requests %}
+    					<div class="card m-2 px-4 pb-4">
+    						<!-- Friend requests -->
+    				  		<div class="d-flex flex-column pt-4">
+    							<a href="{% url 'friend:friend-requests' user_id=id %}">
+    								<div class="d-flex flex-row align-items-center justify-content-center icon-container">
+    									<span class="material-icons mr-2 person-add-icon">person_add</span><span class="friend-text">Friend Requests ({{friend_requests|length}})</span>
+    								</div>
+    							</a>
+    						</div>
+    					</div>
+    					{% endif %}
+
+    					{% if is_friend %}
+    						<div class="d-flex flex-row align-items-center btn btn-primary m-2 px-4" onclick="createOrReturnPrivateChat('{{id}}')">
+    							<span class="material-icons m-auto">
+    							message
+    							</span>
+    							<span class="message-btn-text m-auto pl-2">Message</span>
+    						</div>
+    					{% endif %}
+
+    				</div>
+    				{% endif %}
+
+    			
+            </div>
+       </div>
+
+
+
+
+       <!------ Post area ------------------->
+       <div id="post-area" style=" min-height: 400px; flex: 2.5; padding: 0px; padding-right: 0px;">
+         
+             <div class="card" style="border: solid thin #aaa; padding: 10px; background-color: white; margin-top: 15px;">
+             
+                <textarea placeholder="What's in your mind?">What's in your mind?
+                </textarea>
+                <input id="post_btn" type="submit" value="Post">
+                <br>
+             </div>
+
+             <!-------- Photos ------------------>
+             <br>
+             <div class="card">
+             
+             {% for post in posts %}
+             {% if username == post.user %}
+
+                  <div class="photos">
+                    <li style="display: inline">
+                      <a class="strip" href="{{request.user.profile_image.url}}" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
+                        <img src="{{request.user.profile_image.url}}" style="height: 110px; width: 150px;" alt=""></a>
+                    </li>
+                  </div>
+              {% endif %}
+              {% endfor %}
+             </div>
+             <br>
+
+
+                  <!----------------------------- POST BODY ------------------------------>
+                  
+                    {% for post in posts  %} 
+
+                      {% if user.is_authenticated %}
+                      {% if user.id == post.author.id %}
+                    
+                    <div class="card text-bg-secondary mb-3" style="max-width: 118rem;">
+                      
+                      
+                      <div class="card-header" style="display: flex;">
+                            <a href="#"><img class="account-image rounded-circle ml d-block dropdown-toggle" id="id_profile_links" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" src="{{post.author.profile_image.url}}" alt="profile logo" width="40" height="40"></a>
+                            <small style="margin-top: 9px">@{{ post.author.username }}</small>
+
+                      </div>
+
+                      
+                        <div class="card-body">
+                            <div>
+
+
+
+                              {% if post.header_image %}
+                              <a class="strip" href="{{post.header_image.url}}" title="" data-strip-group="mygroup" data-strip-group-options="loop: false">
+
+                                <img src="{{post.header_image.url}}" style="height: 37vw; width: 99%;" alt="">
+                              </a>
+
+                              <div class="tags" style="display: inline-block;">
+                                  <h5 class="card-title">{#{ post.title }#}</h5>
+                                  <p class="card-text">{{ post.snippet|slice:40 }}</p><br>
+                              </div>
+                              {% else %}
+                                {{ post.body|safe|slice:255 }}
+
+
+
+                              {% endif %}
+                              </div><hr>
+
+                      
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+
+
+                  
+
+
+       </div>
+
+		</div>
+
+
+	</div>       
+</div>
+
+  <script data-cfasync="false" src="{% static '../../cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js' %}">
+  	
+  </script><script src="{% static 'perso/js/main.min.js' %}"></script>
+  <script src="{% static 'perso/js/script.js' %}"></script>
+
+
+<script type="text/javascript">
+
+	// called from base_js.html
+	//preloadImage("{{profile_image|safe}}", 'id_profile_image')
+
+	function onFriendRequestSent(){
+		location.reload();
+	}
+
+	function onFriendRequestCancelled(){
+		location.reload();
+	}
+
+	function onFriendRemoved(){
+		location.reload();
+	}
+
+	function onFriendRequestAccepted(){
+		location.reload();
+	}
+
+	function onFriendRequestDeclined(){
+		location.reload();
+	}
+
+
+	var sendFriendRequestBtn = document.getElementById("id_send_friend_request_btn")
+	if (sendFriendRequestBtn != null){
+		sendFriendRequestBtn.addEventListener("click", function(){
+			sendFriendRequest("{{id}}", onFriendRequestSent)
+		})
+	}
+
+	var cancelFriendRequestBtn = document.getElementById("id_cancel_friend_request_btn")
+	if(cancelFriendRequestBtn != null){
+		cancelFriendRequestBtn.addEventListener("click", function(){
+			cancelFriendRequest("{{id}}", onFriendRequestCancelled)
+		})
+	}
+
+	var removeFriendBtn = document.getElementById("id_unfriend_btn")
+	if (removeFriendBtn != null){
+		removeFriendBtn.addEventListener("click", function(){
+			removeFriend("{{id}}", onFriendRemoved)
+		})
+	}
+
+	function triggerAcceptFriendRequest(friend_request_id){
+		acceptFriendRequest(friend_request_id, onFriendRequestAccepted)
+	}
+
+	function triggerDeclineFriendRequest(friend_request_id){
+		declineFriendRequest(friend_request_id, onFriendRequestDeclined)
+	}
+	
+</script>
+
+{% include 'friend/snippets/send_friend_request.html' %}
+{% include 'friend/snippets/accept_friend_request.html' %}
+{% include 'friend/snippets/decline_friend_request.html' %}
+{% include 'friend/snippets/cancel_friend_request.html' %}
+{% include 'friend/snippets/remove_friend.html' %}
+{% include 'chat/snippets/create_or_return_private_chat.html' %}
+
+
+
+{% endblock content %}
+
+
