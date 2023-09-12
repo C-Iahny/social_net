@@ -1,0 +1,367 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+
+{% block content %}
+
+
+	<!----- ICONSCOUT CDN -------->
+	<link rel="stylesheet" href="https://unicons.iconscout.com/release/v2.1.6/css/unicons.css">
+
+{% include 'snippets/styles.html' %}
+
+
+                  <!------------------- POST BODY ------------------------>
+<body>  
+
+<div class="main">	
+	<div class="container">
+		<!------------------------ LEFT -------------------------->
+		<div class="left">
+
+			
+			<a class="profile">
+				<div class="profile-photo">
+					<img src="{{ request.user.profile_image.url }}" style="width: 60px; height: 60px;">
+				</div>
+				<div class="handle" >
+					{{ request.user.username }}
+					<p class="text-muted">
+						@Staff
+					</p>
+				</div>
+			</a>
+
+
+			<!----------------- SIDEBAR -------------------->
+			<div class="sidebar">
+				<a class="menu-item active">
+					<span><i class="uil uil-home"></i></span><h3>Home</h3>
+					
+				</a>
+
+				<a class="menu-item">
+					<span><i class="uil uil-compass"></i></span><h3>Explore</h3>
+					
+				</a>
+
+				<a class="menu-item" id="notifications">
+					<span><i class="uil uil-bell"><small class="notification-count">9+</small></i></span><h3>Notifications</h3>
+					<!------------- Notifications popup ---------------->
+					<div class="notifications-popup">
+						<div>
+							<div class="profile-photo">
+								<img src="{% static 'images/resources/admin3.jpg' %}">
+							</div>
+							<div class="notification-body">
+								<b>User</b>accepted your friend request
+								<small class="text-muted">2 minutes ago</small>
+							</div>
+							
+						</div>
+
+						<div>
+							<div class="profile-photo">
+								<img src="{% static 'images/resources/admin4.jpg' %}">
+							</div>
+							<div class="notification-body">
+								<b>User</b>accepted your friend request
+								<small class="text-muted">2 minutes ago</small>
+							</div>
+							
+						</div>
+
+						<div>
+							<div class="profile-photo">
+								<img src="{% static 'images/resources/ad-widget.jpg' %}">
+							</div>
+							<div class="notification-body">
+								<b>User</b>accepted your friend request
+								<small class="text-muted">2 minutes ago</small>
+							</div>
+							
+						</div>
+
+					</div>
+				</a>
+
+				<a class="menu-item" id="messages-notification">
+					<span><i class="uil uil-envelope-alt"><small class="notification-count">6</small></i></span><h3>Message</h3>
+					
+				</a>
+
+				<a class="menu-item">
+					<span><i class="uil uil-bookmark"></i></span><h3>Bookmarks</h3>
+					
+				</a>
+
+				<a class="menu-item">
+					<span><i class="uil uil-chart-line"></i></span><h3>Analytics</h3>
+					
+				</a>
+
+				<a class="menu-item">
+					<span><i class="uil uil-palette"></i></span><h3>Theme</h3>
+					
+				</a>
+
+				<a class="menu-item">
+					<span><i class="uil uil-setting"></i></span><h3>Settings</h3>
+					
+				</a>								
+
+			</div>
+
+			<!--------------------- END OF SIDEBAR ----------------->
+			<label for="create-post" class="btn btn-primary">Create Post</label>
+		</div>
+
+
+		<!----------------------- MIDDLE ------------------------->
+		<div class="middle">
+			<!---------------- STORIES --------------->
+			<div class="stories">
+				{% for post in posts|slice:5 %} <!-- Mila ovaina hoe for xxx in story -->
+				<div class="story">
+					<div class="profile-photo">
+						<img src="{% static 'images/resources/nearly1.jpg' %}">
+					</div>
+					<p class="name">Your story</p>
+				</div>
+
+
+				{% endfor %}
+
+			</div>
+
+				<!------------------ POST FORM ----------------->
+				<form class="create-post">
+					{% csrf_token %}
+					<div class="story-background">
+						<div class="profile-photo">
+							<img src="{{ request.user.profile_image.url }}" style="width: 60px">
+						</div>
+						{#{ form }#}
+						<input type="text" placeholder="What's in your mind?" id="create-post">
+						<input type="submit" value="Post" class="btn btn-primary" name="">
+					</div>
+				</form>
+
+
+
+				<!------------------ FEEDS --------------------->
+
+					<!------------- FEED --------------->
+
+				{% if request.user.is_authenticated %}	
+				{% for post in posts %}
+
+				<br>
+				<div class="card text-bg-secondary mb-3" style="max-width: 118rem;background: whitesmoke;">
+				  	<div class="card-header">
+
+				  			<div class="profile" style="display: flex;">
+								<div class="profile-photo">
+									<img class="account-image rounded-circle m-auto d-block dropdown-toggle" id="id_profile_links" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" src="{{post.author.profile_image.url }}" alt="profile logo" width="40" height="40">
+								</div>
+
+								<div class="ingo">
+									<small style="color: whitesmoke;">{{ post.author.username }}</small><br>
+									<small style="color: whitesmoke;">Lyon, 15 minutes ago</small>
+								</div>
+
+								<span class="edit">
+									<i class="uil uil-ellipsis"></i>
+								</span>
+							</div>
+
+  					</div>
+
+					<div>
+						<img class="img-fluid" src="{{ post.header_image.url }}" style="width: 100%;">
+						
+					</div>
+										<div class="card-body" style="display: flex;">
+					    <h5 class="card-title">{#{ post.title }#}</h5>
+
+					    <p class="card-text">{{ post.snippets|slice:40 }}</p>
+					</div>
+
+					<hr>
+
+
+						<div class="action-buttons">
+							<div class="interaction-button">
+								<span><i class="uil uil-heart"></i></span>
+								<span><i class="uil uil-comment-dots"></i></span>
+								<span><i class="uil uil-share-alt"></i></span>
+								<span><i class="uil uil-bookmark-full"></i></span>
+							</div>
+							<div class="bookmark">
+								
+
+							</div>
+
+							<div class="liked-by" style="padding: 15px;">
+								<span><img src="{% static 'images/resources/chatlist1.jpg' %}"></span>
+								<span><img src="{% static 'images/resources/chatlist2.jpg' %}"></span>
+								<span><img src="{% static 'images/resources/comet-1.jpg' %}"></span>
+								<span><img src="{% static 'images/resources/comet-2.jpg' %}"></span>
+								<span><img src="{% static 'images/resources/comet-3.jpg' %}"></span>
+
+								<p><small>Liked by </p><b>User Name</b> and <b>1,522 others</b></small>
+							</div>
+
+							<div class="caption" style="padding: 15px;">
+								<p><b>Christina Rose</b>Lorem ipsum dolor sit amet, consectetur adipisicing elit <span class="harsh-tag">#Lifestyle</span></p>
+
+							</div>
+							<div class="comments text-muted" style="padding: 15px;">
+								View all 357 comments
+							</div>
+						</div>
+
+
+
+
+				</div>
+
+				{% endfor %}
+				{% endif %}
+
+
+
+					<!-------------- END FEED  ---------------->
+
+					
+
+
+		</div><!--end of the middle-->
+
+
+
+
+		<!---------------------- RIGHT --------------------------->
+		<div class="right">
+			<div class="messages">
+				<div class="heading">
+					<h4>Messages</h4><i class="uil uil-edit"></i>
+					
+				</div>
+
+				<!----------- SEARCH BAR ------------>
+				<div class="search-bar">
+					<i class="uil uil-search"></i>
+					<input type="search" placeholder="Searc messages" id="message-search">
+					
+				</div>
+
+				<!-------- MESSAGE CATEGORY --------->
+				<div class="category">
+					<h6 class="active">Primary</h6>
+					<h6>General</h6>
+					<h6 message-requests>Requests(8)</h6>
+					
+				</div>
+
+				<!--------- MESSAGE ------------------>
+				<div class="message">
+					<div class="profile-photo">
+						<img src="{% static 'images/resources/admin2.jpg' %}">
+						
+					</div>
+					<div class="message-body">
+						<h5>Raven Craig</h5>
+						<p class="text-muted">Good morning</p>
+						
+					</div>
+
+					
+				</div>
+
+				<div class="message">
+					<div class="profile-photo">
+						<img src="{% static 'images/resources/admin4.jpg' %}">
+						
+					</div>
+					<div class="message-body">
+						<h5>Claude Ihany</h5>
+						<p class="text-muted">Good morning</p>
+						
+					</div>
+
+					
+				</div>
+
+				<div class="message">
+					<div class="profile-photo">
+						<img src="{% static 'images/resources/admin3.jpg' %}">
+						
+					</div>
+					<div class="message-body">
+						<h5>Meva Soa</h5>
+						<p class="text-muted">Good morning</p>
+						
+					</div>
+
+					
+				</div>
+
+
+
+			</div>
+
+
+				<!------------ FRIEND REQUESTS ------------->
+			<div class="friend-requests">
+				<h4>Requests</h4>
+				<div class="request">
+					<div class="info">
+						<div class="profile-photo">
+							<img src="{% static 'images/resources/admin.jpg' %}">
+							
+						</div>
+
+						<div>
+							<h5>Haja Alfred</h5>
+							<p class="text-muted">5 mutual friends</p>
+						</div>
+
+					</div>
+
+						<div class="action">
+							<button class="btn btn-primary">Accept</button>
+							<button class="btn btn-secondary">Decline</button>
+							
+						</div>
+					
+				</div>
+				
+			</div>
+				
+			
+		</div>
+
+<!------- END OF THE RIGHT SECTION ---------->
+	</div>
+	</div></p></div></div></div></div></div></div>
+
+
+
+
+{% include 'snippets/javascript.html' %}
+
+
+
+</body> 
+
+
+
+
+
+
+{% endblock content %}
+
+
+

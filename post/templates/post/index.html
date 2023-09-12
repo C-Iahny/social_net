@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INDEX</title>
+</head>
+<body>
+
+  
+  {% include 'snippets/base_css.html' %}
+
+
+<div class="container">
+{% if user.is_authenticated %}
+
+    <div class="welcome"><h2>Welcome to the SOCIAL NET</h2>
+      <button><a href="{% url 'logout' %}">Logout</a></button>
+      <button><a href="{% url 'post:post_view' %}">Timeline</a></button>
+
+</div>
+{% else %}
+  <div id="flag"></div>
+  <div id="banner"></div>
+  <nav>
+    Navbar
+  </nav>
+
+  <main>
+    
+    <h2>Here you can connect with friends and family. Even your long lost friends can be found here. Just choose your country, your town and help us also to fill the path for making that comme true. But of course, if you want to stay behind the shadow, anonymous, you can just subscribe as a simple user and connect with somebody you want. As a registered user you can see and find more and more features on the this page. So, register, log in and feel free. Enjoy the navigation. </h2>
+
+    <br>
+    <h3><a href="{% url 'register' %}">Register</a> or <a href="{% url 'login' %}">Log in</a></h3>
+    
+  </main>
+
+  <div id="sidebar">
+    <button class="btn">Country</button>
+    <button class="btn">Departure</button>
+    <button class="btn">Ville</button>
+    <button class="btn">City/Town</button>
+    <button class="btn">Statut</button>
+    <button class="btn">Profession</button>
+    <button class="btn">Student</button>
+    <button class="btn">College</button>
+    <button class="btn">Entertainment</button>
+    <button class="btn">Videos/Films</button>
+    <button class="btn">Musics</button>
+    <button class="btn">Sports</button>
+    <button class="btn">Physic games</button>
+    <button class="btn">Cultural items</button>
+  </div>
+  <div id="content1"><br></div>
+
+  <div id="content2">
+        <div class="index-card">
+
+            <div class="card">
+              <h2>Title</h2>
+              <p>This is just for testing the web page.</p>
+            </div>
+
+            <div class="card">
+              <h2>Title</h2>
+              <p>This is just for testing the web page.</p>
+            </div>
+
+            <div class="card">
+              <h2>Title</h2>
+              <p>This is just for testing the web page.</p>
+            </div>
+
+            <div class="card">
+              <h2>Title</h2>
+              <p>This is just for testing the web page.</p>
+            </div>
+
+            <div class="card">
+              <h2>Title</h2>
+              <p>This is just for testing the web page.</p>
+            </div>
+
+        </div>
+    </div>
+
+  <div id="content3"><br></div>
+
+  <div id="footer">
+    {% include 'snippets/footer.html' %}
+  </div>
+  {% endif %}
+</div>
+
+
+
+
+<!---- CARD CONTAINER -----------
+<div class="container">
+    <section>
+        <div>
+          <p></p>
+        </div>
+    </section>
+
+    <section>
+        <div id="index-card">
+
+            <div class="card">
+              <h2>Title</h2>
+              <p>This is just for testing the web page.</p>
+            </div>
+
+            <div class="card">
+              <h2>Title</h2>
+              <p>This is just for testing the web page.</p>
+            </div>
+
+            <div class="card">
+              <h2>Title</h2>
+              <p>This is just for testing the web page.</p>
+            </div>
+
+            <div class="card">
+              <h2>Title</h2>
+              <p>This is just for testing the web page.</p>
+            </div>
+
+            <div class="card">
+              <h2>Title</h2>
+              <p>This is just for testing the web page.</p>
+            </div>
+
+        </div>
+    </section>
+</div>
+--------- END OF THE CARD COPNTAINER -------------->
+
+</body>
+</html>
+
+
+
+
+
+
+
