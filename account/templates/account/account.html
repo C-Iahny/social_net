@@ -1,0 +1,911 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+/* ===== PROFILE PAGE ===== */
+.profile-wrapper {
+    max-width: 940px;
+    margin: 70px auto 2rem;
+    padding: 0 1rem;
+}
+
+/* ---- Cover ---- */
+.cover-block {
+    position: relative;
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+    background: var(--bg-card);
+    box-shadow: var(--shadow);
+}
+.cover-img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    display: block;
+}
+.cover-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 120px;
+    background: linear-gradient(transparent, rgba(0,0,0,.55));
+}
+
+/* ---- Profile header ---- */
+.profile-header {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 0 1.5rem 1rem;
+    box-shadow: var(--shadow);
+    transition: background .3s;
+}
+.avatar-area {
+    display: flex;
+    align-items: flex-end;
+    gap: 1.2rem;
+    margin-top: -60px;
+    padding-bottom: .8rem;
+    flex-wrap: wrap;
+}
+.avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+.avatar-img {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 4px solid var(--bg-card);
+    object-fit: cover;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+    transition: border-color .3s;
+}
+.avatar-edit-btn {
+    position: absolute;
+    bottom: 6px; right: 6px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--btn-bg);
+    border: 2px solid var(--bg-card);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: .85rem;
+    color: var(--text);
+    text-decoration: none;
+    transition: background .2s;
+}
+.avatar-edit-btn:hover { background: var(--accent); color: #fff; }
+
+.profile-name-area {
+    flex: 1;
+    min-width: 0;
+    padding-bottom: .5rem;
+}
+.profile-name {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.2;
+}
+.profile-bio {
+    color: var(--text-muted);
+    font-size: .95rem;
+    margin: .3rem 0 0;
+}
+.profile-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    margin-top: .6rem;
+    font-size: .9rem;
+    color: var(--text-muted);
+}
+.profile-meta span { display: flex; align-items: center; gap: .3rem; }
+.profile-meta .stat-val { font-weight: 700; color: var(--text); }
+
+.profile-actions {
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    padding-top: 1rem;
+    flex-wrap: wrap;
+}
+.btn-profile {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .45rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: .9rem;
+    border: none;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    text-decoration: none;
+}
+.btn-profile:hover { transform: translateY(-1px); text-decoration: none; }
+.btn-profile-primary  { background: var(--accent); color: #fff; }
+.btn-profile-primary:hover  { background: var(--accent-dark); color: #fff; }
+.btn-profile-secondary { background: var(--btn-bg); color: var(--text); border: 1px solid var(--border); }
+.btn-profile-secondary:hover { background: var(--btn-hover); color: var(--text); }
+.btn-profile-danger { background: #fdecea; color: #c62828; border: 1px solid #f5c6c6; }
+[data-theme="dark"] .btn-profile-danger { background: #3b1212; color: #f28b82; border-color: #5a2020; }
+.btn-profile-success { background: #e6f4ea; color: #1a7f37; border: 1px solid #b7dfbd; }
+[data-theme="dark"] .btn-profile-success { background: #1a3326; color: #4caf7d; border-color: #1e4030; }
+
+/* ---- Tabs ---- */
+.profile-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border);
+    margin: 1.5rem 0 1.2rem;
+    overflow-x: auto;
+}
+.tab-btn {
+    padding: .75rem 1.3rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: .95rem;
+    color: var(--text-muted);
+    transition: color .2s, border-color .2s;
+    white-space: nowrap;
+}
+.tab-btn:hover { color: var(--accent); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ---- Two-column layout ---- */
+.profile-body {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+@media (max-width: 768px) {
+    .profile-body { grid-template-columns: 1fr; }
+    .profile-sidebar { display: none; }
+    .cover-img { height: 180px; }
+    .avatar-img { width: 90px; height: 90px; }
+    .profile-name { font-size: 1.25rem; }
+}
+
+/* ---- Sidebar cards ---- */
+.profile-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    transition: background .3s;
+}
+.profile-card h6 {
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-muted);
+    margin-bottom: .8rem;
+}
+.info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: .7rem;
+    padding: .4rem 0;
+    color: var(--text);
+    font-size: .93rem;
+    border-bottom: 1px solid var(--border);
+}
+.info-row:last-child { border-bottom: none; }
+.info-row .material-icons { font-size: 1.1rem; color: var(--text-muted); margin-top: 2px; flex-shrink: 0; }
+
+/* ---- Mini friends grid ---- */
+.mini-friends-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: .5rem;
+}
+.mini-friend {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 1;
+}
+.mini-friend img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: transform .2s;
+}
+.mini-friend:hover img { transform: scale(1.05); }
+.mini-friend-name {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,.55);
+    color: #fff;
+    font-size: .7rem;
+    padding: 2px 4px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---- Post card ---- */
+.post-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: background .3s;
+}
+.post-card-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .9rem 1rem .4rem;
+}
+.post-author-img {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid var(--border);
+}
+.post-author-name {
+    font-weight: 700;
+    color: var(--text);
+    font-size: .95rem;
+    text-decoration: none;
+}
+.post-author-name:hover { color: var(--accent); }
+.post-date {
+    font-size: .8rem;
+    color: var(--text-muted);
+}
+.post-actions-menu {
+    margin-left: auto;
+    display: flex;
+    gap: .4rem;
+}
+.post-action-btn {
+    padding: .3rem .65rem;
+    font-size: .8rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--btn-bg);
+    color: var(--text);
+    text-decoration: none;
+    transition: background .2s;
+    cursor: pointer;
+}
+.post-action-btn:hover { background: var(--btn-hover); color: var(--text); text-decoration: none; }
+.post-action-btn.danger { color: #c62828; border-color: #f5c6c6; }
+[data-theme="dark"] .post-action-btn.danger { color: #f28b82; border-color: #5a2020; }
+
+.post-body {
+    padding: .4rem 1rem .6rem;
+    color: var(--text);
+    font-size: .95rem;
+    line-height: 1.55;
+}
+.post-body img { max-width: 100%; border-radius: 4px; }
+.post-image {
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+    transition: opacity .2s;
+}
+.post-image:hover { opacity: .92; }
+.post-footer {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .5rem 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: .85rem;
+}
+.like-count { display: flex; align-items: center; gap: .25rem; }
+.like-count .material-icons { font-size: 1rem; color: var(--accent); }
+.post-category {
+    margin-left: auto;
+    font-size: .78rem;
+    background: var(--btn-bg);
+    padding: .15rem .55rem;
+    border-radius: 20px;
+    color: var(--text-muted);
+}
+
+/* ---- Create post box ---- */
+.create-post-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .9rem 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    cursor: pointer;
+    transition: background .2s;
+    text-decoration: none;
+}
+.create-post-box:hover { background: var(--btn-bg); text-decoration: none; }
+.create-post-placeholder {
+    flex: 1;
+    background: var(--btn-bg);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: .55rem 1rem;
+    color: var(--text-muted);
+    font-size: .95rem;
+    pointer-events: none;
+}
+
+/* ---- Empty state ---- */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+.empty-state .material-icons { font-size: 3rem; display: block; margin-bottom: .8rem; }
+
+/* ---- Photos grid ---- */
+.photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+}
+.photo-thumb {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--btn-bg);
+}
+.photo-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform .25s;
+    cursor: pointer;
+}
+.photo-thumb img:hover { transform: scale(1.04); }
+
+/* ---- Friends list ---- */
+.friends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: .8rem;
+}
+.friend-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text);
+    transition: box-shadow .2s, transform .15s;
+}
+.friend-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); text-decoration: none; color: var(--text); }
+.friend-card-img {
+    width: 100%; aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+}
+.friend-card-name {
+    padding: .5rem .4rem;
+    font-size: .85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---- Friend request banner ---- */
+.fr-banner {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: .8rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+}
+.fr-banner .fr-text { flex: 1; font-size: .92rem; color: var(--text); }
+</style>
+
+<div class="profile-wrapper">
+
+    <!-- ===================== COVER + AVATAR ===================== -->
+    <div class="cover-block">
+        <img class="cover-img" src="{% static 'images/kali.png' %}" alt="Cover">
+        <div class="cover-overlay"></div>
+    </div>
+
+    <div class="profile-header">
+        <div class="avatar-area">
+            <div class="avatar-wrap">
+                <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}">
+                {% if is_self %}
+                <a class="avatar-edit-btn" href="{% url 'account:edit' user_id=id %}" title="Modifier la photo">
+                    <span class="material-icons" style="font-size:1rem;">photo_camera</span>
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="profile-name-area">
+                <h1 class="profile-name">{{ username }}</h1>
+                {% if bio %}<p class="profile-bio">{{ bio }}</p>{% endif %}
+                <div class="profile-meta">
+                    <span>
+                        <span class="material-icons" style="font-size:1rem;">article</span>
+                        <span class="stat-val">{{ post_count }}</span> post{% if post_count != 1 %}s{% endif %}
+                    </span>
+                    <span>
+                        <span class="material-icons" style="font-size:1rem;">group</span>
+                        <span class="stat-val">{{ friends_count }}</span> ami{% if friends_count != 1 %}s{% endif %}
+                    </span>
+                    {% if location %}
+                    <span>
+                        <span class="material-icons" style="font-size:1rem;">place</span>
+                        {{ location }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ---- Action buttons ---- -->
+        <div class="profile-actions">
+            {% if request.user.is_authenticated %}
+
+                {% if is_self %}
+                    <!-- Own profile -->
+                    <a class="btn-profile btn-profile-secondary" href="{% url 'account:edit' user_id=id %}">
+                        <span class="material-icons" style="font-size:1rem;">edit</span> Modifier le profil
+                    </a>
+                    <a class="btn-profile btn-profile-secondary" href="{% url 'password_change' %}">
+                        <span class="material-icons" style="font-size:1rem;">lock</span> Mot de passe
+                    </a>
+
+                {% else %}
+                    <!-- Viewing someone else's profile -->
+
+                    {% if request_sent == 0 %}
+                    <!-- THEM sent YOU a request -->
+                    <div id="fr-accept-area" class="fr-banner">
+                        <span class="material-icons" style="color:var(--accent)">person_add</span>
+                        <span class="fr-text">{{ username }} vous a envoyé une demande d'ami.</span>
+                        <button class="btn-profile btn-profile-success" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>
+                            <span class="material-icons" style="font-size:1rem;">check</span> Accepter
+                        </button>
+                        <button class="btn-profile btn-profile-danger" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>
+                            <span class="material-icons" style="font-size:1rem;">close</span> Refuser
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    {% if is_friend %}
+                    <!-- Already friends -->
+                    <div class="dropdown">
+                        <button class="btn-profile btn-profile-secondary dropdown-toggle" data-toggle="dropdown" id="friends-drop">
+                            <span class="material-icons" style="font-size:1rem;">how_to_reg</span> Amis
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="friends-drop">
+                            <a class="dropdown-item text-danger" href="#" onclick="removeFriend('{{ id }}', onFriendRemoved)">
+                                <span class="material-icons mr-1" style="font-size:1rem;vertical-align:middle;">person_remove</span>Retirer des amis
+                            </a>
+                        </div>
+                    </div>
+                    <button class="btn-profile btn-profile-primary" onclick="createOrReturnPrivateChat('{{ id }}')">
+                        <span class="material-icons" style="font-size:1rem;">message</span> Message
+                    </button>
+
+                    {% elif request_sent == 1 %}
+                    <!-- YOU sent them a request -->
+                    <button class="btn-profile btn-profile-secondary" id="id_cancel_friend_request_btn">
+                        <span class="material-icons" style="font-size:1rem;">person_remove</span> Annuler la demande
+                    </button>
+
+                    {% elif request_sent == -1 %}
+                    <!-- No request sent -->
+                    <button class="btn-profile btn-profile-primary" id="id_send_friend_request_btn">
+                        <span class="material-icons" style="font-size:1rem;">person_add</span> Ajouter en ami
+                    </button>
+                    {% endif %}
+
+                {% endif %}
+
+                {% if friend_requests and is_self %}
+                <a class="btn-profile btn-profile-secondary" href="{% url 'friend:friend-requests' user_id=id %}">
+                    <span class="material-icons" style="font-size:1rem;">notifications</span>
+                    {{ friend_requests|length }} demande{% if friend_requests|length != 1 %}s{% endif %} d'ami
+                </a>
+                {% endif %}
+
+            {% else %}
+                <a class="btn-profile btn-profile-primary" href="{% url 'login' %}">
+                    <span class="material-icons" style="font-size:1rem;">login</span> Connexion
+                </a>
+            {% endif %}
+        </div>
+    </div><!-- /profile-header -->
+
+    <!-- ===================== TABS ===================== -->
+    <div class="profile-tabs" id="profile-tabs">
+        <button class="tab-btn active" data-tab="posts">
+            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">article</span> Posts
+        </button>
+        <button class="tab-btn" data-tab="photos">
+            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">photo_library</span> Photos
+        </button>
+        <button class="tab-btn" data-tab="friends-tab">
+            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">group</span> Amis
+        </button>
+        <button class="tab-btn" data-tab="about">
+            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">info</span> À propos
+        </button>
+    </div>
+
+    <!-- ===================== TAB: POSTS ===================== -->
+    <div class="tab-pane active" id="tab-posts">
+        <div class="profile-body">
+
+            <!-- Sidebar -->
+            <aside class="profile-sidebar">
+
+                <!-- Infos rapides -->
+                <div class="profile-card">
+                    <h6>Infos</h6>
+                    {% if location %}
+                    <div class="info-row">
+                        <span class="material-icons">place</span>
+                        <span>{{ location }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-row">
+                        <span class="material-icons">calendar_today</span>
+                        <span>Membre depuis {{ date_joined|date:"F Y" }}</span>
+                    </div>
+                    {% if is_self or not hide_email %}
+                    <div class="info-row">
+                        <span class="material-icons">email</span>
+                        <span>{{ email }}</span>
+                    </div>
+                    {% endif %}
+                    {% if bio %}
+                    <div class="info-row">
+                        <span class="material-icons">notes</span>
+                        <span>{{ bio }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Mini amis -->
+                {% if friends %}
+                <div class="profile-card">
+                    <h6>Amis · {{ friends_count }}</h6>
+                    <div class="mini-friends-grid">
+                        {% for friend in friends|slice:":9" %}
+                        <a class="mini-friend" href="{% url 'account:view' user_id=friend.id %}" title="{{ friend.username }}">
+                            <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
+                            <span class="mini-friend-name">{{ friend.username }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% if friends_count > 9 %}
+                    <a href="{% url 'friend:list' user_id=id %}" class="btn-profile btn-profile-secondary w-100 mt-2" style="justify-content:center;">
+                        Voir tous les amis
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Mini photos -->
+                {% if photos %}
+                <div class="profile-card">
+                    <h6>Photos</h6>
+                    <div class="mini-friends-grid">
+                        {% for photo in photos|slice:":9" %}
+                        <div class="mini-friend">
+                            <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            </aside>
+
+            <!-- Main feed -->
+            <div class="profile-main">
+
+                <!-- Create post (only own profile) -->
+                {% if is_self %}
+                <a class="create-post-box" href="{% url 'post:addPost' %}">
+                    <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}" style="width:44px;height:44px;flex-shrink:0;">
+                    <span class="create-post-placeholder">Quoi de neuf, {{ username }} ?</span>
+                </a>
+                {% endif %}
+
+                <!-- Posts loop -->
+                {% if posts %}
+                    {% for post in posts %}
+                    <div class="post-card">
+                        <div class="post-card-header">
+                            <a href="{% url 'account:view' user_id=post.author.id %}">
+                                <img class="post-author-img" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+                            </a>
+                            <div>
+                                <a class="post-author-name" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
+                                <div class="post-date">{{ post.post_date|date:"d F Y" }}</div>
+                            </div>
+                            {% if is_self or request.user.id == post.author.id %}
+                            <div class="post-actions-menu">
+                                <a class="post-action-btn" href="{% url 'post:edit-post' pk=post.id %}">
+                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">edit</span> Modifier
+                                </a>
+                                <a class="post-action-btn danger" href="{% url 'post:delete-post' pk=post.id %}">
+                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">delete</span> Supprimer
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if post.title %}
+                        <div class="post-body">
+                            <strong>{{ post.title }}</strong>
+                        </div>
+                        {% endif %}
+
+                        {% if post.body %}
+                        <div class="post-body">{{ post.body|safe }}</div>
+                        {% endif %}
+
+                        {% if post.header_image %}
+                        <a href="{{ post.header_image.url }}" target="_blank">
+                            <img class="post-image" src="{{ post.header_image.url }}" alt="{{ post.title }}">
+                        </a>
+                        {% endif %}
+
+                        <div class="post-footer">
+                            <span class="like-count">
+                                <span class="material-icons">thumb_up</span>
+                                {{ post.total_likes }} j'aime
+                            </span>
+                            {% if post.category and post.category != 'Category' %}
+                            <span class="post-category">{{ post.category }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                {% else %}
+                    <div class="empty-state">
+                        <span class="material-icons">article</span>
+                        <p>Aucun post pour l'instant.</p>
+                        {% if is_self %}
+                        <a class="btn-profile btn-profile-primary" href="{% url 'post:addPost' %}">
+                            Créer votre premier post
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div><!-- /profile-main -->
+
+        </div><!-- /profile-body -->
+    </div><!-- /tab-posts -->
+
+
+    <!-- ===================== TAB: PHOTOS ===================== -->
+    <div class="tab-pane" id="tab-photos">
+        {% if photos %}
+        <div class="photos-grid">
+            {% for photo in photos %}
+            <div class="photo-thumb">
+                <a href="{{ photo.header_image.url }}" target="_blank">
+                    <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="material-icons">photo_library</span>
+            <p>Aucune photo publiée.</p>
+            {% if is_self %}
+            <a class="btn-profile btn-profile-primary" href="{% url 'post:addPost' %}">Publier une photo</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ===================== TAB: FRIENDS ===================== -->
+    <div class="tab-pane" id="tab-friends-tab">
+        {% if friends %}
+        <div class="friends-grid">
+            {% for friend in friends %}
+            <a class="friend-card" href="{% url 'account:view' user_id=friend.id %}">
+                <img class="friend-card-img" src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
+                <div class="friend-card-name">{{ friend.username }}</div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <span class="material-icons">group</span>
+            <p>Aucun ami pour l'instant.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ===================== TAB: ABOUT ===================== -->
+    <div class="tab-pane" id="tab-about">
+        <div class="profile-card" style="max-width:600px;">
+            <h6>Informations personnelles</h6>
+
+            <div class="info-row">
+                <span class="material-icons">person</span>
+                <div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Nom d'utilisateur</div>
+                    <div><strong>{{ username }}</strong></div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <span class="material-icons">email</span>
+                <div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Email</div>
+                    <div>
+                        {% if is_self %}
+                            {{ email }}
+                        {% elif hide_email %}
+                            <em style="color:var(--text-muted)">Masqué par l'utilisateur</em>
+                        {% else %}
+                            {{ email }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if bio %}
+            <div class="info-row">
+                <span class="material-icons">notes</span>
+                <div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Bio</div>
+                    <div>{{ bio }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if location %}
+            <div class="info-row">
+                <span class="material-icons">place</span>
+                <div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Localisation</div>
+                    <div>{{ location }}</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="info-row">
+                <span class="material-icons">calendar_today</span>
+                <div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Membre depuis</div>
+                    <div>{{ date_joined|date:"d F Y" }}</div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <span class="material-icons">article</span>
+                <div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Publications</div>
+                    <div>{{ post_count }} post{% if post_count != 1 %}s{% endif %}</div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <span class="material-icons">group</span>
+                <div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Amis</div>
+                    <div>{{ friends_count }} ami{% if friends_count != 1 %}s{% endif %}</div>
+                </div>
+            </div>
+
+            {% if is_self %}
+            <div style="margin-top:1rem;display:flex;gap:.7rem;flex-wrap:wrap;">
+                <a class="btn-profile btn-profile-primary" href="{% url 'account:edit' user_id=id %}">
+                    <span class="material-icons" style="font-size:1rem;">edit</span> Modifier le profil
+                </a>
+                <a class="btn-profile btn-profile-secondary" href="{% url 'password_change' %}">
+                    <span class="material-icons" style="font-size:1rem;">lock</span> Changer le mot de passe
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div><!-- /tab-about -->
+
+</div><!-- /profile-wrapper -->
+
+
+<!-- ===================== SCRIPTS ===================== -->
+<script type="text/javascript">
+
+    /* ----- Tab navigation ----- */
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var target = this.dataset.tab;
+            // Remove active from all buttons and panes
+            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
+            // Activate current
+            this.classList.add('active');
+            var pane = document.getElementById('tab-' + target);
+            if (pane) pane.classList.add('active');
+            // Save in localStorage
+            localStorage.setItem('profile_active_tab_{{ id }}', target);
+        });
+    });
+
+    // Restore last active tab
+    (function() {
+        var saved = localStorage.getItem('profile_active_tab_{{ id }}');
+        if (saved) {
+            var btn = document.querySelector('[data-tab="' + saved + '"]');
+            if (btn) btn.click();
+        }
+    })();
+
+    /* ----- Friend request callbacks ----- */
+    function onFriendRequestSent()        { location.reload(); }
+    function onFriendRequestCancelled()   { location.reload(); }
+    function onFriendRemoved()            { location.reload(); }
+    function onFriendRequestAccepted()    { location.reload(); }
+    function onFriendRequestDeclined()    { location.reload(); }
+
+    var sendBtn = document.getElementById("id_send_friend_request_btn");
+    if (sendBtn) sendBtn.addEventListener("click", function() {
+        sendFriendRequest("{{ id }}", onFriendRequestSent);
+    });
+
+    var cancelBtn = document.getElementById("id_cancel_friend_request_btn");
+    if (cancelBtn) cancelBtn.addEventListener("click", function() {
+        cancelFriendRequest("{{ id }}", onFriendRequestCancelled);
+    });
+
+    function triggerAcceptFriendRequest(friend_request_id) {
+        acceptFriendRequest(friend_request_id, onFriendRequestAccepted);
+    }
+    function triggerDeclineFriendRequest(friend_request_id) {
+        declineFriendRequest(friend_request_id, onFriendRequestDeclined);
+    }
+</script>
+
+{% include 'friend/snippets/send_friend_request.html' %}
+{% include 'friend/snippets/accept_friend_request.html' %}
+{% include 'friend/snippets/decline_friend_request.html' %}
+{% include 'friend/snippets/cancel_friend_request.html' %}
+{% include 'friend/snippets/remove_friend.html' %}
+{% include 'chat/snippets/create_or_return_private_chat.html' %}
+
+{% endblock content %}
