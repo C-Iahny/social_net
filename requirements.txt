@@ -35,6 +35,10 @@ whitenoise==6.2.0
 # ── Images ───────────────────────────────────────────────────────────────────
 Pillow==9.4.0
 
+# ── Stockage cloud (médias persistants en production) ────────────────────────
+cloudinary==1.36.0
+django-cloudinary-storage==0.3.0
+
 # ── Frontend / formulaires ───────────────────────────────────────────────────
 django-ckeditor==6.5.1
 django-js-asset==2.0.0
