@@ -72,6 +72,10 @@ INSTALLED_APPS = [
 
 
 
+    # Stockage cloud médias — doit être AVANT django.contrib.staticfiles
+    'cloudinary_storage',
+    'cloudinary',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -195,20 +199,32 @@ USE_TZ = True
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
-    # Note : 'media/' retiré des STATICFILES_DIRS — les fichiers uploadés
-    # ne doivent pas être collectés comme fichiers statiques.
 ]
 STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn')
+
+# WhiteNoise — compression + cache-busting des fichiers statiques
+STATICFILES_STORAGE = 'ZOOT.storage.RelaxedStaticFilesStorage'
+
+# ── Médias (fichiers uploadés) ────────────────────────────────────────────────
+# En production : Cloudinary (fichiers persistants entre déploiements Railway)
+# En développement : stockage local
+CLOUDINARY_URL = config('CLOUDINARY_URL', default=None)
+
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media_cdn')
+
+if CLOUDINARY_URL:
+    # Production : Cloudinary héberge tous les médias
+    import cloudinary
+    cloudinary.config(cloudinary_url=CLOUDINARY_URL)
+    CLOUDINARY_STORAGE = {'CLOUDINARY_URL': CLOUDINARY_URL}
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 TEMP = os.path.join(BASE_DIR, 'media_cdn/temp')
 
-# WhiteNoise — compression + cache-busting des fichiers statiques
-# Utilise notre sous-classe permissive (manifest_strict=False) pour éviter
-# les erreurs sur les sourcemaps .map ou autres fichiers référencés mais absents.
-STATICFILES_STORAGE = 'ZOOT.storage.RelaxedStaticFilesStorage'
+# Taille max d'un fichier uploadé via formulaire (10 Mo)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
@@ -222,6 +238,12 @@ CSRF_TRUSTED_ORIGINS = config(
     default='http://127.0.0.1:8000,http://localhost:8000',
     cast=Csv()
 )
+# Ajoute automatiquement les domaines Railway si non déjà présents
+if not DEBUG:
+    _railway_csrf = ['https://*.railway.app', 'https://*.up.railway.app']
+    for _origin in _railway_csrf:
+        if _origin not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(_origin)
 
 # En production (DEBUG=False), activer les redirections HTTPS
 if not DEBUG:
