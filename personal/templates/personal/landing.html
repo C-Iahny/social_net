@@ -1,0 +1,456 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZOOT — Réseau Social</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ===== VARIABLES THÈME ===== */
+    :root {
+      --bg:          #f0f2f5;
+      --bg-card:     #ffffff;
+      --bg-nav:      #ffffff;
+      --text:        #1c1e21;
+      --text-muted:  #65676b;
+      --border:      #dddfe2;
+      --accent:      #1877f2;
+      --accent-dark: #0d6efd;
+      --hero-from:   #1877f2;
+      --hero-to:     #6c2bd9;
+      --shadow:      0 2px 12px rgba(0,0,0,.10);
+      --badge-info:    #e7f3ff;
+      --badge-info-t:  #1877f2;
+      --badge-success: #e6f4ea;
+      --badge-success-t:#1a7f37;
+      --badge-warning: #fff8e1;
+      --badge-warning-t:#b45309;
+      --badge-danger:  #fdecea;
+      --badge-danger-t:#d93025;
+    }
+
+    [data-theme="dark"] {
+      --bg:          #18191a;
+      --bg-card:     #242526;
+      --bg-nav:      #242526;
+      --text:        #e4e6eb;
+      --text-muted:  #b0b3b8;
+      --border:      #3a3b3c;
+      --accent:      #2d88ff;
+      --accent-dark: #1877f2;
+      --hero-from:   #1a237e;
+      --hero-to:     #4a148c;
+      --shadow:      0 2px 12px rgba(0,0,0,.40);
+      --badge-info:    #1c3558;
+      --badge-info-t:  #6ba3f7;
+      --badge-success: #1a3326;
+      --badge-success-t:#4caf7d;
+      --badge-warning: #332b00;
+      --badge-warning-t:#ffd54f;
+      --badge-danger:  #3b1212;
+      --badge-danger-t:#f28b82;
+    }
+
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background .3s, color .3s;
+      line-height: 1.6;
+    }
+
+    /* ===== NAV ===== */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg-nav);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+      transition: background .3s, border-color .3s;
+    }
+    .nav-logo {
+      font-size: 1.6rem; font-weight: 900; color: var(--accent);
+      text-decoration: none; letter-spacing: -1px;
+    }
+    .nav-links { display: flex; align-items: center; gap: 1rem; }
+    .nav-links a {
+      color: var(--text); text-decoration: none;
+      font-weight: 500; font-size: .95rem;
+      padding: .4rem .9rem; border-radius: 8px;
+      transition: background .2s;
+    }
+    .nav-links a:hover { background: var(--border); }
+    .btn-primary {
+      background: var(--accent); color: #fff !important;
+      border-radius: 8px; padding: .45rem 1.1rem !important;
+      font-weight: 600 !important;
+      transition: background .2s, transform .15s !important;
+    }
+    .btn-primary:hover { background: var(--accent-dark) !important; transform: translateY(-1px); }
+
+    /* Toggle dark/light */
+    #theme-toggle {
+      background: none; border: 1.5px solid var(--border);
+      color: var(--text); cursor: pointer;
+      width: 38px; height: 38px; border-radius: 50%;
+      font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+      transition: background .2s, border-color .2s;
+    }
+    #theme-toggle:hover { background: var(--border); }
+
+    /* ===== HERO ===== */
+    .hero {
+      background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
+      color: #fff;
+      padding: 5rem 2rem 4rem;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-content { position: relative; max-width: 700px; margin: 0 auto; }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900; line-height: 1.1;
+      margin-bottom: 1.2rem;
+      text-shadow: 0 2px 16px rgba(0,0,0,.25);
+    }
+    .hero p {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      opacity: .9; margin-bottom: 2rem; max-width: 540px; margin-inline: auto;
+    }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .hero-btns a {
+      padding: .85rem 2rem; border-radius: 10px; font-weight: 700;
+      text-decoration: none; font-size: 1rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .hero-btns a:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+    .btn-white { background: #fff; color: var(--accent); }
+    .btn-outline-white { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.7); }
+
+    /* ===== ANNONCES ===== */
+    .section-announcements {
+      max-width: 860px; margin: 3rem auto; padding: 0 1.5rem;
+    }
+    .section-title {
+      font-size: 1.4rem; font-weight: 800; margin-bottom: 1.2rem;
+      display: flex; align-items: center; gap: .6rem; color: var(--text);
+    }
+    .section-title i { color: var(--accent); }
+
+    .announcement-card {
+      background: var(--bg-card);
+      border-radius: 14px;
+      border-left: 5px solid var(--accent);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+      display: flex; gap: 1rem; align-items: flex-start;
+      transition: transform .2s, box-shadow .2s;
+      animation: slideIn .4s ease;
+    }
+    .announcement-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ann-info    { border-color: var(--badge-info-t); }
+    .ann-success { border-color: var(--badge-success-t); }
+    .ann-warning { border-color: var(--badge-warning-t); }
+    .ann-danger  { border-color: var(--badge-danger-t); }
+
+    .ann-badge {
+      padding: .25rem .7rem; border-radius: 20px;
+      font-size: .75rem; font-weight: 700; white-space: nowrap;
+    }
+    .badge-info    { background: var(--badge-info);    color: var(--badge-info-t); }
+    .badge-success { background: var(--badge-success); color: var(--badge-success-t); }
+    .badge-warning { background: var(--badge-warning); color: var(--badge-warning-t); }
+    .badge-danger  { background: var(--badge-danger);  color: var(--badge-danger-t); }
+
+    .ann-icon { font-size: 1.6rem; flex-shrink: 0; margin-top: .1rem; }
+    .ann-body { flex: 1; }
+    .ann-header { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; margin-bottom: .4rem; }
+    .ann-title { font-weight: 700; font-size: 1rem; color: var(--text); }
+    .ann-content { color: var(--text-muted); font-size: .95rem; line-height: 1.55; }
+    .ann-date {
+      font-size: .78rem; color: var(--text-muted);
+      margin-top: .5rem; display: flex; align-items: center; gap: .3rem;
+    }
+
+    .no-announcement {
+      text-align: center; padding: 2rem;
+      color: var(--text-muted); font-style: italic;
+    }
+
+    /* ===== FEATURES ===== */
+    .section-features {
+      max-width: 1100px; margin: 3rem auto; padding: 0 1.5rem;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.25rem;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border-radius: 14px;
+      padding: 1.75rem 1.5rem;
+      box-shadow: var(--shadow);
+      text-align: center;
+      transition: transform .2s, box-shadow .2s;
+      border: 1px solid var(--border);
+    }
+    .feature-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .feature-icon {
+      width: 60px; height: 60px; border-radius: 16px;
+      background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 1.6rem; color: #fff;
+    }
+    .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .5rem; }
+    .feature-card p  { font-size: .9rem; color: var(--text-muted); }
+
+    /* ===== STATS ===== */
+    .section-stats {
+      background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
+      color: #fff; padding: 3rem 1.5rem; text-align: center;
+    }
+    .stats-grid {
+      display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap;
+      max-width: 700px; margin: 0 auto;
+    }
+    .stat-item h2 { font-size: 2.5rem; font-weight: 900; }
+    .stat-item p  { font-size: .95rem; opacity: .85; }
+
+    /* ===== CTA ===== */
+    .section-cta {
+      max-width: 660px; margin: 4rem auto; padding: 3rem 2rem;
+      text-align: center;
+      background: var(--bg-card);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    .section-cta h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: .75rem; }
+    .section-cta p  { color: var(--text-muted); margin-bottom: 1.5rem; }
+    .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .cta-btns a {
+      padding: .8rem 1.8rem; border-radius: 10px; font-weight: 700;
+      text-decoration: none; font-size: 1rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .cta-btns a:hover { transform: translateY(-2px); }
+    .btn-cta-main { background: var(--accent); color: #fff; }
+    .btn-cta-main:hover { background: var(--accent-dark); }
+    .btn-cta-secondary {
+      background: var(--bg); color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      text-align: center; padding: 2rem 1rem;
+      color: var(--text-muted); font-size: .88rem;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .nav-links .hide-mobile { display: none; }
+      .hero { padding: 3.5rem 1.2rem 3rem; }
+      .stats-grid { gap: 2rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== NAV ===== -->
+  <nav>
+    <a href="{% url 'landing' %}" class="nav-logo">ZOOT</a>
+    <div class="nav-links">
+      <a href="#features" class="hide-mobile">Fonctionnalités</a>
+      <a href="#announcements" class="hide-mobile">Actualités</a>
+      {% if user.is_authenticated %}
+        <a href="{% url 'post:post-view' %}">Mon fil</a>
+        <a href="{% url 'account:view' user_id=user.id %}">Mon profil</a>
+      {% else %}
+        <a href="{% url 'login' %}">Connexion</a>
+        <a href="{% url 'register' %}" class="btn-primary">S'inscrire</a>
+      {% endif %}
+      <button id="theme-toggle" title="Changer le thème" aria-label="Changer le thème">
+        <i class="fa-solid fa-moon" id="theme-icon"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Connectez-vous.<br>Partagez. Grandissez.</h1>
+      <p>ZOOT est le réseau social où vous retrouvez vos amis, partagez vos idées et restez informé en temps réel.</p>
+      <div class="hero-btns">
+        {% if user.is_authenticated %}
+          <a href="{% url 'post:post-view' %}" class="btn-white">Voir mon fil d'actualité</a>
+          <a href="{% url 'account:view' user_id=user.id %}" class="btn-outline-white">Mon profil</a>
+        {% else %}
+          <a href="{% url 'register' %}" class="btn-white">Créer un compte gratuit</a>
+          <a href="{% url 'login' %}" class="btn-outline-white">Se connecter</a>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ANNONCES ===== -->
+  <section class="section-announcements" id="announcements">
+    <div class="section-title">
+      <i class="fa-solid fa-bullhorn"></i>
+      Annonces &amp; Actualités
+    </div>
+
+    {% if announcements %}
+      {% for ann in announcements %}
+        <div class="announcement-card ann-{{ ann.priority }}">
+          <div class="ann-icon">
+            {% if ann.priority == 'info' %}🔵
+            {% elif ann.priority == 'success' %}🟢
+            {% elif ann.priority == 'warning' %}🟡
+            {% elif ann.priority == 'danger' %}🔴
+            {% endif %}
+          </div>
+          <div class="ann-body">
+            <div class="ann-header">
+              <span class="ann-title">{{ ann.title }}</span>
+              <span class="ann-badge badge-{{ ann.priority }}">{{ ann.get_priority_display }}</span>
+            </div>
+            <div class="ann-content">{{ ann.content|linebreaksbr }}</div>
+            <div class="ann-date">
+              <i class="fa-regular fa-clock"></i>
+              Publié le {{ ann.start_date|date:"d F Y" }}
+              {% if ann.end_date %} · jusqu'au {{ ann.end_date|date:"d F Y" }}{% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-announcement">
+        <i class="fa-regular fa-bell-slash" style="font-size:2rem; margin-bottom:.5rem; display:block;"></i>
+        Aucune annonce en ce moment. Revenez bientôt !
+      </div>
+    {% endif %}
+  </section>
+
+  <!-- ===== FEATURES ===== -->
+  <section class="section-features" id="features">
+    <div class="section-title">
+      <i class="fa-solid fa-star"></i>
+      Ce que vous pouvez faire sur ZOOT
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
+        <h3>Ajoutez des amis</h3>
+        <p>Envoyez des demandes d'amitié, acceptez ou refusez, et gérez votre réseau en toute simplicité.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+        <h3>Publiez du contenu</h3>
+        <p>Partagez des textes, images et fichiers. Likez et commentez les publications de votre réseau.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-message"></i></div>
+        <h3>Chat en temps réel</h3>
+        <p>Discutez en privé avec vos amis ou rejoignez le chat public de la communauté.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-bell"></i></div>
+        <h3>Notifications live</h3>
+        <p>Recevez des notifications instantanées pour les demandes d'amis, les messages et les interactions.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-user-circle"></i></div>
+        <h3>Profil personnalisé</h3>
+        <p>Personnalisez votre photo de profil, votre bio et vos informations de contact.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+        <h3>Recherche d'utilisateurs</h3>
+        <p>Trouvez facilement d'autres membres par nom d'utilisateur et agrandissez votre réseau.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== STATS ===== -->
+  <section class="section-stats">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <h2>∞</h2>
+        <p>Connexions possibles</p>
+      </div>
+      <div class="stat-item">
+        <h2>100%</h2>
+        <p>Gratuit</p>
+      </div>
+      <div class="stat-item">
+        <h2>24/7</h2>
+        <p>Disponible</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA FINAL ===== -->
+  {% if not user.is_authenticated %}
+  <section class="section-cta">
+    <h2>Prêt à rejoindre ZOOT ?</h2>
+    <p>Créez votre compte gratuitement et rejoignez la communauté dès aujourd'hui.</p>
+    <div class="cta-btns">
+      <a href="{% url 'register' %}" class="btn-cta-main">Créer mon compte</a>
+      <a href="{% url 'login' %}" class="btn-cta-secondary">J'ai déjà un compte</a>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ===== FOOTER ===== -->
+  <footer>
+    <p>&copy; {% now "Y" %} ZOOT · Réseau Social · Fait avec ❤️
+      &nbsp;|&nbsp;
+      <a href="{% url 'admin:index' %}">Administration</a>
+    </p>
+  </footer>
+
+  <!-- ===== DARK/LIGHT TOGGLE JS ===== -->
+  <script>
+    const toggle = document.getElementById('theme-toggle');
+    const icon   = document.getElementById('theme-icon');
+    const html   = document.documentElement;
+
+    // Charge le thème sauvegardé
+    const saved = localStorage.getItem('zoot-theme') || 'light';
+    html.setAttribute('data-theme', saved);
+    icon.className = saved === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+
+    toggle.addEventListener('click', () => {
+      const current = html.getAttribute('data-theme');
+      const next    = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      icon.className = next === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      localStorage.setItem('zoot-theme', next);
+    });
+  </script>
+</body>
+</html>

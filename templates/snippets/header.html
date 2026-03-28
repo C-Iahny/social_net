@@ -1,0 +1,830 @@
+{% load static %}
+
+<!-- ── Toast notification for new friend posts ─────────────────────── -->
+<style>
+#zoot-post-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+    pointer-events: none;
+}
+.zoot-toast-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border, #e0e0e0);
+    border-left: 4px solid var(--accent, #1877f2);
+    border-radius: 12px;
+    padding: .75rem 1rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.18);
+    min-width: 280px;
+    max-width: 340px;
+    pointer-events: auto;
+    cursor: pointer;
+    animation: toastSlideIn .35s cubic-bezier(.34,1.56,.64,1);
+    transition: opacity .3s;
+}
+.zoot-toast-item:hover { opacity: .88; }
+@keyframes toastSlideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+.zoot-toast-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--accent, #1877f2);
+    flex-shrink: 0;
+}
+.zoot-toast-body { flex: 1; min-width: 0; }
+.zoot-toast-user { font-weight: 700; font-size: .88rem; color: var(--text, #1c1e21); }
+.zoot-toast-msg  { font-size: .82rem; color: var(--text-muted, #65676b); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zoot-toast-close {
+    font-size: 1rem; color: var(--text-muted, #65676b);
+    background: none; border: none; cursor: pointer;
+    padding: 0; line-height: 1; flex-shrink: 0;
+}
+</style>
+<div id="zoot-post-toast"></div>
+
+<!-- ── Navbar premium ─────────────────────────────────────────────── -->
+<style>
+/* ── Reset & Base ── */
+#header * { box-sizing: border-box; }
+
+#header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    height: 62px;
+    background: var(--bg-nav);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 1px 0 var(--border), 0 4px 24px rgba(0,0,0,.06);
+    transition: background .3s, border-color .3s, box-shadow .3s;
+}
+
+[data-theme="dark"] #header {
+    box-shadow: 0 1px 0 var(--border), 0 4px 24px rgba(0,0,0,.35);
+}
+
+.zoot-nav-inner {
+    display: flex;
+    align-items: center;
+    height: 62px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    gap: 1rem;
+}
+
+/* ── Brand / Logo ── */
+.zoot-brand {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    text-decoration: none !important;
+    flex-shrink: 0;
+}
+.zoot-brand-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #1877f2 0%, #7c3aed 100%);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(24,119,242,.35);
+    transition: transform .2s, box-shadow .2s;
+}
+.zoot-brand:hover .zoot-brand-icon {
+    transform: scale(1.07);
+    box-shadow: 0 4px 18px rgba(24,119,242,.45);
+}
+.zoot-brand-icon svg { display: block; }
+.zoot-brand-text {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -.5px;
+    background: linear-gradient(135deg, #1877f2 0%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+}
+
+/* ── Center nav ── */
+.zoot-nav-center {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    flex: 1;
+    justify-content: center;
+}
+.zoot-nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: .4rem 1.1rem;
+    border-radius: 10px;
+    text-decoration: none !important;
+    color: var(--text-muted);
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    transition: color .2s, background .2s;
+    position: relative;
+    min-width: 70px;
+}
+.zoot-nav-link .material-icons {
+    font-size: 1.4rem;
+    transition: color .2s;
+}
+.zoot-nav-link:hover {
+    color: var(--accent);
+    background: rgba(24,119,242,.07);
+    text-decoration: none;
+}
+.zoot-nav-link.active {
+    color: var(--accent);
+}
+.zoot-nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 3px;
+    background: linear-gradient(90deg, #1877f2, #7c3aed);
+    border-radius: 3px 3px 0 0;
+}
+
+/* ── Right section ── */
+.zoot-nav-right {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* ── Search bar ── */
+.zoot-search-form {
+    display: flex;
+    align-items: center;
+    background: var(--btn-bg);
+    border: 1.5px solid transparent;
+    border-radius: 22px;
+    padding: 0 .6rem 0 .9rem;
+    height: 38px;
+    transition: border-color .2s, background .2s, box-shadow .2s;
+    min-width: 180px;
+}
+.zoot-search-form:focus-within {
+    border-color: var(--accent);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(24,119,242,.12);
+}
+.zoot-search-form input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: .9rem;
+    width: 100%;
+    padding: 0;
+}
+.zoot-search-form input::placeholder { color: var(--text-muted); }
+.zoot-search-form button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    transition: color .2s;
+}
+.zoot-search-form button:hover { color: var(--accent); }
+.zoot-search-form .material-icons { font-size: 1.15rem; }
+
+/* ── Icon buttons (theme, chat, notifs) ── */
+.zoot-icon-btn {
+    position: relative;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--btn-bg);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    font-size: 1.1rem;
+    transition: background .2s, color .2s, transform .15s;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.zoot-icon-btn:hover {
+    background: var(--btn-hover);
+    color: var(--accent);
+    transform: scale(1.06);
+}
+.zoot-icon-btn .material-icons { font-size: 1.35rem; }
+
+/* ── Notification badge ── */
+.zoot-badge {
+    position: absolute;
+    top: 4px; right: 4px;
+    min-width: 17px; height: 17px;
+    background: #e0245e;
+    color: #fff;
+    border-radius: 9px;
+    font-size: .65rem;
+    font-weight: 800;
+    line-height: 17px;
+    text-align: center;
+    padding: 0 4px;
+    border: 2px solid var(--bg-nav);
+    display: none;
+    pointer-events: none;
+}
+.zoot-badge:not(:empty) { display: block; }
+
+/* ── Profile avatar button ── */
+.zoot-avatar-btn {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 22px;
+    transition: background .2s;
+}
+.zoot-avatar-btn:hover { background: var(--btn-bg); }
+.zoot-avatar-btn img {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    transition: border-color .2s;
+    display: block;
+}
+.zoot-avatar-btn:hover img { border-color: var(--accent); }
+.zoot-avatar-caret {
+    color: var(--text-muted);
+    font-size: .85rem !important;
+    margin-right: 2px;
+}
+
+/* ── Dropdowns override ── */
+.zoot-nav-right .dropdown-menu {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08);
+    padding: .35rem 0 .5rem;
+    margin-top: 10px !important;
+    min-width: 240px;
+    animation: dropIn .22s cubic-bezier(.34,1.3,.64,1);
+    transform-origin: top right;
+}
+[data-theme="dark"] .zoot-nav-right .dropdown-menu {
+    box-shadow: 0 12px 40px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.4);
+}
+@keyframes dropIn {
+    from { opacity: 0; transform: scale(.94) translateY(-6px); }
+    to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+
+/* items */
+.zoot-nav-right .dropdown-item {
+    color: var(--text);
+    font-size: .88rem;
+    font-weight: 500;
+    padding: .52rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    border-radius: 10px;
+    margin: 1px 6px;
+    width: calc(100% - 12px);
+    transition: background .15s, color .15s;
+}
+.zoot-nav-right .dropdown-item:hover,
+.zoot-nav-right .dropdown-item:focus {
+    background: var(--btn-bg);
+    color: var(--accent);
+    outline: none;
+}
+.zoot-nav-right .dropdown-item .material-icons {
+    font-size: 1.1rem;
+    width: 22px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    transition: color .15s;
+}
+.zoot-nav-right .dropdown-item:hover .material-icons { color: var(--accent); }
+.zoot-nav-right .dropdown-item.danger { color: #e53935; }
+.zoot-nav-right .dropdown-item.danger .material-icons { color: #e53935; }
+.zoot-nav-right .dropdown-item.danger:hover { background: #fdecea; color: #c62828; }
+[data-theme="dark"] .zoot-nav-right .dropdown-item.danger:hover { background: #3e1a1a; }
+
+.zoot-nav-right .dropdown-divider {
+    border-color: var(--border);
+    margin: .35rem .6rem;
+}
+
+/* ── Profile dropdown header ── */
+.zoot-profile-banner {
+    background: linear-gradient(135deg, #1877f2 0%, #7c3aed 100%);
+    border-radius: 12px 12px 0 0;
+    height: 52px;
+    position: relative;
+    flex-shrink: 0;
+}
+.zoot-profile-header {
+    display: flex;
+    align-items: flex-end;
+    gap: .75rem;
+    padding: 0 1rem .7rem;
+    margin-top: -24px;
+    position: relative;
+}
+.zoot-profile-header img {
+    width: 48px; height: 48px;
+    border-radius: 50%; object-fit: cover;
+    border: 3px solid var(--bg-card);
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    flex-shrink: 0;
+    transition: border-color .2s;
+}
+.zoot-profile-info { min-width: 0; padding-bottom: 2px; }
+.zoot-profile-name {
+    font-weight: 800;
+    font-size: .93rem;
+    color: var(--text);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.zoot-profile-handle {
+    font-size: .75rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+}
+
+/* ── Dropdown section label ── */
+.zoot-dropdown-label {
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: .55rem 1rem .2rem;
+}
+
+/* ── Notifications dropdown large ── */
+.scrollable-menu {
+    height: auto;
+    max-height: 480px;
+    width: 360px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-radius: 16px !important;
+}
+.scrollable-menu::-webkit-scrollbar { width: 4px; }
+.scrollable-menu::-webkit-scrollbar-track { background: transparent; }
+.scrollable-menu::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Dropdown header bar (chat & notifs) ── */
+.zoot-dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1rem .45rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: .3rem;
+}
+.zoot-dropdown-header-title {
+    font-weight: 800;
+    font-size: .97rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+.zoot-dropdown-header-title .material-icons { font-size: 1.1rem; color: var(--accent); }
+.zoot-dropdown-header-link {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none;
+    padding: .2rem .5rem;
+    border-radius: 6px;
+    transition: background .15s;
+}
+.zoot-dropdown-header-link:hover { background: var(--btn-bg); text-decoration: none; color: var(--accent); }
+
+/* ── Mobile hamburger ── */
+.zoot-hamburger {
+    display: none;
+    background: var(--btn-bg);
+    border: none;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    transition: background .2s;
+}
+.zoot-hamburger:hover { background: var(--btn-hover); }
+.zoot-hamburger .material-icons { font-size: 1.4rem; }
+
+/* ── Mobile menu panel ── */
+.zoot-mobile-menu {
+    background: var(--bg-nav);
+    border-top: 1px solid var(--border);
+    padding: .75rem 1rem 1rem;
+    display: none;
+    flex-direction: column;
+    gap: .25rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,.1);
+}
+.zoot-mobile-menu.open { display: flex; }
+.zoot-mobile-search {
+    display: flex;
+    align-items: center;
+    background: var(--btn-bg);
+    border: 1.5px solid transparent;
+    border-radius: 22px;
+    padding: 0 .6rem 0 .9rem;
+    height: 40px;
+    margin-bottom: .5rem;
+    transition: border-color .2s;
+}
+.zoot-mobile-search:focus-within { border-color: var(--accent); }
+.zoot-mobile-search input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-size: .9rem; width: 100%; padding: 0;
+}
+.zoot-mobile-search input::placeholder { color: var(--text-muted); }
+.zoot-mobile-search button {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); display: flex; align-items: center;
+}
+.zoot-mobile-link {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .6rem .8rem;
+    border-radius: 10px;
+    color: var(--text);
+    font-weight: 600;
+    font-size: .95rem;
+    text-decoration: none;
+    transition: background .2s, color .2s;
+}
+.zoot-mobile-link:hover {
+    background: var(--btn-bg);
+    color: var(--accent);
+    text-decoration: none;
+}
+.zoot-mobile-link .material-icons { font-size: 1.2rem; color: var(--accent); }
+
+/* ── Responsive breakpoints ── */
+@media (max-width: 991px) {
+    .zoot-nav-center { display: none !important; }
+    .zoot-hamburger  { display: flex; }
+    .zoot-search-form { display: none !important; }
+}
+@media (max-width: 575px) {
+    .zoot-brand-text { display: none; }
+    .zoot-nav-inner  { padding: 0 .75rem; }
+}
+
+/* ── Scrollbar inside dropdown ── */
+.scrollable-menu::-webkit-scrollbar { width: 5px; }
+.scrollable-menu::-webkit-scrollbar-track { background: transparent; }
+.scrollable-menu::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 4px;
+}
+</style>
+
+<!-- ── Header HTML ─────────────────────────────────────────────────── -->
+<nav id="header">
+<div class="zoot-nav-inner">
+
+    <!-- Brand -->
+    <a href="{% url 'post:index' %}" class="zoot-brand">
+        <div class="zoot-brand-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#fff"/>
+            </svg>
+        </div>
+        <span class="zoot-brand-text">SOCIAL NET</span>
+    </a>
+
+    <!-- Center nav links (desktop) -->
+    <div class="zoot-nav-center d-none d-lg-flex">
+        <a href="{% url 'post:post-view' %}"
+           class="zoot-nav-link {% if request.resolver_match.url_name == 'post-view' %}active{% endif %}">
+            <span class="material-icons">home</span>
+            <span>Fil</span>
+        </a>
+        <a href="{% url 'post:index' %}"
+           class="zoot-nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+            <span class="material-icons">explore</span>
+            <span>Explorer</span>
+        </a>
+        <a href="{% url 'search' %}?q="
+           class="zoot-nav-link {% if 'search' in request.path %}active{% endif %}">
+            <span class="material-icons">manage_search</span>
+            <span>Recherche</span>
+        </a>
+    </div>
+
+    <!-- Right section -->
+    <div class="zoot-nav-right">
+
+        {% if request.user.is_authenticated %}
+
+        <!-- Search bar (desktop) -->
+        <form class="zoot-search-form d-none d-lg-flex" onsubmit="return executeQuery();">
+            <input type="text" name="q" id="id_q_large" placeholder="Rechercher…" autocomplete="off">
+            <button type="submit"><span class="material-icons">search</span></button>
+        </form>
+
+        <!-- Theme toggle -->
+        <button id="theme-toggle-btn" onclick="toggleTheme()" class="zoot-icon-btn" title="Changer de thème">
+            <span class="material-icons" style="font-size:1.25rem">dark_mode</span>
+        </button>
+
+        <!-- Chat notifications -->
+        <div class="dropdown">
+            <div class="zoot-icon-btn"
+                 id="id_chat_notification_dropdown_toggle"
+                 data-toggle="dropdown"
+                 data-display="static"
+                 aria-haspopup="true"
+                 aria-expanded="false">
+                <span id="id_chat_notifications_count" class="zoot-badge"></span>
+                <span class="material-icons">chat_bubble_outline</span>
+            </div>
+            <div class="dropdown-menu dropdown-menu-right scrollable-menu"
+                 aria-labelledby="id_chat_notification_dropdown_toggle"
+                 id="id_chat_notifications_container">
+                <!-- header injecté par JS via setupChatDropdownHeader() -->
+            </div>
+        </div>
+
+        <!-- General notifications -->
+        <div class="dropdown">
+            <div class="zoot-icon-btn"
+                 id="id_notification_dropdown_toggle"
+                 data-toggle="dropdown"
+                 data-display="static"
+                 aria-haspopup="true"
+                 aria-expanded="false"
+                 onclick="setGeneralNotificationsAsRead()">
+                <span id="id_general_notifications_count" class="zoot-badge"></span>
+                <span class="material-icons">notifications_none</span>
+            </div>
+            <div class="dropdown-menu dropdown-menu-right scrollable-menu"
+                 aria-labelledby="id_notification_dropdown_toggle"
+                 id="id_general_notifications_container">
+                <!-- header statique notifications -->
+                <div class="zoot-dropdown-header">
+                    <span class="zoot-dropdown-header-title">
+                        <span class="material-icons">notifications</span>
+                        Notifications
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile avatar dropdown -->
+        <div class="dropdown">
+            <div class="zoot-avatar-btn"
+                 id="id_profile_links"
+                 data-toggle="dropdown"
+                 data-display="static"
+                 aria-haspopup="true"
+                 aria-expanded="false">
+                <img src="{{ request.user.profile_image.url }}" alt="profil">
+                <span class="material-icons zoot-avatar-caret">expand_more</span>
+            </div>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="id_profile_links" style="min-width:260px;">
+
+                <!-- Bandeau gradient + avatar -->
+                <div class="zoot-profile-banner"></div>
+                <div class="zoot-profile-header">
+                    <img src="{{ request.user.profile_image.url }}" alt="profil">
+                    <div class="zoot-profile-info">
+                        <div class="zoot-profile-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+                        <div class="zoot-profile-handle">@{{ request.user.username }}</div>
+                    </div>
+                </div>
+
+                <div class="dropdown-divider"></div>
+
+                <!-- Navigation principale -->
+                <p class="zoot-dropdown-label">Mon espace</p>
+                <a class="dropdown-item" href="{% url 'account:view' user_id=request.user.id %}">
+                    <span class="material-icons">person_outline</span> Mon profil
+                </a>
+                <a class="dropdown-item" href="{% url 'post:post-view' %}">
+                    <span class="material-icons">dynamic_feed</span> Fil d'actualité
+                </a>
+                <a class="dropdown-item" href="{% url 'post:addPost' %}">
+                    <span class="material-icons">add_circle_outline</span> Nouveau post
+                </a>
+
+                <div class="dropdown-divider"></div>
+
+                <!-- Social -->
+                <p class="zoot-dropdown-label">Social</p>
+                <a class="dropdown-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
+                    <span class="material-icons">person_add_alt</span> Demandes d'amis
+                </a>
+                <a class="dropdown-item" href="{% url 'friend:list' user_id=request.user.id %}">
+                    <span class="material-icons">group</span> Mes amis
+                </a>
+                <a class="dropdown-item" href="{% url 'chat:private-chat-room' %}">
+                    <span class="material-icons">chat_bubble_outline</span> Messages
+                </a>
+
+                <div class="dropdown-divider"></div>
+
+                <!-- Compte -->
+                <p class="zoot-dropdown-label">Compte</p>
+                <a class="dropdown-item" href="{% url 'account:edit' user_id=request.user.id %}">
+                    <span class="material-icons">manage_accounts</span> Paramètres
+                </a>
+                <a class="dropdown-item danger" href="{% url 'logout' %}">
+                    <span class="material-icons">logout</span> Déconnexion
+                </a>
+
+            </div>
+        </div>
+
+        <!-- Mobile hamburger -->
+        <button class="zoot-hamburger" id="zoot-mobile-toggle" aria-label="Menu">
+            <span class="material-icons">menu</span>
+        </button>
+
+        {% else %}
+        <!-- Not authenticated -->
+        <a class="zoot-nav-link" href="{% url 'login' %}" style="text-transform:none;font-size:.9rem;min-width:auto;">
+            Connexion
+        </a>
+        <a href="{% url 'register' %}"
+           style="background:linear-gradient(135deg,#1877f2,#7c3aed);color:#fff;border:none;border-radius:22px;padding:.45rem 1.2rem;font-size:.9rem;font-weight:700;text-decoration:none;white-space:nowrap;transition:opacity .2s;">
+            S'inscrire
+        </a>
+        {% endif %}
+
+    </div><!-- /zoot-nav-right -->
+</div><!-- /zoot-nav-inner -->
+
+<!-- Mobile expandable menu -->
+{% if request.user.is_authenticated %}
+<div class="zoot-mobile-menu" id="zoot-mobile-menu">
+    <form class="zoot-mobile-search" onsubmit="return executeQuery();">
+        <input type="text" name="q" id="id_q_small" placeholder="Rechercher…" autocomplete="off">
+        <button type="submit"><span class="material-icons" style="font-size:1.1rem;color:var(--text-muted)">search</span></button>
+    </form>
+    <a href="{% url 'post:post-view' %}" class="zoot-mobile-link">
+        <span class="material-icons">home</span> Fil d'actualité
+    </a>
+    <a href="{% url 'post:index' %}" class="zoot-mobile-link">
+        <span class="material-icons">explore</span> Explorer
+    </a>
+    <a href="{% url 'search' %}?q=" class="zoot-mobile-link">
+        <span class="material-icons">manage_search</span> Recherche
+    </a>
+    <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
+        <span class="material-icons">person_outline</span> Mon profil
+    </a>
+    <div style="border-top:1px solid var(--border);margin:.5rem 0;"></div>
+    <a href="{% url 'logout' %}" class="zoot-mobile-link" style="color:#e0245e;">
+        <span class="material-icons" style="color:#e0245e;">logout</span> Déconnexion
+    </a>
+</div>
+{% endif %}
+</nav>
+
+{% include 'snippets/general_notifications.html' %}
+{% include 'snippets/chat_notifications.html' %}
+
+<!-- ── Mobile menu toggle ──────────────────────────────────────────── -->
+<script>
+(function() {
+    var btn  = document.getElementById('zoot-mobile-toggle');
+    var menu = document.getElementById('zoot-mobile-menu');
+    if (btn && menu) {
+        btn.addEventListener('click', function() {
+            menu.classList.toggle('open');
+            var icon = btn.querySelector('.material-icons');
+            icon.textContent = menu.classList.contains('open') ? 'close' : 'menu';
+        });
+    }
+})();
+</script>
+
+<!-- ── Setup SOCKET for NOTIFICATIONS ─────────────────────────────── -->
+<script type="text/javascript">
+    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+    var ws_path = ws_scheme + '://' + window.location.host + "/";
+    var notificationSocket = new WebSocket(ws_path);
+
+    notificationSocket.onmessage = function(message) {
+        var data = JSON.parse(message.data);
+        console.log("Got notification websocket message. " + data.general_msg_type);
+        console.log("Got notification websocket message. " + data.chat_msg_type);
+
+        if(data.general_msg_type == 0){ handleGeneralNotificationsData(data['notifications'], data['new_page_number']) }
+        if(data.general_msg_type == 1){ setGeneralPaginationExhausted() }
+        if(data.general_msg_type == 2){ refreshGeneralNotificationsData(data['notifications']) }
+        if(data.general_msg_type == 3){ handleNewGeneralNotificationsData(data['notifications']) }
+        if(data.general_msg_type == 4){ setUnreadGeneralNotificationsCount(data['count']) }
+        if(data.general_msg_type == 5){ updateGeneralNotificationDiv(data['notification']) }
+        if(data.general_msg_type == 6){ handleNewPostNotification(data) }
+
+        if(data.chat_msg_type == 10){ handleChatNotificationsData(data['notifications'], data['new_page_number']) }
+        if(data.chat_msg_type == 11){ setChatPaginationExhausted() }
+        if(data.chat_msg_type == 13){ handleNewChatNotificationsData(data['notifications']) }
+        if(data.chat_msg_type == 14){ setChatNotificationsCount(data['count']) }
+    }
+
+    notificationSocket.onclose = function(e) {
+        console.error('Notification Socket closed unexpectedly');
+    };
+
+    notificationSocket.onopen = function(e){
+        console.log("Notification Socket on open: " + e)
+        setupGeneralNotificationsMenu()
+        getFirstGeneralNotificationsPage()
+        getUnreadGeneralNotificationsCount()
+        setupChatNotificationsMenu()
+        getFirstChatNotificationsPage()
+    }
+
+    notificationSocket.onerror = function(e){
+        console.log('Notification Socket error', e)
+    }
+
+    /* ── New-post toast notification ─────────────────────────────── */
+    function handleNewPostNotification(data) {
+        var feedUrl = "{% url 'post:post-view' %}";
+        var container = document.getElementById('zoot-post-toast');
+        var toast = document.createElement('div');
+        toast.className = 'zoot-toast-item';
+        toast.innerHTML =
+            '<img class="zoot-toast-avatar" src="' + data.from_image + '" alt="">' +
+            '<div class="zoot-toast-body">' +
+                '<div class="zoot-toast-user">' + data.from_username + ' a publié un post</div>' +
+                '<div class="zoot-toast-msg">' + (data.post_title || '') + '</div>' +
+            '</div>' +
+            '<button class="zoot-toast-close material-icons" onclick="this.closest(\'.zoot-toast-item\').remove()">close</button>';
+        toast.addEventListener('click', function(e){
+            if(!e.target.classList.contains('zoot-toast-close')){
+                window.location.href = feedUrl;
+            }
+        });
+        container.appendChild(toast);
+        setTimeout(function(){ if(toast.parentNode) toast.remove(); }, 8000);
+
+        if(typeof showNewPostsBanner === 'function'){
+            showNewPostsBanner(data.from_username);
+        }
+    }
+
+    if (notificationSocket.readyState == WebSocket.OPEN) {
+        console.log("Notification Socket OPEN complete.")
+    } else if (notificationSocket.readyState == WebSocket.CONNECTING){
+        console.log("Notification Socket connecting..")
+    }
+</script>
+
+<!-- ── Search query handler ───────────────────────────────────────── -->
+<script type="text/javascript">
+    function executeQuery() {
+        var query = document.getElementById('id_q_large') ? document.getElementById('id_q_large').value : '';
+        if (!query) {
+            query = document.getElementById('id_q_small') ? document.getElementById('id_q_small').value : '';
+        }
+        window.location.replace("{% url 'search' %}?q=" + encodeURIComponent(query));
+        return false;
+    }
+</sc

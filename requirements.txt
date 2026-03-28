@@ -1,0 +1,71 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ZOOT Social – dépendances de production
+# ─────────────────────────────────────────────────────────────────────────────
+# Le fichier requirements-dev.txt contient toutes les dépendances de
+# développement (Jupyter, OpenCV, etc.) — ne pas utiliser en production.
+
+# ── Django core ──────────────────────────────────────────────────────────────
+Django==4.2
+asgiref==3.7.2
+sqlparse==0.4.3
+pytz==2022.7.1
+
+# ── ASGI / WebSockets (Channels + Daphne) ────────────────────────────────────
+channels==4.0.0
+channels-redis==4.2.0
+daphne==4.0.0
+redis==5.0.1
+msgpack==1.0.7
+async-timeout==4.0.3
+
+# ── Serveur WSGI (fallback / Health checks) ──────────────────────────────────
+gunicorn==20.1.0
+
+# ── Base de données ──────────────────────────────────────────────────────────
+# psycopg2-binary : version binaire pré-compilée, aucune dépendance système
+psycopg2-binary==2.9.9
+dj-database-url==1.0.0
+
+# ── Configuration / variables d'environnement ────────────────────────────────
+python-decouple==3.6
+
+# ── Fichiers statiques ───────────────────────────────────────────────────────
+whitenoise==6.2.0
+
+# ── Images ───────────────────────────────────────────────────────────────────
+Pillow==9.4.0
+
+# ── Frontend / formulaires ───────────────────────────────────────────────────
+django-ckeditor==6.5.1
+django-js-asset==2.0.0
+django-crispy-forms==2.1
+
+# ── Interface d'administration ───────────────────────────────────────────────
+django-jazzmin==2.6.0
+
+# ── Divers Django ────────────────────────────────────────────────────────────
+django-extensions==3.2.1
+
+# ── Cryptographie / sécurité ─────────────────────────────────────────────────
+cryptography==41.0.7
+pyOpenSSL==23.3.0
+
+# ── Twisted (requis par Daphne/Channels) ─────────────────────────────────────
+Twisted==23.10.0
+autobahn==23.6.2
+txaio==23.1.1
+constantly==23.10.4
+incremental==22.10.0
+hyperlink==21.0.0
+automat==22.10.0
+zope.interface==6.1
+service-identity==24.1.0
+pyasn1==0.5.1
+pyasn1-modules==0.3.0
+
+# ── HTTP ─────────────────────────────────────────────────────────────────────
+requests==2.28.2
+urllib3==1.26.15
+certifi==2022.12.7
+idna==3.4
+charset-normalizer==3.1.0
