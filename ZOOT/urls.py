@@ -15,9 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
 from django.contrib.auth import views as auth_views
 
 
@@ -69,7 +70,16 @@ urlpatterns = [
 
 ]
 
-# Media toujours servi (prod + dev) — Daphne gère les requêtes sur Railway
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# --- Fichiers media ---
+# IMPORTANT : django.conf.urls.static.static() retourne [] quand DEBUG=False,
+# donc les médias ne sont JAMAIS servis en production avec cette fonction.
+# On utilise re_path + serve pour que la route existe dans tous les environnements.
+# En production avec Cloudinary, les URLs sont externes (res.cloudinary.com),
+# donc cette route ne sera pas utilisée pour les images uploadées via Cloudinary.
+# Elle reste utile en dev sans Cloudinary, ou comme fallback.
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+]
+
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
