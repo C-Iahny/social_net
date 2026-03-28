@@ -57,6 +57,15 @@ class Post(models.Model):
     def total_likes(self):
         return self.likes.count()
 
+    @property
+    def header_image_url(self):
+        """Returns the header image URL, or None if the file is missing/unavailable."""
+        if not self.header_image or not self.header_image.name:
+            return None
+        try:
+            return self.header_image.url
+        except Exception:
+            return None
 
     def __str__(self):
         return self.title + ' posted by ' + str(self.author)
