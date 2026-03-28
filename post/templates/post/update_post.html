@@ -89,9 +89,9 @@
                 <div class="form-field">
                     <label>Changer l'image</label>
                     {{ form.header_image }}
-                    {% if object.header_image %}
+                    {% if object.header_image_url %}
                     <p class="upload-hint">Image actuelle :
-                        <a href="{{ object.header_image.url }}" target="_blank" style="color:var(--accent);">voir</a>
+                        <a href="{{ object.header_image_url }}" target="_blank" style="color:var(--accent);">voir</a>
                     </p>
                     {% endif %}
                 </div>

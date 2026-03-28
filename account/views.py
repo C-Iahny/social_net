@@ -299,8 +299,11 @@ def crop_image(request, *args, **kwargs):
 
 			crop_img.save(url)
 
-			# delete the old image
-			user.profile_image.delete()
+			# delete the old image (best-effort -- may fail if stored on Cloudinary with a legacy local path)
+			try:
+				user.profile_image.delete()
+			except Exception:
+				pass
 
 			# Save the cropped image to user model
 			with open(url, 'rb') as image_file:
