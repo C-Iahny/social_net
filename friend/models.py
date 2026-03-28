@@ -152,7 +152,7 @@ class FriendRequest(models.Model):
 
 			# Update notification for RECEIVER
 			receiver_notification = Notification.objects.get(target=self.receiver, content_type=content_type, object_id=self.id)
-			receiver_notification.is_active = False
+			receiver_notification.read = True   # le modèle Notification utilise "read", pas "is_active"
 			receiver_notification.redirect_url = f"{settings.BASE_URL}/account/{self.sender.pk}/"
 			receiver_notification.verb = f"You accepted {self.sender.username}'s friend request."
 			receiver_notification.timestamp = timezone.now()
@@ -191,7 +191,7 @@ class FriendRequest(models.Model):
 
 		# Update notification for RECEIVER
 		notification = Notification.objects.get(target=self.receiver, content_type=content_type, object_id=self.id)
-		notification.is_active = False
+		notification.read = True   # le modèle Notification utilise "read", pas "is_active"
 		notification.redirect_url = f"{settings.BASE_URL}/account/{self.sender.pk}/"
 		notification.verb = f"You declined {self.sender}'s friend request."
 		notification.from_user = self.sender
@@ -247,12 +247,13 @@ class FriendRequest(models.Model):
 @receiver(post_save, sender=FriendRequest)
 def create_notification(sender, instance, created, **kwargs):
 	if created:
+		# GenericRelation.create() injecte automatiquement content_type et object_id
+		# depuis l'instance parente — ne pas passer content_type manuellement ici.
 		instance.notifications.create(
 			target=instance.receiver,
 			from_user=instance.sender,
 			redirect_url=f"{settings.BASE_URL}/account/{instance.sender.pk}/",
 			verb=f"{instance.sender.username} sent you a friend request.",
-			content_type=instance,
 		)
 
 
