@@ -1,0 +1,1197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+/* ============================================================
+   FEED – variables & reset
+   ============================================================ */
+body { background: var(--bg); }
+
+/* ============================================================
+   3-COLUMN GRID
+   ============================================================ */
+.feed-wrapper {
+    max-width: 1180px;
+    margin: 72px auto 3rem;
+    padding: 0 .75rem;
+    display: grid;
+    grid-template-columns: 280px 1fr 300px;
+    gap: 1.2rem;
+    align-items: start;
+}
+@media (max-width: 1100px) {
+    .feed-wrapper { grid-template-columns: 240px 1fr; }
+    .feed-right-col { display: none; }
+}
+@media (max-width: 768px) {
+    .feed-wrapper { grid-template-columns: 1fr; margin-top: 64px; }
+    .feed-left-col { display: none; }
+}
+
+/* ============================================================
+   SHARED CARD
+   ============================================================ */
+.zf-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: background .3s;
+}
+.zf-card-title {
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 1rem 1rem .5rem;
+}
+
+/* ============================================================
+   LEFT SIDEBAR
+   ============================================================ */
+.feed-left-col { position: sticky; top: 80px; }
+
+/* profile block */
+.lsb-profile {
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    padding: 1.5rem 1rem 1rem;
+    gap: .4rem;
+}
+.lsb-avatar-wrap {
+    position: relative; width: 82px; height: 82px;
+}
+.lsb-avatar-wrap img {
+    width: 82px; height: 82px; border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bg-card);
+    box-shadow: 0 0 0 3px var(--accent);
+}
+.lsb-name {
+    font-weight: 800; font-size: 1.05rem;
+    color: var(--text); text-decoration: none; margin-top: .25rem;
+}
+.lsb-name:hover { color: var(--accent); }
+.lsb-stats {
+    display: flex; gap: 1.2rem;
+    padding: .6rem 0 1rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: .4rem 1rem;
+    justify-content: center;
+}
+.lsb-stat { text-align: center; }
+.lsb-stat-val { font-weight: 800; font-size: 1.1rem; color: var(--text); display: block; }
+.lsb-stat-lbl { font-size: .72rem; color: var(--text-muted); }
+
+.lsb-btn {
+    display: block; text-align: center;
+    margin: .5rem 1rem .9rem;
+    padding: .48rem;
+    background: var(--btn-bg);
+    color: var(--accent);
+    border-radius: 8px;
+    font-size: .88rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background .15s;
+}
+.lsb-btn:hover { background: var(--btn-hover); text-decoration: none; color: var(--accent); }
+
+/* nav links */
+.lsb-nav-item {
+    display: flex; align-items: center; gap: .7rem;
+    padding: .6rem 1rem; border-radius: 0;
+    text-decoration: none; color: var(--text);
+    font-size: .93rem; font-weight: 500;
+    transition: background .12s;
+}
+.lsb-nav-item:hover { background: var(--btn-bg); text-decoration: none; color: var(--text); }
+.lsb-nav-item .material-icons { font-size: 1.2rem; width: 26px; color: var(--accent); }
+.lsb-nav-item.danger .material-icons { color: #e53935; }
+.lsb-nav-item.danger:hover { background: #fdecea; }
+[data-theme="dark"] .lsb-nav-item.danger:hover { background: #3e1a1a; }
+
+/* friends in sidebar */
+.lsb-friend {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .45rem 1rem; text-decoration: none; color: var(--text);
+    transition: background .12s;
+}
+.lsb-friend:hover { background: var(--btn-bg); text-decoration: none; color: var(--text); }
+.lsb-friend img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+.lsb-friend span { font-size: .88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ============================================================
+   STORIES BAR
+   ============================================================ */
+.stories-bar {
+    display: flex; gap: .85rem;
+    padding: 1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+}
+.stories-bar::-webkit-scrollbar { display: none; }
+
+.story-item {
+    display: flex; flex-direction: column;
+    align-items: center; gap: .35rem; flex-shrink: 0;
+    text-decoration: none; cursor: pointer;
+}
+.story-avatar-ring {
+    position: relative; width: 62px; height: 62px;
+}
+.story-avatar-ring::before {
+    content: '';
+    position: absolute; inset: -3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent) 0%, #a855f7 50%, #ec4899 100%);
+    z-index: 0;
+}
+.story-avatar-ring img {
+    position: relative; z-index: 1;
+    width: 100%; height: 100%; border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--bg-card);
+}
+.story-label {
+    font-size: .72rem; font-weight: 600; color: var(--text-muted);
+    max-width: 64px; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.story-add .story-avatar-ring::before { background: var(--btn-bg); }
+.story-add .story-avatar-ring img { display: none; }
+.story-add-icon {
+    position: absolute; inset: 0; z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--btn-bg); border-radius: 50%;
+    border: 3px solid var(--bg-card);
+    color: var(--accent);
+}
+.story-add-icon .material-icons { font-size: 1.5rem; }
+
+/* ============================================================
+   CREATE POST BOX
+   ============================================================ */
+.create-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+.create-box-top {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .9rem 1rem;
+}
+.create-box-top img {
+    width: 44px; height: 44px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0; border: 2px solid var(--border);
+}
+.create-box-input {
+    flex: 1; background: var(--btn-bg); border: none;
+    border-radius: 24px; padding: .6rem 1.1rem;
+    color: var(--text-muted); font-size: .95rem;
+    cursor: pointer; text-align: left;
+    text-decoration: none; display: block;
+    transition: background .15s;
+}
+.create-box-input:hover { background: var(--btn-hover); text-decoration: none; }
+.create-box-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+.create-box-actions {
+    display: flex; padding: .55rem .5rem;
+}
+.create-box-action {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .45rem .85rem; border-radius: 8px;
+    font-size: .85rem; font-weight: 700; color: var(--text-muted);
+    text-decoration: none; transition: background .15s; flex: 1; justify-content: center;
+}
+.create-box-action:hover { background: var(--btn-bg); text-decoration: none; color: var(--text); }
+.create-box-action .material-icons { font-size: 1.1rem; }
+.create-box-action.photo  .material-icons { color: #43a047; }
+.create-box-action.file   .material-icons { color: #fb8c00; }
+.create-box-action.post   .material-icons { color: var(--accent); }
+
+/* ============================================================
+   NEW-POSTS BANNER
+   ============================================================ */
+#new-posts-banner {
+    display: none;
+    position: sticky; top: 78px; z-index: 100;
+    background: var(--accent);
+    color: #fff; border-radius: 10px;
+    padding: .65rem 1rem; margin-bottom: 1rem;
+    cursor: pointer; font-size: .93rem; font-weight: 700;
+    box-shadow: 0 4px 16px rgba(24,119,242,.4);
+    align-items: center; justify-content: center; gap: .45rem;
+    animation: bannerPop .3s ease;
+}
+#new-posts-banner.visible { display: flex; }
+@keyframes bannerPop {
+    from { transform: translateY(-8px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ============================================================
+   POST CARD
+   ============================================================ */
+.post-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: background .3s, box-shadow .2s;
+}
+.post-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.12); }
+[data-theme="dark"] .post-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+
+/* header */
+.pc-header {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .9rem 1rem .5rem;
+}
+.pc-avatar {
+    width: 46px; height: 46px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+    border: 2px solid var(--border);
+    transition: opacity .15s;
+}
+.pc-avatar:hover { opacity: .85; }
+.pc-meta { flex: 1; min-width: 0; }
+.pc-author {
+    font-weight: 800; color: var(--text); font-size: .95rem;
+    text-decoration: none; display: block; line-height: 1.2;
+}
+.pc-author:hover { color: var(--accent); text-decoration: none; }
+.pc-sub { font-size: .77rem; color: var(--text-muted); display: flex; align-items: center; gap: .3rem; }
+.pc-sub .material-icons { font-size: .85rem; }
+.pc-actions { display: flex; gap: .35rem; margin-left: auto; flex-shrink: 0; }
+.pc-action-btn {
+    display: inline-flex; align-items: center; gap: .2rem;
+    padding: .28rem .6rem; font-size: .78rem; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--btn-bg);
+    color: var(--text); text-decoration: none; transition: background .12s;
+    cursor: pointer; white-space: nowrap; font-weight: 600;
+}
+.pc-action-btn .material-icons { font-size: .85rem; }
+.pc-action-btn:hover { background: var(--btn-hover); text-decoration: none; color: var(--text); }
+.pc-action-btn.danger { color: #e53935; border-color: #fbc6c6; }
+[data-theme="dark"] .pc-action-btn.danger { color: #f28b82; border-color: #5a2020; }
+
+/* body */
+.pc-title {
+    padding: .35rem 1rem 0;
+    font-weight: 800; font-size: 1.05rem; color: var(--text);
+    line-height: 1.35;
+}
+.pc-body {
+    padding: .3rem 1rem .7rem; color: var(--text);
+    font-size: .94rem; line-height: 1.6;
+}
+.pc-body img { max-width: 100%; border-radius: 6px; margin: .3rem 0; }
+.pc-body p { margin-bottom: .35rem; }
+
+/* image */
+.pc-image-wrap { overflow: hidden; }
+.pc-image {
+    width: 100%; max-height: 540px; object-fit: cover; display: block;
+    cursor: zoom-in; transition: transform .3s;
+}
+.pc-image-wrap:hover .pc-image { transform: scale(1.015); }
+
+/* file attachment */
+.pc-file-attach {
+    margin: .5rem 1rem;
+    display: inline-flex; align-items: center; gap: .5rem;
+    padding: .5rem .85rem; border-radius: 8px;
+    background: var(--btn-bg); border: 1px solid var(--border);
+    color: var(--text); text-decoration: none; font-size: .85rem; font-weight: 600;
+    transition: background .15s;
+}
+.pc-file-attach:hover { background: var(--btn-hover); text-decoration: none; color: var(--text); }
+.pc-file-attach .material-icons { font-size: 1.1rem; color: var(--accent); }
+
+/* video player */
+.pc-video-wrap {
+    margin: .4rem 0 0;
+    background: #000;
+    border-radius: 0;
+    overflow: hidden;
+    position: relative;
+}
+.pc-video {
+    width: 100%;
+    max-height: 480px;
+    display: block;
+    background: #000;
+    outline: none;
+}
+.pc-video-label {
+    display: flex; align-items: center; gap: .4rem;
+    padding: .45rem 1rem;
+    font-size: .8rem; font-weight: 600; color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+}
+.pc-video-label .material-icons { font-size: 1rem; color: #7c3aed; }
+
+/* stats row */
+.pc-stats {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .35rem 1rem;
+    font-size: .82rem; color: var(--text-muted);
+    border-top: 1px solid var(--border);
+}
+.pc-likes-icon { display: flex; align-items: center; gap: .25rem; }
+.pc-likes-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent); font-size: .65rem; color: #fff;
+    font-weight: 700;
+}
+
+/* action bar */
+.pc-footer {
+    display: flex; align-items: stretch;
+    border-top: 1px solid var(--border);
+}
+.pc-footer-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem;
+    padding: .55rem; border: none; background: none;
+    color: var(--text-muted); font-size: .88rem; font-weight: 700;
+    cursor: pointer; text-decoration: none; transition: background .12s;
+}
+.pc-footer-btn:hover { background: var(--btn-bg); text-decoration: none; color: var(--text); }
+.pc-footer-btn .material-icons { font-size: 1.15rem; }
+.pc-footer-btn.liked { color: var(--accent); }
+.pc-footer-btn.liked .material-icons { color: var(--accent); }
+.pc-footer-sep { width: 1px; background: var(--border); margin: .4rem 0; }
+.pc-footer-btn.active { color: var(--accent); background: var(--btn-bg); }
+.pc-footer-btn.active .material-icons { color: var(--accent); }
+
+/* ============================================================
+   COMMENT PANEL
+   ============================================================ */
+.pc-comment-panel {
+    display: none;
+    border-top: 1px solid var(--border);
+    background: var(--bg-card);
+}
+.pc-comment-panel.open { display: block; }
+
+.pc-comment-list {
+    padding: .65rem 1rem .3rem;
+    display: flex; flex-direction: column; gap: .55rem;
+    max-height: 320px; overflow-y: auto;
+}
+.pc-comment-list:empty::after {
+    content: "Aucun commentaire pour l'instant.";
+    font-size: .83rem; color: var(--text-muted);
+    display: block; padding: .2rem 0 .4rem;
+}
+
+.pc-comment-item {
+    display: flex; align-items: flex-start; gap: .6rem;
+}
+.pc-comment-item img {
+    width: 32px; height: 32px; border-radius: 50%;
+    object-fit: cover; border: 2px solid var(--border); flex-shrink: 0;
+}
+.pc-comment-bubble {
+    flex: 1; min-width: 0;
+    background: var(--btn-bg);
+    border-radius: 0 12px 12px 12px;
+    padding: .4rem .7rem .45rem;
+}
+.pc-comment-author {
+    font-size: .78rem; font-weight: 800; color: var(--text);
+    text-decoration: none; display: inline-block;
+}
+.pc-comment-author:hover { color: var(--accent); text-decoration: none; }
+.pc-comment-body {
+    font-size: .88rem; color: var(--text);
+    margin: .05rem 0 0; word-break: break-word; line-height: 1.45;
+}
+.pc-comment-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: .72rem; color: var(--text-muted); margin-top: .25rem;
+}
+.pc-comment-del {
+    background: none; border: none; padding: 0; cursor: pointer;
+    color: var(--text-muted); font-size: .72rem; font-weight: 600;
+    transition: color .12s;
+}
+.pc-comment-del:hover { color: #e53935; }
+
+/* Comment form */
+.pc-comment-form {
+    display: flex; align-items: flex-end; gap: .55rem;
+    padding: .6rem 1rem .75rem;
+    border-top: 1px solid var(--border);
+}
+.pc-comment-form img {
+    width: 34px; height: 34px; border-radius: 50%;
+    object-fit: cover; border: 2px solid var(--border); flex-shrink: 0; margin-bottom: 2px;
+}
+.pc-comment-input-wrap { flex: 1; }
+.pc-comment-textarea {
+    width: 100%; resize: none; overflow: hidden;
+    background: var(--btn-bg); border: 1px solid var(--border);
+    border-radius: 20px; padding: .45rem .85rem;
+    color: var(--text); font-size: .9rem; line-height: 1.45;
+    outline: none; transition: border-color .15s, background .15s;
+    font-family: inherit;
+    min-height: 36px; max-height: 120px;
+}
+.pc-comment-textarea:focus { border-color: var(--accent); background: var(--bg-card); }
+.pc-comment-textarea::placeholder { color: var(--text-muted); }
+.pc-comment-send {
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 50%;
+    width: 34px; height: 34px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .15s; margin-bottom: 2px;
+}
+.pc-comment-send:hover { background: var(--accent-dark); }
+.pc-comment-send .material-icons { font-size: 1.05rem; }
+.pc-comment-send:disabled { opacity: .5; cursor: default; }
+
+/* ============================================================
+   SHARE TOAST
+   ============================================================ */
+#share-toast {
+    position: fixed; bottom: 1.8rem; left: 50%; transform: translateX(-50%) translateY(16px);
+    background: #1c1e20; color: #fff;
+    padding: .6rem 1.3rem; border-radius: 10px;
+    font-size: .9rem; font-weight: 600;
+    box-shadow: 0 4px 18px rgba(0,0,0,.35);
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 9999;
+    display: flex; align-items: center; gap: .5rem;
+}
+#share-toast.show {
+    opacity: 1; transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+#share-toast .material-icons { font-size: 1.1rem; color: #4caf50; }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-feed {
+    text-align: center; padding: 4rem 1.5rem;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: var(--shadow); color: var(--text-muted);
+}
+.empty-feed .ef-icon {
+    font-size: 4rem; display: block; margin-bottom: .9rem;
+    color: var(--border);
+}
+.empty-feed h5 { color: var(--text); font-weight: 800; margin-bottom: .5rem; }
+.ef-cta {
+    display: inline-flex; align-items: center; gap: .4rem;
+    margin-top: 1rem; padding: .55rem 1.4rem;
+    background: var(--accent); color: #fff;
+    border-radius: 10px; font-weight: 700; font-size: .95rem;
+    text-decoration: none; transition: background .15s;
+}
+.ef-cta:hover { background: var(--accent-dark); color: #fff; text-decoration: none; }
+.ef-cta .material-icons { font-size: 1rem; }
+
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+.feed-pagination {
+    display: flex; justify-content: center; align-items: center;
+    gap: .5rem; margin: .5rem 0 1.5rem; flex-wrap: wrap;
+}
+.page-btn {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .48rem 1.1rem; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text); font-size: .88rem; font-weight: 700;
+    text-decoration: none; transition: background .12s;
+}
+.page-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.page-btn .material-icons { font-size: .95rem; }
+.page-info { font-size: .83rem; color: var(--text-muted); }
+
+/* ============================================================
+   RIGHT SIDEBAR
+   ============================================================ */
+.feed-right-col { position: sticky; top: 80px; }
+
+.rsb-section { padding: .9rem 1rem; }
+
+/* people card */
+.rsb-person {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .5rem 0;
+}
+.rsb-person img {
+    width: 44px; height: 44px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0; border: 2px solid var(--border);
+}
+.rsb-person-info { flex: 1; min-width: 0; }
+.rsb-person-name {
+    font-size: .88rem; font-weight: 700; color: var(--text);
+    text-decoration: none; display: block; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+.rsb-person-name:hover { color: var(--accent); text-decoration: none; }
+.rsb-person-sub { font-size: .76rem; color: var(--text-muted); }
+.rsb-add-btn {
+    display: inline-flex; align-items: center; gap: .25rem;
+    padding: .3rem .7rem; border-radius: 7px;
+    background: var(--btn-bg); color: var(--accent);
+    font-size: .8rem; font-weight: 700; border: none;
+    text-decoration: none; transition: background .12s; flex-shrink: 0;
+}
+.rsb-add-btn:hover { background: var(--btn-hover); text-decoration: none; color: var(--accent); }
+
+/* quick links */
+.rsb-link {
+    display: inline; color: var(--text-muted);
+    font-size: .77rem; text-decoration: none;
+}
+.rsb-link:hover { text-decoration: underline; color: var(--text); }
+.rsb-footer-links { padding: .5rem 1rem 1rem; }
+.rsb-footer-links a { margin-right: .5rem; margin-bottom: .25rem; }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════
+     WRAPPER
+     ═══════════════════════════════════════════════════════════ -->
+<div class="feed-wrapper">
+
+    <!-- ════════════════════════════════
+         LEFT SIDEBAR
+         ════════════════════════════════ -->
+    <aside class="feed-left-col">
+
+        <!-- Profile card -->
+        <div class="zf-card">
+            <div class="lsb-profile">
+                <div class="lsb-avatar-wrap">
+                    <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+                </div>
+                <a class="lsb-name" href="{% url 'account:view' user_id=request.user.id %}">{{ request.user.username }}</a>
+                <span style="font-size:.8rem;color:var(--text-muted);">{{ request.user.email }}</span>
+            </div>
+            <div class="lsb-stats">
+                <div class="lsb-stat">
+                    <strong class="lsb-stat-val">{{ my_post_count|default:"0" }}</strong>
+                    <span class="lsb-stat-lbl">Posts</span>
+                </div>
+                <div class="lsb-stat">
+                    <strong class="lsb-stat-val">{{ friends_count|default:"0" }}</strong>
+                    <span class="lsb-stat-lbl">Amis</span>
+                </div>
+            </div>
+            <a class="lsb-btn" href="{% url 'account:view' user_id=request.user.id %}">Voir mon profil</a>
+        </div>
+
+        <!-- Navigation -->
+        <div class="zf-card" style="padding:.5rem 0;">
+            <a class="lsb-nav-item" href="{% url 'post:addPost' %}">
+                <span class="material-icons">add_circle</span> Nouveau post
+            </a>
+            <a class="lsb-nav-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
+                <span class="material-icons">person_add</span> Demandes d'amis
+            </a>
+            <a class="lsb-nav-item" href="{% url 'friend:list' user_id=request.user.id %}">
+                <span class="material-icons">group</span> Mes amis
+            </a>
+            <a class="lsb-nav-item" href="{% url 'account:edit' user_id=request.user.id %}">
+                <span class="material-icons">settings</span> Paramètres
+            </a>
+            <a class="lsb-nav-item danger" href="{% url 'logout' %}">
+                <span class="material-icons">logout</span> Déconnexion
+            </a>
+        </div>
+
+        <!-- Friends list -->
+        {% if friends %}
+        <div class="zf-card" style="padding:.5rem 0 .75rem;">
+            <p class="zf-card-title">Amis</p>
+            {% for friend in friends|slice:":10" %}
+            <a class="lsb-friend" href="{% url 'account:view' user_id=friend.id %}">
+                <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
+                <span>{{ friend.username }}</span>
+            </a>
+            {% endfor %}
+            {% if friends|length > 10 %}
+            <a class="lsb-friend" href="{% url 'friend:list' user_id=request.user.id %}"
+               style="color:var(--accent);font-weight:700;padding:.5rem 1rem;">
+                <span class="material-icons" style="font-size:1rem;">more_horiz</span>
+                <span>Voir tous ({{ friends|length }})</span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </aside>
+
+    <!-- ════════════════════════════════
+         MAIN FEED
+         ════════════════════════════════ -->
+    <div class="feed-main">
+
+        <!-- Stories bar -->
+        <div class="stories-bar">
+            <!-- Add story -->
+            <a class="story-item story-add" href="{% url 'post:addPost' %}">
+                <div class="story-avatar-ring">
+                    <div class="story-add-icon">
+                        <span class="material-icons">add</span>
+                    </div>
+                </div>
+                <span class="story-label">Publier</span>
+            </a>
+            <!-- Friends -->
+            {% for friend in friends|slice:":8" %}
+            <a class="story-item" href="{% url 'account:view' user_id=friend.id %}">
+                <div class="story-avatar-ring">
+                    <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
+                </div>
+                <span class="story-label">{{ friend.username }}</span>
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- New-posts banner (WebSocket) -->
+        <div id="new-posts-banner" onclick="window.location.reload()">
+            <span class="material-icons" style="font-size:1.1rem;">fiber_new</span>
+            <span id="new-posts-banner-text">Nouveaux posts — cliquer pour actualiser</span>
+        </div>
+
+        <!-- Create post box -->
+        <div class="create-box">
+            <div class="create-box-top">
+                <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+                <a class="create-box-input" href="{% url 'post:addPost' %}">
+                    Quoi de neuf, {{ request.user.username }} ?
+                </a>
+            </div>
+            <hr class="create-box-divider">
+            <div class="create-box-actions">
+                <a class="create-box-action photo" href="{% url 'post:addPost' %}">
+                    <span class="material-icons">add_photo_alternate</span> Photo
+                </a>
+                <a class="create-box-action file" href="{% url 'post:addPost' %}">
+                    <span class="material-icons">attach_file</span> Fichier
+                </a>
+                <a class="create-box-action post" href="{% url 'post:addPost' %}">
+                    <span class="material-icons">edit_note</span> Rédiger
+                </a>
+            </div>
+        </div>
+
+        <!-- Post list -->
+        {% if posts_of_the_page %}
+            {% for post in posts_of_the_page %}
+            <article class="post-card" id="post-{{ post.id }}">
+
+                <!-- Header -->
+                <div class="pc-header">
+                    <a href="{% url 'account:view' user_id=post.author.id %}">
+                        <img class="pc-avatar" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+                    </a>
+                    <div class="pc-meta">
+                        <a class="pc-author" href="{% url 'account:view' user_id=post.author.id %}">
+                            {{ post.author.username }}
+                        </a>
+                        <span class="pc-sub">
+                            <span class="material-icons">schedule</span>
+                            {{ post.post_date|date:"d M Y" }}
+                            {% if post.category and post.category != 'Category' %}
+                            &nbsp;·&nbsp;
+                            <span style="background:var(--btn-bg);border-radius:12px;padding:.1rem .55rem;">{{ post.category }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if request.user.id == post.author.id %}
+                    <div class="pc-actions">
+                        <a class="pc-action-btn" href="{% url 'post:edit-post' post.pk %}">
+                            <span class="material-icons">edit</span>
+                        </a>
+                        <a class="pc-action-btn danger" href="{% url 'post:delete-post' post.pk %}">
+                            <span class="material-icons">delete</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Title -->
+                {% if post.title %}
+                <div class="pc-title">{{ post.title }}</div>
+                {% endif %}
+
+                <!-- Body -->
+                {% if post.body %}
+                <div class="pc-body">{{ post.body|safe }}</div>
+                {% endif %}
+
+                <!-- Cover image -->
+                {% if post.header_image %}
+                <div class="pc-image-wrap">
+                    <a href="{{ post.header_image.url }}" target="_blank" rel="noopener">
+                        <img class="pc-image" src="{{ post.header_image.url }}" alt="{{ post.title }}">
+                    </a>
+                </div>
+                {% endif %}
+
+                <!-- Vidéo dédiée -->
+                {% if post.video %}
+                <div class="pc-video-wrap">
+                    <div class="pc-video-label">
+                        <span class="material-icons">videocam</span>
+                        Vidéo
+                    </div>
+                    <video class="pc-video" controls preload="metadata">
+                        <source src="{{ post.video.url }}" type="video/mp4">
+                        <source src="{{ post.video.url }}" type="video/webm">
+                        <source src="{{ post.video.url }}" type="video/ogg">
+                        Votre navigateur ne supporte pas la lecture vidéo.
+                    </video>
+                </div>
+                {% endif %}
+
+                <!-- Fichier joint : si c'est une vidéo → lecteur, sinon → téléchargement -->
+                {% if post.file %}
+                    {% if post.file_is_video %}
+                    <div class="pc-video-wrap">
+                        <div class="pc-video-label">
+                            <span class="material-icons">videocam</span>
+                            Vidéo
+                        </div>
+                        <video class="pc-video" controls preload="metadata">
+                            <source src="{{ post.file.url }}" type="video/mp4">
+                            <source src="{{ post.file.url }}" type="video/webm">
+                            <source src="{{ post.file.url }}" type="video/ogg">
+                            Votre navigateur ne supporte pas la lecture vidéo.
+                        </video>
+                    </div>
+                    {% else %}
+                    <a class="pc-file-attach" href="{{ post.file.url }}" target="_blank" rel="noopener">
+                        <span class="material-icons">insert_drive_file</span>
+                        Fichier joint
+                    </a>
+                    {% endif %}
+                {% endif %}
+
+                <!-- Likes count -->
+                {% if post.total_likes %}
+                <div class="pc-stats">
+                    <div class="pc-likes-icon">
+                        <div class="pc-likes-badge">👍</div>
+                        &nbsp;{{ post.total_likes }} j'aime{% if post.total_likes > 1 %}s{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Action bar -->
+                <div class="pc-footer">
+                    <a class="pc-footer-btn {% if request.user in post.likes.all %}liked{% endif %}"
+                       href="{% url 'post:like-post' %}?post_id={{ post.id }}&next={{ request.path }}">
+                        <span class="material-icons">{% if request.user in post.likes.all %}thumb_up{% else %}thumb_up_off_alt{% endif %}</span>
+                        {% if request.user in post.likes.all %}J'aime déjà{% else %}J'aime{% endif %}
+                    </a>
+                    <div class="pc-footer-sep"></div>
+                    <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
+                            onclick="toggleComments({{ post.id }})">
+                        <span class="material-icons">chat_bubble_outline</span>
+                        Commenter
+                        {% if post.page_comments %}
+                        <span id="comment-count-{{ post.id }}" style="font-size:.78rem;margin-left:.2rem;opacity:.75;">({{ post.page_comments|length }})</span>
+                        {% else %}
+                        <span id="comment-count-{{ post.id }}" style="font-size:.78rem;margin-left:.2rem;opacity:.75;display:none;"></span>
+                        {% endif %}
+                    </button>
+                    <div class="pc-footer-sep"></div>
+                    <button class="pc-footer-btn" onclick="sharePost({{ post.id }})">
+                        <span class="material-icons">share</span>
+                        Partager
+                    </button>
+                </div>
+
+                <!-- Comment Panel -->
+                <div class="pc-comment-panel" id="comment-panel-{{ post.id }}">
+                    <div class="pc-comment-list" id="comment-list-{{ post.id }}">
+                        {% for c in post.page_comments %}
+                        <div class="pc-comment-item" id="comment-item-{{ c.id }}">
+                            <img src="{{ c.author.profile_image.url }}" alt="{{ c.author.username }}">
+                            <div class="pc-comment-bubble">
+                                <a class="pc-comment-author" href="{% url 'account:view' user_id=c.author.id %}">{{ c.author.username }}</a>
+                                <p class="pc-comment-body">{{ c.body }}</p>
+                                <div class="pc-comment-meta">
+                                    <span>{{ c.created_at|date:"d M Y, H:i" }}</span>
+                                    {% if request.user == c.author or request.user == post.author %}
+                                    <button class="pc-comment-del"
+                                            onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">
+                                        Supprimer
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="pc-comment-form">
+                        <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+                        <div class="pc-comment-input-wrap">
+                            <textarea class="pc-comment-textarea"
+                                      id="comment-input-{{ post.id }}"
+                                      placeholder="Écrire un commentaire…"
+                                      rows="1"
+                                      maxlength="1000"
+                                      onkeydown="handleCommentKey(event, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                                      oninput="autoResize(this)"></textarea>
+                        </div>
+                        <button class="pc-comment-send" id="comment-send-{{ post.id }}"
+                                onclick="submitComment({{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                                title="Envoyer">
+                            <span class="material-icons">send</span>
+                        </button>
+                    </div>
+                </div>
+
+            </article>
+            {% endfor %}
+
+            <!-- Pagination -->
+            <div class="feed-pagination">
+                {% if posts_of_the_page.has_previous %}
+                <a class="page-btn" href="?page={{ posts_of_the_page.previous_page_number }}">
+                    <span class="material-icons">chevron_left</span> Précédent
+                </a>
+                {% endif %}
+                <span class="page-info">
+                    Page {{ posts_of_the_page.number }} / {{ posts_of_the_page.paginator.num_pages }}
+                </span>
+                {% if posts_of_the_page.has_next %}
+                <a class="page-btn" href="?page={{ posts_of_the_page.next_page_number }}">
+                    Suivant <span class="material-icons">chevron_right</span>
+                </a>
+                {% endif %}
+            </div>
+
+        {% else %}
+            <!-- Empty feed -->
+            <div class="empty-feed">
+                <span class="material-icons ef-icon">dynamic_feed</span>
+                <h5>Votre fil est vide pour l'instant</h5>
+                <p>Ajoutez des amis ou publiez votre premier post pour commencer.</p>
+                <a class="ef-cta" href="{% url 'post:addPost' %}">
+                    <span class="material-icons">add</span> Créer mon premier post
+                </a>
+            </div>
+        {% endif %}
+
+    </div><!-- /feed-main -->
+
+    <!-- ════════════════════════════════
+         RIGHT SIDEBAR
+         ════════════════════════════════ -->
+    <aside class="feed-right-col">
+
+        {% if friends %}
+        <div class="zf-card">
+            <p class="zf-card-title">Amis en ligne</p>
+            <div class="rsb-section" style="padding-top:.35rem;">
+                {% for friend in friends|slice:":6" %}
+                <div class="rsb-person">
+                    <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
+                    <div class="rsb-person-info">
+                        <a class="rsb-person-name" href="{% url 'account:view' user_id=friend.id %}">
+                            {{ friend.username }}
+                        </a>
+                        <span class="rsb-person-sub">Ami</span>
+                    </div>
+                    <a class="rsb-add-btn" href="{% url 'chat:private-chat-room' %}">
+                        <span class="material-icons" style="font-size:.9rem;">chat</span>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick info -->
+        <div class="zf-card">
+            <p class="zf-card-title">Mon compte</p>
+            <div class="rsb-section" style="padding-top:.4rem; padding-bottom:.8rem;">
+                <div style="display:flex; flex-direction:column; gap:.2rem;">
+                    <span style="font-size:.88rem; color:var(--text);">
+                        <span class="material-icons" style="font-size:.95rem; vertical-align:middle; color:var(--accent);">article</span>
+                        <strong>{{ my_post_count|default:"0" }}</strong> post{% if my_post_count != 1 %}s{% endif %} publiés
+                    </span>
+                    <span style="font-size:.88rem; color:var(--text);">
+                        <span class="material-icons" style="font-size:.95rem; vertical-align:middle; color:var(--accent);">group</span>
+                        <strong>{{ friends_count|default:"0" }}</strong> ami{% if friends_count != 1 %}s{% endif %}
+                    </span>
+                </div>
+                <a class="lsb-btn" href="{% url 'account:edit' user_id=request.user.id %}"
+                   style="margin: .8rem 0 0; display:block; text-align:center; padding:.42rem; border-radius:8px;
+                          background:var(--btn-bg); color:var(--text-muted); font-size:.82rem; font-weight:700;">
+                    <span class="material-icons" style="font-size:.9rem; vertical-align:middle;">settings</span>
+                    Modifier le profil
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer links -->
+        <div class="rsb-footer-links">
+            <a class="rsb-link" href="#">Confidentialité</a>
+            <a class="rsb-link" href="#">Conditions</a>
+            <a class="rsb-link" href="#">Cookies</a>
+            <a class="rsb-link" href="#">À propos</a>
+            <br><br>
+            <span style="font-size:.73rem; color:var(--text-muted);">ZOOT Social © 2026</span>
+        </div>
+
+    </aside>
+
+</div><!-- /feed-wrapper -->
+
+<div id="share-toast">
+    <span class="material-icons">check_circle</span>
+    Lien copié dans le presse-papiers !
+</div>
+
+<script>
+/* ── URL helper for comment deletion (generated by Django) ── */
+var _delUrlTpl = "{% url 'post:delete-comment' 999999 %}";
+function commentDeleteUrl(id) {
+    return _delUrlTpl.replace('999999', id);
+}
+
+/* ── New-posts banner (called from header.html WebSocket handler) ── */
+var _newPostsCount = 0;
+var _newPostsNames = [];
+
+function showNewPostsBanner(username) {
+    _newPostsCount++;
+    if (username && _newPostsNames.indexOf(username) === -1) {
+        _newPostsNames.push(username);
+    }
+    var banner = document.getElementById('new-posts-banner');
+    var text   = document.getElementById('new-posts-banner-text');
+    if (banner) {
+        text.textContent = _newPostsCount === 1
+            ? _newPostsNames[0] + ' a publié un nouveau post — cliquer pour actualiser'
+            : _newPostsCount + ' nouveaux posts — cliquer pour actualiser';
+        banner.classList.add('visible');
+    }
+}
+
+/* ════════════════════════════════════
+   COMMENT TOGGLE
+   ════════════════════════════════════ */
+function toggleComments(postId) {
+    var panel = document.getElementById('comment-panel-' + postId);
+    var btn   = document.getElementById('comment-btn-' + postId);
+    if (!panel) return;
+    var isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    if (btn) btn.classList.toggle('active', !isOpen);
+    if (!isOpen) {
+        // Focus textarea
+        var ta = document.getElementById('comment-input-' + postId);
+        if (ta) setTimeout(function(){ ta.focus(); }, 50);
+    }
+}
+
+/* ════════════════════════════════════
+   TEXTAREA AUTO-RESIZE
+   ════════════════════════════════════ */
+function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+/* ════════════════════════════════════
+   SUBMIT ON ENTER (not Shift+Enter)
+   ════════════════════════════════════ */
+function handleCommentKey(evt, postId, url) {
+    if (evt.key === 'Enter' && !evt.shiftKey) {
+        evt.preventDefault();
+        submitComment(postId, url);
+    }
+}
+
+/* ════════════════════════════════════
+   AJAX: ADD COMMENT
+   ════════════════════════════════════ */
+function submitComment(postId, url) {
+    var ta   = document.getElementById('comment-input-' + postId);
+    var btn  = document.getElementById('comment-send-'  + postId);
+    if (!ta) return;
+    var body = ta.value.trim();
+    if (!body) return;
+
+    btn.disabled = true;
+
+    var formData = new FormData();
+    formData.append('body', body);
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        btn.disabled = false;
+        if (!data.ok) return;
+
+        // Clear textarea
+        ta.value = '';
+        ta.style.height = 'auto';
+
+        // Build comment HTML
+        var delBtn = data.can_delete
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            : '';
+
+        var html = '<div class="pc-comment-item" id="comment-item-' + data.id + '">'
+            + '<img src="' + data.avatar + '" alt="' + data.author + '">'
+            + '<div class="pc-comment-bubble">'
+            +   '<a class="pc-comment-author" href="/account/' + data.author_id + '/view/">' + escHtml(data.author) + '</a>'
+            +   '<p class="pc-comment-body">' + escHtml(data.body) + '</p>'
+            +   '<div class="pc-comment-meta">'
+            +     '<span>' + data.created_at + '</span>'
+            +     delBtn
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+
+        var list = document.getElementById('comment-list-' + postId);
+        if (list) {
+            list.insertAdjacentHTML('beforeend', html);
+            list.scrollTop = list.scrollHeight;
+        }
+
+        // Update count badge
+        updateCommentCount(postId, 1);
+    })
+    .catch(function(){ btn.disabled = false; });
+}
+
+/* ════════════════════════════════════
+   AJAX: DELETE COMMENT
+   ════════════════════════════════════ */
+function deleteComment(commentId, url) {
+    if (!confirm('Supprimer ce commentaire ?')) return;
+
+    var formData = new FormData();
+    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        if (!data.ok) return;
+        var el = document.getElementById('comment-item-' + commentId);
+        if (el) {
+            // Find parent post id from the panel ancestor
+            var panel = el.closest('[id^="comment-panel-"]');
+            el.remove();
+            if (panel) {
+                var postId = panel.id.replace('comment-panel-', '');
+                updateCommentCount(postId, -1);
+            }
+        }
+    });
+}
+
+/* ════════════════════════════════════
+   COMMENT COUNT BADGE
+   ════════════════════════════════════ */
+function updateCommentCount(postId, delta) {
+    var badge = document.getElementById('comment-count-' + postId);
+    if (!badge) return;
+    var list  = document.getElementById('comment-list-' + postId);
+    var cnt   = list ? list.querySelectorAll('.pc-comment-item').length : 0;
+    if (cnt > 0) {
+        badge.textContent = '(' + cnt + ')';
+        badge.style.display = '';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+/* ════════════════════════════════════
+   SHARE: COPY LINK
+   ════════════════════════════════════ */
+var _shareToastTimer = null;
+
+function sharePost(postId) {
+    var url = window.location.origin + window.location.pathname + '#post-' + postId;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(showShareToast);
+    } else {
+        // Fallback for older browsers
+        var tmp = document.createElement('textarea');
+        tmp.value = url;
+        tmp.style.position = 'fixed'; tmp.style.opacity = '0';
+        document.body.appendChild(tmp);
+        tmp.select();
+        try { document.execCommand('copy'); } catch(e){}
+        document.body.removeChild(tmp);
+        showShareToast();
+    }
+}
+
+function showShareToast() {
+    var toast = document.getElementById('share-toast');
+    if (!toast) return;
+    toast.classList.add('show');
+    clearTimeout(_shareToastTimer);
+    _shareToastTimer = setTimeout(function(){
+        toast.classList.remove('show');
+    }, 2800);
+}
+
+/* ════════════════════════════════════
+   HELPERS
+   ════════════════════════════════════ */
+function getCookie(name) {
+    var val = null;
+    if (document.cookie) {
+        document.cookie.split(';').forEach(function(c) {
+            c = c.trim();
+            if (c.startsWith(name + '=')) val = decodeURIComponent(c.slice(name.length + 1));
+        });
+    }
+    return val;
+}
+
+function escHtml(str) {
+    return String(str)
+        .replace(/&/g,  '&amp;')
+        .replace(/</g,  '&lt;')
+        .replace(/>/g,  '&gt;')
+        .replace(/"/g,  '&quot;')
+        .replace(/'/g,  '&#39;');
+}
+</script>
+
+{% endblock content %}
