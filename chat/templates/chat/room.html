@@ -1,0 +1,893 @@
+<!-- PrivateChatRoom — premium redesign -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<script src="{% static 'bootstrap/js/jquery.min.js' %}"></script>
+
+<style>
+/* ── Reset & layout full-height ─────────────────────────────── */
+main { padding: 0 !important; margin-top: 62px; }
+
+.chat-page {
+    display: flex;
+    height: calc(100vh - 62px);
+    overflow: hidden;
+    background: var(--bg);
+}
+
+/* ── Friends sidebar ─────────────────────────────────────────── */
+.chat-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+}
+.chat-sidebar-header {
+    padding: 1.1rem 1.25rem .9rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.chat-sidebar-header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -.3px;
+}
+.friends-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: .4rem .5rem;
+}
+.friends-list-container::-webkit-scrollbar { width: 4px; }
+.friends-list-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.friend-container {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .65rem .75rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background .15s;
+    position: relative;
+}
+.friend-container:hover { background: var(--btn-bg); }
+.friend-container.active { background: rgba(24,119,242,.1); }
+.friend-container.active .friend-name { color: var(--accent); }
+
+.friend-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+.friend-avatar-wrap img {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    display: block;
+}
+.friend-container.active .friend-avatar-wrap img { border-color: var(--accent); }
+
+.friend-info { flex: 1; min-width: 0; }
+.friend-name {
+    font-weight: 700;
+    font-size: .9rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+.friend-preview {
+    font-size: .78rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
+/* Mobile sidebar toggle */
+.chat-sidebar-toggle {
+    display: none;
+    position: fixed;
+    bottom: 90px;
+    left: 12px;
+    z-index: 500;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 18px rgba(24,119,242,.4);
+}
+
+/* ── Main chat area ───────────────────────────────────────────── */
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+    min-width: 0;
+}
+
+/* Chat header */
+#id_room_title {
+    height: 64px;
+    padding: 0 1.25rem;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: .75rem;
+    box-shadow: 0 1px 0 var(--border);
+}
+#id_user_info_container {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    text-decoration: none !important;
+}
+#id_other_user_profile_image {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+}
+#id_other_username {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+    line-height: 1;
+}
+.chat-header-status {
+    font-size: .75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+.status-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4caf7d;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+/* ── Chat log ─────────────────────────────────────────────────── */
+#id_chat_log_container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+#id_chat_log {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1.25rem 1rem .5rem;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 2px;
+    background: var(--bg);
+    scroll-behavior: smooth;
+}
+#id_chat_log::-webkit-scrollbar { width: 5px; }
+#id_chat_log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Message rows ─────────────────────────────────────────────── */
+.message-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: 100%;
+    animation: msgFadeIn .2s ease;
+    margin-bottom: 2px;
+}
+@keyframes msgFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.message-container.own-msg { flex-direction: row-reverse; }
+
+/* Avatar in messages */
+.profile-image {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    cursor: pointer;
+    align-self: flex-end;
+}
+.own-msg .profile-image { display: none; }
+
+/* Message bubble wrapper */
+.msg-content-wrap {
+    display: flex;
+    flex-direction: column;
+    max-width: 65%;
+    gap: 2px;
+}
+.own-msg .msg-content-wrap { align-items: flex-end; }
+
+.msg-meta {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin-bottom: 2px;
+}
+.own-msg .msg-meta { flex-direction: row-reverse; }
+.username-span {
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+.username-span:hover { color: var(--accent); }
+.timestamp-span {
+    font-size: .7rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* The bubble itself */
+.msg-p {
+    margin: 0;
+    padding: .55rem .85rem;
+    border-radius: 18px;
+    font-size: .9rem;
+    line-height: 1.55;
+    word-break: break-word;
+    white-space: pre-wrap;
+    position: relative;
+}
+/* Friend bubble */
+.message-container:not(.own-msg) .msg-p {
+    background: var(--bg-card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.07);
+}
+/* Own bubble */
+.message-container.own-msg .msg-p {
+    background: linear-gradient(135deg, #1877f2 0%, #1565d8 100%);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 2px 10px rgba(24,119,242,.3);
+}
+[data-theme="dark"] .message-container.own-msg .msg-p {
+    background: linear-gradient(135deg, #2d88ff 0%, #1877f2 100%);
+}
+
+/* Join/leave system messages */
+.system-message {
+    display: flex;
+    justify-content: center;
+    margin: .5rem 0;
+}
+.system-message .username-span {
+    background: var(--btn-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: .2rem .9rem;
+    font-size: .75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* ── Spinner ──────────────────────────────────────────────────── */
+#id_chatroom_loading_spinner_container {
+    padding: .5rem 0;
+}
+#id_chatroom_loading_spinner { color: var(--accent) !important; }
+
+/* ── Input bar ────────────────────────────────────────────────── */
+.chat-input-bar {
+    padding: .85rem 1.25rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.chat-input-inner {
+    display: flex;
+    align-items: flex-end;
+    gap: .6rem;
+    background: var(--btn-bg);
+    border: 1.5px solid transparent;
+    border-radius: 24px;
+    padding: .45rem .45rem .45rem .9rem;
+    transition: border-color .2s, box-shadow .2s;
+}
+.chat-input-inner:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(24,119,242,.12);
+    background: var(--bg-card);
+}
+#id_chat_message_input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    resize: none;
+    font-size: .92rem;
+    color: var(--text);
+    max-height: 120px;
+    min-height: 22px;
+    height: 22px;
+    line-height: 1.5;
+    overflow-y: auto;
+    padding: 0;
+    font-family: inherit;
+}
+#id_chat_message_input::placeholder { color: var(--text-muted); }
+.chat-send-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1877f2, #7c3aed);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    box-shadow: 0 2px 8px rgba(24,119,242,.35);
+}
+.chat-send-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px rgba(24,119,242,.5);
+}
+.chat-send-btn:active { transform: scale(.96); }
+.chat-send-btn .material-icons { font-size: 1.2rem; }
+.input-hint {
+    font-size: .72rem;
+    color: var(--text-muted);
+    margin-top: .35rem;
+    padding-left: .5rem;
+}
+
+/* ── Empty state ──────────────────────────────────────────────── */
+.chat-empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    color: var(--text-muted);
+    padding: 2rem;
+    text-align: center;
+}
+.chat-empty-icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--btn-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: .5rem;
+}
+.chat-empty-icon .material-icons { font-size: 2.2rem; color: var(--text-muted); }
+.chat-empty-state h4 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin: 0; }
+.chat-empty-state p  { font-size: .85rem; margin: 0; }
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .chat-sidebar {
+        position: fixed;
+        top: 62px; left: 0; bottom: 0;
+        z-index: 400;
+        transform: translateX(-100%);
+        transition: transform .25s ease;
+        box-shadow: 4px 0 24px rgba(0,0,0,.15);
+    }
+    .chat-sidebar.open { transform: translateX(0); }
+    .chat-sidebar-toggle { display: flex; }
+    .chat-main { width: 100%; }
+}
+</style>
+
+<!-- ── Page layout ───────────────────────────────────────────── -->
+<div class="chat-page">
+
+    <!-- Friends sidebar -->
+    <aside class="chat-sidebar" id="chat-sidebar">
+        <div class="chat-sidebar-header">
+            <h2>Messages</h2>
+        </div>
+        <div class="friends-list-container" id="friends-list-container">
+            {% for x in m_and_f %}
+            <div class="friend-container"
+                 onclick="onSelectFriend('{{ x.friend.id }}')"
+                 id="id_friend_container_{{ x.friend.id }}">
+                <div class="friend-avatar-wrap">
+                    <img class="rounded-circle"
+                         id="id_friend_img_{{ x.friend.id }}"
+                         src="{% static 'images/profile_pic.png' %}"
+                         alt="{{ x.friend.username }}">
+                </div>
+                <div class="friend-info">
+                    <div class="friend-name">{{ x.friend.username }}</div>
+                    <div class="friend-preview">{{ x.message|truncatechars:30 }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:.85rem;">
+                <span class="material-icons" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.4">people_outline</span>
+                Aucun ami pour l'instant
+            </div>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <!-- Main chat -->
+    <div class="chat-main">
+
+        <!-- Header -->
+        <div id="id_room_title">
+            <a class="d-flex align-items-center gap-3" id="id_user_info_container" target="_blank">
+                <img class="d-none" id="id_other_user_profile_image"
+                     src="{% static 'images/profile_pic.png' %}"
+                     alt="avatar">
+                <div>
+                    <h3 id="id_other_username" style="margin:0;font-size:1rem;font-weight:700;color:var(--text);"></h3>
+                    <div class="chat-header-status" id="chat-header-sub" style="display:none;">
+                        <span class="status-dot"></span>En ligne
+                    </div>
+                </div>
+            </a>
+
+            <!-- No conversation selected placeholder -->
+            <div id="chat-no-selection" style="color:var(--text-muted);font-size:.9rem;">
+                <span class="material-icons" style="vertical-align:middle;font-size:1.1rem;margin-right:6px;">touch_app</span>
+                Sélectionnez une conversation
+            </div>
+        </div>
+
+        <!-- Messages + input wrapper -->
+        <div class="d-flex flex-column" id="id_chat_log_container" style="flex:1;overflow:hidden;">
+
+            <!-- Loading spinner -->
+            <div class="d-flex justify-content-center" id="id_chatroom_loading_spinner_container">
+                <div class="spinner-border" id="id_chatroom_loading_spinner"
+                     role="status" style="display:none;">
+                    <span class="sr-only">Chargement…</span>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div id="id_chat_log"></div>
+
+            <!-- Page number (hidden, used by JS) -->
+            <span class="{% if not debug %}d-none{% endif %} page-number"
+                  id="id_page_number" style="display:none !important;">1</span>
+
+            <!-- Input bar -->
+            <div class="chat-input-bar">
+                <div class="chat-input-inner">
+                    <textarea id="id_chat_message_input"
+                              placeholder="Écrire un message…"
+                              rows="1"></textarea>
+                    <button class="chat-send-btn" title="Envoyer (Entrée)">
+                        <span id="id_chat_message_submit" class="material-icons">send</span>
+                    </button>
+                </div>
+                <div class="input-hint">Entrée pour envoyer · Maj+Entrée pour aller à la ligne</div>
+            </div>
+        </div>
+
+    </div><!-- /chat-main -->
+</div><!-- /chat-page -->
+
+<!-- Mobile sidebar toggle -->
+<button class="chat-sidebar-toggle" id="sidebar-toggle-btn" title="Conversations">
+    <span class="material-icons">chat</span>
+</button>
+
+<!-- Client Error Modal -->
+<button type="button" id="id_trigger_client_error_modal"
+        class="d-none" data-toggle="modal" data-target="#id_client_error_modal"></button>
+<div class="modal fade" id="id_client_error_modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Erreur</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="id_client_error_modal_body">Une erreur est survenue.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                        id="id_client_error_modal_close_btn">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Auto-resize textarea -->
+<script>
+(function(){
+    var ta = document.getElementById('id_chat_message_input');
+    if(ta){
+        ta.addEventListener('input', function(){
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+    }
+    // Mobile sidebar toggle
+    var toggleBtn = document.getElementById('sidebar-toggle-btn');
+    var sidebar   = document.getElementById('chat-sidebar');
+    if(toggleBtn && sidebar){
+        toggleBtn.addEventListener('click', function(){
+            sidebar.classList.toggle('open');
+        });
+        // Close sidebar when a friend is clicked on mobile
+        document.addEventListener('click', function(e){
+            if(window.innerWidth <= 768 && sidebar.classList.contains('open')){
+                if(!sidebar.contains(e.target) && e.target !== toggleBtn){
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+    }
+})();
+</script>
+
+<script type="text/javascript">
+
+    var chatSocket = null;
+    var roomId = null;
+    var currentUserId = "{{ request.user.id }}";
+
+    onStart()
+
+    function onStart(){
+        {% if room %}
+            if("{{ room.user1 }}" == "{{ request.user }}"){
+                onSelectFriend("{{ room.user2.id }}")
+            } else {
+                onSelectFriend("{{ room.user1.id }}")
+            }
+        {% else %}
+            {% if m_and_f %}
+                onSelectFriend("{{ m_and_f.0.friend.id }}")
+            {% endif %}
+        {% endif %}
+
+        {% if m_and_f %}
+            onSelectFriend("{{ m_and_f.0.friend.id }}")
+        {% endif %}
+        {% for x in m_and_f %}
+            preloadImage("{{ x.friend.profile_image.url|safe }}", "id_friend_img_{{ x.friend.id }}")
+        {% endfor %}
+    }
+
+    function onSelectFriend(userId){
+        console.log("onSelectFriend: " + userId)
+        createOrReturnPrivateChat(userId)
+        clearHighlightedFriend()
+        highlightFriend(userId)
+        // show header sub-status
+        document.getElementById('chat-no-selection').style.display = 'none';
+        document.getElementById('id_other_user_profile_image').classList.remove('d-none');
+        var sub = document.getElementById('chat-header-sub');
+        if(sub) sub.style.display = '';
+        // close mobile sidebar
+        var sidebar = document.getElementById('chat-sidebar');
+        if(sidebar && window.innerWidth <= 768){ sidebar.classList.remove('open'); }
+    }
+
+    function closeWebSocket(){
+        if(chatSocket != null){
+            chatSocket.close()
+            chatSocket = null
+            clearChatLog()
+            setPageNumber("1")
+            disableChatLogScrollListener()
+        }
+    }
+
+    function setupWebSocket(room_id){
+        console.log("setupWebSocket: " + room_id)
+        roomId = room_id
+        closeWebSocket()
+
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        {% if debug_mode %}
+            var ws_path = ws_scheme + '://' + window.location.host + "/chat/" + roomId + "/";
+        {% else %}
+            var ws_path = ws_scheme + '://' + window.location.host + ":8001/chat/" + roomId + "/";
+        {% endif %}
+
+        chatSocket = new WebSocket(ws_path);
+
+        chatSocket.onmessage = function(message) {
+            console.log("Got websocket message.");
+            var data = JSON.parse(message.data);
+            displayChatroomLoadingSpinner(data.display_progress_bar)
+            if (data.error) { console.error(data.error + ": " + data.message); return; }
+            if (data.join)  { console.log("Joining room " + data.join); getUserInfo(); getRoomChatMessages(); enableChatLogScrollListener(); }
+            if (data.leave) { console.log("Leaving room " + data.leave); }
+            if (data.user_info) { handleUserInfoPayload(data.user_info) }
+            if (data.msg_type == 0 || data.msg_type == 1 || data.msg_type == 2) { appendChatMessage(data, false, true) }
+            if (data.messages_payload) { handleMessagesPayload(data.messages, data.new_page_number) }
+        };
+
+        chatSocket.addEventListener("open", function(e){
+            console.log("ChatSocket OPEN")
+            if("{{ request.user.is_authenticated }}"){
+                chatSocket.send(JSON.stringify({ "command": "join", "room": roomId }))
+            }
+        })
+        chatSocket.onclose  = function(e){ console.log('Chat socket closed.'); };
+        chatSocket.onerror  = function(e){ console.log('ChatSocket error', e); }
+
+        if (chatSocket.readyState == WebSocket.OPEN) {
+            console.log("ChatSocket OPEN")
+        } else if (chatSocket.readyState == WebSocket.CONNECTING){
+            console.log("ChatSocket connecting..")
+        }
+    }
+
+    function getUserInfo(){
+        chatSocket.send(JSON.stringify({ "command": "get_user_info", "room_id": roomId }));
+    }
+
+    function handleUserInfoPayload(user_info){
+        document.getElementById("id_other_username").innerHTML = user_info['username']
+        document.getElementById("id_other_user_profile_image").classList.remove("d-none")
+        document.getElementById("id_user_info_container").href =
+            "{% url 'account:view' user_id=53252646545223623632623 %}".replace("53252646545223623632623", user_info['id'])
+        preloadImage(user_info['profile_image'], "id_other_user_profile_image")
+    }
+
+    function displayChatroomLoadingSpinner(isDisplayed){
+        var spinner = document.getElementById("id_chatroom_loading_spinner")
+        if(isDisplayed) spinner.style.display = "block";
+        else            spinner.style.display = "none";
+    }
+
+    function showClientErrorModal(message){
+        document.getElementById("id_client_error_modal_body").innerHTML = message
+        document.getElementById("id_trigger_client_error_modal").click()
+    }
+
+    /* ── Build message elements ─────────────────────────────── */
+    function appendChatMessage(data, maintainPosition, isNewMessage){
+        var messageType  = data.msg_type;
+        var msg_id       = data.msg_id;
+        var message      = data.message;
+        var uName        = data.username;
+        var user_id      = data.user_id;
+        var profile_image = data.profile_image;
+        var timestamp    = data.natural_timestamp;
+
+        switch (messageType) {
+            case 0:
+                createChatMessageElement(message + '\n', msg_id, uName + ": ", profile_image, user_id, timestamp, maintainPosition, isNewMessage)
+                break;
+            case 1:
+            case 2:
+                createConnectedDisconnectedElement(message, msg_id, profile_image, user_id)
+                break;
+            default:
+                console.log("Unsupported message type!"); return;
+        }
+
+        var input = document.getElementById('id_chat_message_input');
+        if(input) input.focus();
+        input.onkeyup = function(e) {
+            if (e.keyCode === 13 && e.shiftKey) { /* line break — handled by textarea */ }
+            else if(e.keyCode === 13 && !e.shiftKey){
+                e.preventDefault();
+                document.getElementById('id_chat_message_submit').click();
+            }
+        };
+
+        document.getElementById('id_chat_message_submit').onclick = function(e) {
+            var inputDom = document.getElementById('id_chat_message_input');
+            var msg = inputDom.value.trim();
+            if(!msg) return;
+            chatSocket.send(JSON.stringify({ "command": "send", "message": msg, "room": roomId }));
+            inputDom.value = '';
+            inputDom.style.height = 'auto';
+        };
+
+        /* ── System message (join / leave) ── */
+        function createConnectedDisconnectedElement(msg, msd_id, profile_image, user_id){
+            var chatLog = document.getElementById("id_chat_log");
+            var wrap = document.createElement("div");
+            wrap.classList.add("system-message");
+            var usernameSpan = document.createElement("span");
+            usernameSpan.innerHTML = msg;
+            usernameSpan.classList.add("username-span");
+            usernameSpan.style.cursor = "pointer";
+            usernameSpan.addEventListener("click", function(){ selectUser(user_id); });
+            wrap.appendChild(usernameSpan);
+            chatLog.insertBefore(wrap, chatLog.firstChild);
+        }
+    }
+
+    /* ── Build a regular chat bubble ─────────────────────────── */
+    function createChatMessageElement(msg, msg_id, username, profile_image, user_id, timestamp, maintainPosition, isNewMessage){
+        var chatLog = document.getElementById("id_chat_log");
+        var isOwn   = (String(user_id) === String(currentUserId));
+
+        // Outer row
+        var row = document.createElement("div");
+        row.classList.add("message-container");
+        if(isOwn) row.classList.add("own-msg");
+        else       row.classList.add("friend-msg");
+
+        // Avatar
+        var avatar = document.createElement("img");
+        avatar.classList.add("profile-image", "rounded-circle");
+        avatar.src = "{% static 'images/profile_pic.png' %}";
+        var avatarId = "id_profile_image_" + msg_id;
+        avatar.id = avatarId;
+        avatar.addEventListener("click", function(){ selectUser(user_id); });
+        row.appendChild(avatar);
+
+        // Content wrapper
+        var wrap = document.createElement("div");
+        wrap.classList.add("msg-content-wrap");
+
+        // Meta line (username + timestamp) — hide for own
+        if(!isOwn){
+            var meta = document.createElement("div");
+            meta.classList.add("msg-meta");
+
+            var uSpan = document.createElement("span");
+            uSpan.classList.add("username-span");
+            // strip trailing ": " for display
+            uSpan.textContent = username.replace(/:\s*$/, '');
+            uSpan.addEventListener("click", function(){ selectUser(user_id); });
+            meta.appendChild(uSpan);
+
+            var tSpan = document.createElement("span");
+            tSpan.classList.add("timestamp-span");
+            tSpan.innerHTML = timestamp;
+            tSpan.addEventListener("click", function(){ selectUser(user_id); });
+            meta.appendChild(tSpan);
+
+            wrap.appendChild(meta);
+        }
+
+        // Bubble
+        var bubble = document.createElement("p");
+        bubble.classList.add("msg-p");
+        bubble.innerHTML = validateText(msg);
+        wrap.appendChild(bubble);
+
+        // Timestamp for own messages (below bubble)
+        if(isOwn){
+            var tOwn = document.createElement("span");
+            tOwn.classList.add("timestamp-span");
+            tOwn.style.marginTop = "2px";
+            tOwn.innerHTML = timestamp;
+            wrap.appendChild(tOwn);
+        }
+
+        row.appendChild(wrap);
+
+        if(isNewMessage){
+            chatLog.insertBefore(row, chatLog.firstChild);
+        } else {
+            chatLog.appendChild(row);
+        }
+
+        if(!maintainPosition){ chatLog.scrollTop = chatLog.scrollHeight; }
+        preloadImage(profile_image, avatarId);
+    }
+
+    function clearChatLog(){
+        document.getElementById("id_chat_log").innerHTML = ""
+    }
+
+    function setPageNumber(pageNumber){
+        document.getElementById("id_page_number").innerHTML = pageNumber
+    }
+    function setPaginationExhausted(){ setPageNumber("-1") }
+
+    function getRoomChatMessages(){
+        var pageNumber = document.getElementById("id_page_number").innerHTML
+        if(pageNumber != "-1"){
+            setPageNumber("-1")
+            chatSocket.send(JSON.stringify({
+                "command": "get_room_chat_messages",
+                "room_id": roomId,
+                "page_number": pageNumber,
+            }))
+        }
+    }
+
+    function handleMessagesPayload(messages, new_page_number){
+        if(messages != null && messages != "undefined" && messages != "None"){
+            setPageNumber(new_page_number)
+            messages.forEach(function(message){ appendChatMessage(message, true, false) })
+        } else {
+            setPaginationExhausted()
+        }
+    }
+
+    function selectUser(user_id){
+        var url = "{% url 'account:view' user_id=532526456223623632623 %}".replace("532526456223623632623", user_id)
+        var win = window.open(url, "_blank")
+        win.focus()
+    }
+
+    function chatLogScrollListener(e) {
+        var chatLog = document.getElementById("id_chat_log")
+        if ((Math.abs(chatLog.scrollTop) + 2) >= (chatLog.scrollHeight - chatLog.offsetHeight)){
+            getRoomChatMessages()
+        }
+    }
+    function enableChatLogScrollListener(){
+        document.getElementById("id_chat_log").addEventListener("scroll", chatLogScrollListener);
+    }
+    function disableChatLogScrollListener(){
+        document.getElementById("id_chat_log").removeEventListener("scroll", chatLogScrollListener)
+    }
+
+    function highlightFriend(userId){
+        var el = document.getElementById("id_friend_container_" + userId);
+        if(el){
+            // remove active from all
+            document.querySelectorAll('.friend-container').forEach(function(c){ c.classList.remove('active'); });
+            el.classList.add('active');
+        }
+    }
+
+    function clearHighlightedFriend(){
+        document.querySelectorAll('.friend-container').forEach(function(c){ c.classList.remove('active'); });
+        document.getElementById("id_other_user_profile_image").classList.add("d-none")
+        document.getElementById("id_other_user_profile_image").src = "{% static 'images/profile_pic.png' %}"
+        document.getElementById("id_other_username").innerHTML = ""
+    }
+
+    function createOrReturnPrivateChat(id){
+        payload = {
+            "csrfmiddlewaretoken": "{{ csrf_token }}",
+            "user2_id": id,
+        }
+        $.ajax({
+            type: 'POST',
+            dataType: "json",
+            url: "{% url 'chat:create-or-return-private-chat' %}",
+            data: payload,
+            timeout: 5000,
+            success: function(data) {
+                console.log("SUCCESS", data)
+                if(data['response'] == "Successfully got the chat."){
+                    setupWebSocket(data['chatroom_id'])
+                } else if(data['response'] != null){
+                    alert(data['response'])
+                }
+            },
+            error: function(data) {
+                console.error("ERROR...", data)
+                alert("Something went wrong.")
+            },
+        });
+    }
+</script>
+
+{% endblock content %}

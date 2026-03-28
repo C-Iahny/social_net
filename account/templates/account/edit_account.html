@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.edit-page {
+    min-height: calc(100vh - 62px);
+    background: var(--bg);
+    padding: 2rem 1rem 3rem;
+}
+.edit-card {
+    max-width: 560px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    overflow: hidden;
+}
+[data-theme="dark"] .edit-card { box-shadow: 0 4px 24px rgba(0,0,0,.35); }
+
+/* ── Card header ── */
+.edit-card-header {
+    padding: 1.5rem 2rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+.edit-card-header .material-icons {
+    font-size: 1.4rem;
+    color: var(--accent);
+}
+.edit-card-header h2 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0;
+}
+
+/* ── Avatar section ── */
+.avatar-section {
+    padding: 1.75rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+.image-container {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+#id_profile_image_display {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent);
+    display: block;
+}
+#id_middle_container {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.45);
+    opacity: 0;
+    transition: opacity .25s;
+}
+.image-container:hover #id_middle_container { opacity: 1; }
+#id_text {
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 4px;
+}
+.avatar-info h4 { font-size: .95rem; font-weight: 700; color: var(--text); margin: 0 0 .25rem; }
+.avatar-info p  { font-size: .8rem; color: var(--text-muted); margin: 0; }
+
+/* Crop confirm buttons */
+#id_image_crop_confirm {
+    display: none;
+    gap: .75rem;
+    margin-bottom: .5rem;
+}
+#id_confirm, #id_cancel {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem !important;
+    transition: transform .15s;
+}
+#id_confirm { color: #4caf7d; background: rgba(76,175,125,.12); border: 1.5px solid rgba(76,175,125,.3); }
+#id_cancel  { color: #e0245e; background: rgba(224,36,94,.12);  border: 1.5px solid rgba(224,36,94,.3); }
+#id_confirm:hover, #id_cancel:hover { transform: scale(1.1); }
+
+/* ── Form body ── */
+.edit-form-body { padding: 1.5rem 2rem 2rem; }
+.edit-section-title {
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin: 1.5rem 0 .85rem;
+    padding-bottom: .4rem;
+    border-bottom: 1px solid var(--border);
+}
+.edit-section-title:first-child { margin-top: 0; }
+.edit-field { margin-bottom: 1rem; }
+.edit-field label {
+    display: block;
+    font-size: .82rem; font-weight: 600;
+    color: var(--text-muted); margin-bottom: .35rem;
+}
+.edit-input-wrap {
+    display: flex; align-items: center;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 0 .85rem; height: 48px;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.edit-input-wrap:focus-within {
+    border-color: var(--accent); background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(24,119,242,.12);
+}
+.edit-input-wrap .material-icons { font-size: 1.05rem; color: var(--text-muted); margin-right: .6rem; flex-shrink: 0; }
+.edit-input-wrap input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-size: .95rem; padding: 0; font-family: inherit;
+}
+.edit-input-wrap input::placeholder { color: var(--text-muted); }
+.edit-textarea-wrap {
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: .7rem .85rem;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+    display: flex; gap: .5rem;
+}
+.edit-textarea-wrap:focus-within {
+    border-color: var(--accent); background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(24,119,242,.12);
+}
+.edit-textarea-wrap .material-icons { font-size: 1.05rem; color: var(--text-muted); margin-top: 2px; flex-shrink: 0; }
+.edit-textarea-wrap textarea {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-size: .95rem; resize: vertical;
+    min-height: 80px; font-family: inherit; line-height: 1.5;
+}
+.edit-textarea-wrap textarea::placeholder { color: var(--text-muted); }
+.edit-checkbox-wrap {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .75rem .85rem;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; cursor: pointer;
+    transition: border-color .2s;
+}
+.edit-checkbox-wrap:hover { border-color: var(--accent); }
+.edit-checkbox-wrap input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;
+}
+.edit-checkbox-wrap span { font-size: .9rem; color: var(--text); font-weight: 500; cursor: pointer; }
+.edit-errors {
+    background: rgba(224,36,94,.1); border: 1px solid rgba(224,36,94,.25);
+    border-radius: 10px; padding: .6rem .9rem; margin-bottom: .75rem;
+    font-size: .84rem; color: #c0392b;
+}
+[data-theme="dark"] .edit-errors { color: #f28b82; }
+.edit-save-btn {
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
+    width: 100%; height: 50px;
+    background: linear-gradient(135deg, #1877f2 0%, #7c3aed 100%);
+    color: #fff; border: none; border-radius: 12px;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(24,119,242,.35);
+    transition: opacity .2s, transform .15s;
+    margin-top: 1.5rem;
+}
+.edit-save-btn:hover { opacity: .92; transform: translateY(-1px); }
+.edit-save-btn .material-icons { font-size: 1.1rem; }
+</style>
+
+<div class="edit-page">
+    <div class="edit-card">
+
+        <!-- Header -->
+        <div class="edit-card-header">
+            <span class="material-icons">manage_accounts</span>
+            <h2>Modifier mon profil</h2>
+        </div>
+
+        <!-- Avatar -->
+        <div class="avatar-section">
+            <div>
+                <div id="id_image_crop_confirm" style="display:none;gap:.75rem;margin-bottom:.75rem;">
+                    <span id="id_cancel" class="material-icons">cancel</span>
+                    <span id="id_confirm" class="material-icons">check_circle</span>
+                </div>
+                <div class="image-container" id="id_image_container">
+                    <img class="rounded-circle" id="id_profile_image_display"
+                         src="{{ form.initial.profile_image.url }}" alt="avatar">
+                    <div id="id_middle_container">
+                        <div id="id_text">
+                            <span class="material-icons" style="font-size:.95rem;">photo_camera</span>
+                            Modifier
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="avatar-info">
+                <h4>Photo de profil</h4>
+                <p>Cliquez sur la photo pour en changer.<br>Format recommandé : carré, JPG ou PNG.</p>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="edit-form-body">
+            <form class="form-signin" method="post" enctype="multipart/form-data">{% csrf_token %}
+                <input class="d-none" type="file" name="profile_image" id="id_profile_image" onchange="readURL(this)">
+
+                <!-- Errors -->
+                {% for field in form %}{% for error in field.errors %}
+                <div class="edit-errors">{{ error }}</div>
+                {% endfor %}{% endfor %}
+                {% if form.non_field_errors %}
+                <div class="edit-errors">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="edit-section-title">Informations du compte</div>
+
+                <div class="edit-field">
+                    <label>Adresse e-mail</label>
+                    <div class="edit-input-wrap">
+                        <span class="material-icons">mail_outline</span>
+                        <input type="email" name="email" id="id_input_email"
+                               placeholder="votre@email.com" required
+                               value="{{ form.initial.email }}">
+                    </div>
+                </div>
+
+                <div class="edit-field">
+                    <label>Nom d'utilisateur</label>
+                    <div class="edit-input-wrap">
+                        <span class="material-icons">alternate_email</span>
+                        <input type="text" name="username" id="id_input_username"
+                               placeholder="nom_utilisateur" required
+                               value="{{ form.initial.username }}">
+                    </div>
+                </div>
+
+                <div class="edit-section-title">À propos de vous</div>
+
+                <div class="edit-field">
+                    <label>Bio</label>
+                    <div class="edit-textarea-wrap">
+                        <span class="material-icons">edit_note</span>
+                        <textarea name="bio" id="id_input_bio"
+                                  placeholder="Parlez un peu de vous…">{{ form.initial.bio }}</textarea>
+                    </div>
+                </div>
+
+                <div class="edit-field">
+                    <label>Localisation</label>
+                    <div class="edit-input-wrap">
+                        <span class="material-icons">location_on</span>
+                        <input type="text" name="location" id="id_input_location"
+                               placeholder="Ville, Pays"
+                               value="{{ form.initial.location }}">
+                    </div>
+                </div>
+
+                <div class="edit-section-title">Confidentialité</div>
+
+                <div class="edit-field">
+                    <label class="edit-checkbox-wrap" for="id_input_hide_email">
+                        <input type="checkbox" name="hide_email" id="id_input_hide_email"
+                               {% if form.initial.hide_email %}checked{% endif %}>
+                        <span>Masquer mon adresse e-mail aux autres utilisateurs</span>
+                    </label>
+                </div>
+
+                <button class="edit-save-btn" type="submit">
+                    <span class="material-icons">save</span>
+                    Enregistrer les modifications
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script type="text/javascript">
+    var cropper;
+    var imageFile;
+    var base64ImageString;
+    var cropX, cropY, cropWidth, cropHeight;
+
+    enableImageOverlay();
+
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                disableImageOverlay();
+                var image = e.target.result;
+                var imageField = document.getElementById('id_profile_image_display');
+                imageField.src = image;
+                cropper = new Cropper(imageField, {
+                    aspectRatio: 1/1,
+                    crop(event) {
+                        setImageCropProperties(image, event.detail.x, event.detail.y, event.detail.width, event.detail.height);
+                    },
+                });
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function setImageCropProperties(image, x, y, width, height) {
+        imageFile = image; cropX = x; cropY = y; cropWidth = width; cropHeight = height;
+    }
+
+    function isImageSizeValid(image) {
+        var startIndex = image.indexOf("base64,") + 7;
+        var base64str = image.substr(startIndex);
+        var decoded = atob(base64str);
+        if (decoded.length >= "{{ DATA_UPLOAD_MAX_MEMORY_SIZE }}") return null;
+        return base64str;
+    }
+
+    function cropImage(image, x, y, width, height) {
+        base64ImageString = isImageSizeValid(image);
+        if (base64ImageString != null) {
+            displayLoadingSpinner(true);
+            $.ajax({
+                type: 'POST', dataType: "json",
+                url: "{% url 'account:crop_image' user_id=form.initial.id %}",
+                data: {
+                    "csrfmiddlewaretoken": "{{ csrf_token }}",
+                    "image": base64ImageString,
+                    "cropX": cropX, "cropY": cropY,
+                    "cropWidth": cropWidth, "cropHeight": cropHeight
+                },
+                timeout: 10000,
+                success: function(data) {
+                    if (data.result == "success") { document.getElementById("id_cancel").click(); }
+                    else if (data.result == "error") { alert(data.exception); document.getElementById("id_cancel").click(); }
+                },
+                error: function(data) { console.error("ERROR...", data); },
+                complete: function(data) { displayLoadingSpinner(false); }
+            });
+        } else {
+            alert("Choisissez une image de moins de 10 Mo.");
+            document.getElementById("id_cancel").click();
+        }
+    }
+
+    function enableImageOverlay() {
+        var container  = document.getElementById("id_image_container");
+        var cropBtn    = document.getElementById("id_image_crop_confirm");
+        cropBtn.style.display = "none";
+        container.addEventListener("click", function() {
+            document.getElementById('id_profile_image').click();
+        });
+    }
+
+    function disableImageOverlay() {
+        var cropBtn = document.getElementById("id_image_crop_confirm");
+        cropBtn.style.display = "flex";
+
+        var container = document.getElementById("id_image_container");
+        container.replaceWith(container.cloneNode(true)); // remove old click listener
+
+        document.getElementById("id_confirm").addEventListener("click", function() {
+            cropImage(imageFile, cropX, cropY, cropWidth, cropHeight);
+        });
+        document.getElementById("id_cancel").addEventListener("click", function() {
+            window.location.reload();
+        });
+    }
+</script>
+{% endblock content %}
