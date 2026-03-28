@@ -244,36 +244,11 @@ def edit_account_view(request, *args, **kwargs):
 	if request.POST:
 		form = AccountUpdateForm(request.POST, request.FILES, instance=request.user)
 		if form.is_valid():
-			# delete the old profile image so the name is preserved.
-			#account.profile_image.delete() # ilay contraire foana no mahazo anah fa io ny form tena tokony ho izy.
 			form.save()
 			return redirect("account:view", user_id=account.pk)
-		else:
-			form = AccountUpdateForm(request.POST, instance=request.user,
-				initial={
-					"id":            account.pk,
-					"email":         account.email,
-					"username":      account.username,
-					"profile_image": account.profile_image,
-					"hide_email":    account.hide_email,
-					"bio":           account.bio,
-					"location":      account.location,
-				}
-			)
-			context['form'] = form
 	else:
-		form = AccountUpdateForm(
-			initial={
-					"id":            account.pk,
-					"email":         account.email,
-					"username":      account.username,
-					"profile_image": account.profile_image,
-					"hide_email":    account.hide_email,
-					"bio":           account.bio,
-					"location":      account.location,
-				}
-			)
-		context['form'] = form
+		form = AccountUpdateForm(instance=request.user)
+	context['form'] = form
 	context['DATA_UPLOAD_MAX_MEMORY_SIZE'] = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
 	return render(request, "account/edit_account.html", context)
 

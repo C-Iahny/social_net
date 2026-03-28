@@ -94,12 +94,15 @@ class AccountUpdateForm(forms.ModelForm):
 
     def save(self, commit=True):
         account = super(AccountUpdateForm, self).save(commit=False)
-        account.username      = self.cleaned_data['username']
-        account.email         = self.cleaned_data['email'].lower()
-        account.profile_image = self.cleaned_data['profile_image']
-        account.hide_email    = self.cleaned_data['hide_email']
-        account.bio           = self.cleaned_data.get('bio', '')
-        account.location      = self.cleaned_data.get('location', '')
+        account.username   = self.cleaned_data['username']
+        account.email      = self.cleaned_data['email'].lower()
+        account.hide_email = self.cleaned_data['hide_email']
+        account.bio        = self.cleaned_data.get('bio', '')
+        account.location   = self.cleaned_data.get('location', '')
+        # Ne remplace la photo que si un nouveau fichier est uploadé
+        new_image = self.cleaned_data.get('profile_image')
+        if new_image:
+            account.profile_image = new_image
         if commit:
             account.save()
         return account

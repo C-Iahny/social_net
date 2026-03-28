@@ -201,7 +201,7 @@
                 </div>
                 <div class="image-container" id="id_image_container">
                     <img class="rounded-circle" id="id_profile_image_display"
-                         src="{{ form.initial.profile_image.url }}" alt="avatar">
+                         src="{{ form.instance.profile_image.url }}" alt="avatar">
                     <div id="id_middle_container">
                         <div id="id_text">
                             <span class="material-icons" style="font-size:.95rem;">photo_camera</span>
@@ -237,7 +237,7 @@
                         <span class="material-icons">mail_outline</span>
                         <input type="email" name="email" id="id_input_email"
                                placeholder="votre@email.com" required
-                               value="{{ form.initial.email }}">
+                               value="{{ form.email.value }}">
                     </div>
                 </div>
 
@@ -247,7 +247,7 @@
                         <span class="material-icons">alternate_email</span>
                         <input type="text" name="username" id="id_input_username"
                                placeholder="nom_utilisateur" required
-                               value="{{ form.initial.username }}">
+                               value="{{ form.username.value }}">
                     </div>
                 </div>
 
@@ -258,7 +258,7 @@
                     <div class="edit-textarea-wrap">
                         <span class="material-icons">edit_note</span>
                         <textarea name="bio" id="id_input_bio"
-                                  placeholder="Parlez un peu de vous…">{{ form.initial.bio }}</textarea>
+                                  placeholder="Parlez un peu de vous…">{{ form.bio.value }}</textarea>
                     </div>
                 </div>
 
@@ -268,7 +268,7 @@
                         <span class="material-icons">location_on</span>
                         <input type="text" name="location" id="id_input_location"
                                placeholder="Ville, Pays"
-                               value="{{ form.initial.location }}">
+                               value="{{ form.location.value }}">
                     </div>
                 </div>
 
@@ -277,7 +277,7 @@
                 <div class="edit-field">
                     <label class="edit-checkbox-wrap" for="id_input_hide_email">
                         <input type="checkbox" name="hide_email" id="id_input_hide_email"
-                               {% if form.initial.hide_email %}checked{% endif %}>
+                               {% if form.hide_email.value %}checked{% endif %}>
                         <span>Masquer mon adresse e-mail aux autres utilisateurs</span>
                     </label>
                 </div>
@@ -337,7 +337,7 @@
             displayLoadingSpinner(true);
             $.ajax({
                 type: 'POST', dataType: "json",
-                url: "{% url 'account:crop_image' user_id=form.initial.id %}",
+                url: "{% url 'account:crop_image' user_id=form.instance.pk %}",
                 data: {
                     "csrfmiddlewaretoken": "{{ csrf_token }}",
                     "image": base64ImageString,
