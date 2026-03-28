@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.delete-wrapper { max-width: 500px; margin: 100px auto 2rem; padding: 0 1rem; }
+.delete-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: var(--shadow);
+    overflow: hidden; transition: background .3s;
+    text-align: center;
+}
+.delete-card-icon {
+    padding: 2rem 1.5rem 1rem;
+    background: #fdecea;
+    border-bottom: 1px solid #f5c6c6;
+}
+[data-theme="dark"] .delete-card-icon { background: #3b1212; border-color: #5a2020; }
+.delete-card-icon .material-icons {
+    font-size: 3.2rem; color: #c62828; display: block; margin-bottom: .5rem;
+}
+[data-theme="dark"] .delete-card-icon .material-icons { color: #f28b82; }
+.delete-card-icon h4 { color: #c62828; font-weight: 800; margin: 0; }
+[data-theme="dark"] .delete-card-icon h4 { color: #f28b82; }
+
+.delete-card-body { padding: 1.5rem; }
+.delete-card-body p { color: var(--text-muted); font-size: .95rem; margin-bottom: 1rem; }
+.post-preview {
+    background: var(--btn-bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: .9rem 1rem; margin-bottom: 1.2rem;
+    text-align: left;
+}
+.post-preview .post-preview-title { font-weight: 700; color: var(--text); font-size: .95rem; }
+.post-preview .post-preview-date { font-size: .8rem; color: var(--text-muted); margin-top: .2rem; }
+
+.delete-actions { display: flex; gap: .7rem; justify-content: center; padding: 1rem 1.5rem; border-top: 1px solid var(--border); }
+.btn-confirm-delete {
+    flex: 1; padding: .65rem 1.2rem; background: #c62828; color: #fff;
+    border: none; border-radius: 10px; font-size: .95rem; font-weight: 700;
+    cursor: pointer; transition: background .2s;
+    display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
+}
+.btn-confirm-delete:hover { background: #b71c1c; }
+.btn-cancel-delete {
+    flex: 1; padding: .65rem 1.2rem; border: 1.5px solid var(--border); border-radius: 10px;
+    background: none; color: var(--text); font-size: .95rem; font-weight: 600;
+    cursor: pointer; text-decoration: none; transition: background .15s;
+    display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
+}
+.btn-cancel-delete:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+</style>
+
+<div class="delete-wrapper">
+    <div class="delete-card">
+
+        <div class="delete-card-icon">
+            <span class="material-icons">delete_forever</span>
+            <h4>Supprimer le post ?</h4>
+        </div>
+
+        <div class="delete-card-body">
+            <p>Cette action est <strong>irréversible</strong>. Le post sera définitivement supprimé.</p>
+
+            <div class="post-preview">
+                <div class="post-preview-title">{{ object.title }}</div>
+                <div class="post-preview-date">Publié le {{ object.post_date|date:"d F Y" }}</div>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="delete-actions">
+                <a class="btn-cancel-delete" href="{% url 'post:post-view' %}">
+                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> Annuler
+                </a>
+                <button class="btn-confirm-delete" type="submit">
+                    <span class="material-icons" style="font-size:1rem;">delete</span> Oui, supprimer
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock content %}

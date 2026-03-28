@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.post-form-wrapper { max-width: 680px; margin: 90px auto 2rem; padding: 0 1rem; }
+.post-form-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; transition: background .3s;
+}
+.post-form-header {
+    padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: .8rem;
+}
+.post-form-header .material-icons { font-size: 1.5rem; color: var(--accent); }
+.post-form-header h4 { font-size: 1.05rem; font-weight: 700; color: var(--text); margin: 0; }
+.post-form-header span { font-size: .85rem; color: var(--text-muted); }
+.post-form-body { padding: 1.5rem; }
+
+.form-field { margin-bottom: 1.2rem; }
+.form-field label {
+    display: block; font-size: .82rem; font-weight: 700;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: .04em; margin-bottom: .45rem;
+}
+.form-field input[type="text"],
+.form-field textarea {
+    width: 100%; background: var(--input-bg, var(--bg-card));
+    color: var(--text); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: .65rem .9rem; font-size: .95rem;
+    transition: border-color .2s, box-shadow .2s; outline: none;
+}
+.form-field input[type="text"]:focus,
+.form-field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(24,119,242,.15);
+}
+.form-field textarea { min-height: 100px; resize: vertical; }
+.upload-hint { font-size: .82rem; color: var(--text-muted); margin-top: .3rem; }
+
+.post-form-actions {
+    display: flex; gap: .7rem; align-items: center;
+    padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: var(--bg-card);
+}
+.btn-submit {
+    flex: 1; padding: .6rem 1.5rem; background: var(--accent); color: #fff;
+    border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: background .2s;
+    display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+}
+.btn-submit:hover { background: var(--accent-dark); }
+.btn-cancel {
+    padding: .6rem 1.2rem; border: 1.5px solid var(--border); border-radius: 10px;
+    background: none; color: var(--text-muted); font-size: .95rem; font-weight: 600;
+    cursor: pointer; text-decoration: none; transition: background .15s, color .15s;
+    display: inline-flex; align-items: center; gap: .35rem;
+}
+.btn-cancel:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+</style>
+
+<div class="post-form-wrapper">
+    <div class="post-form-card">
+
+        <div class="post-form-header">
+            <span class="material-icons">edit</span>
+            <div>
+                <h4>Modifier le post</h4>
+                <span>{{ object.title }}</span>
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="post-form-body">
+
+                <div class="form-field">
+                    <label for="id_title">Titre <span style="color:var(--badge-danger-t,red)">*</span></label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <p style="color:var(--badge-danger-t,red);font-size:.83rem;margin-top:.3rem;">{{ form.title.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-field">
+                    <label>Contenu</label>
+                    {{ form.body }}
+                </div>
+
+                <div class="form-field">
+                    <label>Changer l'image</label>
+                    {{ form.header_image }}
+                    {% if object.header_image %}
+                    <p class="upload-hint">Image actuelle :
+                        <a href="{{ object.header_image.url }}" target="_blank" style="color:var(--accent);">voir</a>
+                    </p>
+                    {% endif %}
+                </div>
+
+                <div class="form-field">
+                    <label>
+                        <span class="material-icons" style="font-size:1rem;vertical-align:middle;color:#7c3aed;">videocam</span>
+                        Vidéo
+                    </label>
+                    {{ form.video }}
+                    {% if object.video %}
+                    <p class="upload-hint">
+                        Vidéo actuelle :
+                        <a href="{{ object.video.url }}" target="_blank" style="color:#7c3aed;">voir</a>
+                        &nbsp;—&nbsp;
+                        <video style="max-width:100%;max-height:200px;border-radius:8px;margin-top:.4rem;display:block;" controls preload="metadata">
+                            <source src="{{ object.video.url }}">
+                        </video>
+                    </p>
+                    {% endif %}
+                </div>
+
+                <div class="form-field">
+                    <label>Fichier joint</label>
+                    {{ form.file }}
+                    {% if object.file %}
+                    <p class="upload-hint">Fichier actuel :
+                        <a href="{{ object.file.url }}" target="_blank" style="color:var(--accent);">voir</a>
+                    </p>
+                    {% endif %}
+                </div>
+
+                {% if form.non_field_errors %}
+                <p style="color:var(--badge-danger-t,red);font-size:.88rem;">{{ form.non_field_errors }}</p>
+                {% endif %}
+
+            </div>
+
+            <div class="post-form-actions">
+                <a class="btn-cancel" href="{% url 'post:post-view' %}">
+                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> Annuler
+                </a>
+                <button class="btn-submit" type="submit">
+                    <span class="material-icons" style="font-size:1rem;">save</span> Enregistrer
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock content %}

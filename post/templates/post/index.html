@@ -1,0 +1,509 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+/* ============================================================
+   EXPLORE PAGE
+   ============================================================ */
+
+/* ── Hero ── */
+.explore-hero {
+    background: linear-gradient(135deg, var(--hero-from, var(--accent)) 0%, var(--hero-to, #7c3aed) 100%);
+    color: #fff;
+    padding: 5rem 1.5rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-top: 0;        /* header is fixed, no extra margin needed */
+}
+.explore-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+}
+.explore-hero-content {
+    position: relative;
+    max-width: 700px; margin: 0 auto;
+}
+.explore-hero h1 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 900; line-height: 1.15;
+    margin-bottom: .9rem;
+    text-shadow: 0 2px 16px rgba(0,0,0,.2);
+}
+.explore-hero p {
+    font-size: 1.05rem; opacity: .9;
+    max-width: 520px; margin: 0 auto 2rem;
+    line-height: 1.65;
+}
+.hero-search-wrap {
+    display: flex; gap: .5rem;
+    max-width: 520px; margin: 0 auto;
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.35);
+    border-radius: 50px;
+    padding: .35rem .35rem .35rem 1.1rem;
+    backdrop-filter: blur(6px);
+}
+.hero-search-wrap input {
+    flex: 1; background: none; border: none; outline: none;
+    color: #fff; font-size: .97rem;
+    placeholder-color: rgba(255,255,255,.7);
+}
+.hero-search-wrap input::placeholder { color: rgba(255,255,255,.72); }
+.hero-search-btn {
+    background: #fff; color: var(--accent);
+    border: none; border-radius: 40px;
+    padding: .5rem 1.2rem; font-weight: 700; font-size: .9rem;
+    cursor: pointer; transition: transform .15s, box-shadow .15s;
+    display: flex; align-items: center; gap: .3rem;
+    text-decoration: none;
+}
+.hero-search-btn:hover { transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,.2); text-decoration: none; }
+.hero-search-btn .material-icons { font-size: 1rem; }
+
+/* ── Page wrapper ── */
+.explore-wrapper {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2rem 1rem 3rem;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 1.4rem;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .explore-wrapper { grid-template-columns: 1fr; }
+    .explore-sidebar  { display: none; }
+}
+
+/* ── Shared card ── */
+.ex-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.1rem;
+    overflow: hidden;
+    transition: background .3s;
+}
+.ex-card-title {
+    font-size: .72rem; font-weight: 800;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 1rem 1rem .6rem;
+}
+
+/* ── SIDEBAR ── */
+.explore-sidebar { position: sticky; top: 80px; }
+
+/* Continent list */
+.continent-item {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .55rem 1rem;
+    text-decoration: none; color: var(--text);
+    font-size: .9rem; font-weight: 600;
+    transition: background .12s;
+}
+.continent-item:hover { background: var(--btn-bg); text-decoration: none; color: var(--accent); }
+.continent-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #7c3aed);
+    flex-shrink: 0;
+}
+.continent-count {
+    margin-left: auto;
+    font-size: .75rem; background: var(--btn-bg);
+    padding: .15rem .55rem; border-radius: 20px;
+    color: var(--text-muted); font-weight: 700;
+}
+
+/* Country tags */
+.country-tags {
+    display: flex; flex-wrap: wrap; gap: .45rem;
+    padding: .4rem 1rem 1rem;
+}
+.country-tag {
+    font-size: .78rem; font-weight: 600;
+    padding: .28rem .75rem; border-radius: 20px;
+    background: var(--btn-bg); color: var(--text-muted);
+    text-decoration: none; border: 1px solid var(--border);
+    transition: background .12s, color .12s;
+    cursor: pointer;
+}
+.country-tag:hover { background: var(--accent); color: #fff; border-color: var(--accent); text-decoration: none; }
+
+/* Sidebar CTA */
+.sidebar-cta {
+    padding: 1.25rem 1rem;
+    text-align: center;
+}
+.sidebar-cta p { font-size: .88rem; color: var(--text-muted); margin-bottom: .85rem; line-height: 1.5; }
+.sidebar-cta-btn {
+    display: block; padding: .55rem;
+    border-radius: 10px; font-weight: 700; font-size: .9rem;
+    text-decoration: none; text-align: center;
+    margin-bottom: .5rem; transition: background .15s, transform .12s;
+}
+.sidebar-cta-btn:hover { transform: translateY(-1px); text-decoration: none; }
+.cta-primary { background: var(--accent); color: #fff; }
+.cta-primary:hover { background: var(--accent-dark); color: #fff; }
+.cta-secondary { background: var(--btn-bg); color: var(--text); border: 1px solid var(--border); }
+.cta-secondary:hover { background: var(--btn-hover); color: var(--text); }
+
+/* ── MAIN CONTENT ── */
+
+/* Section header */
+.section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+}
+.section-head h2 {
+    font-size: 1.1rem; font-weight: 800; color: var(--text);
+    display: flex; align-items: center; gap: .5rem;
+}
+.section-head h2 .material-icons { font-size: 1.2rem; color: var(--accent); }
+.section-head-link {
+    font-size: .83rem; color: var(--accent); font-weight: 700;
+    text-decoration: none;
+}
+.section-head-link:hover { text-decoration: underline; }
+
+/* Posts grid */
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1rem;
+}
+
+/* Post card */
+.explore-post-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    transition: transform .2s, box-shadow .2s, background .3s;
+    text-decoration: none; color: var(--text);
+}
+.explore-post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,.13);
+    text-decoration: none; color: var(--text);
+}
+[data-theme="dark"] .explore-post-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.5); }
+
+.epc-thumb {
+    width: 100%; height: 170px;
+    object-fit: cover; display: block;
+    background: var(--btn-bg);
+}
+.epc-thumb-placeholder {
+    width: 100%; height: 130px;
+    background: linear-gradient(135deg, var(--btn-bg) 0%, var(--border) 100%);
+    display: flex; align-items: center; justify-content: center;
+}
+.epc-thumb-placeholder .material-icons {
+    font-size: 2.8rem; color: var(--border);
+}
+.epc-body { padding: .9rem 1rem; flex: 1; display: flex; flex-direction: column; gap: .4rem; }
+.epc-author {
+    display: flex; align-items: center; gap: .5rem;
+}
+.epc-author img {
+    width: 30px; height: 30px; border-radius: 50%;
+    object-fit: cover; border: 2px solid var(--border);
+}
+.epc-author-name { font-size: .8rem; font-weight: 700; color: var(--text-muted); }
+.epc-title {
+    font-weight: 800; font-size: .97rem; color: var(--text);
+    line-height: 1.35; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.epc-body-excerpt {
+    font-size: .83rem; color: var(--text-muted); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+}
+.epc-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: .77rem; color: var(--text-muted);
+    padding: .6rem 1rem;
+    border-top: 1px solid var(--border);
+}
+.epc-footer .likes { display: flex; align-items: center; gap: .3rem; }
+.epc-footer .likes .material-icons { font-size: .9rem; color: var(--accent); }
+.epc-date { font-size: .75rem; }
+
+/* Empty state */
+.explore-empty {
+    text-align: center; padding: 4rem 1.5rem;
+    color: var(--text-muted);
+}
+.explore-empty .material-icons { font-size: 3.5rem; display: block; margin-bottom: .8rem; color: var(--border); }
+.explore-empty h5 { color: var(--text); font-weight: 800; margin-bottom: .5rem; }
+
+/* Stats strip */
+.stats-strip {
+    display: flex; gap: .75rem; flex-wrap: wrap;
+    margin-bottom: 1.4rem;
+}
+.stat-chip {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 10px; padding: .65rem 1.1rem;
+    display: flex; align-items: center; gap: .55rem;
+    box-shadow: var(--shadow);
+    font-size: .88rem; color: var(--text);
+}
+.stat-chip .material-icons { font-size: 1.15rem; color: var(--accent); }
+.stat-chip strong { font-weight: 800; }
+</style>
+
+<!-- ═══════════════════════════════════
+     HERO  (valeurs dynamiques via HeroSettings)
+     ═══════════════════════════════════ -->
+<style>
+  :root {
+    --hero-from: {{ hero.gradient_from }};
+    --hero-to:   {{ hero.gradient_to }};
+  }
+
+  {% if hero.background_image %}
+  /* Image de fond : le dégradé devient un calque semi-transparent */
+  .explore-hero {
+    background:
+      linear-gradient(
+        135deg,
+        {{ hero.gradient_from }}cc 0%,
+        {{ hero.gradient_to }}cc 100%
+      ),
+      url('{{ hero.background_image.url }}') center / cover no-repeat !important;
+  }
+  {% endif %}
+</style>
+
+<div class="explore-hero">
+    <div class="explore-hero-content">
+        <h1>{{ hero.title }}</h1>
+        <p>{{ hero.subtitle }}</p>
+        <div class="hero-search-wrap">
+            <input type="text" id="hero-search-input" placeholder="Rechercher un utilisateur, un post…"
+                   onkeydown="if(event.key==='Enter') doHeroSearch()">
+            <a class="hero-search-btn" onclick="doHeroSearch()">
+                <span class="material-icons">search</span> Rechercher
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     MAIN WRAPPER
+     ═══════════════════════════════════ -->
+<div class="explore-wrapper">
+
+    <!-- ─── SIDEBAR ─── -->
+    <aside class="explore-sidebar">
+
+        <!-- Continents -->
+        {% if continent %}
+        <div class="ex-card">
+            <p class="ex-card-title">Continents</p>
+            {% for c in continent %}
+            <div class="continent-item">
+                <span class="continent-dot"></span>
+                {{ c.name }}
+                <span class="continent-count">
+                    {{ c.country_set.count }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Countries -->
+        {% if countries %}
+        <div class="ex-card">
+            <p class="ex-card-title">Pays ({{ countries|length }})</p>
+            <div class="country-tags">
+                {% for country in countries|slice:":24" %}
+                <span class="country-tag">{{ country.name }}</span>
+                {% endfor %}
+                {% if countries|length > 24 %}
+                <span class="country-tag" style="opacity:.6;">+{{ countries|length|add:"-24" }} autres</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- CTA -->
+        <div class="ex-card">
+            <div class="sidebar-cta">
+                {% if user.is_authenticated %}
+                <p>Envie de partager quelque chose avec la communauté ?</p>
+                <a class="sidebar-cta-btn cta-primary" href="{% url 'post:addPost' %}">
+                    <span class="material-icons" style="font-size:.9rem;vertical-align:middle;">add</span>
+                    Créer un post
+                </a>
+                <a class="sidebar-cta-btn cta-secondary" href="{% url 'post:post-view' %}">
+                    Mon fil d'actualité
+                </a>
+                {% else %}
+                <p>Rejoignez ZOOT pour publier, commenter et interagir avec la communauté.</p>
+                <a class="sidebar-cta-btn cta-primary" href="{% url 'register' %}">Créer un compte</a>
+                <a class="sidebar-cta-btn cta-secondary" href="{% url 'login' %}">Se connecter</a>
+                {% endif %}
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ─── MAIN ─── -->
+    <div class="explore-main">
+
+        <!-- Stats strip -->
+        <div class="stats-strip">
+            <div class="stat-chip">
+                <span class="material-icons">article</span>
+                <strong>{{ recent_posts|length }}</strong>&nbsp;posts récents
+            </div>
+            {% if continent %}
+            <div class="stat-chip">
+                <span class="material-icons">public</span>
+                <strong>{{ continent|length }}</strong>&nbsp;continents
+            </div>
+            {% endif %}
+            {% if countries %}
+            <div class="stat-chip">
+                <span class="material-icons">flag</span>
+                <strong>{{ countries|length }}</strong>&nbsp;pays
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Posts section -->
+        <div class="section-head">
+            <h2>
+                <span class="material-icons">explore</span>
+                Publications récentes
+            </h2>
+            {% if user.is_authenticated %}
+            <a class="section-head-link" href="{% url 'post:post-view' %}">
+                Voir mon fil →
+            </a>
+            {% else %}
+            <a class="section-head-link" href="{% url 'login' %}">
+                Se connecter pour voir plus →
+            </a>
+            {% endif %}
+        </div>
+
+        {% if recent_posts %}
+        <div class="posts-grid" id="posts-grid">
+            {% for post in recent_posts %}
+            <div class="explore-post-card">
+
+                <!-- Thumbnail -->
+                {% if post.header_image %}
+                <img class="epc-thumb" src="{{ post.header_image.url }}" alt="{{ post.title }}">
+                {% else %}
+                <div class="epc-thumb-placeholder">
+                    <span class="material-icons">article</span>
+                </div>
+                {% endif %}
+
+                <!-- Body -->
+                <div class="epc-body">
+                    <div class="epc-author">
+                        <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+                        <span class="epc-author-name">{{ post.author.username }}</span>
+                    </div>
+                    <div class="epc-title">{{ post.title }}</div>
+                    {% if post.snippet and post.snippet != 'click the link above.' %}
+                    <div class="epc-body-excerpt">{{ post.snippet }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Footer -->
+                <div class="epc-footer">
+                    <span class="likes">
+                        <span class="material-icons">thumb_up</span>
+                        {{ post.total_likes }}
+                    </span>
+                    <span class="epc-date">{{ post.post_date|date:"d M Y" }}</span>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if user.is_authenticated %}
+        <div style="text-align:center; margin-top:1.5rem;">
+            <a href="{% url 'post:post-view' %}"
+               style="display:inline-flex; align-items:center; gap:.4rem; padding:.65rem 1.8rem;
+                      background:var(--accent); color:#fff; border-radius:10px;
+                      font-weight:700; text-decoration:none; font-size:.95rem;
+                      transition:background .15s;">
+                <span class="material-icons" style="font-size:1rem;">dynamic_feed</span>
+                Voir mon fil d'actualité complet
+            </a>
+        </div>
+        {% else %}
+        <div style="text-align:center; margin-top:1.5rem;">
+            <a href="{% url 'register' %}"
+               style="display:inline-flex; align-items:center; gap:.4rem; padding:.65rem 1.8rem;
+                      background:var(--accent); color:#fff; border-radius:10px;
+                      font-weight:700; text-decoration:none; font-size:.95rem;">
+                <span class="material-icons" style="font-size:1rem;">person_add</span>
+                Rejoindre ZOOT pour voir plus
+            </a>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="explore-empty">
+            <span class="material-icons">explore_off</span>
+            <h5>Aucun post à explorer pour l'instant</h5>
+            <p>Soyez le premier à publier quelque chose sur ZOOT.</p>
+            {% if user.is_authenticated %}
+            <a href="{% url 'post:addPost' %}"
+               style="display:inline-flex;align-items:center;gap:.4rem;margin-top:1rem;
+                      padding:.55rem 1.4rem;background:var(--accent);color:#fff;
+                      border-radius:10px;font-weight:700;text-decoration:none;">
+                <span class="material-icons" style="font-size:1rem;">add</span> Créer le premier post
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div><!-- /explore-main -->
+
+</div><!-- /explore-wrapper -->
+
+<script>
+function doHeroSearch() {
+    var q = document.getElementById('hero-search-input').value.trim();
+    if (q) {
+        window.location.href = "{% url 'search' %}?q=" + encodeURIComponent(q);
+    }
+}
+
+/* ── Live client-side filter on post cards ── */
+(function(){
+    var input = document.getElementById('hero-search-input');
+    if (!input) return;
+    input.addEventListener('input', function(){
+        var q = this.value.toLowerCase();
+        var cards = document.querySelectorAll('#posts-grid .explore-post-card');
+        cards.forEach(function(card){
+            var title  = (card.querySelector('.epc-title')  || {}).textContent || '';
+            var author = (card.querySelector('.epc-author-name') || {}).textContent || '';
+            card.style.display = (title + author).toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+})();
+</script>
+
+{% endblock content %}
