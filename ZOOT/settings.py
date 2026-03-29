@@ -223,8 +223,13 @@ if CLOUDINARY_URL:
 
 TEMP = os.path.join(BASE_DIR, 'media_cdn/temp')
 
-# Taille max d'un fichier uploadé via formulaire (10 Mo)
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+# Taille max des données POST non-fichier (formulaires, crop base64, etc.)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024   # 100 Mo
+
+# Taille max d'un fichier maintenu en mémoire avant d'être streamé sur disque.
+# Au-delà de cette valeur, Django écrit dans un fichier temporaire.
+# (N'est PAS une limite dure sur la taille du fichier uploadé.)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024    # 10 Mo (seuil mémoire↔disque)
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 

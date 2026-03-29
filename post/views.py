@@ -113,18 +113,25 @@ class AddPostView(CreateView):
         except FriendList.DoesNotExist:
             friends = []
 
-        channel_layer = get_channel_layer()
-        for friend in friends:
-            async_to_sync(channel_layer.group_send)(
-                f"user_{friend.id}",
-                {
-                    "type": "new_post_notification",
-                    "from_username": author.username,
-                    "from_image":    author.profile_image.url,
-                    "post_title":    post.title,
-                    "post_id":       post.id,
-                }
-            )
+        # Notifier via WebSocket — enveloppé dans try/except :
+        # si Redis est indisponible ou channel_layer=None, le post est quand même
+        # sauvegardé et l'utilisateur est redirigé normalement (pas de 500).
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                for friend in friends:
+                    async_to_sync(channel_layer.group_send)(
+                        f"user_{friend.id}",
+                        {
+                            "type": "new_post_notification",
+                            "from_username": author.username,
+                            "from_image":    author.profile_image.url,
+                            "post_title":    post.title,
+                            "post_id":       post.id,
+                        }
+                    )
+        except Exception:
+            pass  # échec WebSocket non bloquant : le post existe déjà en base
 
         return response
 
