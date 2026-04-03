@@ -244,11 +244,36 @@ def edit_account_view(request, *args, **kwargs):
 	if request.POST:
 		form = AccountUpdateForm(request.POST, request.FILES, instance=request.user)
 		if form.is_valid():
+			# delete the old profile image so the name is preserved.
+			#account.profile_image.delete() # ilay contraire foana no mahazo anah fa io ny form tena tokony ho izy.
 			form.save()
 			return redirect("account:view", user_id=account.pk)
+		else:
+			form = AccountUpdateForm(request.POST, instance=request.user,
+				initial={
+					"id":            account.pk,
+					"email":         account.email,
+					"username":      account.username,
+					"profile_image": account.profile_image,
+					"hide_email":    account.hide_email,
+					"bio":           account.bio,
+					"location":      account.location,
+				}
+			)
+			context['form'] = form
 	else:
-		form = AccountUpdateForm(instance=request.user)
-	context['form'] = form
+		form = AccountUpdateForm(
+			initial={
+					"id":            account.pk,
+					"email":         account.email,
+					"username":      account.username,
+					"profile_image": account.profile_image,
+					"hide_email":    account.hide_email,
+					"bio":           account.bio,
+					"location":      account.location,
+				}
+			)
+		context['form'] = form
 	context['DATA_UPLOAD_MAX_MEMORY_SIZE'] = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
 	return render(request, "account/edit_account.html", context)
 
@@ -256,8 +281,10 @@ def edit_account_view(request, *args, **kwargs):
 def save_temp_profile_image_from_base64String(imageString, user):
 	INCORRECT_PADDING_EXCEPTION = "Incorrect padding"
 	try:
-		# os.makedirs crée tous les dossiers parents si nécessaire (important sur Railway)
-		os.makedirs(settings.TEMP + "/" + str(user.pk), exist_ok=True)
+		if not os.path.exists(settings.TEMP):
+			os.mkdir(settings.TEMP)
+		if not os.path.exists(settings.TEMP + "/" + str(user.pk)):
+			os.mkdir(settings.TEMP + "/" + str(user.pk))
 		url = os.path.join(settings.TEMP + "/" + str(user.pk),TEMP_PROFILE_IMAGE_NAME)
 		storage = FileSystemStorage(location=url)
 		image = base64.b64decode(imageString)
@@ -299,11 +326,8 @@ def crop_image(request, *args, **kwargs):
 
 			crop_img.save(url)
 
-			# delete the old image (best-effort -- may fail if stored on Cloudinary with a legacy local path)
-			try:
-				user.profile_image.delete()
-			except Exception:
-				pass
+			# delete the old image
+			user.profile_image.delete()
 
 			# Save the cropped image to user model
 			with open(url, 'rb') as image_file:

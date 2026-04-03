@@ -201,7 +201,7 @@
                 </div>
                 <div class="image-container" id="id_image_container">
                     <img class="rounded-circle" id="id_profile_image_display"
-                         src="{{ form.instance.profile_image.url }}" alt="avatar">
+                         src="{{ form.initial.profile_image.url }}" alt="avatar">
                     <div id="id_middle_container">
                         <div id="id_text">
                             <span class="material-icons" style="font-size:.95rem;">photo_camera</span>
@@ -237,7 +237,7 @@
                         <span class="material-icons">mail_outline</span>
                         <input type="email" name="email" id="id_input_email"
                                placeholder="votre@email.com" required
-                               value="{{ form.email.value }}">
+                               value="{{ form.initial.email }}">
                     </div>
                 </div>
 
@@ -247,7 +247,7 @@
                         <span class="material-icons">alternate_email</span>
                         <input type="text" name="username" id="id_input_username"
                                placeholder="nom_utilisateur" required
-                               value="{{ form.username.value }}">
+                               value="{{ form.initial.username }}">
                     </div>
                 </div>
 
@@ -258,7 +258,7 @@
                     <div class="edit-textarea-wrap">
                         <span class="material-icons">edit_note</span>
                         <textarea name="bio" id="id_input_bio"
-                                  placeholder="Parlez un peu de vous…">{{ form.bio.value }}</textarea>
+                                  placeholder="Parlez un peu de vous…">{{ form.initial.bio }}</textarea>
                     </div>
                 </div>
 
@@ -268,7 +268,7 @@
                         <span class="material-icons">location_on</span>
                         <input type="text" name="location" id="id_input_location"
                                placeholder="Ville, Pays"
-                               value="{{ form.location.value }}">
+                               value="{{ form.initial.location }}">
                     </div>
                 </div>
 
@@ -277,7 +277,7 @@
                 <div class="edit-field">
                     <label class="edit-checkbox-wrap" for="id_input_hide_email">
                         <input type="checkbox" name="hide_email" id="id_input_hide_email"
-                               {% if form.hide_email.value %}checked{% endif %}>
+                               {% if form.initial.hide_email %}checked{% endif %}>
                         <span>Masquer mon adresse e-mail aux autres utilisateurs</span>
                     </label>
                 </div>
@@ -326,8 +326,10 @@
     function isImageSizeValid(image) {
         var startIndex = image.indexOf("base64,") + 7;
         var base64str = image.substr(startIndex);
-        var decoded = atob(base64str);
-        if (decoded.length >= "{{ DATA_UPLOAD_MAX_MEMORY_SIZE }}") return null;
+        // Calcul rapide de la taille en octets depuis la longueur base64 (sans atob qui bloque le navigateur)
+        var approxBytes = (base64str.length * 3) / 4;
+        var maxBytes = {{ DATA_UPLOAD_MAX_MEMORY_SIZE }};
+        if (approxBytes >= maxBytes) return null;
         return base64str;
     }
 
@@ -337,23 +339,23 @@
             displayLoadingSpinner(true);
             $.ajax({
                 type: 'POST', dataType: "json",
-                url: "{% url 'account:crop_image' user_id=form.instance.pk %}",
+                url: "{% url 'account:crop_image' user_id=form.initial.id %}",
                 data: {
                     "csrfmiddlewaretoken": "{{ csrf_token }}",
                     "image": base64ImageString,
                     "cropX": cropX, "cropY": cropY,
                     "cropWidth": cropWidth, "cropHeight": cropHeight
                 },
-                timeout: 10000,
+                timeout: 30000,
                 success: function(data) {
                     if (data.result == "success") { document.getElementById("id_cancel").click(); }
                     else if (data.result == "error") { alert(data.exception); document.getElementById("id_cancel").click(); }
                 },
-                error: function(data) { console.error("ERROR...", data); },
+                error: function(data) { console.error("Erreur crop image:", data); },
                 complete: function(data) { displayLoadingSpinner(false); }
             });
         } else {
-            alert("Choisissez une image de moins de 10 Mo.");
+            alert("Choisissez une image de moins de 20 Mo.");
             document.getElementById("id_cancel").click();
         }
     }
