@@ -452,6 +452,11 @@ main { padding: 0 !important; margin-top: 62px; }
                 </div>
             </a>
 
+            <!-- WebSocket status dot -->
+            <span id="ws-status-dot"
+                  style="width:9px;height:9px;border-radius:50%;background:#aaa;display:inline-block;margin-left:auto;flex-shrink:0;"
+                  title="En attente de connexion…"></span>
+
             <!-- No conversation selected placeholder -->
             <div id="chat-no-selection" style="color:var(--text-muted);font-size:.9rem;">
                 <span class="material-icons" style="vertical-align:middle;font-size:1.1rem;margin-right:6px;">touch_app</span>
@@ -483,7 +488,7 @@ main { padding: 0 !important; margin-top: 62px; }
                     <textarea id="id_chat_message_input"
                               placeholder="Écrire un message…"
                               rows="1"></textarea>
-                    <button id="id_chat_message_submit" class="chat-send-btn" title="Envoyer (Entrée)">
+                    <button type="button" id="id_chat_message_submit" class="chat-send-btn" title="Envoyer (Entrée)" onclick="sendMessage()">
                         <span class="material-icons">send</span>
                     </button>
                 </div>
@@ -590,6 +595,14 @@ main { padding: 0 !important; margin-top: 62px; }
         if(sidebar && window.innerWidth <= 768){ sidebar.classList.remove('open'); }
     }
 
+    /* ── Indicateur de statut WebSocket ─────────────────────────── */
+    function setWsIndicator(connected){
+        var dot = document.getElementById('ws-status-dot');
+        if(!dot) return;
+        dot.style.background = connected ? '#4caf7d' : '#e53935';
+        dot.title = connected ? 'Chat connecté' : 'Chat déconnecté';
+    }
+
     function closeWebSocket(){
         if(chatSocket != null){
             chatSocket.close()
@@ -607,9 +620,23 @@ main { padding: 0 !important; margin-top: 62px; }
         if(!msg) return;
         // Vérifie que le WebSocket est bien ouvert avant d'envoyer
         if(!chatSocket || chatSocket.readyState !== WebSocket.OPEN){
-            console.warn("WebSocket non prêt (état: " + (chatSocket ? chatSocket.readyState : 'null') + ") — message ignoré");
+            var state = chatSocket ? chatSocket.readyState : 'null';
+            console.warn("WebSocket non prêt (état: " + state + ") — tentative de reconnexion");
+            // Feedback visible à l'utilisateur
+            var chatLog = document.getElementById('id_chat_log');
+            if(chatLog){
+                var errDiv = document.createElement('div');
+                errDiv.style.cssText = 'text-align:center;color:#e53935;font-size:.8rem;padding:.3rem;';
+                errDiv.textContent = '⚠ Connexion perdue. Rechargement en cours…';
+                chatLog.insertBefore(errDiv, chatLog.firstChild);
+            }
+            // Si la socket est fermée (3) ou manquante, et qu'on a un roomId, on retente
+            if(roomId && (!chatSocket || chatSocket.readyState === WebSocket.CLOSED)){
+                setTimeout(function(){ setupWebSocket(roomId); }, 500);
+            }
             return;
         }
+        console.log("sendMessage: envoi room=" + roomId + " msg=" + msg.substring(0,30));
         chatSocket.send(JSON.stringify({ "command": "send", "message": msg, "room": roomId }));
         inputEl.value = '';
         if(inputEl.style) inputEl.style.height = 'auto';
@@ -664,12 +691,19 @@ main { padding: 0 !important; margin-top: 62px; }
 
         chatSocket.addEventListener("open", function(e){
             console.log("ChatSocket OPEN")
+            setWsIndicator(true);
             if("{{ request.user.is_authenticated }}"){
                 chatSocket.send(JSON.stringify({ "command": "join", "room": roomId }))
             }
         })
-        chatSocket.onclose  = function(e){ console.log('Chat socket closed.'); };
-        chatSocket.onerror  = function(e){ console.log('ChatSocket error', e); }
+        chatSocket.onclose  = function(e){
+            console.log('Chat socket closed. Code:', e.code, 'Reason:', e.reason);
+            setWsIndicator(false);
+        };
+        chatSocket.onerror  = function(e){
+            console.log('ChatSocket error', e);
+            setWsIndicator(false);
+        };
 
         if (chatSocket.readyState == WebSocket.OPEN) {
             console.log("ChatSocket OPEN")
