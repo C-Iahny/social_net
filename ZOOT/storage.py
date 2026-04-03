@@ -14,9 +14,19 @@ Deux problèmes à résoudre avec WhiteNoise 6.x :
    → On surcharge stored_name() pour retourner le nom original en fallback.
 """
 import logging
+import warnings
 from whitenoise.storage import CompressedManifestStaticFilesStorage, MissingFileError
 
 logger = logging.getLogger(__name__)
+
+# CKEditor référence des assets (PNG/SVG/GIF) absents du manifeste → Django émet
+# des RuntimeWarning très verbeux à chaque collectstatic. On les supprime ici
+# car ils ne représentent aucun vrai problème de fonctionnement.
+warnings.filterwarnings(
+    "ignore",
+    message=r"The CSS file .* references a file which could not be found",
+    category=RuntimeWarning,
+)
 
 
 class RelaxedStaticFilesStorage(CompressedManifestStaticFilesStorage):
@@ -42,12 +52,13 @@ class RelaxedStaticFilesStorage(CompressedManifestStaticFilesStorage):
         re-lève l'exception dans collect(). Il faut donc inspecter chaque
         tuple et supprimer ceux qui contiennent une erreur de fichier manquant.
         """
+        skipped = []
         gen = super().post_process(paths, dry_run=dry_run, **options)
         while True:
             try:
                 result = next(gen)
             except StopIteration:
-                return
+                break
             except Exception as e:
                 # Exception levée directement (cas rare) → on log et on ignore
                 logger.warning("collectstatic: exception ignorée — %s", e)
@@ -62,8 +73,15 @@ class RelaxedStaticFilesStorage(CompressedManifestStaticFilesStorage):
                 and any(isinstance(result[i], Exception) for i in range(len(result)))
             )
             if has_error:
-                exc = next(r for r in result if isinstance(r, Exception))
-                logger.warning("collectstatic: post-process ignoré pour '%s' — %s", result[0], exc)
+                skipped.append(result[0])
                 # Ne pas yield → Django ne verra jamais l'erreur
             else:
                 yield result
+
+        if skipped:
+            logger.warning(
+                "collectstatic: %d fichier(s) ignoré(s) pour cause d'assets manquants "
+                "(principalement CKEditor). Premier : %s",
+                len(skipped),
+                skipped[0],
+            )
