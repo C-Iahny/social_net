@@ -190,12 +190,13 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		# get list of connected_users
 		connected_users = room.connected_users.all()
 
-		# Execute these functions asychronously
-		await asyncio.gather(*[
-			append_unread_msg_if_not_connected(room, room.user1, connected_users, message), 
+		# Execute these functions asynchronously; capture msg_id for avatar lookup
+		results = await asyncio.gather(
+			append_unread_msg_if_not_connected(room, room.user1, connected_users, message),
 			append_unread_msg_if_not_connected(room, room.user2, connected_users, message),
-			create_room_chat_message(room, self.scope["user"], message)
-		])
+			create_room_chat_message(room, self.scope["user"], message),
+		)
+		msg_obj = results[2]  # RoomChatMessage instance
 
 		await self.channel_layer.group_send(
 			room.group_name,
@@ -205,6 +206,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				"username": self.scope["user"].username,
 				"user_id": self.scope["user"].id,
 				"message": message,
+				"msg_id": msg_obj.id,
 			}
 		)
 
@@ -264,6 +266,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				"profile_image": event["profile_image"],
 				"message": event["message"],
 				"natural_timestamp": timestamp,
+				"msg_id": event.get("msg_id"),
 			},
 		)
 
