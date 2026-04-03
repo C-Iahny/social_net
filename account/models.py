@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.files.storage import FileSystemStorage
-from django.db.models.fields.files import ImageFieldFile, ImageField
 from django.conf import settings
 import os
 from django.db.models.signals import post_save
@@ -12,26 +11,6 @@ import uuid
 
 from friend.models import FriendList
 from django.contrib.auth import get_user_model
-
-
-class ProfileImageFieldFile(ImageFieldFile):
-    """ImageFieldFile qui retourne l'image statique par défaut en cas d'échec."""
-    @property
-    def url(self):
-        name = str(self.name) if self.name else ''
-        # Image par défaut ou champ vide → URL statique (évite un 404 Cloudinary)
-        if not name or name == 'images/profile_pic.png':
-            from django.templatetags.static import static
-            return static('images/profile_pic.png')
-        try:
-            return super().url
-        except Exception:
-            from django.templatetags.static import static
-            return static('images/profile_pic.png')
-
-
-class ProfileImageField(ImageField):
-    attr_class = ProfileImageFieldFile
 
 
 class MyAccountManager(BaseUserManager):
@@ -79,7 +58,7 @@ class Account(AbstractBaseUser):
 	is_active				= models.BooleanField(default=True)
 	is_staff				= models.BooleanField(default=False)
 	is_superuser			= models.BooleanField(default=False)
-	profile_image			= ProfileImageField(max_length=255, upload_to=get_profile_image_filepath, null=True, blank=True, default=get_default_profile_image)
+	profile_image			= models.ImageField(max_length=255, upload_to=get_profile_image_filepath, null=True, blank=True, default=get_default_profile_image)
 	hide_email				= models.BooleanField(default=True)
 # From Tomi -----------------------------------------------
 	bio = models.TextField(blank=True)
