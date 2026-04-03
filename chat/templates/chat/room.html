@@ -605,17 +605,43 @@ main { padding: 0 !important; margin-top: 62px; }
         }
     }
 
+    /* ── Handlers Send bouton + touche Entrée ───────────────────────
+       IMPORTANT : enregistrés ICI au niveau global, PAS dans appendChatMessage().
+       Avant ce fix, ils n'étaient enregistrés que lors de la réception d'un
+       message WebSocket → boutons totalement morts sur une conversation vide.
+    ──────────────────────────────────────────────────────────────── */
+    document.addEventListener("DOMContentLoaded", function(){
+        var submitBtn = document.getElementById('id_chat_message_submit');
+        var inputEl   = document.getElementById('id_chat_message_input');
+        if(submitBtn){
+            submitBtn.onclick = function(e){
+                var msg = inputEl ? inputEl.value.trim() : '';
+                if(!msg || !chatSocket) return;
+                chatSocket.send(JSON.stringify({ "command": "send", "message": msg, "room": roomId }));
+                inputEl.value = '';
+                if(inputEl.style) inputEl.style.height = 'auto';
+            };
+        }
+        if(inputEl){
+            inputEl.onkeyup = function(e){
+                if(e.keyCode === 13 && e.shiftKey){ /* saut de ligne */ }
+                else if(e.keyCode === 13 && !e.shiftKey){
+                    e.preventDefault();
+                    if(submitBtn) submitBtn.click();
+                }
+            };
+        }
+    });
+
     function setupWebSocket(room_id){
         console.log("setupWebSocket: " + room_id)
         roomId = room_id
         closeWebSocket()
 
+        /* En production Railway, Daphne écoute sur window.location.host (pas :8001).
+           On utilise le même host pour dev et prod. */
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-        {% if debug_mode %}
-            var ws_path = ws_scheme + '://' + window.location.host + "/chat/" + roomId + "/";
-        {% else %}
-            var ws_path = ws_scheme + '://' + window.location.host + ":8001/chat/" + roomId + "/";
-        {% endif %}
+        var ws_path = ws_scheme + '://' + window.location.host + "/chat/" + roomId + "/";
 
         chatSocket = new WebSocket(ws_path);
 
@@ -694,22 +720,6 @@ main { padding: 0 !important; margin-top: 62px; }
 
         var input = document.getElementById('id_chat_message_input');
         if(input) input.focus();
-        input.onkeyup = function(e) {
-            if (e.keyCode === 13 && e.shiftKey) { /* line break — handled by textarea */ }
-            else if(e.keyCode === 13 && !e.shiftKey){
-                e.preventDefault();
-                document.getElementById('id_chat_message_submit').click();
-            }
-        };
-
-        document.getElementById('id_chat_message_submit').onclick = function(e) {
-            var inputDom = document.getElementById('id_chat_message_input');
-            var msg = inputDom.value.trim();
-            if(!msg) return;
-            chatSocket.send(JSON.stringify({ "command": "send", "message": msg, "room": roomId }));
-            inputDom.value = '';
-            inputDom.style.height = 'auto';
-        };
 
         /* ── System message (join / leave) ── */
         function createConnectedDisconnectedElement(msg, msd_id, profile_image, user_id){
@@ -740,7 +750,7 @@ main { padding: 0 !important; margin-top: 62px; }
         // Avatar
         var avatar = document.createElement("img");
         avatar.classList.add("profile-image", "rounded-circle");
-        avatar.src = "{% static 'images/profile_pic.png' %}";
+        avatar.src = profile_image || "{% static 'images/profile_pic.png' %}";
         var avatarId = "id_profile_image_" + msg_id;
         avatar.id = avatarId;
         avatar.addEventListener("click", function(){ selectUser(user_id); });
@@ -795,7 +805,6 @@ main { padding: 0 !important; margin-top: 62px; }
         }
 
         if(!maintainPosition){ chatLog.scrollTop = chatLog.scrollHeight; }
-        preloadImage(profile_image, avatarId);
     }
 
     function clearChatLog(){

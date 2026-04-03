@@ -100,6 +100,8 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 					await self.send_unread_general_notification_count(payload['count'])
 			elif command == "mark_notifications_read":
 				await mark_notifications_read(self.scope["user"])
+				# Immediately confirm to the client so the badge resets without waiting for the next poll
+				await self.send_unread_general_notification_count(0)
 
 			elif command == "get_chat_notifications":
 				payload = await get_chat_notifications(self.scope["user"], content.get("page_number", None))
