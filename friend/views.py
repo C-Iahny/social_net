@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import json
 
 from account.models import Account
@@ -42,7 +42,7 @@ def friend_requests(request, *args, **kwargs):
 			friend_requests = FriendRequest.objects.filter(receiver=account, is_active=True)
 			context['friend_requests'] = friend_requests
 		else:
-			return HttpResponse("You can't view another users friend requets.")
+			return HttpResponse("You can't view another users friend requests.")
 	else:
 		return redirect("login")
 	return render(request, "friend/friend_requests.html", context)
@@ -135,8 +135,8 @@ def cancel_friend_request(request, *args, **kwargs):
 
 			# There should only ever be ONE active friend request at any given time. Cancel them all just in case.
 			if len(friend_requests) > 1:
-				for request in friend_requests:
-					request.cancel()
+				for friend_req in friend_requests:
+					friend_req.cancel()
 				payload['response'] = "Friend request canceled."
 			else:
 				# found the request. Now cancel it
