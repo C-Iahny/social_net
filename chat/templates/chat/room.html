@@ -483,8 +483,8 @@ main { padding: 0 !important; margin-top: 62px; }
                     <textarea id="id_chat_message_input"
                               placeholder="Écrire un message…"
                               rows="1"></textarea>
-                    <button class="chat-send-btn" title="Envoyer (Entrée)">
-                        <span id="id_chat_message_submit" class="material-icons">send</span>
+                    <button id="id_chat_message_submit" class="chat-send-btn" title="Envoyer (Entrée)">
+                        <span class="material-icons">send</span>
                     </button>
                 </div>
                 <div class="input-hint">Entrée pour envoyer · Maj+Entrée pour aller à la ligne</div>
@@ -560,19 +560,14 @@ main { padding: 0 !important; margin-top: 62px; }
     onStart()
 
     function onStart(){
+        // Un seul appel à onSelectFriend pour éviter la double connexion WebSocket
         {% if room %}
             if("{{ room.user1 }}" == "{{ request.user }}"){
                 onSelectFriend("{{ room.user2.id }}")
             } else {
                 onSelectFriend("{{ room.user1.id }}")
             }
-        {% else %}
-            {% if m_and_f %}
-                onSelectFriend("{{ m_and_f.0.friend.id }}")
-            {% endif %}
-        {% endif %}
-
-        {% if m_and_f %}
+        {% elif m_and_f %}
             onSelectFriend("{{ m_and_f.0.friend.id }}")
         {% endif %}
         {% for x in m_and_f %}
@@ -605,31 +600,41 @@ main { padding: 0 !important; margin-top: 62px; }
         }
     }
 
-    /* ── Handlers Send bouton + touche Entrée ───────────────────────
-       IMPORTANT : enregistrés ICI au niveau global, PAS dans appendChatMessage().
-       Avant ce fix, ils n'étaient enregistrés que lors de la réception d'un
-       message WebSocket → boutons totalement morts sur une conversation vide.
-    ──────────────────────────────────────────────────────────────── */
+    /* ── Helpers envoi ─────────────────────────────────────────── */
+    function sendMessage(){
+        var inputEl = document.getElementById('id_chat_message_input');
+        var msg = inputEl ? inputEl.value.trim() : '';
+        if(!msg) return;
+        // Vérifie que le WebSocket est bien ouvert avant d'envoyer
+        if(!chatSocket || chatSocket.readyState !== WebSocket.OPEN){
+            console.warn("WebSocket non prêt (état: " + (chatSocket ? chatSocket.readyState : 'null') + ") — message ignoré");
+            return;
+        }
+        chatSocket.send(JSON.stringify({ "command": "send", "message": msg, "room": roomId }));
+        inputEl.value = '';
+        if(inputEl.style) inputEl.style.height = 'auto';
+        inputEl.focus();
+    }
+
+    /* ── Handlers Send bouton + touche Entrée ─────────────────── */
     document.addEventListener("DOMContentLoaded", function(){
         var submitBtn = document.getElementById('id_chat_message_submit');
         var inputEl   = document.getElementById('id_chat_message_input');
+        // Le onclick est sur le <button> (id_chat_message_submit), pas sur le <span> intérieur
         if(submitBtn){
-            submitBtn.onclick = function(e){
-                var msg = inputEl ? inputEl.value.trim() : '';
-                if(!msg || !chatSocket) return;
-                chatSocket.send(JSON.stringify({ "command": "send", "message": msg, "room": roomId }));
-                inputEl.value = '';
-                if(inputEl.style) inputEl.style.height = 'auto';
-            };
+            submitBtn.addEventListener('click', function(e){
+                e.preventDefault();
+                sendMessage();
+            });
         }
         if(inputEl){
-            inputEl.onkeyup = function(e){
-                if(e.keyCode === 13 && e.shiftKey){ /* saut de ligne */ }
-                else if(e.keyCode === 13 && !e.shiftKey){
+            inputEl.addEventListener('keydown', function(e){
+                if(e.key === 'Enter' && !e.shiftKey){
                     e.preventDefault();
-                    if(submitBtn) submitBtn.click();
+                    sendMessage();
                 }
-            };
+                // Shift+Enter → saut de ligne naturel (comportement par défaut du textarea)
+            });
         }
     });
 
