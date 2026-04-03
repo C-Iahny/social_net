@@ -843,7 +843,11 @@ main { padding: 0 !important; margin-top: 62px; }
             chatLog.appendChild(row);
         }
 
-        if(!maintainPosition){ chatLog.scrollTop = chatLog.scrollHeight; }
+        /* Avec flex-direction: column-reverse, scrollTop=0 affiche le bas (messages récents).
+           scrollTop=scrollHeight afficherait le haut (anciens messages) — ce serait une erreur.
+           Pour les nouveaux messages en temps réel, on reste à 0 (bas visible).
+           Pour les messages historiques (maintainPosition=true), on ne touche pas. */
+        if(!maintainPosition){ chatLog.scrollTop = 0; }
     }
 
     function clearChatLog(){
