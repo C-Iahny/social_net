@@ -73,6 +73,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				await self.display_progress_bar(False)
 		except ClientError as e:
 			await self.handle_client_error(e)
+		except Exception as e:
+			print("ChatConsumer: receive_json: unhandled exception — " + str(e))
+			import traceback; traceback.print_exc()
+			await self.send_json({"error": 500, "message": "Une erreur interne s'est produite."})
 
 
 	async def disconnect(self, code):
@@ -187,8 +191,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		# Get the room and send to the group about it
 		room = await get_room_or_error(room_id, self.scope["user"])
 
-		# get list of connected_users
-		connected_users = room.connected_users.all()
+		# get list of connected_users — must go through database_sync_to_async
+		connected_users = await get_connected_users(room)
 
 		# Execute these functions asynchronously; capture msg_id for avatar lookup
 		results = await asyncio.gather(
@@ -393,6 +397,12 @@ def get_room_chat_messages(room, page_number):
 		print("EXCEPTION: " + str(e))
 	return None
 
+
+
+@database_sync_to_async
+def get_connected_users(room):
+	"""Return a QuerySet-evaluated list of users currently connected to the room."""
+	return list(room.connected_users.all())
 
 
 @database_sync_to_async
