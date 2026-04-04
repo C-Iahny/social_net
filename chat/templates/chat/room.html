@@ -442,7 +442,7 @@ main { padding: 0 !important; margin-top: 62px; }
                 <div class="friend-avatar-wrap">
                     <img class="rounded-circle"
                          id="id_friend_img_{{ x.friend.id }}"
-                         src="{{ friend.profile_image.url }}"
+                         src="{{ x.friend.profile_image.url }}"
                          alt="{{ x.friend.username }}">
                 </div>
                 <div class="friend-info">
@@ -866,22 +866,14 @@ main { padding: 0 !important; margin-top: 62px; }
 
         row.appendChild(wrap);
 
-        /* ── Date separator ── */
-        // timestamp is a string like "Dec. 5, 2024, 3:42 p.m." — extract the date part
+        /* ── Date separator ──
+           calculate_timestamp formats:
+             "today at 10:56 AM"  |  "yesterday at 5:19 PM"  |  "05/06/2020"
+           We extract the date part only (before " at ") as the group key. */
         var dateLabel = '';
         if(timestamp){
-            // Split on comma to get e.g. "Dec. 5" vs "2024, 3:42 p.m."
-            var parts = timestamp.split(',');
-            if(parts.length >= 2){
-                var today = new Date();
-                var todayStr = today.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
-                var yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
-                var yesterdayStr = yesterday.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
-                // Use full date (month + day + year) as cache key, strip time
-                dateLabel = (parts[0] + ',' + parts[1]).trim();
-            } else {
-                dateLabel = parts[0].trim();
-            }
+            var atIdx = timestamp.indexOf(' at ');
+            dateLabel = (atIdx !== -1) ? timestamp.substring(0, atIdx).trim() : timestamp.trim();
         }
         if(dateLabel && dateLabel !== _lastSeenDate){
             var sep = _makeDateSeparator(dateLabel);
