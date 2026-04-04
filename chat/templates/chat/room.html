@@ -680,12 +680,16 @@ main { padding: 0 !important; margin-top: 62px; }
         chatSocket.onmessage = function(message) {
             console.log("Got websocket message.");
             var data = JSON.parse(message.data);
+            console.log("WS data keys:", Object.keys(data), "msg_type:", data.msg_type, "error:", data.error);
             displayChatroomLoadingSpinner(data.display_progress_bar)
-            if (data.error) { console.error(data.error + ": " + data.message); return; }
+            if (data.error) { console.error("WS error from server:", data.error, data.message); return; }
             if (data.join)  { console.log("Joining room " + data.join); getUserInfo(); getRoomChatMessages(); enableChatLogScrollListener(); }
             if (data.leave) { console.log("Leaving room " + data.leave); }
             if (data.user_info) { handleUserInfoPayload(data.user_info) }
-            if (data.msg_type == 0 || data.msg_type == 1 || data.msg_type == 2) { appendChatMessage(data, false, true) }
+            if (data.msg_type == 0 || data.msg_type == 1 || data.msg_type == 2) {
+                console.log("appendChatMessage called, msg_type=" + data.msg_type + " msg=" + String(data.message).substring(0,40));
+                appendChatMessage(data, false, true);
+            }
             if (data.messages_payload) { handleMessagesPayload(data.messages, data.new_page_number) }
         };
 
@@ -823,7 +827,12 @@ main { padding: 0 !important; margin-top: 62px; }
         // Bubble
         var bubble = document.createElement("p");
         bubble.classList.add("msg-p");
-        bubble.innerHTML = validateText(msg);
+        try {
+            bubble.innerHTML = validateText(msg);
+        } catch(e) {
+            console.error("validateText error:", e);
+            bubble.textContent = msg;
+        }
         wrap.appendChild(bubble);
 
         // Timestamp for own messages (below bubble)
@@ -838,7 +847,9 @@ main { padding: 0 !important; margin-top: 62px; }
         row.appendChild(wrap);
 
         if(isNewMessage){
+            console.log("insertBefore: chatLog.children=" + chatLog.children.length + " scrollTop before=" + chatLog.scrollTop);
             chatLog.insertBefore(row, chatLog.firstChild);
+            console.log("insertBefore done: chatLog.children=" + chatLog.children.length);
         } else {
             chatLog.appendChild(row);
         }
