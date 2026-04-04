@@ -221,15 +221,23 @@ def account_view(request, *args, **kwargs):
 def account_search_view(request, *args, **kwargs):
 	context = {}
 	if request.method == "GET":
-		search_query = request.GET.get("q")
-		if len(search_query) > 0:
-			search_results = Account.objects.filter(username__icontains=search_query).distinct()#.filter(email__icontains=search_query) <== à mettre devant le 1er filter normalement.
+		search_query = request.GET.get("q", "").strip()
+		context['search_query'] = search_query
+		if search_query:
+			search_results = Account.objects.filter(username__icontains=search_query).distinct()
 			user = request.user
-			accounts = [] # [(account1, True), (account2, False), ...]
+			# Build friend set for logged-in user
+			friend_ids = set()
+			if user.is_authenticated:
+				try:
+					friend_ids = set(FriendList.objects.get(user=user).friends.values_list('id', flat=True))
+				except FriendList.DoesNotExist:
+					pass
+			accounts = []  # [(account, is_friend)]
 			for account in search_results:
-				accounts.append((account, False)) # you have no friends yet
+				is_friend = account.id in friend_ids
+				accounts.append((account, is_friend))
 			context['accounts'] = accounts
-				
 	return render(request, "account/search_results.html", context)
 
 
@@ -320,42 +328,4 @@ def crop_image(request, *args, **kwargs):
 			cropHeight = int(float(str(request.POST.get("cropHeight"))))
 			if cropX < 0:
 				cropX = 0
-			if cropY < 0: # There is a bug with cropperjs. y can be negative.
-				cropY = 0
-			crop_img = img.crop((cropX, cropY, cropX + cropWidth, cropY + cropHeight))
-
-			crop_img.save(url)
-
-			# delete the old image
-			user.profile_image.delete()
-
-			# Save the cropped image to user model
-			with open(url, 'rb') as image_file:
-				user.profile_image.save("profile_image.png", files.File(image_file))
-			user.save()
-
-			payload['result'] = "success"
-			payload['cropped_profile_image'] = user.profile_image.url
-
-			# delete temp file
-			os.remove(url)
-			
-		except Exception as e:
-			logger.error("crop_image exception: %s", e)
-			payload['result'] = "error"
-			payload['exception'] = str(e)
-	return HttpResponse(json.dumps(payload), content_type="application/json")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+			if cropY < 0: # There is a bug with cro
