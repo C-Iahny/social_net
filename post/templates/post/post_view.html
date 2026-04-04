@@ -748,9 +748,7 @@ body { background: var(--bg); }
                 <!-- Cover image -->
                 {% if post.header_image_url %}
                 <div class="pc-image-wrap">
-                    <a href="{{ post.header_image_url }}" target="_blank" rel="noopener">
-                        <img class="pc-image" src="{{ post.header_image_url }}" alt="{{ post.title }}">
-                    </a>
+                    <img class="pc-image" src="{{ post.header_image_url }}" alt="{{ post.title }}" data-lb>
                 </div>
                 {% endif %}
 

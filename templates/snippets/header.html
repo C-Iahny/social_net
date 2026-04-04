@@ -555,8 +555,8 @@
         {% if request.user.is_authenticated %}
 
         <!-- Search bar (desktop) -->
-        <form class="zoot-search-form d-none d-lg-flex" onsubmit="return executeQuery();">
-            <input type="text" name="q" id="id_q_large" placeholder="Rechercher…" autocomplete="off">
+        <form class="zoot-search-form d-none d-lg-flex" method="GET" action="{% url 'search' %}">
+            <input type="text" name="q" placeholder="Rechercher…" autocomplete="off">
             <button type="submit"><span class="material-icons">search</span></button>
         </form>
 
@@ -695,8 +695,8 @@
 <!-- Mobile expandable menu -->
 {% if request.user.is_authenticated %}
 <div class="zoot-mobile-menu" id="zoot-mobile-menu">
-    <form class="zoot-mobile-search" onsubmit="return executeQuery();">
-        <input type="text" name="q" id="id_q_small" placeholder="Rechercher…" autocomplete="off">
+    <form class="zoot-mobile-search" method="GET" action="{% url 'search' %}">
+        <input type="text" name="q" placeholder="Rechercher…" autocomplete="off">
         <button type="submit"><span class="material-icons" style="font-size:1.1rem;color:var(--text-muted)">search</span></button>
     </form>
     <a href="{% url 'post:post-view' %}" class="zoot-mobile-link">
