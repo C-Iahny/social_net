@@ -547,11 +547,6 @@
             <span class="material-icons">explore</span>
             <span>Explorer</span>
         </a>
-        <a href="{% url 'search' %}?q="
-           class="zoot-nav-link {% if 'search' in request.path %}active{% endif %}">
-            <span class="material-icons">manage_search</span>
-            <span>Recherche</span>
-        </a>
     </div>
 
     <!-- Right section -->
@@ -709,9 +704,6 @@
     </a>
     <a href="{% url 'post:index' %}" class="zoot-mobile-link">
         <span class="material-icons">explore</span> Explorer
-    </a>
-    <a href="{% url 'search' %}?q=" class="zoot-mobile-link">
-        <span class="material-icons">manage_search</span> Recherche
     </a>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
         <span class="material-icons">person_outline</span> Mon profil
