@@ -226,7 +226,6 @@ def account_search_view(request, *args, **kwargs):
 		if search_query:
 			search_results = Account.objects.filter(username__icontains=search_query).distinct()
 			user = request.user
-			# Build friend set for logged-in user
 			friend_ids = set()
 			if user.is_authenticated:
 				try:
@@ -235,8 +234,7 @@ def account_search_view(request, *args, **kwargs):
 					pass
 			accounts = []  # [(account, is_friend)]
 			for account in search_results:
-				is_friend = account.id in friend_ids
-				accounts.append((account, is_friend))
+				accounts.append((account, account.id in friend_ids))
 			context['accounts'] = accounts
 	return render(request, "account/search_results.html", context)
 
@@ -328,4 +326,42 @@ def crop_image(request, *args, **kwargs):
 			cropHeight = int(float(str(request.POST.get("cropHeight"))))
 			if cropX < 0:
 				cropX = 0
-			if cropY < 0: # There is a bug with cro
+			if cropY < 0: # There is a bug with cropperjs. y can be negative.
+				cropY = 0
+			crop_img = img.crop((cropX, cropY, cropX + cropWidth, cropY + cropHeight))
+
+			crop_img.save(url)
+
+			# delete the old image
+			user.profile_image.delete()
+
+			# Save the cropped image to user model
+			with open(url, 'rb') as image_file:
+				user.profile_image.save("profile_image.png", files.File(image_file))
+			user.save()
+
+			payload['result'] = "success"
+			payload['cropped_profile_image'] = user.profile_image.url
+
+			# delete temp file
+			os.remove(url)
+			
+		except Exception as e:
+			logger.error("crop_image exception: %s", e)
+			payload['result'] = "error"
+			payload['exception'] = str(e)
+	return HttpResponse(json.dumps(payload), content_type="application/json")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
