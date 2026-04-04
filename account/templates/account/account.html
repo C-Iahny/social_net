@@ -445,7 +445,7 @@
     <div class="profile-header">
         <div class="avatar-area">
             <div class="avatar-wrap">
-                <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}">
+                <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}" data-lb>
                 {% if is_self %}
                 <a class="avatar-edit-btn" href="{% url 'account:edit' user_id=id %}" title="Modifier la photo">
                     <span class="material-icons" style="font-size:1rem;">photo_camera</span>
@@ -628,7 +628,7 @@
                     <div class="mini-friends-grid">
                         {% for photo in photos|slice:":9" %}
                         <div class="mini-friend">
-                            <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
+                            <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}" data-lb>
                         </div>
                         {% endfor %}
                     </div>
@@ -683,9 +683,7 @@
                         {% endif %}
 
                         {% if post.header_image %}
-                        <a href="{{ post.header_image.url }}" target="_blank">
-                            <img class="post-image" src="{{ post.header_image.url }}" alt="{{ post.title }}">
-                        </a>
+                        <img class="post-image" src="{{ post.header_image.url }}" alt="{{ post.title }}" data-lb>
                         {% endif %}
 
                         <div class="post-footer">
@@ -723,9 +721,7 @@
         <div class="photos-grid">
             {% for photo in photos %}
             <div class="photo-thumb">
-                <a href="{{ photo.header_image.url }}" target="_blank">
-                    <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
-                </a>
+                <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}" data-lb>
             </div>
             {% endfor %}
         </div>

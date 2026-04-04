@@ -117,5 +117,191 @@
             else { spinner.style.display = "none"; }
         }
     </script>
+
+    <!-- ── Global Lightbox ───────────────────────────────────────────── -->
+    <style>
+    #zoot-lightbox {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0,0,0,.88);
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1rem;
+        animation: lbFadeIn .18s ease;
+        cursor: zoom-out;
+    }
+    #zoot-lightbox.open { display: flex; }
+    @keyframes lbFadeIn { from { opacity:0; } to { opacity:1; } }
+
+    #zoot-lightbox img {
+        max-width: min(92vw, 1100px);
+        max-height: 82vh;
+        border-radius: 10px;
+        box-shadow: 0 8px 48px rgba(0,0,0,.6);
+        object-fit: contain;
+        transition: transform .2s;
+        cursor: default;
+        animation: lbImgIn .22s cubic-bezier(.22,1,.36,1);
+    }
+    @keyframes lbImgIn {
+        from { transform: scale(.92); opacity:0; }
+        to   { transform: scale(1);   opacity:1; }
+    }
+
+    #zoot-lb-caption {
+        color: rgba(255,255,255,.75);
+        font-size: .85rem;
+        max-width: 80vw;
+        text-align: center;
+        letter-spacing: .01em;
+    }
+
+    #zoot-lb-close {
+        position: fixed;
+        top: 1rem; right: 1.25rem;
+        background: rgba(255,255,255,.12);
+        border: none; border-radius: 50%;
+        width: 38px; height: 38px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        color: #fff;
+        font-size: 1.3rem;
+        transition: background .15s;
+        line-height: 1;
+    }
+    #zoot-lb-close:hover { background: rgba(255,255,255,.25); }
+
+    /* Nav arrows */
+    .zoot-lb-nav {
+        position: fixed;
+        top: 50%; transform: translateY(-50%);
+        background: rgba(255,255,255,.1);
+        border: none; border-radius: 50%;
+        width: 44px; height: 44px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; color: #fff; font-size: 1.5rem;
+        transition: background .15s;
+    }
+    .zoot-lb-nav:hover { background: rgba(255,255,255,.25); }
+    #zoot-lb-prev { left: 1rem; }
+    #zoot-lb-next { right: 1rem; }
+    .zoot-lb-nav.hidden { display: none; }
+
+    /* Make clickable images show pointer + subtle hover */
+    img[data-lb] {
+        cursor: zoom-in;
+        transition: opacity .15s, transform .15s;
+    }
+    img[data-lb]:hover { opacity: .93; transform: scale(1.01); }
+    </style>
+
+    <!-- Lightbox overlay -->
+    <div id="zoot-lightbox" role="dialog" aria-modal="true">
+        <button id="zoot-lb-close" aria-label="Fermer">&times;</button>
+        <button class="zoot-lb-nav hidden" id="zoot-lb-prev" aria-label="Précédent">
+            <span class="material-icons">chevron_left</span>
+        </button>
+        <img id="zoot-lb-img" src="" alt="">
+        <div id="zoot-lb-caption"></div>
+        <button class="zoot-lb-nav hidden" id="zoot-lb-next" aria-label="Suivant">
+            <span class="material-icons">chevron_right</span>
+        </button>
+    </div>
+
+    <script>
+    (function(){
+        var lb      = document.getElementById('zoot-lightbox');
+        var lbImg   = document.getElementById('zoot-lb-img');
+        var lbCap   = document.getElementById('zoot-lb-caption');
+        var lbClose = document.getElementById('zoot-lb-close');
+        var lbPrev  = document.getElementById('zoot-lb-prev');
+        var lbNext  = document.getElementById('zoot-lb-next');
+
+        var gallery = [];   // list of {src, alt} for current context
+        var current = 0;
+
+        /* ── Collect images on page load ── */
+        function collectImages(){
+            gallery = [];
+            document.querySelectorAll('img[data-lb]').forEach(function(img){
+                gallery.push({ src: img.src, alt: img.alt || '' });
+            });
+        }
+
+        /* ── Open ── */
+        function open(src, alt, idx){
+            current = (idx !== undefined) ? idx : 0;
+            lbImg.src = src;
+            lbImg.alt = alt;
+            lbCap.textContent = alt || '';
+            lb.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            updateNav();
+        }
+
+        function updateNav(){
+            lbPrev.classList.toggle('hidden', gallery.length <= 1 || current === 0);
+            lbNext.classList.toggle('hidden', gallery.length <= 1 || current === gallery.length - 1);
+        }
+
+        /* ── Close ── */
+        function close(){
+            lb.classList.remove('open');
+            lbImg.src = '';
+            document.body.style.overflow = '';
+        }
+
+        /* ── Navigate ── */
+        function go(dir){
+            current += dir;
+            if(current < 0) current = 0;
+            if(current >= gallery.length) current = gallery.length - 1;
+            lbImg.style.animation = 'none';
+            lbImg.offsetHeight; // reflow
+            lbImg.style.animation = '';
+            lbImg.src = gallery[current].src;
+            lbImg.alt = gallery[current].alt;
+            lbCap.textContent = gallery[current].alt || '';
+            updateNav();
+        }
+
+        /* ── Events ── */
+        lbClose.addEventListener('click', close);
+        lbPrev.addEventListener('click', function(e){ e.stopPropagation(); go(-1); });
+        lbNext.addEventListener('click', function(e){ e.stopPropagation(); go(1); });
+
+        lb.addEventListener('click', function(e){
+            if(e.target === lb || e.target === lbCap) close();
+        });
+
+        document.addEventListener('keydown', function(e){
+            if(!lb.classList.contains('open')) return;
+            if(e.key === 'Escape')      close();
+            if(e.key === 'ArrowLeft')   go(-1);
+            if(e.key === 'ArrowRight')  go(1);
+        });
+
+        /* ── Intercept clicks on images with data-lb ── */
+        document.addEventListener('click', function(e){
+            var img = e.target.closest('img[data-lb]');
+            if(!img) return;
+
+            /* Cancel the parent <a target="_blank"> if any */
+            var anchor = img.closest('a');
+            if(anchor){
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            collectImages();
+            var idx = gallery.findIndex(function(g){ return g.src === img.src; });
+            open(img.src, img.alt, idx >= 0 ? idx : 0);
+        }, true);  /* capture phase so we beat the anchor href */
+
+    })();
+    </script>
 </body>
 </html>
