@@ -241,6 +241,30 @@ main { padding: 0 !important; margin-top: 62px; }
     color: var(--text-muted);
     cursor: pointer;
     white-space: nowrap;
+    /* hidden by default — shown on row hover */
+    opacity: 0;
+    transition: opacity .15s;
+}
+.message-container:hover .timestamp-span { opacity: 1; }
+
+/* Date separator between days */
+.date-separator {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin: .6rem 0 .3rem;
+    color: var(--text-muted);
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+.date-separator::before,
+.date-separator::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
 }
 
 /* The bubble itself */
@@ -774,6 +798,16 @@ main { padding: 0 !important; margin-top: 62px; }
         }
     }
 
+    /* ── Date separator helper ──────────────────────────────── */
+    var _lastSeenDate = null;  // tracks the "current" date label as we render messages
+
+    function _makeDateSeparator(label){
+        var sep = document.createElement("div");
+        sep.classList.add("date-separator");
+        sep.textContent = label;
+        return sep;
+    }
+
     /* ── Build a regular chat bubble ─────────────────────────── */
     function createChatMessageElement(msg, msg_id, username, profile_image, user_id, timestamp, maintainPosition, isNewMessage){
         var chatLog = document.getElementById("id_chat_log");
@@ -798,23 +832,16 @@ main { padding: 0 !important; margin-top: 62px; }
         var wrap = document.createElement("div");
         wrap.classList.add("msg-content-wrap");
 
-        // Meta line (username + timestamp) — hide for own
+        // Meta line (username) — only for friend messages
         if(!isOwn){
             var meta = document.createElement("div");
             meta.classList.add("msg-meta");
 
             var uSpan = document.createElement("span");
             uSpan.classList.add("username-span");
-            // strip trailing ": " for display
             uSpan.textContent = username.replace(/:\s*$/, '');
             uSpan.addEventListener("click", function(){ selectUser(user_id); });
             meta.appendChild(uSpan);
-
-            var tSpan = document.createElement("span");
-            tSpan.classList.add("timestamp-span");
-            tSpan.innerHTML = timestamp;
-            tSpan.addEventListener("click", function(){ selectUser(user_id); });
-            meta.appendChild(tSpan);
 
             wrap.appendChild(meta);
         }
@@ -830,16 +857,41 @@ main { padding: 0 !important; margin-top: 62px; }
         }
         wrap.appendChild(bubble);
 
-        // Timestamp for own messages (below bubble)
-        if(isOwn){
-            var tOwn = document.createElement("span");
-            tOwn.classList.add("timestamp-span");
-            tOwn.style.marginTop = "2px";
-            tOwn.innerHTML = timestamp;
-            wrap.appendChild(tOwn);
-        }
+        // Timestamp (visible on hover via CSS, placed after bubble)
+        var tSpan = document.createElement("span");
+        tSpan.classList.add("timestamp-span");
+        tSpan.style.cssText = "display:block;margin-top:2px;font-size:.67rem;";
+        tSpan.textContent = timestamp || '';
+        wrap.appendChild(tSpan);
 
         row.appendChild(wrap);
+
+        /* ── Date separator ── */
+        // timestamp is a string like "Dec. 5, 2024, 3:42 p.m." — extract the date part
+        var dateLabel = '';
+        if(timestamp){
+            // Split on comma to get e.g. "Dec. 5" vs "2024, 3:42 p.m."
+            var parts = timestamp.split(',');
+            if(parts.length >= 2){
+                var today = new Date();
+                var todayStr = today.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+                var yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
+                var yesterdayStr = yesterday.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+                // Use full date (month + day + year) as cache key, strip time
+                dateLabel = (parts[0] + ',' + parts[1]).trim();
+            } else {
+                dateLabel = parts[0].trim();
+            }
+        }
+        if(dateLabel && dateLabel !== _lastSeenDate){
+            var sep = _makeDateSeparator(dateLabel);
+            if(isNewMessage){
+                chatLog.insertBefore(sep, chatLog.firstChild);
+            } else {
+                chatLog.appendChild(sep);
+            }
+            _lastSeenDate = dateLabel;
+        }
 
         if(isNewMessage){
             chatLog.insertBefore(row, chatLog.firstChild);
@@ -855,7 +907,8 @@ main { padding: 0 !important; margin-top: 62px; }
     }
 
     function clearChatLog(){
-        document.getElementById("id_chat_log").innerHTML = ""
+        document.getElementById("id_chat_log").innerHTML = "";
+        _lastSeenDate = null;  // reset date separator state for new conversation
     }
 
     function setPageNumber(pageNumber){
