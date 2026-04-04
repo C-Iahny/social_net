@@ -442,7 +442,7 @@ main { padding: 0 !important; margin-top: 62px; }
                 <div class="friend-avatar-wrap">
                     <img class="rounded-circle"
                          id="id_friend_img_{{ x.friend.id }}"
-                         src="{% static 'images/profile_pic.png' %}"
+                         src="{{ friend.profile_image.url }}"
                          alt="{{ x.friend.username }}">
                 </div>
                 <div class="friend-info">
