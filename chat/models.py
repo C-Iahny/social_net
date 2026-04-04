@@ -5,6 +5,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
+from django.urls import reverse
 
 from notification.models import Notification
 
@@ -152,7 +153,7 @@ def increment_unread_msg_count(sender, instance, **kwargs):
 				instance.notifications.create(
 					target=instance.user,
 					from_user=other_user,
-					redirect_url=f"{settings.BASE_URL}/chat/?room_id={instance.room.id}", # we want to go to the chatroom
+					redirect_url=reverse('chat:private-chat-room') + f'?room_id={instance.room.id}',
 					verb=instance.most_recent_message,
 					content_type=content_type,
 				)
