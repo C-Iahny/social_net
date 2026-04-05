@@ -532,7 +532,7 @@
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#fff"/>
             </svg>
         </div>
-        <span class="zoot-brand-text">SOCIAL NET</span>
+        <span class="zoot-brand-text">VAZIMBA</span>
     </a>
 
     <!-- Center nav links (desktop) -->
@@ -540,12 +540,12 @@
         <a href="{% url 'post:post-view' %}"
            class="zoot-nav-link {% if request.resolver_match.url_name == 'post-view' %}active{% endif %}">
             <span class="material-icons">home</span>
-            <span>Fil</span>
+            <span>Vaovao</span>
         </a>
         <a href="{% url 'post:index' %}"
            class="zoot-nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
             <span class="material-icons">explore</span>
-            <span>Explorer</span>
+            <span>Zava-misy</span>
         </a>
     </div>
 
@@ -556,12 +556,12 @@
 
         <!-- Search bar (desktop) -->
         <form class="zoot-search-form d-none d-lg-flex" method="GET" action="{% url 'search' %}">
-            <input type="text" name="q" placeholder="Rechercher…" autocomplete="off">
+            <input type="text" name="q" placeholder="Mikaroka..." autocomplete="off">
             <button type="submit"><span class="material-icons">search</span></button>
         </form>
 
         <!-- Theme toggle -->
-        <button id="theme-toggle-btn" onclick="toggleTheme()" class="zoot-icon-btn" title="Changer de thème">
+        <button id="theme-toggle-btn" onclick="toggleTheme()" class="zoot-icon-btn" title="Hiova loko">
             <span class="material-icons" style="font-size:1.25rem">dark_mode</span>
         </button>
 
@@ -602,7 +602,7 @@
                 <div class="zoot-dropdown-header">
                     <span class="zoot-dropdown-header-title">
                         <span class="material-icons">notifications</span>
-                        Notifications
+                        Famantarana
                     </span>
                 </div>
             </div>
@@ -634,15 +634,15 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Navigation principale -->
-                <p class="zoot-dropdown-label">Mon espace</p>
+                <p class="zoot-dropdown-label">Tranoko</p>
                 <a class="dropdown-item" href="{% url 'account:view' user_id=request.user.id %}">
-                    <span class="material-icons">person_outline</span> Mon profil
+                    <span class="material-icons">person_outline</span> Momba Ahy
                 </a>
                 <a class="dropdown-item" href="{% url 'post:post-view' %}">
-                    <span class="material-icons">dynamic_feed</span> Fil d'actualité
+                    <span class="material-icons">dynamic_feed</span> Ny Vaovao
                 </a>
                 <a class="dropdown-item" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">add_circle_outline</span> Nouveau post
+                    <span class="material-icons">add_circle_outline</span> Paositra Vaovao
                 </a>
 
                 <div class="dropdown-divider"></div>
@@ -650,24 +650,24 @@
                 <!-- Social -->
                 <p class="zoot-dropdown-label">Social</p>
                 <a class="dropdown-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
-                    <span class="material-icons">person_add_alt</span> Demandes d'amis
+                    <span class="material-icons">person_add_alt</span> Fangatahana namana
                 </a>
                 <a class="dropdown-item" href="{% url 'friend:list' user_id=request.user.id %}">
-                    <span class="material-icons">group</span> Mes amis
+                    <span class="material-icons">group</span>Ireo Namako
                 </a>
                 <a class="dropdown-item" href="{% url 'chat:private-chat-room' %}">
-                    <span class="material-icons">chat_bubble_outline</span> Messages
+                    <span class="material-icons">chat_bubble_outline</span> Ny Hafatra
                 </a>
 
                 <div class="dropdown-divider"></div>
 
                 <!-- Compte -->
-                <p class="zoot-dropdown-label">Compte</p>
+                <p class="zoot-dropdown-label">Kaonty</p>
                 <a class="dropdown-item" href="{% url 'account:edit' user_id=request.user.id %}">
-                    <span class="material-icons">manage_accounts</span> Paramètres
+                    <span class="material-icons">manage_accounts</span> Fikirana
                 </a>
                 <a class="dropdown-item danger" href="{% url 'logout' %}">
-                    <span class="material-icons">logout</span> Déconnexion
+                    <span class="material-icons">logout</span> Hiala
                 </a>
 
             </div>
@@ -696,21 +696,21 @@
 {% if request.user.is_authenticated %}
 <div class="zoot-mobile-menu" id="zoot-mobile-menu">
     <form class="zoot-mobile-search" method="GET" action="{% url 'search' %}">
-        <input type="text" name="q" placeholder="Rechercher…" autocomplete="off">
+        <input type="text" name="q" placeholder="Mikaroka…" autocomplete="off">
         <button type="submit"><span class="material-icons" style="font-size:1.1rem;color:var(--text-muted)">search</span></button>
     </form>
     <a href="{% url 'post:post-view' %}" class="zoot-mobile-link">
-        <span class="material-icons">home</span> Fil d'actualité
+        <span class="material-icons">home</span> Zava-misy
     </a>
     <a href="{% url 'post:index' %}" class="zoot-mobile-link">
         <span class="material-icons">explore</span> Explorer
     </a>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
-        <span class="material-icons">person_outline</span> Mon profil
+        <span class="material-icons">person_outline</span> Momba Ahy
     </a>
     <div style="border-top:1px solid var(--border);margin:.5rem 0;"></div>
     <a href="{% url 'logout' %}" class="zoot-mobile-link" style="color:#e0245e;">
-        <span class="material-icons" style="color:#e0245e;">logout</span> Déconnexion
+        <span class="material-icons" style="color:#e0245e;">logout</span> Hiala
     </a>
 </div>
 {% endif %}
@@ -785,7 +785,7 @@
         toast.innerHTML =
             '<img class="zoot-toast-avatar" src="' + data.from_image + '" alt="">' +
             '<div class="zoot-toast-body">' +
-                '<div class="zoot-toast-user">' + data.from_username + ' a publié un post</div>' +
+                '<div class="zoot-toast-user">' + 'Nandefa zavatra i </div>' + data.from_username +
                 '<div class="zoot-toast-msg">' + (data.post_title || '') + '</div>' +
             '</div>' +
             '<button class="zoot-toast-close material-icons" onclick="this.closest(\'.zoot-toast-item\').remove()">close</button>';
