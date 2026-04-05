@@ -594,39 +594,39 @@ body { background: var(--bg); }
             <div class="lsb-stats">
                 <div class="lsb-stat">
                     <strong class="lsb-stat-val">{{ my_post_count|default:"0" }}</strong>
-                    <span class="lsb-stat-lbl">Posts</span>
+                    <span class="lsb-stat-lbl">Paositra</span>
                 </div>
                 <div class="lsb-stat">
                     <strong class="lsb-stat-val">{{ friends_count|default:"0" }}</strong>
-                    <span class="lsb-stat-lbl">Amis</span>
+                    <span class="lsb-stat-lbl">Namana</span>
                 </div>
             </div>
-            <a class="lsb-btn" href="{% url 'account:view' user_id=request.user.id %}">Voir mon profil</a>
+            <a class="lsb-btn" href="{% url 'account:view' user_id=request.user.id %}">Ijery ny profil-ko</a>
         </div>
 
         <!-- Navigation -->
         <div class="zf-card" style="padding:.5rem 0;">
             <a class="lsb-nav-item" href="{% url 'post:addPost' %}">
-                <span class="material-icons">add_circle</span> Nouveau post
+                <span class="material-icons">add_circle</span> Paositra Vaovao
             </a>
             <a class="lsb-nav-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
-                <span class="material-icons">person_add</span> Demandes d'amis
+                <span class="material-icons">person_add</span> Fangatahana Namana
             </a>
             <a class="lsb-nav-item" href="{% url 'friend:list' user_id=request.user.id %}">
-                <span class="material-icons">group</span> Mes amis
+                <span class="material-icons">group</span> Ireo Namako
             </a>
             <a class="lsb-nav-item" href="{% url 'account:edit' user_id=request.user.id %}">
-                <span class="material-icons">settings</span> Paramètres
+                <span class="material-icons">settings</span> Fikirana
             </a>
             <a class="lsb-nav-item danger" href="{% url 'logout' %}">
-                <span class="material-icons">logout</span> Déconnexion
+                <span class="material-icons">logout</span> Hiala
             </a>
         </div>
 
         <!-- Friends list -->
         {% if friends %}
         <div class="zf-card" style="padding:.5rem 0 .75rem;">
-            <p class="zf-card-title">Amis</p>
+            <p class="zf-card-title">Namana</p>
             {% for friend in friends|slice:":10" %}
             <a class="lsb-friend" href="{% url 'account:view' user_id=friend.id %}">
                 <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
@@ -659,7 +659,7 @@ body { background: var(--bg); }
                         <span class="material-icons">add</span>
                     </div>
                 </div>
-                <span class="story-label">Publier</span>
+                <span class="story-label">Aroso</span>
             </a>
             <!-- Friends -->
             {% for friend in friends|slice:":8" %}
@@ -675,7 +675,7 @@ body { background: var(--bg); }
         <!-- New-posts banner (WebSocket) -->
         <div id="new-posts-banner" onclick="window.location.reload()">
             <span class="material-icons" style="font-size:1.1rem;">fiber_new</span>
-            <span id="new-posts-banner-text">Nouveaux posts — cliquer pour actualiser</span>
+            <span id="new-posts-banner-text">Paositra Vaovao - Tsindrio anavaozana azy</span>
         </div>
 
         <!-- Create post box -->
@@ -683,19 +683,19 @@ body { background: var(--bg); }
             <div class="create-box-top">
                 <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
                 <a class="create-box-input" href="{% url 'post:addPost' %}">
-                    Quoi de neuf, {{ request.user.username }} ?
+                    Inona ny vaovao ry {{ request.user.username }} ?
                 </a>
             </div>
             <hr class="create-box-divider">
             <div class="create-box-actions">
                 <a class="create-box-action photo" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">add_photo_alternate</span> Photo
+                    <span class="material-icons">add_photo_alternate</span> Sary
                 </a>
                 <a class="create-box-action file" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">attach_file</span> Fichier
+                    <span class="material-icons">attach_file</span> Zavatra
                 </a>
                 <a class="create-box-action post" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">edit_note</span> Rédiger
+                    <span class="material-icons">edit_note</span> Anoratra
                 </a>
             </div>
         </div>
@@ -748,7 +748,9 @@ body { background: var(--bg); }
                 <!-- Cover image -->
                 {% if post.header_image_url %}
                 <div class="pc-image-wrap">
-                    <img class="pc-image" src="{{ post.header_image_url }}" alt="{{ post.title }}" data-lb>
+                    <a href="{{ post.header_image_url }}" target="_blank" rel="noopener">
+                        <img class="pc-image" src="{{ post.header_image_url }}" alt="{{ post.title }}">
+                    </a>
                 </div>
                 {% endif %}
 
@@ -763,7 +765,7 @@ body { background: var(--bg); }
                         <source src="{{ post.video.url }}" type="video/mp4">
                         <source src="{{ post.video.url }}" type="video/webm">
                         <source src="{{ post.video.url }}" type="video/ogg">
-                        Votre navigateur ne supporte pas la lecture vidéo.
+                        Tsy mahavaky ilay video ny navigateur-nao.
                     </video>
                 </div>
                 {% endif %}
@@ -780,13 +782,13 @@ body { background: var(--bg); }
                             <source src="{{ post.file.url }}" type="video/mp4">
                             <source src="{{ post.file.url }}" type="video/webm">
                             <source src="{{ post.file.url }}" type="video/ogg">
-                            Votre navigateur ne supporte pas la lecture vidéo.
+                            Tsy mahavaky ilay video ny navigateur-nao.
                         </video>
                     </div>
                     {% else %}
                     <a class="pc-file-attach" href="{{ post.file.url }}" target="_blank" rel="noopener">
                         <span class="material-icons">insert_drive_file</span>
-                        Fichier joint
+                        Fichier ampiana
                     </a>
                     {% endif %}
                 {% endif %}
@@ -796,7 +798,7 @@ body { background: var(--bg); }
                 <div class="pc-stats">
                     <div class="pc-likes-icon">
                         <div class="pc-likes-badge">👍</div>
-                        &nbsp;{{ post.total_likes }} j'aime{% if post.total_likes > 1 %}s{% endif %}
+                        &nbsp;{{ post.total_likes }} tiako{% if post.total_likes > 1 %}s{% endif %}
                     </div>
                 </div>
                 {% endif %}
@@ -806,13 +808,13 @@ body { background: var(--bg); }
                     <a class="pc-footer-btn {% if request.user in post.likes.all %}liked{% endif %}"
                        href="{% url 'post:like-post' %}?post_id={{ post.id }}&next={{ request.path }}">
                         <span class="material-icons">{% if request.user in post.likes.all %}thumb_up{% else %}thumb_up_off_alt{% endif %}</span>
-                        {% if request.user in post.likes.all %}J'aime déjà{% else %}J'aime{% endif %}
+                        {% if request.user in post.likes.all %}efa tiako{% else %}J'aime{% endif %}
                     </a>
                     <div class="pc-footer-sep"></div>
                     <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
                             onclick="toggleComments({{ post.id }})">
                         <span class="material-icons">chat_bubble_outline</span>
-                        Commenter
+                        Evitra
                         {% if post.page_comments %}
                         <span id="comment-count-{{ post.id }}" style="font-size:.78rem;margin-left:.2rem;opacity:.75;">({{ post.page_comments|length }})</span>
                         {% else %}
@@ -822,7 +824,7 @@ body { background: var(--bg); }
                     <div class="pc-footer-sep"></div>
                     <button class="pc-footer-btn" onclick="sharePost({{ post.id }})">
                         <span class="material-icons">share</span>
-                        Partager
+                        Zaraina
                     </button>
                 </div>
 
@@ -840,7 +842,7 @@ body { background: var(--bg); }
                                     {% if request.user == c.author or request.user == post.author %}
                                     <button class="pc-comment-del"
                                             onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">
-                                        Supprimer
+                                        Fafana
                                     </button>
                                     {% endif %}
                                 </div>
@@ -874,7 +876,7 @@ body { background: var(--bg); }
             <div class="feed-pagination">
                 {% if posts_of_the_page.has_previous %}
                 <a class="page-btn" href="?page={{ posts_of_the_page.previous_page_number }}">
-                    <span class="material-icons">chevron_left</span> Précédent
+                    <span class="material-icons">chevron_left</span> Any Aloha
                 </a>
                 {% endif %}
                 <span class="page-info">
@@ -882,7 +884,7 @@ body { background: var(--bg); }
                 </span>
                 {% if posts_of_the_page.has_next %}
                 <a class="page-btn" href="?page={{ posts_of_the_page.next_page_number }}">
-                    Suivant <span class="material-icons">chevron_right</span>
+                    Manaraka <span class="material-icons">chevron_right</span>
                 </a>
                 {% endif %}
             </div>
@@ -891,10 +893,10 @@ body { background: var(--bg); }
             <!-- Empty feed -->
             <div class="empty-feed">
                 <span class="material-icons ef-icon">dynamic_feed</span>
-                <h5>Votre fil est vide pour l'instant</h5>
-                <p>Ajoutez des amis ou publiez votre premier post pour commencer.</p>
+                <h5>Mbola tsy misy vaovao aloha hatreto.</h5>
+                <p>Mangalà namana na mandefasa paositra avy hatrany.</p>
                 <a class="ef-cta" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">add</span> Créer mon premier post
+                    <span class="material-icons">add</span> Paositrako voalohany
                 </a>
             </div>
         {% endif %}
@@ -908,7 +910,7 @@ body { background: var(--bg); }
 
         {% if friends %}
         <div class="zf-card">
-            <p class="zf-card-title">Amis en ligne</p>
+            <p class="zf-card-title">Namana en ligne</p>
             <div class="rsb-section" style="padding-top:.35rem;">
                 {% for friend in friends|slice:":6" %}
                 <div class="rsb-person">
@@ -917,7 +919,7 @@ body { background: var(--bg); }
                         <a class="rsb-person-name" href="{% url 'account:view' user_id=friend.id %}">
                             {{ friend.username }}
                         </a>
-                        <span class="rsb-person-sub">Ami</span>
+                        <span class="rsb-person-sub">Namana</span>
                     </div>
                     <a class="rsb-add-btn" href="{% url 'chat:private-chat-room' %}">
                         <span class="material-icons" style="font-size:.9rem;">chat</span>
@@ -930,16 +932,16 @@ body { background: var(--bg); }
 
         <!-- Quick info -->
         <div class="zf-card">
-            <p class="zf-card-title">Mon compte</p>
+            <p class="zf-card-title">Kaontiko</p>
             <div class="rsb-section" style="padding-top:.4rem; padding-bottom:.8rem;">
                 <div style="display:flex; flex-direction:column; gap:.2rem;">
                     <span style="font-size:.88rem; color:var(--text);">
                         <span class="material-icons" style="font-size:.95rem; vertical-align:middle; color:var(--accent);">article</span>
-                        <strong>{{ my_post_count|default:"0" }}</strong> post{% if my_post_count != 1 %}s{% endif %} publiés
+                        <strong>{{ my_post_count|default:"0" }}</strong> post{% if my_post_count != 1 %}s{% endif %} nalefako
                     </span>
                     <span style="font-size:.88rem; color:var(--text);">
                         <span class="material-icons" style="font-size:.95rem; vertical-align:middle; color:var(--accent);">group</span>
-                        <strong>{{ friends_count|default:"0" }}</strong> ami{% if friends_count != 1 %}s{% endif %}
+                        <strong>{{ friends_count|default:"0" }}</strong> akama{% if friends_count != 1 %}ko{% endif %}
                     </span>
                 </div>
                 <a class="lsb-btn" href="{% url 'account:edit' user_id=request.user.id %}"
@@ -953,12 +955,12 @@ body { background: var(--bg); }
 
         <!-- Footer links -->
         <div class="rsb-footer-links">
-            <a class="rsb-link" href="#">Confidentialité</a>
-            <a class="rsb-link" href="#">Conditions</a>
-            <a class="rsb-link" href="#">Cookies</a>
-            <a class="rsb-link" href="#">À propos</a>
+            <a class="rsb-link" href="#">Tsiambaratelo</a>
+            <a class="rsb-link" href="#">Fepetra</a>
+            <a class="rsb-link" href="#">Mofomamy</a>
+            <a class="rsb-link" href="#">Momba anay</a>
             <br><br>
-            <span style="font-size:.73rem; color:var(--text-muted);">ZOOT Social © 2026</span>
+            <span style="font-size:.73rem; color:var(--text-muted);">VAZIMBA © 2026</span>
         </div>
 
     </aside>
@@ -967,7 +969,7 @@ body { background: var(--bg); }
 
 <div id="share-toast">
     <span class="material-icons">check_circle</span>
-    Lien copié dans le presse-papiers !
+    Lien lasa ao anaty presse-papiers !
 </div>
 
 <script>
