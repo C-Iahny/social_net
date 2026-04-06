@@ -937,11 +937,11 @@ body { background: var(--bg); }
                 <div style="display:flex; flex-direction:column; gap:.2rem;">
                     <span style="font-size:.88rem; color:var(--text);">
                         <span class="material-icons" style="font-size:.95rem; vertical-align:middle; color:var(--accent);">article</span>
-                        <strong>{{ my_post_count|default:"0" }}</strong> post{% if my_post_count != 1 %}s{% endif %} nalefako
+                         post{% if my_post_count != 1 %}s{% endif %} nalefako: <strong>{{ my_post_count|default:"0" }}</strong>
                     </span>
                     <span style="font-size:.88rem; color:var(--text);">
                         <span class="material-icons" style="font-size:.95rem; vertical-align:middle; color:var(--accent);">group</span>
-                        <strong>{{ friends_count|default:"0" }}</strong> akama{% if friends_count != 1 %}ko{% endif %}
+                         akama{% if friends_count != 1 %}ko{% endif %}: <strong>{{ friends_count|default:"0" }}</strong>
                     </span>
                 </div>
                 <a class="lsb-btn" href="{% url 'account:edit' user_id=request.user.id %}"
