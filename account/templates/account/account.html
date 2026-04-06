@@ -663,10 +663,10 @@
                             {% if is_self or request.user.id == post.author.id %}
                             <div class="post-actions-menu">
                                 <a class="post-action-btn" href="{% url 'post:edit-post' pk=post.id %}">
-                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">edit</span> Ovaina
+                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">edit</span>
                                 </a>
                                 <a class="post-action-btn danger" href="{% url 'post:delete-post' pk=post.id %}">
-                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">delete</span> Fafana
+                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">delete</span>
                                 </a>
                             </div>
                             {% endif %}
