@@ -601,7 +601,7 @@ body { background: var(--bg); }
                     <span class="lsb-stat-lbl">Namana</span>
                 </div>
             </div>
-            <a class="lsb-btn" href="{% url 'account:view' user_id=request.user.id %}">Ijery ny profil-ko</a>
+            <a class="lsb-btn" href="{% url 'account:view' user_id=request.user.id %}">Profile-ko</a>
         </div>
 
         <!-- Navigation -->
@@ -692,7 +692,7 @@ body { background: var(--bg); }
                     <span class="material-icons">add_photo_alternate</span> Sary
                 </a>
                 <a class="create-box-action file" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">attach_file</span> Zavatra
+                    <span class="material-icons">attach_file</span> Rakitra
                 </a>
                 <a class="create-box-action post" href="{% url 'post:addPost' %}">
                     <span class="material-icons">edit_note</span> Anoratra
@@ -788,7 +788,7 @@ body { background: var(--bg); }
                     {% else %}
                     <a class="pc-file-attach" href="{{ post.file.url }}" target="_blank" rel="noopener">
                         <span class="material-icons">insert_drive_file</span>
-                        Fichier ampiana
+                        Anampy rakitra
                     </a>
                     {% endif %}
                 {% endif %}
@@ -798,7 +798,7 @@ body { background: var(--bg); }
                 <div class="pc-stats">
                     <div class="pc-likes-icon">
                         <div class="pc-likes-badge">👍</div>
-                        &nbsp;{{ post.total_likes }} tiako{% if post.total_likes > 1 %}s{% endif %}
+                        &nbsp;{{ post.total_likes }} tiana{% if post.total_likes > 1 %}.{% endif %}
                     </div>
                 </div>
                 {% endif %}
