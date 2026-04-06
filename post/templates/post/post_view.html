@@ -788,7 +788,7 @@ body { background: var(--bg); }
                     {% else %}
                     <a class="pc-file-attach" href="{{ post.file.url }}" target="_blank" rel="noopener">
                         <span class="material-icons">insert_drive_file</span>
-                        Anampy rakitra
+                        Rakitra
                     </a>
                     {% endif %}
                 {% endif %}
@@ -808,7 +808,7 @@ body { background: var(--bg); }
                     <a class="pc-footer-btn {% if request.user in post.likes.all %}liked{% endif %}"
                        href="{% url 'post:like-post' %}?post_id={{ post.id }}&next={{ request.path }}">
                         <span class="material-icons">{% if request.user in post.likes.all %}thumb_up{% else %}thumb_up_off_alt{% endif %}</span>
-                        {% if request.user in post.likes.all %}efa tiako{% else %}J'aime{% endif %}
+                        {% if request.user in post.likes.all %}Tiana{% else %}Tiana{% endif %}
                     </a>
                     <div class="pc-footer-sep"></div>
                     <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
