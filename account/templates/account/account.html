@@ -445,7 +445,7 @@
     <div class="profile-header">
         <div class="avatar-area">
             <div class="avatar-wrap">
-                <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}" data-lb>
+                <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}">
                 {% if is_self %}
                 <a class="avatar-edit-btn" href="{% url 'account:edit' user_id=id %}" title="Modifier la photo">
                     <span class="material-icons" style="font-size:1rem;">photo_camera</span>
@@ -463,7 +463,7 @@
                     </span>
                     <span>
                         <span class="material-icons" style="font-size:1rem;">group</span>
-                        <span class="stat-val">{{ friends_count }}</span> ami{% if friends_count != 1 %}s{% endif %}
+                        <span class="stat-val">{{ friends_count }}</span> namana{% if friends_count != 1 %}s{% endif %}
                     </span>
                     {% if location %}
                     <span>
@@ -482,10 +482,10 @@
                 {% if is_self %}
                     <!-- Own profile -->
                     <a class="btn-profile btn-profile-secondary" href="{% url 'account:edit' user_id=id %}">
-                        <span class="material-icons" style="font-size:1rem;">edit</span> Modifier le profil
+                        <span class="material-icons" style="font-size:1rem;">edit</span> Anova profil
                     </a>
                     <a class="btn-profile btn-profile-secondary" href="{% url 'password_change' %}">
-                        <span class="material-icons" style="font-size:1rem;">lock</span> Mot de passe
+                        <span class="material-icons" style="font-size:1rem;">lock</span> Teny Miafina
                     </a>
 
                 {% else %}
@@ -495,12 +495,12 @@
                     <!-- THEM sent YOU a request -->
                     <div id="fr-accept-area" class="fr-banner">
                         <span class="material-icons" style="color:var(--accent)">person_add</span>
-                        <span class="fr-text">{{ username }} vous a envoyé une demande d'ami.</span>
+                        <span class="fr-text">{{ username }} Nandefa fangatahana ho namana ianao.</span>
                         <button class="btn-profile btn-profile-success" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>
-                            <span class="material-icons" style="font-size:1rem;">check</span> Accepter
+                            <span class="material-icons" style="font-size:1rem;">check</span> Ekena
                         </button>
                         <button class="btn-profile btn-profile-danger" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>
-                            <span class="material-icons" style="font-size:1rem;">close</span> Refuser
+                            <span class="material-icons" style="font-size:1rem;">close</span> Lavina
                         </button>
                     </div>
                     {% endif %}
@@ -509,28 +509,28 @@
                     <!-- Already friends -->
                     <div class="dropdown">
                         <button class="btn-profile btn-profile-secondary dropdown-toggle" data-toggle="dropdown" id="friends-drop">
-                            <span class="material-icons" style="font-size:1rem;">how_to_reg</span> Amis
+                            <span class="material-icons" style="font-size:1rem;">how_to_reg</span> Namana
                         </button>
                         <div class="dropdown-menu" aria-labelledby="friends-drop">
                             <a class="dropdown-item text-danger" href="#" onclick="removeFriend('{{ id }}', onFriendRemoved)">
-                                <span class="material-icons mr-1" style="font-size:1rem;vertical-align:middle;">person_remove</span>Retirer des amis
+                                <span class="material-icons mr-1" style="font-size:1rem;vertical-align:middle;">person_remove</span>Anala namana
                             </a>
                         </div>
                     </div>
                     <button class="btn-profile btn-profile-primary" onclick="createOrReturnPrivateChat('{{ id }}')">
-                        <span class="material-icons" style="font-size:1rem;">message</span> Message
+                        <span class="material-icons" style="font-size:1rem;">message</span> Hafatra
                     </button>
 
                     {% elif request_sent == 1 %}
                     <!-- YOU sent them a request -->
                     <button class="btn-profile btn-profile-secondary" id="id_cancel_friend_request_btn">
-                        <span class="material-icons" style="font-size:1rem;">person_remove</span> Annuler la demande
+                        <span class="material-icons" style="font-size:1rem;">person_remove</span> Ajanona ilay fangatahana
                     </button>
 
                     {% elif request_sent == -1 %}
                     <!-- No request sent -->
                     <button class="btn-profile btn-profile-primary" id="id_send_friend_request_btn">
-                        <span class="material-icons" style="font-size:1rem;">person_add</span> Ajouter en ami
+                        <span class="material-icons" style="font-size:1rem;">person_add</span> Tiana ho namana
                     </button>
                     {% endif %}
 
@@ -539,13 +539,13 @@
                 {% if friend_requests and is_self %}
                 <a class="btn-profile btn-profile-secondary" href="{% url 'friend:friend-requests' user_id=id %}">
                     <span class="material-icons" style="font-size:1rem;">notifications</span>
-                    {{ friend_requests|length }} demande{% if friend_requests|length != 1 %}s{% endif %} d'ami
+                    {{ friend_requests|length }} fangatahana{% if friend_requests|length != 1 %}s{% endif %} namana
                 </a>
                 {% endif %}
 
             {% else %}
                 <a class="btn-profile btn-profile-primary" href="{% url 'login' %}">
-                    <span class="material-icons" style="font-size:1rem;">login</span> Connexion
+                    <span class="material-icons" style="font-size:1rem;">login</span> Hiiditra
                 </a>
             {% endif %}
         </div>
@@ -554,16 +554,16 @@
     <!-- ===================== TABS ===================== -->
     <div class="profile-tabs" id="profile-tabs">
         <button class="tab-btn active" data-tab="posts">
-            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">article</span> Posts
+            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">article</span> Paositra
         </button>
         <button class="tab-btn" data-tab="photos">
-            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">photo_library</span> Photos
+            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">photo_library</span> Sary
         </button>
         <button class="tab-btn" data-tab="friends-tab">
-            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">group</span> Amis
+            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">group</span> Namana
         </button>
         <button class="tab-btn" data-tab="about">
-            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">info</span> À propos
+            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">info</span> Momba ahy
         </button>
     </div>
 
@@ -579,17 +579,17 @@
                     <h6>Infos</h6>
                     {% if location %}
                     <div class="info-row">
-                        <span class="material-icons">place</span>
+                        <span class="material-icons">localisation</span>
                         <span>{{ location }}</span>
                     </div>
                     {% endif %}
                     <div class="info-row">
                         <span class="material-icons">calendar_today</span>
-                        <span>Membre depuis {{ date_joined|date:"F Y" }}</span>
+                        <span>Mpikambana h@ {{ date_joined|date:"F Y" }}</span>
                     </div>
                     {% if is_self or not hide_email %}
                     <div class="info-row">
-                        <span class="material-icons">email</span>
+                        <span class="material-icons">mailaka</span>
                         <span>{{ email }}</span>
                     </div>
                     {% endif %}
@@ -615,7 +615,7 @@
                     </div>
                     {% if friends_count > 9 %}
                     <a href="{% url 'friend:list' user_id=id %}" class="btn-profile btn-profile-secondary w-100 mt-2" style="justify-content:center;">
-                        Voir tous les amis
+                        Ny namako rehetra
                     </a>
                     {% endif %}
                 </div>
@@ -624,11 +624,11 @@
                 <!-- Mini photos -->
                 {% if photos %}
                 <div class="profile-card">
-                    <h6>Photos</h6>
+                    <h6>Sary</h6>
                     <div class="mini-friends-grid">
                         {% for photo in photos|slice:":9" %}
                         <div class="mini-friend">
-                            <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}" data-lb>
+                            <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
                         </div>
                         {% endfor %}
                     </div>
@@ -644,7 +644,7 @@
                 {% if is_self %}
                 <a class="create-post-box" href="{% url 'post:addPost' %}">
                     <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}" style="width:44px;height:44px;flex-shrink:0;">
-                    <span class="create-post-placeholder">Quoi de neuf, {{ username }} ?</span>
+                    <span class="create-post-placeholder">Inona ny vaovao ry {{ username }} ?</span>
                 </a>
                 {% endif %}
 
@@ -663,10 +663,10 @@
                             {% if is_self or request.user.id == post.author.id %}
                             <div class="post-actions-menu">
                                 <a class="post-action-btn" href="{% url 'post:edit-post' pk=post.id %}">
-                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">edit</span> Modifier
+                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">edit</span> Ovaina
                                 </a>
                                 <a class="post-action-btn danger" href="{% url 'post:delete-post' pk=post.id %}">
-                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">delete</span> Supprimer
+                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">delete</span> Fafana
                                 </a>
                             </div>
                             {% endif %}
@@ -683,13 +683,15 @@
                         {% endif %}
 
                         {% if post.header_image %}
-                        <img class="post-image" src="{{ post.header_image.url }}" alt="{{ post.title }}" data-lb>
+                        <a href="{{ post.header_image.url }}" target="_blank">
+                            <img class="post-image" src="{{ post.header_image.url }}" alt="{{ post.title }}">
+                        </a>
                         {% endif %}
 
                         <div class="post-footer">
                             <span class="like-count">
                                 <span class="material-icons">thumb_up</span>
-                                {{ post.total_likes }} j'aime
+                                {{ post.total_likes }} tiako
                             </span>
                             {% if post.category and post.category != 'Category' %}
                             <span class="post-category">{{ post.category }}</span>
@@ -701,10 +703,10 @@
                 {% else %}
                     <div class="empty-state">
                         <span class="material-icons">article</span>
-                        <p>Aucun post pour l'instant.</p>
+                        <p>Mbola tsy misy paositra aloha hatreto.</p>
                         {% if is_self %}
                         <a class="btn-profile btn-profile-primary" href="{% url 'post:addPost' %}">
-                            Créer votre premier post
+                            Paositra voalohany
                         </a>
                         {% endif %}
                     </div>
@@ -721,16 +723,18 @@
         <div class="photos-grid">
             {% for photo in photos %}
             <div class="photo-thumb">
-                <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}" data-lb>
+                <a href="{{ photo.header_image.url }}" target="_blank">
+                    <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
+                </a>
             </div>
             {% endfor %}
         </div>
         {% else %}
         <div class="empty-state">
             <span class="material-icons">photo_library</span>
-            <p>Aucune photo publiée.</p>
+            <p>Mbola tsy misy sary voaranty.</p>
             {% if is_self %}
-            <a class="btn-profile btn-profile-primary" href="{% url 'post:addPost' %}">Publier une photo</a>
+            <a class="btn-profile btn-profile-primary" href="{% url 'post:addPost' %}">Andranty sary</a>
             {% endif %}
         </div>
         {% endif %}
@@ -750,7 +754,7 @@
         {% else %}
         <div class="empty-state">
             <span class="material-icons">group</span>
-            <p>Aucun ami pour l'instant.</p>
+            <p>Mbola tsy misy paositra aloha hatreto.</p>
         </div>
         {% endif %}
     </div>
@@ -758,25 +762,25 @@
     <!-- ===================== TAB: ABOUT ===================== -->
     <div class="tab-pane" id="tab-about">
         <div class="profile-card" style="max-width:600px;">
-            <h6>Informations personnelles</h6>
+            <h6>Mombamomba manokana</h6>
 
             <div class="info-row">
                 <span class="material-icons">person</span>
                 <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Nom d'utilisateur</div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Anarana</div>
                     <div><strong>{{ username }}</strong></div>
                 </div>
             </div>
 
             <div class="info-row">
-                <span class="material-icons">email</span>
+                <span class="material-icons">mailaka</span>
                 <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Email</div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Mailaka</div>
                     <div>
                         {% if is_self %}
                             {{ email }}
                         {% elif hide_email %}
-                            <em style="color:var(--text-muted)">Masqué par l'utilisateur</em>
+                            <em style="color:var(--text-muted)">Notakoman'ny tompony</em>
                         {% else %}
                             {{ email }}
                         {% endif %}
@@ -798,7 +802,7 @@
             <div class="info-row">
                 <span class="material-icons">place</span>
                 <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Localisation</div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Toerana</div>
                     <div>{{ location }}</div>
                 </div>
             </div>
@@ -807,7 +811,7 @@
             <div class="info-row">
                 <span class="material-icons">calendar_today</span>
                 <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Membre depuis</div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Mpikambana h@</div>
                     <div>{{ date_joined|date:"d F Y" }}</div>
                 </div>
             </div>
@@ -815,7 +819,7 @@
             <div class="info-row">
                 <span class="material-icons">article</span>
                 <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Publications</div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Fandrantiana</div>
                     <div>{{ post_count }} post{% if post_count != 1 %}s{% endif %}</div>
                 </div>
             </div>
@@ -823,7 +827,7 @@
             <div class="info-row">
                 <span class="material-icons">group</span>
                 <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Amis</div>
+                    <div style="font-size:.8rem;color:var(--text-muted)">Namana</div>
                     <div>{{ friends_count }} ami{% if friends_count != 1 %}s{% endif %}</div>
                 </div>
             </div>
@@ -831,10 +835,10 @@
             {% if is_self %}
             <div style="margin-top:1rem;display:flex;gap:.7rem;flex-wrap:wrap;">
                 <a class="btn-profile btn-profile-primary" href="{% url 'account:edit' user_id=id %}">
-                    <span class="material-icons" style="font-size:1rem;">edit</span> Modifier le profil
+                    <span class="material-icons" style="font-size:1rem;">edit</span> Anova profil
                 </a>
                 <a class="btn-profile btn-profile-secondary" href="{% url 'password_change' %}">
-                    <span class="material-icons" style="font-size:1rem;">lock</span> Changer le mot de passe
+                    <span class="material-icons" style="font-size:1rem;">lock</span> Anova teny miafina
                 </a>
             </div>
             {% endif %}

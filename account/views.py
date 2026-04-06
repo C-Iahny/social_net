@@ -221,21 +221,15 @@ def account_view(request, *args, **kwargs):
 def account_search_view(request, *args, **kwargs):
 	context = {}
 	if request.method == "GET":
-		search_query = request.GET.get("q", "").strip()
-		context['search_query'] = search_query
-		if search_query:
-			search_results = Account.objects.filter(username__icontains=search_query).distinct()
+		search_query = request.GET.get("q")
+		if len(search_query) > 0:
+			search_results = Account.objects.filter(username__icontains=search_query).distinct()#.filter(email__icontains=search_query) <== à mettre devant le 1er filter normalement.
 			user = request.user
-			friend_ids = set()
-			if user.is_authenticated:
-				try:
-					friend_ids = set(FriendList.objects.get(user=user).friends.values_list('id', flat=True))
-				except FriendList.DoesNotExist:
-					pass
-			accounts = []  # [(account, is_friend)]
+			accounts = [] # [(account1, True), (account2, False), ...]
 			for account in search_results:
-				accounts.append((account, account.id in friend_ids))
+				accounts.append((account, False)) # you have no friends yet
 			context['accounts'] = accounts
+				
 	return render(request, "account/search_results.html", context)
 
 
@@ -250,36 +244,11 @@ def edit_account_view(request, *args, **kwargs):
 	if request.POST:
 		form = AccountUpdateForm(request.POST, request.FILES, instance=request.user)
 		if form.is_valid():
-			# delete the old profile image so the name is preserved.
-			#account.profile_image.delete() # ilay contraire foana no mahazo anah fa io ny form tena tokony ho izy.
 			form.save()
 			return redirect("account:view", user_id=account.pk)
-		else:
-			form = AccountUpdateForm(request.POST, instance=request.user,
-				initial={
-					"id":            account.pk,
-					"email":         account.email,
-					"username":      account.username,
-					"profile_image": account.profile_image,
-					"hide_email":    account.hide_email,
-					"bio":           account.bio,
-					"location":      account.location,
-				}
-			)
-			context['form'] = form
 	else:
-		form = AccountUpdateForm(
-			initial={
-					"id":            account.pk,
-					"email":         account.email,
-					"username":      account.username,
-					"profile_image": account.profile_image,
-					"hide_email":    account.hide_email,
-					"bio":           account.bio,
-					"location":      account.location,
-				}
-			)
-		context['form'] = form
+		form = AccountUpdateForm(instance=request.user)
+	context['form'] = form
 	context['DATA_UPLOAD_MAX_MEMORY_SIZE'] = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
 	return render(request, "account/edit_account.html", context)
 
@@ -287,10 +256,8 @@ def edit_account_view(request, *args, **kwargs):
 def save_temp_profile_image_from_base64String(imageString, user):
 	INCORRECT_PADDING_EXCEPTION = "Incorrect padding"
 	try:
-		if not os.path.exists(settings.TEMP):
-			os.mkdir(settings.TEMP)
-		if not os.path.exists(settings.TEMP + "/" + str(user.pk)):
-			os.mkdir(settings.TEMP + "/" + str(user.pk))
+		# os.makedirs crée tous les dossiers parents si nécessaire (important sur Railway)
+		os.makedirs(settings.TEMP + "/" + str(user.pk), exist_ok=True)
 		url = os.path.join(settings.TEMP + "/" + str(user.pk),TEMP_PROFILE_IMAGE_NAME)
 		storage = FileSystemStorage(location=url)
 		image = base64.b64decode(imageString)
@@ -332,8 +299,11 @@ def crop_image(request, *args, **kwargs):
 
 			crop_img.save(url)
 
-			# delete the old image
-			user.profile_image.delete()
+			# delete the old image (best-effort -- may fail if stored on Cloudinary with a legacy local path)
+			try:
+				user.profile_image.delete()
+			except Exception:
+				pass
 
 			# Save the cropped image to user model
 			with open(url, 'rb') as image_file:
