@@ -206,12 +206,23 @@ class DeletePostView(DeleteView):
 @login_required(login_url="login")
 def like_post(request):
     post_id = request.GET.get("post_id")
-    post = get_object_or_404(Post, id=post_id)
+    post    = get_object_or_404(Post, id=post_id)
+
     if post.likes.filter(id=request.user.id).exists():
         post.likes.remove(request.user)
+        liked = False
     else:
         post.likes.add(request.user)
-    # Retourner sur la page précédente si possible
+        liked = True
+
+    # ── Requête AJAX → JSON (pas de rechargement, pas de scroll to top) ───────
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'liked':       liked,
+            'total_likes': post.likes.count(),
+        })
+
+    # ── Requête classique (fallback sans JS) → redirection ────────────────────
     next_url = request.GET.get("next") or request.META.get("HTTP_REFERER") or "post:post-view"
     return redirect(next_url)
 
