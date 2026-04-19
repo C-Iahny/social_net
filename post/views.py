@@ -20,18 +20,44 @@ from personal.models import HeroSettings
 
 
 # ──────────────────────────────────────────────
-# Index (legacy page)
+# Index — page Explore publique (feed/index/)
 # ──────────────────────────────────────────────
 def Index(request):
-    continent    = Continent.objects.all()
-    countries    = Country.objects.all()
-    recent_posts = Post.objects.select_related("author").order_by("-id")[:12]
-    hero         = HeroSettings.get()          # singleton — crée l'instance si absente
+    from django.db.models import Count
+
+    # ── Tri dynamique ─────────────────────────────────────────────────────────
+    # ?sort=popular → classés par nombre de likes
+    # ?sort=recent  → classés par date (défaut)
+    sort = request.GET.get('sort', 'recent')
+
+    posts_qs = Post.objects.select_related("author")
+    if sort == 'popular':
+        # annotate évite le N+1 de total_likes() en template
+        posts_qs = posts_qs.annotate(like_count=Count('likes', distinct=True)).order_by("-like_count", "-id")
+    else:
+        posts_qs = posts_qs.order_by("-id")
+
+    recent_posts = posts_qs[:12]
+
+    # ── Sidebar : continents avec compte de pays en une seule requête ─────────
+    # FIX N+1 : on annotate au lieu de c.country_set.count dans le template
+    continent = Continent.objects.annotate(country_count=Count('country')).order_by('name')
+    countries = Country.objects.select_related('continent').order_by('name')
+
+    # ── Stats globales ────────────────────────────────────────────────────────
+    total_post_count = Post.objects.count()
+    total_user_count = User.objects.count()
+
+    hero = HeroSettings.get()          # singleton — crée l'instance si absente
+
     context = {
-        "continent":    continent,
-        "countries":    countries,
-        "recent_posts": recent_posts,
-        "hero":         hero,
+        "continent":        continent,
+        "countries":        countries,
+        "recent_posts":     recent_posts,
+        "hero":             hero,
+        "sort":             sort,
+        "total_post_count": total_post_count,
+        "total_user_count": total_user_count,
     }
     return render(request, "post/index.html", context)
 
