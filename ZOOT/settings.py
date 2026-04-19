@@ -67,11 +67,6 @@ INSTALLED_APPS = [
     # FIX : était après 'channels' — ordre incorrect.
     'daphne',
 
-    # ── Jazzmin — personnalise l'interface admin ───────────────────────────────
-    # Doit être avant 'django.contrib.admin' pour surcharger les templates admin.
-    # FIX : présent dans requirements.txt mais absent de INSTALLED_APPS.
-    'jazzmin',
-
     # ── WhiteNoise — désactive le serveur de fichiers statiques de Django ──────
     # (doit être AVANT django.contrib.staticfiles)
     'whitenoise.runserver_nostatic',
