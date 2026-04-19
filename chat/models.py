@@ -58,17 +58,25 @@ class RoomChatMessageManager(models.Manager):
 
 class RoomChatMessage(models.Model):
 	"""
-	Chat message created by a user inside a Room
+	Chat message created by a user inside a Room.
+	Can be a text message, a file attachment, or both.
 	"""
-	user                = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-	room                = models.ForeignKey(PrivateChatRoom, on_delete=models.CASCADE)
-	timestamp           = models.DateTimeField(auto_now_add=True)
-	content             = models.TextField(unique=False, blank=False,)
+	user      = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+	room      = models.ForeignKey(PrivateChatRoom, on_delete=models.CASCADE)
+	timestamp = models.DateTimeField(auto_now_add=True)
+	content   = models.TextField(unique=False, blank=True, default='')
+
+	# ── File attachment ──────────────────────────────────────────────────────
+	file      = models.FileField(upload_to='chat_files/', blank=True, null=True)
+	# 'image' | 'video' | 'document' | '' (text-only)
+	file_type = models.CharField(max_length=20, blank=True, default='')
 
 	objects = RoomChatMessageManager()
 
 	def __str__(self):
-		return self.content
+		if self.file:
+			return f'[{self.file_type or "file"}] {self.file.name}'
+		return self.content[:80]
 
 
 

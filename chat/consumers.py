@@ -71,6 +71,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				else:
 					raise ClientError(204, "Something went wrong retrieving the other users account details.")
 				await self.display_progress_bar(False)
+			elif command == "send_file":
+				# The file was already saved to DB by the HTTP upload view.
+				# We just need to broadcast it to the room group.
+				await self.send_file_room(
+					content["room"],
+					content.get("msg_id"),
+					content["file_url"],
+					content["file_name"],
+					content["file_type"],
+				)
 		except ClientError as e:
 			await self.handle_client_error(e)
 		except Exception as e:
@@ -215,6 +225,38 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		)
 
 
+	async def send_file_room(self, room_id, msg_id, file_url, file_name, file_type):
+		"""
+		Broadcast a file attachment to the room group.
+		The RoomChatMessage was already created by the HTTP upload view.
+		"""
+		if self.room_id is None or str(room_id) != str(self.room_id):
+			raise ClientError("ROOM_ACCESS_DENIED", "Room access denied")
+
+		room = await get_room_or_error(room_id, self.scope["user"])
+		connected_users = await get_connected_users(room)
+
+		# Increment unread count for the other (disconnected) user
+		preview = f'[📎 {file_name}]'
+		await asyncio.gather(
+			append_unread_msg_if_not_connected(room, room.user1, connected_users, preview),
+			append_unread_msg_if_not_connected(room, room.user2, connected_users, preview),
+		)
+
+		await self.channel_layer.group_send(
+			room.group_name,
+			{
+				"type":          "chat.file",
+				"profile_image": self.scope["user"].profile_image.url,
+				"username":      self.scope["user"].username,
+				"user_id":       self.scope["user"].id,
+				"msg_id":        msg_id,
+				"file_url":      file_url,
+				"file_name":     file_name,
+				"file_type":     file_type,
+			}
+		)
+
 	# These helper methods are named by the types we send - so chat.join becomes chat_join
 	async def chat_join(self, event):
 		"""
@@ -273,6 +315,21 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				"msg_id": event.get("msg_id"),
 			},
 		)
+
+	async def chat_file(self, event):
+		"""Broadcast a file attachment to all clients in the room."""
+		timestamp = calculate_timestamp(timezone.now())
+		await self.send_json({
+			"msg_type":        MSG_TYPE_FILE,
+			"username":        event["username"],
+			"user_id":         event["user_id"],
+			"profile_image":   event["profile_image"],
+			"file_url":        event["file_url"],
+			"file_name":       event["file_name"],
+			"file_type":       event["file_type"],
+			"natural_timestamp": timestamp,
+			"msg_id":          event.get("msg_id"),
+		})
 
 	async def send_messages_payload(self, messages, new_page_number):
 		"""
