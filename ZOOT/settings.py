@@ -27,10 +27,21 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
+# ── Email ─────────────────────────────────────────────────────────────────────
+# En développement : affiche les e-mails dans la console (pas d'envoi réel)
+# En production   : serveur SMTP configuré via variables d'environnement
 if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Développement seulement
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND       = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+    EMAIL_HOST          = config('EMAIL_HOST',     default='smtp.gmail.com')
+    EMAIL_PORT          = config('EMAIL_PORT',     default=587, cast=int)
+    EMAIL_USE_TLS       = config('EMAIL_USE_TLS',  default=True, cast=bool)
+    EMAIL_HOST_USER     = config('EMAIL_HOST_USER',     default='')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+    DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL',  default=config('EMAIL_HOST_USER', default=''))
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost, .railway.app', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
 
 # Railway health check — toujours autoriser le domaine de health check de Railway
 # (évite les boucles de redémarrage causées par les 400 sur le health check)
@@ -42,40 +53,50 @@ if not DEBUG:
 
 AUTH_USER_MODEL = 'account.Account'
 
-AUTHENTICATION_BACKENDS = ( 
-    'django.contrib.auth.backends.AllowAllUsersModelBackend', 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.AllowAllUsersModelBackend',
     'account.backends.CaseInsensitiveModelBackend',
-    )
+)
 
 # Application definition
 
 INSTALLED_APPS = [
-    # WhiteNoise — désactive le serveur de fichiers statiques de Django en développement
+    # ── Daphne doit être PREMIER dans INSTALLED_APPS ──────────────────────────
+    # Obligatoire pour que `python manage.py runserver` utilise Daphne (ASGI)
+    # au lieu du serveur WSGI intégré à Django. Doit précéder 'channels'.
+    # FIX : était après 'channels' — ordre incorrect.
+    'daphne',
+
+    # ── Jazzmin — personnalise l'interface admin ───────────────────────────────
+    # Doit être avant 'django.contrib.admin' pour surcharger les templates admin.
+    # FIX : présent dans requirements.txt mais absent de INSTALLED_APPS.
+    'jazzmin',
+
+    # ── WhiteNoise — désactive le serveur de fichiers statiques de Django ──────
     # (doit être AVANT django.contrib.staticfiles)
     'whitenoise.runserver_nostatic',
 
+    # ── Applications du projet ─────────────────────────────────────────────────
     'account',
     'personal',
     'friend',
     'public_chat',
-    'channels', # or daphne
-    'daphne',
-    'redis',
+    'channels',
     'django.contrib.humanize',
     'chat',
     'notification',
     'post',
     'ckeditor',
     'crispy_forms',
+    # FIX : django-crispy-forms 2.x a extrait les template packs en packages séparés.
+    # 'bootstrap3' n'est plus inclus par défaut. On utilise bootstrap4 (voir CRISPY_TEMPLATE_PACK).
+    'crispy_bootstrap4',
 
-
-
-
-
-    # Stockage cloud médias — doit être AVANT django.contrib.staticfiles
+    # ── Stockage cloud médias — doit être AVANT django.contrib.staticfiles ─────
     'cloudinary_storage',
     'cloudinary',
 
+    # ── Django core ────────────────────────────────────────────────────────────
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -83,7 +104,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+
+    # ── Utilitaires ────────────────────────────────────────────────────────────
+    # FIX : présent dans requirements.txt mais absent de INSTALLED_APPS.
+    'django_extensions',      # Commandes pratiques : shell_plus, graph_models, etc.
 ]
+# NOTE : 'redis' a été SUPPRIMÉ de INSTALLED_APPS — c'est un client Python
+# (bibliothèque), pas une application Django. L'inclure ici est une erreur.
 
 SITE_ID = 1
 
@@ -130,7 +157,6 @@ CHANNEL_LAYERS = {
         },
     },
 }
-
 
 
 # Database
@@ -193,7 +219,6 @@ USE_I18N = True
 USE_TZ = True
 
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
@@ -202,9 +227,6 @@ STATICFILES_DIRS = [
 ]
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn')
-
-# WhiteNoise — compression + cache-busting des fichiers statiques
-STATICFILES_STORAGE = 'ZOOT.storage.RelaxedStaticFilesStorage'
 
 # ── Médias (fichiers uploadés) ────────────────────────────────────────────────
 # En production : Cloudinary (fichiers persistants entre déploiements Railway)
@@ -215,11 +237,25 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media_cdn')
 
 if CLOUDINARY_URL:
-    # Production : Cloudinary héberge tous les médias
     import cloudinary
     cloudinary.config(cloudinary_url=CLOUDINARY_URL)
     CLOUDINARY_STORAGE = {'CLOUDINARY_URL': CLOUDINARY_URL}
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    _media_backend = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+else:
+    _media_backend = 'django.core.files.storage.FileSystemStorage'
+
+# ── Stockage (Django 4.2+) ────────────────────────────────────────────────────
+# FIX : STATICFILES_STORAGE et DEFAULT_FILE_STORAGE sont dépréciés en Django 4.2.
+# On utilise le nouveau dictionnaire STORAGES à la place.
+STORAGES = {
+    "default": {
+        "BACKEND": _media_backend,
+    },
+    "staticfiles": {
+        # WhiteNoise avec fallback sur les fichiers absents du manifeste (CKEditor, etc.)
+        "BACKEND": "ZOOT.storage.RelaxedStaticFilesStorage",
+    },
+}
 
 TEMP = os.path.join(BASE_DIR, 'media_cdn/temp')
 
@@ -231,7 +267,9 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024   # 100 Mo
 # (N'est PAS une limite dure sur la taille du fichier uploadé.)
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024    # 10 Mo (seuil mémoire↔disque)
 
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
+# FIX : 'bootstrap3' n'est plus inclus dans django-crispy-forms 2.x.
+# On utilise 'bootstrap4' via le package crispy-bootstrap4 (voir INSTALLED_APPS + requirements.txt).
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # URL de base de l'application (utilisée dans les e-mails, liens de partage, etc.)
 BASE_URL = config('BASE_URL', default='http://127.0.0.1:8000')

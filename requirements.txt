@@ -43,6 +43,7 @@ django-cloudinary-storage==0.3.0
 django-ckeditor==6.5.1
 django-js-asset==2.0.0
 django-crispy-forms==2.1
+crispy-bootstrap4==2024.1    # Template pack Bootstrap 4 requis par django-crispy-forms 2.x
 
 # ── Interface d'administration ───────────────────────────────────────────────
 django-jazzmin==2.6.0
