@@ -15,7 +15,7 @@
     text-align: center;
     position: relative;
     overflow: hidden;
-    margin-top: 0;        /* header is fixed, no extra margin needed */
+    margin-top: 0;
 }
 .explore-hero::before {
     content: '';
@@ -50,7 +50,6 @@
 .hero-search-wrap input {
     flex: 1; background: none; border: none; outline: none;
     color: #fff; font-size: .97rem;
-    placeholder-color: rgba(255,255,255,.7);
 }
 .hero-search-wrap input::placeholder { color: rgba(255,255,255,.72); }
 .hero-search-btn {
@@ -63,6 +62,15 @@
 }
 .hero-search-btn:hover { transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,.2); text-decoration: none; }
 .hero-search-btn .material-icons { font-size: 1rem; }
+
+/* ── Hero stats bar ── */
+.hero-stats {
+    display: flex; gap: 2.5rem; justify-content: center;
+    margin-top: 2rem; flex-wrap: wrap;
+}
+.hero-stat { text-align: center; }
+.hero-stat-val { font-size: 1.8rem; font-weight: 900; line-height: 1; display: block; }
+.hero-stat-lbl { font-size: .8rem; opacity: .8; margin-top: .2rem; display: block; letter-spacing: .03em; }
 
 /* ── Page wrapper ── */
 .explore-wrapper {
@@ -155,6 +163,31 @@
 
 /* ── MAIN CONTENT ── */
 
+/* Filter tabs */
+.filter-tabs {
+    display: flex; gap: .4rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .35rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1.2rem;
+}
+.filter-tab {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: .35rem;
+    padding: .5rem 1rem; border-radius: 9px;
+    font-size: .88rem; font-weight: 700;
+    text-decoration: none; color: var(--text-muted);
+    transition: background .15s, color .15s;
+}
+.filter-tab:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.filter-tab.active {
+    background: var(--accent); color: #fff;
+    box-shadow: 0 2px 10px rgba(24,119,242,.3);
+}
+.filter-tab.active:hover { background: var(--accent-dark); color: #fff; }
+.filter-tab .material-icons { font-size: 1rem; }
+
 /* Section header */
 .section-head {
     display: flex; align-items: center; justify-content: space-between;
@@ -174,11 +207,11 @@
 /* Posts grid */
 .posts-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1rem;
 }
 
-/* Post card */
+/* Post card — maintenant un lien cliquable */
 .explore-post-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -188,19 +221,24 @@
     display: flex; flex-direction: column;
     transition: transform .2s, box-shadow .2s, background .3s;
     text-decoration: none; color: var(--text);
+    cursor: pointer;
 }
 .explore-post-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 28px rgba(0,0,0,.13);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 32px rgba(0,0,0,.14);
     text-decoration: none; color: var(--text);
+    border-color: var(--accent);
 }
-[data-theme="dark"] .explore-post-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.5); }
+[data-theme="dark"] .explore-post-card:hover { box-shadow: 0 10px 32px rgba(0,0,0,.5); }
 
 .epc-thumb {
     width: 100%; height: 170px;
     object-fit: cover; display: block;
     background: var(--btn-bg);
+    transition: transform .3s;
 }
+.explore-post-card:hover .epc-thumb { transform: scale(1.03); }
+
 .epc-thumb-placeholder {
     width: 100%; height: 130px;
     background: linear-gradient(135deg, var(--btn-bg) 0%, var(--border) 100%);
@@ -238,6 +276,19 @@
 .epc-footer .likes .material-icons { font-size: .9rem; color: var(--accent); }
 .epc-date { font-size: .75rem; }
 
+/* Badge populaire */
+.epc-popular-badge {
+    position: absolute; top: .6rem; right: .6rem;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: #fff; font-size: .7rem; font-weight: 800;
+    padding: .2rem .55rem; border-radius: 20px;
+    display: flex; align-items: center; gap: .2rem;
+    box-shadow: 0 2px 8px rgba(239,68,68,.4);
+    pointer-events: none;
+}
+.epc-popular-badge .material-icons { font-size: .75rem; }
+.epc-thumb-wrap { position: relative; overflow: hidden; }
+
 /* Empty state */
 .explore-empty {
     text-align: center; padding: 4rem 1.5rem;
@@ -260,26 +311,37 @@
 }
 .stat-chip .material-icons { font-size: 1.15rem; color: var(--accent); }
 .stat-chip strong { font-weight: 800; }
+
+/* CTA bar */
+.explore-cta-bar {
+    text-align: center; margin-top: 1.8rem;
+}
+.explore-cta-btn {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .65rem 1.8rem;
+    border-radius: 12px; font-weight: 700; font-size: .95rem;
+    text-decoration: none; transition: background .15s, transform .12s;
+}
+.explore-cta-btn:hover { transform: translateY(-2px); text-decoration: none; }
+.explore-cta-primary { background: var(--accent); color: #fff; }
+.explore-cta-primary:hover { background: var(--accent-dark); color: #fff; }
+.explore-cta-secondary { background: var(--btn-bg); color: var(--text); border: 1px solid var(--border); margin-left: .5rem; }
+.explore-cta-secondary:hover { background: var(--btn-hover); color: var(--text); }
+.explore-cta-btn .material-icons { font-size: 1rem; }
 </style>
 
 <!-- ═══════════════════════════════════
-     HERO  (valeurs dynamiques via HeroSettings)
+     HERO
      ═══════════════════════════════════ -->
 <style>
   :root {
     --hero-from: {{ hero.gradient_from }};
     --hero-to:   {{ hero.gradient_to }};
   }
-
   {% if hero.background_image %}
-  /* Image de fond : le dégradé devient un calque semi-transparent */
   .explore-hero {
     background:
-      linear-gradient(
-        135deg,
-        {{ hero.gradient_from }}cc 0%,
-        {{ hero.gradient_to }}cc 100%
-      ),
+      linear-gradient(135deg, {{ hero.gradient_from }}cc 0%, {{ hero.gradient_to }}cc 100%),
       url('{{ hero.background_image.url }}') center / cover no-repeat !important;
   }
   {% endif %}
@@ -290,11 +352,36 @@
         <h1>{{ hero.title }}</h1>
         <p>{{ hero.subtitle }}</p>
         <div class="hero-search-wrap">
-            <input type="text" id="hero-search-input" placeholder="Rechercher un utilisateur, un post…"
+            <input type="text" id="hero-search-input"
+                   placeholder="Rechercher un utilisateur, un post…"
                    onkeydown="if(event.key==='Enter') doHeroSearch()">
             <a class="hero-search-btn" onclick="doHeroSearch()">
                 <span class="material-icons">search</span> Rechercher
             </a>
+        </div>
+
+        <!-- Statistiques globales dans le hero -->
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <span class="hero-stat-val">{{ total_post_count }}</span>
+                <span class="hero-stat-lbl">Publications</span>
+            </div>
+            <div class="hero-stat">
+                <span class="hero-stat-val">{{ total_user_count }}</span>
+                <span class="hero-stat-lbl">Membres</span>
+            </div>
+            {% if continent %}
+            <div class="hero-stat">
+                <span class="hero-stat-val">{{ continent|length }}</span>
+                <span class="hero-stat-lbl">Continents</span>
+            </div>
+            {% endif %}
+            {% if countries %}
+            <div class="hero-stat">
+                <span class="hero-stat-val">{{ countries|length }}</span>
+                <span class="hero-stat-lbl">Pays</span>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -307,7 +394,7 @@
     <!-- ─── SIDEBAR ─── -->
     <aside class="explore-sidebar">
 
-        <!-- Continents -->
+        <!-- Continents — FIX N+1 : utilise country_count annoté -->
         {% if continent %}
         <div class="ex-card">
             <p class="ex-card-title">Continents</p>
@@ -315,9 +402,7 @@
             <div class="continent-item">
                 <span class="continent-dot"></span>
                 {{ c.name }}
-                <span class="continent-count">
-                    {{ c.country_set.count }}
-                </span>
+                <span class="continent-count">{{ c.country_count }}</span>
             </div>
             {% endfor %}
         </div>
@@ -363,31 +448,30 @@
     <!-- ─── MAIN ─── -->
     <div class="explore-main">
 
-        <!-- Stats strip -->
-        <div class="stats-strip">
-            <div class="stat-chip">
-                <span class="material-icons">article</span>
-                <strong>{{ recent_posts|length }}</strong>&nbsp;posts récents
-            </div>
-            {% if continent %}
-            <div class="stat-chip">
-                <span class="material-icons">public</span>
-                <strong>{{ continent|length }}</strong>&nbsp;continents
-            </div>
-            {% endif %}
-            {% if countries %}
-            <div class="stat-chip">
-                <span class="material-icons">flag</span>
-                <strong>{{ countries|length }}</strong>&nbsp;pays
-            </div>
-            {% endif %}
+        <!-- Onglets de tri -->
+        <div class="filter-tabs">
+            <a class="filter-tab {% if sort == 'recent' or not sort %}active{% endif %}"
+               href="{% url 'post:index' %}?sort=recent">
+                <span class="material-icons">schedule</span>
+                Récents
+            </a>
+            <a class="filter-tab {% if sort == 'popular' %}active{% endif %}"
+               href="{% url 'post:index' %}?sort=popular">
+                <span class="material-icons">local_fire_department</span>
+                Populaires
+            </a>
         </div>
 
-        <!-- Posts section -->
+        <!-- Section header -->
         <div class="section-head">
             <h2>
+                {% if sort == 'popular' %}
+                <span class="material-icons">local_fire_department</span>
+                Publications populaires
+                {% else %}
                 <span class="material-icons">explore</span>
                 Publications récentes
+                {% endif %}
             </h2>
             {% if user.is_authenticated %}
             <a class="section-head-link" href="{% url 'post:post-view' %}">
@@ -395,7 +479,7 @@
             </a>
             {% else %}
             <a class="section-head-link" href="{% url 'login' %}">
-                Se connecter pour voir plus →
+                Se connecter →
             </a>
             {% endif %}
         </div>
@@ -403,22 +487,47 @@
         {% if recent_posts %}
         <div class="posts-grid" id="posts-grid">
             {% for post in recent_posts %}
-            <div class="explore-post-card">
+            {# Chaque carte est un lien vers le profil de l'auteur #}
+            <a class="explore-post-card" href="{% url 'account:view' user_id=post.author.id %}">
 
                 <!-- Thumbnail -->
-                {% if post.header_image_url %}
-                <img class="epc-thumb" src="{{ post.header_image_url }}" alt="{{ post.title }}">
-                {% else %}
-                <div class="epc-thumb-placeholder">
-                    <span class="material-icons">article</span>
+                <div class="epc-thumb-wrap">
+                    {% if post.header_image_url %}
+                    <img class="epc-thumb" src="{{ post.header_image_url }}"
+                         alt="{{ post.title }}"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="epc-thumb-placeholder" style="display:none;">
+                        <span class="material-icons">article</span>
+                    </div>
+                    {% else %}
+                    <div class="epc-thumb-placeholder">
+                        <span class="material-icons">article</span>
+                    </div>
+                    {% endif %}
+
+                    {# Badge "Trending" pour le tri populaire si likes > 5 #}
+                    {% if sort == 'popular' and post.like_count > 5 %}
+                    <div class="epc-popular-badge">
+                        <span class="material-icons">local_fire_department</span>
+                        Trending
+                    </div>
+                    {% endif %}
                 </div>
-                {% endif %}
 
                 <!-- Body -->
                 <div class="epc-body">
                     <div class="epc-author">
-                        <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+                        <img src="{{ post.author.profile_image.url }}"
+                             alt="{{ post.author.username }}"
+                             onerror="this.onerror=null;this.src='{% static 'images/profile_pic.png' %}'">
                         <span class="epc-author-name">{{ post.author.username }}</span>
+                        {% if post.category and post.category != 'Category' %}
+                        <span style="margin-left:auto;font-size:.72rem;background:var(--btn-bg);
+                                     border-radius:10px;padding:.1rem .5rem;color:var(--text-muted);
+                                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;">
+                            {{ post.category }}
+                        </span>
+                        {% endif %}
                     </div>
                     <div class="epc-title">{{ post.title }}</div>
                     {% if post.snippet and post.snippet != 'click the link above.' %}
@@ -430,37 +539,41 @@
                 <div class="epc-footer">
                     <span class="likes">
                         <span class="material-icons">thumb_up</span>
-                        {{ post.total_likes }}
+                        {% if sort == 'popular' %}
+                            {{ post.like_count }}
+                        {% else %}
+                            {{ post.total_likes }}
+                        {% endif %}
                     </span>
                     <span class="epc-date">{{ post.post_date|date:"d M Y" }}</span>
                 </div>
 
-            </div>
+            </a>
             {% endfor %}
         </div>
 
-        {% if user.is_authenticated %}
-        <div style="text-align:center; margin-top:1.5rem;">
-            <a href="{% url 'post:post-view' %}"
-               style="display:inline-flex; align-items:center; gap:.4rem; padding:.65rem 1.8rem;
-                      background:var(--accent); color:#fff; border-radius:10px;
-                      font-weight:700; text-decoration:none; font-size:.95rem;
-                      transition:background .15s;">
-                <span class="material-icons" style="font-size:1rem;">dynamic_feed</span>
-                Voir mon fil d'actualité complet
+        <!-- CTA après la grille -->
+        <div class="explore-cta-bar">
+            {% if user.is_authenticated %}
+            <a href="{% url 'post:post-view' %}" class="explore-cta-btn explore-cta-primary">
+                <span class="material-icons">dynamic_feed</span>
+                Mon fil d'actualité complet
             </a>
-        </div>
-        {% else %}
-        <div style="text-align:center; margin-top:1.5rem;">
-            <a href="{% url 'register' %}"
-               style="display:inline-flex; align-items:center; gap:.4rem; padding:.65rem 1.8rem;
-                      background:var(--accent); color:#fff; border-radius:10px;
-                      font-weight:700; text-decoration:none; font-size:.95rem;">
-                <span class="material-icons" style="font-size:1rem;">person_add</span>
-                Rejoindre ZOOT pour voir plus
+            <a href="{% url 'post:addPost' %}" class="explore-cta-btn explore-cta-secondary">
+                <span class="material-icons">add</span>
+                Nouveau post
             </a>
+            {% else %}
+            <a href="{% url 'register' %}" class="explore-cta-btn explore-cta-primary">
+                <span class="material-icons">person_add</span>
+                Rejoindre ZOOT
+            </a>
+            <a href="{% url 'login' %}" class="explore-cta-btn explore-cta-secondary">
+                <span class="material-icons">login</span>
+                Se connecter
+            </a>
+            {% endif %}
         </div>
-        {% endif %}
 
         {% else %}
         <div class="explore-empty">
@@ -468,11 +581,9 @@
             <h5>Aucun post à explorer pour l'instant</h5>
             <p>Soyez le premier à publier quelque chose sur ZOOT.</p>
             {% if user.is_authenticated %}
-            <a href="{% url 'post:addPost' %}"
-               style="display:inline-flex;align-items:center;gap:.4rem;margin-top:1rem;
-                      padding:.55rem 1.4rem;background:var(--accent);color:#fff;
-                      border-radius:10px;font-weight:700;text-decoration:none;">
-                <span class="material-icons" style="font-size:1rem;">add</span> Créer le premier post
+            <a href="{% url 'post:addPost' %}" class="explore-cta-btn explore-cta-primary"
+               style="display:inline-flex;margin-top:1rem;">
+                <span class="material-icons">add</span> Créer le premier post
             </a>
             {% endif %}
         </div>
@@ -490,15 +601,14 @@ function doHeroSearch() {
     }
 }
 
-/* ── Live client-side filter on post cards ── */
+/* ── Live client-side filter sur les cartes ── */
 (function(){
     var input = document.getElementById('hero-search-input');
     if (!input) return;
     input.addEventListener('input', function(){
         var q = this.value.toLowerCase();
-        var cards = document.querySelectorAll('#posts-grid .explore-post-card');
-        cards.forEach(function(card){
-            var title  = (card.querySelector('.epc-title')  || {}).textContent || '';
+        document.querySelectorAll('#posts-grid .explore-post-card').forEach(function(card){
+            var title  = (card.querySelector('.epc-title')      || {}).textContent || '';
             var author = (card.querySelector('.epc-author-name') || {}).textContent || '';
             card.style.display = (title + author).toLowerCase().includes(q) ? '' : 'none';
         });
