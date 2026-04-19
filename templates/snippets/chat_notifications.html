@@ -1,31 +1,55 @@
 {% load static %}
 
 <style type="text/css">
+    /* ── Chat notification cards ─────────────────────────────────── */
     .chat-card {
         border-bottom: 1px solid var(--border, #e0e0e0);
         background: var(--bg-card, #fff);
         color: var(--text, #1c1e21);
         transition: background .15s;
-        padding: .75rem 1rem !important;
-        gap: .6rem;
+        padding: .6rem .9rem !important;
+        gap: .5rem;
     }
     .chat-card:hover {
         cursor: pointer;
         background: var(--btn-bg, #f0f2f5);
     }
     .chat-card .notification-thumbnail-image {
-        width: 44px; height: 44px;
+        width: 42px; height: 42px;
         border-radius: 50%;
         border: 2px solid var(--border, #e0e0e0);
         flex-shrink: 0;
+        object-fit: cover;
     }
     .notification-chatroom-msg {
-        color: var(--accent, #1877f2);
-        font-size: .8rem;
+        color: var(--text-muted, #65676b);
+        font-size: .79rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 180px;
+    }
+    .chat-card-title {
+        font-weight: 700;
+        font-size: .87rem;
+        color: var(--text, #1c1e21);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 180px;
+    }
+    .chat-card-unread-dot {
+        width: 9px; height: 9px;
+        border-radius: 50%;
+        background: var(--accent, #1877f2);
+        flex-shrink: 0;
+        margin-left: auto;
+        align-self: center;
     }
     .timestamp-text {
-        font-size: .75rem;
+        font-size: .71rem;
         color: var(--text-muted, #65676b);
+        margin-top: 2px;
     }
     #id_notifications_loading_spinner {
         position: absolute;
@@ -35,31 +59,34 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: .75rem 1rem .45rem;
+        padding: .7rem 1rem .4rem;
         border-bottom: 1px solid var(--border, #e0e0e0);
-        margin-bottom: .3rem;
+        margin-bottom: .2rem;
         cursor: default;
     }
     .chat-dropdown-header-title {
         font-weight: 800;
-        font-size: .97rem;
+        font-size: .95rem;
         color: var(--text, #1c1e21);
         display: flex;
         align-items: center;
         gap: .4rem;
     }
-    .chat-dropdown-header-title .material-icons { font-size: 1.1rem; color: var(--accent, #1877f2); }
+    .chat-dropdown-header-title .material-icons { font-size: 1.05rem; color: var(--accent, #1877f2); }
     .chat-dropdown-header-goto {
-        font-size: .78rem;
+        font-size: .77rem;
         font-weight: 700;
         color: var(--accent, #1877f2);
         text-decoration: none;
-        padding: .22rem .6rem;
+        padding: .2rem .55rem;
         border-radius: 6px;
         background: transparent;
         border: none;
         cursor: pointer;
         transition: background .15s;
+        display: flex;
+        align-items: center;
+        gap: 3px;
     }
     .chat-dropdown-header-goto:hover { background: var(--btn-bg, #e4e6eb); }
 </style>
@@ -192,7 +219,7 @@
 	}
 
 	/*
-		Display a card that says "You have no notifications"
+		Display empty-state card + header
 	*/
 	function setupChatNotificationsMenu(){
 		var notificationContainer = document.getElementById("id_chat_notifications_container")
@@ -200,17 +227,11 @@
 		if(notificationContainer != null){
 			setupChatDropdownHeader()
 
-			card = createChatNotificationCard("id_no_chat_notifications")
-
-			var div = document.createElement("div")
-			div.classList.add("d-flex", "flex-row", "align-items-start")
-
-			span = document.createElement("span")
-			span.classList.add("align-items-start", "pt-1", "m-auto")
-			span.innerHTML = "You have no notifications."
-			div.appendChild(span)
-			card.appendChild(div)
-			notificationContainer.appendChild(card)
+			var empty = document.createElement("div")
+			empty.id = "id_no_chat_notifications"
+			empty.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;color:var(--text-muted,#65676b);gap:.5rem;"
+			empty.innerHTML = '<span class="material-icons" style="font-size:2.2rem;opacity:.35;">chat_bubble_outline</span><span style="font-size:.85rem;">Tsy misy hafatra vaovao</span>'
+			notificationContainer.appendChild(empty)
 
 			setChatNotificationsCount([])
 		}
@@ -272,36 +293,47 @@
 		})
 
 		var div1 = document.createElement("div")
-		div1.classList.add("d-flex", "flex-row", "align-items-start")
+		div1.classList.add("d-flex", "flex-row", "align-items-center")
+		div1.style.gap = ".65rem"
 		div1.id = assignChatDiv1Id(notification)
 
+		// Avatar
 		img = createChatProfileImageThumbnail(notification)
 		img.id = assignChatImgId(notification)
 		div1.appendChild(img)
 
+		// Text block
 		var div2 = document.createElement("div")
 		div2.classList.add("d-flex", "flex-column")
+		div2.style.cssText = "flex:1;min-width:0;"
 		div2.id = assignChatDiv2Id(notification)
-		
-		var title = document.createElement("span")
-		title.classList.add("align-items-start")
+
+		var title = document.createElement("div")
+		title.classList.add("chat-card-title")
 		title.innerHTML = notification['from']['title']
 		title.id = assignChatTitleId(notification)
 		div2.appendChild(title)
 
-		var chatRoomMessage = document.createElement("span")
+		var chatRoomMessage = document.createElement("div")
 		chatRoomMessage.id = assignChatroomMessageId(notification)
-		chatRoomMessage.classList.add("align-items-start", "pt-1", "small", "notification-chatroom-msg")
-		if(notification['verb'].length > 50){
-			chatRoomMessage.innerHTML = notification['verb'].slice(0, 50) + "..."
-		}
-		else{
-			chatRoomMessage.innerHTML = notification['verb']
-		}
+		chatRoomMessage.classList.add("notification-chatroom-msg")
+		chatRoomMessage.innerHTML = notification['verb'].length > 45
+			? notification['verb'].slice(0, 45) + "…"
+			: notification['verb']
 		div2.appendChild(chatRoomMessage)
+
+		// Timestamp below message
+		var ts = createChatTimestampElement(notification)
+		ts.style.margin = "0"
+		div2.appendChild(ts)
 		div1.appendChild(div2)
+
+		// Unread dot
+		var dot = document.createElement("div")
+		dot.classList.add("chat-card-unread-dot")
+		div1.appendChild(dot)
+
 		card.appendChild(div1)
-		card.appendChild(createChatTimestampElement(notification))
 		return card
 	}
 

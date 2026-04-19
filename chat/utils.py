@@ -44,12 +44,19 @@ def calculate_timestamp(timestamp):
 class LazyRoomChatMessageEncoder(Serializer):
     def get_dump_object(self, obj):
         dump_object = {}
-        dump_object.update({'msg_type': MSG_TYPE_MESSAGE})
-        dump_object.update({'msg_id': str(obj.id)})
-        dump_object.update({'user_id': str(obj.user.id)})
-        dump_object.update({'username': str(obj.user.username)})
-        dump_object.update({'message': str(obj.content)})
-        dump_object.update({'profile_image': str(obj.user.profile_image.url)})
-        dump_object.update({'natural_timestamp': calculate_timestamp(obj.timestamp)})
+        # Determine message type
+        if obj.file:
+            dump_object['msg_type']  = MSG_TYPE_FILE
+            dump_object['file_url']  = str(obj.file.url)
+            dump_object['file_name'] = obj.file.name.split('/')[-1]
+            dump_object['file_type'] = obj.file_type or 'document'
+        else:
+            dump_object['msg_type'] = MSG_TYPE_MESSAGE
+        dump_object['msg_id']            = str(obj.id)
+        dump_object['user_id']           = str(obj.user.id)
+        dump_object['username']          = str(obj.user.username)
+        dump_object['message']           = str(obj.content)
+        dump_object['profile_image']     = str(obj.user.profile_image.url)
+        dump_object['natural_timestamp'] = calculate_timestamp(obj.timestamp)
         return dump_object
 

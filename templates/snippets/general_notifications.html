@@ -2,52 +2,114 @@
 
 
 <style type="text/css">
-	.notification-thumbnail-image{
-		height: 50px;
-		width: 50px;
-	}
+    /* ── General notification cards ─────────────────────────────── */
+    .notification-thumbnail-image {
+        height: 44px; width: 44px;
+    }
     .general-card {
         border-bottom: 1px solid var(--border, #e0e0e0);
         background: var(--bg-card, #fff);
         color: var(--text, #1c1e21);
         transition: background .15s;
-        padding: .75rem 1rem !important;
-        gap: .6rem;
+        padding: .65rem .9rem !important;
+        gap: .55rem;
+        position: relative;
+    }
+    .general-card.unread {
+        background: rgba(24,119,242,.05);
+    }
+    .general-card.unread::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 3px;
+        background: var(--accent, #1877f2);
+        border-radius: 0 2px 2px 0;
     }
     .general-card:hover {
         cursor: pointer;
         background: var(--btn-bg, #f0f2f5);
     }
     .general-card .notification-thumbnail-image {
-        width: 44px; height: 44px;
+        width: 42px; height: 42px;
         border-radius: 50%;
         border: 2px solid var(--border, #e0e0e0);
         flex-shrink: 0;
+        object-fit: cover;
     }
+    /* Avatar wrap with type icon badge */
+    .notif-avatar-wrap {
+        position: relative;
+        flex-shrink: 0;
+    }
+    .notif-avatar-wrap .notif-type-icon {
+        position: absolute;
+        bottom: -3px; right: -3px;
+        width: 18px; height: 18px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .65rem;
+        border: 2px solid var(--bg-card, #fff);
+        line-height: 1;
+    }
+    .notif-type-icon.friend-req  { background: #1877f2; color: #fff; }
+    .notif-type-icon.friend-acc  { background: #4caf7d; color: #fff; }
+    .notif-type-icon.post-notif  { background: #f59e0b; color: #fff; }
+    .notif-type-icon .material-icons { font-size: .7rem; }
+
+    /* Verb text */
+    .notif-verb {
+        font-size: .84rem;
+        line-height: 1.35;
+        color: var(--text, #1c1e21);
+        flex: 1;
+        min-width: 0;
+    }
+    .notif-verb strong { font-weight: 700; }
+
     .general-card .btn-primary {
         background: var(--accent, #1877f2);
         border-color: var(--accent, #1877f2);
-        font-size: .82rem;
-        padding: .3rem .75rem;
+        font-size: .8rem;
+        padding: .28rem .7rem;
         border-radius: 8px;
+        font-weight: 600;
     }
     .general-card .btn-secondary {
         background: var(--btn-bg, #e4e6eb);
         border-color: var(--border, #cdd0d4);
         color: var(--text, #1c1e21);
-        font-size: .82rem;
-        padding: .3rem .75rem;
+        font-size: .8rem;
+        padding: .28rem .7rem;
         border-radius: 8px;
+        font-weight: 600;
     }
+    .general-card .btn-primary:hover  { opacity: .88; }
+    .general-card .btn-secondary:hover { opacity: .78; }
+
     .timestamp-text {
-        font-size: .75rem;
+        font-size: .72rem;
         color: var(--text-muted, #65676b);
+        margin-top: 2px;
     }
-	
-	#id_notifications_loading_spinner{
-		position: absolute;
-		margin-top: 40px;
-	}
+
+    /* Empty state */
+    .notif-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        color: var(--text-muted, #65676b);
+        gap: .5rem;
+    }
+    .notif-empty .material-icons { font-size: 2.2rem; opacity: .35; }
+    .notif-empty span { font-size: .85rem; }
+
+    #id_notifications_loading_spinner {
+        position: absolute;
+        margin-top: 40px;
+    }
 </style>
 
 
@@ -181,20 +243,16 @@
 		})
 
 		var div1 = document.createElement("div")
-		div1.classList.add("d-flex", "flex-row", "align-items-start")
+		div1.classList.add("d-flex", "flex-row", "align-items-center")
 		div1.id = assignGeneralDiv1Id(notification)
 
-		img = createGeneralProfileImageThumbnail(notification)
-		div1.appendChild(img)
+		div1.appendChild(createGeneralProfileImageThumbnail(notification))
 
 		span = document.createElement("span")
-		span.classList.add("align-items-start", "pt-1", "m-auto")
-		if(notification['verb'].length > 50){
-			span.innerHTML = notification['verb'].slice(0, 50) + "..."
-		}
-		else{
-			span.innerHTML = notification['verb']
-		}
+		span.classList.add("notif-verb")
+		span.innerHTML = notification['verb'].length > 60
+			? notification['verb'].slice(0, 60) + "…"
+			: notification['verb']
 		span.id = assignGeneralVerbId(notification)
 		div1.appendChild(span)
 		card.appendChild(div1)
@@ -226,17 +284,14 @@
 
 		// Is the friend request PENDING? (not answered yet)
 		if(notification['is_active'] == "True"){
-
-			//console.log("found an active friend request")
 			div1 = document.createElement("div")
-			div1.classList.add("d-flex", "flex-row", "align-items-start")
+			div1.classList.add("d-flex", "flex-row", "align-items-center")
 			div1.id = assignGeneralDiv1Id(notification)
-			
-			img = createGeneralProfileImageThumbnail(notification)
-			div1.appendChild(img)
+
+			div1.appendChild(createGeneralProfileImageThumbnail(notification))
 
 			span = document.createElement("span")
-			span.classList.add("m-auto")
+			span.classList.add("notif-verb")
 			span.innerHTML = notification['verb']
 			span.id = assignGeneralVerbId(notification)
 			div1.appendChild(span)
@@ -244,12 +299,12 @@
 
 			div2 = document.createElement("div")
 			div2.classList.add("d-flex", "flex-row", "mt-2")
+			div2.style.paddingLeft = "3.1rem"  // align under verb
 			div2.id = assignGeneralDiv2Id(notification)
 
-			pos_action = document.createElement("a")
+			pos_action = document.createElement("button")
 			pos_action.classList.add("btn", "btn-primary", "mr-2")
-			pos_action.href = "#"
-			pos_action.innerHTML = "Accept"
+			pos_action.innerHTML = '<span class="material-icons" style="font-size:.9rem;vertical-align:middle;margin-right:3px;">check</span>Accepter'
 			pos_action.addEventListener("click", function(e){
 				e.stopPropagation();
 				sendAcceptFriendRequestToSocket(notification['notification_id'])
@@ -257,10 +312,9 @@
 			pos_action.id = assignGeneralPosActionId(notification)
 			div2.appendChild(pos_action)
 
-			neg_action = document.createElement("a")
+			neg_action = document.createElement("button")
 			neg_action.classList.add("btn", "btn-secondary")
-			neg_action.href = "#"
-			neg_action.innerHTML = "Decline"
+			neg_action.innerHTML = '<span class="material-icons" style="font-size:.9rem;vertical-align:middle;margin-right:3px;">close</span>Refuser'
 			neg_action.addEventListener("click", function(e){
 				e.stopPropagation();
 				sendDeclineFriendRequestToSocket(notification['notification_id'])
@@ -272,15 +326,13 @@
 		// The friend request has been answered (Declined or accepted)
 		else{
 			var div1 = document.createElement("div")
-			div1.classList.add("d-flex", "flex-row", "align-items-start")
+			div1.classList.add("d-flex", "flex-row", "align-items-center")
 			div1.id = assignGeneralDiv1Id(notification)
 
-			img = createGeneralProfileImageThumbnail(notification)
-			img.id = assignGeneralImgId(notification)
-			div1.appendChild(img)
+			div1.appendChild(createGeneralProfileImageThumbnail(notification))
 
 			span = document.createElement("span")
-			span.classList.add("m-auto")
+			span.classList.add("notif-verb")
 			span.innerHTML = notification['verb']
 			span.id = assignGeneralVerbId(notification)
 			div1.appendChild(span)
@@ -299,27 +351,23 @@
 		var notificationContainer = document.getElementById("id_general_notifications_container")
 
 		if(notificationContainer != null){
-			card = createGeneralNotificationCard("id_no_general_notifications")
-
-			var div = document.createElement("div")
-			div.classList.add("d-flex", "flex-row", "align-items-start")
-
-			span = document.createElement("span")
-			span.classList.add("align-items-start", "pt-1", "m-auto")
-			span.innerHTML = "You have no notifications."
-			div.appendChild(span)
-			card.appendChild(div)
-			notificationContainer.appendChild(card)
+			// Empty state
+			var empty = document.createElement("div")
+			empty.id = "id_no_general_notifications"
+			empty.classList.add("notif-empty")
+			empty.innerHTML = '<span class="material-icons">notifications_off</span><span>Tsy misy famantarana</span>'
+			notificationContainer.appendChild(empty)
 		}
 	}
 
 	/*
-		Remove the element that says "There are no notifications".
+		Remove the empty-state element.
 	*/
 	function clearNoGeneralNotificationsCard(){
 		var element = document.getElementById("id_no_general_notifications")
-		if(element != null && element != "undefined"){
-			document.getElementById("id_general_notifications_container").removeChild(element)
+		if(element != null){
+			var container = document.getElementById("id_general_notifications_container")
+			if(container && container.contains(element)) container.removeChild(element)
 		}
 	}
 
@@ -336,14 +384,32 @@
 	}
 
 	/*
-		Circular image icon that can be in a notification card
+		Avatar wrap with type badge icon
 	*/
 	function createGeneralProfileImageThumbnail(notification){
+		var wrap = document.createElement("div")
+		wrap.classList.add("notif-avatar-wrap", "mr-2")
+
 		var img = document.createElement("img")
-		img.classList.add("notification-thumbnail-image", "img-fluid", "rounded-circle", "mr-2")
+		img.classList.add("notification-thumbnail-image", "img-fluid", "rounded-circle")
 		img.src = "{% static 'images/profile_pic.png' %}"
 		img.id = assignGeneralImgId(notification)
-		return img
+		img.onerror = function(){ this.src = "{% static 'images/profile_pic.png' %}"; }
+		wrap.appendChild(img)
+
+		// Type badge
+		var badge = document.createElement("span")
+		badge.classList.add("notif-type-icon")
+		if(notification['notification_type'] === "FriendRequest"){
+			badge.classList.add("friend-req")
+			badge.innerHTML = '<span class="material-icons">person_add</span>'
+		} else if(notification['notification_type'] === "FriendList"){
+			badge.classList.add("friend-acc")
+			badge.innerHTML = '<span class="material-icons">check</span>'
+		}
+		wrap.appendChild(badge)
+
+		return wrap
 	}
 
 	/*
