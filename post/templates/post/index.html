@@ -446,7 +446,7 @@
     </aside>
 
     <!-- ─── MAIN ─── -->
-    <div class="explore-main">
+    <div class="explore-main" id="explore-main-content">
 
         <!-- Onglets de tri -->
         <div class="filter-tabs">
@@ -614,6 +614,71 @@ function doHeroSearch() {
         });
     });
 })();
+
+/* ════════════════════════════════════════════════════════════
+   AJAX : onglets Récent / Populaire — sans rechargement de page
+   ════════════════════════════════════════════════════════════
+   Fonctionnement :
+   1. On intercepte le clic sur un onglet de filtre.
+   2. On fetch() la même URL avec le nouveau ?sort=...
+   3. On extrait #explore-main-content de la réponse HTML.
+   4. On remplace le contenu dans la page actuelle.
+   5. history.pushState met à jour l'URL sans rechargement.
+   ============================================================ */
+function attachFilterHandlers() {
+    document.querySelectorAll('.filter-tab').forEach(function(tab) {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            var url = this.href;
+            swapFilterContent(url);
+        });
+    });
+}
+
+function swapFilterContent(url) {
+    var mainEl = document.getElementById('explore-main-content');
+    if (!mainEl) { window.location.href = url; return; }
+
+    // Feedback visuel : atténuer le contenu pendant le chargement
+    mainEl.style.transition  = 'opacity .15s';
+    mainEl.style.opacity     = '.45';
+    mainEl.style.pointerEvents = 'none';
+
+    fetch(url)
+        .then(function(r) {
+            if (!r.ok) throw new Error('network');
+            return r.text();
+        })
+        .then(function(html) {
+            var parser  = new DOMParser();
+            var doc     = parser.parseFromString(html, 'text/html');
+            var newMain = doc.getElementById('explore-main-content');
+
+            if (newMain) {
+                mainEl.innerHTML = newMain.innerHTML;
+                attachFilterHandlers(); // Réattacher aux nouveaux onglets dans le DOM
+            }
+
+            // Mettre à jour l'URL dans la barre d'adresse sans rechargement
+            history.pushState({ url: url }, '', url);
+
+            // Restaurer l'affichage
+            mainEl.style.opacity      = '';
+            mainEl.style.pointerEvents = '';
+        })
+        .catch(function() {
+            // Fallback : navigation classique si fetch échoue
+            window.location.href = url;
+        });
+}
+
+// Gérer le bouton "précédent" / "suivant" du navigateur
+window.addEventListener('popstate', function(e) {
+    swapFilterContent(window.location.href);
+});
+
+// Attacher les handlers au chargement initial
+attachFilterHandlers();
 </script>
 
 {% endblock content %}
