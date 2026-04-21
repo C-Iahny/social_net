@@ -44,6 +44,7 @@ urlpatterns = [
     path('friend/', include('friend.urls', namespace='friend')),
     path('chat/', include('chat.urls', namespace='chat')),
     path('stories/', include('stories.urls', namespace='stories')),
+    path('notif/', include('notification.urls', namespace='notification')),
 
     path('register/', register_view, name="register"),
     path('login/', login_view, name="login"),

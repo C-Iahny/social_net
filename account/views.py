@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import login, authenticate, logout
 from django.conf import settings
 
@@ -219,18 +219,113 @@ def account_view(request, *args, **kwargs):
 
 
 def account_search_view(request, *args, **kwargs):
-	context = {}
-	if request.method == "GET":
-		search_query = request.GET.get("q")
-		if len(search_query) > 0:
-			search_results = Account.objects.filter(username__icontains=search_query).distinct()#.filter(email__icontains=search_query) <== à mettre devant le 1er filter normalement.
-			user = request.user
-			accounts = [] # [(account1, True), (account2, False), ...]
-			for account in search_results:
-				accounts.append((account, False)) # you have no friends yet
-			context['accounts'] = accounts
-				
-	return render(request, "account/search_results.html", context)
+    """Recherche globale : utilisateurs + posts + hashtags."""
+    from django.db.models import Q, Count
+    import re
+
+    context = {}
+    search_query = (request.GET.get('q') or '').strip()
+
+    if search_query:
+        # ── Utilisateurs ──────────────────────────────────────────────────────
+        search_results = Account.objects.filter(
+            username__icontains=search_query
+        ).distinct()[:20]
+
+        user = request.user
+        try:
+            friend_list = FriendList.objects.get(user=user)
+            friend_ids  = set(friend_list.friends.values_list('id', flat=True))
+        except (FriendList.DoesNotExist, AttributeError):
+            friend_ids = set()
+
+        accounts = []
+        for acc in search_results:
+            accounts.append((acc, acc.id in friend_ids))
+        context['accounts'] = accounts
+
+        # ── Posts ─────────────────────────────────────────────────────────────
+        from post.models import Post
+        posts = Post.objects.filter(
+            Q(title__icontains=search_query) | Q(body__icontains=search_query)
+        ).select_related('author').order_by('-id')[:10]
+        context['posts'] = posts
+
+        # ── Hashtags ──────────────────────────────────────────────────────────
+        tag_query = search_query.lstrip('#').lower()
+        from post.models import Post as PostModel
+        matching_posts = PostModel.objects.filter(
+            Q(body__icontains='#' + tag_query) | Q(title__icontains='#' + tag_query)
+        ).values_list('body', 'title')
+
+        pattern = re.compile(r'#(' + re.escape(tag_query) + r'[a-zA-ZÀ-ÿ0-9_]*)', re.I)
+        tag_counts = {}
+        for body, title in matching_posts:
+            text = re.sub(r'<[^>]+>', ' ', (body or '') + ' ' + (title or ''))
+            for t in pattern.findall(text):
+                k = t.lower()
+                tag_counts[k] = tag_counts.get(k, 0) + 1
+        hashtags = [
+            {'tag': '#' + t, 'count': c}
+            for t, c in sorted(tag_counts.items(), key=lambda x: -x[1])[:8]
+        ]
+        context['hashtags'] = hashtags
+        context['query'] = search_query
+        context['total'] = len(accounts) + len(list(posts)) + len(hashtags)
+
+    return render(request, "account/search_results.html", context)
+
+
+def global_search_api(request):
+    """API JSON pour le live-search du header (suggestions rapides)."""
+    from django.db.models import Q
+    from post.models import Post
+    import re
+
+    q = (request.GET.get('q') or '').strip()
+    if len(q) < 2:
+        return JsonResponse({'users': [], 'posts': [], 'hashtags': []})
+
+    # Users
+    users = Account.objects.filter(username__istartswith=q).values(
+        'id', 'username', 'profile_image'
+    )[:5]
+    users_data = [
+        {
+            'id':       u['id'],
+            'username': u['username'],
+            'avatar':   u['profile_image'] if u['profile_image'] else '',
+        }
+        for u in users
+    ]
+
+    # Posts
+    posts_qs = Post.objects.filter(
+        Q(title__icontains=q)
+    ).values('id', 'title', 'author__username')[:4]
+    posts_data = [
+        {'id': p['id'], 'title': p['title'], 'author': p['author__username']}
+        for p in posts_qs
+    ]
+
+    # Hashtags
+    tag_clean = q.lstrip('#').lower()
+    matching = Post.objects.filter(
+        Q(body__icontains='#' + tag_clean) | Q(title__icontains='#' + tag_clean)
+    ).values_list('body', 'title')[:30]
+    pattern = re.compile(r'#(' + re.escape(tag_clean) + r'[a-zA-ZÀ-ÿ0-9_]*)', re.I)
+    tag_counts = {}
+    for body, title in matching:
+        text = re.sub(r'<[^>]+>', ' ', (body or '') + ' ' + (title or ''))
+        for t in pattern.findall(text):
+            k = t.lower()
+            tag_counts[k] = tag_counts.get(k, 0) + 1
+    hashtags = [
+        {'tag': '#' + t, 'count': c}
+        for t, c in sorted(tag_counts.items(), key=lambda x: -x[1])[:4]
+    ]
+
+    return JsonResponse({'users': users_data, 'posts': posts_data, 'hashtags': hashtags})
 
 
 def edit_account_view(request, *args, **kwargs):
