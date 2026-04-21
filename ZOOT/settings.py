@@ -303,6 +303,19 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 # URL de base de l'application (utilisée dans les e-mails, liens de partage, etc.)
 BASE_URL = config('BASE_URL', default='http://127.0.0.1:8000')
 
+# ── Web Push Notifications (VAPID) ───────────────────────────────────────────
+VAPID_PUBLIC_KEY   = config('VAPID_PUBLIC_KEY',   default='')
+VAPID_PRIVATE_KEY  = config('VAPID_PRIVATE_KEY',  default='')
+VAPID_CLAIMS_EMAIL = config('VAPID_CLAIMS_EMAIL', default='admin@vazimba.com')
+
+# ── Cache (pour les trending hashtags) ───────────────────────────────────────
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'zoot-cache',
+    }
+}
+
 # ── Sécurité production ───────────────────────────────────────────────────────
 # Domaines autorisés pour les requêtes CSRF (obligatoire pour Railway / HTTPS)
 CSRF_TRUSTED_ORIGINS = config(

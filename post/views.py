@@ -20,6 +20,44 @@ from friend.models import FriendList
 from personal.models import HeroSettings
 
 
+# ──────────────────────────────────────────────────────────────
+# Trending hashtags (cached, recalculé toutes les 30 min)
+# ──────────────────────────────────────────────────────────────
+def get_trending_hashtags(limit=10, days=7):
+    """
+    Extrait et classe les hashtags les plus utilisés dans les posts récents.
+    Résultat mis en cache 30 minutes (LocMemCache).
+    """
+    import re
+    from datetime import timedelta
+    from django.utils import timezone
+    from django.core.cache import cache
+
+    cache_key = f'trending_hashtags_{limit}_{days}'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    cutoff = timezone.now().date() - timedelta(days=days)
+    posts = Post.objects.filter(post_date__gte=cutoff).values_list('body', 'title')
+
+    counts = {}
+    pattern = re.compile(r'#([a-zA-ZÀ-ÿ0-9_]{2,30})')
+    for body, title in posts:
+        # Nettoyer les balises HTML avant d'extraire
+        text = re.sub(r'<[^>]+>', ' ', (body or '') + ' ' + (title or ''))
+        for tag in pattern.findall(text):
+            t = tag.lower()
+            counts[t] = counts.get(t, 0) + 1
+
+    result = [
+        {'tag': '#' + tag, 'count': cnt}
+        for tag, cnt in sorted(counts.items(), key=lambda x: -x[1])[:limit]
+    ]
+    cache.set(cache_key, result, 1800)  # 30 min
+    return result
+
+
 # ──────────────────────────────────────────────
 # Index — page Explore publique (feed/index/)
 # ──────────────────────────────────────────────
@@ -130,11 +168,12 @@ def post_feed_view(request):
         post.total_reactions   = sum(post.reaction_counts.values())
 
     context = {
-        "friends":          friends,
-        "friends_count":    friends.count(),
-        "posts_of_the_page": posts_of_the_page,
-        "post_form":        PostForm(),
-        "my_post_count":    my_post_count,
+        "friends":            friends,
+        "friends_count":      friends.count(),
+        "posts_of_the_page":  posts_of_the_page,
+        "post_form":          PostForm(),
+        "my_post_count":      my_post_count,
+        "trending_hashtags":  get_trending_hashtags(),
     }
     return render(request, "post/post_view.html", context)
 
@@ -353,6 +392,19 @@ def add_comment(request, post_id):
         comment.author = request.user
         comment.save()
 
+        # Push notification au propriétaire du post
+        if post.author != request.user:
+            try:
+                from notification.models import PushSubscription
+                PushSubscription.send_notification(
+                    user  = post.author,
+                    title = 'VAZIMBA — Commentaire',
+                    body  = f"{request.user.username} a commenté votre post : {comment.body[:60]}",
+                    url   = '/feed/',
+                )
+            except Exception:
+                pass
+
         # Réponse JSON pour AJAX
         return JsonResponse({
             "ok":         True,
@@ -419,6 +471,20 @@ def react_post(request):
     )
     counts = {row['reaction_type']: row['c'] for row in counts_qs}
     total  = sum(counts.values())
+
+    # Push notification au propriétaire du post (sauf si c'est lui-même qui réagit)
+    if user_reaction and post.author != request.user:
+        try:
+            from notification.models import PushSubscription
+            EMOJI = {'like':'👍','heart':'❤️','laugh':'😂','wow':'😮','sad':'😢'}
+            PushSubscription.send_notification(
+                user  = post.author,
+                title = 'VAZIMBA — Réaction',
+                body  = f"{request.user.username} a réagi {EMOJI.get(user_reaction,'👍')} à votre post",
+                url   = '/feed/',
+            )
+        except Exception:
+            pass
 
     return JsonResponse({
         'user_reaction': user_reaction,
