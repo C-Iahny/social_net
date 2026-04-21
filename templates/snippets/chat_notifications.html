@@ -506,7 +506,8 @@
 	function setChatNotificationsCount(count){
 		var countElement = document.getElementById("id_chat_notifications_count")
 		if(count > 0){
-			countElement.style.background = "red"
+			var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent3').trim() || '#e0245e';
+			countElement.style.background = accentColor;
 			countElement.style.display = "block"
 			countElement.innerHTML = count
 		}

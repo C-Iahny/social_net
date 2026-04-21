@@ -52,9 +52,9 @@
         border: 2px solid var(--bg-card, #fff);
         line-height: 1;
     }
-    .notif-type-icon.friend-req  { background: #1877f2; color: #fff; }
-    .notif-type-icon.friend-acc  { background: #4caf7d; color: #fff; }
-    .notif-type-icon.post-notif  { background: #f59e0b; color: #fff; }
+    .notif-type-icon.friend-req  { background: var(--accent,  #6366f1); color: #fff; }
+    .notif-type-icon.friend-acc  { background: var(--color-success, #4caf7d); color: #fff; }
+    .notif-type-icon.post-notif  { background: var(--accent3, #f59e0b); color: #fff; }
     .notif-type-icon .material-icons { font-size: .7rem; }
 
     /* Verb text */
@@ -726,7 +726,8 @@
 	function setUnreadGeneralNotificationsCount(count){
 		var countElement = document.getElementById("id_general_notifications_count")
 		if(count > 0){
-			countElement.style.background = "red"
+			var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent3').trim() || '#e0245e';
+			countElement.style.background = accentColor;
 			countElement.style.display = "block"
 			countElement.innerHTML = count
 		}
