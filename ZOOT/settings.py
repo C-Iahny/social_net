@@ -163,24 +163,35 @@ CHANNEL_LAYERS = {
 # Si DATABASE_URL est définie (Railway / Heroku), elle a la priorité.
 # Sinon, les variables individuelles du .env local sont utilisées.
 _DATABASE_URL = config('DATABASE_URL', default=None)
+_DB_PASSWORD  = config('DB_PASSWORD', default=None)
 
 if _DATABASE_URL:
+    # Production (Railway, Heroku, etc.) — URL complète
     DATABASES = {
         'default': dj_database_url.parse(
             _DATABASE_URL,
             conn_max_age=600,
-            ssl_require=False,   # Railway gère le SSL en interne ; passer à True si besoin
+            ssl_require=False,
         )
     }
-else:
+elif _DB_PASSWORD:
+    # Dev avec PostgreSQL local — credentials définis dans .env
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': config('DB_NAME', default='social_db'),
             'USER': config('DB_USER', default='social_user'),
-            'PASSWORD': config('DB_PASSWORD', default=''),
+            'PASSWORD': _DB_PASSWORD,
             'HOST': config('DB_HOST', default='localhost'),
             'PORT': config('DB_PORT', default='5432'),
+        }
+    }
+else:
+    # Dev sans PostgreSQL — SQLite (aucune config requise)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
