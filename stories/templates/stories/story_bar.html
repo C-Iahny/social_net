@@ -1,0 +1,1071 @@
+{% load static %}
+{# Inclure ce snippet dans le feed (et la page profil avec mode="profile") #}
+
+<!-- ══════════════════════════════════════════════════════
+     STORIES — BARRE + CRÉATEUR + VIEWER
+     ══════════════════════════════════════════════════════ -->
+<style>
+/* ── Variables & reset ─────────────────────────────────── */
+.zoot-stories * { box-sizing: border-box; }
+
+/* ── Conteneur scrollable ──────────────────────────────── */
+.zoot-stories {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .75rem 1rem;
+    overflow-x: auto;
+    overflow-y: visible;
+    scrollbar-width: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+    scroll-behavior: smooth;
+}
+.zoot-stories::-webkit-scrollbar { display: none; }
+
+/* ── Item générique ────────────────────────────────────── */
+.story-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .38rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    width: 72px;
+}
+.story-item-label {
+    font-size: .68rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+/* ── Avatar ring ────────────────────────────────────────── */
+.story-avatar-ring {
+    position: relative;
+    width: 60px; height: 60px;
+    flex-shrink: 0;
+}
+.story-avatar-ring::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: conic-gradient(
+        var(--accent) 0deg,
+        var(--accent2) 120deg,
+        var(--accent3) 240deg,
+        var(--accent) 360deg
+    );
+    animation: ringRotate 4s linear infinite;
+    opacity: 0;
+    transition: opacity .3s;
+}
+.story-avatar-ring.has-story::before { opacity: 1; }
+.story-avatar-ring.all-seen::before {
+    background: conic-gradient(
+        var(--text-muted) 0deg,
+        var(--border) 360deg
+    );
+    animation: none;
+}
+[data-theme="dark"] .story-avatar-ring.has-story::before {
+    box-shadow: 0 0 12px rgba(0,207,255,.4), 0 0 20px rgba(191,95,255,.2);
+}
+@keyframes ringRotate {
+    to { transform: rotate(360deg); }
+}
+.story-avatar-inner {
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.story-avatar-inner img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* ── Bouton ajouter (premier item) ─────────────────────── */
+.story-add-btn {
+    position: relative;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+    flex-shrink: 0;
+}
+.story-add-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+[data-theme="dark"] .story-add-btn {
+    box-shadow: 0 0 16px rgba(0,207,255,.3);
+}
+[data-theme="dark"] .story-add-btn:hover {
+    box-shadow: 0 0 24px rgba(0,207,255,.5);
+}
+.story-add-btn .material-icons { color: #fff; font-size: 1.6rem; }
+[data-theme="dark"] .story-add-btn .material-icons { color: #000; }
+
+/* ══════════════════════════════════════════════════════════
+   MODAL CRÉATEUR
+   ══════════════════════════════════════════════════════════ */
+#story-creator-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    z-index: 10000;
+    background: rgba(0,0,0,.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: fadeIn .2s ease;
+}
+#story-creator-overlay.open { display: flex; }
+
+#story-creator {
+    width: 100%; max-width: 420px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,.6);
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+[data-theme="dark"] #story-creator {
+    background: #0d0f1e;
+    border-color: rgba(0,207,255,.12);
+    box-shadow: 0 24px 80px rgba(0,0,0,.8), 0 0 40px rgba(0,207,255,.05);
+}
+
+.sc-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.25rem .75rem;
+    border-bottom: 1px solid var(--border);
+}
+.sc-title {
+    font-size: 1.05rem; font-weight: 800;
+    color: var(--text); letter-spacing: -.02em;
+}
+.sc-close {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--btn-bg); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); transition: background .2s, color .2s;
+}
+.sc-close:hover { background: var(--btn-hover); color: var(--accent3); }
+.sc-close .material-icons { font-size: 1.1rem; }
+
+.sc-body { padding: 1rem 1.25rem 1.25rem; }
+
+/* Type chips */
+.sc-types {
+    display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem;
+}
+.sc-type-chip {
+    flex: 1; min-width: 80px;
+    display: flex; flex-direction: column; align-items: center; gap: .25rem;
+    padding: .55rem .4rem;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--btn-bg);
+    cursor: pointer;
+    transition: border-color .2s, background .2s, box-shadow .2s;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+.sc-type-chip .material-icons { font-size: 1.3rem; color: var(--text-muted); transition: color .2s; }
+.sc-type-chip span:last-child { font-size: .68rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.sc-type-chip:hover,
+.sc-type-chip.active {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.sc-type-chip.active .material-icons,
+.sc-type-chip.active span:last-child { color: var(--accent); }
+[data-theme="dark"] .sc-type-chip.active {
+    box-shadow: 0 0 12px rgba(0,207,255,.2);
+}
+
+/* Preview zone */
+.sc-preview {
+    position: relative;
+    width: 100%; height: 220px;
+    border-radius: 14px;
+    border: 2px dashed var(--border);
+    overflow: hidden;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    background: var(--input-bg);
+    transition: border-color .2s;
+}
+.sc-preview:hover { border-color: var(--accent); }
+.sc-preview img,
+.sc-preview video {
+    width: 100%; height: 100%; object-fit: cover;
+    position: absolute; inset: 0; display: none;
+}
+.sc-preview-placeholder {
+    display: flex; flex-direction: column; align-items: center; gap: .5rem;
+    color: var(--text-muted); pointer-events: none;
+}
+.sc-preview-placeholder .material-icons { font-size: 2.5rem; opacity: .5; }
+.sc-preview-placeholder p { font-size: .82rem; margin: 0; }
+input#sc-file-input { display: none; }
+
+/* Text card preview */
+.sc-text-card {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem;
+    position: absolute; inset: 0;
+    display: none;
+}
+.sc-text-card p {
+    font-size: 1.1rem; font-weight: 700; color: #fff;
+    text-align: center; word-break: break-word; margin: 0;
+    text-shadow: 0 1px 8px rgba(0,0,0,.5);
+    line-height: 1.4;
+}
+
+/* Gradients */
+.grad_cyan    { background: linear-gradient(135deg, #00cfff, #0066ff); }
+.grad_purple  { background: linear-gradient(135deg, #bf5fff, #ff4da6); }
+.grad_sunset  { background: linear-gradient(135deg, #ff6b35, #ff4da6); }
+.grad_forest  { background: linear-gradient(135deg, #00c851, #00cfff); }
+.grad_night   { background: linear-gradient(135deg, #07080f, #bf5fff); }
+.grad_gold    { background: linear-gradient(135deg, #ffd700, #ff6b35); }
+
+/* Gradient picker */
+.sc-grad-picker {
+    display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .85rem;
+}
+.sc-grad-swatch {
+    width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color .2s, transform .15s;
+    flex-shrink: 0;
+}
+.sc-grad-swatch:hover { transform: scale(1.1); }
+.sc-grad-swatch.active { border-color: #fff; box-shadow: 0 0 0 3px var(--accent); }
+
+/* Caption input */
+.sc-caption-wrap {
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 0 .85rem; height: 44px;
+    transition: border-color .2s; margin-bottom: 1rem;
+}
+.sc-caption-wrap:focus-within { border-color: var(--accent); }
+.sc-caption-wrap .material-icons { font-size: 1rem; color: var(--text-muted); }
+.sc-caption-wrap input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-size: .9rem;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+.sc-caption-wrap input::placeholder { color: var(--text-muted); }
+
+/* Publish button */
+.sc-publish-btn {
+    width: 100%; height: 48px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 12px;
+    font-size: .95rem; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
+    transition: opacity .2s, transform .15s, box-shadow .2s;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    position: relative; overflow: hidden;
+}
+[data-theme="dark"] .sc-publish-btn { color: #000; box-shadow: 0 0 20px rgba(0,207,255,.25); }
+.sc-publish-btn:hover { opacity: .9; transform: translateY(-1px); }
+.sc-publish-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.sc-publish-btn .material-icons { font-size: 1.1rem; }
+
+/* Upload progress */
+.sc-upload-bar {
+    height: 3px; border-radius: 3px;
+    background: var(--border); margin-bottom: .85rem;
+    overflow: hidden; display: none;
+}
+.sc-upload-bar-inner {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width .2s;
+}
+
+/* ══════════════════════════════════════════════════════════
+   VIEWER (plein écran)
+   ══════════════════════════════════════════════════════════ */
+#story-viewer-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    z-index: 10001;
+    background: #000;
+    animation: fadeIn .15s ease;
+}
+#story-viewer-overlay.open { display: block; }
+
+.sv-container {
+    position: relative;
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+/* Média */
+.sv-media {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: none;
+    position: absolute; inset: 0;
+}
+.sv-text-bg {
+    position: absolute; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    padding: 2rem;
+}
+.sv-text-bg p {
+    font-size: 1.6rem; font-weight: 800; color: #fff;
+    text-align: center; line-height: 1.3; word-break: break-word;
+    text-shadow: 0 2px 20px rgba(0,0,0,.6);
+    max-width: 340px;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+
+/* Caption overlay */
+.sv-caption {
+    position: absolute;
+    bottom: 80px; left: 0; right: 0;
+    text-align: center;
+    padding: .5rem 1.5rem;
+    font-size: 1rem; font-weight: 600; color: #fff;
+    text-shadow: 0 1px 12px rgba(0,0,0,.8);
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    display: none;
+}
+
+/* Top bar */
+.sv-top {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: .75rem 1rem .5rem;
+    z-index: 10;
+    background: linear-gradient(to bottom, rgba(0,0,0,.5) 0%, transparent 100%);
+}
+
+/* Progress bars */
+.sv-progress-bars {
+    display: flex; gap: .25rem; margin-bottom: .65rem;
+}
+.sv-pb {
+    flex: 1; height: 3px; border-radius: 3px;
+    background: rgba(255,255,255,.3); overflow: hidden;
+}
+.sv-pb-inner {
+    height: 100%; width: 0%; background: #fff;
+    border-radius: 3px;
+}
+.sv-pb.done .sv-pb-inner { width: 100%; }
+
+/* User info */
+.sv-user-info {
+    display: flex; align-items: center; gap: .65rem;
+}
+.sv-user-info img {
+    width: 38px; height: 38px; border-radius: 50%;
+    object-fit: cover; border: 2px solid rgba(255,255,255,.5);
+}
+.sv-username {
+    color: #fff; font-weight: 700; font-size: .9rem;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    text-shadow: 0 1px 4px rgba(0,0,0,.5);
+}
+.sv-time {
+    color: rgba(255,255,255,.7); font-size: .72rem;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+
+/* Close btn */
+.sv-close {
+    position: absolute; top: .75rem; right: 1rem;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(0,0,0,.4); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; transition: background .2s;
+    z-index: 11;
+}
+.sv-close:hover { background: rgba(0,0,0,.7); }
+.sv-close .material-icons { font-size: 1.2rem; }
+
+/* Nav zones (tap left / right) */
+.sv-nav {
+    position: absolute; top: 0; bottom: 0; width: 40%;
+    cursor: pointer; z-index: 9;
+}
+.sv-nav-prev { left: 0; }
+.sv-nav-next { right: 0; }
+
+/* Vue count (pour ses propres stories) */
+.sv-views {
+    position: absolute; bottom: 20px; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: .4rem;
+    color: rgba(255,255,255,.8); font-size: .82rem;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+.sv-views .material-icons { font-size: 1rem; }
+
+/* Delete btn (pour ses propres stories) */
+.sv-delete {
+    position: absolute; bottom: 20px; right: 1.25rem;
+    background: rgba(255,77,166,.2); border: 1px solid rgba(255,77,166,.4);
+    color: var(--neon-pink, #ff4da6);
+    border-radius: 20px; padding: .35rem .85rem;
+    font-size: .75rem; font-weight: 700; cursor: pointer;
+    display: none; align-items: center; gap: .3rem;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    transition: background .2s;
+}
+.sv-delete:hover { background: rgba(255,77,166,.35); }
+.sv-delete .material-icons { font-size: .9rem; }
+
+@keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+}
+</style>
+
+<!-- ── BARRE STORIES ─────────────────────────────────────── -->
+<div class="zoot-stories" id="zoot-stories-bar">
+
+    <!-- Bouton "Ajouter" -->
+    {% if request.user.is_authenticated %}
+    <div class="story-item" onclick="openStoryCreator()">
+        <button class="story-add-btn" title="Ajouter une story">
+            <span class="material-icons">add</span>
+        </button>
+        <span class="story-item-label">Ma story</span>
+    </div>
+    {% endif %}
+
+    <!-- Stories chargées dynamiquement -->
+    <div id="story-items-container" style="display:contents;"></div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     MODAL CRÉATEUR
+     ══════════════════════════════════════════════════════ -->
+<div id="story-creator-overlay" onclick="if(event.target===this)closeStoryCreator()">
+<div id="story-creator">
+
+    <div class="sc-header">
+        <span class="sc-title">Créer une story</span>
+        <button class="sc-close" onclick="closeStoryCreator()">
+            <span class="material-icons">close</span>
+        </button>
+    </div>
+
+    <div class="sc-body">
+        <!-- Type -->
+        <div class="sc-types">
+            <div class="sc-type-chip active" data-type="image" onclick="selectStoryType('image',this)">
+                <span class="material-icons">photo_camera</span>
+                <span>Photo</span>
+            </div>
+            <div class="sc-type-chip" data-type="video" onclick="selectStoryType('video',this)">
+                <span class="material-icons">videocam</span>
+                <span>Vidéo</span>
+            </div>
+            <div class="sc-type-chip" data-type="text" onclick="selectStoryType('text',this)">
+                <span class="material-icons">text_fields</span>
+                <span>Texte</span>
+            </div>
+            <div class="sc-type-chip" data-type="image_text" onclick="selectStoryType('image_text',this)">
+                <span class="material-icons">add_photo_alternate</span>
+                <span>Photo+texte</span>
+            </div>
+        </div>
+
+        <!-- Zone de preview -->
+        <div class="sc-preview" id="sc-preview" onclick="triggerFileInput()">
+            <img  id="sc-preview-img"   alt="">
+            <video id="sc-preview-video" muted playsinline loop></video>
+            <div class="sc-text-card grad_cyan" id="sc-text-card">
+                <p id="sc-text-card-content">Votre texte ici…</p>
+            </div>
+            <div class="sc-preview-placeholder" id="sc-preview-placeholder">
+                <span class="material-icons">add_photo_alternate</span>
+                <p>Cliquer pour choisir un fichier</p>
+            </div>
+        </div>
+        <input type="file" id="sc-file-input" accept="image/*,video/*" onchange="onFileSelected(this)">
+
+        <!-- Sélecteur gradient (visible pour text / image_text) -->
+        <div id="sc-grad-section" style="display:none;">
+            <div class="sc-grad-picker">
+                <div class="sc-grad-swatch grad_cyan   active" data-grad="grad_cyan"   onclick="selectGrad('grad_cyan',this)"   title="Cyan"></div>
+                <div class="sc-grad-swatch grad_purple"       data-grad="grad_purple"  onclick="selectGrad('grad_purple',this)"  title="Violet"></div>
+                <div class="sc-grad-swatch grad_sunset"       data-grad="grad_sunset"  onclick="selectGrad('grad_sunset',this)"  title="Coucher"></div>
+                <div class="sc-grad-swatch grad_forest"       data-grad="grad_forest"  onclick="selectGrad('grad_forest',this)"  title="Forêt"></div>
+                <div class="sc-grad-swatch grad_night"        data-grad="grad_night"   onclick="selectGrad('grad_night',this)"   title="Nuit"></div>
+                <div class="sc-grad-swatch grad_gold"         data-grad="grad_gold"    onclick="selectGrad('grad_gold',this)"    title="Or"></div>
+            </div>
+        </div>
+
+        <!-- Caption -->
+        <div class="sc-caption-wrap">
+            <span class="material-icons">edit</span>
+            <input type="text" id="sc-caption-input" maxlength="200"
+                   placeholder="Ajouter un texte ou une légende…"
+                   oninput="onCaptionInput(this.value)">
+        </div>
+
+        <!-- Barre de progression upload -->
+        <div class="sc-upload-bar" id="sc-upload-bar">
+            <div class="sc-upload-bar-inner" id="sc-upload-bar-inner"></div>
+        </div>
+
+        <!-- Publier -->
+        <button class="sc-publish-btn" id="sc-publish-btn" onclick="publishStory()">
+            <span class="material-icons">bolt</span>
+            Publier ma story
+        </button>
+    </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     VIEWER PLEIN ÉCRAN
+     ══════════════════════════════════════════════════════ -->
+<div id="story-viewer-overlay">
+<div class="sv-container">
+
+    <!-- Zones de navigation -->
+    <div class="sv-nav sv-nav-prev" onclick="svNavigate(-1)"></div>
+    <div class="sv-nav sv-nav-next" onclick="svNavigate(1)"></div>
+
+    <!-- Média -->
+    <img   id="sv-img"    class="sv-media" alt="">
+    <video id="sv-video"  class="sv-media" muted playsinline autoplay></video>
+    <div   id="sv-text"   class="sv-text-bg"><p id="sv-text-content"></p></div>
+
+    <!-- Caption -->
+    <div id="sv-caption" class="sv-caption"></div>
+
+    <!-- Top UI -->
+    <div class="sv-top">
+        <div class="sv-progress-bars" id="sv-progress-bars"></div>
+        <div class="sv-user-info">
+            <img id="sv-avatar" src="" alt="">
+            <div>
+                <div class="sv-username" id="sv-username"></div>
+                <div class="sv-time"     id="sv-time"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Close -->
+    <button class="sv-close" onclick="closeStoryViewer()">
+        <span class="material-icons">close</span>
+    </button>
+
+    <!-- Vue count + delete (ses propres stories) -->
+    <div class="sv-views" id="sv-views">
+        <span class="material-icons">visibility</span>
+        <span id="sv-view-count">0</span> vue(s)
+    </div>
+    <button class="sv-delete" id="sv-delete" onclick="deleteCurrentStory()">
+        <span class="material-icons">delete</span>
+        Supprimer
+    </button>
+
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     JAVASCRIPT STORIES
+     ══════════════════════════════════════════════════════ -->
+<script>
+(function() {
+
+/* ── URLs Django ── */
+var URLS = {
+    feed:    '{% url "stories:feed" %}',
+    create:  '{% url "stories:create" %}',
+    delete:  '/stories/delete/',   // + id + /
+    viewed:  '/stories/viewed/',   // + id + /
+};
+
+var ME_ID = {{ request.user.id|default:"null" }};
+
+/* ════════════════════════════════════════════
+   ÉTAT GLOBAL
+   ════════════════════════════════════════════ */
+var _groups      = [];   // [{user_id, username, avatar, stories:[…]}, …]
+var _curGroup    = 0;
+var _curStory    = 0;
+var _svTimer     = null;
+var _svDuration  = 5000; // ms pour photos/textes
+var _svProgress  = null; // requestAnimationFrame ref
+var _svStart     = null;
+var _svElapsed   = 0;
+var _svPaused    = false;
+
+var _scType      = 'image';
+var _scGrad      = 'grad_cyan';
+var _scFile      = null;
+
+/* ════════════════════════════════════════════
+   CHARGEMENT DES STORIES
+   ════════════════════════════════════════════ */
+function loadStories() {
+    fetch(URLS.feed, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+        .then(function(r){ return r.json(); })
+        .then(function(data) {
+            _groups = data.groups || [];
+            renderStoryBar();
+        })
+        .catch(function(e){ console.error('stories fetch error', e); });
+}
+
+function renderStoryBar() {
+    var container = document.getElementById('story-items-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    _groups.forEach(function(group, gi) {
+        // Ne pas afficher "Ma story" ici si déjà dans le bouton add
+        // (si on a des stories on les affiche tout de même)
+        var item = document.createElement('div');
+        item.className = 'story-item';
+        item.setAttribute('data-group', gi);
+        item.onclick = function(){ openStoryViewer(gi); };
+
+        var ringClass = 'story-avatar-ring';
+        if (group.stories && group.stories.length > 0) ringClass += ' has-story';
+        if (group.all_seen) ringClass += ' all-seen';
+
+        var label = group.is_me ? 'Ma story' : (group.username || '').substring(0, 10);
+
+        item.innerHTML =
+            '<div class="' + ringClass + '">' +
+                '<div class="story-avatar-inner">' +
+                    '<img src="' + group.avatar + '" alt="' + group.username + '">' +
+                '</div>' +
+            '</div>' +
+            '<span class="story-item-label">' + label + '</span>';
+
+        container.appendChild(item);
+    });
+}
+
+/* ════════════════════════════════════════════
+   CRÉATEUR
+   ════════════════════════════════════════════ */
+window.openStoryCreator = function() {
+    document.getElementById('story-creator-overlay').classList.add('open');
+};
+window.closeStoryCreator = function() {
+    document.getElementById('story-creator-overlay').classList.remove('open');
+    resetCreator();
+};
+
+window.selectStoryType = function(type, el) {
+    _scType = type;
+    document.querySelectorAll('.sc-type-chip').forEach(function(c){ c.classList.remove('active'); });
+    el.classList.add('active');
+
+    var isText      = (type === 'text');
+    var hasMedia    = (type === 'image' || type === 'video' || type === 'image_text');
+    var showGrad    = (type === 'text' || type === 'image_text');
+
+    document.getElementById('sc-grad-section').style.display = showGrad ? '' : 'none';
+
+    // Réinitialiser la preview si on change de type
+    if (isText) {
+        document.getElementById('sc-preview').onclick = null;
+        showTextCard();
+    } else {
+        document.getElementById('sc-preview').onclick = triggerFileInput;
+        hideTextCard();
+        if (!_scFile) showPlaceholder();
+    }
+
+    // Mettre à jour l'accept du file input
+    var fi = document.getElementById('sc-file-input');
+    if (type === 'video') fi.accept = 'video/*';
+    else if (type === 'image' || type === 'image_text') fi.accept = 'image/*';
+    else fi.accept = '';
+};
+
+window.triggerFileInput = function() {
+    if (_scType !== 'text') {
+        document.getElementById('sc-file-input').click();
+    }
+};
+
+window.onFileSelected = function(input) {
+    var file = input.files[0];
+    if (!file) return;
+    _scFile = file;
+    var url  = URL.createObjectURL(file);
+    var isVid = file.type.startsWith('video/');
+
+    hidePlaceholder();
+    if (isVid) {
+        document.getElementById('sc-preview-img').style.display = 'none';
+        var v = document.getElementById('sc-preview-video');
+        v.src = url; v.style.display = 'block';
+    } else {
+        document.getElementById('sc-preview-video').style.display = 'none';
+        var img = document.getElementById('sc-preview-img');
+        img.src = url; img.style.display = 'block';
+    }
+    if (_scType === 'image_text') {
+        showTextCard();
+        document.getElementById('sc-text-card').style.position = 'absolute';
+        document.getElementById('sc-text-card').style.background = 'transparent';
+        document.getElementById('sc-text-card').style.display = 'flex';
+    }
+};
+
+window.selectGrad = function(grad, el) {
+    _scGrad = grad;
+    document.querySelectorAll('.sc-grad-swatch').forEach(function(s){ s.classList.remove('active'); });
+    el.classList.add('active');
+    var card = document.getElementById('sc-text-card');
+    card.className = 'sc-text-card ' + grad;
+    if (_scType === 'image_text') card.style.background = 'transparent';
+};
+
+window.onCaptionInput = function(val) {
+    document.getElementById('sc-text-card-content').textContent = val || 'Votre texte ici…';
+};
+
+function showTextCard() {
+    document.getElementById('sc-text-card').style.display = 'flex';
+    document.getElementById('sc-preview-placeholder').style.display = 'none';
+}
+function hideTextCard() {
+    document.getElementById('sc-text-card').style.display = 'none';
+}
+function showPlaceholder() {
+    document.getElementById('sc-preview-placeholder').style.display = 'flex';
+}
+function hidePlaceholder() {
+    document.getElementById('sc-preview-placeholder').style.display = 'none';
+}
+
+window.publishStory = function() {
+    var caption = document.getElementById('sc-caption-input').value.trim();
+    if (_scType === 'text' && !caption) {
+        alert('Entrez un texte pour votre story !'); return;
+    }
+    if (_scType !== 'text' && !_scFile) {
+        alert('Sélectionnez un fichier !'); return;
+    }
+
+    var fd = new FormData();
+    fd.append('story_type', _scType);
+    fd.append('caption', caption);
+    fd.append('bg_gradient', _scGrad);
+    fd.append('text_align', 'center');
+    if (_scFile) fd.append('media', _scFile);
+
+    var btn = document.getElementById('sc-publish-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-icons" style="animation:spin .8s linear infinite">sync</span> Publication…';
+
+    var bar = document.getElementById('sc-upload-bar');
+    var barInner = document.getElementById('sc-upload-bar-inner');
+    bar.style.display = 'block';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', URLS.create);
+    xhr.setRequestHeader('X-CSRFToken', getCsrf());
+
+    xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+            barInner.style.width = Math.round(e.loaded / e.total * 100) + '%';
+        }
+    };
+
+    xhr.onload = function() {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-icons">bolt</span> Publier ma story';
+        bar.style.display = 'none';
+        barInner.style.width = '0%';
+        if (xhr.status === 200) {
+            closeStoryCreator();
+            loadStories();
+        } else {
+            var err = JSON.parse(xhr.responseText);
+            alert(err.error || 'Erreur lors de la publication.');
+        }
+    };
+    xhr.onerror = function() {
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-icons">bolt</span> Publier ma story';
+        alert('Erreur réseau.');
+    };
+    xhr.send(fd);
+};
+
+function resetCreator() {
+    _scFile = null;
+    _scType = 'image'; _scGrad = 'grad_cyan';
+    document.querySelectorAll('.sc-type-chip').forEach(function(c){ c.classList.remove('active'); });
+    document.querySelector('.sc-type-chip[data-type="image"]').classList.add('active');
+    document.getElementById('sc-file-input').value = '';
+    document.getElementById('sc-preview-img').style.display = 'none';
+    document.getElementById('sc-preview-video').style.display = 'none';
+    document.getElementById('sc-text-card').style.display = 'none';
+    document.getElementById('sc-preview-placeholder').style.display = 'flex';
+    document.getElementById('sc-caption-input').value = '';
+    document.getElementById('sc-grad-section').style.display = 'none';
+    document.getElementById('sc-text-card').className = 'sc-text-card grad_cyan';
+    document.getElementById('sc-text-card-content').textContent = 'Votre texte ici…';
+    document.querySelectorAll('.sc-grad-swatch').forEach(function(s){ s.classList.remove('active'); });
+    document.querySelector('.sc-grad-swatch[data-grad="grad_cyan"]').classList.add('active');
+}
+
+/* ════════════════════════════════════════════
+   VIEWER
+   ════════════════════════════════════════════ */
+window.openStoryViewer = function(groupIndex) {
+    _curGroup = groupIndex;
+    _curStory = 0;
+    if (!_groups[_curGroup] || !_groups[_curGroup].stories.length) return;
+    document.getElementById('story-viewer-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderCurrentStory();
+};
+
+window.closeStoryViewer = function() {
+    document.getElementById('story-viewer-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+    cancelAnimationFrame(_svProgress);
+    clearTimeout(_svTimer);
+    var vid = document.getElementById('sv-video');
+    vid.pause(); vid.src = '';
+};
+
+window.svNavigate = function(dir) {
+    cancelAnimationFrame(_svProgress);
+    clearTimeout(_svTimer);
+
+    var group = _groups[_curGroup];
+    var nextStory = _curStory + dir;
+
+    if (nextStory >= 0 && nextStory < group.stories.length) {
+        _curStory = nextStory;
+        renderCurrentStory();
+    } else if (dir > 0) {
+        // Groupe suivant
+        var nextGroup = _curGroup + 1;
+        if (nextGroup < _groups.length) {
+            _curGroup = nextGroup;
+            _curStory = 0;
+            renderCurrentStory();
+        } else {
+            closeStoryViewer();
+        }
+    } else {
+        // Groupe précédent
+        var prevGroup = _curGroup - 1;
+        if (prevGroup >= 0) {
+            _curGroup = prevGroup;
+            _curStory = _groups[_curGroup].stories.length - 1;
+            renderCurrentStory();
+        }
+    }
+};
+
+function renderCurrentStory() {
+    var group = _groups[_curGroup];
+    if (!group) { closeStoryViewer(); return; }
+    var story = group.stories[_curStory];
+    if (!story) { closeStoryViewer(); return; }
+
+    // Marquer comme vu
+    if (!story.seen) {
+        fetch(URLS.viewed + story.id + '/', {
+            method: 'POST',
+            headers: {'X-CSRFToken': getCsrf(), 'X-Requested-With': 'XMLHttpRequest'},
+        }).then(function() {
+            story.seen = true;
+            group.all_seen = group.stories.every(function(s){ return s.seen; });
+        });
+    }
+
+    // UI user info
+    document.getElementById('sv-avatar').src    = group.avatar;
+    document.getElementById('sv-username').textContent = group.username;
+    document.getElementById('sv-time').textContent     = formatTimeLeft(story.time_left);
+
+    // Progress bars
+    var pbContainer = document.getElementById('sv-progress-bars');
+    pbContainer.innerHTML = '';
+    group.stories.forEach(function(s, i) {
+        var pb = document.createElement('div');
+        pb.className = 'sv-pb' + (i < _curStory ? ' done' : '');
+        pb.innerHTML = '<div class="sv-pb-inner" id="sv-pb-' + i + '"></div>';
+        pbContainer.appendChild(pb);
+    });
+
+    // Masquer tous les médias
+    document.getElementById('sv-img').style.display   = 'none';
+    document.getElementById('sv-video').style.display = 'none';
+    document.getElementById('sv-text').style.display  = 'none';
+    document.getElementById('sv-caption').style.display = 'none';
+
+    var duration = _svDuration;
+
+    if (story.story_type === 'video' && story.media_url) {
+        var vid = document.getElementById('sv-video');
+        vid.src = story.media_url;
+        vid.style.display = 'block';
+        vid.play();
+        vid.onloadedmetadata = function() { duration = vid.duration * 1000; };
+    } else if ((story.story_type === 'image' || story.story_type === 'image_text') && story.media_url) {
+        var img = document.getElementById('sv-img');
+        img.src = story.media_url;
+        img.style.display = 'block';
+    } else if (story.story_type === 'text') {
+        var textEl = document.getElementById('sv-text');
+        textEl.className = 'sv-text-bg ' + (story.bg_gradient || 'grad_cyan');
+        textEl.style.display = 'flex';
+        document.getElementById('sv-text-content').textContent = story.caption || '';
+        duration = 7000; // texte : 7s
+    }
+
+    // Caption
+    if (story.caption && story.story_type !== 'text') {
+        var cap = document.getElementById('sv-caption');
+        cap.textContent = story.caption;
+        cap.style.display = 'block';
+    }
+
+    // Vue count + delete (si c'est la mienne)
+    var viewsEl  = document.getElementById('sv-views');
+    var deleteEl = document.getElementById('sv-delete');
+    if (group.user_id === ME_ID) {
+        viewsEl.style.display  = 'flex';
+        deleteEl.style.display = 'flex';
+        document.getElementById('sv-view-count').textContent = story.view_count || 0;
+    } else {
+        viewsEl.style.display  = 'none';
+        deleteEl.style.display = 'none';
+    }
+
+    // Lancer la progression
+    startProgress(duration);
+}
+
+function startProgress(duration) {
+    cancelAnimationFrame(_svProgress);
+    clearTimeout(_svTimer);
+    _svStart   = performance.now();
+    _svElapsed = 0;
+    _svPaused  = false;
+
+    var pbEl = document.getElementById('sv-pb-' + _curStory);
+
+    function step(now) {
+        if (_svPaused) { _svProgress = requestAnimationFrame(step); return; }
+        _svElapsed = now - _svStart;
+        var pct = Math.min(_svElapsed / duration * 100, 100);
+        if (pbEl) pbEl.style.width = pct + '%';
+        if (_svElapsed < duration) {
+            _svProgress = requestAnimationFrame(step);
+        } else {
+            svNavigate(1);
+        }
+    }
+    _svProgress = requestAnimationFrame(step);
+}
+
+window.deleteCurrentStory = function() {
+    var group = _groups[_curGroup];
+    if (!group) return;
+    var story = group.stories[_curStory];
+    if (!story || group.user_id !== ME_ID) return;
+
+    if (!confirm('Supprimer cette story ?')) return;
+
+    fetch(URLS.delete + story.id + '/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCsrf(), 'X-Requested-With': 'XMLHttpRequest'},
+    }).then(function(r){ return r.json(); })
+    .then(function(data) {
+        if (data.ok) {
+            group.stories.splice(_curStory, 1);
+            if (group.stories.length === 0) {
+                _groups.splice(_curGroup, 1);
+                if (_groups.length === 0) { closeStoryViewer(); loadStories(); return; }
+                _curGroup = Math.min(_curGroup, _groups.length - 1);
+                _curStory = 0;
+            } else {
+                _curStory = Math.min(_curStory, group.stories.length - 1);
+            }
+            renderCurrentStory();
+            loadStories();
+        }
+    });
+};
+
+/* ════════════════════════════════════════════
+   UTILS
+   ════════════════════════════════════════════ */
+function getCsrf() {
+    var m = document.cookie.match(/csrftoken=([^;]+)/);
+    return m ? m[1] : '';
+}
+function formatTimeLeft(seconds) {
+    if (!seconds) return '';
+    var h = Math.floor(seconds / 3600);
+    var m = Math.floor((seconds % 3600) / 60);
+    if (h > 0) return 'Expire dans ' + h + 'h' + (m > 0 ? m + 'min' : '');
+    return 'Expire dans ' + m + 'min';
+}
+
+/* ════════════════════════════════════════════
+   INIT
+   ════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+    loadStories();
+});
+
+// Exposer pour la page profil
+window.zootStories = {
+    load: loadStories,
+    openCreator: openStoryCreator,
+    openViewer: openStoryViewer,
+    groups: function(){ return _groups; },
+};
+
+})();
+</script>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
