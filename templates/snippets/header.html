@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 
 <!-- ── Toast notification for new friend posts ─────────────────────── -->
 <style>
@@ -464,6 +464,61 @@
 }
 .zoot-dropdown-header-link:hover { background: var(--btn-bg); text-decoration: none; color: var(--accent); }
 
+/* ── Language switcher ── */
+.zoot-lang-btn {
+    position: relative;
+    height: 40px;
+    padding: 0 .6rem;
+    border-radius: 20px;
+    background: var(--btn-bg);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    color: var(--text);
+    font-size: .82rem;
+    font-weight: 700;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    transition: background .2s, border-color .2s;
+    flex-shrink: 0;
+}
+.zoot-lang-btn:hover { background: var(--btn-hover); border-color: var(--accent); }
+.zoot-lang-btn .lang-flag { font-size: 1.05rem; line-height: 1; }
+.zoot-lang-btn .lang-code { letter-spacing: .04em; text-transform: uppercase; }
+.zoot-lang-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.18);
+    min-width: 165px;
+    padding: .3rem 0;
+    z-index: 2000;
+    display: none;
+    animation: dropIn .2s cubic-bezier(.34,1.3,.64,1);
+}
+[data-theme="dark"] .zoot-lang-dropdown { box-shadow: 0 12px 40px rgba(0,0,0,.55); }
+.zoot-lang-dropdown.open { display: block; }
+.lang-option {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .5rem 1rem;
+    cursor: pointer;
+    font-size: .88rem;
+    font-weight: 600;
+    color: var(--text);
+    transition: background .12s, color .12s;
+    border-radius: 8px;
+    margin: 1px 4px;
+}
+.lang-option:hover { background: var(--btn-bg); color: var(--accent); }
+.lang-option.active { color: var(--accent); }
+.lang-option .lang-flag { font-size: 1.1rem; }
+
 /* ── Mobile hamburger ── */
 .zoot-hamburger {
     display: none;
@@ -570,12 +625,12 @@
         <a href="{% url 'post:post-view' %}"
            class="zoot-nav-link {% if request.resolver_match.url_name == 'post-view' %}active{% endif %}">
             <span class="material-icons">home</span>
-            <span>Vaovao</span>
+            <span>{% trans "Feed" %}</span>
         </a>
         <a href="{% url 'post:index' %}"
            class="zoot-nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
             <span class="material-icons">explore</span>
-            <span>Zava-misy</span>
+            <span>{% trans "Explore" %}</span>
         </a>
     </div>
 
@@ -586,12 +641,37 @@
 
         <!-- Search bar (desktop) -->
         <form class="zoot-search-form d-none d-lg-flex" method="GET" action="{% url 'search' %}">
-            <input type="text" name="q" placeholder="Mikaroka..." autocomplete="off">
+            <input type="text" name="q" placeholder="{% trans 'Search...' %}" autocomplete="off">
             <button type="submit"><span class="material-icons">search</span></button>
         </form>
 
+        <!-- Language switcher -->
+        {% get_current_language as CURRENT_LANG %}
+        <div style="position:relative;">
+            <button class="zoot-lang-btn" id="zoot-lang-toggle" onclick="document.getElementById('zoot-lang-dd').classList.toggle('open');event.stopPropagation();" title="{% trans 'Language' %}">
+                <span class="lang-flag">{% if CURRENT_LANG == 'mg' %}🇲🇬{% elif CURRENT_LANG == 'en' %}🇬🇧{% else %}🇫🇷{% endif %}</span>
+                <span class="lang-code">{{ CURRENT_LANG|upper }}</span>
+                <span class="material-icons" style="font-size:.85rem;opacity:.6">expand_more</span>
+            </button>
+            <div class="zoot-lang-dropdown" id="zoot-lang-dd">
+                {% get_available_languages as LANGUAGES %}
+                {% for lang_code, lang_name in LANGUAGES %}
+                <form method="post" action="{% url 'set_language' %}" style="margin:0;padding:0;">
+                    {% csrf_token %}
+                    <input type="hidden" name="language" value="{{ lang_code }}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="lang-option {% if CURRENT_LANG == lang_code %}active{% endif %}">
+                        <span class="lang-flag">{% if lang_code == 'mg' %}🇲🇬{% elif lang_code == 'en' %}🇬🇧{% else %}🇫🇷{% endif %}</span>
+                        <span>{% if lang_code == 'fr' %}Français{% elif lang_code == 'en' %}English{% else %}Malagasy{% endif %}</span>
+                        {% if CURRENT_LANG == lang_code %}<span class="material-icons" style="font-size:.9rem;margin-left:auto;color:var(--accent)">check</span>{% endif %}
+                    </button>
+                </form>
+                {% endfor %}
+            </div>
+        </div>
+
         <!-- Theme toggle -->
-        <button id="theme-toggle-btn" onclick="toggleTheme()" class="zoot-icon-btn" title="Hiova loko">
+        <button id="theme-toggle-btn" onclick="toggleTheme()" class="zoot-icon-btn" title="{% trans 'Dark mode' %}">
             <span class="material-icons" style="font-size:1.25rem">dark_mode</span>
         </button>
 
@@ -666,13 +746,13 @@
                 <!-- Navigation principale -->
                 <p class="zoot-dropdown-label">Tranoko</p>
                 <a class="dropdown-item" href="{% url 'account:view' user_id=request.user.id %}">
-                    <span class="material-icons">person_outline</span> Momba Ahy
+                    <span class="material-icons">person_outline</span> {% trans "My profile" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'post:post-view' %}">
-                    <span class="material-icons">dynamic_feed</span> Ny Vaovao
+                    <span class="material-icons">dynamic_feed</span> {% trans "Feed" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">add_circle_outline</span> Paositra Vaovao
+                    <span class="material-icons">add_circle_outline</span> {% trans "Posts" %} +
                 </a>
 
                 <div class="dropdown-divider"></div>
@@ -680,13 +760,13 @@
                 <!-- Social -->
                 <p class="zoot-dropdown-label">Social</p>
                 <a class="dropdown-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
-                    <span class="material-icons">person_add_alt</span> Fangatahana namana
+                    <span class="material-icons">person_add_alt</span> {% trans "Friend requests" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'friend:list' user_id=request.user.id %}">
-                    <span class="material-icons">group</span>Ireo Namako
+                    <span class="material-icons">group</span> {% trans "My friends" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'chat:private-chat-room' %}">
-                    <span class="material-icons">chat_bubble_outline</span> Ny Hafatra
+                    <span class="material-icons">chat_bubble_outline</span> {% trans "Messages" %}
                 </a>
 
                 <div class="dropdown-divider"></div>
@@ -694,10 +774,10 @@
                 <!-- Compte -->
                 <p class="zoot-dropdown-label">Kaonty</p>
                 <a class="dropdown-item" href="{% url 'account:edit' user_id=request.user.id %}">
-                    <span class="material-icons">manage_accounts</span> Fikirana
+                    <span class="material-icons">manage_accounts</span> {% trans "Settings" %}
                 </a>
                 <a class="dropdown-item danger" href="{% url 'logout' %}">
-                    <span class="material-icons">logout</span> Hiala
+                    <span class="material-icons">logout</span> {% trans "Logout" %}
                 </a>
 
             </div>
@@ -726,21 +806,21 @@
 {% if request.user.is_authenticated %}
 <div class="zoot-mobile-menu" id="zoot-mobile-menu">
     <form class="zoot-mobile-search" method="GET" action="{% url 'search' %}">
-        <input type="text" name="q" placeholder="Mikaroka…" autocomplete="off">
+        <input type="text" name="q" placeholder="{% trans 'Search...' %}" autocomplete="off">
         <button type="submit"><span class="material-icons" style="font-size:1.1rem;color:var(--text-muted)">search</span></button>
     </form>
     <a href="{% url 'post:post-view' %}" class="zoot-mobile-link">
-        <span class="material-icons">home</span> Zava-misy
+        <span class="material-icons">home</span> {% trans "Feed" %}
     </a>
     <a href="{% url 'post:index' %}" class="zoot-mobile-link">
-        <span class="material-icons">explore</span> Explorer
+        <span class="material-icons">explore</span> {% trans "Explore" %}
     </a>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
-        <span class="material-icons">person_outline</span> Momba Ahy
+        <span class="material-icons">person_outline</span> {% trans "My profile" %}
     </a>
     <div style="border-top:1px solid var(--border);margin:.5rem 0;"></div>
     <a href="{% url 'logout' %}" class="zoot-mobile-link" style="color:#e0245e;">
-        <span class="material-icons" style="color:#e0245e;">logout</span> Hiala
+        <span class="material-icons" style="color:#e0245e;">logout</span> {% trans "Logout" %}
     </a>
 </div>
 {% endif %}
@@ -837,6 +917,17 @@
     } else if (notificationSocket.readyState == WebSocket.CONNECTING){
         console.log("Notification Socket connecting..")
     }
+</script>
+
+<!-- ── Language dropdown close on outside click ──────────────────── -->
+<script>
+document.addEventListener('click', function(e) {
+    var dd = document.getElementById('zoot-lang-dd');
+    var btn = document.getElementById('zoot-lang-toggle');
+    if (dd && !dd.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+        dd.classList.remove('open');
+    }
+});
 </script>
 
 <!-- ── Search query handler ───────────────────────────────────────── -->

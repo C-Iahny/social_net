@@ -1,0 +1,292 @@
+# Fandikana amin'ny teny Malagasy — VAZIMBA Social Network
+# Language: Malagasy (mg)
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: mg\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# ── Navigasiona ──
+msgid "Feed"
+msgstr "Vaovao"
+
+msgid "Explore"
+msgstr "Zava-misy"
+
+msgid "Search..."
+msgstr "Mikaroka..."
+
+msgid "Logout"
+msgstr "Hiala"
+
+msgid "Login"
+msgstr "Miditra"
+
+msgid "Register"
+msgstr "Misoratra anarana"
+
+msgid "Dark mode"
+msgstr "Loko maizina"
+
+# ── Profily ──
+msgid "Edit profile"
+msgstr "Anova profil"
+
+msgid "Change password"
+msgstr "Teny Miafina vaovao"
+
+msgid "My profile"
+msgstr "Ny Profily"
+
+msgid "About me"
+msgstr "Momba Ahy"
+
+msgid "posts"
+msgstr "paositra"
+
+msgid "friends"
+msgstr "namana"
+
+msgid "Send message"
+msgstr "Hafatra"
+
+msgid "Add friend"
+msgstr "Manampy namana"
+
+msgid "Friend request sent"
+msgstr "Fangatahana nalefa"
+
+msgid "Remove friend"
+msgstr "Esory amin'ny namana"
+
+msgid "Cancel request"
+msgstr "Foano ny fangatahana"
+
+# ── Tongotry ny profily ──
+msgid "Posts"
+msgstr "Paositra"
+
+msgid "Photos"
+msgstr "Sary"
+
+msgid "Friends"
+msgstr "Namana"
+
+msgid "My Profile"
+msgstr "Profile-ko"
+
+# ── Vaovao ──
+msgid "What's new"
+msgstr "Inona ny vaovao"
+
+msgid "Photo"
+msgstr "Sary"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Feeling"
+msgstr "Tsapa"
+
+msgid "New posts available — click to refresh"
+msgstr "Paositra vaovao — Tsindrio anavaozana azy"
+
+# ── Namana ──
+msgid "Friend requests"
+msgstr "Fangatahana namana"
+
+msgid "My friends"
+msgstr "Ireo Namako"
+
+msgid "People you may know"
+msgstr "Olona mety fantatrao"
+
+msgid "Accept"
+msgstr "Ekeo"
+
+msgid "Decline"
+msgstr "Ariana"
+
+msgid "Message"
+msgstr "Hafatra"
+
+msgid "No friends yet"
+msgstr "Tsy misy namana mbola"
+
+# ── Tantara (Stories) ──
+msgid "My story"
+msgstr "Tantarako"
+
+msgid "Add story"
+msgstr "Manampy tantara"
+
+msgid "Image"
+msgstr "Sary"
+
+msgid "Text"
+msgstr "Lahatsoratra"
+
+msgid "Image + Text"
+msgstr "Sary + Lahatsoratra"
+
+msgid "Publish"
+msgstr "Alefa"
+
+msgid "Cancel"
+msgstr "Foano"
+
+msgid "Choose a file"
+msgstr "Misafidy rakitra"
+
+msgid "Add a caption..."
+msgstr "Manampy famaritana..."
+
+# ── Fandraisana ──
+msgid "Welcome back"
+msgstr "Tonga soa indray"
+
+msgid "Username"
+msgstr "Anarana mpampiasa"
+
+msgid "Password"
+msgstr "Teny miafina"
+
+msgid "Forgot password?"
+msgstr "Hadino ny teny miafina?"
+
+msgid "Don't have an account?"
+msgstr "Tsy manana kaonty?"
+
+msgid "Already have an account?"
+msgstr "Manana kaonty sahady?"
+
+msgid "First name"
+msgstr "Anarana voalohany"
+
+msgid "Last name"
+msgstr "Fanamarana"
+
+msgid "Email"
+msgstr "Mailaka"
+
+msgid "Confirm password"
+msgstr "Marihina ny teny miafina"
+
+msgid "Create account"
+msgstr "Mamorona kaonty"
+
+msgid "Password strength"
+msgstr "Hery ny teny miafina"
+
+msgid "Weak"
+msgstr "Malemy"
+
+msgid "Medium"
+msgstr "Antonony"
+
+msgid "Strong"
+msgstr "Matanjaka"
+
+msgid "Excellent"
+msgstr "Tsara dia tsara"
+
+# ── Fampandrenesana ──
+msgid "Notifications"
+msgstr "Famantarana"
+
+msgid "No notifications"
+msgstr "Tsy misy famantarana"
+
+msgid "sent a friend request"
+msgstr "nangataka ho namana"
+
+msgid "accepted your friend request"
+msgstr "nanaiky ny fangatahana namana"
+
+msgid "liked your post"
+msgstr "nankia ny paositranao"
+
+msgid "commented on your post"
+msgstr "nanamarika ny paositranao"
+
+# ── Hafatra ──
+msgid "Messages"
+msgstr "Hafatra"
+
+msgid "No messages"
+msgstr "Tsy misy hafatra"
+
+msgid "Type a message..."
+msgstr "Soraty ny hafatra..."
+
+msgid "Send"
+msgstr "Alefa"
+
+msgid "Attach file"
+msgstr "Ampifandray rakitra"
+
+# ── Ankapobeny ──
+msgid "Settings"
+msgstr "Fikirana"
+
+msgid "Home"
+msgstr "Tranon-trano"
+
+msgid "Save"
+msgstr "Tehirizo"
+
+msgid "Delete"
+msgstr "Fafao"
+
+msgid "Confirm"
+msgstr "Marihina"
+
+msgid "Close"
+msgstr "Akatony"
+
+msgid "Loading..."
+msgstr "Ampidirina..."
+
+msgid "See all"
+msgstr "Jerena rehetra"
+
+msgid "View profile"
+msgstr "Jerena profily"
+
+msgid "Language"
+msgstr "Fiteny"
+
+msgid "French"
+msgstr "Frantsay"
+
+msgid "English"
+msgstr "Anglisy"
+
+msgid "Malagasy"
+msgstr "Malagasy"
+
+# ── Pejy fandraisana ──
+msgid "Join VAZIMBA"
+msgstr "Miditra ao amin'ny VAZIMBA"
+
+msgid "Discover publications, people and content from around the world."
+msgstr "Hikaroka paositra, olona ary votoatiny manerana an'izao tontolo izao."
+
+msgid "Recent posts"
+msgstr "Paositra vao haingana"
+
+msgid "Popular"
+msgstr "Malaza"
+
+msgid "Recent"
+msgstr "Vao haingana"
+
+msgid "Publications"
+msgstr "Paositra"
+
+msgid "Members"
+msgstr "Mpikambana"
+
+msgid "View my feed"
+msgstr "Jerena ny vaovao"
