@@ -1,0 +1,292 @@
+# Traductions françaises — VAZIMBA Social Network
+# Language: French (fr)
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+# ── Navigation ──
+msgid "Feed"
+msgstr "Fil d'actualité"
+
+msgid "Explore"
+msgstr "Explorer"
+
+msgid "Search..."
+msgstr "Rechercher..."
+
+msgid "Logout"
+msgstr "Se déconnecter"
+
+msgid "Login"
+msgstr "Se connecter"
+
+msgid "Register"
+msgstr "S'inscrire"
+
+msgid "Dark mode"
+msgstr "Mode sombre"
+
+# ── Profil ──
+msgid "Edit profile"
+msgstr "Modifier le profil"
+
+msgid "Change password"
+msgstr "Changer le mot de passe"
+
+msgid "My profile"
+msgstr "Mon profil"
+
+msgid "About me"
+msgstr "Momba Ahy"
+
+msgid "posts"
+msgstr "publications"
+
+msgid "friends"
+msgstr "amis"
+
+msgid "Send message"
+msgstr "Envoyer un message"
+
+msgid "Add friend"
+msgstr "Ajouter en ami"
+
+msgid "Friend request sent"
+msgstr "Demande envoyée"
+
+msgid "Remove friend"
+msgstr "Retirer des amis"
+
+msgid "Cancel request"
+msgstr "Annuler la demande"
+
+# ── Onglets profil ──
+msgid "Posts"
+msgstr "Publications"
+
+msgid "Photos"
+msgstr "Photos"
+
+msgid "Friends"
+msgstr "Amis"
+
+msgid "My Profile"
+msgstr "Mon Profil"
+
+# ── Fil d'actualité ──
+msgid "What's new"
+msgstr "Quoi de neuf"
+
+msgid "Photo"
+msgstr "Photo"
+
+msgid "Video"
+msgstr "Vidéo"
+
+msgid "Feeling"
+msgstr "Humeur"
+
+msgid "New posts available — click to refresh"
+msgstr "Nouvelles publications — cliquez pour actualiser"
+
+# ── Amis ──
+msgid "Friend requests"
+msgstr "Demandes d'amis"
+
+msgid "My friends"
+msgstr "Mes amis"
+
+msgid "People you may know"
+msgstr "Personnes que vous connaissez peut-être"
+
+msgid "Accept"
+msgstr "Accepter"
+
+msgid "Decline"
+msgstr "Refuser"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "No friends yet"
+msgstr "Pas encore d'amis"
+
+# ── Stories ──
+msgid "My story"
+msgstr "Ma story"
+
+msgid "Add story"
+msgstr "Ajouter une story"
+
+msgid "Image"
+msgstr "Image"
+
+msgid "Text"
+msgstr "Texte"
+
+msgid "Image + Text"
+msgstr "Image + Texte"
+
+msgid "Publish"
+msgstr "Publier"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Choose a file"
+msgstr "Choisir un fichier"
+
+msgid "Add a caption..."
+msgstr "Ajouter une légende..."
+
+# ── Authentification ──
+msgid "Welcome back"
+msgstr "Bon retour"
+
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "Forgot password?"
+msgstr "Mot de passe oublié ?"
+
+msgid "Don't have an account?"
+msgstr "Pas encore de compte ?"
+
+msgid "Already have an account?"
+msgstr "Déjà un compte ?"
+
+msgid "First name"
+msgstr "Prénom"
+
+msgid "Last name"
+msgstr "Nom"
+
+msgid "Email"
+msgstr "E-mail"
+
+msgid "Confirm password"
+msgstr "Confirmer le mot de passe"
+
+msgid "Create account"
+msgstr "Créer un compte"
+
+msgid "Password strength"
+msgstr "Force du mot de passe"
+
+msgid "Weak"
+msgstr "Faible"
+
+msgid "Medium"
+msgstr "Moyen"
+
+msgid "Strong"
+msgstr "Fort"
+
+msgid "Excellent"
+msgstr "Excellent"
+
+# ── Notifications ──
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "No notifications"
+msgstr "Aucune notification"
+
+msgid "sent a friend request"
+msgstr "vous a envoyé une demande d'ami"
+
+msgid "accepted your friend request"
+msgstr "a accepté votre demande d'ami"
+
+msgid "liked your post"
+msgstr "a aimé votre publication"
+
+msgid "commented on your post"
+msgstr "a commenté votre publication"
+
+# ── Chat ──
+msgid "Messages"
+msgstr "Messages"
+
+msgid "No messages"
+msgstr "Aucun message"
+
+msgid "Type a message..."
+msgstr "Écrire un message..."
+
+msgid "Send"
+msgstr "Envoyer"
+
+msgid "Attach file"
+msgstr "Joindre un fichier"
+
+# ── Général ──
+msgid "Settings"
+msgstr "Paramètres"
+
+msgid "Home"
+msgstr "Accueil"
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "Confirm"
+msgstr "Confirmer"
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "Loading..."
+msgstr "Chargement..."
+
+msgid "See all"
+msgstr "Voir tout"
+
+msgid "View profile"
+msgstr "Voir le profil"
+
+msgid "Language"
+msgstr "Langue"
+
+msgid "French"
+msgstr "Français"
+
+msgid "English"
+msgstr "Anglais"
+
+msgid "Malagasy"
+msgstr "Malgache"
+
+# ── Landing page ──
+msgid "Join VAZIMBA"
+msgstr "Rejoindre VAZIMBA"
+
+msgid "Discover publications, people and content from around the world."
+msgstr "Découvrez des publications, des personnes et des contenus du monde entier."
+
+msgid "Recent posts"
+msgstr "Publications récentes"
+
+msgid "Popular"
+msgstr "Populaires"
+
+msgid "Recent"
+msgstr "Récents"
+
+msgid "Publications"
+msgstr "Publications"
+
+msgid "Members"
+msgstr "Membres"
+
+msgid "View my feed"
+msgstr "Voir mon fil"

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% load static %}
+{% load static i18n %}
 <html lang="fr">
 <head>
     <meta charset="utf-8">
@@ -102,6 +102,62 @@
 	</main>
 
 	{% include 'snippets/footer.html' %}
+
+    <!-- ── Détection automatique de langue par géolocalisation IP ──────── -->
+    <!-- Appelé UNE SEULE FOIS si aucune préférence n'est déjà enregistrée  -->
+    {% get_current_language as ZOOT_LANG %}
+    <script>
+    (function() {
+        // Mapping pays → code langue supporté par le site
+        var COUNTRY_LANG = {
+            // Madagascar → Malagasy
+            'MG': 'mg',
+            // Pays francophones principaux → Français
+            'FR':'fr','BE':'fr','CH':'fr','LU':'fr','MC':'fr',
+            'SN':'fr','CI':'fr','ML':'fr','BF':'fr','CM':'fr',
+            'TG':'fr','BJ':'fr','NE':'fr','GN':'fr','GA':'fr',
+            'CD':'fr','CG':'fr','RW':'fr','BI':'fr','DJ':'fr',
+            'HT':'fr','MU':'fr','SC':'fr','KM':'fr',
+            // Tout le reste → Anglais (défaut)
+        };
+        var DEFAULT_LANG = 'en';
+
+        // Si une langue a déjà été choisie manuellement par l'utilisateur,
+        // on ne touche à rien (respect du choix explicite)
+        var cookieLang = (document.cookie.match(/zoot_language=([^;]+)/) || [])[1];
+        if (cookieLang) return;
+
+        // Appel à l'API de géolocalisation IP (gratuit, sans clé, non-commercial)
+        fetch('https://ip-api.com/json/?fields=countryCode', {cache:'no-cache'})
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                var detected = COUNTRY_LANG[data.countryCode] || DEFAULT_LANG;
+                var current  = '{{ ZOOT_LANG }}';
+                // Ne rien faire si la langue détectée == langue active
+                if (detected === current) return;
+                // Appliquer via la vue Django set_language
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{% url "set_language" %}';
+                form.style.display = 'none';
+                var csrfInput = document.createElement('input');
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = '{{ csrf_token }}';
+                var langInput = document.createElement('input');
+                langInput.name = 'language';
+                langInput.value = detected;
+                var nextInput = document.createElement('input');
+                nextInput.name = 'next';
+                nextInput.value = window.location.pathname;
+                form.appendChild(csrfInput);
+                form.appendChild(langInput);
+                form.appendChild(nextInput);
+                document.body.appendChild(form);
+                form.submit();
+            })
+            .catch(function(){/* silencieux — pas de langue forcée si l'API échoue */});
+    })();
+    </script>
 
     <!-- Bootstrap JS (une seule fois, déjà jQuery en <head>) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>

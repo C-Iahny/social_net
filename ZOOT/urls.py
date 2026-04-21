@@ -34,6 +34,9 @@ from personal.views import landing_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # ── Internationalisation ───────────────────────────────────────────────────
+    # Fournit /i18n/set_language/ (vue POST) pour changer la langue depuis le JS/form
+    path('i18n/', include('django.conf.urls.i18n')),
     path('', landing_view, name='landing'),       # Page d'accueil = landing page
     path('feed/', include('post.urls')),           # Le fil d'actualité est déplacé ici
     path('personal/', include('personal.urls')),

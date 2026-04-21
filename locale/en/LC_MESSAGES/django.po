@@ -1,0 +1,292 @@
+# English translations — VAZIMBA Social Network
+# Language: English (en)
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# ── Navigation ──
+msgid "Feed"
+msgstr "Feed"
+
+msgid "Explore"
+msgstr "Explore"
+
+msgid "Search..."
+msgstr "Search..."
+
+msgid "Logout"
+msgstr "Logout"
+
+msgid "Login"
+msgstr "Login"
+
+msgid "Register"
+msgstr "Register"
+
+msgid "Dark mode"
+msgstr "Dark mode"
+
+# ── Profile ──
+msgid "Edit profile"
+msgstr "Edit profile"
+
+msgid "Change password"
+msgstr "Change password"
+
+msgid "My profile"
+msgstr "My profile"
+
+msgid "About me"
+msgstr "About me"
+
+msgid "posts"
+msgstr "posts"
+
+msgid "friends"
+msgstr "friends"
+
+msgid "Send message"
+msgstr "Send message"
+
+msgid "Add friend"
+msgstr "Add friend"
+
+msgid "Friend request sent"
+msgstr "Friend request sent"
+
+msgid "Remove friend"
+msgstr "Remove friend"
+
+msgid "Cancel request"
+msgstr "Cancel request"
+
+# ── Profile tabs ──
+msgid "Posts"
+msgstr "Posts"
+
+msgid "Photos"
+msgstr "Photos"
+
+msgid "Friends"
+msgstr "Friends"
+
+msgid "My Profile"
+msgstr "My Profile"
+
+# ── Feed ──
+msgid "What's new"
+msgstr "What's on your mind"
+
+msgid "Photo"
+msgstr "Photo"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Feeling"
+msgstr "Feeling"
+
+msgid "New posts available — click to refresh"
+msgstr "New posts available — click to refresh"
+
+# ── Friends ──
+msgid "Friend requests"
+msgstr "Friend requests"
+
+msgid "My friends"
+msgstr "My friends"
+
+msgid "People you may know"
+msgstr "People you may know"
+
+msgid "Accept"
+msgstr "Accept"
+
+msgid "Decline"
+msgstr "Decline"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "No friends yet"
+msgstr "No friends yet"
+
+# ── Stories ──
+msgid "My story"
+msgstr "My story"
+
+msgid "Add story"
+msgstr "Add story"
+
+msgid "Image"
+msgstr "Image"
+
+msgid "Text"
+msgstr "Text"
+
+msgid "Image + Text"
+msgstr "Image + Text"
+
+msgid "Publish"
+msgstr "Publish"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Choose a file"
+msgstr "Choose a file"
+
+msgid "Add a caption..."
+msgstr "Add a caption..."
+
+# ── Authentication ──
+msgid "Welcome back"
+msgstr "Welcome back"
+
+msgid "Username"
+msgstr "Username"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Forgot password?"
+msgstr "Forgot password?"
+
+msgid "Don't have an account?"
+msgstr "Don't have an account?"
+
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
+msgid "First name"
+msgstr "First name"
+
+msgid "Last name"
+msgstr "Last name"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Confirm password"
+msgstr "Confirm password"
+
+msgid "Create account"
+msgstr "Create account"
+
+msgid "Password strength"
+msgstr "Password strength"
+
+msgid "Weak"
+msgstr "Weak"
+
+msgid "Medium"
+msgstr "Medium"
+
+msgid "Strong"
+msgstr "Strong"
+
+msgid "Excellent"
+msgstr "Excellent"
+
+# ── Notifications ──
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "No notifications"
+msgstr "No notifications"
+
+msgid "sent a friend request"
+msgstr "sent you a friend request"
+
+msgid "accepted your friend request"
+msgstr "accepted your friend request"
+
+msgid "liked your post"
+msgstr "liked your post"
+
+msgid "commented on your post"
+msgstr "commented on your post"
+
+# ── Chat ──
+msgid "Messages"
+msgstr "Messages"
+
+msgid "No messages"
+msgstr "No messages"
+
+msgid "Type a message..."
+msgstr "Type a message..."
+
+msgid "Send"
+msgstr "Send"
+
+msgid "Attach file"
+msgstr "Attach file"
+
+# ── General ──
+msgid "Settings"
+msgstr "Settings"
+
+msgid "Home"
+msgstr "Home"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Confirm"
+msgstr "Confirm"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Loading..."
+msgstr "Loading..."
+
+msgid "See all"
+msgstr "See all"
+
+msgid "View profile"
+msgstr "View profile"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "French"
+msgstr "French"
+
+msgid "English"
+msgstr "English"
+
+msgid "Malagasy"
+msgstr "Malagasy"
+
+# ── Landing page ──
+msgid "Join VAZIMBA"
+msgstr "Join VAZIMBA"
+
+msgid "Discover publications, people and content from around the world."
+msgstr "Discover publications, people and content from around the world."
+
+msgid "Recent posts"
+msgstr "Recent posts"
+
+msgid "Popular"
+msgstr "Popular"
+
+msgid "Recent"
+msgstr "Recent"
+
+msgid "Publications"
+msgstr "Publications"
+
+msgid "Members"
+msgstr "Members"
+
+msgid "View my feed"
+msgstr "View my feed"
