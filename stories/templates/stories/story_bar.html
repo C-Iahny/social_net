@@ -363,12 +363,13 @@ input#sc-file-input { display: none; }
     display: none;
 }
 
-/* Top bar */
+/* Top bar — padding-top intègre la hauteur du navbar (62px) en mode non-fullscreen,
+   ou env(safe-area-inset-top) sur mobile. */
 .sv-top {
     position: absolute; top: 0; left: 0; right: 0;
-    padding: .75rem 1rem .5rem;
+    padding: calc(.75rem + env(safe-area-inset-top, 0px)) 1rem .5rem;
     z-index: 10;
-    background: linear-gradient(to bottom, rgba(0,0,0,.5) 0%, transparent 100%);
+    background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, transparent 100%);
 }
 
 /* Progress bars */
@@ -606,6 +607,20 @@ input#sc-file-input { display: none; }
      ══════════════════════════════════════════════════════ -->
 <script>
 (function() {
+
+/* ══════════════════════════════════════════════════════════════
+   PORTAL — déplacer les overlays en tant qu'enfants directs de <body>
+   Cela évite que le stacking context de <main> (z-index:1)
+   empêche les overlays de passer au-dessus du navbar (z-index:1000).
+   ══════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+    ['story-creator-overlay', 'story-viewer-overlay'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el && el.parentElement !== document.body) {
+            document.body.appendChild(el);
+        }
+    });
+});
 
 /* ── URLs Django ── */
 var URLS = {
