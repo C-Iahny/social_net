@@ -97,19 +97,22 @@ body {
     line-height: 1.6;
 }
 
-/* Grille cyberpunk uniquement en dark mode */
+/* Grille cyberpunk uniquement en dark mode
+   z-index: -1 → reste derrière tout le contenu SANS créer de stacking context
+   sur les enfants directs de body (ce qui causerait des bugs z-index sur les modals) */
 [data-theme="dark"] body::before {
     content: '';
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 0;
+    z-index: -1;
     background-image:
         linear-gradient(rgba(0,207,255,.025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(0,207,255,.025) 1px, transparent 1px);
     background-size: 48px 48px;
 }
-[data-theme="dark"] body > * { position: relative; z-index: 1; }
+/* NE PAS donner z-index aux body > * : cela crée un stacking context
+   qui empêche les overlays (modals, stories) de passer au-dessus du navbar */
 
 /* Lueur de fond subtile en dark mode */
 [data-theme="dark"] body::after {
@@ -120,7 +123,7 @@ body {
     background: radial-gradient(circle, rgba(191,95,255,.06) 0%, transparent 70%);
     top: -200px; right: -200px;
     pointer-events: none;
-    z-index: 0;
+    z-index: -1;
 }
 
 footer {
