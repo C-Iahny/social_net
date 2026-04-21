@@ -1,0 +1,196 @@
+{% load static %}
+{% for post in posts_of_the_page %}
+<article class="post-card" id="post-{{ post.id }}">
+
+    <!-- Header -->
+    <div class="pc-header">
+        <a href="{% url 'account:view' user_id=post.author.id %}">
+            <img class="pc-avatar" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+        </a>
+        <div class="pc-meta">
+            <a class="pc-author" href="{% url 'account:view' user_id=post.author.id %}">
+                {{ post.author.username }}
+            </a>
+            <span class="pc-sub">
+                <span class="material-icons">schedule</span>
+                {{ post.post_date|date:"d M Y" }}
+                {% if post.category and post.category != 'Category' %}
+                &nbsp;·&nbsp;
+                <span style="background:var(--btn-bg);border-radius:12px;padding:.1rem .55rem;">{{ post.category }}</span>
+                {% endif %}
+            </span>
+        </div>
+        {% if request.user.id == post.author.id %}
+        <div class="pc-actions">
+            <a class="pc-action-btn" href="{% url 'post:edit-post' post.pk %}">
+                <span class="material-icons">edit</span>
+            </a>
+            <a class="pc-action-btn danger" href="{% url 'post:delete-post' post.pk %}">
+                <span class="material-icons">delete</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if post.title %}
+    <div class="pc-title">{{ post.title }}</div>
+    {% endif %}
+
+    {% if post.body %}
+    <div class="pc-body">{{ post.body|safe }}</div>
+    {% endif %}
+
+    {% if post.header_image_url %}
+    <div class="pc-image-wrap">
+        <a href="{{ post.header_image_url }}" target="_blank" rel="noopener">
+            <img class="pc-image" src="{{ post.header_image_url }}" alt="{{ post.title }}">
+        </a>
+    </div>
+    {% endif %}
+
+    {% if post.video %}
+    <div class="pc-video-wrap">
+        <div class="pc-video-label">
+            <span class="material-icons">videocam</span> Vidéo
+        </div>
+        <video class="pc-video" controls preload="metadata">
+            <source src="{{ post.video.url }}" type="video/mp4">
+            <source src="{{ post.video.url }}" type="video/webm">
+            Tsy mahavaky ilay video ny navigateur-nao.
+        </video>
+    </div>
+    {% endif %}
+
+    {% if post.file %}
+        {% if post.file_is_video %}
+        <div class="pc-video-wrap">
+            <div class="pc-video-label">
+                <span class="material-icons">videocam</span> Vidéo
+            </div>
+            <video class="pc-video" controls preload="metadata">
+                <source src="{{ post.file.url }}" type="video/mp4">
+                <source src="{{ post.file.url }}" type="video/webm">
+                Tsy mahavaky ilay video ny navigateur-nao.
+            </video>
+        </div>
+        {% else %}
+        <a class="pc-file-attach" href="{{ post.file.url }}" target="_blank" rel="noopener">
+            <span class="material-icons">insert_drive_file</span> Rakitra
+        </a>
+        {% endif %}
+    {% endif %}
+
+    <!-- Reaction summary bar -->
+    <div class="pc-reaction-bar" id="reaction-bar-{{ post.id }}"
+         {% if not post.total_reactions %}style="display:none"{% endif %}>
+        <div class="rc-emoji-group" id="reaction-summary-{{ post.id }}">
+            {% for rtype, cnt in post.reaction_counts.items %}
+            <span class="rc-emoji" data-type="{{ rtype }}">
+                {% if rtype == 'like' %}👍{% elif rtype == 'heart' %}❤️{% elif rtype == 'laugh' %}😂{% elif rtype == 'wow' %}😮{% elif rtype == 'sad' %}😢{% endif %}
+            </span>
+            {% endfor %}
+        </div>
+        <span class="rc-count" id="reaction-total-{{ post.id }}">{{ post.total_reactions }}</span>
+        <span>réactions</span>
+    </div>
+
+    <div class="pc-footer">
+        <!-- Reactions button + picker -->
+        <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}">
+            <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
+                    id="react-btn-{{ post.id }}"
+                    onclick="quickReact({{ post.id }})"
+                    onmouseenter="openPicker({{ post.id }})"
+                    title="Réagir">
+                <span id="react-icon-{{ post.id }}" style="font-size:1.1rem;line-height:1;">
+                    {% if post.user_reaction == 'like' %}👍
+                    {% elif post.user_reaction == 'heart' %}❤️
+                    {% elif post.user_reaction == 'laugh' %}😂
+                    {% elif post.user_reaction == 'wow' %}😮
+                    {% elif post.user_reaction == 'sad' %}😢
+                    {% else %}<span class="material-icons" style="font-size:1.15rem;">thumb_up_off_alt</span>
+                    {% endif %}
+                </span>
+                <span id="react-label-{{ post.id }}">
+                    {% if post.user_reaction == 'like' %}Tiana
+                    {% elif post.user_reaction == 'heart' %}Tiako
+                    {% elif post.user_reaction == 'laugh' %}Heniky
+                    {% elif post.user_reaction == 'wow' %}Mahagaga
+                    {% elif post.user_reaction == 'sad' %}Maika
+                    {% else %}Tiana{% endif %}
+                </span>
+            </button>
+            <div class="reaction-picker" id="picker-{{ post.id }}"
+                 onmouseleave="closePicker({{ post.id }})">
+                <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
+                        onclick="sendReaction({{ post.id }}, 'like')" title="J'aime">👍</button>
+                <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
+                        onclick="sendReaction({{ post.id }}, 'heart')" title="J'adore">❤️</button>
+                <button class="reaction-emoji-btn {% if post.user_reaction == 'laugh' %}selected{% endif %}"
+                        onclick="sendReaction({{ post.id }}, 'laugh')" title="Haha">😂</button>
+                <button class="reaction-emoji-btn {% if post.user_reaction == 'wow' %}selected{% endif %}"
+                        onclick="sendReaction({{ post.id }}, 'wow')" title="Wow">😮</button>
+                <button class="reaction-emoji-btn {% if post.user_reaction == 'sad' %}selected{% endif %}"
+                        onclick="sendReaction({{ post.id }}, 'sad')" title="Triste">😢</button>
+            </div>
+        </div>
+        <div class="pc-footer-sep"></div>
+        <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
+                onclick="toggleComments({{ post.id }})">
+            <span class="material-icons">chat_bubble_outline</span>
+            Evitra
+            {% if post.page_comments %}
+            <span id="comment-count-{{ post.id }}" style="font-size:.78rem;margin-left:.2rem;opacity:.75;">({{ post.page_comments|length }})</span>
+            {% else %}
+            <span id="comment-count-{{ post.id }}" style="font-size:.78rem;margin-left:.2rem;opacity:.75;display:none;"></span>
+            {% endif %}
+        </button>
+        <div class="pc-footer-sep"></div>
+        <button class="pc-footer-btn" onclick="sharePost({{ post.id }})">
+            <span class="material-icons">share</span>
+            Zaraina
+        </button>
+    </div>
+
+    <div class="pc-comment-panel" id="comment-panel-{{ post.id }}">
+        <div class="pc-comment-list" id="comment-list-{{ post.id }}">
+            {% for c in post.page_comments %}
+            <div class="pc-comment-item" id="comment-item-{{ c.id }}">
+                <img src="{{ c.author.profile_image.url }}" alt="{{ c.author.username }}">
+                <div class="pc-comment-bubble">
+                    <a class="pc-comment-author" href="{% url 'account:view' user_id=c.author.id %}">{{ c.author.username }}</a>
+                    <p class="pc-comment-body">{{ c.body }}</p>
+                    <div class="pc-comment-meta">
+                        <span>{{ c.created_at|date:"d M Y, H:i" }}</span>
+                        {% if request.user == c.author or request.user == post.author %}
+                        <button class="pc-comment-del"
+                                onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">
+                            Fafana
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="pc-comment-form">
+            <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+            <div class="pc-comment-input-wrap">
+                <textarea class="pc-comment-textarea"
+                          id="comment-input-{{ post.id }}"
+                          placeholder="Écrire un commentaire…"
+                          rows="1"
+                          maxlength="1000"
+                          onkeydown="handleCommentKey(event, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                          oninput="autoResize(this)"></textarea>
+            </div>
+            <button class="pc-comment-send" id="comment-send-{{ post.id }}"
+                    onclick="submitComment({{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                    title="Envoyer">
+                <span class="material-icons">send</span>
+            </button>
+        </div>
+    </div>
+
+</article>
+{% endfor %}

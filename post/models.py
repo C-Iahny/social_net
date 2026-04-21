@@ -95,6 +95,39 @@ class Comment(models.Model):
 #======================= COMMENTAIRE END ==============================
 
 
+#======================= REACTIONS ====================================
+
+class Reaction(models.Model):
+    REACTION_CHOICES = [
+        ('like',  '👍'),
+        ('heart', '❤️'),
+        ('laugh', '😂'),
+        ('wow',   '😮'),
+        ('sad',   '😢'),
+    ]
+    EMOJI_MAP = {
+        'like':  '👍',
+        'heart': '❤️',
+        'laugh': '😂',
+        'wow':   '😮',
+        'sad':   '😢',
+    }
+
+    post          = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reactions')
+    user          = models.ForeignKey(Account, on_delete=models.CASCADE)
+    reaction_type = models.CharField(max_length=10, choices=REACTION_CHOICES, default='like')
+    created_at    = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('post', 'user')
+        ordering        = ['created_at']
+
+    def __str__(self):
+        return f"{self.user} → {self.EMOJI_MAP.get(self.reaction_type, '?')} on {self.post}"
+
+#======================= REACTIONS END ================================
+
+
 class Follow(models.Model):
     user            = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='follower')
     user_follower   = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='be_followed')

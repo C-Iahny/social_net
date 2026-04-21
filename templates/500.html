@@ -1,0 +1,240 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>500 — VAZIMBA</title>
+    <script>(function(){var t=localStorage.getItem('zoot-theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');})();</script>
+    <link rel="stylesheet" href="{% static 'perso/bootstrap/css/bootstrap.min.css' %}">
+    {% include 'snippets/base_css.html' %}
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+    .error-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background: var(--bg);
+        font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+        position: relative;
+        overflow: hidden;
+    }
+
+    [data-theme="dark"] .error-page::before {
+        content: '';
+        position: fixed;
+        width: 700px; height: 700px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,77,166,.07) 0%, transparent 65%);
+        top: -200px; right: -200px;
+        pointer-events: none;
+    }
+    [data-theme="dark"] .error-page::after {
+        content: '';
+        position: fixed;
+        width: 500px; height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(191,95,255,.06) 0%, transparent 65%);
+        bottom: -150px; left: -150px;
+        pointer-events: none;
+    }
+
+    .error-card {
+        text-align: center;
+        max-width: 540px;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp .6s ease both;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .error-code {
+        font-size: clamp(6rem, 20vw, 10rem);
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -.05em;
+        background: linear-gradient(135deg, var(--accent3) 0%, var(--accent2) 50%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: .25rem;
+        display: block;
+        filter: drop-shadow(0 0 30px rgba(255,77,166,.3));
+    }
+
+    [data-theme="dark"] .error-code {
+        filter: drop-shadow(0 0 40px rgba(255,77,166,.5));
+        animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+        0%,100% { filter: drop-shadow(0 0 30px rgba(255,77,166,.4)); }
+        50%      { filter: drop-shadow(0 0 60px rgba(191,95,255,.7)); }
+    }
+
+    .error-icon {
+        font-size: 3.5rem;
+        margin: .5rem 0 1rem;
+        display: block;
+        animation: shake 2.5s ease-in-out infinite;
+    }
+
+    @keyframes shake {
+        0%,100% { transform: rotate(-5deg) scale(1); }
+        25%      { transform: rotate(5deg) scale(1.05); }
+        50%      { transform: rotate(-3deg) scale(.97); }
+        75%      { transform: rotate(4deg) scale(1.03); }
+    }
+
+    .error-title {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: .6rem;
+    }
+
+    .error-subtitle {
+        font-size: 1rem;
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .error-actions {
+        display: flex;
+        gap: .75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-error-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .65rem 1.6rem;
+        background: linear-gradient(135deg, var(--accent3), var(--accent2));
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: .95rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: opacity .2s, transform .15s, box-shadow .2s;
+        font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    }
+    .btn-error-primary:hover {
+        opacity: .88;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(255,77,166,.35);
+        color: #fff;
+        text-decoration: none;
+    }
+    [data-theme="dark"] .btn-error-primary {
+        box-shadow: 0 0 20px rgba(255,77,166,.25);
+        color: #fff;
+    }
+
+    .btn-error-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .65rem 1.6rem;
+        background: var(--btn-bg);
+        color: var(--text);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: .95rem;
+        text-decoration: none;
+        transition: background .2s, transform .15s;
+        font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    }
+    .btn-error-secondary:hover {
+        background: var(--btn-hover);
+        transform: translateY(-2px);
+        color: var(--text);
+        text-decoration: none;
+    }
+
+    .error-status {
+        margin-top: 2.5rem;
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        background: var(--btn-bg);
+        border: 1px solid var(--border);
+        font-size: .85rem;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+    .error-status strong {
+        color: var(--text);
+        font-weight: 700;
+    }
+
+    [data-theme="dark"] body {
+        background-image:
+            linear-gradient(rgba(255,77,166,.015) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,77,166,.015) 1px, transparent 1px);
+        background-size: 48px 48px;
+    }
+    </style>
+</head>
+<body>
+<div class="error-page">
+    <div class="error-card">
+
+        <span class="error-code">500</span>
+        <span class="error-icon">⚡</span>
+
+        <h1 class="error-title">Erreur serveur</h1>
+        <p class="error-subtitle">
+            Quelque chose a mal tourné de notre côté.
+            L'équipe a été notifiée et travaille à résoudre le problème.
+        </p>
+
+        <div class="error-actions">
+            {% if user.is_authenticated %}
+            <a href="{% url 'post:post-view' %}" class="btn-error-primary">
+                <span class="material-icons" style="font-size:1.1rem">home</span>
+                Retour au fil
+            </a>
+            {% else %}
+            <a href="/" class="btn-error-primary">
+                <span class="material-icons" style="font-size:1.1rem">home</span>
+                Page d'accueil
+            </a>
+            {% endif %}
+            <button onclick="location.reload()" class="btn-error-secondary">
+                <span class="material-icons" style="font-size:1.1rem">refresh</span>
+                Réessayer
+            </button>
+        </div>
+
+        <div class="error-status">
+            <strong>Que s'est-il passé ?</strong><br>
+            Le serveur a rencontré une erreur interne et n'a pas pu traiter votre requête.
+            Vous pouvez réessayer dans quelques instants — si le problème persiste, contactez le support.
+        </div>
+
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+function toggleTheme(){
+    var h=document.documentElement;
+    var n=(h.getAttribute('data-theme')==='dark')?'light':'dark';
+    h.setAttribute('data-theme',n);
+    try{localStorage.setItem('zoot-theme',n);}catch(e){}
+}
+</script>
+</body>
+</html>

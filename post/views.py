@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
+from django.template.loader import render_to_string
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -14,7 +15,7 @@ User = get_user_model()
 from account.models import Account
 from django.http import JsonResponse
 from .forms import PostForm, EditForm, CommentForm
-from .models import Post, Continent, Country, Follow, Comment
+from .models import Post, Continent, Country, Follow, Comment, Reaction
 from friend.models import FriendList
 from personal.models import HeroSettings
 
@@ -103,9 +104,30 @@ def post_feed_view(request):
     for c in comments_qs:
         comments_by_post.setdefault(c.post_id, []).append(c)
 
-    # Attacher les commentaires directement à chaque post (attribut dynamique)
+    # Précharger les réactions
+    from .models import Reaction
+    from django.db.models import Count
+    reactions_qs = (
+        Reaction.objects.filter(post_id__in=post_ids)
+        .values('post_id', 'reaction_type')
+        .annotate(c=Count('id'))
+    )
+    reactions_by_post = {}
+    for row in reactions_qs:
+        reactions_by_post.setdefault(row['post_id'], {})[row['reaction_type']] = row['c']
+
+    # Réaction de l'utilisateur courant
+    user_reactions_qs = Reaction.objects.filter(
+        post_id__in=post_ids, user=user
+    ).values_list('post_id', 'reaction_type')
+    user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
+
+    # Attacher les données directement à chaque post
     for post in posts_of_the_page:
-        post.page_comments = comments_by_post.get(post.id, [])
+        post.page_comments     = comments_by_post.get(post.id, [])
+        post.reaction_counts   = reactions_by_post.get(post.id, {})
+        post.user_reaction     = user_reaction_by_post.get(post.id)
+        post.total_reactions   = sum(post.reaction_counts.values())
 
     context = {
         "friends":          friends,
@@ -115,6 +137,76 @@ def post_feed_view(request):
         "my_post_count":    my_post_count,
     }
     return render(request, "post/post_view.html", context)
+
+
+# ──────────────────────────────────────────────
+# Feed — Infinite Scroll (AJAX fragment)
+# ──────────────────────────────────────────────
+@login_required(login_url="login")
+def post_feed_more(request):
+    """Retourne le fragment HTML des posts pour l'infinite scroll."""
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return redirect('post:post-view')
+
+    user = request.user
+    try:
+        friend_list = FriendList.objects.get(user=user)
+        friends = friend_list.friends.all()
+    except FriendList.DoesNotExist:
+        friends = []
+
+    feed_posts = Post.objects.filter(
+        author__in=list(friends) + [user]
+    ).order_by("-id")
+
+    paginator = Paginator(feed_posts, 5)
+    page_number = request.GET.get("page", 1)
+    posts_page = paginator.get_page(page_number)
+
+    # Précharger les commentaires
+    post_ids = [p.id for p in posts_page]
+    from .models import Comment as CommentModel
+    comments_qs = CommentModel.objects.filter(
+        post_id__in=post_ids
+    ).select_related('author').order_by('created_at')
+    comments_by_post = {}
+    for c in comments_qs:
+        comments_by_post.setdefault(c.post_id, []).append(c)
+
+    # Précharger les réactions
+    from .models import Reaction
+    from django.db.models import Count
+    reactions_qs = (
+        Reaction.objects.filter(post_id__in=post_ids)
+        .values('post_id', 'reaction_type')
+        .annotate(c=Count('id'))
+    )
+    reactions_by_post = {}
+    for row in reactions_qs:
+        reactions_by_post.setdefault(row['post_id'], {})[row['reaction_type']] = row['c']
+
+    user_reactions_qs = Reaction.objects.filter(
+        post_id__in=post_ids, user=user
+    ).values_list('post_id', 'reaction_type')
+    user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
+
+    for post in posts_page:
+        post.page_comments   = comments_by_post.get(post.id, [])
+        post.reaction_counts = reactions_by_post.get(post.id, {})
+        post.user_reaction   = user_reaction_by_post.get(post.id)
+        post.total_reactions = sum(post.reaction_counts.values())
+
+    html = render_to_string(
+        'post/post_cards_fragment.html',
+        {'posts_of_the_page': posts_page, 'request': request},
+        request=request,
+    )
+
+    return JsonResponse({
+        'html':      html,
+        'has_next':  posts_page.has_next(),
+        'next_page': posts_page.next_page_number() if posts_page.has_next() else None,
+    })
 
 
 # ──────────────────────────────────────────────
@@ -284,6 +376,96 @@ def delete_comment(request, comment_id):
         return JsonResponse({"error": "Non autorisé."}, status=403)
     comment.delete()
     return JsonResponse({"ok": True})
+
+
+# ──────────────────────────────────────────────
+# Reactions
+# ──────────────────────────────────────────────
+@login_required(login_url="login")
+def react_post(request):
+    """Ajoute, change ou supprime une réaction (toggle). Retourne JSON."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST only'}, status=405)
+
+    post_id       = request.POST.get('post_id')
+    reaction_type = request.POST.get('reaction', 'like')
+    post          = get_object_or_404(Post, id=post_id)
+
+    VALID = {'like', 'heart', 'laugh', 'wow', 'sad'}
+    if reaction_type not in VALID:
+        return JsonResponse({'error': 'Invalid reaction'}, status=400)
+
+    try:
+        existing = Reaction.objects.get(post=post, user=request.user)
+        if existing.reaction_type == reaction_type:
+            # Même réaction → suppression (toggle off)
+            existing.delete()
+            user_reaction = None
+        else:
+            # Réaction différente → mise à jour
+            existing.reaction_type = reaction_type
+            existing.save(update_fields=['reaction_type'])
+            user_reaction = reaction_type
+    except Reaction.DoesNotExist:
+        Reaction.objects.create(post=post, user=request.user, reaction_type=reaction_type)
+        user_reaction = reaction_type
+
+    # Compte par type
+    from django.db.models import Count
+    counts_qs = (
+        Reaction.objects.filter(post=post)
+        .values('reaction_type')
+        .annotate(c=Count('id'))
+    )
+    counts = {row['reaction_type']: row['c'] for row in counts_qs}
+    total  = sum(counts.values())
+
+    return JsonResponse({
+        'user_reaction': user_reaction,
+        'counts':        counts,
+        'total':         total,
+    })
+
+
+# ──────────────────────────────────────────────
+# Hashtag Search
+# ──────────────────────────────────────────────
+@login_required(login_url="login")
+def hashtag_view(request, tag):
+    """Affiche les posts contenant un hashtag donné."""
+    from django.db.models import Q
+    tag_clean = tag.lstrip('#').lower()
+    posts = Post.objects.filter(
+        Q(body__icontains='#' + tag_clean) | Q(title__icontains='#' + tag_clean)
+    ).select_related('author').order_by('-id')
+
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    posts_page = paginator.get_page(page_number)
+
+    return render(request, 'post/hashtag.html', {
+        'tag':   '#' + tag_clean,
+        'posts': posts_page,
+    })
+
+
+# ──────────────────────────────────────────────
+# Mention autocomplete
+# ──────────────────────────────────────────────
+@login_required(login_url="login")
+def mention_autocomplete(request):
+    """Retourne les utilisateurs dont le nom commence par 'q' (pour l'autocomplétion)."""
+    q = request.GET.get('q', '').strip()
+    if not q:
+        return JsonResponse({'users': []})
+    users = User.objects.filter(username__istartswith=q).values(
+        'id', 'username'
+    )[:8]
+    result = [
+        {'id': u['id'], 'username': u['username']}
+        for u in users
+    ]
+    return JsonResponse({'users': result})
 
 
 @login_required(login_url="login")

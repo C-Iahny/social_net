@@ -1,0 +1,264 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>404 — VAZIMBA</title>
+    <script>(function(){var t=localStorage.getItem('zoot-theme');document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');})();</script>
+    <link rel="stylesheet" href="{% static 'perso/bootstrap/css/bootstrap.min.css' %}">
+    {% include 'snippets/base_css.html' %}
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+    .error-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background: var(--bg);
+        font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Orbe de fond en dark mode */
+    [data-theme="dark"] .error-page::before {
+        content: '';
+        position: fixed;
+        width: 700px; height: 700px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0,207,255,.07) 0%, transparent 65%);
+        top: -200px; left: -200px;
+        pointer-events: none;
+    }
+    [data-theme="dark"] .error-page::after {
+        content: '';
+        position: fixed;
+        width: 500px; height: 500px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(191,95,255,.06) 0%, transparent 65%);
+        bottom: -150px; right: -150px;
+        pointer-events: none;
+    }
+
+    .error-card {
+        text-align: center;
+        max-width: 540px;
+        width: 100%;
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp .6s ease both;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .error-code {
+        font-size: clamp(6rem, 20vw, 10rem);
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -.05em;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: .25rem;
+        display: block;
+        filter: drop-shadow(0 0 30px rgba(0,207,255,.3));
+    }
+
+    [data-theme="dark"] .error-code {
+        filter: drop-shadow(0 0 40px rgba(0,207,255,.5));
+        animation: pulseGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes pulseGlow {
+        0%,100% { filter: drop-shadow(0 0 30px rgba(0,207,255,.4)); }
+        50%      { filter: drop-shadow(0 0 60px rgba(191,95,255,.6)); }
+    }
+
+    .error-icon {
+        font-size: 3.5rem;
+        margin: .5rem 0 1rem;
+        display: block;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%,100% { transform: translateY(0); }
+        50%      { transform: translateY(-12px); }
+    }
+
+    .error-title {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: .6rem;
+    }
+
+    .error-subtitle {
+        font-size: 1rem;
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .error-actions {
+        display: flex;
+        gap: .75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-error-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .65rem 1.6rem;
+        background: linear-gradient(135deg, var(--accent), var(--accent2));
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: .95rem;
+        text-decoration: none;
+        cursor: pointer;
+        transition: opacity .2s, transform .15s, box-shadow .2s;
+        font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    }
+    .btn-error-primary:hover {
+        opacity: .88;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px var(--accent-glow, rgba(99,102,241,.3));
+        color: #fff;
+        text-decoration: none;
+    }
+    [data-theme="dark"] .btn-error-primary {
+        box-shadow: 0 0 20px rgba(0,207,255,.2);
+        color: #000;
+    }
+
+    .btn-error-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .65rem 1.6rem;
+        background: var(--btn-bg);
+        color: var(--text);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: .95rem;
+        text-decoration: none;
+        transition: background .2s, transform .15s;
+        font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    }
+    .btn-error-secondary:hover {
+        background: var(--btn-hover);
+        transform: translateY(-2px);
+        color: var(--text);
+        text-decoration: none;
+    }
+
+    .error-suggestions {
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--border);
+    }
+    .error-suggestions p {
+        font-size: .85rem;
+        color: var(--text-muted);
+        margin-bottom: .75rem;
+    }
+    .error-sugg-links {
+        display: flex;
+        gap: .5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .error-sugg-link {
+        font-size: .82rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        padding: .25rem .7rem;
+        border-radius: 20px;
+        background: var(--btn-bg);
+        border: 1px solid var(--border);
+        transition: background .15s, color .15s;
+    }
+    .error-sugg-link:hover {
+        background: var(--accent);
+        color: #fff;
+        text-decoration: none;
+    }
+
+    /* Grille déco dark */
+    [data-theme="dark"] body {
+        background-image:
+            linear-gradient(rgba(0,207,255,.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,207,255,.02) 1px, transparent 1px);
+        background-size: 48px 48px;
+    }
+    </style>
+</head>
+<body>
+<div class="error-page">
+    <div class="error-card">
+
+        <span class="error-code">404</span>
+        <span class="error-icon">🌌</span>
+
+        <h1 class="error-title">Page introuvable</h1>
+        <p class="error-subtitle">
+            Cette page s'est perdue dans le cosmos. Elle n'existe pas,
+            a été déplacée ou l'URL est incorrecte.
+        </p>
+
+        <div class="error-actions">
+            {% if user.is_authenticated %}
+            <a href="{% url 'post:post-view' %}" class="btn-error-primary">
+                <span class="material-icons" style="font-size:1.1rem">home</span>
+                Retour au fil
+            </a>
+            {% else %}
+            <a href="/" class="btn-error-primary">
+                <span class="material-icons" style="font-size:1.1rem">home</span>
+                Page d'accueil
+            </a>
+            {% endif %}
+            <button onclick="history.back()" class="btn-error-secondary">
+                <span class="material-icons" style="font-size:1.1rem">arrow_back</span>
+                Retour
+            </button>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="error-suggestions">
+            <p>Ou explore une de ces sections :</p>
+            <div class="error-sugg-links">
+                <a href="{% url 'post:index' %}" class="error-sugg-link">🔭 Explorer</a>
+                <a href="{% url 'friend:list' user_id=user.id %}" class="error-sugg-link">👥 Amis</a>
+                <a href="{% url 'chat:private-chat-room' %}" class="error-sugg-link">💬 Messages</a>
+                <a href="{% url 'account:view' user_id=user.id %}" class="error-sugg-link">👤 Profil</a>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+function toggleTheme(){
+    var h=document.documentElement;
+    var n=(h.getAttribute('data-theme')==='dark')?'light':'dark';
+    h.setAttribute('data-theme',n);
+    try{localStorage.setItem('zoot-theme',n);}catch(e){}
+}
+</script>
+</body>
+</html>
