@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+body { background: var(--bg); }
+.hashtag-wrapper {
+    max-width: 680px;
+    margin: 80px auto 3rem;
+    padding: 0 .75rem;
+}
+.hashtag-hero {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    border-radius: 16px;
+    padding: 2rem 1.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #fff;
+    box-shadow: 0 8px 32px rgba(0,207,255,.2);
+}
+[data-theme="dark"] .hashtag-hero {
+    box-shadow: 0 8px 32px rgba(0,207,255,.15), 0 0 60px rgba(0,207,255,.08);
+}
+.hashtag-hero h1 {
+    font-size: clamp(1.6rem, 5vw, 2.5rem);
+    font-weight: 900; letter-spacing: -.02em;
+    margin-bottom: .3rem;
+}
+.hashtag-hero p { font-size: .95rem; opacity: .9; margin: 0; }
+.ht-back {
+    display: inline-flex; align-items: center; gap: .4rem;
+    margin-bottom: 1rem;
+    color: var(--text-muted); font-size: .88rem; font-weight: 600;
+    text-decoration: none; transition: color .15s;
+}
+.ht-back:hover { color: var(--accent); text-decoration: none; }
+.ht-back .material-icons { font-size: 1rem; }
+
+/* Post cards (same styles as feed) */
+.post-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+.pc-header { display: flex; align-items: center; gap: .75rem; padding: .9rem 1rem .5rem; }
+.pc-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+.pc-meta { flex: 1; min-width: 0; }
+.pc-author { font-weight: 800; color: var(--text); font-size: .93rem; text-decoration: none; display: block; }
+.pc-author:hover { color: var(--accent); text-decoration: none; }
+.pc-sub { font-size: .75rem; color: var(--text-muted); display: flex; align-items: center; gap: .3rem; }
+.pc-sub .material-icons { font-size: .82rem; }
+.pc-title { padding: .35rem 1rem 0; font-weight: 800; font-size: 1rem; color: var(--text); }
+.pc-body { padding: .3rem 1rem .7rem; color: var(--text); font-size: .93rem; line-height: 1.6; }
+.pc-body a.hashtag { color: var(--accent); font-weight: 700; text-decoration: none; }
+.pc-body a.hashtag:hover { text-decoration: underline; }
+.pc-image-wrap { overflow: hidden; }
+.pc-image { width: 100%; max-height: 400px; object-fit: cover; display: block; }
+.pc-footer { display: flex; align-items: center; border-top: 1px solid var(--border); }
+.pc-footer-info {
+    flex: 1; padding: .5rem 1rem;
+    font-size: .82rem; color: var(--text-muted);
+    display: flex; align-items: center; gap: .6rem;
+}
+.pc-footer-info .material-icons { font-size: .95rem; color: var(--accent); }
+
+.empty-ht {
+    text-align: center; padding: 4rem 1.5rem;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; color: var(--text-muted);
+}
+.empty-ht .ef-icon { font-size: 3.5rem; display: block; margin-bottom: 1rem; }
+
+/* Pagination */
+.ht-pagination {
+    display: flex; justify-content: center; gap: .5rem; margin-top: .5rem; flex-wrap: wrap;
+}
+.page-btn {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .45rem 1rem; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text); font-size: .88rem; font-weight: 700;
+    text-decoration: none; transition: background .12s;
+}
+.page-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.page-btn .material-icons { font-size: .95rem; }
+.page-info { font-size: .83rem; color: var(--text-muted); align-self: center; }
+</style>
+
+<div class="hashtag-wrapper">
+
+    <a class="ht-back" href="{% url 'post:post-view' %}">
+        <span class="material-icons">arrow_back</span>
+        Retour au fil
+    </a>
+
+    <div class="hashtag-hero">
+        <h1>{{ tag }}</h1>
+        <p>{{ posts.paginator.count }} publication{{ posts.paginator.count|pluralize }}</p>
+    </div>
+
+    {% if posts %}
+        {% for post in posts %}
+        <article class="post-card">
+            <div class="pc-header">
+                <a href="{% url 'account:view' user_id=post.author.id %}">
+                    <img class="pc-avatar" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+                </a>
+                <div class="pc-meta">
+                    <a class="pc-author" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
+                    <span class="pc-sub">
+                        <span class="material-icons">schedule</span>
+                        {{ post.post_date|date:"d M Y" }}
+                    </span>
+                </div>
+            </div>
+
+            {% if post.title %}
+            <div class="pc-title">{{ post.title }}</div>
+            {% endif %}
+
+            {% if post.body %}
+            <div class="pc-body ht-body">{{ post.body|safe }}</div>
+            {% endif %}
+
+            {% if post.header_image_url %}
+            <div class="pc-image-wrap">
+                <a href="{{ post.header_image_url }}" target="_blank" rel="noopener">
+                    <img class="pc-image" src="{{ post.header_image_url }}" alt="{{ post.title }}">
+                </a>
+            </div>
+            {% endif %}
+
+            <div class="pc-footer">
+                <div class="pc-footer-info">
+                    <span class="material-icons">thumb_up</span>
+                    {{ post.total_likes }} réaction{{ post.total_likes|pluralize }}
+                    &nbsp;·&nbsp;
+                    <span class="material-icons">chat_bubble_outline</span>
+                    {{ post.comments.count }} commentaire{{ post.comments.count|pluralize }}
+                </div>
+                <a href="{% url 'post:post-view' %}" style="padding:.5rem 1rem; color:var(--accent); font-size:.85rem; font-weight:700; text-decoration:none;">
+                    Voir
+                </a>
+            </div>
+        </article>
+        {% endfor %}
+
+        <div class="ht-pagination">
+            {% if posts.has_previous %}
+            <a class="page-btn" href="?page={{ posts.previous_page_number }}">
+                <span class="material-icons">chevron_left</span> Précédent
+            </a>
+            {% endif %}
+            <span class="page-info">{{ posts.number }} / {{ posts.paginator.num_pages }}</span>
+            {% if posts.has_next %}
+            <a class="page-btn" href="?page={{ posts.next_page_number }}">
+                Suivant <span class="material-icons">chevron_right</span>
+            </a>
+            {% endif %}
+        </div>
+
+    {% else %}
+        <div class="empty-ht">
+            <span class="ef-icon">🔍</span>
+            <strong style="color:var(--text);">Aucun post trouvé pour {{ tag }}</strong>
+            <p style="margin-top:.5rem;">Soit le premier à publier avec ce hashtag !</p>
+        </div>
+    {% endif %}
+
+</div>
+
+<script>
+// Transformer les hashtags et mentions dans les corps de posts
+document.querySelectorAll('.ht-body').forEach(function(el) {
+    processHashtagsAndMentions(el);
+});
+
+function processHashtagsAndMentions(container) {
+    if (!container) return;
+    var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+    var nodes = [];
+    var node;
+    while (node = walker.nextNode()) {
+        if (node.parentElement && node.parentElement.tagName === 'A') continue;
+        nodes.push(node);
+    }
+    nodes.forEach(function(n) {
+        var html = n.textContent
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/#([a-zA-ZÀ-ÿ0-9_]{2,30})/g, function(m, tag) {
+                return '<a class="hashtag" href="/post/hashtag/' + tag.toLowerCase() + '/">' + m + '</a>';
+            })
+            .replace(/@([a-zA-Z0-9_]{2,30})/g, function(m, user) {
+                return '<a class="mention" href="/account/search/?q=' + encodeURIComponent(user) + '" style="color:var(--accent2);font-weight:700;text-decoration:none;">' + m + '</a>';
+            });
+        if (html !== n.textContent.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')) {
+            var span = document.createElement('span');
+            span.innerHTML = html;
+            n.parentNode.replaceChild(span, n);
+        }
+    });
+}
+</script>
+{% endblock content %}

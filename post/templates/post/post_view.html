@@ -420,6 +420,55 @@ body { background: var(--bg); }
 .pc-comment-send:disabled { opacity: .5; cursor: default; }
 
 /* ============================================================
+   REACTIONS PICKER
+   ============================================================ */
+.reaction-wrap {
+    position: relative;
+    flex: 1;
+}
+.reaction-picker {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%; transform: translateX(-50%);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 40px;
+    padding: .35rem .5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.22);
+    gap: .15rem;
+    z-index: 200;
+    white-space: nowrap;
+    animation: reactionPop .18s cubic-bezier(.34,1.56,.64,1) both;
+}
+.reaction-picker.open { display: flex; }
+@keyframes reactionPop {
+    from { opacity: 0; transform: translateX(-50%) scale(.6) translateY(6px); }
+    to   { opacity: 1; transform: translateX(-50%) scale(1)  translateY(0); }
+}
+.reaction-emoji-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.55rem; padding: .1rem .18rem;
+    border-radius: 50%; transition: transform .15s;
+    line-height: 1;
+}
+.reaction-emoji-btn:hover { transform: scale(1.35) translateY(-4px); }
+.reaction-emoji-btn.selected { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Reaction summary row */
+.pc-reaction-bar {
+    display: flex; align-items: center; gap: .4rem;
+    padding: .3rem 1rem;
+    font-size: .82rem; color: var(--text-muted);
+    flex-wrap: wrap;
+}
+.rc-emoji-group {
+    display: inline-flex; align-items: center; gap: .15rem;
+}
+.rc-emoji { font-size: .95rem; }
+.rc-count { font-weight: 700; color: var(--text); }
+
+/* ============================================================
    SHARE TOAST
    ============================================================ */
 #share-toast {
@@ -463,22 +512,91 @@ body { background: var(--bg); }
 .ef-cta .material-icons { font-size: 1rem; }
 
 /* ============================================================
-   PAGINATION
+   SKELETON LOADING
    ============================================================ */
-.feed-pagination {
-    display: flex; justify-content: center; align-items: center;
-    gap: .5rem; margin: .5rem 0 1.5rem; flex-wrap: wrap;
+@keyframes shimmer {
+    0%   { background-position: -600px 0; }
+    100% { background-position: 600px 0; }
 }
-.page-btn {
-    display: inline-flex; align-items: center; gap: .3rem;
-    padding: .48rem 1.1rem; border-radius: 10px;
-    border: 1px solid var(--border); background: var(--bg-card);
-    color: var(--text); font-size: .88rem; font-weight: 700;
-    text-decoration: none; transition: background .12s;
+.skeleton-line {
+    border-radius: 6px;
+    background: linear-gradient(90deg,
+        var(--btn-bg) 25%,
+        var(--btn-hover) 50%,
+        var(--btn-bg) 75%);
+    background-size: 600px 100%;
+    animation: shimmer 1.4s infinite linear;
 }
-.page-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
-.page-btn .material-icons { font-size: .95rem; }
-.page-info { font-size: .83rem; color: var(--text-muted); }
+.skeleton-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    padding: .9rem 1rem 1rem;
+}
+.skeleton-header {
+    display: flex; align-items: center; gap: .75rem; margin-bottom: .9rem;
+}
+.skeleton-avatar {
+    width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+}
+.skeleton-meta { flex: 1; display: flex; flex-direction: column; gap: .4rem; }
+.skeleton-title  { height: 14px; width: 55%; }
+.skeleton-sub    { height: 11px; width: 30%; }
+.skeleton-body   { height: 13px; margin-bottom: .5rem; }
+.skeleton-body.w90  { width: 90%; }
+.skeleton-body.w75  { width: 75%; }
+.skeleton-body.w60  { width: 60%; }
+.skeleton-image  { height: 200px; border-radius: 10px; margin: .5rem 0 .9rem; }
+.skeleton-footer {
+    display: flex; gap: 1rem; padding-top: .6rem;
+    border-top: 1px solid var(--border); margin-top: .4rem;
+}
+.skeleton-btn    { height: 28px; border-radius: 8px; flex: 1; }
+
+/* ── Hashtags & Mentions ── */
+.zf-hashtag {
+    color: var(--accent) !important;
+    font-weight: 700;
+    text-decoration: none !important;
+    border-radius: 4px;
+    padding: 0 2px;
+    transition: background .12s;
+}
+.zf-hashtag:hover { background: rgba(0,207,255,.12); }
+.zf-mention {
+    color: var(--accent2) !important;
+    font-weight: 700;
+    text-decoration: none !important;
+    border-radius: 4px;
+    padding: 0 2px;
+    transition: background .12s;
+}
+.zf-mention:hover { background: rgba(191,95,255,.12); }
+
+/* ── Infinite scroll sentinel ── */
+#feed-sentinel {
+    height: 20px;
+    margin: .5rem 0 1.5rem;
+}
+#feed-loading-indicator {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 1rem;
+}
+#feed-loading-indicator.visible { display: flex; }
+#feed-end-message {
+    display: none;
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--text-muted);
+    font-size: .85rem;
+    font-weight: 600;
+}
+#feed-end-message.visible { display: block; }
 
 /* ============================================================
    RIGHT SIDEBAR
@@ -725,27 +843,62 @@ body { background: var(--bg); }
                     {% endif %}
                 {% endif %}
 
-                <!-- Likes count — id dynamique pour mise à jour AJAX -->
-                <div class="pc-stats" id="like-stats-{{ post.id }}"
-                     {% if not post.total_likes %}style="display:none"{% endif %}>
-                    <div class="pc-likes-icon">
-                        <div class="pc-likes-badge">👍</div>
-                        &nbsp;<span id="likes-count-{{ post.id }}">{{ post.total_likes }}</span> tiana.
+                <!-- Reaction summary bar -->
+                <div class="pc-reaction-bar" id="reaction-bar-{{ post.id }}"
+                     {% if not post.total_reactions %}style="display:none"{% endif %}>
+                    <div class="rc-emoji-group" id="reaction-summary-{{ post.id }}">
+                        {% for rtype, cnt in post.reaction_counts.items %}
+                        <span class="rc-emoji" data-type="{{ rtype }}">
+                            {% if rtype == 'like' %}👍{% elif rtype == 'heart' %}❤️{% elif rtype == 'laugh' %}😂{% elif rtype == 'wow' %}😮{% elif rtype == 'sad' %}😢{% endif %}
+                        </span>
+                        {% endfor %}
                     </div>
+                    <span class="rc-count" id="reaction-total-{{ post.id }}">{{ post.total_reactions }}</span>
+                    <span>réactions</span>
                 </div>
 
                 <!-- Action bar -->
                 <div class="pc-footer">
-                    <!-- Bouton like : AJAX — pas de rechargement ni de scroll to top -->
-                    <button class="pc-footer-btn {% if request.user in post.likes.all %}liked{% endif %}"
-                            id="like-btn-{{ post.id }}"
-                            onclick="toggleLike({{ post.id }}, '{% url 'post:like-post' %}')"
-                            title="J'aime / Je n'aime plus">
-                        <span class="material-icons" id="like-icon-{{ post.id }}">
-                            {% if request.user in post.likes.all %}thumb_up{% else %}thumb_up_off_alt{% endif %}
-                        </span>
-                        Tiana
-                    </button>
+                    <!-- Reactions button + picker -->
+                    <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}">
+                        <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
+                                id="react-btn-{{ post.id }}"
+                                onclick="quickReact({{ post.id }})"
+                                onmouseenter="openPicker({{ post.id }})"
+                                title="Réagir">
+                            <span id="react-icon-{{ post.id }}" style="font-size:1.1rem;line-height:1;">
+                                {% if post.user_reaction == 'like' %}👍
+                                {% elif post.user_reaction == 'heart' %}❤️
+                                {% elif post.user_reaction == 'laugh' %}😂
+                                {% elif post.user_reaction == 'wow' %}😮
+                                {% elif post.user_reaction == 'sad' %}😢
+                                {% else %}<span class="material-icons" style="font-size:1.15rem;">thumb_up_off_alt</span>
+                                {% endif %}
+                            </span>
+                            <span id="react-label-{{ post.id }}">
+                                {% if post.user_reaction == 'like' %}Tiana
+                                {% elif post.user_reaction == 'heart' %}Tiako
+                                {% elif post.user_reaction == 'laugh' %}Heniky
+                                {% elif post.user_reaction == 'wow' %}Mahagaga
+                                {% elif post.user_reaction == 'sad' %}Maika
+                                {% else %}Tiana{% endif %}
+                            </span>
+                        </button>
+                        <!-- Reaction picker popup -->
+                        <div class="reaction-picker" id="picker-{{ post.id }}"
+                             onmouseleave="closePicker({{ post.id }})">
+                            <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
+                                    onclick="sendReaction({{ post.id }}, 'like')" title="J'aime">👍</button>
+                            <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
+                                    onclick="sendReaction({{ post.id }}, 'heart')" title="J'adore">❤️</button>
+                            <button class="reaction-emoji-btn {% if post.user_reaction == 'laugh' %}selected{% endif %}"
+                                    onclick="sendReaction({{ post.id }}, 'laugh')" title="Haha">😂</button>
+                            <button class="reaction-emoji-btn {% if post.user_reaction == 'wow' %}selected{% endif %}"
+                                    onclick="sendReaction({{ post.id }}, 'wow')" title="Wow">😮</button>
+                            <button class="reaction-emoji-btn {% if post.user_reaction == 'sad' %}selected{% endif %}"
+                                    onclick="sendReaction({{ post.id }}, 'sad')" title="Triste">😢</button>
+                        </div>
+                    </div>
                     <div class="pc-footer-sep"></div>
                     <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
                             onclick="toggleComments({{ post.id }})">
@@ -808,22 +961,37 @@ body { background: var(--bg); }
             </article>
             {% endfor %}
 
-            <!-- Pagination -->
-            <div class="feed-pagination">
-                {% if posts_of_the_page.has_previous %}
-                <a class="page-btn" href="?page={{ posts_of_the_page.previous_page_number }}">
-                    <span class="material-icons">chevron_left</span> Any Aloha
-                </a>
-                {% endif %}
-                <span class="page-info">
-                    Page {{ posts_of_the_page.number }} / {{ posts_of_the_page.paginator.num_pages }}
-                </span>
-                {% if posts_of_the_page.has_next %}
-                <a class="page-btn" href="?page={{ posts_of_the_page.next_page_number }}">
-                    Manaraka <span class="material-icons">chevron_right</span>
-                </a>
-                {% endif %}
+            <!-- Infinite scroll trigger -->
+            <div id="feed-sentinel"></div>
+
+        <!-- Skeleton loading indicator (infinite scroll) -->
+        <div id="feed-loading-indicator">
+            {% for _ in "xxx" %}
+            <div class="skeleton-card">
+                <div class="skeleton-header">
+                    <div class="skeleton-line skeleton-avatar"></div>
+                    <div class="skeleton-meta">
+                        <div class="skeleton-line skeleton-title"></div>
+                        <div class="skeleton-line skeleton-sub"></div>
+                    </div>
+                </div>
+                <div class="skeleton-line skeleton-body w90"></div>
+                <div class="skeleton-line skeleton-body w75"></div>
+                <div class="skeleton-line skeleton-body w60"></div>
+                <div class="skeleton-line skeleton-image"></div>
+                <div class="skeleton-footer">
+                    <div class="skeleton-line skeleton-btn"></div>
+                    <div class="skeleton-line skeleton-btn"></div>
+                    <div class="skeleton-line skeleton-btn"></div>
+                </div>
             </div>
+            {% endfor %}
+        </div>
+
+        <div id="feed-end-message">
+            <span class="material-icons" style="display:block;font-size:2rem;margin-bottom:.5rem;color:var(--border);">check_circle</span>
+            Efa hitanao ny post rehetra !
+        </div>
 
         {% else %}
             <!-- Empty feed -->
@@ -910,40 +1078,185 @@ body { background: var(--bg); }
 
 <script>
 /* ════════════════════════════════════
-   AJAX: TOGGLE LIKE (sans rechargement)
+   INFINITE SCROLL
    ════════════════════════════════════ */
-function toggleLike(postId, baseUrl) {
-    var btn     = document.getElementById('like-btn-'    + postId);
-    var icon    = document.getElementById('like-icon-'   + postId);
-    var stats   = document.getElementById('like-stats-'  + postId);
-    var counter = document.getElementById('likes-count-' + postId);
-    if (!btn) return;
+(function() {
+    var _feedMoreUrl   = "{% url 'post:feed-more' %}";
+    var _nextPage      = {% if posts_of_the_page.has_next %}{{ posts_of_the_page.next_page_number }}{% else %}null{% endif %};
+    var _loading       = false;
 
-    // Feedback visuel immédiat
-    btn.disabled     = true;
-    btn.style.opacity = '.55';
+    var sentinel  = document.getElementById('feed-sentinel');
+    var indicator = document.getElementById('feed-loading-indicator');
+    var endMsg    = document.getElementById('feed-end-message');
+    var feedMain  = document.querySelector('.feed-main');
 
-    fetch(baseUrl + '?post_id=' + postId, {
-        method:  'GET',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    if (!sentinel) return;
+
+    // Move sentinel after the post list (before skeleton)
+    feedMain.insertBefore(sentinel, indicator);
+
+    function loadMore() {
+        if (_loading || _nextPage === null) return;
+        _loading = true;
+
+        // Show skeleton
+        if (indicator) indicator.classList.add('visible');
+
+        fetch(_feedMoreUrl + '?page=' + _nextPage, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            _loading = false;
+            if (indicator) indicator.classList.remove('visible');
+
+            if (data.html && data.html.trim()) {
+                // Insert posts before sentinel
+                var tmp = document.createElement('div');
+                tmp.innerHTML = data.html;
+                while (tmp.firstChild) {
+                    feedMain.insertBefore(tmp.firstChild, sentinel);
+                }
+            }
+
+            if (data.has_next) {
+                _nextPage = data.next_page;
+            } else {
+                _nextPage = null;
+                if (sentinel) sentinel.style.display = 'none';
+                if (endMsg)   endMsg.classList.add('visible');
+                observer.disconnect();
+            }
+        })
+        .catch(function(err) {
+            _loading  = false;
+            _nextPage = null;
+            if (indicator) indicator.classList.remove('visible');
+            console.error('Infinite scroll error:', err);
+        });
+    }
+
+    // Intersection Observer — déclenche loadMore quand le sentinel est visible
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) loadMore();
+        });
+    }, { rootMargin: '200px' });
+
+    if (_nextPage !== null) {
+        observer.observe(sentinel);
+    } else {
+        // Seule page — afficher le message de fin
+        if (endMsg) endMsg.classList.add('visible');
+    }
+})();
+
+/* ════════════════════════════════════
+   REACTIONS
+   ════════════════════════════════════ */
+var _REACT_URL    = "{% url 'post:react-post' %}";
+var _REACT_EMOJIS = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
+var _REACT_LABELS = { like:'Tiana', heart:'Tiako', laugh:'Heniky', wow:'Mahagaga', sad:'Maika' };
+var _pickerTimers = {};
+var _userReactions = {};  // postId → reaction_type | null
+
+function openPicker(postId) {
+    clearTimeout(_pickerTimers[postId]);
+    _pickerTimers[postId] = setTimeout(function() {
+        var p = document.getElementById('picker-' + postId);
+        if (p) p.classList.add('open');
+    }, 200);
+}
+
+function closePicker(postId) {
+    clearTimeout(_pickerTimers[postId]);
+    _pickerTimers[postId] = setTimeout(function() {
+        var p = document.getElementById('picker-' + postId);
+        if (p) p.classList.remove('open');
+    }, 150);
+}
+
+// Quick click: toggle current reaction or default 'like'
+function quickReact(postId) {
+    var cur = _userReactions[postId] !== undefined ? _userReactions[postId]
+            : document.getElementById('react-btn-' + postId).classList.contains('liked')
+              ? 'like' : null;
+    sendReaction(postId, cur || 'like');
+}
+
+function sendReaction(postId, reactionType) {
+    closePicker(postId);
+
+    var formData = new FormData();
+    formData.append('post_id',              postId);
+    formData.append('reaction',             reactionType);
+    formData.append('csrfmiddlewaretoken',  getCookie('csrftoken'));
+
+    fetch(_REACT_URL, {
+        method:  'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body:    formData
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-        btn.disabled      = false;
-        btn.style.opacity = '';
+        _userReactions[postId] = data.user_reaction;
 
-        // Basculer l'état visuel du bouton
-        btn.classList.toggle('liked', data.liked);
-        if (icon) icon.textContent = data.liked ? 'thumb_up' : 'thumb_up_off_alt';
+        // ── Update button ────────────────────────────────
+        var btn   = document.getElementById('react-btn-'   + postId);
+        var icon  = document.getElementById('react-icon-'  + postId);
+        var label = document.getElementById('react-label-' + postId);
+        if (btn) btn.classList.toggle('liked', !!data.user_reaction);
 
-        // Mettre à jour le compteur sans recharger la page
-        if (counter) counter.textContent = data.total_likes;
-        if (stats)   stats.style.display  = data.total_likes > 0 ? '' : 'none';
+        if (icon) {
+            if (data.user_reaction && _REACT_EMOJIS[data.user_reaction]) {
+                icon.textContent = _REACT_EMOJIS[data.user_reaction];
+                icon.style.fontSize = '1.1rem';
+            } else {
+                icon.innerHTML = '<span class="material-icons" style="font-size:1.15rem;">thumb_up_off_alt</span>';
+            }
+        }
+        if (label) {
+            label.textContent = data.user_reaction ? (_REACT_LABELS[data.user_reaction] || 'Tiana') : 'Tiana';
+        }
+
+        // ── Update picker selected state ─────────────────
+        var picker = document.getElementById('picker-' + postId);
+        if (picker) {
+            picker.querySelectorAll('.reaction-emoji-btn').forEach(function(b) {
+                b.classList.remove('selected');
+            });
+            if (data.user_reaction) {
+                var sel = picker.querySelector('[onclick*="' + data.user_reaction + '"]');
+                if (sel) sel.classList.add('selected');
+            }
+        }
+
+        // ── Update reaction bar ───────────────────────────
+        var bar     = document.getElementById('reaction-bar-'     + postId);
+        var summary = document.getElementById('reaction-summary-' + postId);
+        var total   = document.getElementById('reaction-total-'   + postId);
+
+        if (total)   total.textContent  = data.total;
+        if (bar)     bar.style.display  = data.total > 0 ? '' : 'none';
+        if (summary) {
+            // Rebuild emoji list
+            var html = '';
+            Object.keys(data.counts).forEach(function(rt) {
+                if (_REACT_EMOJIS[rt]) {
+                    html += '<span class="rc-emoji" data-type="' + rt + '">' + _REACT_EMOJIS[rt] + '</span>';
+                }
+            });
+            summary.innerHTML = html;
+        }
     })
-    .catch(function() {
-        btn.disabled      = false;
-        btn.style.opacity = '';
-    });
+    .catch(function(e) { console.error('Reaction error:', e); });
+}
+
+/* ════════════════════════════════════
+   AJAX: TOGGLE LIKE (legacy — kept for any leftover references)
+   ════════════════════════════════════ */
+function toggleLike(postId, baseUrl) {
+    sendReaction(postId, 'like');
 }
 
 /* ── URL helper for comment deletion (generated by Django) ── */
@@ -1165,6 +1478,174 @@ function escHtml(str) {
         .replace(/"/g,  '&quot;')
         .replace(/'/g,  '&#39;');
 }
+
+/* ════════════════════════════════════
+   HASHTAGS + MENTIONS PARSER
+   ════════════════════════════════════ */
+var _HASHTAG_URL  = "{% url 'post:hashtag' 'TAGPLACEHOLDER' %}".replace('/TAGPLACEHOLDER/', '/');
+var _PROFILE_BASE = "{% url 'account:view' user_id=1 %}".replace('/1/', '/');
+
+function processHashtagsAndMentions(container) {
+    if (!container) return;
+    // Walk text nodes (skip links/scripts/code)
+    var SKIP_TAGS = new Set(['A', 'SCRIPT', 'STYLE', 'CODE', 'PRE', 'TEXTAREA', 'INPUT']);
+    var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+        acceptNode: function(n) {
+            var p = n.parentElement;
+            while (p) {
+                if (SKIP_TAGS.has(p.tagName)) return NodeFilter.FILTER_REJECT;
+                p = p.parentElement;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+        }
+    }, false);
+    var nodes = [];
+    var node;
+    while (node = walker.nextNode()) nodes.push(node);
+
+    nodes.forEach(function(n) {
+        var text = n.textContent;
+        if (!/#[a-zA-ZÀ-ÿ0-9_]{2,}|@[a-zA-Z0-9_]{2,}/.test(text)) return;
+
+        var html = text
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/#([a-zA-ZÀ-ÿ0-9_]{2,30})/g, function(m, tag) {
+                var url = '/post/hashtag/' + tag.toLowerCase() + '/';
+                return '<a href="' + url + '" class="zf-hashtag" style="color:var(--accent);font-weight:700;text-decoration:none;" onclick="event.stopPropagation();">' + m + '</a>';
+            })
+            .replace(/@([a-zA-Z0-9_]{2,30})/g, function(m, user) {
+                var url = '/account/search/?q=' + encodeURIComponent(user);
+                return '<a href="' + url + '" class="zf-mention" style="color:var(--accent2);font-weight:700;text-decoration:none;" onclick="event.stopPropagation();">' + m + '</a>';
+            });
+
+        var span = document.createElement('span');
+        span.innerHTML = html;
+        n.parentNode.replaceChild(span, n);
+    });
+}
+
+// Process all post bodies on load
+function processAllPostBodies() {
+    document.querySelectorAll('.pc-body, .pc-title').forEach(function(el) {
+        if (!el.dataset.htagDone) {
+            el.dataset.htagDone = '1';
+            processHashtagsAndMentions(el);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', processAllPostBodies);
+
+// Hook into infinite scroll: process new posts after insertion
+var _origLoadMore = window._infiniteScrollLoadMore;
+(function patchInfiniteScroll() {
+    // Re-process after DOM mutations from infinite scroll inserts
+    var mo = new MutationObserver(function() {
+        processAllPostBodies();
+    });
+    mo.observe(document.querySelector('.feed-main') || document.body, {
+        childList: true, subtree: true
+    });
+})();
+
+/* ════════════════════════════════════
+   MENTION AUTOCOMPLETE IN COMMENT BOX
+   ════════════════════════════════════ */
+var _MENTION_AC_URL = "{% url 'post:mention-autocomplete' %}";
+var _acDropdown = null;
+var _acTimer = null;
+
+document.addEventListener('input', function(e) {
+    var ta = e.target;
+    if (!ta.classList.contains('pc-comment-textarea')) return;
+
+    var val    = ta.value;
+    var cursor = ta.selectionStart;
+    // Find the @word being typed
+    var before  = val.slice(0, cursor);
+    var match   = before.match(/@([a-zA-Z0-9_]*)$/);
+    if (!match) { hideAcDropdown(); return; }
+
+    var query = match[1];
+    clearTimeout(_acTimer);
+    _acTimer = setTimeout(function() { fetchMentions(ta, query); }, 220);
+});
+
+function fetchMentions(ta, query) {
+    fetch(_MENTION_AC_URL + '?q=' + encodeURIComponent(query), {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.users && data.users.length) {
+            showAcDropdown(ta, data.users);
+        } else {
+            hideAcDropdown();
+        }
+    });
+}
+
+function showAcDropdown(ta, users) {
+    hideAcDropdown();
+    var dd = document.createElement('div');
+    dd.id = 'mention-ac-dd';
+    dd.style.cssText = [
+        'position:absolute',
+        'z-index:9999',
+        'background:var(--bg-card)',
+        'border:1px solid var(--border)',
+        'border-radius:10px',
+        'box-shadow:0 8px 24px rgba(0,0,0,.2)',
+        'overflow:hidden',
+        'min-width:180px',
+        'max-width:260px',
+    ].join(';');
+
+    users.forEach(function(u) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.textContent = '@' + u.username;
+        item.style.cssText = [
+            'display:block', 'width:100%', 'text-align:left',
+            'padding:.5rem .9rem', 'background:none', 'border:none',
+            'cursor:pointer', 'color:var(--text)', 'font-size:.9rem',
+            'font-weight:600', 'transition:background .1s',
+        ].join(';');
+        item.onmouseover = function() { this.style.background = 'var(--btn-bg)'; };
+        item.onmouseout  = function() { this.style.background = 'none'; };
+        item.onclick = function() {
+            insertMention(ta, u.username);
+            hideAcDropdown();
+        };
+        dd.appendChild(item);
+    });
+
+    var rect = ta.getBoundingClientRect();
+    dd.style.top  = (window.scrollY + rect.bottom + 4) + 'px';
+    dd.style.left = (window.scrollX + rect.left) + 'px';
+    document.body.appendChild(dd);
+    _acDropdown = dd;
+}
+
+function hideAcDropdown() {
+    if (_acDropdown) { _acDropdown.remove(); _acDropdown = null; }
+}
+
+function insertMention(ta, username) {
+    var val    = ta.value;
+    var cursor = ta.selectionStart;
+    var before = val.slice(0, cursor);
+    var after  = val.slice(cursor);
+    var newBefore = before.replace(/@([a-zA-Z0-9_]*)$/, '@' + username + ' ');
+    ta.value = newBefore + after;
+    var newCursor = newBefore.length;
+    ta.setSelectionRange(newCursor, newCursor);
+    ta.focus();
+}
+
+document.addEventListener('click', function(e) {
+    if (_acDropdown && !_acDropdown.contains(e.target)) hideAcDropdown();
+});
 </script>
 
 {% endblock content %}
