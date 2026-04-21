@@ -1,14 +1,172 @@
-<style type="text/css">
-    .footer{
-        min-height: 100px;
-        
-    }
+<style>
+/* ── Footer Synthwave ─────────────────────────────────────── */
+#pied {
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 1.5rem 1.5rem;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
 
+/* Lueur décorative en dark mode */
+[data-theme="dark"] #pied::before {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 500px; height: 120px;
+    background: radial-gradient(ellipse, rgba(0,207,255,.07) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.footer-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+/* Brand */
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    text-decoration: none !important;
+}
+.footer-brand-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+}
+[data-theme="dark"] .footer-brand-icon {
+    box-shadow: 0 0 12px rgba(0,207,255,.3);
+}
+.footer-brand-icon svg { display: block; }
+.footer-brand-name {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -.02em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Ligne de liens */
+.footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .25rem .1rem;
+}
+.footer-links a {
+    color: var(--text-muted);
+    font-size: .8rem;
+    font-weight: 500;
+    text-decoration: none;
+    padding: .25rem .65rem;
+    border-radius: 20px;
+    transition: color .2s, background .2s;
+}
+.footer-links a:hover {
+    color: var(--accent);
+    background: var(--btn-bg);
+    text-decoration: none;
+}
+[data-theme="dark"] .footer-links a:hover {
+    color: var(--neon-cyan);
+}
+
+/* Séparateur lumineux */
+.footer-divider {
+    width: 100%;
+    max-width: 400px;
+    height: 1px;
+    background: var(--border);
+    position: relative;
+    overflow: visible;
+}
+[data-theme="dark"] .footer-divider::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px; height: 1px;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent), 0 0 16px rgba(0,207,255,.3);
+}
+
+/* Copyright */
+.footer-copy {
+    font-size: .75rem;
+    color: var(--text-muted);
+    text-align: center;
+    line-height: 1.6;
+}
+.footer-copy span {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* Tagline synthwave */
+.footer-tagline {
+    font-size: .7rem;
+    color: var(--text-muted);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    opacity: .65;
+}
+[data-theme="dark"] .footer-tagline {
+    color: var(--neon-cyan);
+    opacity: .45;
+    text-shadow: 0 0 6px rgba(0,207,255,.3);
+}
+
+@media (max-width: 575px) {
+    #pied { padding: 2rem 1rem 1.25rem; }
+}
 </style>
 
-<!-- Footer -->
+<div id="pied" class="mt-5">
+    <div class="footer-inner">
 
-<div id="pied" class="d-flex flex-row align-items-center footer bg-white shadow-lg mt-5">
-    <p class="m-auto">VAZIMBA © | 2020</p>
+        <!-- Brand -->
+        <a href="/" class="footer-brand">
+            <div class="footer-brand-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#fff"/>
+                </svg>
+            </div>
+            <span class="footer-brand-name">VAZIMBA</span>
+        </a>
+
+        <!-- Tagline -->
+        <p class="footer-tagline mb-0">Réseau social · Madagascar · 2025</p>
+
+        <!-- Liens -->
+        <nav class="footer-links">
+            <a href="{% url 'post:post-view' %}">Vaovao</a>
+            <a href="{% url 'post:index' %}">Zava-misy</a>
+            <a href="{% url 'friend:list' user_id=request.user.id %}" {% if not request.user.is_authenticated %}style="display:none"{% endif %}>Namana</a>
+            <a href="{% url 'chat:private-chat-room' %}" {% if not request.user.is_authenticated %}style="display:none"{% endif %}>Hafatra</a>
+            {% if not request.user.is_authenticated %}
+            <a href="{% url 'login' %}">Connexion</a>
+            <a href="{% url 'register' %}">Inscription</a>
+            {% endif %}
+        </nav>
+
+        <!-- Divider -->
+        <div class="footer-divider"></div>
+
+        <!-- Copyright -->
+        <p class="footer-copy mb-0">
+            © 2025 <span>VAZIMBA</span> — Tous droits réservés.<br>
+            Construit avec ❤️ pour la communauté malgache.
+        </p>
+
+    </div>
 </div>
-<!-- End Footer -->
