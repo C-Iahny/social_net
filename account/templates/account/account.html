@@ -444,10 +444,15 @@
 
     <div class="profile-header">
         <div class="avatar-area">
-            <div class="avatar-wrap">
-                <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}">
+            <div class="avatar-wrap" id="profile-avatar-wrap"
+                 style="cursor:pointer;position:relative;">
+                <!-- Anneau story injecté par JS -->
+                <span id="profile-story-ring-el"></span>
+                <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}"
+                     style="position:relative;z-index:1;">
                 {% if is_self %}
-                <a class="avatar-edit-btn" href="{% url 'account:edit' user_id=id %}" title="Modifier la photo">
+                <a class="avatar-edit-btn" href="{% url 'account:edit' user_id=id %}" title="Modifier la photo"
+                   onclick="event.stopPropagation();">
                     <span class="material-icons" style="font-size:1rem;">photo_camera</span>
                 </a>
                 {% endif %}
@@ -639,6 +644,28 @@
 
             <!-- Main feed -->
             <div class="profile-main">
+
+                <!-- ── Stories section ───────────────────────────────── -->
+                <div id="profile-stories-section" style="display:none;margin-bottom:1rem;">
+                    <!-- Header -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
+                        <div style="display:flex;align-items:center;gap:.5rem;">
+                            <span class="material-icons" style="color:var(--accent);font-size:1.1rem;">auto_stories</span>
+                            <span style="font-size:.82rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);">
+                                {% if is_self %}Mes stories{% else %}Stories{% endif %}
+                            </span>
+                        </div>
+                        {% if is_self %}
+                        <button onclick="openStoryCreator()"
+                            style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:20px;padding:.3rem .9rem;font-size:.75rem;font-weight:700;cursor:pointer;font-family:var(--font-primary,'Space Grotesk',sans-serif);display:flex;align-items:center;gap:.3rem;">
+                            <span class="material-icons" style="font-size:.9rem;">add</span>
+                            Nouvelle
+                        </button>
+                        {% endif %}
+                    </div>
+                    <!-- Vignettes -->
+                    <div id="profile-stories-grid" style="display:flex;gap:.75rem;flex-wrap:wrap;"></div>
+                </div>
 
                 <!-- Create post (only own profile) -->
                 {% if is_self %}
@@ -907,5 +934,235 @@
 {% include 'friend/snippets/cancel_friend_request.html' %}
 {% include 'friend/snippets/remove_friend.html' %}
 {% include 'chat/snippets/create_or_return_private_chat.html' %}
+
+<!-- ── Stories (créateur + viewer réutilisés depuis le feed) ── -->
+{% include 'stories/story_bar.html' %}
+
+<style>
+/* ── Masquer la barre stories du snippet sur la page profil ── */
+#zoot-stories-bar { display: none !important; }
+
+/* ── Vignettes stories profil ────────────────────────────────── */
+.profile-story-thumb {
+    position: relative;
+    width: 80px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.profile-story-thumb-inner {
+    width: 80px; height: 130px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--border);
+    transition: border-color .2s, transform .15s, box-shadow .2s;
+    background: var(--btn-bg);
+}
+.profile-story-thumb:hover .profile-story-thumb-inner {
+    border-color: var(--accent);
+    transform: scale(1.03);
+    box-shadow: 0 4px 18px var(--accent-glow);
+}
+[data-theme="dark"] .profile-story-thumb:hover .profile-story-thumb-inner {
+    box-shadow: 0 0 16px rgba(0,207,255,.3);
+}
+.profile-story-thumb-inner img,
+.profile-story-thumb-inner video {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.profile-story-thumb-text {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center; padding: .5rem;
+}
+.profile-story-thumb-text p {
+    font-size: .68rem; font-weight: 700; color: #fff;
+    text-align: center; word-break: break-word; margin: 0;
+    text-shadow: 0 1px 4px rgba(0,0,0,.5); line-height: 1.3;
+}
+.profile-story-thumb-label {
+    font-size: .65rem; font-weight: 600; color: var(--text-muted);
+    text-align: center; margin-top: .3rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.profile-story-thumb-seen {
+    position: absolute; top: 6px; right: 6px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(0,0,0,.55);
+    display: flex; align-items: center; justify-content: center;
+}
+.profile-story-thumb-seen .material-icons { font-size: .7rem; color: #fff; }
+</style>
+
+<script>
+(function() {
+    var PROFILE_USER_ID = {{ id }};
+    var IS_SELF = {{ is_self|yesno:"true,false" }};
+    var STORY_PROFILE_URL = '{% url "stories:profile" user_id=id %}';
+    var STORY_MINE_URL    = '{% url "stories:mine" %}';
+
+    /* ── Gradients CSS → couleur de fond de vignette ── */
+    var GRAD_MAP = {
+        grad_cyan:   'linear-gradient(135deg,#00cfff,#0066ff)',
+        grad_purple: 'linear-gradient(135deg,#bf5fff,#ff4da6)',
+        grad_sunset: 'linear-gradient(135deg,#ff6b35,#ff4da6)',
+        grad_forest: 'linear-gradient(135deg,#00c851,#00cfff)',
+        grad_night:  'linear-gradient(135deg,#07080f,#bf5fff)',
+        grad_gold:   'linear-gradient(135deg,#ffd700,#ff6b35)',
+    };
+
+    function loadProfileStories() {
+        var url = IS_SELF ? STORY_MINE_URL : STORY_PROFILE_URL;
+        fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                var stories = IS_SELF ? (data.stories || []) : (data.stories || []);
+                renderProfileStories(stories);
+                updateAvatarRing(stories);
+            });
+    }
+
+    function renderProfileStories(stories) {
+        var section = document.getElementById('profile-stories-section');
+        var grid    = document.getElementById('profile-stories-grid');
+        if (!section || !grid) return;
+
+        if (!stories.length) {
+            section.style.display = 'none';
+            return;
+        }
+        section.style.display = 'block';
+        grid.innerHTML = '';
+
+        stories.forEach(function(s, idx) {
+            var thumb = document.createElement('div');
+            thumb.className = 'profile-story-thumb';
+            thumb.onclick = function() { openProfileStoryAt(idx); };
+
+            var inner = document.createElement('div');
+            inner.className = 'profile-story-thumb-inner';
+
+            if (s.story_type === 'text') {
+                var bg = GRAD_MAP[s.bg_gradient] || GRAD_MAP.grad_cyan;
+                inner.style.background = bg;
+                inner.innerHTML = '<div class="profile-story-thumb-text"><p>' + (s.caption || '') + '</p></div>';
+            } else if (s.story_type === 'video' && s.media_url) {
+                inner.innerHTML = '<video src="' + s.media_url + '" muted preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>';
+            } else if (s.media_url) {
+                inner.innerHTML = '<img src="' + s.media_url + '" alt="" loading="lazy">';
+            } else {
+                inner.style.background = GRAD_MAP.grad_cyan;
+                inner.innerHTML = '<div class="profile-story-thumb-text"><p>' + (s.caption || '') + '</p></div>';
+            }
+
+            // Icône "vu"
+            if (s.seen && !IS_SELF) {
+                var seenEl = document.createElement('div');
+                seenEl.className = 'profile-story-thumb-seen';
+                seenEl.innerHTML = '<span class="material-icons">done_all</span>';
+                thumb.appendChild(seenEl);
+            }
+
+            var label = document.createElement('div');
+            label.className = 'profile-story-thumb-label';
+            var h = Math.floor(s.time_left / 3600);
+            label.textContent = h > 0 ? h + 'h restant' : Math.floor(s.time_left / 60) + 'min';
+
+            thumb.appendChild(inner);
+            thumb.appendChild(label);
+            grid.appendChild(thumb);
+        });
+
+        // Stocker les stories dans un groupe temp pour le viewer
+        window._profileStoryGroup = {
+            user_id:  PROFILE_USER_ID,
+            username: IS_SELF ? '{{ username }}' : '{{ username }}',
+            avatar:   '{{ profile_image }}',
+            is_me:    IS_SELF,
+            stories:  stories,
+            all_seen: stories.every(function(s){ return s.seen; }),
+        };
+    }
+
+    function updateAvatarRing(stories) {
+        var ringEl = document.getElementById('profile-story-ring-el');
+        var wrap   = document.getElementById('profile-avatar-wrap');
+        if (!ringEl || !wrap) return;
+
+        if (!stories.length) {
+            ringEl.innerHTML = '';
+            wrap.onclick = IS_SELF ? function(){ openStoryCreator(); } : null;
+            return;
+        }
+
+        var allSeen = stories.every(function(s){ return s.seen; });
+
+        // Anneau CSS
+        ringEl.style.cssText =
+            'position:absolute;inset:-5px;border-radius:50%;z-index:0;' +
+            (allSeen
+                ? 'background:conic-gradient(var(--text-muted) 0deg,var(--border) 360deg);'
+                : 'background:conic-gradient(var(--accent) 0deg,var(--accent2) 120deg,var(--accent3) 240deg,var(--accent) 360deg);animation:ringRotate 4s linear infinite;');
+
+        if (!allSeen) {
+            // Injecter la keyframe si pas déjà présente
+            if (!document.getElementById('ring-keyframe')) {
+                var s = document.createElement('style');
+                s.id = 'ring-keyframe';
+                s.textContent = '@keyframes ringRotate{to{transform:rotate(360deg)}}';
+                document.head.appendChild(s);
+            }
+        }
+
+        // Liseré blanc intérieur
+        var inner = document.createElement('span');
+        inner.style.cssText =
+            'position:absolute;inset:3px;border-radius:50%;' +
+            'background:var(--bg-card);z-index:0;display:block;';
+        ringEl.appendChild(inner);
+
+        // Click → viewer
+        wrap.onclick = function() {
+            if (IS_SELF) {
+                openStoryCreator();
+            } else {
+                openProfileStoryAt(0);
+            }
+        };
+    }
+
+    window.openProfileStoryAt = function(idx) {
+        if (!window._profileStoryGroup) return;
+        // Injecter le groupe dans la liste _groups du viewer global
+        if (window.zootStories) {
+            var groups = window.zootStories.groups();
+            // Trouver si ce groupe existe déjà
+            var found = -1;
+            for (var i = 0; i < groups.length; i++) {
+                if (groups[i].user_id === PROFILE_USER_ID) { found = i; break; }
+            }
+            if (found === -1) {
+                groups.unshift(window._profileStoryGroup);
+                found = 0;
+            }
+            window.openStoryViewer(found);
+            // Naviguer jusqu'à la bonne story
+            // (openStoryViewer commence à 0, mais on veut idx)
+        }
+    };
+
+    window.openProfileStory = function(userId) {
+        openProfileStoryAt(0);
+    };
+
+    document.addEventListener('DOMContentLoaded', loadProfileStories);
+
+    // Recharger après création d'une story
+    var origClose = window.closeStoryCreator;
+    window.closeStoryCreator = function() {
+        if (origClose) origClose();
+        setTimeout(loadProfileStories, 500);
+    };
+
+})();
+</script>
 
 {% endblock content %}
