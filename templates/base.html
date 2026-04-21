@@ -16,10 +16,13 @@
         })();
     </script>
 
-    <!-- ② Variables CSS + styles de base (dans <head> pour éviter le flash) -->
+    <!-- ② Bootstrap chargé EN PREMIER pour que nos overrides CSS le surchargent -->
+    <link rel="stylesheet" type="text/css" href="{% static 'perso/bootstrap/css/bootstrap.min.css' %}">
+
+    <!-- ③ Variables CSS + styles de base (après Bootstrap pour avoir priorité) -->
     {% include 'snippets/base_css.html' %}
 
-    <!-- ③ Fonctions thème globales -->
+    <!-- ④ Fonctions thème globales -->
     <script>
         function _syncThemeIcons(theme) {
             var icon = (theme === 'dark')
@@ -45,7 +48,6 @@
     </script>
 
     <!-- CSS librairies -->
-    <link rel="stylesheet" type="text/css" href="{% static 'perso/bootstrap/css/bootstrap.min.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">

@@ -177,25 +177,27 @@ code, pre {
 [data-theme="dark"] .neon-border-purple { border-color: var(--neon-purple)  !important; box-shadow: 0 0 12px rgba(191,95,255,.3); }
 
 /* ============================================================
-   CARDS
+   CARDS — !important pour surcharger Bootstrap 4 (bg-color: #fff)
    ============================================================ */
 .card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text) !important;
     border-radius: var(--main-radius, 12px);
     box-shadow: var(--shadow);
-    transition: box-shadow .25s, border-color .25s, transform .2s;
+    transition: box-shadow .25s, border-color .25s, transform .2s, background .3s;
 }
 .card:hover {
     box-shadow: var(--shadow-lg);
 }
 [data-theme="dark"] .card:hover {
-    border-color: rgba(0,207,255,.2);
+    border-color: rgba(0,207,255,.2) !important;
     box-shadow: var(--shadow-lg), 0 0 20px rgba(0,207,255,.06);
 }
-.card-body {
-    background: var(--bg-card);
-    color: var(--text);
+.card-body, .card-header, .card-footer {
+    background: var(--bg-card) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
 }
 
 /* ============================================================
@@ -504,6 +506,154 @@ textarea:focus, select:focus {
 [data-theme="dark"] .left .sidebar {
     background: var(--bg-card) !important;
     color: var(--text);
+}
+
+/* ============================================================
+   COUVERTURE GLOBALE — Bootstrap 4 résiduel
+   Ces règles !important couvrent tous les éléments Bootstrap
+   qui auraient un fond blanc codé en dur.
+   ============================================================ */
+
+/* Corps de page */
+[data-theme="dark"] body,
+[data-theme="dark"] html {
+    background-color: var(--bg) !important;
+    color: var(--text) !important;
+}
+
+/* Tous les conteneurs Bootstrap */
+[data-theme="dark"] .container,
+[data-theme="dark"] .container-fluid,
+[data-theme="dark"] .container-sm,
+[data-theme="dark"] .container-md,
+[data-theme="dark"] .container-lg,
+[data-theme="dark"] .container-xl {
+    color: var(--text);
+}
+
+/* Tous les panels, wells, jumbotrons */
+[data-theme="dark"] .jumbotron,
+[data-theme="dark"] .well,
+[data-theme="dark"] .panel,
+[data-theme="dark"] .panel-body,
+[data-theme="dark"] .panel-heading {
+    background-color: var(--bg-card) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+}
+
+/* Tables */
+[data-theme="dark"] .table,
+[data-theme="dark"] .table td,
+[data-theme="dark"] .table th,
+[data-theme="dark"] .table thead th {
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+    background-color: transparent !important;
+}
+[data-theme="dark"] .table-bordered,
+[data-theme="dark"] .table-bordered td,
+[data-theme="dark"] .table-bordered th {
+    border-color: var(--border) !important;
+}
+[data-theme="dark"] .thead-light th {
+    background-color: var(--btn-bg) !important;
+    color: var(--text) !important;
+}
+
+/* Badges Bootstrap */
+[data-theme="dark"] .badge-light {
+    background-color: var(--btn-bg) !important;
+    color: var(--text) !important;
+}
+[data-theme="dark"] .badge-secondary {
+    background-color: var(--btn-bg) !important;
+    color: var(--text-muted) !important;
+}
+
+/* Groupes de listes */
+[data-theme="dark"] .list-group-item-action:hover,
+[data-theme="dark"] .list-group-item-action:focus {
+    background-color: var(--btn-bg) !important;
+    color: var(--text) !important;
+}
+[data-theme="dark"] .list-group-item-light {
+    background-color: var(--btn-bg) !important;
+    color: var(--text) !important;
+}
+
+/* Nav pills et tabs */
+[data-theme="dark"] .nav-pills .nav-link {
+    color: var(--text-muted);
+}
+[data-theme="dark"] .nav-pills .nav-link.active,
+[data-theme="dark"] .nav-pills .show > .nav-link {
+    background-color: var(--accent) !important;
+    color: #fff !important;
+}
+
+/* Accordions */
+[data-theme="dark"] .accordion > .card,
+[data-theme="dark"] .collapse { background-color: var(--bg-card) !important; }
+
+/* Popover / Tooltip Bootstrap */
+[data-theme="dark"] .popover {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border) !important;
+}
+[data-theme="dark"] .popover-body { color: var(--text) !important; }
+[data-theme="dark"] .bs-popover-top > .arrow::after,
+[data-theme="dark"] .bs-popover-auto[x-placement^=top] > .arrow::after {
+    border-top-color: var(--bg-card) !important;
+}
+
+/* Inputs — forcer backdrop sur les inputs Bootstrap */
+[data-theme="dark"] .input-group-text {
+    background-color: var(--btn-bg) !important;
+    border-color: var(--border) !important;
+    color: var(--text) !important;
+}
+[data-theme="dark"] .custom-select {
+    background-color: var(--input-bg) !important;
+    border-color: var(--border) !important;
+    color: var(--text) !important;
+}
+
+/* Close button */
+[data-theme="dark"] .close { color: var(--text) !important; }
+
+/* Progress bars */
+[data-theme="dark"] .progress {
+    background-color: var(--btn-bg) !important;
+}
+
+/* Breadcrumb */
+[data-theme="dark"] .breadcrumb {
+    background-color: var(--bg-card) !important;
+}
+[data-theme="dark"] .breadcrumb-item.active { color: var(--text-muted) !important; }
+[data-theme="dark"] .breadcrumb-item + .breadcrumb-item::before { color: var(--text-muted) !important; }
+
+/* Pagination — forcer les bords */
+[data-theme="dark"] .page-item:not(.active) .page-link {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border) !important;
+    color: var(--text-muted) !important;
+}
+
+/* Links globaux sans classe */
+[data-theme="dark"] p, [data-theme="dark"] span,
+[data-theme="dark"] li, [data-theme="dark"] label,
+[data-theme="dark"] h1, [data-theme="dark"] h2,
+[data-theme="dark"] h3, [data-theme="dark"] h4,
+[data-theme="dark"] h5, [data-theme="dark"] h6 {
+    color: inherit;
+}
+
+/* Highlight des textes de sélection */
+[data-theme="dark"] ::selection {
+    background: rgba(0,207,255,.25);
+    color: #fff;
 }
 
 </style>
