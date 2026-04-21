@@ -2,119 +2,500 @@
 {% load static %}
 
 {% block content %}
+<style>
+/* ── Friend List Page ─────────────────────────────────────── */
+.fl-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+}
 
-<style type="text/css">
-	.profile-image{
-		max-height: 100px;
-		max-width: 100px;
-	}
-	.profile-image{
-		border-radius: 12px;
-	}
-	.card{
-		border-radius: 12px;
-	}
-	.friends-text{
-		color: var(--text, #000);
-		font-weight: 500;
-	}
-	.friends-text-container{
-		border: 1px solid var(--border, #cccccc);
-		border-radius: 12px;
-		background: var(--bg-card, #fff);
-		transition: background .3s;
-	}
-	.friends-btn:hover {
-		background-color: var(--btn-hover, #bfbfbf);
-		border-color: var(--border, #bfbfbf);
-	}
-	.dropdown-toggle::after {
-		content: none;
-	}
-	.profile-link{
-		color: var(--text, #000);
-	}
-	.checkmark-icon{
-		color: var(--badge-success-t, green);
-	}
-	.cancel-icon{
-		color: var(--badge-danger-t, red);
-	}
-	
+/* Page header */
+.fl-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+.fl-title {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+.fl-title-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+[data-theme="dark"] .fl-title-icon {
+    box-shadow: 0 0 16px rgba(0,207,255,.35);
+}
+.fl-title-icon .material-icons { color: #fff; font-size: 1.4rem; }
+[data-theme="dark"] .fl-title-icon .material-icons { color: #000; }
+.fl-title h1 {
+    font-size: 1.55rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -.03em;
+    color: var(--text);
+}
+.fl-title h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+[data-theme="dark"] .fl-count-badge {
+    background: rgba(0,207,255,.12);
+    color: var(--neon-cyan);
+    border: 1px solid rgba(0,207,255,.2);
+}
+.fl-count-badge {
+    font-size: .78rem;
+    font-weight: 700;
+    padding: .25rem .7rem;
+    border-radius: 20px;
+    background: var(--accent-glow, rgba(99,102,241,.1));
+    color: var(--accent);
+    border: 1px solid var(--glass-border, rgba(99,102,241,.18));
+    align-self: center;
+    white-space: nowrap;
+}
+
+/* Search bar */
+.fl-search-bar {
+    display: flex;
+    align-items: center;
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 22px;
+    padding: 0 .75rem 0 1rem;
+    height: 40px;
+    max-width: 280px;
+    width: 100%;
+    transition: border-color .2s, box-shadow .2s;
+}
+.fl-search-bar:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.fl-search-bar input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-size: .9rem; width: 100%;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+.fl-search-bar input::placeholder { color: var(--text-muted); }
+.fl-search-bar .material-icons { color: var(--text-muted); font-size: 1.1rem; }
+
+/* Grid */
+.fl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+}
+
+/* Friend card */
+.fl-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: transform .2s, box-shadow .25s, border-color .25s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+.fl-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+}
+[data-theme="dark"] .fl-card:hover {
+    border-color: rgba(0,207,255,.25);
+    box-shadow: var(--shadow-lg), 0 0 24px rgba(0,207,255,.07);
+}
+
+/* Card banner */
+.fl-card-banner {
+    height: 64px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    position: relative;
+    flex-shrink: 0;
+}
+[data-theme="dark"] .fl-card-banner {
+    background: linear-gradient(135deg, #001a2c 0%, #130020 100%);
+}
+[data-theme="dark"] .fl-card-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0,207,255,.18) 0%, rgba(191,95,255,.18) 100%);
+}
+
+/* Status dot */
+.fl-status-dot {
+    position: absolute;
+    bottom: 3px; right: 3px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-card);
+    background: #aaa;
+}
+.fl-status-dot.online  { background: #00ffaa; }
+[data-theme="dark"] .fl-status-dot.online { box-shadow: 0 0 8px rgba(0,255,170,.6); }
+
+/* Card body */
+.fl-card-body {
+    padding: 0 1.1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Avatar */
+.fl-avatar-wrap {
+    margin-top: -28px;
+    margin-bottom: .65rem;
+    position: relative;
+    display: inline-block;
+}
+.fl-avatar {
+    width: 58px; height: 58px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 3px solid var(--bg-card);
+    box-shadow: 0 2px 12px rgba(0,0,0,.18);
+    display: block;
+    transition: transform .2s;
+}
+.fl-card:hover .fl-avatar { transform: scale(1.04); }
+
+/* Name */
+.fl-username {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -.01em;
+    display: block;
+    margin-bottom: .15rem;
+    transition: color .2s;
+}
+.fl-username:hover { color: var(--accent); text-decoration: none; }
+[data-theme="dark"] .fl-username:hover { text-shadow: 0 0 8px rgba(0,207,255,.4); }
+
+/* Status badge */
+.fl-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .2rem .6rem;
+    border-radius: 20px;
+    margin-bottom: .85rem;
+}
+.fl-badge.friend {
+    background: rgba(0,255,170,.1);
+    color: #00cc88;
+    border: 1px solid rgba(0,255,170,.2);
+}
+[data-theme="dark"] .fl-badge.friend {
+    background: rgba(0,255,170,.08);
+    color: #00ffaa;
+    border-color: rgba(0,255,170,.2);
+}
+.fl-badge.not-friend {
+    background: var(--btn-bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+}
+.fl-badge.me {
+    background: rgba(99,102,241,.1);
+    color: var(--accent);
+    border: 1px solid rgba(99,102,241,.2);
+}
+[data-theme="dark"] .fl-badge.me {
+    background: rgba(0,207,255,.08);
+    color: var(--neon-cyan);
+    border-color: rgba(0,207,255,.2);
+}
+.fl-badge .material-icons { font-size: .85rem; }
+
+/* Action row */
+.fl-actions {
+    display: flex;
+    gap: .5rem;
+    margin-top: auto;
+}
+.fl-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    height: 34px;
+    border-radius: 10px;
+    font-size: .78rem;
+    font-weight: 700;
+    text-decoration: none !important;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: background .2s, box-shadow .2s, transform .15s;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    white-space: nowrap;
+}
+.fl-btn .material-icons { font-size: .95rem; }
+.fl-btn-profile {
+    background: var(--btn-bg);
+    color: var(--text);
+    border-color: var(--border);
+}
+.fl-btn-profile:hover {
+    background: var(--btn-hover);
+    color: var(--accent);
+    text-decoration: none;
+}
+.fl-btn-msg {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border-color: transparent;
+}
+[data-theme="dark"] .fl-btn-msg { color: #000; }
+.fl-btn-msg:hover {
+    opacity: .88;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px var(--accent-glow);
+}
+[data-theme="dark"] .fl-btn-msg:hover {
+    box-shadow: 0 0 16px rgba(0,207,255,.35);
+}
+
+/* Empty state */
+.fl-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5rem 2rem;
+    gap: 1rem;
+    color: var(--text-muted);
+}
+.fl-empty-icon {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--btn-bg);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: .5rem;
+}
+[data-theme="dark"] .fl-empty-icon {
+    background: rgba(0,207,255,.06);
+    border: 1px solid rgba(0,207,255,.12);
+}
+.fl-empty-icon .material-icons { font-size: 2.5rem; color: var(--text-muted); }
+.fl-empty h3 {
+    font-size: 1.1rem; font-weight: 700; color: var(--text);
+    margin: 0;
+}
+.fl-empty p {
+    font-size: .88rem; color: var(--text-muted);
+    text-align: center; margin: 0; max-width: 300px;
+}
+.fl-empty-cta {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .5rem 1.3rem;
+    border-radius: 22px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-weight: 700; font-size: .88rem;
+    text-decoration: none;
+    margin-top: .5rem;
+    transition: opacity .2s, box-shadow .2s;
+}
+[data-theme="dark"] .fl-empty-cta { color: #000; }
+.fl-empty-cta:hover {
+    opacity: .88; text-decoration: none;
+    box-shadow: 0 4px 20px var(--accent-glow);
+    color: #fff;
+}
+[data-theme="dark"] .fl-empty-cta:hover { color: #000; }
+
+/* Filter chips */
+.fl-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 1.5rem;
+}
+.fl-chip {
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .3rem .85rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .2s;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+.fl-chip.active, .fl-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+}
+[data-theme="dark"] .fl-chip.active, [data-theme="dark"] .fl-chip:hover {
+    background: rgba(0,207,255,.08);
+    box-shadow: 0 0 8px rgba(0,207,255,.15);
+}
 </style>
-<br><br><br><br>
-<div class="container">
-	<div class="card p-2">
 
-		{% if friends %}
-		<div class="d-flex flex-row flex-wrap">
-		{% for friend in friends %}
-		<div class="card flex-row flex-grow-1 p-2 mx-2 my-2 align-items-center">
-			<a class="profile-link" href="{% url 'account:view' user_id=friend.0.pk %}">
-				<div class="card-image m-2">
-					<img class="img-fluid profile-image" src="{{friend.0.profile_image.url}}" alt="">
-				</div>
-			</a>
-			
-			<div class="card-center px-2">
-				<a class="profile-link" href="{% url 'account:view' user_id=friend.0.pk %}">
-					<h4 class="card-title">{{friend.0.username|truncatechars:50}}</h4>
-				</a>
-				{% if friend.1 %}
-				<a href="#" onclick="createOrReturnPrivateChat('{{friend.0.id}}')">Send a Message</a>
-				{% endif %}
-				
-			</div>
-			
-			<div class="d-flex flex-row card-right flex-grow-1 justify-content-end mx-2">
-				{% if friend.1 %}
-					<div class="d-flex flex-row friends-text-container p-3">
-						<p class="friends-text m-auto">
-							Friends 
-						</p>
-						<span class="material-icons checkmark-icon m-auto pl-2">
-						check_circle_outline
-						</span>
-					</div>
-				{% else %}
-					{% if friend.0 !=  request.user %}
-						<div class="d-flex flex-row friends-text-container p-3">
-							<p class="friends-text m-auto">
-								Not Friends 
-							</p>
-							<span class="material-icons cancel-icon m-auto pl-2">cancel</span>
-						</div>
-					{% endif %}
-				{% endif %}
-				{% if friend.0 == request.user %}
-					<div class="d-flex flex-row friends-text-container p-3">
-						<p class="friends-text m-auto">
-							This is you 
-						</p>
-						<span class="material-icons m-auto pl-2">
-						person_pin
-						</span>
-					</div>
-				{% endif %}
-			</div>
-		</div>
-		{% if forloop.counter|divisibleby:2 %}
-		</div><div class="d-flex flex-row flex-wrap">
-		{% endif %}
-		
-		{% endfor %}
-		
-		{% else %} <!-- If no friends -->
-		<div class="d-flex flex-row flex-grow-1 justify-content-center align-items-center p-4">
-			<p>No friends :(</p>
-		</div>
-		{% endif %}
-		</div>
-	</div>
-	
+<div class="fl-wrapper">
+
+    <!-- Header -->
+    <div class="fl-header">
+        <div class="fl-title">
+            <div class="fl-title-icon">
+                <span class="material-icons">group</span>
+            </div>
+            <div>
+                <h1>Ireo <span>Namako</span></h1>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2" style="gap:.75rem;display:flex;">
+            {% if friends %}
+            <span class="fl-count-badge">{{ friends|length }} namana</span>
+            {% endif %}
+            <div class="fl-search-bar">
+                <span class="material-icons">search</span>
+                <input type="text" id="fl-search-input" placeholder="Hikaroka namana…" autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter chips -->
+    <div class="fl-filters">
+        <button class="fl-chip active" data-filter="all">Rehetra</button>
+        <button class="fl-chip" data-filter="friend">Namana</button>
+        <button class="fl-chip" data-filter="not-friend">Tsy namana</button>
+    </div>
+
+    <!-- Grid -->
+    <div class="fl-grid" id="fl-grid">
+
+        {% if friends %}
+            {% for friend in friends %}
+            <div class="fl-card anim-fade-up"
+                 data-username="{{ friend.0.username|lower }}"
+                 data-status="{% if friend.0 == request.user %}me{% elif friend.1 %}friend{% else %}not-friend{% endif %}"
+                 style="animation-delay: {{ forloop.counter0 }}0ms;">
+
+                <!-- Banner -->
+                <div class="fl-card-banner"></div>
+
+                <div class="fl-card-body">
+                    <!-- Avatar -->
+                    <a href="{% url 'account:view' user_id=friend.0.pk %}" class="fl-avatar-wrap">
+                        <img class="fl-avatar" src="{{ friend.0.profile_image.url }}" alt="{{ friend.0.username }}">
+                    </a>
+
+                    <!-- Name -->
+                    <a class="fl-username" href="{% url 'account:view' user_id=friend.0.pk %}">
+                        {{ friend.0.username|truncatechars:24 }}
+                    </a>
+
+                    <!-- Status badge -->
+                    {% if friend.0 == request.user %}
+                    <span class="fl-badge me">
+                        <span class="material-icons">person_pin</span>
+                        Ahy ity
+                    </span>
+                    {% elif friend.1 %}
+                    <span class="fl-badge friend">
+                        <span class="material-icons">check_circle</span>
+                        Namana
+                    </span>
+                    {% else %}
+                    <span class="fl-badge not-friend">
+                        <span class="material-icons">person_off</span>
+                        Tsy namana
+                    </span>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="fl-actions">
+                        <a class="fl-btn fl-btn-profile" href="{% url 'account:view' user_id=friend.0.pk %}">
+                            <span class="material-icons">person</span>
+                            Profil
+                        </a>
+                        {% if friend.1 and friend.0 != request.user %}
+                        <a class="fl-btn fl-btn-msg" href="#" onclick="createOrReturnPrivateChat('{{ friend.0.id }}'); return false;">
+                            <span class="material-icons">chat_bubble</span>
+                            Hafatra
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+
+        {% else %}
+        <!-- Empty state -->
+        <div class="fl-empty">
+            <div class="fl-empty-icon">
+                <span class="material-icons">group_off</span>
+            </div>
+            <h3>Tsy misy namana mbola</h3>
+            <p>Mitady olona ho lasa namana ianao? Mikaroka ety ary manomboka ifandraisana!</p>
+            <a href="{% url 'search' %}?q=" class="fl-empty-cta">
+                <span class="material-icons" style="font-size:1rem;">person_search</span>
+                Mitady olona
+            </a>
+        </div>
+        {% endif %}
+
+    </div><!-- /fl-grid -->
+
 </div>
 
-{%  include 'chat/snippets/create_or_return_private_chat.html' %}
+{% include 'chat/snippets/create_or_return_private_chat.html' %}
 
+<script>
+(function() {
+    /* ── Recherche en temps réel ── */
+    var searchInput = document.getElementById('fl-search-input');
+    var cards = document.querySelectorAll('.fl-card');
+    var activeFilter = 'all';
+
+    function filterCards() {
+        var q = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        cards.forEach(function(card) {
+            var username = (card.dataset.username || '').toLowerCase();
+            var status   = card.dataset.status || '';
+            var matchQ    = !q || username.includes(q);
+            var matchF    = activeFilter === 'all' || status === activeFilter;
+            card.style.display = (matchQ && matchF) ? '' : 'none';
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', filterCards);
+    }
+
+    /* ── Filter chips ── */
+    document.querySelectorAll('.fl-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+            document.querySelectorAll('.fl-chip').forEach(function(c){ c.classList.remove('active'); });
+            chip.classList.add('active');
+            activeFilter = chip.dataset.filter;
+            filterCards();
+        });
+    });
+})();
+</script>
 
 {% endblock content %}

@@ -3,94 +3,214 @@
 
 {% block content %}
 <style>
+/* Shared with login.html — same .auth-page/.auth-card system */
 .auth-page {
     min-height: calc(100vh - 62px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     padding: 2rem 1rem;
     background: var(--bg);
+    position: relative; overflow: hidden;
 }
+[data-theme="dark"] .auth-page::before {
+    content: '';
+    position: absolute;
+    width: 500px; height: 500px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(191,95,255,.07) 0%, transparent 65%);
+    top: -150px; left: -150px; pointer-events: none;
+}
+[data-theme="dark"] .auth-page::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,207,255,.06) 0%, transparent 65%);
+    bottom: -100px; right: -100px; pointer-events: none;
+}
+.auth-particle { display: none; }
+[data-theme="dark"] .auth-particle {
+    display: block; position: absolute; border-radius: 50%;
+    pointer-events: none; opacity: 0;
+    animation: floatParticle 8s ease-in-out infinite;
+}
+[data-theme="dark"] .auth-particle:nth-child(1) { width:4px;height:4px;background:var(--neon-purple);top:15%;left:15%; animation-delay:0s;   animation-duration:9s; }
+[data-theme="dark"] .auth-particle:nth-child(2) { width:3px;height:3px;background:var(--neon-cyan);  top:55%;left:80%; animation-delay:2.5s; animation-duration:7s; }
+[data-theme="dark"] .auth-particle:nth-child(3) { width:5px;height:5px;background:var(--neon-pink);  top:85%;left:30%; animation-delay:4s;   animation-duration:6s; }
+[data-theme="dark"] .auth-particle:nth-child(4) { width:3px;height:3px;background:var(--neon-cyan);  top:30%;left:65%; animation-delay:1.5s; animation-duration:8s; }
+[data-theme="dark"] .auth-particle:nth-child(5) { width:4px;height:4px;background:var(--neon-purple);top:70%;left:55%; animation-delay:3s;   animation-duration:10s;}
+@keyframes floatParticle {
+    0%,100% { opacity:0; transform:translateY(0) scale(1); }
+    20%      { opacity:.7; }
+    50%      { opacity:.5; transform:translateY(-28px) scale(1.15); }
+    80%      { opacity:.6; }
+}
+
 .auth-card {
-    width: 100%;
-    max-width: 440px;
+    width: 100%; max-width: 440px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 20px;
-    box-shadow: 0 8px 40px rgba(0,0,0,.1);
-    padding: 2.5rem 2.25rem 2rem;
+    border-radius: 22px;
+    box-shadow: 0 12px 48px rgba(0,0,0,.12);
+    padding: 2.25rem 2.25rem 2rem;
+    position: relative; z-index: 1;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    animation: fadeInUp .4s ease both;
 }
-[data-theme="dark"] .auth-card { box-shadow: 0 8px 40px rgba(0,0,0,.4); }
+[data-theme="dark"] .auth-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-color: var(--glass-border);
+    box-shadow: 0 12px 48px rgba(0,0,0,.6),
+                0 0 0 1px rgba(191,95,255,.06),
+                inset 0 1px 0 rgba(255,255,255,.04);
+}
+[data-theme="dark"] .auth-card:focus-within {
+    border-color: rgba(191,95,255,.22);
+    box-shadow: 0 12px 48px rgba(0,0,0,.6),
+                0 0 30px rgba(191,95,255,.06);
+}
+
 .auth-brand {
     display: flex; align-items: center; justify-content: center; gap: .55rem;
-    margin-bottom: 1.75rem; text-decoration: none !important;
+    margin-bottom: 1.5rem; text-decoration: none !important;
 }
 .auth-brand-icon {
-    width: 38px; height: 38px;
-    background: linear-gradient(135deg, #1877f2, #7c3aed);
-    border-radius: 11px;
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 3px 12px rgba(24,119,242,.35);
+    box-shadow: 0 3px 14px var(--accent-glow);
+    transition: transform .2s;
 }
+[data-theme="dark"] .auth-brand-icon {
+    box-shadow: 0 0 16px rgba(191,95,255,.45), 0 3px 12px rgba(0,0,0,.4);
+}
+.auth-brand:hover .auth-brand-icon { transform: scale(1.07); }
 .auth-brand-icon svg { display: block; }
 .auth-brand-text {
-    font-size: 1.35rem; font-weight: 800; letter-spacing: -.5px;
-    background: linear-gradient(135deg, #1877f2, #7c3aed);
+    font-size: 1.35rem; font-weight: 800; letter-spacing: -.03em;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.auth-heading { text-align: center; font-size: 1.45rem; font-weight: 800; color: var(--text); margin-bottom: .35rem; }
-.auth-sub    { text-align: center; font-size: .88rem; color: var(--text-muted); margin-bottom: 1.75rem; }
-.auth-field  { margin-bottom: .9rem; }
+[data-theme="dark"] .auth-brand-text {
+    filter: drop-shadow(0 0 6px rgba(191,95,255,.4));
+}
+
+.auth-heading {
+    text-align: center; font-size: 1.45rem; font-weight: 800;
+    color: var(--text); margin-bottom: .35rem; letter-spacing: -.03em;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+[data-theme="dark"] .auth-heading {
+    background: linear-gradient(135deg, #fff 40%, rgba(191,95,255,.7) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.auth-sub { text-align: center; font-size: .88rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+
+.auth-field { margin-bottom: .85rem; }
 .auth-field label {
-    display: block; font-size: .82rem; font-weight: 600;
+    display: block; font-size: .78rem; font-weight: 700;
     color: var(--text-muted); margin-bottom: .35rem;
-    letter-spacing: .03em; text-transform: uppercase;
+    letter-spacing: .06em; text-transform: uppercase;
 }
 .auth-input-wrap {
     display: flex; align-items: center;
-    background: var(--btn-bg); border: 1.5px solid var(--border);
-    border-radius: 12px; padding: 0 .9rem; height: 48px;
-    transition: border-color .2s, box-shadow .2s, background .2s;
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 0 .9rem; height: 50px;
+    transition: border-color .25s, box-shadow .25s, background .2s;
 }
 .auth-input-wrap:focus-within {
-    border-color: var(--accent); background: var(--bg-card);
-    box-shadow: 0 0 0 3px rgba(24,119,242,.12);
+    border-color: var(--accent2);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(168,85,247,.15);
 }
-.auth-input-wrap .material-icons { font-size: 1.1rem; color: var(--text-muted); margin-right: .6rem; flex-shrink: 0; }
+[data-theme="dark"] .auth-input-wrap:focus-within {
+    box-shadow: 0 0 0 3px rgba(191,95,255,.12), 0 0 12px rgba(191,95,255,.08);
+}
+.auth-input-wrap .material-icons {
+    font-size: 1.1rem; color: var(--text-muted); margin-right: .6rem; flex-shrink: 0;
+    transition: color .2s;
+}
+.auth-input-wrap:focus-within .material-icons { color: var(--accent2); }
 .auth-input-wrap input {
     flex: 1; background: none; border: none; outline: none;
-    color: var(--text); font-size: .95rem; padding: 0; font-family: inherit;
+    color: var(--text); font-size: .95rem; padding: 0;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
 }
 .auth-input-wrap input::placeholder { color: var(--text-muted); }
+
+.auth-hint { font-size: .72rem; color: var(--text-muted); margin-top: .3rem; padding-left: .3rem; }
+
 .auth-errors {
-    background: rgba(224,36,94,.1); border: 1px solid rgba(224,36,94,.25);
-    border-radius: 10px; padding: .65rem .9rem; margin-bottom: 1rem;
-    font-size: .85rem; color: #c0392b;
+    background: rgba(224,36,94,.08); border: 1px solid rgba(224,36,94,.2);
+    border-radius: 10px; padding: .6rem .85rem; margin-bottom: .85rem;
+    font-size: .84rem; color: #c0392b;
+    display: flex; align-items: flex-start; gap: .4rem;
 }
-[data-theme="dark"] .auth-errors { color: #f28b82; }
+[data-theme="dark"] .auth-errors {
+    background: rgba(255,77,166,.08); border-color: rgba(255,77,166,.2);
+    color: var(--neon-pink);
+}
+
 .auth-btn {
-    display: block; width: 100%; height: 50px;
-    background: linear-gradient(135deg, #1877f2 0%, #7c3aed 100%);
+    display: block; width: 100%; height: 52px;
+    background: linear-gradient(135deg, var(--accent2) 0%, var(--accent) 100%);
     color: #fff; border: none; border-radius: 12px;
     font-size: 1rem; font-weight: 700; cursor: pointer;
     letter-spacing: .02em;
     transition: opacity .2s, transform .15s, box-shadow .2s;
-    box-shadow: 0 4px 16px rgba(24,119,242,.35); margin-top: 1.25rem;
+    box-shadow: 0 4px 18px rgba(168,85,247,.3);
+    margin-top: 1.1rem;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    position: relative; overflow: hidden;
 }
-.auth-btn:hover { opacity: .92; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(24,119,242,.45); }
+[data-theme="dark"] .auth-btn {
+    color: #000;
+    box-shadow: 0 0 20px rgba(191,95,255,.35), 0 4px 18px rgba(0,0,0,.4);
+}
+.auth-btn::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.12) 50%, transparent 100%);
+    transform: translateX(-100%); transition: transform .4s;
+}
+.auth-btn:hover::after { transform: translateX(100%); }
+.auth-btn:hover {
+    opacity: .9; transform: translateY(-1px);
+    box-shadow: 0 8px 28px rgba(168,85,247,.4);
+}
+[data-theme="dark"] .auth-btn:hover {
+    box-shadow: 0 0 28px rgba(191,95,255,.5), 0 8px 28px rgba(0,0,0,.4);
+}
 .auth-btn:active { transform: translateY(0); }
+
 .auth-divider {
     display: flex; align-items: center; gap: .75rem;
-    margin: 1.5rem 0 1.25rem; color: var(--text-muted); font-size: .8rem;
+    margin: 1.4rem 0 1.1rem; color: var(--text-muted); font-size: .8rem;
 }
-.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
 .auth-login-link { text-align: center; font-size: .9rem; color: var(--text-muted); }
-.auth-login-link a { color: var(--accent); font-weight: 700; text-decoration: none; }
-.auth-login-link a:hover { text-decoration: underline; }
-.auth-hint { font-size: .75rem; color: var(--text-muted); margin-top: .3rem; padding-left: .3rem; }
+.auth-login-link a { color: var(--accent2); font-weight: 700; text-decoration: none; transition: opacity .2s; }
+.auth-login-link a:hover { opacity: .75; }
+
+/* Indicateur force du mot de passe */
+.pw-strength { margin-top: .35rem; display: flex; gap: .3rem; align-items: center; }
+.pw-bar { flex: 1; height: 3px; border-radius: 3px; background: var(--border); transition: background .3s; }
+.pw-label { font-size: .7rem; color: var(--text-muted); white-space: nowrap; min-width: 60px; text-align: right; }
+
+@keyframes fadeInUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+}
 </style>
 
 <div class="auth-page">
+    <span class="auth-particle"></span>
+    <span class="auth-particle"></span>
+    <span class="auth-particle"></span>
+    <span class="auth-particle"></span>
+    <span class="auth-particle"></span>
+
     <div class="auth-card">
 
         <!-- Brand -->
@@ -100,63 +220,76 @@
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#fff"/>
                 </svg>
             </div>
-            <span class="auth-brand-text">ZOOT</span>
+            <span class="auth-brand-text">VAZIMBA</span>
         </a>
 
         <h1 class="auth-heading">Créer un compte</h1>
-        <p class="auth-sub">Rejoignez la communauté ZOOT dès maintenant</p>
+        <p class="auth-sub">Rejoignez la communauté VAZIMBA ✦</p>
 
         <!-- Errors -->
         {% if registration_form.non_field_errors %}
         <div class="auth-errors">
-            <span class="material-icons" style="font-size:.9rem;vertical-align:middle;margin-right:4px;">error_outline</span>
-            {{ registration_form.non_field_errors }}
+            <span class="material-icons" style="font-size:1rem;flex-shrink:0;">error_outline</span>
+            <span>{{ registration_form.non_field_errors }}</span>
         </div>
         {% endif %}
         {% for field in registration_form %}{% for error in field.errors %}
-        <div class="auth-errors">{{ error }}</div>
+        <div class="auth-errors">
+            <span class="material-icons" style="font-size:1rem;flex-shrink:0;">warning_amber</span>
+            <span>{{ error }}</span>
+        </div>
         {% endfor %}{% endfor %}
 
         <!-- Form -->
         <form method="post">{% csrf_token %}
 
             <div class="auth-field">
-                <label>Adresse e-mail</label>
+                <label for="inputEmail">Adresse e-mail</label>
                 <div class="auth-input-wrap">
                     <span class="material-icons">mail_outline</span>
                     <input type="email" name="email" id="inputEmail"
-                           placeholder="votre@email.com" required autofocus>
+                           placeholder="votre@email.com" required autofocus autocomplete="email">
                 </div>
             </div>
 
             <div class="auth-field">
-                <label>Nom d'utilisateur</label>
+                <label for="inputUsername">Nom d'utilisateur</label>
                 <div class="auth-input-wrap">
                     <span class="material-icons">person_outline</span>
                     <input type="text" name="username" id="inputUsername"
-                           placeholder="ex: john_doe" required>
+                           placeholder="ex : cy_borg_42" required autocomplete="username">
                 </div>
             </div>
 
             <div class="auth-field">
-                <label>Mot de passe</label>
+                <label for="inputPassword1">Mot de passe</label>
                 <div class="auth-input-wrap">
                     <span class="material-icons">lock_outline</span>
                     <input type="password" name="password1" id="inputPassword1"
-                           placeholder="••••••••" required>
+                           placeholder="••••••••" required autocomplete="new-password">
+                </div>
+                <!-- Barre de force -->
+                <div class="pw-strength" id="pw-strength-wrap" style="display:none;">
+                    <div class="pw-bar" id="pw-bar-1"></div>
+                    <div class="pw-bar" id="pw-bar-2"></div>
+                    <div class="pw-bar" id="pw-bar-3"></div>
+                    <div class="pw-bar" id="pw-bar-4"></div>
+                    <span class="pw-label" id="pw-label">Faible</span>
                 </div>
             </div>
 
             <div class="auth-field">
-                <label>Confirmer le mot de passe</label>
+                <label for="inputPassword2">Confirmer le mot de passe</label>
                 <div class="auth-input-wrap">
                     <span class="material-icons">lock_reset</span>
                     <input type="password" name="password2" id="inputPassword2"
-                           placeholder="••••••••" required>
+                           placeholder="••••••••" required autocomplete="new-password">
                 </div>
             </div>
 
-            <button class="auth-btn" type="submit">Créer mon compte</button>
+            <button class="auth-btn" type="submit">
+                Créer mon compte
+            </button>
         </form>
 
         <div class="auth-divider">ou</div>
@@ -168,4 +301,44 @@
 
     </div>
 </div>
+
+<script>
+/* ── Indicateur de force du mot de passe ── */
+(function() {
+    var input = document.getElementById('inputPassword1');
+    var wrap  = document.getElementById('pw-strength-wrap');
+    var bars  = [
+        document.getElementById('pw-bar-1'),
+        document.getElementById('pw-bar-2'),
+        document.getElementById('pw-bar-3'),
+        document.getElementById('pw-bar-4'),
+    ];
+    var label = document.getElementById('pw-label');
+    var COLORS = ['#ff4da6', '#ffa500', '#00cfff', '#00ffaa'];
+    var LABELS = ['Faible', 'Moyen', 'Fort', 'Excellent'];
+
+    function score(pw) {
+        var s = 0;
+        if (pw.length >= 8)  s++;
+        if (/[A-Z]/.test(pw)) s++;
+        if (/[0-9]/.test(pw)) s++;
+        if (/[^A-Za-z0-9]/.test(pw)) s++;
+        return s;
+    }
+
+    if (input && wrap) {
+        input.addEventListener('input', function() {
+            var pw = input.value;
+            if (!pw) { wrap.style.display = 'none'; return; }
+            wrap.style.display = 'flex';
+            var s = score(pw);
+            bars.forEach(function(b, i) {
+                b.style.background = i < s ? COLORS[s - 1] : 'var(--border)';
+            });
+            label.textContent  = LABELS[s - 1] || 'Faible';
+            label.style.color  = COLORS[s - 1] || COLORS[0];
+        });
+    }
+})();
+</script>
 {% endblock content %}
