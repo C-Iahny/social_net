@@ -26,6 +26,7 @@ from friend.models import FriendList, FriendRequest
 
 from post.models import Post, Follow
 from post.models import Comment as CommentModel, Reaction as ReactionModel, PostMedia
+from post.views import _attach_media
 
 TEMP_PROFILE_IMAGE_NAME = "temp_profile_image.png"
 
@@ -165,12 +166,6 @@ def account_view(request, *args, **kwargs):
 			for c in top_comments:
 				c.reply_list = replies_map.get(c.id, [])
 
-		# Médias multiples
-		media_qs = PostMedia.objects.filter(post_id__in=post_ids).order_by('order')
-		media_by_post = {}
-		for m in media_qs:
-			media_by_post.setdefault(m.post_id, []).append(m)
-
 		for post in posts:
 			post.user_reaction   = user_reaction_by_post.get(post.id)
 			post.reaction_counts = reactions_by_post.get(post.id, {})
@@ -181,7 +176,7 @@ def account_view(request, *args, **kwargs):
 					c.reply_list = []
 			post.page_comments  = top
 			post.total_comments = len(top) + sum(len(c.reply_list) for c in top)
-			post.media_list     = media_by_post.get(post.id, [])
+		_attach_media(posts, post_ids)
 	else:
 		for post in posts:
 			post.user_reaction   = None
@@ -491,12 +486,6 @@ def profile_posts_more(request, *args, **kwargs):
 			for c in top_comments:
 				c.reply_list = replies_map.get(c.id, [])
 
-		# Médias multiples
-		media_qs_p = PostMedia.objects.filter(post_id__in=post_ids).order_by('order')
-		media_by_post_p = {}
-		for m in media_qs_p:
-			media_by_post_p.setdefault(m.post_id, []).append(m)
-
 		for post in posts:
 			post.user_reaction   = user_reaction_by_post.get(post.id)
 			post.reaction_counts = reactions_by_post.get(post.id, {})
@@ -507,7 +496,7 @@ def profile_posts_more(request, *args, **kwargs):
 					c.reply_list = []
 			post.page_comments  = top
 			post.total_comments = len(top) + sum(len(c.reply_list) for c in top)
-			post.media_list     = media_by_post_p.get(post.id, [])
+		_attach_media(posts, post_ids)
 	else:
 		for post in posts:
 			post.user_reaction   = None

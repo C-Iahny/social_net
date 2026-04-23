@@ -38,6 +38,7 @@ def compress_image(django_file):
     try:
         from PIL import Image, ImageOps
 
+        django_file.seek(0)
         img = Image.open(django_file)
         img = ImageOps.exif_transpose(img)  # corriger la rotation EXIF
 
@@ -79,8 +80,10 @@ def compress_video(django_file):
     Reçoit un django InMemoryUploadedFile / TemporaryUploadedFile.
     Retourne un ContentFile MP4 H.264 recompressé, ou le fichier original si erreur.
     """
+    tmp_in_path  = None
+    tmp_out_path = None
     try:
-        # Écrire le fichier d'entrée dans un temp
+        django_file.seek(0)
         suffix_in = '.' + (_ext(django_file.name) or 'mp4')
         with tempfile.NamedTemporaryFile(suffix=suffix_in, delete=False) as tmp_in:
             for chunk in django_file.chunks():
@@ -128,13 +131,14 @@ def compress_video(django_file):
         return django_file
 
     finally:
-        # Nettoyage des fichiers temporaires
+        # Nettoyage des fichiers temporaires (tmp_in_path peut être None si exception précoce)
         for p in [tmp_in_path, tmp_out_path]:
-            try:
-                if os.path.exists(p):
-                    os.remove(p)
-            except Exception:
-                pass
+            if p:
+                try:
+                    if os.path.exists(p):
+                        os.remove(p)
+                except Exception:
+                    pass
 
 
 def compress_media(django_file):

@@ -102,6 +102,20 @@ def Index(request):
 
 
 # ──────────────────────────────────────────────
+def _attach_media(posts, post_ids):
+    """Attache post.media_list à chaque post (liste de PostMedia). Silencieux si table absente."""
+    try:
+        media_qs = PostMedia.objects.filter(post_id__in=post_ids).order_by('order')
+        media_map = {}
+        for m in media_qs:
+            media_map.setdefault(m.post_id, []).append(m)
+        for post in posts:
+            post.media_list = media_map.get(post.id, [])
+    except Exception:
+        for post in posts:
+            post.media_list = []
+
+
 # Feed
 # ──────────────────────────────────────────────
 @login_required(login_url="login")
@@ -169,12 +183,6 @@ def post_feed_view(request):
     ).values_list('post_id', 'reaction_type')
     user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
-    # Précharger les médias multiples
-    media_qs = PostMedia.objects.filter(post_id__in=post_ids).order_by('order')
-    media_by_post = {}
-    for m in media_qs:
-        media_by_post.setdefault(m.post_id, []).append(m)
-
     # Attacher les données directement à chaque post
     for post in posts_of_the_page:
         top = top_by_post.get(post.id, [])
@@ -186,7 +194,7 @@ def post_feed_view(request):
         post.reaction_counts = reactions_by_post.get(post.id, {})
         post.user_reaction   = user_reaction_by_post.get(post.id)
         post.total_reactions = sum(post.reaction_counts.values())
-        post.media_list      = media_by_post.get(post.id, [])
+    _attach_media(posts_of_the_page, post_ids)
 
     context = {
         "friends":            friends,
@@ -258,12 +266,6 @@ def post_feed_more(request):
     ).values_list('post_id', 'reaction_type')
     user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
-    # Médias multiples
-    media_qs2 = PostMedia.objects.filter(post_id__in=post_ids).order_by('order')
-    media_by_post2 = {}
-    for m in media_qs2:
-        media_by_post2.setdefault(m.post_id, []).append(m)
-
     for post in posts_page:
         top = top_by_post.get(post.id, [])
         for c in top:
@@ -274,7 +276,7 @@ def post_feed_more(request):
         post.reaction_counts = reactions_by_post.get(post.id, {})
         post.user_reaction   = user_reaction_by_post.get(post.id)
         post.total_reactions = sum(post.reaction_counts.values())
-        post.media_list      = media_by_post2.get(post.id, [])
+    _attach_media(posts_page, post_ids)
 
     html = render_to_string(
         'post/post_cards_fragment.html',
@@ -304,14 +306,23 @@ class AddPostView(CreateView):
         post = self.object
 
         # ── Save + compress multiple media files ──────────────────────
-        from .media_utils import compress_media
-        files = self.request.FILES.getlist('media_files')
-        for i, f in enumerate(files):
-            try:
-                compressed, mtype = compress_media(f)
-            except Exception:
-                compressed, mtype = f, 'image'
-            PostMedia.objects.create(post=post, file=compressed, media_type=mtype, order=i)
+        try:
+            from .media_utils import compress_media
+            files = self.request.FILES.getlist('media_files')
+            for i, f in enumerate(files):
+                try:
+                    compressed, mtype = compress_media(f)
+                except Exception:
+                    f.seek(0)
+                    compressed, mtype = f, 'image'
+                try:
+                    PostMedia.objects.create(post=post, file=compressed, media_type=mtype, order=i)
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error("PostMedia.create failed: %s", e)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error("media_files block failed: %s", e)
 
         # Notify each friend via WebSocket channel layer
         author = self.request.user
