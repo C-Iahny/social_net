@@ -132,6 +132,41 @@ class Reaction(models.Model):
 #======================= REACTIONS END ================================
 
 
+#======================= POST MEDIA ===================================
+
+class PostMedia(models.Model):
+    """Fichiers multiples attachés à un post (images + vidéos mélangés)."""
+    IMAGE = 'image'
+    VIDEO = 'video'
+    TYPE_CHOICES = [(IMAGE, 'Image'), (VIDEO, 'Vidéo')]
+
+    VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
+
+    post       = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='media_files')
+    file       = models.FileField(upload_to='post_media/')
+    media_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default=IMAGE)
+    order      = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    @property
+    def url(self):
+        return self.file.url if self.file else None
+
+    @property
+    def is_video(self):
+        if self.file and self.file.name:
+            ext = self.file.name.rsplit('.', 1)[-1].lower() if '.' in self.file.name else ''
+            return ext in self.VIDEO_EXTS
+        return self.media_type == self.VIDEO
+
+    def __str__(self):
+        return f"{self.media_type} #{self.order} → {self.post}"
+
+#======================= POST MEDIA END ===============================
+
+
 class Follow(models.Model):
     user            = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='follower')
     user_follower   = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='be_followed')
