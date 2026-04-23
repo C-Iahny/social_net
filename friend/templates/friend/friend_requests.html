@@ -371,7 +371,7 @@
                 {{ friend_requests|length }} fangatahana
             </span>
             {% endif %}
-            <a class="fr-friends-link" href="{% url 'friend:friend-list' %}">
+            <a class="fr-friends-link" href="{% url 'friend:list' user_id=request.user.id %}">
                 <span class="material-icons">group</span>
                 Ireo namako
             </a>
