@@ -23,6 +23,7 @@ from friend.friend_request_status import FriendRequestStatus
 from friend.models import FriendList, FriendRequest
 
 from post.models import Post, Follow
+from post.models import Comment as CommentModel, Reaction as ReactionModel
 
 TEMP_PROFILE_IMAGE_NAME = "temp_profile_image.png"
 
@@ -120,7 +121,52 @@ def account_view(request, *args, **kwargs):
 	except Account.DoesNotExist:
 		return HttpResponse("Utilisateur introuvable.", status=404)
 
-	posts = Post.objects.filter(author=account).order_by("-id")
+	posts = list(Post.objects.filter(author=account).order_by("-id").select_related('author'))
+
+	# Enrich posts with reactions + threaded comments (same as feed)
+	post_ids = [p.id for p in posts]
+	if post_ids:
+		user_reactions = {}
+		if request.user.is_authenticated:
+			for r in ReactionModel.objects.filter(user=request.user, post_id__in=post_ids):
+				user_reactions[r.post_id] = r.reaction
+
+		reaction_counts_map = {}
+		for r in ReactionModel.objects.filter(post_id__in=post_ids):
+			reaction_counts_map.setdefault(r.post_id, {})
+			reaction_counts_map[r.post_id][r.reaction] = reaction_counts_map[r.post_id].get(r.reaction, 0) + 1
+
+		comments_all = list(CommentModel.objects.filter(
+			post_id__in=post_ids).select_related('author').order_by('created_at'))
+		top_by_post = {}
+		replies_map = {}
+		for c in comments_all:
+			if c.parent_id is None:
+				top_by_post.setdefault(c.post_id, []).append(c)
+			else:
+				replies_map.setdefault(c.parent_id, []).append(c)
+		for top_comments in top_by_post.values():
+			for c in top_comments:
+				c.reply_list = replies_map.get(c.id, [])
+
+		for post in posts:
+			post.user_reaction  = user_reactions.get(post.id)
+			counts              = reaction_counts_map.get(post.id, {})
+			post.reaction_counts = counts
+			post.total_reactions = sum(counts.values())
+			top = top_by_post.get(post.id, [])
+			for c in top:
+				if not hasattr(c, 'reply_list'):
+					c.reply_list = []
+			post.page_comments  = top
+			post.total_comments = len(top) + sum(len(c.reply_list) for c in top)
+	else:
+		for post in posts:
+			post.user_reaction   = None
+			post.reaction_counts = {}
+			post.total_reactions = 0
+			post.page_comments   = []
+			post.total_comments  = 0
 
 	# Follow stats (Account IS the user model — use account.id directly)
 	try:

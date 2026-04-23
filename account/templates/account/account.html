@@ -377,6 +377,178 @@ body { background: var(--bg); }
     color: var(--text-muted); font-size: .9rem;
 }
 
+/* ══════════════════════════════════════════════
+   POST CARD (shared with feed)
+   ══════════════════════════════════════════════ */
+.post-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    margin-bottom: 1.1rem;
+    overflow: hidden;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.05);
+    transition: transform .22s ease, box-shadow .22s ease;
+    position: relative;
+}
+.post-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,.05), 0 10px 28px rgba(0,0,0,.1), 0 0 0 .5px rgba(0,0,0,.07);
+}
+[data-theme="dark"] .post-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 6px 22px rgba(0,0,0,.42), 0 0 0 .5px rgba(255,255,255,.06);
+}
+[data-theme="dark"] .post-card:hover {
+    box-shadow: 0 2px 5px rgba(0,0,0,.3), 0 14px 36px rgba(0,0,0,.55), 0 0 0 .5px rgba(255,255,255,.08);
+}
+.pc-header { display: flex; align-items: center; gap: .85rem; padding: 1rem 1.1rem .55rem; }
+.pc-avatar-ring {
+    width: 48px; height: 48px; border-radius: 50%; padding: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    flex-shrink: 0; text-decoration: none; transition: transform .15s; display: block;
+}
+.pc-avatar-ring:hover { transform: scale(1.07); text-decoration: none; }
+.pc-avatar-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--bg-card); display: block; }
+.pc-meta { flex: 1; min-width: 0; }
+.pc-author { font-weight: 700; color: var(--text); font-size: .93rem; text-decoration: none; display: block; line-height: 1.25; }
+.pc-author:hover { color: var(--accent); text-decoration: none; }
+.pc-sub { font-size: .74rem; color: var(--text-muted); display: flex; align-items: center; gap: .3rem; margin-top: .05rem; opacity: .85; }
+.pc-sub .material-icons { font-size: .8rem; }
+.pc-category-tag { display: inline-block; background: var(--btn-bg); color: var(--text-muted); border-radius: 6px; padding: .05rem .45rem; font-size: .7rem; font-weight: 600; }
+.pc-dot { opacity: .45; }
+.pc-owner-menu { display: flex; gap: .3rem; margin-left: auto; flex-shrink: 0; }
+.pc-menu-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent; color: var(--text-muted);
+    cursor: pointer; text-decoration: none; transition: background .12s, color .12s;
+}
+.pc-menu-btn .material-icons { font-size: 1rem; }
+.pc-menu-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; }
+.pc-title { padding: .4rem 1.1rem .15rem; font-weight: 700; font-size: 1.07rem; color: var(--text); line-height: 1.4; letter-spacing: -.01em; }
+.pc-body { padding: .2rem 1.1rem .7rem; color: var(--text); font-size: .9rem; line-height: 1.68; opacity: .9; }
+.pc-body img { max-width: 100%; border-radius: 8px; margin: .3rem 0; }
+.pc-body p { margin-bottom: .35rem; }
+.pc-image-wrap { overflow: hidden; position: relative; }
+.pc-image { width: 100%; max-height: 520px; object-fit: cover; display: block; cursor: zoom-in; transition: transform .35s; }
+.pc-image-wrap:hover .pc-image { transform: scale(1.015); }
+.pc-image[data-src] { opacity: 0; filter: blur(8px); }
+.pc-image.lazy-loaded { opacity: 1; filter: none; transform: scale(1); transition: opacity .4s, filter .4s, transform .4s; }
+.pc-file-attach {
+    margin: .5rem 1.1rem; display: inline-flex; align-items: center; gap: .5rem;
+    padding: .48rem .9rem; border-radius: 10px; background: var(--btn-bg); border: 1px solid var(--border);
+    color: var(--text); text-decoration: none; font-size: .83rem; font-weight: 600; transition: background .15s;
+}
+.pc-file-attach:hover { background: var(--btn-hover); text-decoration: none; color: var(--text); }
+.pc-file-attach .material-icons { font-size: 1.05rem; color: var(--accent); }
+.pc-video-wrap { margin: .4rem 0 0; background: #000; overflow: hidden; }
+.pc-video { width: 100%; max-height: 460px; display: block; background: #000; outline: none; }
+.pc-video-label { display: flex; align-items: center; gap: .4rem; padding: .4rem 1.1rem; font-size: .78rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.pc-video-label .material-icons { font-size: .95rem; color: #7c3aed; }
+/* Reaction summary */
+.pc-reaction-bar { display: flex; align-items: center; gap: .45rem; padding: .3rem 1.1rem; font-size: .8rem; color: var(--text-muted); }
+.rc-emoji-group { display: flex; }
+.rc-emoji { width: 22px; height: 22px; border-radius: 50%; background: var(--bg-card); border: 1.5px solid var(--border); display: inline-flex; align-items: center; justify-content: center; font-size: .82rem; margin-right: -5px; position: relative; z-index: 1; }
+.rc-count { font-weight: 600; color: var(--text-muted); font-size: .78rem; margin-left: 8px; }
+/* Footer actions */
+.pc-footer { display: flex; gap: .2rem; padding: .35rem .65rem .4rem; border-top: 1px solid rgba(0,0,0,.05); }
+[data-theme="dark"] .pc-footer { border-top-color: rgba(255,255,255,.05); }
+.reaction-wrap { flex: 1; position: relative; }
+.pc-footer-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: .38rem;
+    padding: .5rem .5rem; border-radius: 11px; border: none; background: none;
+    color: var(--text-muted); font-size: .81rem; font-weight: 600; cursor: pointer;
+    text-decoration: none; transition: background .13s, color .13s; letter-spacing: .01em; font-family: inherit;
+}
+.pc-footer-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.pc-footer-btn .material-icons { font-size: 1.1rem; }
+.pc-footer-btn.liked { color: var(--accent); }
+.pc-footer-btn.active { color: var(--accent); }
+/* Reaction picker */
+.reaction-picker {
+    display: none; position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 40px;
+    padding: .32rem .45rem; box-shadow: 0 8px 32px rgba(0,0,0,.22); gap: .1rem; z-index: 200;
+    white-space: nowrap; animation: reactionPop .18s cubic-bezier(.34,1.56,.64,1) both;
+}
+.reaction-picker.open { display: flex; }
+@keyframes reactionPop {
+    from { opacity: 0; transform: translateX(-50%) scale(.55) translateY(8px); }
+    to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+}
+.reaction-emoji-btn { background: none; border: none; cursor: pointer; font-size: 1.6rem; padding: .1rem .15rem; border-radius: 50%; transition: transform .15s; line-height: 1; }
+.reaction-emoji-btn:hover { transform: scale(1.38) translateY(-5px); }
+.reaction-emoji-btn.selected { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 50%; }
+/* Comment panel */
+.pc-comment-panel { display: none; border-top: 1px solid rgba(0,0,0,.05); background: var(--bg-card); }
+[data-theme="dark"] .pc-comment-panel { border-top-color: rgba(255,255,255,.05); }
+.pc-comment-panel.open { display: block; }
+.pc-comment-list { padding: .75rem 1.1rem .4rem; display: flex; flex-direction: column; gap: .7rem; max-height: 440px; overflow-y: auto; scrollbar-width: thin; }
+.pc-comment-list:empty::after { content: "Aucun commentaire pour l'instant."; font-size: .82rem; color: var(--text-muted); display: block; }
+.pc-comment-item { display: flex; align-items: flex-start; gap: .6rem; }
+.pc-comment-item .cmt-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; margin-top: 1px; }
+.pc-comment-right { flex: 1; min-width: 0; }
+.pc-comment-bubble { background: var(--btn-bg); border-radius: 4px 14px 14px 14px; padding: .42rem .75rem .48rem; display: inline-block; max-width: 100%; }
+.pc-comment-author { font-size: .78rem; font-weight: 700; color: var(--text); text-decoration: none; display: inline-block; }
+.pc-comment-author:hover { color: var(--accent); text-decoration: none; }
+.pc-comment-body { font-size: .88rem; color: var(--text); margin: .05rem 0 0; word-break: break-word; line-height: 1.5; }
+.pc-comment-footer { display: flex; align-items: center; gap: .7rem; margin-top: .28rem; padding: 0 .1rem; }
+.pc-comment-time { font-size: .7rem; color: var(--text-muted); }
+.pc-comment-reply-btn { background: none; border: none; padding: 0; cursor: pointer; color: var(--text-muted); font-size: .7rem; font-weight: 700; transition: color .12s; text-transform: uppercase; }
+.pc-comment-reply-btn:hover { color: var(--accent); }
+.pc-comment-del { background: none; border: none; padding: 0; cursor: pointer; color: var(--text-muted); font-size: .7rem; font-weight: 600; transition: color .12s; margin-left: auto; }
+.pc-comment-del:hover { color: #e53935; }
+.pc-comment-replies { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; padding-left: .1rem; border-left: 2px solid rgba(0,207,255,.22); margin-left: .6rem; }
+[data-theme="dark"] .pc-comment-replies { border-left-color: rgba(0,207,255,.18); }
+.pc-comment-reply-item { display: flex; align-items: flex-start; gap: .5rem; }
+.pc-comment-reply-item .reply-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; margin-top: 1px; }
+.pc-reply-form-wrap { display: none; margin-top: .45rem; border-left: 2px solid rgba(0,207,255,.22); margin-left: .6rem; padding-left: .65rem; }
+[data-theme="dark"] .pc-reply-form-wrap { border-left-color: rgba(0,207,255,.18); }
+.pc-reply-form-wrap.open { display: flex; align-items: flex-end; gap: .5rem; }
+.pc-reply-form-wrap .reply-form-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; margin-bottom: 2px; }
+.pc-reply-input-wrap { flex: 1; }
+.pc-comment-form { display: flex; align-items: flex-end; gap: .55rem; padding: .55rem 1.1rem .7rem; border-top: 1px solid rgba(0,0,0,.05); }
+[data-theme="dark"] .pc-comment-form { border-top-color: rgba(255,255,255,.05); }
+.pc-comment-form .cmt-form-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; margin-bottom: 2px; }
+.pc-comment-input-wrap { flex: 1; }
+.pc-comment-textarea, .pc-reply-textarea {
+    width: 100%; resize: none; overflow: hidden;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 18px; padding: .42rem .85rem;
+    color: var(--text); font-size: .88rem; line-height: 1.45;
+    outline: none; transition: border-color .15s, background .15s; font-family: inherit;
+    min-height: 36px; max-height: 120px;
+}
+.pc-comment-textarea:focus, .pc-reply-textarea:focus { border-color: var(--accent); background: var(--bg-card); }
+.pc-comment-textarea::placeholder, .pc-reply-textarea::placeholder { color: var(--text-muted); }
+.pc-comment-send {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 50%;
+    width: 34px; height: 34px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: opacity .15s; margin-bottom: 2px;
+}
+.pc-comment-send:hover { opacity: .85; }
+.pc-comment-send .material-icons { font-size: 1rem; }
+.pc-comment-send:disabled { opacity: .45; cursor: default; }
+/* Hashtags / mentions */
+.zf-hashtag { color: var(--accent) !important; font-weight: 700; text-decoration: none !important; border-radius: 4px; padding: 0 2px; transition: background .12s; }
+.zf-hashtag:hover { background: rgba(0,207,255,.12); }
+.zf-mention { color: var(--accent2) !important; font-weight: 700; text-decoration: none !important; border-radius: 4px; padding: 0 2px; transition: background .12s; }
+.zf-mention:hover { background: rgba(191,95,255,.12); }
+/* Share toast */
+#share-toast {
+    position: fixed; bottom: 1.8rem; left: 50%; transform: translateX(-50%) translateY(16px);
+    background: #1c1e20; color: #fff; padding: .6rem 1.3rem; border-radius: 12px;
+    font-size: .88rem; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+    z-index: 9999; display: flex; align-items: center; gap: .5rem;
+}
+#share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+#share-toast .material-icons { font-size: 1.05rem; color: #4caf50; }
+
 /* ── Empty state ── */
 .pf-empty {
     text-align: center; padding: 3rem 1rem;
@@ -710,57 +882,9 @@ body { background: var(--bg); }
                 </a>
                 {% endif %}
 
-                <!-- Posts -->
+                <!-- Posts — same cards as the feed (reactions + comments + share) -->
                 {% if posts %}
-                    {% for post in posts %}
-                    <article class="pf-post-card">
-                        <div class="pf-post-header">
-                            <a class="pf-avatar-ring" href="{% url 'account:view' user_id=post.author.id %}">
-                                <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
-                            </a>
-                            <div style="flex:1;min-width:0;">
-                                <a class="pf-author" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
-                                <div class="pf-date">{{ post.post_date|date:"d F Y" }}</div>
-                            </div>
-                            {% if is_self or request.user.id == post.author.id %}
-                            <div class="pf-post-menu">
-                                <a class="pf-menu-btn" href="{% url 'post:edit-post' pk=post.id %}" title="Modifier">
-                                    <span class="material-icons">edit</span>
-                                </a>
-                                <a class="pf-menu-btn danger" href="{% url 'post:delete-post' pk=post.id %}" title="Supprimer">
-                                    <span class="material-icons">delete_outline</span>
-                                </a>
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        {% if post.title %}
-                        <div class="pf-post-title">{{ post.title }}</div>
-                        {% endif %}
-
-                        {% if post.body %}
-                        <div class="pf-post-body">{{ post.body|safe }}</div>
-                        {% endif %}
-
-                        {% if post.header_image %}
-                        <div class="pf-image-wrap">
-                            <a href="{{ post.header_image.url }}" target="_blank" rel="noopener">
-                                <img class="pf-post-image" src="{{ post.header_image.url }}" alt="{{ post.title }}" loading="lazy">
-                            </a>
-                        </div>
-                        {% endif %}
-
-                        <div class="pf-post-footer">
-                            <span class="pf-likes">
-                                <span class="material-icons">thumb_up</span>
-                                {{ post.total_likes }}
-                            </span>
-                            {% if post.category and post.category != 'Category' %}
-                            <span class="pf-cat-tag">{{ post.category }}</span>
-                            {% endif %}
-                        </div>
-                    </article>
-                    {% endfor %}
+                    {% include 'post/post_cards_fragment.html' with posts_of_the_page=posts %}
                 {% else %}
                     <div class="pf-empty">
                         <span class="material-icons">article</span>
@@ -905,6 +1029,9 @@ body { background: var(--bg); }
 
 </div><!-- /profile-wrapper -->
 
+<!-- Share toast -->
+<div id="share-toast"><span class="material-icons">link</span> Lien copié !</div>
+
 <script>
 /* ── Tab navigation ── */
 document.querySelectorAll('.tab-btn').forEach(function(btn) {
@@ -940,6 +1067,321 @@ if (cancelBtn) cancelBtn.onclick = function() { cancelFriendRequest("{{ id }}", 
 
 function triggerAcceptFriendRequest(id) { acceptFriendRequest(id, onFriendRequestAccepted); }
 function triggerDeclineFriendRequest(id) { declineFriendRequest(id, onFriendRequestDeclined); }
+</script>
+
+<script>
+/* ══════════════════════════════════════
+   REACTIONS
+   ══════════════════════════════════════ */
+var _REACT_URL    = "{% url 'post:react-post' %}";
+var _REACT_EMOJIS = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
+var _REACT_LABELS = { like:'Tiana', heart:'Tiako', laugh:'Heniky', wow:'Mahagaga', sad:'Maika' };
+var _pickerTimers = {};
+var _userReactions = {};
+
+function openPicker(postId) {
+    clearTimeout(_pickerTimers[postId]);
+    _pickerTimers[postId] = setTimeout(function() {
+        var p = document.getElementById('picker-' + postId);
+        if (p) p.classList.add('open');
+    }, 200);
+}
+function closePicker(postId) {
+    clearTimeout(_pickerTimers[postId]);
+    _pickerTimers[postId] = setTimeout(function() {
+        var p = document.getElementById('picker-' + postId);
+        if (p) p.classList.remove('open');
+    }, 150);
+}
+function quickReact(postId) {
+    var cur = _userReactions[postId] !== undefined ? _userReactions[postId]
+            : document.getElementById('react-btn-' + postId).classList.contains('liked') ? 'like' : null;
+    sendReaction(postId, cur || 'like');
+}
+function sendReaction(postId, reactionType) {
+    closePicker(postId);
+    var fd = new FormData();
+    fd.append('post_id', postId);
+    fd.append('reaction', reactionType);
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fetch(_REACT_URL, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        _userReactions[postId] = data.user_reaction;
+        var btn   = document.getElementById('react-btn-'   + postId);
+        var icon  = document.getElementById('react-icon-'  + postId);
+        var label = document.getElementById('react-label-' + postId);
+        if (btn) btn.classList.toggle('liked', !!data.user_reaction);
+        if (icon) {
+            if (data.user_reaction && _REACT_EMOJIS[data.user_reaction]) {
+                icon.textContent = _REACT_EMOJIS[data.user_reaction];
+                icon.style.fontSize = '1.05rem';
+            } else {
+                icon.innerHTML = '<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>';
+            }
+        }
+        if (label) label.textContent = data.user_reaction ? (_REACT_LABELS[data.user_reaction] || 'Tiana') : 'Tiana';
+        var picker = document.getElementById('picker-' + postId);
+        if (picker) {
+            picker.querySelectorAll('.reaction-emoji-btn').forEach(function(b) { b.classList.remove('selected'); });
+            if (data.user_reaction) {
+                var sel = picker.querySelector('[onclick*="' + data.user_reaction + '"]');
+                if (sel) sel.classList.add('selected');
+            }
+        }
+        var bar     = document.getElementById('reaction-bar-'     + postId);
+        var summary = document.getElementById('reaction-summary-' + postId);
+        var total   = document.getElementById('reaction-total-'   + postId);
+        if (total)   total.textContent = data.total;
+        if (bar)     bar.style.display = data.total > 0 ? '' : 'none';
+        if (summary) {
+            var html = '';
+            Object.keys(data.counts).forEach(function(rt) {
+                if (_REACT_EMOJIS[rt]) html += '<span class="rc-emoji" data-type="' + rt + '">' + _REACT_EMOJIS[rt] + '</span>';
+            });
+            summary.innerHTML = html;
+        }
+    })
+    .catch(function(e) { console.error('Reaction error:', e); });
+}
+function toggleLike(postId) { sendReaction(postId, 'like'); }
+
+/* ══════════════════════════════════════
+   COMMENTS
+   ══════════════════════════════════════ */
+function toggleComments(postId) {
+    var panel = document.getElementById('comment-panel-' + postId);
+    var btn   = document.getElementById('comment-btn-'   + postId);
+    if (!panel) return;
+    var isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    if (btn) btn.classList.toggle('active', !isOpen);
+    if (!isOpen) {
+        var ta = document.getElementById('comment-input-' + postId);
+        if (ta) setTimeout(function(){ ta.focus(); }, 50);
+    }
+}
+function handleCommentKey(evt, postId, url) {
+    if (evt.key === 'Enter' && !evt.shiftKey) { evt.preventDefault(); submitComment(postId, url); }
+}
+function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function submitComment(postId, url) {
+    var ta  = document.getElementById('comment-input-' + postId);
+    var btn = document.getElementById('comment-send-'  + postId);
+    if (!ta) return;
+    var body = ta.value.trim();
+    if (!body) return;
+    btn.disabled = true;
+    var fd = new FormData();
+    fd.append('body', body);
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        btn.disabled = false;
+        if (!data.ok) return;
+        ta.value = ''; ta.style.height = 'auto';
+        var delBtn = data.can_delete
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            : '';
+        var html = '<div class="pc-comment-item" id="comment-item-' + data.id + '">'
+            + '<a href="/account/' + data.author_id + '/view/"><img class="cmt-avatar" src="' + data.avatar + '" alt=""></a>'
+            + '<div class="pc-comment-right">'
+            +   '<div class="pc-comment-bubble">'
+            +     '<a class="pc-comment-author" href="/account/' + data.author_id + '/view/">' + escHtml(data.author) + '</a>'
+            +     '<p class="pc-comment-body">' + escHtml(data.body) + '</p>'
+            +   '</div>'
+            +   '<div class="pc-comment-footer">'
+            +     '<span class="pc-comment-time">' + data.created_at + '</span>'
+            +     '<button class="pc-comment-reply-btn" onclick="toggleReplyForm(' + data.id + ', ' + postId + ', \'' + url + '\')">Répondre</button>'
+            +     delBtn
+            +   '</div>'
+            +   '<div class="pc-comment-replies" id="replies-' + data.id + '" style="display:none;"></div>'
+            +   '<div class="pc-reply-form-wrap" id="reply-form-' + data.id + '">'
+            +     '<img class="reply-form-avatar" src="' + data.avatar + '">'
+            +     '<div class="pc-reply-input-wrap">'
+            +       '<textarea class="pc-reply-textarea" id="reply-input-' + data.id + '" placeholder="Écrire une réponse…" rows="1" maxlength="1000"'
+            +       ' onkeydown="handleReplyKey(event,' + data.id + ',' + postId + ',\'' + url + '\')"'
+            +       ' oninput="autoResize(this)"></textarea>'
+            +     '</div>'
+            +     '<button class="pc-comment-send" onclick="submitReply(' + data.id + ',' + postId + ',\'' + url + '\')" title="Répondre">'
+            +       '<span class="material-icons">send</span></button>'
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+        var list = document.getElementById('comment-list-' + postId);
+        if (list) { list.insertAdjacentHTML('beforeend', html); list.scrollTop = list.scrollHeight; }
+        updateCommentCount(postId, 1);
+    })
+    .catch(function(){ btn.disabled = false; });
+}
+
+/* ══════════════════════════════════════
+   REPLIES
+   ══════════════════════════════════════ */
+function toggleReplyForm(commentId, postId, url) {
+    var form = document.getElementById('reply-form-' + commentId);
+    if (!form) return;
+    var isOpen = form.classList.contains('open');
+    form.classList.toggle('open', !isOpen);
+    if (!isOpen) {
+        var replies = document.getElementById('replies-' + commentId);
+        if (replies) replies.style.display = '';
+        var ta = document.getElementById('reply-input-' + commentId);
+        if (ta) setTimeout(function(){ ta.focus(); }, 50);
+    }
+}
+function handleReplyKey(evt, parentId, postId, url) {
+    if (evt.key === 'Enter' && !evt.shiftKey) { evt.preventDefault(); submitReply(parentId, postId, url); }
+}
+function submitReply(parentCommentId, postId, url) {
+    var ta = document.getElementById('reply-input-' + parentCommentId);
+    if (!ta) return;
+    var body = ta.value.trim();
+    if (!body) return;
+    var fd = new FormData();
+    fd.append('body', body);
+    fd.append('parent_id', parentCommentId);
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        if (!data.ok) return;
+        ta.value = ''; ta.style.height = 'auto';
+        var form = document.getElementById('reply-form-' + parentCommentId);
+        if (form) form.classList.remove('open');
+        var delBtn = data.can_delete
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            : '';
+        var html = '<div class="pc-comment-reply-item" id="comment-item-' + data.id + '">'
+            + '<a href="/account/' + data.author_id + '/view/"><img class="reply-avatar" src="' + data.avatar + '" alt=""></a>'
+            + '<div class="pc-comment-right">'
+            +   '<div class="pc-comment-bubble">'
+            +     '<a class="pc-comment-author" href="/account/' + data.author_id + '/view/">' + escHtml(data.author) + '</a>'
+            +     '<p class="pc-comment-body">' + escHtml(data.body) + '</p>'
+            +   '</div>'
+            +   '<div class="pc-comment-footer">'
+            +     '<span class="pc-comment-time">' + data.created_at + '</span>'
+            +     delBtn
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+        var repliesContainer = document.getElementById('replies-' + parentCommentId);
+        if (repliesContainer) { repliesContainer.style.display = ''; repliesContainer.insertAdjacentHTML('beforeend', html); }
+        updateCommentCount(postId, 1);
+    })
+    .catch(function(e) { console.error('Reply error:', e); });
+}
+
+/* ══════════════════════════════════════
+   DELETE COMMENT
+   ══════════════════════════════════════ */
+var _delUrlTpl = "{% url 'post:delete-comment' 999999 %}";
+function commentDeleteUrl(id) { return _delUrlTpl.replace('999999', id); }
+function deleteComment(commentId, url) {
+    if (!confirm('Supprimer ce commentaire ?')) return;
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        if (!data.ok) return;
+        var el = document.getElementById('comment-item-' + commentId);
+        if (el) {
+            var panel = el.closest('[id^="comment-panel-"]');
+            el.remove();
+            if (panel) updateCommentCount(panel.id.replace('comment-panel-', ''), -1);
+        }
+    });
+}
+function updateCommentCount(postId, delta) {
+    var badge = document.getElementById('comment-count-' + postId);
+    if (!badge) return;
+    var list = document.getElementById('comment-list-' + postId);
+    var cnt  = list ? list.querySelectorAll('.pc-comment-item, .pc-comment-reply-item').length : 0;
+    if (cnt > 0) { badge.textContent = '(' + cnt + ')'; badge.style.display = ''; }
+    else           badge.style.display = 'none';
+}
+
+/* ══════════════════════════════════════
+   SHARE
+   ══════════════════════════════════════ */
+var _shareTimer = null;
+function sharePost(postId) {
+    var url = window.location.origin + window.location.pathname + '#post-' + postId;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(showShareToast);
+    } else {
+        var tmp = document.createElement('textarea');
+        tmp.value = url; tmp.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(tmp); tmp.select();
+        try { document.execCommand('copy'); } catch(e){}
+        document.body.removeChild(tmp);
+        showShareToast();
+    }
+}
+function showShareToast() {
+    var t = document.getElementById('share-toast');
+    if (!t) return;
+    t.classList.add('show');
+    clearTimeout(_shareTimer);
+    _shareTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+/* ══════════════════════════════════════
+   HELPERS
+   ══════════════════════════════════════ */
+function getCookie(name) {
+    var val = null;
+    if (document.cookie) {
+        document.cookie.split(';').forEach(function(c) {
+            c = c.trim();
+            if (c.startsWith(name + '=')) val = decodeURIComponent(c.slice(name.length + 1));
+        });
+    }
+    return val;
+}
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ── Hashtags + Mentions ── */
+function processHashtagsAndMentions(container) {
+    if (!container) return;
+    var SKIP = new Set(['A', 'SCRIPT', 'STYLE', 'CODE', 'PRE', 'TEXTAREA', 'INPUT']);
+    var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+        acceptNode: function(n) {
+            var p = n.parentElement;
+            while (p) { if (SKIP.has(p.tagName)) return NodeFilter.FILTER_REJECT; p = p.parentElement; }
+            return NodeFilter.FILTER_ACCEPT;
+        }
+    }, false);
+    var nodes = [], node;
+    while (node = walker.nextNode()) nodes.push(node);
+    nodes.forEach(function(n) {
+        var text = n.textContent;
+        if (!/#[a-zA-ZÀ-ÿ0-9_]{2,}|@[a-zA-Z0-9_]{2,}/.test(text)) return;
+        var html = text
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/#([a-zA-ZÀ-ÿ0-9_]{2,30})/g, function(m, tag) {
+                return '<a href="/post/hashtag/' + tag.toLowerCase() + '/" class="zf-hashtag">' + m + '</a>';
+            })
+            .replace(/@([a-zA-Z0-9_]{2,30})/g, function(m, user) {
+                return '<a href="/account/search/?q=' + encodeURIComponent(user) + '" class="zf-mention">' + m + '</a>';
+            });
+        var span = document.createElement('span');
+        span.innerHTML = html;
+        n.parentNode.replaceChild(span, n);
+    });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.pc-body, .pc-title').forEach(function(el) {
+        if (!el.dataset.htagDone) { el.dataset.htagDone = '1'; processHashtagsAndMentions(el); }
+    });
+});
 </script>
 
 {% include 'friend/snippets/send_friend_request.html' %}
