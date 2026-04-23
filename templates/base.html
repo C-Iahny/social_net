@@ -91,6 +91,105 @@
 			height: 100%;
 			margin-top: 62px; /* hauteur de la navbar fixe */
 		}
+
+        /* ── Mobile bottom navigation ── */
+        .zoot-bottom-nav {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            main { padding-bottom: 68px; }
+
+            .zoot-bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0; left: 0; right: 0;
+                height: 58px;
+                background: var(--bg-nav, rgba(255,255,255,.95));
+                border-top: 1px solid var(--border);
+                backdrop-filter: blur(18px);
+                -webkit-backdrop-filter: blur(18px);
+                z-index: 1000;
+                align-items: stretch;
+                box-shadow: 0 -2px 16px rgba(0,0,0,.08);
+            }
+            [data-theme="dark"] .zoot-bottom-nav {
+                box-shadow: 0 -2px 16px rgba(0,0,0,.35);
+            }
+
+            .zbn-item {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 2px;
+                text-decoration: none;
+                color: var(--text-muted);
+                font-size: .6rem;
+                font-weight: 600;
+                font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+                letter-spacing: .02em;
+                transition: color .15s;
+                position: relative;
+                border: none;
+                background: none;
+                cursor: pointer;
+                padding: 0;
+            }
+            .zbn-item .material-icons {
+                font-size: 1.35rem;
+                transition: transform .18s, color .15s;
+            }
+            .zbn-item:hover,
+            .zbn-item.active {
+                color: var(--accent);
+                text-decoration: none;
+            }
+            .zbn-item.active .material-icons {
+                transform: scale(1.1);
+            }
+            [data-theme="dark"] .zbn-item.active {
+                color: var(--neon-cyan, var(--accent));
+            }
+
+            /* New post button — highlighted */
+            .zbn-item.zbn-new {
+                color: var(--bg-card);
+            }
+            .zbn-item.zbn-new .zbn-new-icon {
+                width: 42px; height: 42px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, var(--accent), var(--accent2));
+                display: flex; align-items: center; justify-content: center;
+                box-shadow: 0 3px 12px rgba(99,102,241,.4);
+                transition: transform .18s, box-shadow .18s;
+                margin-bottom: 1px;
+            }
+            .zbn-item.zbn-new .zbn-new-icon .material-icons {
+                font-size: 1.25rem;
+                color: #fff;
+                transform: none !important;
+            }
+            [data-theme="dark"] .zbn-item.zbn-new .zbn-new-icon .material-icons { color: #000; }
+            .zbn-item.zbn-new:active .zbn-new-icon {
+                transform: scale(.93);
+            }
+            .zbn-item.zbn-new span.zbn-label { color: var(--text-muted); }
+
+            /* Notification badge */
+            .zbn-badge {
+                position: absolute;
+                top: 6px; right: calc(50% - 14px);
+                min-width: 16px; height: 16px;
+                background: #e53935;
+                color: #fff; font-size: .6rem; font-weight: 800;
+                border-radius: 8px; padding: 0 4px;
+                display: flex; align-items: center; justify-content: center;
+                border: 2px solid var(--bg-nav);
+                pointer-events: none;
+                line-height: 1;
+            }
+        }
 	</style>
 
 
@@ -158,6 +257,65 @@
             .catch(function(){/* silencieux — pas de langue forcée si l'API échoue */});
     })();
     </script>
+
+    <!-- ── Mobile bottom navigation ── -->
+    {% if request.user.is_authenticated %}
+    <nav class="zoot-bottom-nav" id="zoot-bottom-nav">
+        <a class="zbn-item" href="{% url 'post:post-view' %}" data-page="feed">
+            <span class="material-icons">home</span>
+            <span class="zbn-label">Feed</span>
+        </a>
+        <a class="zbn-item" href="{% url 'search' %}?q=" data-page="search">
+            <span class="material-icons">search</span>
+            <span class="zbn-label">Hikaroka</span>
+        </a>
+        <a class="zbn-item zbn-new" href="{% url 'post:addPost' %}" data-page="new">
+            <div class="zbn-new-icon">
+                <span class="material-icons">add</span>
+            </div>
+            <span class="zbn-label">Mamorona</span>
+        </a>
+        <a class="zbn-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}" data-page="friends" id="zbn-friends-link">
+            <span class="material-icons">person_add</span>
+            <span class="zbn-label">Fangatahana</span>
+        </a>
+        <a class="zbn-item" href="{% url 'account:view' user_id=request.user.id %}" data-page="profile">
+            <span class="material-icons">person</span>
+            <span class="zbn-label">Profil</span>
+        </a>
+    </nav>
+    <script>
+    (function() {
+        // Highlight the active tab based on current URL
+        var path = window.location.pathname;
+        var map = {
+            feed:    ['/post/', '/'],
+            search:  ['/search/'],
+            new:     ['/post/create/', '/post/add/'],
+            friends: ['/friend/'],
+            profile: ['/account/'],
+        };
+        document.querySelectorAll('.zbn-item').forEach(function(el) {
+            var page = el.dataset.page;
+            var patterns = map[page] || [];
+            var active = patterns.some(function(p) { return path.startsWith(p); });
+            if (active) el.classList.add('active');
+        });
+
+        // Sync pending friend-request badge from push-notif counter if exists
+        var pendingCount = parseInt(sessionStorage.getItem('zoot_pending_fr') || '0', 10);
+        if (pendingCount > 0) {
+            var link = document.getElementById('zbn-friends-link');
+            if (link) {
+                var badge = document.createElement('span');
+                badge.className = 'zbn-badge';
+                badge.textContent = pendingCount > 9 ? '9+' : pendingCount;
+                link.appendChild(badge);
+            }
+        }
+    })();
+    </script>
+    {% endif %}
 
     <!-- Bootstrap JS (une seule fois, déjà jQuery en <head>) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
