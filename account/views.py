@@ -124,18 +124,28 @@ def account_view(request, *args, **kwargs):
 	posts = list(Post.objects.filter(author=account).order_by("-id").select_related('author'))
 
 	# Enrich posts with reactions + threaded comments (same as feed)
+	from django.db.models import Count
 	post_ids = [p.id for p in posts]
 	if post_ids:
-		user_reactions = {}
+		# Reaction counts per post (grouped)
+		reactions_qs = (
+			ReactionModel.objects.filter(post_id__in=post_ids)
+			.values('post_id', 'reaction_type')
+			.annotate(c=Count('id'))
+		)
+		reactions_by_post = {}
+		for row in reactions_qs:
+			reactions_by_post.setdefault(row['post_id'], {})[row['reaction_type']] = row['c']
+
+		# Current user's reaction per post
+		user_reaction_by_post = {}
 		if request.user.is_authenticated:
-			for r in ReactionModel.objects.filter(user=request.user, post_id__in=post_ids):
-				user_reactions[r.post_id] = r.reaction
+			user_reactions_qs = ReactionModel.objects.filter(
+				post_id__in=post_ids, user=request.user
+			).values_list('post_id', 'reaction_type')
+			user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
-		reaction_counts_map = {}
-		for r in ReactionModel.objects.filter(post_id__in=post_ids):
-			reaction_counts_map.setdefault(r.post_id, {})
-			reaction_counts_map[r.post_id][r.reaction] = reaction_counts_map[r.post_id].get(r.reaction, 0) + 1
-
+		# Comments (threaded)
 		comments_all = list(CommentModel.objects.filter(
 			post_id__in=post_ids).select_related('author').order_by('created_at'))
 		top_by_post = {}
@@ -150,10 +160,9 @@ def account_view(request, *args, **kwargs):
 				c.reply_list = replies_map.get(c.id, [])
 
 		for post in posts:
-			post.user_reaction  = user_reactions.get(post.id)
-			counts              = reaction_counts_map.get(post.id, {})
-			post.reaction_counts = counts
-			post.total_reactions = sum(counts.values())
+			post.user_reaction   = user_reaction_by_post.get(post.id)
+			post.reaction_counts = reactions_by_post.get(post.id, {})
+			post.total_reactions = sum(post.reaction_counts.values())
 			top = top_by_post.get(post.id, [])
 			for c in top:
 				if not hasattr(c, 'reply_list'):
