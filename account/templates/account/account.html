@@ -2,957 +2,442 @@
 {% load static %}
 
 {% block content %}
-
 <style>
-/* ===== PROFILE PAGE ===== */
+/* ════════════════════════════════════════════════════
+   PROFILE PAGE — PREMIUM REDESIGN
+   ════════════════════════════════════════════════════ */
+body { background: var(--bg); }
+
 .profile-wrapper {
-    max-width: 940px;
-    margin: 70px auto 2rem;
-    padding: 0 1rem;
+    max-width: 960px;
+    margin: 72px auto 2rem;
+    padding: 0 .75rem;
 }
 
-/* ---- Cover ---- */
-.cover-block {
-    position: relative;
-    border-radius: 12px 12px 0 0;
+/* ── Cover ── */
+.profile-cover {
+    height: 210px;
+    border-radius: 22px 22px 0 0;
     overflow: hidden;
+    position: relative;
     background: var(--bg-card);
-    box-shadow: var(--shadow);
 }
-.cover-img {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-    display: block;
-}
-.cover-overlay {
+.profile-cover-bg {
     position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 120px;
-    background: linear-gradient(transparent, rgba(0,0,0,.55));
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 10% 70%, rgba(0,207,255,.38) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 30%, rgba(191,95,255,.32) 0%, transparent 55%),
+        radial-gradient(ellipse at 55% 110%, rgba(255,77,166,.22) 0%, transparent 50%);
+}
+[data-theme="dark"] .profile-cover-bg {
+    background:
+        radial-gradient(ellipse at 10% 70%, rgba(0,207,255,.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 30%, rgba(191,95,255,.16) 0%, transparent 55%),
+        radial-gradient(ellipse at 55% 110%, rgba(255,77,166,.1) 0%, transparent 50%);
+}
+.profile-cover-noise {
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+    opacity: .5;
 }
 
-/* ---- Profile header ---- */
+/* ── Profile header block ── */
 .profile-header {
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    padding: 0 1.5rem 1rem;
-    box-shadow: var(--shadow);
-    transition: background .3s;
+    border-radius: 0 0 22px 22px;
+    padding: 0 1.5rem 1.25rem;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.04),
+        0 6px 20px rgba(0,0,0,.07),
+        0 0 0 .5px rgba(0,0,0,.05);
+    margin-bottom: 1.1rem;
 }
+[data-theme="dark"] .profile-header {
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.3),
+        0 8px 28px rgba(0,0,0,.45),
+        0 0 0 .5px rgba(255,255,255,.06);
+}
+
 .avatar-area {
     display: flex;
     align-items: flex-end;
-    gap: 1.2rem;
-    margin-top: -60px;
-    padding-bottom: .8rem;
+    gap: 1.1rem;
+    margin-top: -62px;
+    padding-bottom: .75rem;
     flex-wrap: wrap;
 }
-.avatar-wrap {
-    position: relative;
+
+/* Avatar ring */
+.avatar-ring-wrap {
+    width: 124px; height: 124px;
+    border-radius: 50%;
+    padding: 3.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
     flex-shrink: 0;
+    box-shadow: 0 0 0 4px var(--bg-card);
+    position: relative;
+    cursor: pointer;
+    transition: transform .18s;
 }
-.avatar-img {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    border: 4px solid var(--bg-card);
-    object-fit: cover;
-    box-shadow: 0 4px 16px rgba(0,0,0,.3);
-    transition: border-color .3s;
+.avatar-ring-wrap:hover { transform: scale(1.04); }
+.avatar-ring-wrap img {
+    width: 100%; height: 100%;
+    border-radius: 50%; object-fit: cover;
+    border: 3px solid var(--bg-card);
+    display: block;
+    position: relative; z-index: 1;
 }
-.avatar-edit-btn {
+#profile-story-ring-el {
     position: absolute;
-    bottom: 6px; right: 6px;
-    width: 32px; height: 32px;
+    inset: -5px; border-radius: 50%;
+    z-index: 0;
+}
+.avatar-edit-fab {
+    position: absolute;
+    bottom: 5px; right: 5px;
+    width: 30px; height: 30px;
     border-radius: 50%;
-    background: var(--btn-bg);
-    border: 2px solid var(--bg-card);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: 2.5px solid var(--bg-card);
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    font-size: .85rem;
-    color: var(--text);
-    text-decoration: none;
-    transition: background .2s;
+    text-decoration: none; z-index: 2;
+    transition: opacity .15s;
 }
-.avatar-edit-btn:hover { background: var(--accent); color: #fff; }
+.avatar-edit-fab:hover { opacity: .85; text-decoration: none; }
+.avatar-edit-fab .material-icons { font-size: .85rem; color: #fff; }
 
+/* Name area */
 .profile-name-area {
-    flex: 1;
-    min-width: 0;
-    padding-bottom: .5rem;
+    flex: 1; min-width: 0;
+    padding-bottom: .4rem;
 }
-.profile-name {
-    font-size: 1.65rem;
-    font-weight: 800;
-    color: var(--text);
-    margin: 0;
-    line-height: 1.2;
+.profile-username {
+    font-size: 1.55rem; font-weight: 800;
+    color: var(--text); margin: 0; line-height: 1.2;
+    letter-spacing: -.02em;
 }
-.profile-bio {
-    color: var(--text-muted);
-    font-size: .95rem;
-    margin: .3rem 0 0;
+.profile-bio-text {
+    color: var(--text-muted); font-size: .9rem;
+    margin: .25rem 0 0; line-height: 1.5;
 }
-.profile-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.2rem;
-    margin-top: .6rem;
-    font-size: .9rem;
-    color: var(--text-muted);
+.profile-stats-row {
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    margin-top: .55rem;
 }
-.profile-meta span { display: flex; align-items: center; gap: .3rem; }
-.profile-meta .stat-val { font-weight: 700; color: var(--text); }
+.profile-stat {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .87rem; color: var(--text-muted);
+}
+.profile-stat-val { font-weight: 700; color: var(--text); }
+.profile-stat .material-icons { font-size: .95rem; color: var(--accent); }
 
+/* Action buttons */
 .profile-actions {
-    display: flex;
-    gap: .6rem;
-    align-items: center;
-    padding-top: 1rem;
+    display: flex; gap: .55rem;
     flex-wrap: wrap;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,.05);
 }
-.btn-profile {
-    display: inline-flex;
-    align-items: center;
-    gap: .4rem;
-    padding: .45rem 1.1rem;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: .9rem;
-    border: none;
-    cursor: pointer;
-    transition: background .2s, transform .1s;
-    text-decoration: none;
+[data-theme="dark"] .profile-actions { border-top-color: rgba(255,255,255,.05); }
+.btn-p {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .44rem 1.05rem; border-radius: 12px;
+    font-weight: 600; font-size: .88rem; border: none;
+    cursor: pointer; text-decoration: none;
+    transition: opacity .15s, transform .12s;
+    font-family: inherit;
 }
-.btn-profile:hover { transform: translateY(-1px); text-decoration: none; }
-.btn-profile-primary  { background: var(--accent); color: #fff; }
-.btn-profile-primary:hover  { background: var(--accent-dark); color: #fff; }
-.btn-profile-secondary { background: var(--btn-bg); color: var(--text); border: 1px solid var(--border); }
-.btn-profile-secondary:hover { background: var(--btn-hover); color: var(--text); }
-.btn-profile-danger { background: #fdecea; color: #c62828; border: 1px solid #f5c6c6; }
-[data-theme="dark"] .btn-profile-danger { background: #3b1212; color: #f28b82; border-color: #5a2020; }
-.btn-profile-success { background: #e6f4ea; color: #1a7f37; border: 1px solid #b7dfbd; }
-[data-theme="dark"] .btn-profile-success { background: #1a3326; color: #4caf7d; border-color: #1e4030; }
+.btn-p:hover { opacity: .88; transform: translateY(-1px); text-decoration: none; }
+.btn-p .material-icons { font-size: .95rem; }
+.btn-p-primary  { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+.btn-p-secondary { background: var(--btn-bg); color: var(--text); border: 1.5px solid var(--border); }
+.btn-p-secondary:hover { background: var(--btn-hover); color: var(--text); }
+.btn-p-danger { background: rgba(229,57,53,.1); color: #e53935; border: 1.5px solid rgba(229,57,53,.25); }
+[data-theme="dark"] .btn-p-danger { color: #f28b82; border-color: rgba(242,139,130,.25); }
+.btn-p-success { background: rgba(76,175,80,.1); color: #388e3c; border: 1.5px solid rgba(76,175,80,.25); }
+[data-theme="dark"] .btn-p-success { color: #66bb6a; border-color: rgba(102,187,106,.25); }
 
-/* ---- Tabs ---- */
+/* Friend request banner */
+.fr-banner {
+    background: rgba(0,207,255,.06);
+    border: 1.5px solid rgba(0,207,255,.2);
+    border-radius: 14px; padding: .75rem 1rem;
+    display: flex; align-items: center; gap: .8rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.fr-banner .fr-text { flex: 1; font-size: .9rem; color: var(--text); min-width: 160px; }
+.fr-banner .material-icons { color: var(--accent); font-size: 1.2rem; flex-shrink: 0; }
+
+/* ── Tabs ── */
 .profile-tabs {
     display: flex;
-    gap: 0;
-    border-bottom: 2px solid var(--border);
-    margin: 1.5rem 0 1.2rem;
+    border-bottom: 1.5px solid var(--border);
+    margin: 0 0 1.1rem;
     overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--bg-card);
+    border-radius: 14px 14px 0 0;
+    padding: 0 .5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
 }
+.profile-tabs::-webkit-scrollbar { display: none; }
 .tab-btn {
-    padding: .75rem 1.3rem;
-    background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -2px;
+    padding: .8rem 1.1rem;
+    background: none; border: none;
+    border-bottom: 2.5px solid transparent;
+    margin-bottom: -1.5px;
     cursor: pointer;
-    font-weight: 600;
-    font-size: .95rem;
+    font-weight: 600; font-size: .88rem;
     color: var(--text-muted);
-    transition: color .2s, border-color .2s;
+    transition: color .18s, border-color .18s;
     white-space: nowrap;
+    display: flex; align-items: center; gap: .35rem;
+    font-family: inherit;
 }
-.tab-btn:hover { color: var(--accent); }
+.tab-btn:hover { color: var(--text); }
 .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-
+.tab-btn .material-icons { font-size: 1rem; }
 .tab-pane { display: none; }
 .tab-pane.active { display: block; }
 
-/* ---- Two-column layout ---- */
+/* ── Profile body grid ── */
 .profile-body {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 284px 1fr;
     gap: 1rem;
     align-items: start;
 }
 @media (max-width: 768px) {
     .profile-body { grid-template-columns: 1fr; }
     .profile-sidebar { display: none; }
-    .cover-img { height: 180px; }
-    .avatar-img { width: 90px; height: 90px; }
-    .profile-name { font-size: 1.25rem; }
+    .profile-cover { height: 140px; }
+    .avatar-ring-wrap { width: 88px; height: 88px; }
+    .profile-username { font-size: 1.2rem; }
 }
 
-/* ---- Sidebar cards ---- */
-.profile-card {
+/* ── Sidebar cards ── */
+.pc-sidebar-card {
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.2rem;
-    margin-bottom: 1rem;
-    box-shadow: var(--shadow);
-    transition: background .3s;
+    border-radius: 18px;
+    padding: 1.1rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.05);
 }
-.profile-card h6 {
-    font-size: .8rem;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    color: var(--text-muted);
-    margin-bottom: .8rem;
+[data-theme="dark"] .pc-sidebar-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 0 0 .5px rgba(255,255,255,.05);
+}
+.pc-sidebar-label {
+    font-size: .68rem; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: .75rem;
 }
 .info-row {
-    display: flex;
-    align-items: flex-start;
-    gap: .7rem;
-    padding: .4rem 0;
-    color: var(--text);
-    font-size: .93rem;
-    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: .65rem;
+    padding: .42rem 0;
+    color: var(--text); font-size: .88rem;
+    border-bottom: 1px solid rgba(0,0,0,.04);
 }
+[data-theme="dark"] .info-row { border-bottom-color: rgba(255,255,255,.04); }
 .info-row:last-child { border-bottom: none; }
-.info-row .material-icons { font-size: 1.1rem; color: var(--text-muted); margin-top: 2px; flex-shrink: 0; }
+.info-row .material-icons { font-size: 1rem; color: var(--text-muted); margin-top: 1px; flex-shrink: 0; }
 
-/* ---- Mini friends grid ---- */
+/* Mini friends grid */
 .mini-friends-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-top: .5rem;
+    gap: 5px;
+    margin-top: .4rem;
 }
 .mini-friend {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    aspect-ratio: 1;
+    position: relative; border-radius: 10px;
+    overflow: hidden; aspect-ratio: 1;
 }
 .mini-friend img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
-    transition: transform .2s;
+    width: 100%; height: 100%; object-fit: cover;
+    border-radius: 10px; transition: transform .2s;
 }
-.mini-friend:hover img { transform: scale(1.05); }
-.mini-friend-name {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
+.mini-friend:hover img { transform: scale(1.06); }
+.mini-friend-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
     background: rgba(0,0,0,.55);
-    color: #fff;
-    font-size: .7rem;
-    padding: 2px 4px;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: #fff; font-size: .65rem;
+    padding: 2px 4px; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* ---- Post card ---- */
-.post-card {
+/* ── Post cards (profile) ── */
+.pf-post-card {
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 1rem;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    transition: background .3s;
-}
-.post-card-header {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    padding: .9rem 1rem .4rem;
-}
-.post-author-img {
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-    border: 2px solid var(--border);
-}
-.post-author-name {
-    font-weight: 700;
-    color: var(--text);
-    font-size: .95rem;
-    text-decoration: none;
-}
-.post-author-name:hover { color: var(--accent); }
-.post-date {
-    font-size: .8rem;
-    color: var(--text-muted);
-}
-.post-actions-menu {
-    margin-left: auto;
-    display: flex;
-    gap: .4rem;
-}
-.post-action-btn {
-    padding: .3rem .65rem;
-    font-size: .8rem;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--btn-bg);
-    color: var(--text);
-    text-decoration: none;
-    transition: background .2s;
-    cursor: pointer;
-}
-.post-action-btn:hover { background: var(--btn-hover); color: var(--text); text-decoration: none; }
-.post-action-btn.danger { color: #c62828; border-color: #f5c6c6; }
-[data-theme="dark"] .post-action-btn.danger { color: #f28b82; border-color: #5a2020; }
-
-.post-body {
-    padding: .4rem 1rem .6rem;
-    color: var(--text);
-    font-size: .95rem;
-    line-height: 1.55;
-}
-.post-body img { max-width: 100%; border-radius: 4px; }
-.post-image {
-    width: 100%;
-    max-height: 500px;
-    object-fit: cover;
-    display: block;
-    cursor: pointer;
-    transition: opacity .2s;
-}
-.post-image:hover { opacity: .92; }
-.post-footer {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    padding: .5rem 1rem;
-    border-top: 1px solid var(--border);
-    color: var(--text-muted);
-    font-size: .85rem;
-}
-.like-count { display: flex; align-items: center; gap: .25rem; }
-.like-count .material-icons { font-size: 1rem; color: var(--accent); }
-.post-category {
-    margin-left: auto;
-    font-size: .78rem;
-    background: var(--btn-bg);
-    padding: .15rem .55rem;
     border-radius: 20px;
-    color: var(--text-muted);
+    margin-bottom: 1.1rem;
+    overflow: hidden;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.05);
+    transition: transform .22s ease, box-shadow .22s ease;
+}
+.pf-post-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,.05), 0 10px 28px rgba(0,0,0,.1), 0 0 0 .5px rgba(0,0,0,.07);
+}
+[data-theme="dark"] .pf-post-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 6px 22px rgba(0,0,0,.42), 0 0 0 .5px rgba(255,255,255,.06);
+}
+[data-theme="dark"] .pf-post-card:hover {
+    box-shadow: 0 2px 5px rgba(0,0,0,.3), 0 14px 36px rgba(0,0,0,.55), 0 0 0 .5px rgba(255,255,255,.08);
+}
+.pf-post-header {
+    display: flex; align-items: center; gap: .85rem;
+    padding: 1rem 1.1rem .5rem;
+}
+.pf-avatar-ring {
+    width: 42px; height: 42px;
+    border-radius: 50%; padding: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    flex-shrink: 0; text-decoration: none;
+    transition: transform .15s; display: block;
+}
+.pf-avatar-ring:hover { transform: scale(1.07); text-decoration: none; }
+.pf-avatar-ring img {
+    width: 100%; height: 100%;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--bg-card); display: block;
+}
+.pf-author { font-weight: 700; color: var(--text); font-size: .9rem; text-decoration: none; display: block; }
+.pf-author:hover { color: var(--accent); text-decoration: none; }
+.pf-date { font-size: .73rem; color: var(--text-muted); opacity: .85; }
+.pf-post-menu { margin-left: auto; display: flex; gap: .25rem; }
+.pf-menu-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent;
+    color: var(--text-muted); text-decoration: none;
+    cursor: pointer; transition: background .12s, color .12s;
+}
+.pf-menu-btn .material-icons { font-size: 1rem; }
+.pf-menu-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.pf-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; }
+.pf-post-title {
+    padding: .4rem 1.1rem .15rem;
+    font-weight: 700; font-size: 1.07rem; color: var(--text);
+    line-height: 1.4; letter-spacing: -.01em;
+}
+.pf-post-body {
+    padding: .2rem 1.1rem .65rem; color: var(--text);
+    font-size: .9rem; line-height: 1.68; opacity: .9;
+}
+.pf-post-body p { margin-bottom: .3rem; }
+.pf-post-image {
+    width: 100%; max-height: 500px; object-fit: cover; display: block;
+    cursor: zoom-in; transition: transform .35s;
+}
+.pf-image-wrap:hover .pf-post-image { transform: scale(1.015); }
+.pf-post-footer {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .55rem 1.1rem;
+    border-top: 1px solid rgba(0,0,0,.05);
+    font-size: .82rem; color: var(--text-muted);
+}
+[data-theme="dark"] .pf-post-footer { border-top-color: rgba(255,255,255,.05); }
+.pf-likes { display: flex; align-items: center; gap: .3rem; }
+.pf-likes .material-icons { font-size: .95rem; color: var(--accent); }
+.pf-cat-tag {
+    margin-left: auto; font-size: .74rem;
+    background: var(--btn-bg); padding: .15rem .55rem;
+    border-radius: 20px; color: var(--text-muted);
 }
 
-/* ---- Create post box ---- */
-.create-post-box {
+/* ── Create post box (profile) ── */
+.pf-create-box {
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: .9rem 1rem;
+    border-radius: 18px;
+    padding: .85rem 1.1rem;
     margin-bottom: 1rem;
-    box-shadow: var(--shadow);
-    display: flex;
-    align-items: center;
-    gap: .8rem;
-    cursor: pointer;
-    transition: background .2s;
+    display: flex; align-items: center; gap: .85rem;
     text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
+    transition: box-shadow .2s;
 }
-.create-post-box:hover { background: var(--btn-bg); text-decoration: none; }
-.create-post-placeholder {
-    flex: 1;
-    background: var(--btn-bg);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: .55rem 1rem;
-    color: var(--text-muted);
-    font-size: .95rem;
-    pointer-events: none;
+.pf-create-box:hover {
+    text-decoration: none;
+    box-shadow: 0 0 0 2px var(--accent), 0 4px 20px rgba(0,207,255,.1);
+}
+.pf-create-box img {
+    width: 40px; height: 40px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0; border: 1.5px solid var(--border);
+}
+.pf-create-prompt {
+    flex: 1; background: var(--btn-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 24px; padding: .55rem 1.1rem;
+    color: var(--text-muted); font-size: .9rem;
 }
 
-/* ---- Empty state ---- */
-.empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
+/* ── Empty state ── */
+.pf-empty {
+    text-align: center; padding: 3rem 1rem;
+    background: var(--bg-card); border-radius: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
     color: var(--text-muted);
 }
-.empty-state .material-icons { font-size: 3rem; display: block; margin-bottom: .8rem; }
+.pf-empty .material-icons { font-size: 3rem; display: block; margin-bottom: .8rem; opacity: .4; }
 
-/* ---- Photos grid ---- */
+/* ── Photos grid ── */
 .photos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
     gap: 8px;
 }
 .photo-thumb {
-    aspect-ratio: 1;
-    border-radius: 8px;
-    overflow: hidden;
-    background: var(--btn-bg);
+    aspect-ratio: 1; border-radius: 12px;
+    overflow: hidden; background: var(--btn-bg);
 }
 .photo-thumb img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: transform .25s;
-    cursor: pointer;
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .25s; cursor: pointer;
 }
 .photo-thumb img:hover { transform: scale(1.04); }
 
-/* ---- Friends list ---- */
+/* ── Friends grid ── */
 .friends-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: .8rem;
 }
-.friend-card {
+.friend-card-link {
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    text-align: center;
-    text-decoration: none;
-    color: var(--text);
-    transition: box-shadow .2s, transform .15s;
-}
-.friend-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); text-decoration: none; color: var(--text); }
-.friend-card-img {
-    width: 100%; aspect-ratio: 1;
-    object-fit: cover;
+    border-radius: 16px;
+    overflow: hidden; text-align: center;
+    text-decoration: none; color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
+    transition: transform .2s, box-shadow .2s;
     display: block;
 }
+.friend-card-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 18px rgba(0,0,0,.1), 0 0 0 .5px rgba(0,0,0,.06);
+    text-decoration: none; color: var(--text);
+}
+[data-theme="dark"] .friend-card-link {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 0 0 .5px rgba(255,255,255,.05);
+}
+.friend-card-link img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
 .friend-card-name {
-    padding: .5rem .4rem;
-    font-size: .85rem;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding: .5rem .4rem; font-size: .84rem; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* ---- Friend request banner ---- */
-.fr-banner {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--accent);
-    border-radius: 10px;
-    padding: .8rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: .8rem;
-    margin-bottom: 1rem;
-    box-shadow: var(--shadow);
-}
-.fr-banner .fr-text { flex: 1; font-size: .92rem; color: var(--text); }
-</style>
-
-<div class="profile-wrapper">
-
-    <!-- ===================== COVER + AVATAR ===================== -->
-    <div class="cover-block">
-        <img class="cover-img" src="{% static 'images/kali.png' %}" alt="Cover">
-        <div class="cover-overlay"></div>
-    </div>
-
-    <div class="profile-header">
-        <div class="avatar-area">
-            <div class="avatar-wrap" id="profile-avatar-wrap"
-                 style="cursor:pointer;position:relative;">
-                <!-- Anneau story injecté par JS -->
-                <span id="profile-story-ring-el"></span>
-                <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}"
-                     style="position:relative;z-index:1;">
-                {% if is_self %}
-                <a class="avatar-edit-btn" href="{% url 'account:edit' user_id=id %}" title="Modifier la photo"
-                   onclick="event.stopPropagation();">
-                    <span class="material-icons" style="font-size:1rem;">photo_camera</span>
-                </a>
-                {% endif %}
-            </div>
-
-            <div class="profile-name-area">
-                <h1 class="profile-name">{{ username }}</h1>
-                {% if bio %}<p class="profile-bio">{{ bio }}</p>{% endif %}
-                <div class="profile-meta">
-                    <span>
-                        <span class="material-icons" style="font-size:1rem;">article</span>
-                        <span class="stat-val">{{ post_count }}</span> post{% if post_count != 1 %}s{% endif %}
-                    </span>
-                    <span>
-                        <span class="material-icons" style="font-size:1rem;">group</span>
-                        <span class="stat-val">{{ friends_count }}</span> namana{% if friends_count != 1 %}.{% endif %}
-                    </span>
-                    {% if location %}
-                    <span>
-                        <span class="material-icons" style="font-size:1rem;">place</span>
-                        {{ location }}
-                    </span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- ---- Action buttons ---- -->
-        <div class="profile-actions">
-            {% if request.user.is_authenticated %}
-
-                {% if is_self %}
-                    <!-- Own profile -->
-                    <a class="btn-profile btn-profile-secondary" href="{% url 'account:edit' user_id=id %}">
-                        <span class="material-icons" style="font-size:1rem;">edit</span> Anova profil
-                    </a>
-                    <a class="btn-profile btn-profile-secondary" href="{% url 'password_change' %}">
-                        <span class="material-icons" style="font-size:1rem;">lock</span> Teny Miafina
-                    </a>
-
-                {% else %}
-                    <!-- Viewing someone else's profile -->
-
-                    {% if request_sent == 0 %}
-                    <!-- THEM sent YOU a request -->
-                    <div id="fr-accept-area" class="fr-banner">
-                        <span class="material-icons" style="color:var(--accent)">person_add</span>
-                        <span class="fr-text">{{ username }} Nandefa fangatahana ho namana ianao.</span>
-                        <button class="btn-profile btn-profile-success" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>
-                            <span class="material-icons" style="font-size:1rem;">check</span> Ekena
-                        </button>
-                        <button class="btn-profile btn-profile-danger" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>
-                            <span class="material-icons" style="font-size:1rem;">close</span> Lavina
-                        </button>
-                    </div>
-                    {% endif %}
-
-                    {% if is_friend %}
-                    <!-- Already friends -->
-                    <div class="dropdown">
-                        <button class="btn-profile btn-profile-secondary dropdown-toggle" data-toggle="dropdown" id="friends-drop">
-                            <span class="material-icons" style="font-size:1rem;">how_to_reg</span> Namana
-                        </button>
-                        <div class="dropdown-menu" aria-labelledby="friends-drop">
-                            <a class="dropdown-item text-danger" href="#" onclick="removeFriend('{{ id }}', onFriendRemoved)">
-                                <span class="material-icons mr-1" style="font-size:1rem;vertical-align:middle;">person_remove</span>Anala namana
-                            </a>
-                        </div>
-                    </div>
-                    <button class="btn-profile btn-profile-primary" onclick="createOrReturnPrivateChat('{{ id }}')">
-                        <span class="material-icons" style="font-size:1rem;">message</span> Hafatra
-                    </button>
-
-                    {% elif request_sent == 1 %}
-                    <!-- YOU sent them a request -->
-                    <button class="btn-profile btn-profile-secondary" id="id_cancel_friend_request_btn">
-                        <span class="material-icons" style="font-size:1rem;">person_remove</span> Ajanona ilay fangatahana
-                    </button>
-
-                    {% elif request_sent == -1 %}
-                    <!-- No request sent -->
-                    <button class="btn-profile btn-profile-primary" id="id_send_friend_request_btn">
-                        <span class="material-icons" style="font-size:1rem;">person_add</span> Tiana ho namana
-                    </button>
-                    {% endif %}
-
-                {% endif %}
-
-                {% if friend_requests and is_self %}
-                <a class="btn-profile btn-profile-secondary" href="{% url 'friend:friend-requests' user_id=id %}">
-                    <span class="material-icons" style="font-size:1rem;">notifications</span>
-                    {{ friend_requests|length }} fangatahana{% if friend_requests|length != 1 %}-{% endif %} namana
-                </a>
-                {% endif %}
-
-            {% else %}
-                <a class="btn-profile btn-profile-primary" href="{% url 'login' %}">
-                    <span class="material-icons" style="font-size:1rem;">login</span> Hiiditra
-                </a>
-            {% endif %}
-        </div>
-    </div><!-- /profile-header -->
-
-    <!-- ===================== TABS ===================== -->
-    <div class="profile-tabs" id="profile-tabs">
-        <button class="tab-btn active" data-tab="posts">
-            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">article</span> Paositra
-        </button>
-        <button class="tab-btn" data-tab="photos">
-            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">photo_library</span> Sary
-        </button>
-        <button class="tab-btn" data-tab="friends-tab">
-            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">group</span> Namana
-        </button>
-        <button class="tab-btn" data-tab="about">
-            <span class="material-icons" style="font-size:1rem;vertical-align:middle;">info</span> Profile-ko
-        </button>
-    </div>
-
-    <!-- ===================== TAB: POSTS ===================== -->
-    <div class="tab-pane active" id="tab-posts">
-        <div class="profile-body">
-
-            <!-- Sidebar -->
-            <aside class="profile-sidebar">
-
-                <!-- Infos rapides -->
-                <div class="profile-card">
-                    <h6>Infos</h6>
-                    {% if location %}
-                    <div class="info-row">
-                        <span class="material-icons">localisation</span>
-                        <span>{{ location }}</span>
-                    </div>
-                    {% endif %}
-                    <div class="info-row">
-                        <span class="material-icons">calendar_today</span>
-                        <span>Mpikambana h@ {{ date_joined|date:"F Y" }}</span>
-                    </div>
-                    {% if is_self or not hide_email %}
-                    <div class="info-row">
-                        <span class="material-icons">mailaka</span>
-                        <span>{{ email }}</span>
-                    </div>
-                    {% endif %}
-                    {% if bio %}
-                    <div class="info-row">
-                        <span class="material-icons">notes</span>
-                        <span>{{ bio }}</span>
-                    </div>
-                    {% endif %}
-                </div>
-
-                <!-- Mini amis -->
-                {% if friends %}
-                <div class="profile-card">
-                    <h6>Amis · {{ friends_count }}</h6>
-                    <div class="mini-friends-grid">
-                        {% for friend in friends|slice:":9" %}
-                        <a class="mini-friend" href="{% url 'account:view' user_id=friend.id %}" title="{{ friend.username }}">
-                            <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
-                            <span class="mini-friend-name">{{ friend.username }}</span>
-                        </a>
-                        {% endfor %}
-                    </div>
-                    {% if friends_count > 9 %}
-                    <a href="{% url 'friend:list' user_id=id %}" class="btn-profile btn-profile-secondary w-100 mt-2" style="justify-content:center;">
-                        Ny namako rehetra
-                    </a>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- Mini photos -->
-                {% if photos %}
-                <div class="profile-card">
-                    <h6>Sary</h6>
-                    <div class="mini-friends-grid">
-                        {% for photo in photos|slice:":9" %}
-                        <div class="mini-friend">
-                            <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-            </aside>
-
-            <!-- Main feed -->
-            <div class="profile-main">
-
-                <!-- ── Stories section ───────────────────────────────── -->
-                <div id="profile-stories-section" style="display:none;margin-bottom:1rem;">
-                    <!-- Header -->
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
-                        <div style="display:flex;align-items:center;gap:.5rem;">
-                            <span class="material-icons" style="color:var(--accent);font-size:1.1rem;">auto_stories</span>
-                            <span style="font-size:.82rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);">
-                                {% if is_self %}Mes stories{% else %}Stories{% endif %}
-                            </span>
-                        </div>
-                        {% if is_self %}
-                        <button onclick="openStoryCreator()"
-                            style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:20px;padding:.3rem .9rem;font-size:.75rem;font-weight:700;cursor:pointer;font-family:var(--font-primary,'Space Grotesk',sans-serif);display:flex;align-items:center;gap:.3rem;">
-                            <span class="material-icons" style="font-size:.9rem;">add</span>
-                            Nouvelle
-                        </button>
-                        {% endif %}
-                    </div>
-                    <!-- Vignettes -->
-                    <div id="profile-stories-grid" style="display:flex;gap:.75rem;flex-wrap:wrap;"></div>
-                </div>
-
-                <!-- Create post (only own profile) -->
-                {% if is_self %}
-                <a class="create-post-box" href="{% url 'post:addPost' %}">
-                    <img class="avatar-img" src="{{ profile_image }}" alt="{{ username }}" style="width:44px;height:44px;flex-shrink:0;">
-                    <span class="create-post-placeholder">Inona ny vaovao ry {{ username }} ?</span>
-                </a>
-                {% endif %}
-
-                <!-- Posts loop -->
-                {% if posts %}
-                    {% for post in posts %}
-                    <div class="post-card">
-                        <div class="post-card-header">
-                            <a href="{% url 'account:view' user_id=post.author.id %}">
-                                <img class="post-author-img" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
-                            </a>
-                            <div>
-                                <a class="post-author-name" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
-                                <div class="post-date">{{ post.post_date|date:"d F Y" }}</div>
-                            </div>
-                            {% if is_self or request.user.id == post.author.id %}
-                            <div class="post-actions-menu">
-                                <a class="post-action-btn" href="{% url 'post:edit-post' pk=post.id %}">
-                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">edit</span>
-                                </a>
-                                <a class="post-action-btn danger" href="{% url 'post:delete-post' pk=post.id %}">
-                                    <span class="material-icons" style="font-size:.95rem;vertical-align:middle;">delete</span>
-                                </a>
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        {% if post.title %}
-                        <div class="post-body">
-                            <strong>{{ post.title }}</strong>
-                        </div>
-                        {% endif %}
-
-                        {% if post.body %}
-                        <div class="post-body">{{ post.body|safe }}</div>
-                        {% endif %}
-
-                        {% if post.header_image %}
-                        <a href="{{ post.header_image.url }}" target="_blank">
-                            <img class="post-image" src="{{ post.header_image.url }}" alt="{{ post.title }}">
-                        </a>
-                        {% endif %}
-
-                        <div class="post-footer">
-                            <span class="like-count">
-                                <span class="material-icons">thumb_up</span>
-                                {{ post.total_likes }} tiana
-                            </span>
-                            {% if post.category and post.category != 'Category' %}
-                            <span class="post-category">{{ post.category }}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-
-                {% else %}
-                    <div class="empty-state">
-                        <span class="material-icons">article</span>
-                        <p>Mbola tsy misy paositra aloha hatreto.</p>
-                        {% if is_self %}
-                        <a class="btn-profile btn-profile-primary" href="{% url 'post:addPost' %}">
-                            Paositra voalohany
-                        </a>
-                        {% endif %}
-                    </div>
-                {% endif %}
-            </div><!-- /profile-main -->
-
-        </div><!-- /profile-body -->
-    </div><!-- /tab-posts -->
-
-
-    <!-- ===================== TAB: PHOTOS ===================== -->
-    <div class="tab-pane" id="tab-photos">
-        {% if photos %}
-        <div class="photos-grid">
-            {% for photo in photos %}
-            <div class="photo-thumb">
-                <a href="{{ photo.header_image.url }}" target="_blank">
-                    <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
-                </a>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <span class="material-icons">photo_library</span>
-            <p>Mbola tsy misy sary voaranty.</p>
-            {% if is_self %}
-            <a class="btn-profile btn-profile-primary" href="{% url 'post:addPost' %}">Andranty sary</a>
-            {% endif %}
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- ===================== TAB: FRIENDS ===================== -->
-    <div class="tab-pane" id="tab-friends-tab">
-        {% if friends %}
-        <div class="friends-grid">
-            {% for friend in friends %}
-            <a class="friend-card" href="{% url 'account:view' user_id=friend.id %}">
-                <img class="friend-card-img" src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
-                <div class="friend-card-name">{{ friend.username }}</div>
-            </a>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <span class="material-icons">group</span>
-            <p>Mbola tsy misy paositra aloha hatreto.</p>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- ===================== TAB: ABOUT ===================== -->
-    <div class="tab-pane" id="tab-about">
-        <div class="profile-card" style="max-width:600px;">
-            <h6>Mombamomba manokana</h6>
-
-            <div class="info-row">
-                <span class="material-icons">person</span>
-                <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Anarana</div>
-                    <div><strong>{{ username }}</strong></div>
-                </div>
-            </div>
-
-            <div class="info-row">
-                <span class="material-icons">mailaka</span>
-                <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Mailaka</div>
-                    <div>
-                        {% if is_self %}
-                            {{ email }}
-                        {% elif hide_email %}
-                            <em style="color:var(--text-muted)">Notakoman'ny tompony</em>
-                        {% else %}
-                            {{ email }}
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            {% if bio %}
-            <div class="info-row">
-                <span class="material-icons">notes</span>
-                <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Bio</div>
-                    <div>{{ bio }}</div>
-                </div>
-            </div>
-            {% endif %}
-
-            {% if location %}
-            <div class="info-row">
-                <span class="material-icons">place</span>
-                <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Toerana</div>
-                    <div>{{ location }}</div>
-                </div>
-            </div>
-            {% endif %}
-
-            <div class="info-row">
-                <span class="material-icons">calendar_today</span>
-                <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Mpikambana h@</div>
-                    <div>{{ date_joined|date:"d F Y" }}</div>
-                </div>
-            </div>
-
-            <div class="info-row">
-                <span class="material-icons">article</span>
-                <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Fandrantiana</div>
-                    <div>{{ post_count }} post{% if post_count != 1 %}s{% endif %}</div>
-                </div>
-            </div>
-
-            <div class="info-row">
-                <span class="material-icons">group</span>
-                <div>
-                    <div style="font-size:.8rem;color:var(--text-muted)">Namana</div>
-                    <div>{{ friends_count }} namana{% if friends_count != 1 %}.{% endif %}</div>
-                </div>
-            </div>
-
-            {% if is_self %}
-            <div style="margin-top:1rem;display:flex;gap:.7rem;flex-wrap:wrap;">
-                <a class="btn-profile btn-profile-primary" href="{% url 'account:edit' user_id=id %}">
-                    <span class="material-icons" style="font-size:1rem;">edit</span> Anova profil
-                </a>
-                <a class="btn-profile btn-profile-secondary" href="{% url 'password_change' %}">
-                    <span class="material-icons" style="font-size:1rem;">lock</span> Anova teny miafina
-                </a>
-            </div>
-            {% endif %}
-        </div>
-    </div><!-- /tab-about -->
-
-</div><!-- /profile-wrapper -->
-
-
-<!-- ===================== SCRIPTS ===================== -->
-<script type="text/javascript">
-
-    /* ----- Tab navigation ----- */
-    document.querySelectorAll('.tab-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var target = this.dataset.tab;
-            // Remove active from all buttons and panes
-            document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
-            document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
-            // Activate current
-            this.classList.add('active');
-            var pane = document.getElementById('tab-' + target);
-            if (pane) pane.classList.add('active');
-            // Save in localStorage
-            localStorage.setItem('profile_active_tab_{{ id }}', target);
-        });
-    });
-
-    // Restore last active tab
-    (function() {
-        var saved = localStorage.getItem('profile_active_tab_{{ id }}');
-        if (saved) {
-            var btn = document.querySelector('[data-tab="' + saved + '"]');
-            if (btn) btn.click();
-        }
-    })();
-
-    /* ----- Friend request callbacks ----- */
-    function onFriendRequestSent()        { location.reload(); }
-    function onFriendRequestCancelled()   { location.reload(); }
-    function onFriendRemoved()            { location.reload(); }
-    function onFriendRequestAccepted()    { location.reload(); }
-    function onFriendRequestDeclined()    { location.reload(); }
-
-    var sendBtn = document.getElementById("id_send_friend_request_btn");
-    if (sendBtn) sendBtn.addEventListener("click", function() {
-        sendFriendRequest("{{ id }}", onFriendRequestSent);
-    });
-
-    var cancelBtn = document.getElementById("id_cancel_friend_request_btn");
-    if (cancelBtn) cancelBtn.addEventListener("click", function() {
-        cancelFriendRequest("{{ id }}", onFriendRequestCancelled);
-    });
-
-    function triggerAcceptFriendRequest(friend_request_id) {
-        acceptFriendRequest(friend_request_id, onFriendRequestAccepted);
-    }
-    function triggerDeclineFriendRequest(friend_request_id) {
-        declineFriendRequest(friend_request_id, onFriendRequestDeclined);
-    }
-</script>
-
-{% include 'friend/snippets/send_friend_request.html' %}
-{% include 'friend/snippets/accept_friend_request.html' %}
-{% include 'friend/snippets/decline_friend_request.html' %}
-{% include 'friend/snippets/cancel_friend_request.html' %}
-{% include 'friend/snippets/remove_friend.html' %}
-{% include 'chat/snippets/create_or_return_private_chat.html' %}
-
-<!-- ── Stories (créateur + viewer réutilisés depuis le feed) ── -->
-{% include 'stories/story_bar.html' %}
-
-<style>
-/* ── Masquer la barre stories du snippet sur la page profil ── */
-#zoot-stories-bar { display: none !important; }
-
-/* ── Vignettes stories profil ────────────────────────────────── */
+/* ── Stories section ── */
 .profile-story-thumb {
-    position: relative;
-    width: 80px;
-    cursor: pointer;
-    flex-shrink: 0;
+    position: relative; width: 80px; cursor: pointer; flex-shrink: 0;
 }
 .profile-story-thumb-inner {
     width: 80px; height: 130px;
-    border-radius: 12px;
-    overflow: hidden;
+    border-radius: 14px; overflow: hidden;
     border: 2px solid var(--border);
     transition: border-color .2s, transform .15s, box-shadow .2s;
     background: var(--btn-bg);
@@ -960,13 +445,9 @@
 .profile-story-thumb:hover .profile-story-thumb-inner {
     border-color: var(--accent);
     transform: scale(1.03);
-    box-shadow: 0 4px 18px var(--accent-glow);
+    box-shadow: 0 4px 18px rgba(0,207,255,.25);
 }
-[data-theme="dark"] .profile-story-thumb:hover .profile-story-thumb-inner {
-    box-shadow: 0 0 16px rgba(0,207,255,.3);
-}
-.profile-story-thumb-inner img,
-.profile-story-thumb-inner video {
+.profile-story-thumb-inner img, .profile-story-thumb-inner video {
     width: 100%; height: 100%; object-fit: cover;
 }
 .profile-story-thumb-text {
@@ -979,7 +460,7 @@
     text-shadow: 0 1px 4px rgba(0,0,0,.5); line-height: 1.3;
 }
 .profile-story-thumb-label {
-    font-size: .65rem; font-weight: 600; color: var(--text-muted);
+    font-size: .64rem; font-weight: 600; color: var(--text-muted);
     text-align: center; margin-top: .3rem;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -990,7 +471,484 @@
     display: flex; align-items: center; justify-content: center;
 }
 .profile-story-thumb-seen .material-icons { font-size: .7rem; color: #fff; }
+#zoot-stories-bar { display: none !important; }
 </style>
+
+<div class="profile-wrapper">
+
+    <!-- ══════════════════════════════════
+         COVER + HEADER
+         ══════════════════════════════════ -->
+    <div class="profile-cover">
+        <div class="profile-cover-bg"></div>
+        <div class="profile-cover-noise"></div>
+    </div>
+
+    <div class="profile-header">
+        <div class="avatar-area">
+            <div class="avatar-ring-wrap" id="profile-avatar-wrap">
+                <span id="profile-story-ring-el"></span>
+                <img src="{{ profile_image }}" alt="{{ username }}"
+                     style="position:relative;z-index:1;">
+                {% if is_self %}
+                <a class="avatar-edit-fab" href="{% url 'account:edit' user_id=id %}"
+                   title="Modifier la photo" onclick="event.stopPropagation();">
+                    <span class="material-icons">photo_camera</span>
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="profile-name-area">
+                <h1 class="profile-username">{{ username }}</h1>
+                {% if bio %}<p class="profile-bio-text">{{ bio }}</p>{% endif %}
+                <div class="profile-stats-row">
+                    <span class="profile-stat">
+                        <span class="material-icons">article</span>
+                        <span class="profile-stat-val">{{ post_count }}</span>&nbsp;post{% if post_count != 1 %}s{% endif %}
+                    </span>
+                    <span class="profile-stat">
+                        <span class="material-icons">group</span>
+                        <span class="profile-stat-val">{{ friends_count }}</span>&nbsp;namana
+                    </span>
+                    {% if location %}
+                    <span class="profile-stat">
+                        <span class="material-icons">place</span>
+                        {{ location }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="profile-actions">
+            {% if request.user.is_authenticated %}
+                {% if is_self %}
+                    <a class="btn-p btn-p-secondary" href="{% url 'account:edit' user_id=id %}">
+                        <span class="material-icons">edit</span> Anova profil
+                    </a>
+                    <a class="btn-p btn-p-secondary" href="{% url 'password_change' %}">
+                        <span class="material-icons">lock</span> Teny Miafina
+                    </a>
+                    {% if friend_requests %}
+                    <a class="btn-p btn-p-primary" href="{% url 'friend:friend-requests' user_id=id %}">
+                        <span class="material-icons">notifications</span>
+                        {{ friend_requests|length }} fangatahana
+                    </a>
+                    {% endif %}
+
+                {% else %}
+                    {% if request_sent == 0 %}
+                    <div class="fr-banner">
+                        <span class="material-icons">person_add</span>
+                        <span class="fr-text">{{ username }} nandefa fangatahana ho namana.</span>
+                        <button class="btn-p btn-p-success" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>
+                            <span class="material-icons">check</span> Ekena
+                        </button>
+                        <button class="btn-p btn-p-danger" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>
+                            <span class="material-icons">close</span> Lavina
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    {% if is_friend %}
+                    <div class="dropdown">
+                        <button class="btn-p btn-p-secondary dropdown-toggle" data-toggle="dropdown" id="friends-drop">
+                            <span class="material-icons">how_to_reg</span> Namana
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="friends-drop"
+                             style="border-radius:12px;border-color:var(--border);background:var(--bg-card);box-shadow:0 8px 28px rgba(0,0,0,.18);padding:.4rem;">
+                            <a class="dropdown-item" href="#"
+                               style="border-radius:8px;color:#e53935;font-size:.88rem;padding:.5rem .85rem;"
+                               onclick="removeFriend('{{ id }}', onFriendRemoved)">
+                                <span class="material-icons mr-1" style="font-size:.95rem;vertical-align:middle;">person_remove</span>
+                                Anala namana
+                            </a>
+                        </div>
+                    </div>
+                    <button class="btn-p btn-p-primary" onclick="createOrReturnPrivateChat('{{ id }}')">
+                        <span class="material-icons">message</span> Hafatra
+                    </button>
+
+                    {% elif request_sent == 1 %}
+                    <button class="btn-p btn-p-secondary" id="id_cancel_friend_request_btn">
+                        <span class="material-icons">person_remove</span> Ajanona fangatahana
+                    </button>
+
+                    {% elif request_sent == -1 %}
+                    <button class="btn-p btn-p-primary" id="id_send_friend_request_btn">
+                        <span class="material-icons">person_add</span> Tiana ho namana
+                    </button>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <a class="btn-p btn-p-primary" href="{% url 'login' %}">
+                    <span class="material-icons">login</span> Hiiditra
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         TABS
+         ══════════════════════════════════ -->
+    <div class="profile-tabs" id="profile-tabs">
+        <button class="tab-btn active" data-tab="posts">
+            <span class="material-icons">article</span> Paositra
+        </button>
+        <button class="tab-btn" data-tab="photos">
+            <span class="material-icons">photo_library</span> Sary
+        </button>
+        <button class="tab-btn" data-tab="friends-tab">
+            <span class="material-icons">group</span> Namana
+        </button>
+        <button class="tab-btn" data-tab="about">
+            <span class="material-icons">info</span> Profile-ko
+        </button>
+    </div>
+
+    <!-- ══════════════════════════════════
+         TAB: POSTS
+         ══════════════════════════════════ -->
+    <div class="tab-pane active" id="tab-posts">
+        <div class="profile-body">
+
+            <!-- Sidebar -->
+            <aside class="profile-sidebar">
+
+                <!-- Infos -->
+                <div class="pc-sidebar-card">
+                    <p class="pc-sidebar-label">Infos</p>
+                    {% if location %}
+                    <div class="info-row">
+                        <span class="material-icons">place</span>
+                        <span>{{ location }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-row">
+                        <span class="material-icons">calendar_today</span>
+                        <span>Mpikambana h@ {{ date_joined|date:"F Y" }}</span>
+                    </div>
+                    {% if is_self or not hide_email %}
+                    <div class="info-row">
+                        <span class="material-icons">mail</span>
+                        <span>{{ email }}</span>
+                    </div>
+                    {% endif %}
+                    {% if bio %}
+                    <div class="info-row">
+                        <span class="material-icons">notes</span>
+                        <span>{{ bio }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Mini friends -->
+                {% if friends %}
+                <div class="pc-sidebar-card">
+                    <p class="pc-sidebar-label">Namana · {{ friends_count }}</p>
+                    <div class="mini-friends-grid">
+                        {% for friend in friends|slice:":9" %}
+                        <a class="mini-friend" href="{% url 'account:view' user_id=friend.id %}" title="{{ friend.username }}">
+                            <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
+                            <span class="mini-friend-label">{{ friend.username }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% if friends_count > 9 %}
+                    <a href="{% url 'friend:list' user_id=id %}" class="btn-p btn-p-secondary"
+                       style="width:100%;margin-top:.75rem;justify-content:center;">
+                        Ny namako rehetra
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Mini photos -->
+                {% if photos %}
+                <div class="pc-sidebar-card">
+                    <p class="pc-sidebar-label">Sary</p>
+                    <div class="mini-friends-grid">
+                        {% for photo in photos|slice:":9" %}
+                        <div class="mini-friend">
+                            <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            </aside>
+
+            <!-- Main content -->
+            <div class="profile-main">
+
+                <!-- Stories section -->
+                <div id="profile-stories-section" style="display:none;margin-bottom:1rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;">
+                        <div style="display:flex;align-items:center;gap:.45rem;">
+                            <span class="material-icons" style="color:var(--accent);font-size:1rem;">auto_stories</span>
+                            <span style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);">
+                                {% if is_self %}Mes stories{% else %}Stories{% endif %}
+                            </span>
+                        </div>
+                        {% if is_self %}
+                        <button onclick="openStoryCreator()"
+                            style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:20px;padding:.3rem .85rem;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.3rem;">
+                            <span class="material-icons" style="font-size:.85rem;">add</span> Nouvelle
+                        </button>
+                        {% endif %}
+                    </div>
+                    <div id="profile-stories-grid" style="display:flex;gap:.7rem;flex-wrap:wrap;"></div>
+                </div>
+
+                <!-- Create post (own profile) -->
+                {% if is_self %}
+                <a class="pf-create-box" href="{% url 'post:addPost' %}">
+                    <img src="{{ profile_image }}" alt="{{ username }}">
+                    <span class="pf-create-prompt">Inona ny vaovao ry {{ username }} ?</span>
+                </a>
+                {% endif %}
+
+                <!-- Posts -->
+                {% if posts %}
+                    {% for post in posts %}
+                    <article class="pf-post-card">
+                        <div class="pf-post-header">
+                            <a class="pf-avatar-ring" href="{% url 'account:view' user_id=post.author.id %}">
+                                <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+                            </a>
+                            <div style="flex:1;min-width:0;">
+                                <a class="pf-author" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
+                                <div class="pf-date">{{ post.post_date|date:"d F Y" }}</div>
+                            </div>
+                            {% if is_self or request.user.id == post.author.id %}
+                            <div class="pf-post-menu">
+                                <a class="pf-menu-btn" href="{% url 'post:edit-post' pk=post.id %}" title="Modifier">
+                                    <span class="material-icons">edit</span>
+                                </a>
+                                <a class="pf-menu-btn danger" href="{% url 'post:delete-post' pk=post.id %}" title="Supprimer">
+                                    <span class="material-icons">delete_outline</span>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if post.title %}
+                        <div class="pf-post-title">{{ post.title }}</div>
+                        {% endif %}
+
+                        {% if post.body %}
+                        <div class="pf-post-body">{{ post.body|safe }}</div>
+                        {% endif %}
+
+                        {% if post.header_image %}
+                        <div class="pf-image-wrap">
+                            <a href="{{ post.header_image.url }}" target="_blank" rel="noopener">
+                                <img class="pf-post-image" src="{{ post.header_image.url }}" alt="{{ post.title }}" loading="lazy">
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        <div class="pf-post-footer">
+                            <span class="pf-likes">
+                                <span class="material-icons">thumb_up</span>
+                                {{ post.total_likes }}
+                            </span>
+                            {% if post.category and post.category != 'Category' %}
+                            <span class="pf-cat-tag">{{ post.category }}</span>
+                            {% endif %}
+                        </div>
+                    </article>
+                    {% endfor %}
+                {% else %}
+                    <div class="pf-empty">
+                        <span class="material-icons">article</span>
+                        <p>Mbola tsy misy paositra aloha hatreto.</p>
+                        {% if is_self %}
+                        <a class="btn-p btn-p-primary" href="{% url 'post:addPost' %}" style="margin-top:.75rem;">
+                            <span class="material-icons">add</span> Paositra voalohany
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div><!-- /tab-posts -->
+
+    <!-- ══════════════════════════════════
+         TAB: PHOTOS
+         ══════════════════════════════════ -->
+    <div class="tab-pane" id="tab-photos">
+        {% if photos %}
+        <div class="photos-grid">
+            {% for photo in photos %}
+            <div class="photo-thumb">
+                <a href="{{ photo.header_image.url }}" target="_blank">
+                    <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="pf-empty">
+            <span class="material-icons">photo_library</span>
+            <p>Mbola tsy misy sary voaranty.</p>
+            {% if is_self %}
+            <a class="btn-p btn-p-primary" href="{% url 'post:addPost' %}" style="margin-top:.75rem;">
+                <span class="material-icons">add_photo_alternate</span> Andranty sary
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ══════════════════════════════════
+         TAB: FRIENDS
+         ══════════════════════════════════ -->
+    <div class="tab-pane" id="tab-friends-tab">
+        {% if friends %}
+        <div class="friends-grid">
+            {% for friend in friends %}
+            <a class="friend-card-link" href="{% url 'account:view' user_id=friend.id %}">
+                <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
+                <div class="friend-card-name">{{ friend.username }}</div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="pf-empty">
+            <span class="material-icons">group</span>
+            <p>Mbola tsy misy namana.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ══════════════════════════════════
+         TAB: ABOUT
+         ══════════════════════════════════ -->
+    <div class="tab-pane" id="tab-about">
+        <div class="pc-sidebar-card" style="max-width:600px;">
+            <p class="pc-sidebar-label">Mombamomba manokana</p>
+
+            <div class="info-row">
+                <span class="material-icons">person</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">Anarana</div>
+                    <strong>{{ username }}</strong>
+                </div>
+            </div>
+            <div class="info-row">
+                <span class="material-icons">mail</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">Mailaka</div>
+                    <div>
+                        {% if is_self %}{{ email }}
+                        {% elif hide_email %}<em style="color:var(--text-muted)">Notakoman'ny tompony</em>
+                        {% else %}{{ email }}{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% if bio %}
+            <div class="info-row">
+                <span class="material-icons">notes</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">Bio</div>
+                    <div>{{ bio }}</div>
+                </div>
+            </div>
+            {% endif %}
+            {% if location %}
+            <div class="info-row">
+                <span class="material-icons">place</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">Toerana</div>
+                    <div>{{ location }}</div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <span class="material-icons">calendar_today</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">Mpikambana h@</div>
+                    <div>{{ date_joined|date:"d F Y" }}</div>
+                </div>
+            </div>
+            <div class="info-row">
+                <span class="material-icons">article</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">Posts</div>
+                    <div>{{ post_count }}</div>
+                </div>
+            </div>
+            <div class="info-row">
+                <span class="material-icons">group</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">Namana</div>
+                    <div>{{ friends_count }}</div>
+                </div>
+            </div>
+
+            {% if is_self %}
+            <div style="margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap;">
+                <a class="btn-p btn-p-primary" href="{% url 'account:edit' user_id=id %}">
+                    <span class="material-icons">edit</span> Anova profil
+                </a>
+                <a class="btn-p btn-p-secondary" href="{% url 'password_change' %}">
+                    <span class="material-icons">lock</span> Teny miafina
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div><!-- /profile-wrapper -->
+
+<script>
+/* ── Tab navigation ── */
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var target = this.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
+        this.classList.add('active');
+        var pane = document.getElementById('tab-' + target);
+        if (pane) pane.classList.add('active');
+        try { sessionStorage.setItem('profile_tab_{{ id }}', target); } catch(e){}
+    });
+});
+(function() {
+    try {
+        var saved = sessionStorage.getItem('profile_tab_{{ id }}');
+        if (saved) { var b = document.querySelector('[data-tab="' + saved + '"]'); if (b) b.click(); }
+    } catch(e){}
+})();
+
+/* ── Friend callbacks ── */
+function onFriendRequestSent()      { location.reload(); }
+function onFriendRequestCancelled() { location.reload(); }
+function onFriendRemoved()          { location.reload(); }
+function onFriendRequestAccepted()  { location.reload(); }
+function onFriendRequestDeclined()  { location.reload(); }
+
+var sendBtn = document.getElementById("id_send_friend_request_btn");
+if (sendBtn) sendBtn.onclick = function() { sendFriendRequest("{{ id }}", onFriendRequestSent); };
+
+var cancelBtn = document.getElementById("id_cancel_friend_request_btn");
+if (cancelBtn) cancelBtn.onclick = function() { cancelFriendRequest("{{ id }}", onFriendRequestCancelled); };
+
+function triggerAcceptFriendRequest(id) { acceptFriendRequest(id, onFriendRequestAccepted); }
+function triggerDeclineFriendRequest(id) { declineFriendRequest(id, onFriendRequestDeclined); }
+</script>
+
+{% include 'friend/snippets/send_friend_request.html' %}
+{% include 'friend/snippets/accept_friend_request.html' %}
+{% include 'friend/snippets/decline_friend_request.html' %}
+{% include 'friend/snippets/cancel_friend_request.html' %}
+{% include 'friend/snippets/remove_friend.html' %}
+{% include 'chat/snippets/create_or_return_private_chat.html' %}
+{% include 'stories/story_bar.html' %}
 
 <script>
 (function() {
@@ -999,7 +957,6 @@
     var STORY_PROFILE_URL = '{% url "stories:profile" user_id=id %}';
     var STORY_MINE_URL    = '{% url "stories:mine" %}';
 
-    /* ── Gradients CSS → couleur de fond de vignette ── */
     var GRAD_MAP = {
         grad_cyan:   'linear-gradient(135deg,#00cfff,#0066ff)',
         grad_purple: 'linear-gradient(135deg,#bf5fff,#ff4da6)',
@@ -1014,7 +971,7 @@
         fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
             .then(function(r){ return r.json(); })
             .then(function(data) {
-                var stories = IS_SELF ? (data.stories || []) : (data.stories || []);
+                var stories = data.stories || [];
                 renderProfileStories(stories);
                 updateAvatarRing(stories);
             });
@@ -1024,11 +981,7 @@
         var section = document.getElementById('profile-stories-section');
         var grid    = document.getElementById('profile-stories-grid');
         if (!section || !grid) return;
-
-        if (!stories.length) {
-            section.style.display = 'none';
-            return;
-        }
+        if (!stories.length) { section.style.display = 'none'; return; }
         section.style.display = 'block';
         grid.innerHTML = '';
 
@@ -1041,8 +994,7 @@
             inner.className = 'profile-story-thumb-inner';
 
             if (s.story_type === 'text') {
-                var bg = GRAD_MAP[s.bg_gradient] || GRAD_MAP.grad_cyan;
-                inner.style.background = bg;
+                inner.style.background = GRAD_MAP[s.bg_gradient] || GRAD_MAP.grad_cyan;
                 inner.innerHTML = '<div class="profile-story-thumb-text"><p>' + (s.caption || '') + '</p></div>';
             } else if (s.story_type === 'video' && s.media_url) {
                 inner.innerHTML = '<video src="' + s.media_url + '" muted preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>';
@@ -1053,31 +1005,29 @@
                 inner.innerHTML = '<div class="profile-story-thumb-text"><p>' + (s.caption || '') + '</p></div>';
             }
 
-            // Icône "vu"
             if (s.seen && !IS_SELF) {
-                var seenEl = document.createElement('div');
-                seenEl.className = 'profile-story-thumb-seen';
-                seenEl.innerHTML = '<span class="material-icons">done_all</span>';
-                thumb.appendChild(seenEl);
+                var seen = document.createElement('div');
+                seen.className = 'profile-story-thumb-seen';
+                seen.innerHTML = '<span class="material-icons">done_all</span>';
+                thumb.appendChild(seen);
             }
 
             var label = document.createElement('div');
             label.className = 'profile-story-thumb-label';
             var h = Math.floor(s.time_left / 3600);
-            label.textContent = h > 0 ? h + 'h restant' : Math.floor(s.time_left / 60) + 'min';
+            label.textContent = h > 0 ? h + 'h' : Math.floor(s.time_left / 60) + 'min';
 
             thumb.appendChild(inner);
             thumb.appendChild(label);
             grid.appendChild(thumb);
         });
 
-        // Stocker les stories dans un groupe temp pour le viewer
         window._profileStoryGroup = {
-            user_id:  PROFILE_USER_ID,
-            username: IS_SELF ? '{{ username }}' : '{{ username }}',
-            avatar:   '{{ profile_image }}',
-            is_me:    IS_SELF,
-            stories:  stories,
+            user_id: PROFILE_USER_ID,
+            username: '{{ username }}',
+            avatar: '{{ profile_image }}',
+            is_me: IS_SELF,
+            stories: stories,
             all_seen: stories.every(function(s){ return s.seen; }),
         };
     }
@@ -1089,79 +1039,54 @@
 
         if (!stories.length) {
             ringEl.innerHTML = '';
-            wrap.onclick = IS_SELF ? function(){ openStoryCreator(); } : null;
+            if (IS_SELF) wrap.onclick = function(){ openStoryCreator(); };
             return;
         }
 
         var allSeen = stories.every(function(s){ return s.seen; });
-
-        // Anneau CSS
         ringEl.style.cssText =
             'position:absolute;inset:-5px;border-radius:50%;z-index:0;' +
             (allSeen
                 ? 'background:conic-gradient(var(--text-muted) 0deg,var(--border) 360deg);'
                 : 'background:conic-gradient(var(--accent) 0deg,var(--accent2) 120deg,var(--accent3) 240deg,var(--accent) 360deg);animation:ringRotate 4s linear infinite;');
 
-        if (!allSeen) {
-            // Injecter la keyframe si pas déjà présente
-            if (!document.getElementById('ring-keyframe')) {
-                var s = document.createElement('style');
-                s.id = 'ring-keyframe';
-                s.textContent = '@keyframes ringRotate{to{transform:rotate(360deg)}}';
-                document.head.appendChild(s);
-            }
+        if (!allSeen && !document.getElementById('ring-keyframe')) {
+            var s = document.createElement('style');
+            s.id = 'ring-keyframe';
+            s.textContent = '@keyframes ringRotate{to{transform:rotate(360deg)}}';
+            document.head.appendChild(s);
         }
-
-        // Liseré blanc intérieur
         var inner = document.createElement('span');
-        inner.style.cssText =
-            'position:absolute;inset:3px;border-radius:50%;' +
-            'background:var(--bg-card);z-index:0;display:block;';
+        inner.style.cssText = 'position:absolute;inset:3px;border-radius:50%;background:var(--bg-card);z-index:0;display:block;';
         ringEl.appendChild(inner);
 
-        // Click → viewer
         wrap.onclick = function() {
-            if (IS_SELF) {
-                openStoryCreator();
-            } else {
-                openProfileStoryAt(0);
-            }
+            if (IS_SELF) openStoryCreator();
+            else openProfileStoryAt(0);
         };
     }
 
     window.openProfileStoryAt = function(idx) {
         if (!window._profileStoryGroup) return;
-        // Injecter le groupe dans la liste _groups du viewer global
         if (window.zootStories) {
             var groups = window.zootStories.groups();
-            // Trouver si ce groupe existe déjà
             var found = -1;
             for (var i = 0; i < groups.length; i++) {
                 if (groups[i].user_id === PROFILE_USER_ID) { found = i; break; }
             }
-            if (found === -1) {
-                groups.unshift(window._profileStoryGroup);
-                found = 0;
-            }
+            if (found === -1) { groups.unshift(window._profileStoryGroup); found = 0; }
             window.openStoryViewer(found);
-            // Naviguer jusqu'à la bonne story
-            // (openStoryViewer commence à 0, mais on veut idx)
         }
     };
-
-    window.openProfileStory = function(userId) {
-        openProfileStoryAt(0);
-    };
+    window.openProfileStory = function() { openProfileStoryAt(0); };
 
     document.addEventListener('DOMContentLoaded', loadProfileStories);
 
-    // Recharger après création d'une story
     var origClose = window.closeStoryCreator;
     window.closeStoryCreator = function() {
         if (origClose) origClose();
         setTimeout(loadProfileStories, 500);
     };
-
 })();
 </script>
 

@@ -6,7 +6,12 @@
 .post-form-wrapper { max-width: 680px; margin: 90px auto 2rem; padding: 0 1rem; }
 .post-form-card {
     background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; transition: background .3s;
+    border-radius: 20px;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.04);
+    overflow: hidden; transition: background .3s;
 }
 .post-form-header {
     padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);
@@ -43,19 +48,23 @@
     padding: 1rem 1.5rem; border-top: 1px solid var(--border); background: var(--bg-card);
 }
 .btn-submit {
-    flex: 1; padding: .6rem 1.5rem; background: var(--accent); color: #fff;
-    border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
-    cursor: pointer; transition: background .2s;
+    flex: 1; padding: .6rem 1.5rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none; border-radius: 22px; font-size: 1rem; font-weight: 700;
+    cursor: pointer; transition: opacity .2s, transform .1s, box-shadow .2s;
     display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    box-shadow: 0 4px 16px rgba(0,207,255,.25);
 }
-.btn-submit:hover { background: var(--accent-dark); }
+[data-theme="dark"] .btn-submit { color: #000; }
+.btn-submit:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(0,207,255,.35); }
 .btn-cancel {
-    padding: .6rem 1.2rem; border: 1.5px solid var(--border); border-radius: 10px;
+    padding: .6rem 1.2rem; border: 1.5px solid var(--border); border-radius: 22px;
     background: none; color: var(--text-muted); font-size: .95rem; font-weight: 600;
-    cursor: pointer; text-decoration: none; transition: background .15s, color .15s;
+    cursor: pointer; text-decoration: none; transition: background .15s, color .15s, border-color .15s;
     display: inline-flex; align-items: center; gap: .35rem;
 }
-.btn-cancel:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.btn-cancel:hover { background: var(--btn-bg); color: var(--text); border-color: var(--accent); text-decoration: none; }
 </style>
 
 <div class="post-form-wrapper">

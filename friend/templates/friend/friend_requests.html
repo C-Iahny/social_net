@@ -2,104 +2,513 @@
 {% load static %}
 
 {% block content %}
+<style>
+/* ── Friend Requests Page ──────────────────────────────────── */
+.fr-wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2.5rem 1rem 4rem;
+}
 
+/* ── Page header ── */
+.fr-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2.2rem;
+}
+.fr-title {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+}
+.fr-title-icon {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(191,95,255,.3);
+}
+[data-theme="dark"] .fr-title-icon {
+    box-shadow: 0 0 18px rgba(191,95,255,.4);
+}
+.fr-title-icon .material-icons { color: #fff; font-size: 1.4rem; }
+.fr-title-text h1 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -.03em;
+    color: var(--text);
+}
+.fr-title-text h1 span {
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.fr-title-text p {
+    font-size: .82rem;
+    color: var(--text-muted);
+    margin: .15rem 0 0;
+}
+.fr-count-badge {
+    font-size: .78rem;
+    font-weight: 700;
+    padding: .28rem .8rem;
+    border-radius: 20px;
+    background: rgba(191,95,255,.1);
+    color: var(--accent2);
+    border: 1px solid rgba(191,95,255,.22);
+    white-space: nowrap;
+    align-self: center;
+}
+[data-theme="dark"] .fr-count-badge {
+    background: rgba(191,95,255,.12);
+    box-shadow: 0 0 8px rgba(191,95,255,.15);
+}
+.fr-header-right {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+.fr-friends-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .45rem 1rem;
+    border-radius: 22px;
+    background: var(--btn-bg);
+    color: var(--text-muted);
+    border: 1.5px solid var(--border);
+    font-size: .82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .2s;
+}
+.fr-friends-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+    background: var(--btn-hover, var(--btn-bg));
+}
+.fr-friends-link .material-icons { font-size: .95rem; }
 
-<style type="text/css">
-	.profile-image{
-		max-height: 100px;
-		max-width: 100px;
-	}
-	.profile-image{
-		border-radius: 12px;
-	}
-	.card{
-		border-radius: 12px;
-	}
-	.dropdown-toggle::after { 
-		content: none; 
-	}
-	.profile-link{
-		color: var(--text, #000);
-	}
-	.material-icons{
-		font-size: 30px;
-	}
-	.material-icons:hover{
-		cursor: pointer;
-	}
-	.confirm-friend-request{
-		color: var(--badge-success-t, green);
-	}
-	.confirm-friend-request:hover {
-		opacity: 0.7;
-	}
-	.decline-friend-request:hover {
-		opacity: 0.7;
-	}
-	.decline-friend-request{
-		color: var(--badge-danger-t, red);
-	}
+/* ── Cards grid ── */
+.fr-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.1rem;
+}
+
+/* ── Request card ── */
+.fr-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.04);
+    overflow: hidden;
+    transition: transform .2s, box-shadow .25s, border-color .25s;
+    display: flex;
+    flex-direction: column;
+    animation: fr-card-in .35s ease both;
+}
+.fr-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 2px 6px rgba(0,0,0,.06),
+        0 8px 28px rgba(0,0,0,.1),
+        0 0 0 .5px rgba(0,0,0,.04);
+}
+[data-theme="dark"] .fr-card:hover {
+    border-color: rgba(191,95,255,.22);
+    box-shadow:
+        0 2px 6px rgba(0,0,0,.2),
+        0 8px 28px rgba(0,0,0,.35),
+        0 0 20px rgba(191,95,255,.07);
+}
+
+@keyframes fr-card-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Card banner */
+.fr-card-banner {
+    height: 56px;
+    background: linear-gradient(135deg, var(--accent2) 0%, var(--accent3) 100%);
+    position: relative;
+    flex-shrink: 0;
+}
+[data-theme="dark"] .fr-card-banner {
+    background: linear-gradient(135deg, #1a0030 0%, #2a0020 100%);
+}
+[data-theme="dark"] .fr-card-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(191,95,255,.2) 0%, rgba(255,77,166,.18) 100%);
+}
+
+/* Card body */
+.fr-card-body {
+    padding: 0 1.2rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Avatar */
+.fr-avatar-wrap {
+    margin-top: -26px;
+    margin-bottom: .6rem;
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+}
+.fr-avatar-ring {
+    display: block;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    padding: 2.5px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    box-shadow: 0 2px 12px rgba(191,95,255,.35);
+    transition: box-shadow .2s, transform .2s;
+}
+.fr-card:hover .fr-avatar-ring {
+    transform: scale(1.05);
+    box-shadow: 0 4px 18px rgba(191,95,255,.45);
+}
+[data-theme="dark"] .fr-avatar-ring {
+    box-shadow: 0 0 14px rgba(191,95,255,.4);
+}
+.fr-avatar-ring img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2.5px solid var(--bg-card);
+}
+
+/* Name */
+.fr-username {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -.01em;
+    display: block;
+    margin-bottom: .15rem;
+    transition: color .2s;
+}
+.fr-username:hover {
+    color: var(--accent2);
+    text-decoration: none;
+}
+[data-theme="dark"] .fr-username:hover {
+    text-shadow: 0 0 8px rgba(191,95,255,.45);
+}
+
+.fr-username-sub {
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-bottom: .85rem;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+}
+.fr-username-sub .material-icons { font-size: .85rem; }
+
+/* Actions */
+.fr-actions {
+    display: flex;
+    gap: .55rem;
+    margin-top: auto;
+}
+.fr-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    height: 36px;
+    border-radius: 22px;
+    font-size: .82rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    transition: opacity .2s, transform .15s, box-shadow .2s;
+    white-space: nowrap;
+}
+.fr-btn .material-icons { font-size: .95rem; }
+.fr-btn:active { transform: scale(.97); }
+
+.fr-btn-accept {
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    color: #fff;
+    box-shadow: 0 3px 12px rgba(191,95,255,.3);
+}
+[data-theme="dark"] .fr-btn-accept { color: #fff; }
+.fr-btn-accept:hover {
+    opacity: .9;
+    box-shadow: 0 4px 18px rgba(191,95,255,.45);
+    transform: translateY(-1px);
+}
+
+.fr-btn-decline {
+    background: var(--btn-bg);
+    color: var(--text-muted);
+    border: 1.5px solid var(--border);
+}
+.fr-btn-decline:hover {
+    background: rgba(224,36,94,.08);
+    color: #e0245e;
+    border-color: rgba(224,36,94,.3);
+    transform: translateY(-1px);
+}
+[data-theme="dark"] .fr-btn-decline:hover {
+    background: rgba(224,36,94,.12);
+    color: #f28b82;
+    border-color: rgba(242,139,130,.3);
+}
+
+/* Removing animation */
+.fr-card.fr-removing {
+    animation: fr-card-out .3s ease forwards;
+    pointer-events: none;
+}
+@keyframes fr-card-out {
+    to { opacity: 0; transform: scale(.94) translateY(6px); }
+}
+
+/* ── Empty state ── */
+.fr-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5rem 2rem;
+    gap: 1rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+.fr-empty-icon-wrap {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    background: var(--btn-bg);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: .5rem;
+    position: relative;
+}
+[data-theme="dark"] .fr-empty-icon-wrap {
+    background: rgba(191,95,255,.07);
+    border: 1px solid rgba(191,95,255,.14);
+}
+.fr-empty-icon-wrap .material-icons {
+    font-size: 2.6rem;
+    color: var(--text-muted);
+    opacity: .45;
+}
+.fr-empty h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+}
+.fr-empty p {
+    font-size: .86rem;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 300px;
+}
+.fr-empty-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .5rem 1.4rem;
+    border-radius: 22px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-weight: 700;
+    font-size: .88rem;
+    text-decoration: none;
+    margin-top: .5rem;
+    transition: opacity .2s, box-shadow .2s;
+    box-shadow: 0 4px 16px rgba(0,207,255,.25);
+}
+[data-theme="dark"] .fr-empty-cta { color: #000; }
+.fr-empty-cta:hover {
+    opacity: .88;
+    text-decoration: none;
+    box-shadow: 0 6px 24px rgba(0,207,255,.35);
+    color: #fff;
+}
+[data-theme="dark"] .fr-empty-cta:hover { color: #000; }
 </style>
 
-<div class="container">
-	<div class="card p-2">
+<div class="fr-wrapper">
 
-		{% if friend_requests %}
-		<div class="d-flex flex-row flex-wrap">
-		{% for request in friend_requests %}
-		<div class="card flex-row flex-grow-1 p-2 mx-2 my-2 align-items-center">
-			<a class="profile-link" href="{% url 'account:view' user_id=request.sender.id %}">
-				<div class="card-image m-2">
-					<img class="img-fluid profile-image" src="{{request.sender.profile_image.url}}" alt="">
-				</div>
-			</a>
-			<a class="profile-link" href="{% url 'account:view' user_id=request.sender.id %}">
-				<div class="card-center px-2">
-					<h4 class="card-title">{{request.sender.username}}</h4>
-				</div>
-			</a>
-			<div class="d-flex flex-row card-right flex-grow-1 justify-content-end mx-2">
-	  			<span id="id_cancel_{{request.sender.id}}" class="decline-friend-request material-icons p-1" onclick='triggerDeclineFriendRequest("{{request.id}}")'>cancel</span>
-	  			<span id="id_confirm_{{request.sender.id}}" class="confirm-friend-request material-icons p-1" onclick='triggerAcceptFriendRequest("{{request.id}}")'>check</span>
-			</div>
-		</div>
-		{% if forloop.counter|divisibleby:2 %}
-		</div><div class="d-flex flex-row flex-wrap">
-		{% endif %}
-		
-		{% endfor %}
-		
-		{% else %} <!-- If no friends -->
-		<div class="d-flex flex-row flex-grow-1 justify-content-center align-items-center p-4">
-			<p>No results</p>
-		</div>
-		{% endif %}
-		</div>
-	</div>
-	
+    <!-- Header -->
+    <div class="fr-header">
+        <div class="fr-title">
+            <div class="fr-title-icon">
+                <span class="material-icons">person_add</span>
+            </div>
+            <div class="fr-title-text">
+                <h1>Fangatahana <span>Namana</span></h1>
+                <p>Olona te-ho lasa namana aminao</p>
+            </div>
+        </div>
+        <div class="fr-header-right">
+            {% if friend_requests %}
+            <span class="fr-count-badge" id="fr-total-badge">
+                {{ friend_requests|length }} fangatahana
+            </span>
+            {% endif %}
+            <a class="fr-friends-link" href="{% url 'friend:friend-list' %}">
+                <span class="material-icons">group</span>
+                Ireo namako
+            </a>
+        </div>
+    </div>
+
+    <!-- Cards grid -->
+    <div class="fr-grid" id="fr-grid">
+
+        {% if friend_requests %}
+            {% for request in friend_requests %}
+            <div class="fr-card" id="fr-card-{{ request.id }}" style="animation-delay:{{ forloop.counter0 }}5ms;">
+
+                <!-- Banner -->
+                <div class="fr-card-banner"></div>
+
+                <div class="fr-card-body">
+                    <!-- Avatar -->
+                    <a class="fr-avatar-wrap" href="{% url 'account:view' user_id=request.sender.id %}">
+                        <div class="fr-avatar-ring">
+                            <img src="{{ request.sender.profile_image.url }}" alt="{{ request.sender.username }}">
+                        </div>
+                    </a>
+
+                    <!-- Name -->
+                    <a class="fr-username" href="{% url 'account:view' user_id=request.sender.id %}">
+                        {{ request.sender.username }}
+                    </a>
+                    <div class="fr-username-sub">
+                        <span class="material-icons">person_outline</span>
+                        Mangataka ho lasa namana aminao
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="fr-actions">
+                        <button class="fr-btn fr-btn-decline"
+                                id="id_cancel_{{ request.sender.id }}"
+                                onclick="handleDecline('{{ request.id }}')">
+                            <span class="material-icons">close</span>
+                            Atsaharo
+                        </button>
+                        <button class="fr-btn fr-btn-accept"
+                                id="id_confirm_{{ request.sender.id }}"
+                                onclick="handleAccept('{{ request.id }}')">
+                            <span class="material-icons">check</span>
+                            Ekeo
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+
+        {% else %}
+        <!-- Empty state -->
+        <div class="fr-empty">
+            <div class="fr-empty-icon-wrap">
+                <span class="material-icons">inbox</span>
+            </div>
+            <h3>Tsy misy fangatahana</h3>
+            <p>Raha misy olona mangataka ho lasa namana aminao, hiseho eto izy.</p>
+            <a class="fr-empty-cta" href="{% url 'search' %}?q=">
+                <span class="material-icons" style="font-size:.95rem;">person_search</span>
+                Mitady olona
+            </a>
+        </div>
+        {% endif %}
+
+    </div><!-- /fr-grid -->
+
 </div>
 
 <script type="text/javascript">
+var _frPendingCount = {{ friend_requests|length }};
 
-	function onFriendRequestAccepted(){
-		location.reload();
-	}
+function handleAccept(requestId) {
+    triggerAcceptFriendRequest(requestId, function() {
+        removeCard(requestId);
+    });
+}
 
-	function onFriendRequestDeclined(){
-		location.reload();
-	}
+function handleDecline(requestId) {
+    triggerDeclineFriendRequest(requestId, function() {
+        removeCard(requestId);
+    });
+}
 
-	function triggerAcceptFriendRequest(friend_request_id){
-		acceptFriendRequest(friend_request_id, onFriendRequestAccepted)
-	}
+function removeCard(requestId) {
+    var card = document.getElementById('fr-card-' + requestId);
+    if (!card) return;
+    card.classList.add('fr-removing');
+    setTimeout(function() {
+        card.remove();
+        _frPendingCount--;
+        updateBadge();
+        checkEmpty();
+    }, 310);
+}
 
-	function triggerDeclineFriendRequest(friend_request_id){
-		declineFriendRequest(friend_request_id, onFriendRequestDeclined)
-	}
+function updateBadge() {
+    var badge = document.getElementById('fr-total-badge');
+    if (!badge) return;
+    if (_frPendingCount <= 0) {
+        badge.style.display = 'none';
+    } else {
+        badge.textContent = _frPendingCount + ' fangatahana';
+    }
+}
+
+function checkEmpty() {
+    var grid = document.getElementById('fr-grid');
+    if (!grid) return;
+    var cards = grid.querySelectorAll('.fr-card');
+    if (cards.length === 0) {
+        grid.innerHTML = '<div class="fr-empty">' +
+            '<div class="fr-empty-icon-wrap"><span class="material-icons">inbox</span></div>' +
+            '<h3>Tsy misy fangatahana</h3>' +
+            '<p>Raha misy olona mangataka ho lasa namana aminao, hiseho eto izy.</p>' +
+            '<a class="fr-empty-cta" href="/search/?q=">' +
+            '<span class="material-icons" style="font-size:.95rem;">person_search</span>Mitady olona</a>' +
+            '</div>';
+    }
+}
+
+function onFriendRequestAccepted() {}
+function onFriendRequestDeclined() {}
+
+function triggerAcceptFriendRequest(friend_request_id, callback) {
+    acceptFriendRequest(friend_request_id, callback || onFriendRequestAccepted);
+}
+
+function triggerDeclineFriendRequest(friend_request_id, callback) {
+    declineFriendRequest(friend_request_id, callback || onFriendRequestDeclined);
+}
 </script>
 
 {% include 'friend/snippets/accept_friend_request.html' %}
 {% include 'friend/snippets/decline_friend_request.html' %}
-
 
 {% endblock content %}
