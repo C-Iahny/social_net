@@ -135,12 +135,21 @@ def post_feed_view(request):
     # Précharger les commentaires pour tous les posts de la page
     post_ids = [p.id for p in posts_of_the_page]
     from .models import Comment as CommentModel
-    comments_qs = CommentModel.objects.filter(
+    comments_all = list(CommentModel.objects.filter(
         post_id__in=post_ids
-    ).select_related('author').order_by('created_at')
-    comments_by_post = {}
-    for c in comments_qs:
-        comments_by_post.setdefault(c.post_id, []).append(c)
+    ).select_related('author').order_by('created_at'))
+
+    # Organiser : commentaires racine par post, réponses par commentaire parent
+    top_by_post = {}     # post_id → [top-level Comment]
+    replies_map = {}     # parent_comment_id → [Reply Comment]
+    for c in comments_all:
+        if c.parent_id is None:
+            top_by_post.setdefault(c.post_id, []).append(c)
+        else:
+            replies_map.setdefault(c.parent_id, []).append(c)
+    for comments in top_by_post.values():
+        for c in comments:
+            c.reply_list = replies_map.get(c.id, [])
 
     # Précharger les réactions
     from .models import Reaction
@@ -162,10 +171,15 @@ def post_feed_view(request):
 
     # Attacher les données directement à chaque post
     for post in posts_of_the_page:
-        post.page_comments     = comments_by_post.get(post.id, [])
-        post.reaction_counts   = reactions_by_post.get(post.id, {})
-        post.user_reaction     = user_reaction_by_post.get(post.id)
-        post.total_reactions   = sum(post.reaction_counts.values())
+        top = top_by_post.get(post.id, [])
+        for c in top:
+            if not hasattr(c, 'reply_list'):
+                c.reply_list = []
+        post.page_comments   = top
+        post.total_comments  = len(top) + sum(len(c.reply_list) for c in top)
+        post.reaction_counts = reactions_by_post.get(post.id, {})
+        post.user_reaction   = user_reaction_by_post.get(post.id)
+        post.total_reactions = sum(post.reaction_counts.values())
 
     context = {
         "friends":            friends,
@@ -205,12 +219,20 @@ def post_feed_more(request):
     # Précharger les commentaires
     post_ids = [p.id for p in posts_page]
     from .models import Comment as CommentModel
-    comments_qs = CommentModel.objects.filter(
+    comments_all = list(CommentModel.objects.filter(
         post_id__in=post_ids
-    ).select_related('author').order_by('created_at')
-    comments_by_post = {}
-    for c in comments_qs:
-        comments_by_post.setdefault(c.post_id, []).append(c)
+    ).select_related('author').order_by('created_at'))
+
+    top_by_post = {}
+    replies_map = {}
+    for c in comments_all:
+        if c.parent_id is None:
+            top_by_post.setdefault(c.post_id, []).append(c)
+        else:
+            replies_map.setdefault(c.parent_id, []).append(c)
+    for comments in top_by_post.values():
+        for c in comments:
+            c.reply_list = replies_map.get(c.id, [])
 
     # Précharger les réactions
     from .models import Reaction
@@ -230,7 +252,12 @@ def post_feed_more(request):
     user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
     for post in posts_page:
-        post.page_comments   = comments_by_post.get(post.id, [])
+        top = top_by_post.get(post.id, [])
+        for c in top:
+            if not hasattr(c, 'reply_list'):
+                c.reply_list = []
+        post.page_comments   = top
+        post.total_comments  = len(top) + sum(len(c.reply_list) for c in top)
         post.reaction_counts = reactions_by_post.get(post.id, {})
         post.user_reaction   = user_reaction_by_post.get(post.id)
         post.total_reactions = sum(post.reaction_counts.values())
@@ -390,6 +417,15 @@ def add_comment(request, post_id):
         comment = form.save(commit=False)
         comment.post   = post
         comment.author = request.user
+        # Support threaded replies
+        parent_id = request.POST.get('parent_id')
+        if parent_id:
+            try:
+                from .models import Comment as CommentModel
+                parent_comment = CommentModel.objects.get(id=int(parent_id), post=post)
+                comment.parent = parent_comment
+            except (ValueError, CommentModel.DoesNotExist):
+                pass
         comment.save()
 
         # Push notification au propriétaire du post
@@ -415,6 +451,7 @@ def add_comment(request, post_id):
             "body":       comment.body,
             "created_at": comment.created_at.strftime("%d %b %Y, %H:%M"),
             "can_delete": True,
+            "parent_id":  comment.parent_id,
         })
 
     return JsonResponse({"error": "Commentaire invalide."}, status=400)

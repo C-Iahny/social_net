@@ -3,21 +3,44 @@
 
 {% block content %}
 <style>
-/* ============================================================
-   FEED – variables & reset
-   ============================================================ */
+/* ════════════════════════════════════════════════════════════════
+   FEED — PREMIUM REDESIGN
+   ════════════════════════════════════════════════════════════════ */
+
 body { background: var(--bg); }
 
-/* ============================================================
-   3-COLUMN GRID
-   ============================================================ */
+/* ── Elevation system ── */
+.zf-elev-1 {
+    box-shadow:
+        0 1px 2px rgba(0,0,0,.05),
+        0 0 0 .5px rgba(0,0,0,.06);
+}
+.zf-elev-2 {
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.07),
+        0 0 0 .5px rgba(0,0,0,.05);
+}
+[data-theme="dark"] .zf-elev-1 {
+    box-shadow:
+        0 1px 2px rgba(0,0,0,.25),
+        0 0 0 .5px rgba(255,255,255,.05);
+}
+[data-theme="dark"] .zf-elev-2 {
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.3),
+        0 6px 20px rgba(0,0,0,.4),
+        0 0 0 .5px rgba(255,255,255,.05);
+}
+
+/* ── 3-column grid ── */
 .feed-wrapper {
     max-width: 1180px;
     margin: 72px auto 3rem;
     padding: 0 .75rem;
     display: grid;
-    grid-template-columns: 280px 1fr 300px;
-    gap: 1.2rem;
+    grid-template-columns: 274px 1fr 296px;
+    gap: 1.1rem;
     align-items: start;
 }
 @media (max-width: 1100px) {
@@ -29,162 +52,243 @@ body { background: var(--bg); }
     .feed-left-col { display: none; }
 }
 
-/* ============================================================
-   SHARED CARD
-   ============================================================ */
-.zf-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
-    margin-bottom: 1rem;
-    overflow: hidden;
-    transition: background .3s;
-}
-.zf-card-title {
-    font-size: .72rem;
-    font-weight: 800;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    padding: 1rem 1rem .5rem;
-}
-
-/* ============================================================
+/* ════════════════════════════════════════════════════════════════
    LEFT SIDEBAR
-   ============================================================ */
+   ════════════════════════════════════════════════════════════════ */
 .feed-left-col { position: sticky; top: 80px; }
 
-/* profile block */
-.lsb-profile {
-    display: flex; flex-direction: column;
-    align-items: center; text-align: center;
-    padding: 1.5rem 1rem 1rem;
-    gap: .4rem;
+/* Profile card */
+.lsb-profile-card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: .9rem;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.05);
 }
-.lsb-avatar-wrap {
-    position: relative; width: 82px; height: 82px;
+[data-theme="dark"] .lsb-profile-card {
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.3),
+        0 6px 20px rgba(0,0,0,.4),
+        0 0 0 .5px rgba(255,255,255,.06);
 }
-.lsb-avatar-wrap img {
-    width: 82px; height: 82px; border-radius: 50%;
+.lsb-cover-strip {
+    height: 60px;
+    background: linear-gradient(130deg, var(--accent) 0%, var(--accent2) 55%, var(--accent3) 100%);
+    opacity: .6;
+}
+[data-theme="dark"] .lsb-cover-strip { opacity: .35; }
+
+.lsb-profile-body {
+    padding: 0 1.1rem 1rem;
+    margin-top: -28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.lsb-avatar-ring {
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    padding: 2.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: 0 0 0 3px var(--bg-card);
+    flex-shrink: 0;
+    margin-bottom: .55rem;
+}
+.lsb-avatar-ring img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
     object-fit: cover;
-    border: 3px solid var(--bg-card);
-    box-shadow: 0 0 0 3px var(--accent);
+    display: block;
+    border: 2px solid var(--bg-card);
 }
 .lsb-name {
-    font-weight: 800; font-size: 1.05rem;
-    color: var(--text); text-decoration: none; margin-top: .25rem;
+    font-weight: 700; font-size: .97rem;
+    color: var(--text); text-decoration: none;
+    display: block; line-height: 1.3;
+    margin-bottom: .1rem;
 }
-.lsb-name:hover { color: var(--accent); }
+.lsb-name:hover { color: var(--accent); text-decoration: none; }
+.lsb-handle { font-size: .77rem; color: var(--text-muted); }
+
 .lsb-stats {
-    display: flex; gap: 1.2rem;
-    padding: .6rem 0 1rem;
+    display: flex; gap: .6rem;
+    width: 100%;
+    padding: .7rem 0 .75rem;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
-    margin: .4rem 1rem;
+    margin: .65rem 0 .75rem;
     justify-content: center;
 }
-.lsb-stat { text-align: center; }
-.lsb-stat-val { font-weight: 800; font-size: 1.1rem; color: var(--text); display: block; }
-.lsb-stat-lbl { font-size: .72rem; color: var(--text-muted); }
+.lsb-stat { text-align: center; flex: 1; }
+.lsb-stat-val { font-weight: 800; font-size: 1.05rem; color: var(--text); display: block; line-height: 1.2; }
+.lsb-stat-lbl { font-size: .7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
 
-.lsb-btn {
+.lsb-profile-btn {
     display: block; text-align: center;
-    margin: .5rem 1rem .9rem;
-    padding: .48rem;
-    background: var(--btn-bg);
-    color: var(--accent);
-    border-radius: 8px;
-    font-size: .88rem;
-    font-weight: 700;
+    width: 100%; padding: .44rem;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: .82rem; font-weight: 600;
     text-decoration: none;
-    transition: background .15s;
+    transition: border-color .15s, color .15s, background .15s;
 }
-.lsb-btn:hover { background: var(--btn-hover); text-decoration: none; color: var(--accent); }
+.lsb-profile-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,207,255,.05);
+    text-decoration: none;
+}
 
-/* nav links */
+/* Nav card */
+.lsb-nav-card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    margin-bottom: .9rem;
+    padding: .4rem 0;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.04),
+        0 0 0 .5px rgba(0,0,0,.05);
+}
+[data-theme="dark"] .lsb-nav-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 0 0 .5px rgba(255,255,255,.05);
+}
 .lsb-nav-item {
     display: flex; align-items: center; gap: .7rem;
-    padding: .6rem 1rem; border-radius: 0;
+    padding: .58rem 1.1rem;
     text-decoration: none; color: var(--text);
-    font-size: .93rem; font-weight: 500;
+    font-size: .88rem; font-weight: 500;
+    border-radius: 0;
+    transition: background .12s, color .12s;
+}
+.lsb-nav-item:hover {
+    background: var(--btn-bg);
+    color: var(--text);
+    text-decoration: none;
+}
+.lsb-nav-icon {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--btn-bg);
+    flex-shrink: 0;
     transition: background .12s;
 }
-.lsb-nav-item:hover { background: var(--btn-bg); text-decoration: none; color: var(--text); }
-.lsb-nav-item .material-icons { font-size: 1.2rem; width: 26px; color: var(--accent); }
-.lsb-nav-item.danger .material-icons { color: #e53935; }
-.lsb-nav-item.danger:hover { background: #fdecea; }
-[data-theme="dark"] .lsb-nav-item.danger:hover { background: #3e1a1a; }
+.lsb-nav-item:hover .lsb-nav-icon { background: rgba(0,207,255,.12); }
+.lsb-nav-icon .material-icons { font-size: 1.1rem; color: var(--accent); }
+.lsb-nav-item.danger .lsb-nav-icon .material-icons { color: #e53935; }
+.lsb-nav-item.danger:hover { background: rgba(229,57,53,.06); }
+[data-theme="dark"] .lsb-nav-item.danger:hover { background: rgba(229,57,53,.1); }
 
-/* friends in sidebar */
+/* Friends list in sidebar */
+.lsb-friends-card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    padding: .5rem 0 .6rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.05);
+}
+[data-theme="dark"] .lsb-friends-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 0 0 .5px rgba(255,255,255,.05);
+}
+.lsb-section-label {
+    font-size: .68rem; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase;
+    color: var(--text-muted);
+    padding: .4rem 1.1rem .3rem;
+}
 .lsb-friend {
     display: flex; align-items: center; gap: .6rem;
-    padding: .45rem 1rem; text-decoration: none; color: var(--text);
+    padding: .38rem 1.1rem;
+    text-decoration: none; color: var(--text);
     transition: background .12s;
 }
 .lsb-friend:hover { background: var(--btn-bg); text-decoration: none; color: var(--text); }
-.lsb-friend img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
-.lsb-friend span { font-size: .88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lsb-friend img {
+    width: 34px; height: 34px; border-radius: 50%;
+    object-fit: cover; border: 1.5px solid var(--border);
+    flex-shrink: 0;
+}
+.lsb-friend-name { font-size: .85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* ============================================================
-   STORIES BAR — styles définis dans stories/story_bar.html
-   ============================================================ */
-
-/* ============================================================
+/* ════════════════════════════════════════════════════════════════
    CREATE POST BOX
-   ============================================================ */
+   ════════════════════════════════════════════════════════════════ */
 .create-box {
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    box-shadow: var(--shadow);
+    border-radius: 18px;
     margin-bottom: 1rem;
     overflow: hidden;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.04),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.05);
+    transition: box-shadow .2s;
+}
+[data-theme="dark"] .create-box {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.4), 0 0 0 .5px rgba(255,255,255,.06);
+}
+.create-box:focus-within {
+    box-shadow: 0 0 0 2px var(--accent), 0 4px 20px rgba(0,207,255,.1);
 }
 .create-box-top {
-    display: flex; align-items: center; gap: .75rem;
-    padding: .9rem 1rem;
+    display: flex; align-items: center; gap: .85rem;
+    padding: .9rem 1.1rem;
 }
-.create-box-top img {
-    width: 44px; height: 44px; border-radius: 50%;
-    object-fit: cover; flex-shrink: 0; border: 2px solid var(--border);
+.create-box-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+    border: 1.5px solid var(--border);
 }
-.create-box-input {
-    flex: 1; background: var(--btn-bg); border: none;
-    border-radius: 24px; padding: .6rem 1.1rem;
-    color: var(--text-muted); font-size: .95rem;
+.create-box-trigger {
+    flex: 1; background: var(--btn-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    padding: .58rem 1.1rem;
+    color: var(--text-muted);
+    font-size: .9rem; font-family: inherit;
     cursor: pointer; text-align: left;
     text-decoration: none; display: block;
-    transition: background .15s;
+    transition: background .15s, border-color .15s;
 }
-.create-box-input:hover { background: var(--btn-hover); text-decoration: none; }
+.create-box-trigger:hover {
+    background: var(--btn-hover);
+    border-color: var(--accent);
+    color: var(--text-muted);
+    text-decoration: none;
+}
 .create-box-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
 .create-box-actions {
-    display: flex; padding: .55rem .5rem;
+    display: flex; padding: .45rem .65rem;
 }
 .create-box-action {
-    display: inline-flex; align-items: center; gap: .35rem;
-    padding: .45rem .85rem; border-radius: 8px;
-    font-size: .85rem; font-weight: 700; color: var(--text-muted);
-    text-decoration: none; transition: background .15s; flex: 1; justify-content: center;
+    display: inline-flex; align-items: center; gap: .38rem;
+    padding: .44rem .7rem; border-radius: 9px;
+    font-size: .81rem; font-weight: 600; color: var(--text-muted);
+    text-decoration: none; transition: background .12s, color .12s;
+    flex: 1; justify-content: center;
 }
-.create-box-action:hover { background: var(--btn-bg); text-decoration: none; color: var(--text); }
-.create-box-action .material-icons { font-size: 1.1rem; }
+.create-box-action:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.create-box-action .material-icons { font-size: 1.05rem; }
 .create-box-action.photo  .material-icons { color: #43a047; }
 .create-box-action.file   .material-icons { color: #fb8c00; }
 .create-box-action.post   .material-icons { color: var(--accent); }
 
-/* ============================================================
+/* ════════════════════════════════════════════════════════════════
    NEW-POSTS BANNER
-   ============================================================ */
+   ════════════════════════════════════════════════════════════════ */
 #new-posts-banner {
     display: none;
     position: sticky; top: 78px; z-index: 100;
-    background: var(--accent);
-    color: #fff; border-radius: 10px;
-    padding: .65rem 1rem; margin-bottom: 1rem;
-    cursor: pointer; font-size: .93rem; font-weight: 700;
-    box-shadow: 0 4px 16px rgba(24,119,242,.4);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border-radius: 12px;
+    padding: .6rem 1rem; margin-bottom: 1rem;
+    cursor: pointer; font-size: .88rem; font-weight: 700;
+    box-shadow: 0 4px 18px rgba(0,207,255,.3);
     align-items: center; justify-content: center; gap: .45rem;
     animation: bannerPop .3s ease;
 }
@@ -194,343 +298,382 @@ body { background: var(--bg); }
     to   { transform: translateY(0);    opacity: 1; }
 }
 
-/* ============================================================
+/* ════════════════════════════════════════════════════════════════
    POST CARD
-   ============================================================ */
+   ════════════════════════════════════════════════════════════════ */
 .post-card {
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    margin-bottom: 1rem;
-    box-shadow: var(--shadow);
+    border-radius: 20px;
+    margin-bottom: 1.1rem;
     overflow: hidden;
-    transition: background .3s, box-shadow .2s;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.05);
+    transition: transform .22s ease, box-shadow .22s ease;
+    position: relative;
 }
-.post-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.12); }
-[data-theme="dark"] .post-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.5); }
+.post-card:hover {
+    transform: translateY(-1px);
+    box-shadow:
+        0 2px 5px rgba(0,0,0,.05),
+        0 10px 28px rgba(0,0,0,.1),
+        0 0 0 .5px rgba(0,0,0,.07);
+}
+[data-theme="dark"] .post-card {
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.3),
+        0 6px 22px rgba(0,0,0,.42),
+        0 0 0 .5px rgba(255,255,255,.06);
+}
+[data-theme="dark"] .post-card:hover {
+    box-shadow:
+        0 2px 5px rgba(0,0,0,.3),
+        0 14px 36px rgba(0,0,0,.55),
+        0 0 0 .5px rgba(255,255,255,.08);
+}
 
-/* header */
+/* ── Card header ── */
 .pc-header {
-    display: flex; align-items: center; gap: .75rem;
-    padding: .9rem 1rem .5rem;
+    display: flex; align-items: center; gap: .85rem;
+    padding: 1rem 1.1rem .55rem;
 }
-.pc-avatar {
-    width: 46px; height: 46px; border-radius: 50%;
-    object-fit: cover; flex-shrink: 0;
-    border: 2px solid var(--border);
-    transition: opacity .15s;
+
+.pc-avatar-ring {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    flex-shrink: 0;
+    text-decoration: none;
+    transition: transform .15s;
+    display: block;
 }
-.pc-avatar:hover { opacity: .85; }
+.pc-avatar-ring:hover { transform: scale(1.07); text-decoration: none; }
+.pc-avatar-ring img {
+    width: 100%; height: 100%;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--bg-card);
+    display: block;
+}
+
 .pc-meta { flex: 1; min-width: 0; }
 .pc-author {
-    font-weight: 800; color: var(--text); font-size: .95rem;
-    text-decoration: none; display: block; line-height: 1.2;
+    font-weight: 700; color: var(--text); font-size: .93rem;
+    text-decoration: none; display: block; line-height: 1.25;
 }
 .pc-author:hover { color: var(--accent); text-decoration: none; }
-.pc-sub { font-size: .77rem; color: var(--text-muted); display: flex; align-items: center; gap: .3rem; }
-.pc-sub .material-icons { font-size: .85rem; }
-.pc-actions { display: flex; gap: .35rem; margin-left: auto; flex-shrink: 0; }
-.pc-action-btn {
-    display: inline-flex; align-items: center; gap: .2rem;
-    padding: .28rem .6rem; font-size: .78rem; border-radius: 6px;
-    border: 1px solid var(--border); background: var(--btn-bg);
-    color: var(--text); text-decoration: none; transition: background .12s;
-    cursor: pointer; white-space: nowrap; font-weight: 600;
+.pc-sub {
+    font-size: .74rem; color: var(--text-muted);
+    display: flex; align-items: center; gap: .3rem;
+    margin-top: .05rem; opacity: .85;
 }
-.pc-action-btn .material-icons { font-size: .85rem; }
-.pc-action-btn:hover { background: var(--btn-hover); text-decoration: none; color: var(--text); }
-.pc-action-btn.danger { color: #e53935; border-color: #fbc6c6; }
-[data-theme="dark"] .pc-action-btn.danger { color: #f28b82; border-color: #5a2020; }
+.pc-sub .material-icons { font-size: .8rem; }
+.pc-category-tag {
+    display: inline-block;
+    background: var(--btn-bg);
+    color: var(--text-muted);
+    border-radius: 6px;
+    padding: .05rem .45rem;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+.pc-dot { opacity: .45; }
 
-/* body */
+/* Owner actions */
+.pc-owner-menu {
+    display: flex; gap: .3rem; margin-left: auto; flex-shrink: 0;
+}
+.pc-menu-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent;
+    color: var(--text-muted); cursor: pointer;
+    text-decoration: none;
+    transition: background .12s, color .12s;
+}
+.pc-menu-btn .material-icons { font-size: 1rem; }
+.pc-menu-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; }
+[data-theme="dark"] .pc-menu-btn.danger:hover { color: #f28b82; }
+
+/* ── Card body ── */
 .pc-title {
-    padding: .35rem 1rem 0;
-    font-weight: 800; font-size: 1.05rem; color: var(--text);
-    line-height: 1.35;
+    padding: .4rem 1.1rem .15rem;
+    font-weight: 700; font-size: 1.07rem; color: var(--text);
+    line-height: 1.4; letter-spacing: -.01em;
 }
 .pc-body {
-    padding: .3rem 1rem .7rem; color: var(--text);
-    font-size: .94rem; line-height: 1.6;
+    padding: .2rem 1.1rem .7rem; color: var(--text);
+    font-size: .9rem; line-height: 1.68; opacity: .9;
 }
-.pc-body img { max-width: 100%; border-radius: 6px; margin: .3rem 0; }
+.pc-body img { max-width: 100%; border-radius: 8px; margin: .3rem 0; }
 .pc-body p { margin-bottom: .35rem; }
 
-/* image */
+/* ── Media ── */
 .pc-image-wrap { overflow: hidden; position: relative; }
 .pc-image {
-    width: 100%; max-height: 540px; object-fit: cover; display: block;
-    cursor: zoom-in; transition: transform .3s, opacity .4s;
+    width: 100%; max-height: 520px; object-fit: cover; display: block;
+    cursor: zoom-in; transition: transform .35s;
 }
 .pc-image-wrap:hover .pc-image { transform: scale(1.015); }
-/* Lazy loading blur-up effect */
-.pc-image[data-src] {
-    opacity: 0;
-    filter: blur(8px);
-    transform: scale(1.02);
-}
-.pc-image.lazy-loaded {
-    opacity: 1;
-    filter: none;
-    transform: scale(1);
-}
+.pc-image[data-src] { opacity: 0; filter: blur(8px); transform: scale(1.02); }
+.pc-image.lazy-loaded { opacity: 1; filter: none; transform: scale(1); transition: opacity .4s, filter .4s, transform .4s; }
 
-/* file attachment */
+/* File attachment */
 .pc-file-attach {
-    margin: .5rem 1rem;
+    margin: .5rem 1.1rem;
     display: inline-flex; align-items: center; gap: .5rem;
-    padding: .5rem .85rem; border-radius: 8px;
+    padding: .48rem .9rem; border-radius: 10px;
     background: var(--btn-bg); border: 1px solid var(--border);
-    color: var(--text); text-decoration: none; font-size: .85rem; font-weight: 600;
+    color: var(--text); text-decoration: none; font-size: .83rem; font-weight: 600;
     transition: background .15s;
 }
 .pc-file-attach:hover { background: var(--btn-hover); text-decoration: none; color: var(--text); }
-.pc-file-attach .material-icons { font-size: 1.1rem; color: var(--accent); }
+.pc-file-attach .material-icons { font-size: 1.05rem; color: var(--accent); }
 
-/* video player */
-.pc-video-wrap {
-    margin: .4rem 0 0;
-    background: #000;
-    border-radius: 0;
-    overflow: hidden;
-    position: relative;
-}
-.pc-video {
-    width: 100%;
-    max-height: 480px;
-    display: block;
-    background: #000;
-    outline: none;
-}
+/* Video */
+.pc-video-wrap { margin: .4rem 0 0; background: #000; overflow: hidden; }
+.pc-video { width: 100%; max-height: 460px; display: block; background: #000; outline: none; }
 .pc-video-label {
     display: flex; align-items: center; gap: .4rem;
-    padding: .45rem 1rem;
-    font-size: .8rem; font-weight: 600; color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
+    padding: .4rem 1.1rem; font-size: .78rem; font-weight: 600;
+    color: var(--text-muted); border-bottom: 1px solid var(--border);
 }
-.pc-video-label .material-icons { font-size: 1rem; color: #7c3aed; }
+.pc-video-label .material-icons { font-size: .95rem; color: #7c3aed; }
 
-/* stats row */
-.pc-stats {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: .35rem 1rem;
-    font-size: .82rem; color: var(--text-muted);
-    border-top: 1px solid var(--border);
+/* ── Reaction summary bar ── */
+.pc-reaction-bar {
+    display: flex; align-items: center; gap: .45rem;
+    padding: .3rem 1.1rem;
+    font-size: .8rem; color: var(--text-muted);
 }
-.pc-likes-icon { display: flex; align-items: center; gap: .25rem; }
-.pc-likes-badge {
+.rc-emoji-group { display: flex; }
+.rc-emoji {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
     display: inline-flex; align-items: center; justify-content: center;
-    width: 20px; height: 20px; border-radius: 50%;
-    background: var(--accent); font-size: .65rem; color: #fff;
-    font-weight: 700;
+    font-size: .82rem; line-height: 1;
+    margin-right: -5px; position: relative; z-index: 1;
 }
+.rc-count { font-weight: 600; color: var(--text-muted); font-size: .78rem; margin-left: 8px; }
 
-/* action bar */
+/* ── Action bar ── */
 .pc-footer {
-    display: flex; align-items: stretch;
-    border-top: 1px solid var(--border);
+    display: flex; gap: .2rem;
+    padding: .35rem .65rem .4rem;
+    border-top: 1px solid rgba(0,0,0,.05);
 }
+[data-theme="dark"] .pc-footer { border-top-color: rgba(255,255,255,.05); }
+
+.reaction-wrap { flex: 1; position: relative; }
+
 .pc-footer-btn {
-    flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem;
-    padding: .55rem; border: none; background: none;
-    color: var(--text-muted); font-size: .88rem; font-weight: 700;
-    cursor: pointer; text-decoration: none; transition: background .12s;
+    width: 100%;
+    display: flex; align-items: center; justify-content: center; gap: .38rem;
+    padding: .5rem .5rem;
+    border-radius: 11px; border: none; background: none;
+    color: var(--text-muted); font-size: .81rem; font-weight: 600;
+    cursor: pointer; text-decoration: none;
+    transition: background .13s, color .13s;
+    letter-spacing: .01em; font-family: inherit;
 }
-.pc-footer-btn:hover { background: var(--btn-bg); text-decoration: none; color: var(--text); }
-.pc-footer-btn .material-icons { font-size: 1.15rem; }
+.pc-footer-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.pc-footer-btn .material-icons { font-size: 1.1rem; }
 .pc-footer-btn.liked { color: var(--accent); }
 .pc-footer-btn.liked .material-icons { color: var(--accent); }
-.pc-footer-sep { width: 1px; background: var(--border); margin: .4rem 0; }
-.pc-footer-btn.active { color: var(--accent); background: var(--btn-bg); }
+.pc-footer-btn.active { color: var(--accent); }
 .pc-footer-btn.active .material-icons { color: var(--accent); }
 
-/* ============================================================
-   COMMENT PANEL
-   ============================================================ */
-.pc-comment-panel {
-    display: none;
-    border-top: 1px solid var(--border);
-    background: var(--bg-card);
-}
-.pc-comment-panel.open { display: block; }
-
-.pc-comment-list {
-    padding: .65rem 1rem .3rem;
-    display: flex; flex-direction: column; gap: .55rem;
-    max-height: 320px; overflow-y: auto;
-}
-.pc-comment-list:empty::after {
-    content: "Aucun commentaire pour l'instant.";
-    font-size: .83rem; color: var(--text-muted);
-    display: block; padding: .2rem 0 .4rem;
-}
-
-.pc-comment-item {
-    display: flex; align-items: flex-start; gap: .6rem;
-}
-.pc-comment-item img {
-    width: 32px; height: 32px; border-radius: 50%;
-    object-fit: cover; border: 2px solid var(--border); flex-shrink: 0;
-}
-.pc-comment-bubble {
-    flex: 1; min-width: 0;
-    background: var(--btn-bg);
-    border-radius: 0 12px 12px 12px;
-    padding: .4rem .7rem .45rem;
-}
-.pc-comment-author {
-    font-size: .78rem; font-weight: 800; color: var(--text);
-    text-decoration: none; display: inline-block;
-}
-.pc-comment-author:hover { color: var(--accent); text-decoration: none; }
-.pc-comment-body {
-    font-size: .88rem; color: var(--text);
-    margin: .05rem 0 0; word-break: break-word; line-height: 1.45;
-}
-.pc-comment-meta {
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: .72rem; color: var(--text-muted); margin-top: .25rem;
-}
-.pc-comment-del {
-    background: none; border: none; padding: 0; cursor: pointer;
-    color: var(--text-muted); font-size: .72rem; font-weight: 600;
-    transition: color .12s;
-}
-.pc-comment-del:hover { color: #e53935; }
-
-/* Comment form */
-.pc-comment-form {
-    display: flex; align-items: flex-end; gap: .55rem;
-    padding: .6rem 1rem .75rem;
-    border-top: 1px solid var(--border);
-}
-.pc-comment-form img {
-    width: 34px; height: 34px; border-radius: 50%;
-    object-fit: cover; border: 2px solid var(--border); flex-shrink: 0; margin-bottom: 2px;
-}
-.pc-comment-input-wrap { flex: 1; }
-.pc-comment-textarea {
-    width: 100%; resize: none; overflow: hidden;
-    background: var(--btn-bg); border: 1px solid var(--border);
-    border-radius: 20px; padding: .45rem .85rem;
-    color: var(--text); font-size: .9rem; line-height: 1.45;
-    outline: none; transition: border-color .15s, background .15s;
-    font-family: inherit;
-    min-height: 36px; max-height: 120px;
-}
-.pc-comment-textarea:focus { border-color: var(--accent); background: var(--bg-card); }
-.pc-comment-textarea::placeholder { color: var(--text-muted); }
-.pc-comment-send {
-    background: var(--accent); color: #fff;
-    border: none; border-radius: 50%;
-    width: 34px; height: 34px; flex-shrink: 0;
-    display: inline-flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: background .15s; margin-bottom: 2px;
-}
-.pc-comment-send:hover { background: var(--accent-dark); }
-.pc-comment-send .material-icons { font-size: 1.05rem; }
-.pc-comment-send:disabled { opacity: .5; cursor: default; }
-
-/* ============================================================
-   REACTIONS PICKER
-   ============================================================ */
-.reaction-wrap {
-    position: relative;
-    flex: 1;
-}
+/* Reaction picker */
 .reaction-picker {
     display: none;
     position: absolute;
-    bottom: calc(100% + 8px);
+    bottom: calc(100% + 10px);
     left: 50%; transform: translateX(-50%);
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 40px;
-    padding: .35rem .5rem;
+    padding: .32rem .45rem;
     box-shadow: 0 8px 32px rgba(0,0,0,.22);
-    gap: .15rem;
-    z-index: 200;
+    gap: .1rem; z-index: 200;
     white-space: nowrap;
     animation: reactionPop .18s cubic-bezier(.34,1.56,.64,1) both;
 }
 .reaction-picker.open { display: flex; }
 @keyframes reactionPop {
-    from { opacity: 0; transform: translateX(-50%) scale(.6) translateY(6px); }
-    to   { opacity: 1; transform: translateX(-50%) scale(1)  translateY(0); }
+    from { opacity: 0; transform: translateX(-50%) scale(.55) translateY(8px); }
+    to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
 }
 .reaction-emoji-btn {
     background: none; border: none; cursor: pointer;
-    font-size: 1.55rem; padding: .1rem .18rem;
-    border-radius: 50%; transition: transform .15s;
-    line-height: 1;
+    font-size: 1.6rem; padding: .1rem .15rem;
+    border-radius: 50%; transition: transform .15s; line-height: 1;
 }
-.reaction-emoji-btn:hover { transform: scale(1.35) translateY(-4px); }
-.reaction-emoji-btn.selected { outline: 2px solid var(--accent); outline-offset: 2px; }
+.reaction-emoji-btn:hover { transform: scale(1.38) translateY(-5px); }
+.reaction-emoji-btn.selected { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 50%; }
 
-/* Reaction summary row */
-.pc-reaction-bar {
-    display: flex; align-items: center; gap: .4rem;
-    padding: .3rem 1rem;
+/* ════════════════════════════════════════════════════════════════
+   COMMENT PANEL — PREMIUM THREADED
+   ════════════════════════════════════════════════════════════════ */
+.pc-comment-panel {
+    display: none;
+    border-top: 1px solid rgba(0,0,0,.05);
+    background: var(--bg-card);
+}
+[data-theme="dark"] .pc-comment-panel { border-top-color: rgba(255,255,255,.05); }
+.pc-comment-panel.open { display: block; }
+
+.pc-comment-list {
+    padding: .75rem 1.1rem .4rem;
+    display: flex; flex-direction: column; gap: .7rem;
+    max-height: 440px; overflow-y: auto;
+    scrollbar-width: thin;
+}
+.pc-comment-list:empty::after {
+    content: "Aucun commentaire pour l'instant.";
     font-size: .82rem; color: var(--text-muted);
-    flex-wrap: wrap;
+    display: block; padding: .2rem 0 .3rem;
 }
-.rc-emoji-group {
-    display: inline-flex; align-items: center; gap: .15rem;
-}
-.rc-emoji { font-size: .95rem; }
-.rc-count { font-weight: 700; color: var(--text); }
 
-/* ============================================================
-   SHARE TOAST
-   ============================================================ */
-#share-toast {
-    position: fixed; bottom: 1.8rem; left: 50%; transform: translateX(-50%) translateY(16px);
-    background: #1c1e20; color: #fff;
-    padding: .6rem 1.3rem; border-radius: 10px;
-    font-size: .9rem; font-weight: 600;
-    box-shadow: 0 4px 18px rgba(0,0,0,.35);
-    opacity: 0; pointer-events: none;
-    transition: opacity .25s, transform .25s;
-    z-index: 9999;
-    display: flex; align-items: center; gap: .5rem;
+/* Comment item */
+.pc-comment-item { display: flex; align-items: flex-start; gap: .6rem; }
+.pc-comment-item .cmt-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    object-fit: cover; border: 1.5px solid var(--border);
+    flex-shrink: 0; margin-top: 1px;
 }
-#share-toast.show {
-    opacity: 1; transform: translateX(-50%) translateY(0);
-    pointer-events: auto;
+.pc-comment-right { flex: 1; min-width: 0; }
+.pc-comment-bubble {
+    background: var(--btn-bg);
+    border-radius: 4px 14px 14px 14px;
+    padding: .42rem .75rem .48rem;
+    display: inline-block; max-width: 100%;
 }
-#share-toast .material-icons { font-size: 1.1rem; color: #4caf50; }
+.pc-comment-author {
+    font-size: .78rem; font-weight: 700; color: var(--text);
+    text-decoration: none; display: inline-block;
+}
+.pc-comment-author:hover { color: var(--accent); text-decoration: none; }
+.pc-comment-body {
+    font-size: .88rem; color: var(--text);
+    margin: .05rem 0 0; word-break: break-word; line-height: 1.5;
+}
+.pc-comment-footer {
+    display: flex; align-items: center; gap: .7rem;
+    margin-top: .28rem; padding: 0 .1rem;
+}
+.pc-comment-time { font-size: .7rem; color: var(--text-muted); }
+.pc-comment-reply-btn {
+    background: none; border: none; padding: 0; cursor: pointer;
+    color: var(--text-muted); font-size: .7rem; font-weight: 700;
+    transition: color .12s; letter-spacing: .02em;
+    text-transform: uppercase;
+}
+.pc-comment-reply-btn:hover { color: var(--accent); }
+.pc-comment-del {
+    background: none; border: none; padding: 0; cursor: pointer;
+    color: var(--text-muted); font-size: .7rem; font-weight: 600;
+    transition: color .12s; margin-left: auto;
+}
+.pc-comment-del:hover { color: #e53935; }
 
-/* ============================================================
-   EMPTY STATE
-   ============================================================ */
-.empty-feed {
-    text-align: center; padding: 4rem 1.5rem;
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 14px; box-shadow: var(--shadow); color: var(--text-muted);
+/* Replies container */
+.pc-comment-replies {
+    display: flex; flex-direction: column; gap: .5rem;
+    margin-top: .5rem;
+    padding-left: .1rem;
+    border-left: 2px solid rgba(0,207,255,.22);
+    margin-left: .6rem;
 }
-.empty-feed .ef-icon {
-    font-size: 4rem; display: block; margin-bottom: .9rem;
-    color: var(--border);
-}
-.empty-feed h5 { color: var(--text); font-weight: 800; margin-bottom: .5rem; }
-.ef-cta {
-    display: inline-flex; align-items: center; gap: .4rem;
-    margin-top: 1rem; padding: .55rem 1.4rem;
-    background: var(--accent); color: #fff;
-    border-radius: 10px; font-weight: 700; font-size: .95rem;
-    text-decoration: none; transition: background .15s;
-}
-.ef-cta:hover { background: var(--accent-dark); color: #fff; text-decoration: none; }
-.ef-cta .material-icons { font-size: 1rem; }
+[data-theme="dark"] .pc-comment-replies { border-left-color: rgba(0,207,255,.18); }
 
-/* ============================================================
+/* Reply item */
+.pc-comment-reply-item { display: flex; align-items: flex-start; gap: .5rem; }
+.pc-comment-reply-item .reply-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    object-fit: cover; border: 1.5px solid var(--border);
+    flex-shrink: 0; margin-top: 1px;
+}
+.pc-comment-reply-item .pc-comment-bubble {
+    border-radius: 4px 12px 12px 12px;
+    font-size: .85rem;
+}
+
+/* Inline reply form */
+.pc-reply-form-wrap {
+    display: none;
+    margin-top: .45rem;
+    padding-left: .1rem;
+    border-left: 2px solid rgba(0,207,255,.22);
+    margin-left: .6rem;
+    padding-left: .65rem;
+}
+[data-theme="dark"] .pc-reply-form-wrap { border-left-color: rgba(0,207,255,.18); }
+.pc-reply-form-wrap.open { display: flex; align-items: flex-end; gap: .5rem; }
+
+.pc-reply-form-wrap .reply-form-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    object-fit: cover; border: 1.5px solid var(--border);
+    flex-shrink: 0; margin-bottom: 2px;
+}
+.pc-reply-input-wrap { flex: 1; }
+
+/* Main comment form */
+.pc-comment-form {
+    display: flex; align-items: flex-end; gap: .55rem;
+    padding: .55rem 1.1rem .7rem;
+    border-top: 1px solid rgba(0,0,0,.05);
+}
+[data-theme="dark"] .pc-comment-form { border-top-color: rgba(255,255,255,.05); }
+.pc-comment-form .cmt-form-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    object-fit: cover; border: 1.5px solid var(--border);
+    flex-shrink: 0; margin-bottom: 2px;
+}
+.pc-comment-input-wrap { flex: 1; }
+
+.pc-comment-textarea,
+.pc-reply-textarea {
+    width: 100%; resize: none; overflow: hidden;
+    background: var(--btn-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 18px; padding: .42rem .85rem;
+    color: var(--text); font-size: .88rem; line-height: 1.45;
+    outline: none; transition: border-color .15s, background .15s;
+    font-family: inherit;
+    min-height: 36px; max-height: 120px;
+}
+.pc-comment-textarea:focus,
+.pc-reply-textarea:focus {
+    border-color: var(--accent);
+    background: var(--bg-card);
+}
+.pc-comment-textarea::placeholder,
+.pc-reply-textarea::placeholder { color: var(--text-muted); }
+
+.pc-comment-send {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 50%;
+    width: 34px; height: 34px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: opacity .15s; margin-bottom: 2px;
+}
+.pc-comment-send:hover { opacity: .85; }
+.pc-comment-send .material-icons { font-size: 1rem; }
+.pc-comment-send:disabled { opacity: .45; cursor: default; }
+
+/* ════════════════════════════════════════════════════════════════
    SKELETON LOADING
-   ============================================================ */
+   ════════════════════════════════════════════════════════════════ */
 @keyframes shimmer {
     0%   { background-position: -600px 0; }
     100% { background-position: 600px 0; }
 }
 .skeleton-line {
-    border-radius: 6px;
+    border-radius: 8px;
     background: linear-gradient(90deg,
         var(--btn-bg) 25%,
         var(--btn-hover) 50%,
@@ -540,184 +683,235 @@ body { background: var(--bg); }
 }
 .skeleton-card {
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    margin-bottom: 1rem;
-    box-shadow: var(--shadow);
+    border-radius: 20px;
+    margin-bottom: 1.1rem;
     overflow: hidden;
-    padding: .9rem 1rem 1rem;
+    padding: 1rem 1.1rem 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
 }
-.skeleton-header {
-    display: flex; align-items: center; gap: .75rem; margin-bottom: .9rem;
-}
-.skeleton-avatar {
-    width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
-}
+.skeleton-header { display: flex; align-items: center; gap: .85rem; margin-bottom: .85rem; }
+.skeleton-avatar { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; }
 .skeleton-meta { flex: 1; display: flex; flex-direction: column; gap: .4rem; }
-.skeleton-title  { height: 14px; width: 55%; }
-.skeleton-sub    { height: 11px; width: 30%; }
-.skeleton-body   { height: 13px; margin-bottom: .5rem; }
-.skeleton-body.w90  { width: 90%; }
-.skeleton-body.w75  { width: 75%; }
-.skeleton-body.w60  { width: 60%; }
-.skeleton-image  { height: 200px; border-radius: 10px; margin: .5rem 0 .9rem; }
-.skeleton-footer {
-    display: flex; gap: 1rem; padding-top: .6rem;
-    border-top: 1px solid var(--border); margin-top: .4rem;
+.skeleton-title  { height: 13px; width: 50%; }
+.skeleton-sub    { height: 10px; width: 28%; }
+.skeleton-body   { height: 12px; margin-bottom: .48rem; }
+.skeleton-body.w90 { width: 90%; }
+.skeleton-body.w75 { width: 75%; }
+.skeleton-body.w60 { width: 60%; }
+.skeleton-image  { height: 200px; border-radius: 12px; margin: .5rem 0 .85rem; }
+.skeleton-footer { display: flex; gap: 1rem; padding-top: .55rem; border-top: 1px solid var(--border); }
+.skeleton-btn    { height: 28px; border-radius: 10px; flex: 1; }
+
+#feed-sentinel { height: 20px; margin: .5rem 0 1.5rem; }
+#feed-loading-indicator { display: none; flex-direction: column; margin-bottom: 1rem; }
+#feed-loading-indicator.visible { display: flex; }
+#feed-end-message {
+    display: none; text-align: center;
+    padding: 1.5rem; color: var(--text-muted);
+    font-size: .83rem; font-weight: 600;
 }
-.skeleton-btn    { height: 28px; border-radius: 8px; flex: 1; }
+#feed-end-message.visible { display: block; }
 
 /* ── Hashtags & Mentions ── */
 .zf-hashtag {
-    color: var(--accent) !important;
-    font-weight: 700;
-    text-decoration: none !important;
-    border-radius: 4px;
-    padding: 0 2px;
+    color: var(--accent) !important; font-weight: 700;
+    text-decoration: none !important; border-radius: 4px; padding: 0 2px;
     transition: background .12s;
 }
 .zf-hashtag:hover { background: rgba(0,207,255,.12); }
 .zf-mention {
-    color: var(--accent2) !important;
-    font-weight: 700;
-    text-decoration: none !important;
-    border-radius: 4px;
-    padding: 0 2px;
+    color: var(--accent2) !important; font-weight: 700;
+    text-decoration: none !important; border-radius: 4px; padding: 0 2px;
     transition: background .12s;
 }
 .zf-mention:hover { background: rgba(191,95,255,.12); }
 
-/* ── Infinite scroll sentinel ── */
-#feed-sentinel {
-    height: 20px;
-    margin: .5rem 0 1.5rem;
-}
-#feed-loading-indicator {
-    display: none;
-    flex-direction: column;
-    gap: 0;
-    margin-bottom: 1rem;
-}
-#feed-loading-indicator.visible { display: flex; }
-#feed-end-message {
-    display: none;
-    text-align: center;
-    padding: 1.5rem;
+/* ════════════════════════════════════════════════════════════════
+   EMPTY STATE
+   ════════════════════════════════════════════════════════════════ */
+.empty-feed {
+    text-align: center; padding: 4rem 1.5rem;
+    background: var(--bg-card); border-radius: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.05);
     color: var(--text-muted);
-    font-size: .85rem;
-    font-weight: 600;
 }
-#feed-end-message.visible { display: block; }
+.empty-feed .ef-icon { font-size: 3.5rem; display: block; margin-bottom: .9rem; color: var(--border); }
+.empty-feed h5 { color: var(--text); font-weight: 700; margin-bottom: .5rem; }
+.ef-cta {
+    display: inline-flex; align-items: center; gap: .4rem;
+    margin-top: 1rem; padding: .55rem 1.4rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border-radius: 12px; font-weight: 700; font-size: .9rem;
+    text-decoration: none; transition: opacity .15s;
+}
+.ef-cta:hover { opacity: .88; color: #fff; text-decoration: none; }
+.ef-cta .material-icons { font-size: .95rem; }
 
-/* ============================================================
+/* ════════════════════════════════════════════════════════════════
    RIGHT SIDEBAR
-   ============================================================ */
+   ════════════════════════════════════════════════════════════════ */
 .feed-right-col { position: sticky; top: 80px; }
 
-.rsb-section { padding: .9rem 1rem; }
+.rsb-card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    margin-bottom: .9rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.05);
+}
+[data-theme="dark"] .rsb-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 0 0 .5px rgba(255,255,255,.05);
+}
+.rsb-section-label {
+    font-size: .68rem; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase;
+    color: var(--text-muted);
+    padding: .85rem 1rem .4rem;
+    display: flex; align-items: center; gap: .4rem;
+}
+.rsb-section-label .material-icons { font-size: .85rem; color: var(--accent); }
 
-/* people card */
-.rsb-person {
-    display: flex; align-items: center; gap: .65rem;
-    padding: .5rem 0;
+/* Friends in right sidebar */
+.rsb-friend-row {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .42rem 1rem;
 }
-.rsb-person img {
-    width: 44px; height: 44px; border-radius: 50%;
-    object-fit: cover; flex-shrink: 0; border: 2px solid var(--border);
+.rsb-friend-row img {
+    width: 40px; height: 40px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0; border: 1.5px solid var(--border);
 }
-.rsb-person-info { flex: 1; min-width: 0; }
-.rsb-person-name {
-    font-size: .88rem; font-weight: 700; color: var(--text);
-    text-decoration: none; display: block; white-space: nowrap;
-    overflow: hidden; text-overflow: ellipsis;
+.rsb-friend-info { flex: 1; min-width: 0; }
+.rsb-friend-name {
+    font-size: .85rem; font-weight: 600; color: var(--text);
+    text-decoration: none; display: block;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.rsb-person-name:hover { color: var(--accent); text-decoration: none; }
-.rsb-person-sub { font-size: .76rem; color: var(--text-muted); }
-.rsb-add-btn {
-    display: inline-flex; align-items: center; gap: .25rem;
-    padding: .3rem .7rem; border-radius: 7px;
-    background: var(--btn-bg); color: var(--accent);
-    font-size: .8rem; font-weight: 700; border: none;
-    text-decoration: none; transition: background .12s; flex-shrink: 0;
+.rsb-friend-name:hover { color: var(--accent); text-decoration: none; }
+.rsb-friend-sub { font-size: .73rem; color: var(--text-muted); }
+.rsb-chat-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--btn-bg); border: none;
+    color: var(--accent); text-decoration: none;
+    transition: background .12s; flex-shrink: 0;
 }
-.rsb-add-btn:hover { background: var(--btn-hover); text-decoration: none; color: var(--accent); }
+.rsb-chat-btn:hover { background: rgba(0,207,255,.12); color: var(--accent); text-decoration: none; }
+.rsb-chat-btn .material-icons { font-size: .95rem; }
 
-/* quick links */
-.rsb-link {
-    display: inline; color: var(--text-muted);
-    font-size: .77rem; text-decoration: none;
+/* Trending hashtags */
+.rsb-trending-row {
+    display: flex; align-items: center;
+    padding: .42rem 1rem;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0,0,0,.04);
+    transition: background .12s;
 }
+[data-theme="dark"] .rsb-trending-row { border-bottom-color: rgba(255,255,255,.04); }
+.rsb-trending-row:last-child { border-bottom: none; }
+.rsb-trending-row:hover { background: var(--btn-bg); text-decoration: none; }
+.rsb-trending-rank {
+    width: 20px; font-size: .75rem; font-weight: 700;
+    color: var(--text-muted); flex-shrink: 0; text-align: center;
+}
+.rsb-trending-tag { flex: 1; font-weight: 700; font-size: .87rem; color: var(--accent); padding: 0 .4rem; }
+.rsb-trending-count { font-size: .73rem; color: var(--text-muted); font-weight: 600; }
+
+/* Footer links */
+.rsb-footer-links { padding: .6rem 1rem .9rem; }
+.rsb-link { display: inline; color: var(--text-muted); font-size: .75rem; text-decoration: none; }
 .rsb-link:hover { text-decoration: underline; color: var(--text); }
-.rsb-footer-links { padding: .5rem 1rem 1rem; }
-.rsb-footer-links a { margin-right: .5rem; margin-bottom: .25rem; }
+.rsb-link + .rsb-link { margin-left: .45rem; }
+
+/* ── Share toast ── */
+#share-toast {
+    position: fixed; bottom: 1.8rem; left: 50%; transform: translateX(-50%) translateY(16px);
+    background: #1c1e20; color: #fff;
+    padding: .6rem 1.3rem; border-radius: 12px;
+    font-size: .88rem; font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 9999;
+    display: flex; align-items: center; gap: .5rem;
+}
+#share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+#share-toast .material-icons { font-size: 1.05rem; color: #4caf50; }
 </style>
 
 <!-- ═══════════════════════════════════════════════════════════
-     WRAPPER
+     3-COLUMN LAYOUT
      ═══════════════════════════════════════════════════════════ -->
 <div class="feed-wrapper">
 
-    <!-- ════════════════════════════════
+    <!-- ══════════════════════════
          LEFT SIDEBAR
-         ════════════════════════════════ -->
+         ══════════════════════════ -->
     <aside class="feed-left-col">
 
         <!-- Profile card -->
-        <div class="zf-card">
-            <div class="lsb-profile">
-                <div class="lsb-avatar-wrap">
+        <div class="lsb-profile-card">
+            <div class="lsb-cover-strip"></div>
+            <div class="lsb-profile-body">
+                <a href="{% url 'account:view' user_id=request.user.id %}" class="lsb-avatar-ring">
                     <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
-                </div>
+                </a>
                 <a class="lsb-name" href="{% url 'account:view' user_id=request.user.id %}">{{ request.user.username }}</a>
-                <span style="font-size:.8rem;color:var(--text-muted);">{{ request.user.email }}</span>
-            </div>
-            <div class="lsb-stats">
-                <div class="lsb-stat">
-                    <strong class="lsb-stat-val">{{ my_post_count|default:"0" }}</strong>
-                    <span class="lsb-stat-lbl">Paositra</span>
+                <span class="lsb-handle">{{ request.user.email }}</span>
+                <div class="lsb-stats">
+                    <div class="lsb-stat">
+                        <strong class="lsb-stat-val">{{ my_post_count|default:"0" }}</strong>
+                        <span class="lsb-stat-lbl">Paositra</span>
+                    </div>
+                    <div class="lsb-stat">
+                        <strong class="lsb-stat-val">{{ friends_count|default:"0" }}</strong>
+                        <span class="lsb-stat-lbl">Namana</span>
+                    </div>
                 </div>
-                <div class="lsb-stat">
-                    <strong class="lsb-stat-val">{{ friends_count|default:"0" }}</strong>
-                    <span class="lsb-stat-lbl">Namana</span>
-                </div>
+                <a class="lsb-profile-btn" href="{% url 'account:view' user_id=request.user.id %}">
+                    Profil-ko
+                </a>
             </div>
-            <a class="lsb-btn" href="{% url 'account:view' user_id=request.user.id %}">Profile-ko</a>
         </div>
 
         <!-- Navigation -->
-        <div class="zf-card" style="padding:.5rem 0;">
+        <div class="lsb-nav-card">
             <a class="lsb-nav-item" href="{% url 'post:addPost' %}">
-                <span class="material-icons">add_circle</span> Paositra Vaovao
+                <span class="lsb-nav-icon"><span class="material-icons">add_circle</span></span>
+                Paositra Vaovao
             </a>
             <a class="lsb-nav-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
-                <span class="material-icons">person_add</span> Fangatahana Namana
+                <span class="lsb-nav-icon"><span class="material-icons">person_add</span></span>
+                Fangatahana Namana
             </a>
             <a class="lsb-nav-item" href="{% url 'friend:list' user_id=request.user.id %}">
-                <span class="material-icons">group</span> Ireo Namako
+                <span class="lsb-nav-icon"><span class="material-icons">group</span></span>
+                Ireo Namako
             </a>
             <a class="lsb-nav-item" href="{% url 'account:edit' user_id=request.user.id %}">
-                <span class="material-icons">settings</span> Fikirana
+                <span class="lsb-nav-icon"><span class="material-icons">settings</span></span>
+                Fikirana
             </a>
             <a class="lsb-nav-item danger" href="{% url 'logout' %}">
-                <span class="material-icons">logout</span> Hiala
+                <span class="lsb-nav-icon"><span class="material-icons">logout</span></span>
+                Hiala
             </a>
         </div>
 
-        <!-- Friends list -->
+        <!-- Friends -->
         {% if friends %}
-        <div class="zf-card" style="padding:.5rem 0 .75rem;">
-            <p class="zf-card-title">Namana</p>
+        <div class="lsb-friends-card">
+            <p class="lsb-section-label">Namana</p>
             {% for friend in friends|slice:":10" %}
             <a class="lsb-friend" href="{% url 'account:view' user_id=friend.id %}">
                 <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
-                <span>{{ friend.username }}</span>
+                <span class="lsb-friend-name">{{ friend.username }}</span>
             </a>
             {% endfor %}
             {% if friends|length > 10 %}
             <a class="lsb-friend" href="{% url 'friend:list' user_id=request.user.id %}"
-               style="color:var(--accent);font-weight:700;padding:.5rem 1rem;">
-                <span class="material-icons" style="font-size:1rem;">more_horiz</span>
-                <span>Voir tous ({{ friends|length }})</span>
+               style="color:var(--accent);font-weight:700;">
+                <span class="material-icons" style="font-size:1rem;width:34px;height:34px;display:flex;align-items:center;justify-content:center;">more_horiz</span>
+                <span class="lsb-friend-name" style="color:var(--accent);">Voir tous ({{ friends|length }})</span>
             </a>
             {% endif %}
         </div>
@@ -725,25 +919,24 @@ body { background: var(--bg); }
 
     </aside>
 
-    <!-- ════════════════════════════════
+    <!-- ══════════════════════════
          MAIN FEED
-         ════════════════════════════════ -->
+         ══════════════════════════ -->
     <div class="feed-main">
 
-        <!-- Stories bar — composant dynamique -->
         {% include 'stories/story_bar.html' %}
 
-        <!-- New-posts banner (WebSocket) -->
+        <!-- New-posts banner -->
         <div id="new-posts-banner" onclick="window.location.reload()">
-            <span class="material-icons" style="font-size:1.1rem;">fiber_new</span>
-            <span id="new-posts-banner-text">Paositra Vaovao - Tsindrio anavaozana azy</span>
+            <span class="material-icons" style="font-size:1rem;">fiber_new</span>
+            <span id="new-posts-banner-text">Paositra Vaovao — Tsindrio anavaozana</span>
         </div>
 
         <!-- Create post box -->
         <div class="create-box">
             <div class="create-box-top">
-                <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
-                <a class="create-box-input" href="{% url 'post:addPost' %}">
+                <img class="create-box-avatar" src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+                <a class="create-box-trigger" href="{% url 'post:addPost' %}">
                     Inona ny vaovao ry {{ request.user.username }} ?
                 </a>
             </div>
@@ -761,15 +954,15 @@ body { background: var(--bg); }
             </div>
         </div>
 
-        <!-- Post list -->
+        <!-- ── Post list ── -->
         {% if posts_of_the_page %}
             {% for post in posts_of_the_page %}
             <article class="post-card" id="post-{{ post.id }}">
 
                 <!-- Header -->
                 <div class="pc-header">
-                    <a href="{% url 'account:view' user_id=post.author.id %}">
-                        <img class="pc-avatar" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+                    <a class="pc-avatar-ring" href="{% url 'account:view' user_id=post.author.id %}">
+                        <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
                     </a>
                     <div class="pc-meta">
                         <a class="pc-author" href="{% url 'account:view' user_id=post.author.id %}">
@@ -779,18 +972,18 @@ body { background: var(--bg); }
                             <span class="material-icons">schedule</span>
                             {{ post.post_date|date:"d M Y" }}
                             {% if post.category and post.category != 'Category' %}
-                            &nbsp;·&nbsp;
-                            <span style="background:var(--btn-bg);border-radius:12px;padding:.1rem .55rem;">{{ post.category }}</span>
+                            <span class="pc-dot">·</span>
+                            <span class="pc-category-tag">{{ post.category }}</span>
                             {% endif %}
                         </span>
                     </div>
                     {% if request.user.id == post.author.id %}
-                    <div class="pc-actions">
-                        <a class="pc-action-btn" href="{% url 'post:edit-post' post.pk %}">
+                    <div class="pc-owner-menu">
+                        <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="Modifier">
                             <span class="material-icons">edit</span>
                         </a>
-                        <a class="pc-action-btn danger" href="{% url 'post:delete-post' post.pk %}">
-                            <span class="material-icons">delete</span>
+                        <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="Supprimer">
+                            <span class="material-icons">delete_outline</span>
                         </a>
                     </div>
                     {% endif %}
@@ -812,47 +1005,39 @@ body { background: var(--bg); }
                     <a href="{{ post.header_image_url }}" target="_blank" rel="noopener">
                         <img class="pc-image lazy-img" loading="lazy"
                              src="{{ post.header_image_url }}"
-                             alt="{{ post.title }}"
-                             decoding="async">
+                             alt="{{ post.title }}" decoding="async">
                     </a>
                 </div>
                 {% endif %}
 
-                <!-- Vidéo dédiée -->
+                <!-- Video field -->
                 {% if post.video %}
                 <div class="pc-video-wrap">
                     <div class="pc-video-label">
-                        <span class="material-icons">videocam</span>
-                        Vidéo
+                        <span class="material-icons">videocam</span> Vidéo
                     </div>
                     <video class="pc-video" controls preload="metadata">
                         <source src="{{ post.video.url }}" type="video/mp4">
                         <source src="{{ post.video.url }}" type="video/webm">
-                        <source src="{{ post.video.url }}" type="video/ogg">
-                        Tsy mahavaky ilay video ny navigateur-nao.
                     </video>
                 </div>
                 {% endif %}
 
-                <!-- Fichier joint : si c'est une vidéo → lecteur, sinon → téléchargement -->
+                <!-- File attachment -->
                 {% if post.file %}
                     {% if post.file_is_video %}
                     <div class="pc-video-wrap">
                         <div class="pc-video-label">
-                            <span class="material-icons">videocam</span>
-                            Vidéo
+                            <span class="material-icons">videocam</span> Vidéo
                         </div>
                         <video class="pc-video" controls preload="metadata">
                             <source src="{{ post.file.url }}" type="video/mp4">
                             <source src="{{ post.file.url }}" type="video/webm">
-                            <source src="{{ post.file.url }}" type="video/ogg">
-                            Tsy mahavaky ilay video ny navigateur-nao.
                         </video>
                     </div>
                     {% else %}
                     <a class="pc-file-attach" href="{{ post.file.url }}" target="_blank" rel="noopener">
-                        <span class="material-icons">insert_drive_file</span>
-                        Rakitra
+                        <span class="material-icons">insert_drive_file</span> Rakitra
                     </a>
                     {% endif %}
                 {% endif %}
@@ -868,25 +1053,24 @@ body { background: var(--bg); }
                         {% endfor %}
                     </div>
                     <span class="rc-count" id="reaction-total-{{ post.id }}">{{ post.total_reactions }}</span>
-                    <span>réactions</span>
                 </div>
 
                 <!-- Action bar -->
                 <div class="pc-footer">
-                    <!-- Reactions button + picker -->
+                    <!-- Reactions -->
                     <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}">
                         <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
                                 id="react-btn-{{ post.id }}"
                                 onclick="quickReact({{ post.id }})"
                                 onmouseenter="openPicker({{ post.id }})"
                                 title="Réagir">
-                            <span id="react-icon-{{ post.id }}" style="font-size:1.1rem;line-height:1;">
+                            <span id="react-icon-{{ post.id }}" style="font-size:1.05rem;line-height:1;">
                                 {% if post.user_reaction == 'like' %}👍
                                 {% elif post.user_reaction == 'heart' %}❤️
                                 {% elif post.user_reaction == 'laugh' %}😂
                                 {% elif post.user_reaction == 'wow' %}😮
                                 {% elif post.user_reaction == 'sad' %}😢
-                                {% else %}<span class="material-icons" style="font-size:1.15rem;">thumb_up_off_alt</span>
+                                {% else %}<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>
                                 {% endif %}
                             </span>
                             <span id="react-label-{{ post.id }}">
@@ -898,7 +1082,7 @@ body { background: var(--bg); }
                                 {% else %}Tiana{% endif %}
                             </span>
                         </button>
-                        <!-- Reaction picker popup -->
+                        <!-- Picker -->
                         <div class="reaction-picker" id="picker-{{ post.id }}"
                              onmouseleave="closePicker({{ post.id }})">
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
@@ -913,19 +1097,19 @@ body { background: var(--bg); }
                                     onclick="sendReaction({{ post.id }}, 'sad')" title="Triste">😢</button>
                         </div>
                     </div>
-                    <div class="pc-footer-sep"></div>
+
                     <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
-                            onclick="toggleComments({{ post.id }})">
+                            onclick="toggleComments({{ post.id }})"
+                            style="flex:1;">
                         <span class="material-icons">chat_bubble_outline</span>
                         Evitra
-                        {% if post.page_comments %}
-                        <span id="comment-count-{{ post.id }}" style="font-size:.78rem;margin-left:.2rem;opacity:.75;">({{ post.page_comments|length }})</span>
-                        {% else %}
-                        <span id="comment-count-{{ post.id }}" style="font-size:.78rem;margin-left:.2rem;opacity:.75;display:none;"></span>
-                        {% endif %}
+                        <span id="comment-count-{{ post.id }}"
+                              style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.total_comments %}display:none{% endif %}">
+                            {% if post.total_comments %}({{ post.total_comments }}){% endif %}
+                        </span>
                     </button>
-                    <div class="pc-footer-sep"></div>
-                    <button class="pc-footer-btn" onclick="sharePost({{ post.id }})">
+
+                    <button class="pc-footer-btn" onclick="sharePost({{ post.id }})" style="flex:1;">
                         <span class="material-icons">share</span>
                         Zaraina
                     </button>
@@ -935,32 +1119,92 @@ body { background: var(--bg); }
                 <div class="pc-comment-panel" id="comment-panel-{{ post.id }}">
                     <div class="pc-comment-list" id="comment-list-{{ post.id }}">
                         {% for c in post.page_comments %}
+
                         <div class="pc-comment-item" id="comment-item-{{ c.id }}">
-                            <img src="{{ c.author.profile_image.url }}" alt="{{ c.author.username }}">
-                            <div class="pc-comment-bubble">
-                                <a class="pc-comment-author" href="{% url 'account:view' user_id=c.author.id %}">{{ c.author.username }}</a>
-                                <p class="pc-comment-body">{{ c.body }}</p>
-                                <div class="pc-comment-meta">
-                                    <span>{{ c.created_at|date:"d M Y, H:i" }}</span>
+                            <a href="{% url 'account:view' user_id=c.author.id %}">
+                                <img class="cmt-avatar" src="{{ c.author.profile_image.url }}" alt="{{ c.author.username }}">
+                            </a>
+                            <div class="pc-comment-right">
+                                <div class="pc-comment-bubble">
+                                    <a class="pc-comment-author" href="{% url 'account:view' user_id=c.author.id %}">{{ c.author.username }}</a>
+                                    <p class="pc-comment-body">{{ c.body }}</p>
+                                </div>
+                                <div class="pc-comment-footer">
+                                    <span class="pc-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
+                                    <button class="pc-comment-reply-btn"
+                                            onclick="toggleReplyForm({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')">
+                                        Répondre
+                                    </button>
                                     {% if request.user == c.author or request.user == post.author %}
                                     <button class="pc-comment-del"
                                             onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">
-                                        Fafana
+                                        Supprimer
                                     </button>
                                     {% endif %}
                                 </div>
+
+                                <!-- Replies -->
+                                {% if c.reply_list %}
+                                <div class="pc-comment-replies" id="replies-{{ c.id }}">
+                                    {% for reply in c.reply_list %}
+                                    <div class="pc-comment-reply-item" id="comment-item-{{ reply.id }}">
+                                        <a href="{% url 'account:view' user_id=reply.author.id %}">
+                                            <img class="reply-avatar" src="{{ reply.author.profile_image.url }}" alt="{{ reply.author.username }}">
+                                        </a>
+                                        <div class="pc-comment-right">
+                                            <div class="pc-comment-bubble">
+                                                <a class="pc-comment-author" href="{% url 'account:view' user_id=reply.author.id %}">{{ reply.author.username }}</a>
+                                                <p class="pc-comment-body">{{ reply.body }}</p>
+                                            </div>
+                                            <div class="pc-comment-footer">
+                                                <span class="pc-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
+                                                {% if request.user == reply.author or request.user == post.author %}
+                                                <button class="pc-comment-del"
+                                                        onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')">
+                                                    Supprimer
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="pc-comment-replies" id="replies-{{ c.id }}" style="display:none;"></div>
+                                {% endif %}
+
+                                <!-- Inline reply form -->
+                                <div class="pc-reply-form-wrap" id="reply-form-{{ c.id }}">
+                                    <img class="reply-form-avatar" src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+                                    <div class="pc-reply-input-wrap">
+                                        <textarea class="pc-reply-textarea"
+                                                  id="reply-input-{{ c.id }}"
+                                                  placeholder="Écrire une réponse à {{ c.author.username }}…"
+                                                  rows="1" maxlength="1000"
+                                                  onkeydown="handleReplyKey(event, {{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                                                  oninput="autoResize(this)"></textarea>
+                                    </div>
+                                    <button class="pc-comment-send"
+                                            onclick="submitReply({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                                            title="Répondre">
+                                        <span class="material-icons">send</span>
+                                    </button>
+                                </div>
+
                             </div>
                         </div>
+
                         {% endfor %}
                     </div>
+
+                    <!-- Main comment form -->
                     <div class="pc-comment-form">
-                        <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+                        <img class="cmt-form-avatar" src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
                         <div class="pc-comment-input-wrap">
                             <textarea class="pc-comment-textarea"
                                       id="comment-input-{{ post.id }}"
                                       placeholder="Écrire un commentaire…"
-                                      rows="1"
-                                      maxlength="1000"
+                                      rows="1" maxlength="1000"
                                       onkeydown="handleCommentKey(event, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
                                       oninput="autoResize(this)"></textarea>
                         </div>
@@ -975,40 +1219,39 @@ body { background: var(--bg); }
             </article>
             {% endfor %}
 
-            <!-- Infinite scroll trigger -->
+            <!-- Infinite scroll sentinel -->
             <div id="feed-sentinel"></div>
 
-        <!-- Skeleton loading indicator (infinite scroll) -->
-        <div id="feed-loading-indicator">
-            {% for _ in "xxx" %}
-            <div class="skeleton-card">
-                <div class="skeleton-header">
-                    <div class="skeleton-line skeleton-avatar"></div>
-                    <div class="skeleton-meta">
-                        <div class="skeleton-line skeleton-title"></div>
-                        <div class="skeleton-line skeleton-sub"></div>
+            <!-- Skeleton loading indicator -->
+            <div id="feed-loading-indicator">
+                {% for _ in "xxx" %}
+                <div class="skeleton-card">
+                    <div class="skeleton-header">
+                        <div class="skeleton-line skeleton-avatar"></div>
+                        <div class="skeleton-meta">
+                            <div class="skeleton-line skeleton-title"></div>
+                            <div class="skeleton-line skeleton-sub"></div>
+                        </div>
+                    </div>
+                    <div class="skeleton-line skeleton-body w90"></div>
+                    <div class="skeleton-line skeleton-body w75"></div>
+                    <div class="skeleton-line skeleton-body w60"></div>
+                    <div class="skeleton-line skeleton-image"></div>
+                    <div class="skeleton-footer">
+                        <div class="skeleton-line skeleton-btn"></div>
+                        <div class="skeleton-line skeleton-btn"></div>
+                        <div class="skeleton-line skeleton-btn"></div>
                     </div>
                 </div>
-                <div class="skeleton-line skeleton-body w90"></div>
-                <div class="skeleton-line skeleton-body w75"></div>
-                <div class="skeleton-line skeleton-body w60"></div>
-                <div class="skeleton-line skeleton-image"></div>
-                <div class="skeleton-footer">
-                    <div class="skeleton-line skeleton-btn"></div>
-                    <div class="skeleton-line skeleton-btn"></div>
-                    <div class="skeleton-line skeleton-btn"></div>
-                </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
 
-        <div id="feed-end-message">
-            <span class="material-icons" style="display:block;font-size:2rem;margin-bottom:.5rem;color:var(--border);">check_circle</span>
-            Efa hitanao ny post rehetra !
-        </div>
+            <div id="feed-end-message">
+                <span class="material-icons" style="display:block;font-size:1.8rem;margin-bottom:.4rem;color:var(--border);">check_circle_outline</span>
+                Efa hitanao ny post rehetra !
+            </div>
 
         {% else %}
-            <!-- Empty feed -->
             <div class="empty-feed">
                 <span class="material-icons ef-icon">dynamic_feed</span>
                 <h5>Mbola tsy misy vaovao aloha hatreto.</h5>
@@ -1021,87 +1264,80 @@ body { background: var(--bg); }
 
     </div><!-- /feed-main -->
 
-    <!-- ════════════════════════════════
+    <!-- ══════════════════════════
          RIGHT SIDEBAR
-         ════════════════════════════════ -->
+         ══════════════════════════ -->
     <aside class="feed-right-col">
 
         {% if friends %}
-        <div class="zf-card">
-            <p class="zf-card-title">Namana en ligne</p>
-            <div class="rsb-section" style="padding-top:.35rem;">
-                {% for friend in friends|slice:":6" %}
-                <div class="rsb-person">
-                    <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
-                    <div class="rsb-person-info">
-                        <a class="rsb-person-name" href="{% url 'account:view' user_id=friend.id %}">
-                            {{ friend.username }}
-                        </a>
-                        <span class="rsb-person-sub">Namana</span>
-                    </div>
-                    <a class="rsb-add-btn" href="{% url 'chat:private-chat-room' %}">
-                        <span class="material-icons" style="font-size:.9rem;">chat</span>
-                    </a>
+        <div class="rsb-card">
+            <p class="rsb-section-label">
+                <span class="material-icons">group</span> Namana
+            </p>
+            {% for friend in friends|slice:":6" %}
+            <div class="rsb-friend-row">
+                <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
+                <div class="rsb-friend-info">
+                    <a class="rsb-friend-name" href="{% url 'account:view' user_id=friend.id %}">{{ friend.username }}</a>
+                    <span class="rsb-friend-sub">Namana</span>
                 </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- Quick info -->
-        <div class="zf-card">
-            <p class="zf-card-title">Kaontiko</p>
-            <div class="rsb-section" style="padding-top:.4rem; padding-bottom:.8rem;">
-                <div style="display:flex; flex-direction:column; gap:.2rem;">
-                    <span style="font-size:.88rem; color:var(--text);">
-                        <span class="material-icons" style="font-size:.95rem; vertical-align:middle; color:var(--accent);">article</span>
-                         post{% if my_post_count != 1 %}s{% endif %} nalefako: <strong>{{ my_post_count|default:"0" }}</strong>
-                    </span>
-                    <span style="font-size:.88rem; color:var(--text);">
-                        <span class="material-icons" style="font-size:.95rem; vertical-align:middle; color:var(--accent);">group</span>
-                         akama{% if friends_count != 1 %}ko{% endif %}: <strong>{{ friends_count|default:"0" }}</strong>
-                    </span>
-                </div>
-                <a class="lsb-btn" href="{% url 'account:edit' user_id=request.user.id %}"
-                   style="margin: .8rem 0 0; display:block; text-align:center; padding:.42rem; border-radius:8px;
-                          background:var(--btn-bg); color:var(--text-muted); font-size:.82rem; font-weight:700;">
-                    <span class="material-icons" style="font-size:.9rem; vertical-align:middle;">settings</span>
-                    Anova Profile
+                <a class="rsb-chat-btn" href="{% url 'chat:private-chat-room' %}" title="Message">
+                    <span class="material-icons">chat</span>
                 </a>
             </div>
+            {% endfor %}
+            <div style="height:.5rem;"></div>
         </div>
+        {% endif %}
 
         <!-- Trending hashtags -->
         {% if trending_hashtags %}
-        <div class="zf-card">
-            <p class="zf-card-title" style="display:flex;align-items:center;gap:.4rem;">
-                <span class="material-icons" style="font-size:.95rem;color:var(--accent);">trending_up</span>
-                Tendances
+        <div class="rsb-card">
+            <p class="rsb-section-label">
+                <span class="material-icons">trending_up</span> Tendances
             </p>
-            <div style="padding:.2rem 1rem .75rem;">
-                {% for ht in trending_hashtags %}
-                <a href="{% url 'post:hashtag' ht.tag|slice:'1:' %}"
-                   style="display:flex;align-items:center;justify-content:space-between;
-                          padding:.35rem 0;text-decoration:none;
-                          border-bottom:1px solid var(--border);color:var(--text);"
-                   onmouseover="this.style.color='var(--accent)'"
-                   onmouseout="this.style.color='var(--text)'">
-                    <span style="font-weight:700;font-size:.88rem;">{{ ht.tag }}</span>
-                    <span style="font-size:.75rem;color:var(--text-muted);font-weight:600;">{{ ht.count }}</span>
-                </a>
-                {% endfor %}
-            </div>
+            {% for ht in trending_hashtags %}
+            <a class="rsb-trending-row" href="{% url 'post:hashtag' ht.tag|slice:'1:' %}">
+                <span class="rsb-trending-rank">{{ forloop.counter }}</span>
+                <span class="rsb-trending-tag">{{ ht.tag }}</span>
+                <span class="rsb-trending-count">{{ ht.count }}</span>
+            </a>
+            {% endfor %}
         </div>
         {% endif %}
+
+        <!-- Quick stats -->
+        <div class="rsb-card" style="padding:.85rem 1rem .9rem;">
+            <div style="display:flex;flex-direction:column;gap:.3rem;">
+                <span style="font-size:.84rem;color:var(--text);">
+                    <span class="material-icons" style="font-size:.9rem;vertical-align:middle;color:var(--accent);">article</span>
+                    &nbsp;Post nalefako: <strong>{{ my_post_count|default:"0" }}</strong>
+                </span>
+                <span style="font-size:.84rem;color:var(--text);">
+                    <span class="material-icons" style="font-size:.9rem;vertical-align:middle;color:var(--accent2);">group</span>
+                    &nbsp;Namana: <strong>{{ friends_count|default:"0" }}</strong>
+                </span>
+            </div>
+            <a href="{% url 'account:edit' user_id=request.user.id %}"
+               style="display:flex;align-items:center;gap:.35rem;
+                      margin-top:.75rem;padding:.4rem .7rem;
+                      border:1.5px solid var(--border);border-radius:10px;
+                      color:var(--text-muted);font-size:.8rem;font-weight:600;
+                      text-decoration:none;transition:border-color .15s,color .15s;"
+               onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)';"
+               onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)';">
+                <span class="material-icons" style="font-size:.9rem;">settings</span>
+                Anova Profile
+            </a>
+        </div>
 
         <!-- Footer links -->
         <div class="rsb-footer-links">
             <a class="rsb-link" href="#">Tsiambaratelo</a>
             <a class="rsb-link" href="#">Fepetra</a>
-            <a class="rsb-link" href="#">Mofomamy</a>
             <a class="rsb-link" href="#">Momba anay</a>
             <br><br>
-            <span style="font-size:.73rem; color:var(--text-muted);">VAZIMBA © 2026</span>
+            <span style="font-size:.72rem;color:var(--text-muted);">VAZIMBA © 2026</span>
         </div>
 
     </aside>
@@ -1114,13 +1350,13 @@ body { background: var(--bg); }
 </div>
 
 <script>
-/* ════════════════════════════════════
+/* ══════════════════════════════════════
    INFINITE SCROLL
-   ════════════════════════════════════ */
+   ══════════════════════════════════════ */
 (function() {
-    var _feedMoreUrl   = "{% url 'post:feed-more' %}";
-    var _nextPage      = {% if posts_of_the_page.has_next %}{{ posts_of_the_page.next_page_number }}{% else %}null{% endif %};
-    var _loading       = false;
+    var _feedMoreUrl = "{% url 'post:feed-more' %}";
+    var _nextPage    = {% if posts_of_the_page.has_next %}{{ posts_of_the_page.next_page_number }}{% else %}null{% endif %};
+    var _loading     = false;
 
     var sentinel  = document.getElementById('feed-sentinel');
     var indicator = document.getElementById('feed-loading-indicator');
@@ -1128,15 +1364,11 @@ body { background: var(--bg); }
     var feedMain  = document.querySelector('.feed-main');
 
     if (!sentinel) return;
-
-    // Move sentinel after the post list (before skeleton)
     feedMain.insertBefore(sentinel, indicator);
 
     function loadMore() {
         if (_loading || _nextPage === null) return;
         _loading = true;
-
-        // Show skeleton
         if (indicator) indicator.classList.add('visible');
 
         fetch(_feedMoreUrl + '?page=' + _nextPage, {
@@ -1148,12 +1380,9 @@ body { background: var(--bg); }
             if (indicator) indicator.classList.remove('visible');
 
             if (data.html && data.html.trim()) {
-                // Insert posts before sentinel
                 var tmp = document.createElement('div');
                 tmp.innerHTML = data.html;
-                while (tmp.firstChild) {
-                    feedMain.insertBefore(tmp.firstChild, sentinel);
-                }
+                while (tmp.firstChild) feedMain.insertBefore(tmp.firstChild, sentinel);
             }
 
             if (data.has_next) {
@@ -1166,36 +1395,31 @@ body { background: var(--bg); }
             }
         })
         .catch(function(err) {
-            _loading  = false;
-            _nextPage = null;
+            _loading = false; _nextPage = null;
             if (indicator) indicator.classList.remove('visible');
             console.error('Infinite scroll error:', err);
         });
     }
 
-    // Intersection Observer — déclenche loadMore quand le sentinel est visible
     var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-            if (entry.isIntersecting) loadMore();
-        });
+        entries.forEach(function(e) { if (e.isIntersecting) loadMore(); });
     }, { rootMargin: '200px' });
 
     if (_nextPage !== null) {
         observer.observe(sentinel);
     } else {
-        // Seule page — afficher le message de fin
         if (endMsg) endMsg.classList.add('visible');
     }
 })();
 
-/* ════════════════════════════════════
+/* ══════════════════════════════════════
    REACTIONS
-   ════════════════════════════════════ */
+   ══════════════════════════════════════ */
 var _REACT_URL    = "{% url 'post:react-post' %}";
 var _REACT_EMOJIS = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
 var _REACT_LABELS = { like:'Tiana', heart:'Tiako', laugh:'Heniky', wow:'Mahagaga', sad:'Maika' };
 var _pickerTimers = {};
-var _userReactions = {};  // postId → reaction_type | null
+var _userReactions = {};
 
 function openPicker(postId) {
     clearTimeout(_pickerTimers[postId]);
@@ -1204,7 +1428,6 @@ function openPicker(postId) {
         if (p) p.classList.add('open');
     }, 200);
 }
-
 function closePicker(postId) {
     clearTimeout(_pickerTimers[postId]);
     _pickerTimers[postId] = setTimeout(function() {
@@ -1212,105 +1435,279 @@ function closePicker(postId) {
         if (p) p.classList.remove('open');
     }, 150);
 }
-
-// Quick click: toggle current reaction or default 'like'
 function quickReact(postId) {
     var cur = _userReactions[postId] !== undefined ? _userReactions[postId]
-            : document.getElementById('react-btn-' + postId).classList.contains('liked')
-              ? 'like' : null;
+            : document.getElementById('react-btn-' + postId).classList.contains('liked') ? 'like' : null;
     sendReaction(postId, cur || 'like');
 }
-
 function sendReaction(postId, reactionType) {
     closePicker(postId);
+    var fd = new FormData();
+    fd.append('post_id', postId);
+    fd.append('reaction', reactionType);
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
 
-    var formData = new FormData();
-    formData.append('post_id',              postId);
-    formData.append('reaction',             reactionType);
-    formData.append('csrfmiddlewaretoken',  getCookie('csrftoken'));
-
-    fetch(_REACT_URL, {
-        method:  'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body:    formData
-    })
+    fetch(_REACT_URL, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
     .then(function(r) { return r.json(); })
     .then(function(data) {
         _userReactions[postId] = data.user_reaction;
-
-        // ── Update button ────────────────────────────────
         var btn   = document.getElementById('react-btn-'   + postId);
         var icon  = document.getElementById('react-icon-'  + postId);
         var label = document.getElementById('react-label-' + postId);
         if (btn) btn.classList.toggle('liked', !!data.user_reaction);
-
         if (icon) {
             if (data.user_reaction && _REACT_EMOJIS[data.user_reaction]) {
                 icon.textContent = _REACT_EMOJIS[data.user_reaction];
-                icon.style.fontSize = '1.1rem';
+                icon.style.fontSize = '1.05rem';
             } else {
-                icon.innerHTML = '<span class="material-icons" style="font-size:1.15rem;">thumb_up_off_alt</span>';
+                icon.innerHTML = '<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>';
             }
         }
-        if (label) {
-            label.textContent = data.user_reaction ? (_REACT_LABELS[data.user_reaction] || 'Tiana') : 'Tiana';
-        }
+        if (label) label.textContent = data.user_reaction ? (_REACT_LABELS[data.user_reaction] || 'Tiana') : 'Tiana';
 
-        // ── Update picker selected state ─────────────────
         var picker = document.getElementById('picker-' + postId);
         if (picker) {
-            picker.querySelectorAll('.reaction-emoji-btn').forEach(function(b) {
-                b.classList.remove('selected');
-            });
+            picker.querySelectorAll('.reaction-emoji-btn').forEach(function(b) { b.classList.remove('selected'); });
             if (data.user_reaction) {
                 var sel = picker.querySelector('[onclick*="' + data.user_reaction + '"]');
                 if (sel) sel.classList.add('selected');
             }
         }
 
-        // ── Update reaction bar ───────────────────────────
         var bar     = document.getElementById('reaction-bar-'     + postId);
         var summary = document.getElementById('reaction-summary-' + postId);
         var total   = document.getElementById('reaction-total-'   + postId);
-
-        if (total)   total.textContent  = data.total;
-        if (bar)     bar.style.display  = data.total > 0 ? '' : 'none';
+        if (total)   total.textContent = data.total;
+        if (bar)     bar.style.display = data.total > 0 ? '' : 'none';
         if (summary) {
-            // Rebuild emoji list
             var html = '';
             Object.keys(data.counts).forEach(function(rt) {
-                if (_REACT_EMOJIS[rt]) {
-                    html += '<span class="rc-emoji" data-type="' + rt + '">' + _REACT_EMOJIS[rt] + '</span>';
-                }
+                if (_REACT_EMOJIS[rt]) html += '<span class="rc-emoji" data-type="' + rt + '">' + _REACT_EMOJIS[rt] + '</span>';
             });
             summary.innerHTML = html;
         }
     })
     .catch(function(e) { console.error('Reaction error:', e); });
 }
+function toggleLike(postId) { sendReaction(postId, 'like'); }
 
-/* ════════════════════════════════════
-   AJAX: TOGGLE LIKE (legacy — kept for any leftover references)
-   ════════════════════════════════════ */
-function toggleLike(postId, baseUrl) {
-    sendReaction(postId, 'like');
+/* ══════════════════════════════════════
+   COMMENT TOGGLE
+   ══════════════════════════════════════ */
+function toggleComments(postId) {
+    var panel = document.getElementById('comment-panel-' + postId);
+    var btn   = document.getElementById('comment-btn-'   + postId);
+    if (!panel) return;
+    var isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    if (btn) btn.classList.toggle('active', !isOpen);
+    if (!isOpen) {
+        var ta = document.getElementById('comment-input-' + postId);
+        if (ta) setTimeout(function(){ ta.focus(); }, 50);
+    }
 }
 
-/* ── URL helper for comment deletion (generated by Django) ── */
+/* ══════════════════════════════════════
+   COMMENT FORM
+   ══════════════════════════════════════ */
+function handleCommentKey(evt, postId, url) {
+    if (evt.key === 'Enter' && !evt.shiftKey) { evt.preventDefault(); submitComment(postId, url); }
+}
+function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function submitComment(postId, url) {
+    var ta  = document.getElementById('comment-input-' + postId);
+    var btn = document.getElementById('comment-send-'  + postId);
+    if (!ta) return;
+    var body = ta.value.trim();
+    if (!body) return;
+    btn.disabled = true;
+
+    var fd = new FormData();
+    fd.append('body', body);
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        btn.disabled = false;
+        if (!data.ok) return;
+        ta.value = ''; ta.style.height = 'auto';
+
+        var delBtn = data.can_delete
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            : '';
+
+        var html = '<div class="pc-comment-item" id="comment-item-' + data.id + '">'
+            + '<a href="/account/' + data.author_id + '/view/"><img class="cmt-avatar" src="' + data.avatar + '" alt="' + escHtml(data.author) + '"></a>'
+            + '<div class="pc-comment-right">'
+            +   '<div class="pc-comment-bubble">'
+            +     '<a class="pc-comment-author" href="/account/' + data.author_id + '/view/">' + escHtml(data.author) + '</a>'
+            +     '<p class="pc-comment-body">' + escHtml(data.body) + '</p>'
+            +   '</div>'
+            +   '<div class="pc-comment-footer">'
+            +     '<span class="pc-comment-time">' + data.created_at + '</span>'
+            +     '<button class="pc-comment-reply-btn" onclick="toggleReplyForm(' + data.id + ', ' + postId + ', \'' + url + '\')">Répondre</button>'
+            +     delBtn
+            +   '</div>'
+            +   '<div class="pc-comment-replies" id="replies-' + data.id + '" style="display:none;"></div>'
+            +   '<div class="pc-reply-form-wrap" id="reply-form-' + data.id + '">'
+            +     '<img class="reply-form-avatar" src="' + data.avatar + '">'
+            +     '<div class="pc-reply-input-wrap">'
+            +       '<textarea class="pc-reply-textarea" id="reply-input-' + data.id + '" placeholder="Écrire une réponse…" rows="1" maxlength="1000"'
+            +       ' onkeydown="handleReplyKey(event,' + data.id + ',' + postId + ',\'' + url + '\')"'
+            +       ' oninput="autoResize(this)"></textarea>'
+            +     '</div>'
+            +     '<button class="pc-comment-send" onclick="submitReply(' + data.id + ',' + postId + ',\'' + url + '\')" title="Répondre">'
+            +       '<span class="material-icons">send</span></button>'
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+
+        var list = document.getElementById('comment-list-' + postId);
+        if (list) { list.insertAdjacentHTML('beforeend', html); list.scrollTop = list.scrollHeight; }
+        updateCommentCount(postId, 1);
+    })
+    .catch(function(){ btn.disabled = false; });
+}
+
+/* ══════════════════════════════════════
+   REPLY TO COMMENT
+   ══════════════════════════════════════ */
+function toggleReplyForm(commentId, postId, url) {
+    var form = document.getElementById('reply-form-' + commentId);
+    if (!form) return;
+    var isOpen = form.classList.contains('open');
+    form.classList.toggle('open', !isOpen);
+    if (!isOpen) {
+        // Ensure replies container is visible
+        var replies = document.getElementById('replies-' + commentId);
+        if (replies) replies.style.display = '';
+        var ta = document.getElementById('reply-input-' + commentId);
+        if (ta) setTimeout(function(){ ta.focus(); }, 50);
+    }
+}
+
+function handleReplyKey(evt, parentId, postId, url) {
+    if (evt.key === 'Enter' && !evt.shiftKey) { evt.preventDefault(); submitReply(parentId, postId, url); }
+}
+
+function submitReply(parentCommentId, postId, url) {
+    var ta = document.getElementById('reply-input-' + parentCommentId);
+    if (!ta) return;
+    var body = ta.value.trim();
+    if (!body) return;
+
+    var fd = new FormData();
+    fd.append('body', body);
+    fd.append('parent_id', parentCommentId);
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+
+    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        if (!data.ok) return;
+        ta.value = ''; ta.style.height = 'auto';
+
+        // Close reply form
+        var form = document.getElementById('reply-form-' + parentCommentId);
+        if (form) form.classList.remove('open');
+
+        var delBtn = data.can_delete
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            : '';
+
+        var html = '<div class="pc-comment-reply-item" id="comment-item-' + data.id + '">'
+            + '<a href="/account/' + data.author_id + '/view/"><img class="reply-avatar" src="' + data.avatar + '" alt="' + escHtml(data.author) + '"></a>'
+            + '<div class="pc-comment-right">'
+            +   '<div class="pc-comment-bubble">'
+            +     '<a class="pc-comment-author" href="/account/' + data.author_id + '/view/">' + escHtml(data.author) + '</a>'
+            +     '<p class="pc-comment-body">' + escHtml(data.body) + '</p>'
+            +   '</div>'
+            +   '<div class="pc-comment-footer">'
+            +     '<span class="pc-comment-time">' + data.created_at + '</span>'
+            +     delBtn
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+
+        var repliesContainer = document.getElementById('replies-' + parentCommentId);
+        if (repliesContainer) {
+            repliesContainer.style.display = '';
+            repliesContainer.insertAdjacentHTML('beforeend', html);
+        }
+        updateCommentCount(postId, 1);
+    })
+    .catch(function(e) { console.error('Reply error:', e); });
+}
+
+/* ══════════════════════════════════════
+   DELETE COMMENT
+   ══════════════════════════════════════ */
 var _delUrlTpl = "{% url 'post:delete-comment' 999999 %}";
-function commentDeleteUrl(id) {
-    return _delUrlTpl.replace('999999', id);
+function commentDeleteUrl(id) { return _delUrlTpl.replace('999999', id); }
+
+function deleteComment(commentId, url) {
+    if (!confirm('Supprimer ce commentaire ?')) return;
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        if (!data.ok) return;
+        var el = document.getElementById('comment-item-' + commentId);
+        if (el) {
+            var panel = el.closest('[id^="comment-panel-"]');
+            el.remove();
+            if (panel) updateCommentCount(panel.id.replace('comment-panel-', ''), -1);
+        }
+    });
 }
 
-/* ── New-posts banner (called from header.html WebSocket handler) ── */
+function updateCommentCount(postId, delta) {
+    var badge = document.getElementById('comment-count-' + postId);
+    if (!badge) return;
+    var list = document.getElementById('comment-list-' + postId);
+    var cnt  = list ? list.querySelectorAll('.pc-comment-item, .pc-comment-reply-item').length : 0;
+    if (cnt > 0) { badge.textContent = '(' + cnt + ')'; badge.style.display = ''; }
+    else           badge.style.display = 'none';
+}
+
+/* ══════════════════════════════════════
+   SHARE
+   ══════════════════════════════════════ */
+var _shareTimer = null;
+function sharePost(postId) {
+    var url = window.location.origin + window.location.pathname + '#post-' + postId;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(showShareToast);
+    } else {
+        var tmp = document.createElement('textarea');
+        tmp.value = url; tmp.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(tmp); tmp.select();
+        try { document.execCommand('copy'); } catch(e){}
+        document.body.removeChild(tmp);
+        showShareToast();
+    }
+}
+function showShareToast() {
+    var t = document.getElementById('share-toast');
+    if (!t) return;
+    t.classList.add('show');
+    clearTimeout(_shareTimer);
+    _shareTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+/* ══════════════════════════════════════
+   NEW-POSTS BANNER
+   ══════════════════════════════════════ */
 var _newPostsCount = 0;
 var _newPostsNames = [];
-
 function showNewPostsBanner(username) {
     _newPostsCount++;
-    if (username && _newPostsNames.indexOf(username) === -1) {
-        _newPostsNames.push(username);
-    }
+    if (username && _newPostsNames.indexOf(username) === -1) _newPostsNames.push(username);
     var banner = document.getElementById('new-posts-banner');
     var text   = document.getElementById('new-posts-banner-text');
     if (banner) {
@@ -1321,181 +1718,110 @@ function showNewPostsBanner(username) {
     }
 }
 
-/* ════════════════════════════════════
-   COMMENT TOGGLE
-   ════════════════════════════════════ */
-function toggleComments(postId) {
-    var panel = document.getElementById('comment-panel-' + postId);
-    var btn   = document.getElementById('comment-btn-' + postId);
-    if (!panel) return;
-    var isOpen = panel.classList.contains('open');
-    panel.classList.toggle('open', !isOpen);
-    if (btn) btn.classList.toggle('active', !isOpen);
-    if (!isOpen) {
-        // Focus textarea
-        var ta = document.getElementById('comment-input-' + postId);
-        if (ta) setTimeout(function(){ ta.focus(); }, 50);
-    }
-}
-
-/* ════════════════════════════════════
-   TEXTAREA AUTO-RESIZE
-   ════════════════════════════════════ */
-function autoResize(el) {
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
-}
-
-/* ════════════════════════════════════
-   SUBMIT ON ENTER (not Shift+Enter)
-   ════════════════════════════════════ */
-function handleCommentKey(evt, postId, url) {
-    if (evt.key === 'Enter' && !evt.shiftKey) {
-        evt.preventDefault();
-        submitComment(postId, url);
-    }
-}
-
-/* ════════════════════════════════════
-   AJAX: ADD COMMENT
-   ════════════════════════════════════ */
-function submitComment(postId, url) {
-    var ta   = document.getElementById('comment-input-' + postId);
-    var btn  = document.getElementById('comment-send-'  + postId);
-    if (!ta) return;
-    var body = ta.value.trim();
-    if (!body) return;
-
-    btn.disabled = true;
-
-    var formData = new FormData();
-    formData.append('body', body);
-    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
-
-    fetch(url, {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: formData
-    })
-    .then(function(r){ return r.json(); })
-    .then(function(data) {
-        btn.disabled = false;
-        if (!data.ok) return;
-
-        // Clear textarea
-        ta.value = '';
-        ta.style.height = 'auto';
-
-        // Build comment HTML
-        var delBtn = data.can_delete
-            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
-            : '';
-
-        var html = '<div class="pc-comment-item" id="comment-item-' + data.id + '">'
-            + '<img src="' + data.avatar + '" alt="' + data.author + '">'
-            + '<div class="pc-comment-bubble">'
-            +   '<a class="pc-comment-author" href="/account/' + data.author_id + '/view/">' + escHtml(data.author) + '</a>'
-            +   '<p class="pc-comment-body">' + escHtml(data.body) + '</p>'
-            +   '<div class="pc-comment-meta">'
-            +     '<span>' + data.created_at + '</span>'
-            +     delBtn
-            +   '</div>'
-            + '</div>'
-            + '</div>';
-
-        var list = document.getElementById('comment-list-' + postId);
-        if (list) {
-            list.insertAdjacentHTML('beforeend', html);
-            list.scrollTop = list.scrollHeight;
+/* ══════════════════════════════════════
+   HASHTAGS + MENTIONS PARSER
+   ══════════════════════════════════════ */
+function processHashtagsAndMentions(container) {
+    if (!container) return;
+    var SKIP = new Set(['A', 'SCRIPT', 'STYLE', 'CODE', 'PRE', 'TEXTAREA', 'INPUT']);
+    var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+        acceptNode: function(n) {
+            var p = n.parentElement;
+            while (p) { if (SKIP.has(p.tagName)) return NodeFilter.FILTER_REJECT; p = p.parentElement; }
+            return NodeFilter.FILTER_ACCEPT;
         }
-
-        // Update count badge
-        updateCommentCount(postId, 1);
-    })
-    .catch(function(){ btn.disabled = false; });
-}
-
-/* ════════════════════════════════════
-   AJAX: DELETE COMMENT
-   ════════════════════════════════════ */
-function deleteComment(commentId, url) {
-    if (!confirm('Supprimer ce commentaire ?')) return;
-
-    var formData = new FormData();
-    formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
-
-    fetch(url, {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: formData
-    })
-    .then(function(r){ return r.json(); })
-    .then(function(data) {
-        if (!data.ok) return;
-        var el = document.getElementById('comment-item-' + commentId);
-        if (el) {
-            // Find parent post id from the panel ancestor
-            var panel = el.closest('[id^="comment-panel-"]');
-            el.remove();
-            if (panel) {
-                var postId = panel.id.replace('comment-panel-', '');
-                updateCommentCount(postId, -1);
-            }
-        }
+    }, false);
+    var nodes = [], node;
+    while (node = walker.nextNode()) nodes.push(node);
+    nodes.forEach(function(n) {
+        var text = n.textContent;
+        if (!/#[a-zA-ZÀ-ÿ0-9_]{2,}|@[a-zA-Z0-9_]{2,}/.test(text)) return;
+        var html = text
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/#([a-zA-ZÀ-ÿ0-9_]{2,30})/g, function(m, tag) {
+                return '<a href="/post/hashtag/' + tag.toLowerCase() + '/" class="zf-hashtag" onclick="event.stopPropagation();">' + m + '</a>';
+            })
+            .replace(/@([a-zA-Z0-9_]{2,30})/g, function(m, user) {
+                return '<a href="/account/search/?q=' + encodeURIComponent(user) + '" class="zf-mention" onclick="event.stopPropagation();">' + m + '</a>';
+            });
+        var span = document.createElement('span');
+        span.innerHTML = html;
+        n.parentNode.replaceChild(span, n);
     });
 }
-
-/* ════════════════════════════════════
-   COMMENT COUNT BADGE
-   ════════════════════════════════════ */
-function updateCommentCount(postId, delta) {
-    var badge = document.getElementById('comment-count-' + postId);
-    if (!badge) return;
-    var list  = document.getElementById('comment-list-' + postId);
-    var cnt   = list ? list.querySelectorAll('.pc-comment-item').length : 0;
-    if (cnt > 0) {
-        badge.textContent = '(' + cnt + ')';
-        badge.style.display = '';
-    } else {
-        badge.style.display = 'none';
-    }
+function processAllPostBodies() {
+    document.querySelectorAll('.pc-body, .pc-title').forEach(function(el) {
+        if (!el.dataset.htagDone) { el.dataset.htagDone = '1'; processHashtagsAndMentions(el); }
+    });
 }
+document.addEventListener('DOMContentLoaded', processAllPostBodies);
+(function() {
+    var mo = new MutationObserver(function() { processAllPostBodies(); });
+    mo.observe(document.querySelector('.feed-main') || document.body, { childList: true, subtree: true });
+})();
 
-/* ════════════════════════════════════
-   SHARE: COPY LINK
-   ════════════════════════════════════ */
-var _shareToastTimer = null;
+/* ══════════════════════════════════════
+   MENTION AUTOCOMPLETE
+   ══════════════════════════════════════ */
+var _MENTION_AC_URL = "{% url 'post:mention-autocomplete' %}";
+var _acDropdown = null;
+var _acTimer = null;
 
-function sharePost(postId) {
-    var url = window.location.origin + window.location.pathname + '#post-' + postId;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(showShareToast);
-    } else {
-        // Fallback for older browsers
-        var tmp = document.createElement('textarea');
-        tmp.value = url;
-        tmp.style.position = 'fixed'; tmp.style.opacity = '0';
-        document.body.appendChild(tmp);
-        tmp.select();
-        try { document.execCommand('copy'); } catch(e){}
-        document.body.removeChild(tmp);
-        showShareToast();
-    }
+document.addEventListener('input', function(e) {
+    var ta = e.target;
+    if (!ta.classList.contains('pc-comment-textarea') && !ta.classList.contains('pc-reply-textarea')) return;
+    var val    = ta.value;
+    var cursor = ta.selectionStart;
+    var before = val.slice(0, cursor);
+    var match  = before.match(/@([a-zA-Z0-9_]*)$/);
+    if (!match) { hideAcDropdown(); return; }
+    clearTimeout(_acTimer);
+    _acTimer = setTimeout(function() { fetchMentions(ta, match[1]); }, 220);
+});
+function fetchMentions(ta, query) {
+    fetch(_MENTION_AC_URL + '?q=' + encodeURIComponent(query), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.users && data.users.length) showAcDropdown(ta, data.users);
+        else hideAcDropdown();
+    });
 }
-
-function showShareToast() {
-    var toast = document.getElementById('share-toast');
-    if (!toast) return;
-    toast.classList.add('show');
-    clearTimeout(_shareToastTimer);
-    _shareToastTimer = setTimeout(function(){
-        toast.classList.remove('show');
-    }, 2800);
+function showAcDropdown(ta, users) {
+    hideAcDropdown();
+    var dd = document.createElement('div');
+    dd.id = 'mention-ac-dd';
+    dd.style.cssText = 'position:absolute;z-index:9999;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.2);overflow:hidden;min-width:180px;max-width:260px;';
+    users.forEach(function(u) {
+        var item = document.createElement('button');
+        item.type = 'button';
+        item.textContent = '@' + u.username;
+        item.style.cssText = 'display:block;width:100%;text-align:left;padding:.5rem .9rem;background:none;border:none;cursor:pointer;color:var(--text);font-size:.88rem;font-weight:600;transition:background .1s;';
+        item.onmouseover = function() { this.style.background = 'var(--btn-bg)'; };
+        item.onmouseout  = function() { this.style.background = 'none'; };
+        item.onclick = function() { insertMention(ta, u.username); hideAcDropdown(); };
+        dd.appendChild(item);
+    });
+    var rect = ta.getBoundingClientRect();
+    dd.style.top  = (window.scrollY + rect.bottom + 4) + 'px';
+    dd.style.left = (window.scrollX + rect.left) + 'px';
+    document.body.appendChild(dd);
+    _acDropdown = dd;
 }
+function hideAcDropdown() { if (_acDropdown) { _acDropdown.remove(); _acDropdown = null; } }
+function insertMention(ta, username) {
+    var val = ta.value, cursor = ta.selectionStart;
+    var newBefore = val.slice(0, cursor).replace(/@([a-zA-Z0-9_]*)$/, '@' + username + ' ');
+    ta.value = newBefore + val.slice(cursor);
+    ta.setSelectionRange(newBefore.length, newBefore.length);
+    ta.focus();
+}
+document.addEventListener('click', function(e) {
+    if (_acDropdown && !_acDropdown.contains(e.target)) hideAcDropdown();
+});
 
-/* ════════════════════════════════════
+/* ══════════════════════════════════════
    HELPERS
-   ════════════════════════════════════ */
+   ══════════════════════════════════════ */
 function getCookie(name) {
     var val = null;
     if (document.cookie) {
@@ -1506,183 +1832,9 @@ function getCookie(name) {
     }
     return val;
 }
-
 function escHtml(str) {
-    return String(str)
-        .replace(/&/g,  '&amp;')
-        .replace(/</g,  '&lt;')
-        .replace(/>/g,  '&gt;')
-        .replace(/"/g,  '&quot;')
-        .replace(/'/g,  '&#39;');
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-
-/* ════════════════════════════════════
-   HASHTAGS + MENTIONS PARSER
-   ════════════════════════════════════ */
-var _HASHTAG_URL  = "{% url 'post:hashtag' 'TAGPLACEHOLDER' %}".replace('/TAGPLACEHOLDER/', '/');
-var _PROFILE_BASE = "{% url 'account:view' user_id=1 %}".replace('/1/', '/');
-
-function processHashtagsAndMentions(container) {
-    if (!container) return;
-    // Walk text nodes (skip links/scripts/code)
-    var SKIP_TAGS = new Set(['A', 'SCRIPT', 'STYLE', 'CODE', 'PRE', 'TEXTAREA', 'INPUT']);
-    var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
-        acceptNode: function(n) {
-            var p = n.parentElement;
-            while (p) {
-                if (SKIP_TAGS.has(p.tagName)) return NodeFilter.FILTER_REJECT;
-                p = p.parentElement;
-            }
-            return NodeFilter.FILTER_ACCEPT;
-        }
-    }, false);
-    var nodes = [];
-    var node;
-    while (node = walker.nextNode()) nodes.push(node);
-
-    nodes.forEach(function(n) {
-        var text = n.textContent;
-        if (!/#[a-zA-ZÀ-ÿ0-9_]{2,}|@[a-zA-Z0-9_]{2,}/.test(text)) return;
-
-        var html = text
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/#([a-zA-ZÀ-ÿ0-9_]{2,30})/g, function(m, tag) {
-                var url = '/post/hashtag/' + tag.toLowerCase() + '/';
-                return '<a href="' + url + '" class="zf-hashtag" style="color:var(--accent);font-weight:700;text-decoration:none;" onclick="event.stopPropagation();">' + m + '</a>';
-            })
-            .replace(/@([a-zA-Z0-9_]{2,30})/g, function(m, user) {
-                var url = '/account/search/?q=' + encodeURIComponent(user);
-                return '<a href="' + url + '" class="zf-mention" style="color:var(--accent2);font-weight:700;text-decoration:none;" onclick="event.stopPropagation();">' + m + '</a>';
-            });
-
-        var span = document.createElement('span');
-        span.innerHTML = html;
-        n.parentNode.replaceChild(span, n);
-    });
-}
-
-// Process all post bodies on load
-function processAllPostBodies() {
-    document.querySelectorAll('.pc-body, .pc-title').forEach(function(el) {
-        if (!el.dataset.htagDone) {
-            el.dataset.htagDone = '1';
-            processHashtagsAndMentions(el);
-        }
-    });
-}
-
-document.addEventListener('DOMContentLoaded', processAllPostBodies);
-
-// Hook into infinite scroll: process new posts after insertion
-var _origLoadMore = window._infiniteScrollLoadMore;
-(function patchInfiniteScroll() {
-    // Re-process after DOM mutations from infinite scroll inserts
-    var mo = new MutationObserver(function() {
-        processAllPostBodies();
-    });
-    mo.observe(document.querySelector('.feed-main') || document.body, {
-        childList: true, subtree: true
-    });
-})();
-
-/* ════════════════════════════════════
-   MENTION AUTOCOMPLETE IN COMMENT BOX
-   ════════════════════════════════════ */
-var _MENTION_AC_URL = "{% url 'post:mention-autocomplete' %}";
-var _acDropdown = null;
-var _acTimer = null;
-
-document.addEventListener('input', function(e) {
-    var ta = e.target;
-    if (!ta.classList.contains('pc-comment-textarea')) return;
-
-    var val    = ta.value;
-    var cursor = ta.selectionStart;
-    // Find the @word being typed
-    var before  = val.slice(0, cursor);
-    var match   = before.match(/@([a-zA-Z0-9_]*)$/);
-    if (!match) { hideAcDropdown(); return; }
-
-    var query = match[1];
-    clearTimeout(_acTimer);
-    _acTimer = setTimeout(function() { fetchMentions(ta, query); }, 220);
-});
-
-function fetchMentions(ta, query) {
-    fetch(_MENTION_AC_URL + '?q=' + encodeURIComponent(query), {
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-        if (data.users && data.users.length) {
-            showAcDropdown(ta, data.users);
-        } else {
-            hideAcDropdown();
-        }
-    });
-}
-
-function showAcDropdown(ta, users) {
-    hideAcDropdown();
-    var dd = document.createElement('div');
-    dd.id = 'mention-ac-dd';
-    dd.style.cssText = [
-        'position:absolute',
-        'z-index:9999',
-        'background:var(--bg-card)',
-        'border:1px solid var(--border)',
-        'border-radius:10px',
-        'box-shadow:0 8px 24px rgba(0,0,0,.2)',
-        'overflow:hidden',
-        'min-width:180px',
-        'max-width:260px',
-    ].join(';');
-
-    users.forEach(function(u) {
-        var item = document.createElement('button');
-        item.type = 'button';
-        item.textContent = '@' + u.username;
-        item.style.cssText = [
-            'display:block', 'width:100%', 'text-align:left',
-            'padding:.5rem .9rem', 'background:none', 'border:none',
-            'cursor:pointer', 'color:var(--text)', 'font-size:.9rem',
-            'font-weight:600', 'transition:background .1s',
-        ].join(';');
-        item.onmouseover = function() { this.style.background = 'var(--btn-bg)'; };
-        item.onmouseout  = function() { this.style.background = 'none'; };
-        item.onclick = function() {
-            insertMention(ta, u.username);
-            hideAcDropdown();
-        };
-        dd.appendChild(item);
-    });
-
-    var rect = ta.getBoundingClientRect();
-    dd.style.top  = (window.scrollY + rect.bottom + 4) + 'px';
-    dd.style.left = (window.scrollX + rect.left) + 'px';
-    document.body.appendChild(dd);
-    _acDropdown = dd;
-}
-
-function hideAcDropdown() {
-    if (_acDropdown) { _acDropdown.remove(); _acDropdown = null; }
-}
-
-function insertMention(ta, username) {
-    var val    = ta.value;
-    var cursor = ta.selectionStart;
-    var before = val.slice(0, cursor);
-    var after  = val.slice(cursor);
-    var newBefore = before.replace(/@([a-zA-Z0-9_]*)$/, '@' + username + ' ');
-    ta.value = newBefore + after;
-    var newCursor = newBefore.length;
-    ta.setSelectionRange(newCursor, newCursor);
-    ta.focus();
-}
-
-document.addEventListener('click', function(e) {
-    if (_acDropdown && !_acDropdown.contains(e.target)) hideAcDropdown();
-});
 </script>
 
 {% endblock content %}
