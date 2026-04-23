@@ -216,9 +216,9 @@ def account_view(request, *args, **kwargs):
 		context['friends'] = friends
 		context['friends_count'] = friends.count()
 		context['posts'] = posts
-		context['post_count'] = posts.count()
+		context['post_count'] = len(posts)
 		# Posts with images (for the Photos tab)
-		context['photos'] = posts.exclude(header_image='').exclude(header_image__isnull=True)
+		context['photos'] = [p for p in posts if p.header_image and p.header_image.name]
 		context['friends_posts'] = Post.objects.filter(author__in=list(friends)).order_by('-id')
 	#	context = {
 	#		'posts': Post.objects.filter(author=user_id).order_by('-id'),
