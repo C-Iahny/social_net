@@ -378,6 +378,54 @@ class UpdatePostView(UpdateView):
             return HttpResponse("Vous ne pouvez pas modifier ce post.", status=403)
         return super().dispatch(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        try:
+            ctx['existing_media'] = list(PostMedia.objects.filter(post=self.object).order_by('order'))
+        except Exception:
+            ctx['existing_media'] = []
+        return ctx
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        post = self.object
+        import logging as _log
+        _logger = _log.getLogger(__name__)
+
+        # Supprimer les médias cochés
+        delete_ids = self.request.POST.getlist('delete_media')
+        if delete_ids:
+            try:
+                PostMedia.objects.filter(post=post, id__in=delete_ids).delete()
+            except Exception as e:
+                _logger.error("delete_media failed: %s", e)
+
+        # Ajouter les nouveaux fichiers
+        try:
+            from .media_utils import compress_media
+            files = self.request.FILES.getlist('media_files')
+            _logger.warning("UPDATE MEDIA_DEBUG: %d new file(s) for post %s", len(files), post.id)
+            # Prochain ordre = max existant + 1
+            try:
+                start_order = (PostMedia.objects.filter(post=post).order_by('-order').values_list('order', flat=True).first() or -1) + 1
+            except Exception:
+                start_order = 0
+            for i, f in enumerate(files):
+                try:
+                    compressed, mtype = compress_media(f)
+                except Exception as ce:
+                    _logger.error("compress failed: %s", ce)
+                    f.seek(0)
+                    compressed, mtype = f, 'image'
+                try:
+                    PostMedia.objects.create(post=post, file=compressed, media_type=mtype, order=start_order + i)
+                except Exception as e:
+                    _logger.error("PostMedia.create FAILED: %s", e)
+        except Exception as e:
+            _logger.error("UPDATE media_files block FAILED: %s", e)
+
+        return response
+
     def get_success_url(self):
         return reverse_lazy("post:post-view")
 
