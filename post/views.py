@@ -306,23 +306,28 @@ class AddPostView(CreateView):
         post = self.object
 
         # ── Save + compress multiple media files ──────────────────────
+        import logging as _log
+        _logger = _log.getLogger(__name__)
         try:
             from .media_utils import compress_media
             files = self.request.FILES.getlist('media_files')
+            _logger.warning("MEDIA_DEBUG: %d file(s) received for post %s", len(files), post.id)
             for i, f in enumerate(files):
+                _logger.warning("MEDIA_DEBUG: file[%d] name=%s size=%s", i, f.name, f.size)
                 try:
                     compressed, mtype = compress_media(f)
-                except Exception:
+                    _logger.warning("MEDIA_DEBUG: compressed → %s (%s)", getattr(compressed, 'name', '?'), mtype)
+                except Exception as ce:
+                    _logger.error("MEDIA_DEBUG: compress failed: %s", ce)
                     f.seek(0)
                     compressed, mtype = f, 'image'
                 try:
-                    PostMedia.objects.create(post=post, file=compressed, media_type=mtype, order=i)
+                    pm = PostMedia.objects.create(post=post, file=compressed, media_type=mtype, order=i)
+                    _logger.warning("MEDIA_DEBUG: PostMedia #%s created, url=%s", pm.id, pm.url)
                 except Exception as e:
-                    import logging
-                    logging.getLogger(__name__).error("PostMedia.create failed: %s", e)
+                    _logger.error("MEDIA_DEBUG: PostMedia.create FAILED: %s", e)
         except Exception as e:
-            import logging
-            logging.getLogger(__name__).error("media_files block failed: %s", e)
+            _logger.error("MEDIA_DEBUG: outer block FAILED: %s", e)
 
         # Notify each friend via WebSocket channel layer
         author = self.request.user

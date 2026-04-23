@@ -220,12 +220,14 @@
                         <span class="material-icons" style="font-size:1rem;vertical-align:middle;">perm_media</span>
                         Photos &amp; Vidéos
                     </label>
-                    <div class="upload-zone" id="media-upload-zone">
+                    <div class="upload-zone" id="media-upload-zone" onclick="document.getElementById('id_media_files').click()">
                         <input type="file" name="media_files" id="id_media_files"
                                accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,.mov,.mkv,.avi,.m4v,.3gp"
-                               multiple onchange="handleMediaFiles(this.files)">
+                               multiple
+                               style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"
+                               onchange="previewMediaFiles(this.files)">
                         <span class="material-icons">add_photo_alternate</span>
-                        <p><span class="upload-label">Cliquer pour choisir</span> ou glisser-déposer</p>
+                        <p id="media-zone-label"><span class="upload-label">Cliquer pour choisir</span> ou glisser-déposer</p>
                         <p style="font-size:.78rem;margin-top:.2rem;">Images &amp; Vidéos — plusieurs fichiers acceptés</p>
                     </div>
                     <div class="media-preview-grid" id="media-preview-grid"></div>
@@ -263,93 +265,74 @@
 </div>
 
 <script>
-var _mediaFiles = [];   // tableau des File objects sélectionnés
-
 var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
 
 function isVideo(file) {
-    var ext = file.name.split('.').pop().toLowerCase();
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
     return file.type.startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
 }
 
-function handleMediaFiles(fileList) {
-    for (var i = 0; i < fileList.length; i++) {
-        _mediaFiles.push(fileList[i]);
-    }
-    renderPreviews();
-    syncInput();
-}
-
-function removeMedia(idx) {
-    _mediaFiles.splice(idx, 1);
-    renderPreviews();
-    syncInput();
-}
-
-function renderPreviews() {
-    var grid = document.getElementById('media-preview-grid');
+function previewMediaFiles(fileList) {
+    var grid  = document.getElementById('media-preview-grid');
+    var label = document.getElementById('media-zone-label');
     grid.innerHTML = '';
-    _mediaFiles.forEach(function(file, idx) {
-        var item = document.createElement('div');
-        item.className = 'media-preview-item';
 
-        var url = URL.createObjectURL(file);
-        if (isVideo(file)) {
-            var vid = document.createElement('video');
-            vid.src = url;
-            vid.muted = true;
-            vid.preload = 'metadata';
-            vid.onloadedmetadata = function() { URL.revokeObjectURL(url); };
-            item.appendChild(vid);
-            var badge = document.createElement('span');
-            badge.className = 'mp-type-badge';
-            badge.textContent = 'vidéo';
-            item.appendChild(badge);
-        } else {
-            var img = document.createElement('img');
-            img.src = url;
-            img.onload = function() { URL.revokeObjectURL(url); };
-            item.appendChild(img);
-        }
-
-        var btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'mp-remove';
-        btn.innerHTML = '✕';
-        btn.title = 'Retirer';
-        btn.onclick = (function(i) { return function() { removeMedia(i); }; })(idx);
-        item.appendChild(btn);
-
-        grid.appendChild(item);
-    });
-}
-
-function syncInput() {
-    // Reconstruire le FileList via DataTransfer
-    var dt = new DataTransfer();
-    _mediaFiles.forEach(function(f) { dt.items.add(f); });
-    document.getElementById('id_media_files').files = dt.files;
-
-    // Mettre à jour le texte de la zone
-    var zone = document.getElementById('media-upload-zone');
-    var p = zone.querySelector('p');
-    if (p) {
-        p.innerHTML = _mediaFiles.length > 0
-            ? '<span class="upload-label">' + _mediaFiles.length + ' fichier(s) sélectionné(s)</span>'
+    var count = fileList ? fileList.length : 0;
+    if (label) {
+        label.innerHTML = count > 0
+            ? '<span class="upload-label">' + count + ' fichier(s) sélectionné(s)</span>'
             : '<span class="upload-label">Cliquer pour choisir</span> ou glisser-déposer';
     }
+
+    if (!fileList || count === 0) return;
+
+    for (var i = 0; i < fileList.length; i++) {
+        (function(file) {
+            var item = document.createElement('div');
+            item.className = 'media-preview-item';
+            var url = URL.createObjectURL(file);
+
+            if (isVideo(file)) {
+                var vid = document.createElement('video');
+                vid.src = url; vid.muted = true; vid.preload = 'metadata';
+                vid.onloadedmetadata = function() { URL.revokeObjectURL(url); };
+                item.appendChild(vid);
+                var badge = document.createElement('span');
+                badge.className = 'mp-type-badge';
+                badge.textContent = 'vidéo';
+                item.appendChild(badge);
+            } else {
+                var img = document.createElement('img');
+                img.src = url;
+                img.onload = function() { URL.revokeObjectURL(url); };
+                item.appendChild(img);
+            }
+            grid.appendChild(item);
+        })(fileList[i]);
+    }
 }
 
-// Drag & drop
+// Drag & drop — dépose les fichiers directement sur l'input natif
 (function() {
     var zone = document.getElementById('media-upload-zone');
+    if (!zone) return;
     zone.addEventListener('dragover', function(e) {
         e.preventDefault(); zone.classList.add('dragover');
     });
     zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
     zone.addEventListener('drop', function(e) {
         e.preventDefault(); zone.classList.remove('dragover');
-        handleMediaFiles(e.dataTransfer.files);
+        var input = document.getElementById('id_media_files');
+        // Assign dropped files to input via DataTransfer if possible
+        try {
+            var dt = new DataTransfer();
+            var files = e.dataTransfer.files;
+            for (var i = 0; i < files.length; i++) dt.items.add(files[i]);
+            input.files = dt.files;
+        } catch(err) {
+            // DataTransfer not supported — drag & drop won't work but click selection still does
+        }
+        previewMediaFiles(input.files);
     });
 })();
 </script>
