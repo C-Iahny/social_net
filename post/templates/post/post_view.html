@@ -443,6 +443,63 @@ body { background: var(--bg); }
 }
 .pc-video-label .material-icons { font-size: .95rem; color: #7c3aed; }
 
+/* ── Multi-media gallery ── */
+.pc-gallery {
+    display: grid;
+    gap: 2px;
+    overflow: hidden;
+    margin-top: .4rem;
+    border-radius: 0;
+    max-height: 520px;
+}
+/* 1 file : full width */
+.pc-gallery-1 { grid-template-columns: 1fr; }
+/* 2 files : side by side */
+.pc-gallery-2 { grid-template-columns: 1fr 1fr; }
+/* 3 files : big left + 2 stacked right */
+.pc-gallery-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+.pc-gallery-3 .pc-gal-item:first-child { grid-row: 1 / 3; }
+/* 4+ : 2x2 */
+.pc-gallery-4,
+.pc-gallery-5,
+.pc-gallery-6,
+.pc-gallery-7 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.pc-gallery-4 .pc-gal-item:nth-child(n+5),
+.pc-gallery-5 .pc-gal-item:nth-child(n+5),
+.pc-gallery-6 .pc-gal-item:nth-child(n+5),
+.pc-gallery-7 .pc-gal-item:nth-child(n+5) { display: none; }
+
+.pc-gal-item {
+    overflow: hidden;
+    position: relative;
+    background: var(--btn-bg);
+    min-height: 160px;
+}
+.pc-gal-item:first-child:last-child { min-height: 320px; max-height: 520px; }
+.pc-gal-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .3s;
+}
+.pc-gal-item:hover .pc-gal-img { transform: scale(1.04); }
+.pc-gal-more {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.52);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1.5rem; font-weight: 800;
+    font-family: var(--font-primary);
+    letter-spacing: -.02em;
+    pointer-events: none;
+}
+.pc-gal-video { background: #000; }
+.pc-gal-vid {
+    width: 100%; height: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    display: block;
+}
+
 /* ── Reaction summary bar ── */
 .pc-reaction-bar {
     display: flex; align-items: center; gap: .45rem;
@@ -1001,12 +1058,10 @@ body { background: var(--bg); }
 
                 <!-- Cover image -->
                 {% if post.header_image_url %}
-                <div class="pc-image-wrap">
-                    <a href="{{ post.header_image_url }}" target="_blank" rel="noopener">
-                        <img class="pc-image lazy-img" loading="lazy"
-                             src="{{ post.header_image_url }}"
-                             alt="{{ post.title }}" decoding="async">
-                    </a>
+                <div class="pc-image-wrap" onclick="zootOpenImg('{{ post.header_image_url }}', '{{ post.title|escapejs }}')" style="cursor:zoom-in;">
+                    <img class="pc-image lazy-img" loading="lazy"
+                         src="{{ post.header_image_url }}"
+                         alt="{{ post.title }}" decoding="async">
                 </div>
                 {% endif %}
 

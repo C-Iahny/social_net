@@ -71,7 +71,7 @@
 }
 .form-field textarea { min-height: 100px; resize: vertical; }
 
-/* Image/file upload zone */
+/* Media upload zone */
 .upload-zone {
     border: 2px dashed var(--border);
     border-radius: 10px;
@@ -82,7 +82,7 @@
     position: relative;
     background: var(--btn-bg);
 }
-.upload-zone:hover { border-color: var(--accent); background: var(--bg-card); }
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: var(--bg-card); }
 .upload-zone input[type="file"] {
     position: absolute; inset: 0;
     opacity: 0; cursor: pointer; width: 100%; height: 100%;
@@ -90,26 +90,45 @@
 .upload-zone .material-icons { font-size: 2rem; color: var(--text-muted); display: block; margin-bottom: .3rem; }
 .upload-zone p { color: var(--text-muted); font-size: .88rem; margin: 0; }
 .upload-zone .upload-label { color: var(--accent); font-weight: 600; }
-#image-preview {
-    display: none;
+
+/* Preview grid */
+.media-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
     margin-top: .8rem;
-    border-radius: 8px;
-    max-width: 100%;
-    max-height: 300px;
-    object-fit: contain;
 }
-/* Video upload zone */
-.upload-zone.video-zone { border-color: #7c3aed44; }
-.upload-zone.video-zone:hover { border-color: #7c3aed; }
-.upload-zone.video-zone .material-icons { color: #7c3aed; }
-#video-preview {
-    display: none;
-    margin-top: .8rem;
-    width: 100%;
-    max-height: 320px;
-    border-radius: 10px;
-    background: #000;
-    outline: none;
+.media-preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--btn-bg);
+    border: 1px solid var(--border);
+}
+.media-preview-item img,
+.media-preview-item video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.media-preview-item .mp-remove {
+    position: absolute; top: 3px; right: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.65);
+    border: none; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; line-height: 1;
+    transition: background .15s;
+}
+.media-preview-item .mp-remove:hover { background: #e53935; }
+.media-preview-item .mp-type-badge {
+    position: absolute; bottom: 3px; left: 3px;
+    background: rgba(0,0,0,.6);
+    color: #fff; font-size: .58rem; font-weight: 700;
+    padding: 1px 5px; border-radius: 4px;
+    text-transform: uppercase;
 }
 
 /* CKEditor override */
@@ -195,34 +214,21 @@
                     {% endif %}
                 </div>
 
-                <!-- Image -->
-                <div class="form-field">
-                    <label>Photo / Image</label>
-                    <div class="upload-zone" id="image-upload-zone">
-                        <input type="file" name="header_image" id="id_header_image"
-                               accept="image/*" onchange="previewImage(this)">
-                        <span class="material-icons">add_photo_alternate</span>
-                        <p><span class="upload-label">Cliquer pour choisir</span> ou glisser-déposer une image</p>
-                        <p style="font-size:.78rem;margin-top:.2rem;">PNG, JPG, GIF — max 10 Mo</p>
-                    </div>
-                    <img id="image-preview" src="" alt="Aperçu">
-                </div>
-
-                <!-- Vidéo -->
+                <!-- Photos + Vidéos (multi-upload) -->
                 <div class="form-field">
                     <label>
-                        <span class="material-icons" style="font-size:1rem;vertical-align:middle;color:#7c3aed;">videocam</span>
-                        Vidéo (optionnel)
+                        <span class="material-icons" style="font-size:1rem;vertical-align:middle;">perm_media</span>
+                        Photos &amp; Vidéos
                     </label>
-                    <div class="upload-zone video-zone" id="video-upload-zone">
-                        <input type="file" name="video" id="id_video"
-                               accept="video/mp4,video/webm,video/ogg,video/quicktime,.mp4,.webm,.ogg,.mov,.mkv,.avi,.m4v,.3gp"
-                               onchange="previewVideo(this)">
-                        <span class="material-icons">videocam</span>
-                        <p><span class="upload-label">Cliquer pour ajouter</span> une vidéo</p>
-                        <p style="font-size:.78rem;margin-top:.2rem;">MP4, WebM, MOV, MKV — max 200 Mo</p>
+                    <div class="upload-zone" id="media-upload-zone">
+                        <input type="file" name="media_files" id="id_media_files"
+                               accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,.mov,.mkv,.avi,.m4v,.3gp"
+                               multiple onchange="handleMediaFiles(this.files)">
+                        <span class="material-icons">add_photo_alternate</span>
+                        <p><span class="upload-label">Cliquer pour choisir</span> ou glisser-déposer</p>
+                        <p style="font-size:.78rem;margin-top:.2rem;">Images &amp; Vidéos — plusieurs fichiers acceptés</p>
                     </div>
-                    <video id="video-preview" controls></video>
+                    <div class="media-preview-grid" id="media-preview-grid"></div>
                 </div>
 
                 <!-- File attachment -->
@@ -257,36 +263,95 @@
 </div>
 
 <script>
-function previewImage(input) {
-    var preview = document.getElementById('image-preview');
-    var zone = document.getElementById('image-upload-zone');
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-            zone.querySelector('p').textContent = input.files[0].name;
-        };
-        reader.readAsDataURL(input.files[0]);
+var _mediaFiles = [];   // tableau des File objects sélectionnés
+
+var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
+
+function isVideo(file) {
+    var ext = file.name.split('.').pop().toLowerCase();
+    return file.type.startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
+}
+
+function handleMediaFiles(fileList) {
+    for (var i = 0; i < fileList.length; i++) {
+        _mediaFiles.push(fileList[i]);
+    }
+    renderPreviews();
+    syncInput();
+}
+
+function removeMedia(idx) {
+    _mediaFiles.splice(idx, 1);
+    renderPreviews();
+    syncInput();
+}
+
+function renderPreviews() {
+    var grid = document.getElementById('media-preview-grid');
+    grid.innerHTML = '';
+    _mediaFiles.forEach(function(file, idx) {
+        var item = document.createElement('div');
+        item.className = 'media-preview-item';
+
+        var url = URL.createObjectURL(file);
+        if (isVideo(file)) {
+            var vid = document.createElement('video');
+            vid.src = url;
+            vid.muted = true;
+            vid.preload = 'metadata';
+            vid.onloadedmetadata = function() { URL.revokeObjectURL(url); };
+            item.appendChild(vid);
+            var badge = document.createElement('span');
+            badge.className = 'mp-type-badge';
+            badge.textContent = 'vidéo';
+            item.appendChild(badge);
+        } else {
+            var img = document.createElement('img');
+            img.src = url;
+            img.onload = function() { URL.revokeObjectURL(url); };
+            item.appendChild(img);
+        }
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'mp-remove';
+        btn.innerHTML = '✕';
+        btn.title = 'Retirer';
+        btn.onclick = (function(i) { return function() { removeMedia(i); }; })(idx);
+        item.appendChild(btn);
+
+        grid.appendChild(item);
+    });
+}
+
+function syncInput() {
+    // Reconstruire le FileList via DataTransfer
+    var dt = new DataTransfer();
+    _mediaFiles.forEach(function(f) { dt.items.add(f); });
+    document.getElementById('id_media_files').files = dt.files;
+
+    // Mettre à jour le texte de la zone
+    var zone = document.getElementById('media-upload-zone');
+    var p = zone.querySelector('p');
+    if (p) {
+        p.innerHTML = _mediaFiles.length > 0
+            ? '<span class="upload-label">' + _mediaFiles.length + ' fichier(s) sélectionné(s)</span>'
+            : '<span class="upload-label">Cliquer pour choisir</span> ou glisser-déposer';
     }
 }
 
-function previewVideo(input) {
-    var preview = document.getElementById('video-preview');
-    var zone = document.getElementById('video-upload-zone');
-    if (input.files && input.files[0]) {
-        var file = input.files[0];
-        var url = URL.createObjectURL(file);
-        preview.src = url;
-        preview.style.display = 'block';
-        // Met à jour le texte de la zone
-        var labels = zone.querySelectorAll('p');
-        if (labels[0]) labels[0].innerHTML = '<span class="upload-label">' + file.name + '</span>';
-        preview.onloadedmetadata = function() {
-            URL.revokeObjectURL(url);
-        };
-    }
-}
+// Drag & drop
+(function() {
+    var zone = document.getElementById('media-upload-zone');
+    zone.addEventListener('dragover', function(e) {
+        e.preventDefault(); zone.classList.add('dragover');
+    });
+    zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+    zone.addEventListener('drop', function(e) {
+        e.preventDefault(); zone.classList.remove('dragover');
+        handleMediaFiles(e.dataTransfer.files);
+    });
+})();
 </script>
 
 {% endblock content %}

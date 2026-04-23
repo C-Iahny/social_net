@@ -126,10 +126,8 @@ body { background: var(--bg); }
             {% endif %}
 
             {% if post.header_image_url %}
-            <div class="pc-image-wrap">
-                <a href="{{ post.header_image_url }}" target="_blank" rel="noopener">
-                    <img class="pc-image" src="{{ post.header_image_url }}" alt="{{ post.title }}">
-                </a>
+            <div class="pc-image-wrap" onclick="zootOpenImg('{{ post.header_image_url }}', '{{ post.title|escapejs }}')" style="cursor:zoom-in;">
+                <img class="pc-image" src="{{ post.header_image_url }}" alt="{{ post.title }}">
             </div>
             {% endif %}
 

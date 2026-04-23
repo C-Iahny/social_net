@@ -15,7 +15,7 @@ User = get_user_model()
 from account.models import Account
 from django.http import JsonResponse
 from .forms import PostForm, EditForm, CommentForm
-from .models import Post, Continent, Country, Follow, Comment, Reaction
+from .models import Post, Continent, Country, Follow, Comment, Reaction, PostMedia
 from friend.models import FriendList
 from personal.models import HeroSettings
 
@@ -169,6 +169,12 @@ def post_feed_view(request):
     ).values_list('post_id', 'reaction_type')
     user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
+    # Précharger les médias multiples
+    media_qs = PostMedia.objects.filter(post_id__in=post_ids).order_by('order')
+    media_by_post = {}
+    for m in media_qs:
+        media_by_post.setdefault(m.post_id, []).append(m)
+
     # Attacher les données directement à chaque post
     for post in posts_of_the_page:
         top = top_by_post.get(post.id, [])
@@ -180,6 +186,7 @@ def post_feed_view(request):
         post.reaction_counts = reactions_by_post.get(post.id, {})
         post.user_reaction   = user_reaction_by_post.get(post.id)
         post.total_reactions = sum(post.reaction_counts.values())
+        post.media_list      = media_by_post.get(post.id, [])
 
     context = {
         "friends":            friends,
@@ -251,6 +258,12 @@ def post_feed_more(request):
     ).values_list('post_id', 'reaction_type')
     user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
+    # Médias multiples
+    media_qs2 = PostMedia.objects.filter(post_id__in=post_ids).order_by('order')
+    media_by_post2 = {}
+    for m in media_qs2:
+        media_by_post2.setdefault(m.post_id, []).append(m)
+
     for post in posts_page:
         top = top_by_post.get(post.id, [])
         for c in top:
@@ -261,6 +274,7 @@ def post_feed_more(request):
         post.reaction_counts = reactions_by_post.get(post.id, {})
         post.user_reaction   = user_reaction_by_post.get(post.id)
         post.total_reactions = sum(post.reaction_counts.values())
+        post.media_list      = media_by_post2.get(post.id, [])
 
     html = render_to_string(
         'post/post_cards_fragment.html',
@@ -287,9 +301,19 @@ class AddPostView(CreateView):
     def form_valid(self, form):
         form.instance.author = self.request.user
         response = super().form_valid(form)
+        post = self.object
+
+        # ── Save + compress multiple media files ──────────────────────
+        from .media_utils import compress_media
+        files = self.request.FILES.getlist('media_files')
+        for i, f in enumerate(files):
+            try:
+                compressed, mtype = compress_media(f)
+            except Exception:
+                compressed, mtype = f, 'image'
+            PostMedia.objects.create(post=post, file=compressed, media_type=mtype, order=i)
 
         # Notify each friend via WebSocket channel layer
-        post = self.object
         author = self.request.user
         try:
             friend_list = FriendList.objects.get(user=author)
