@@ -884,7 +884,20 @@ body { background: var(--bg); }
 
                 <!-- Posts — same cards as the feed (reactions + comments + share) -->
                 {% if posts %}
-                    {% include 'post/post_cards_fragment.html' with posts_of_the_page=posts %}
+                    <div id="profile-posts-container">
+                        {% include 'post/post_cards_fragment.html' with posts_of_the_page=posts %}
+                    </div>
+                    <!-- Infinite scroll sentinel -->
+                    {% if posts_has_next %}
+                    <div id="profile-posts-sentinel"
+                         data-next="{{ posts_next_page }}"
+                         data-url="{% url 'account:profile-posts-more' user_id=id %}"
+                         style="height:1px;margin-bottom:2rem;">
+                    </div>
+                    <div id="profile-posts-loader" style="display:none;text-align:center;padding:1.2rem 0;">
+                        <div class="spinner-border text-primary" role="status" style="width:1.6rem;height:1.6rem;"></div>
+                    </div>
+                    {% endif %}
                 {% else %}
                     <div class="pf-empty">
                         <span class="material-icons">article</span>
@@ -1529,6 +1542,66 @@ document.addEventListener('DOMContentLoaded', function() {
         if (origClose) origClose();
         setTimeout(loadProfileStories, 500);
     };
+})();
+</script>
+
+<script>
+/* ══════════════════════════════════════
+   PROFILE — INFINITE SCROLL
+   ══════════════════════════════════════ */
+(function() {
+    var sentinel = document.getElementById('profile-posts-sentinel');
+    var loader   = document.getElementById('profile-posts-loader');
+    var container = document.getElementById('profile-posts-container');
+    if (!sentinel || !container) return;
+
+    var loading = false;
+
+    var observer = new IntersectionObserver(function(entries) {
+        if (!entries[0].isIntersecting || loading) return;
+        var nextPage = sentinel.dataset.next;
+        var url      = sentinel.dataset.url;
+        if (!nextPage || !url) { observer.disconnect(); return; }
+
+        loading = true;
+        if (loader) loader.style.display = 'block';
+
+        fetch(url + '?page=' + nextPage, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            loading = false;
+            if (loader) loader.style.display = 'none';
+
+            if (data.html) {
+                var tmp = document.createElement('div');
+                tmp.innerHTML = data.html;
+                while (tmp.firstChild) { container.appendChild(tmp.firstChild); }
+                // Apply hashtag/mention highlighting to newly inserted cards
+                if (typeof processHashtagsAndMentions === 'function') {
+                    container.querySelectorAll('.pc-body:not([data-htag-done]), .pc-title:not([data-htag-done])').forEach(function(el) {
+                        el.setAttribute('data-htag-done', '1');
+                        processHashtagsAndMentions(el);
+                    });
+                }
+            }
+
+            if (data.has_next && data.next_page) {
+                sentinel.dataset.next = data.next_page;
+            } else {
+                observer.disconnect();
+                sentinel.style.display = 'none';
+            }
+        })
+        .catch(function(e) {
+            loading = false;
+            if (loader) loader.style.display = 'none';
+            console.error('Profile infinite scroll error:', e);
+        });
+    }, { rootMargin: '200px' });
+
+    observer.observe(sentinel);
 })();
 </script>
 

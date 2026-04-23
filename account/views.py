@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import login, authenticate, logout
 from django.conf import settings
+from django.core.paginator import Paginator
+from django.template.loader import render_to_string
 
 from django.core.files.storage import default_storage
 from django.core.files.storage import FileSystemStorage
@@ -121,7 +123,11 @@ def account_view(request, *args, **kwargs):
 	except Account.DoesNotExist:
 		return HttpResponse("Utilisateur introuvable.", status=404)
 
-	posts = list(Post.objects.filter(author=account).order_by("-id").select_related('author'))
+	# First page only — infinite scroll loads the rest via profile_posts_more
+	all_posts_qs = Post.objects.filter(author=account).order_by("-id").select_related('author')
+	paginator   = Paginator(all_posts_qs, 6)
+	first_page  = paginator.get_page(1)
+	posts = list(first_page)
 
 	# Enrich posts with reactions + threaded comments (same as feed)
 	from django.db.models import Count
@@ -216,9 +222,12 @@ def account_view(request, *args, **kwargs):
 		context['friends'] = friends
 		context['friends_count'] = friends.count()
 		context['posts'] = posts
-		context['post_count'] = len(posts)
-		# Posts with images (for the Photos tab)
-		context['photos'] = [p for p in posts if p.header_image and p.header_image.name]
+		context['post_count'] = all_posts_qs.count()
+		context['posts_has_next'] = first_page.has_next()
+		context['posts_next_page'] = 2 if first_page.has_next() else None
+		# Posts with images (for the Photos tab) — use all posts for photos tab
+		all_posts_for_photos = list(all_posts_qs)
+		context['photos'] = [p for p in all_posts_for_photos if p.header_image and p.header_image.name]
 		context['friends_posts'] = Post.objects.filter(author__in=list(friends)).order_by('-id')
 	#	context = {
 	#		'posts': Post.objects.filter(author=user_id).order_by('-id'),
@@ -426,6 +435,82 @@ def save_temp_profile_image_from_base64String(imageString, user):
 
 
 
+
+
+def profile_posts_more(request, *args, **kwargs):
+	"""AJAX endpoint — returns a fragment of paginated profile posts (infinite scroll)."""
+	from django.db.models import Count
+	user_id = kwargs.get("user_id")
+	try:
+		account = Account.objects.get(pk=user_id)
+	except Account.DoesNotExist:
+		return JsonResponse({'html': '', 'has_next': False, 'next_page': None})
+
+	page_number = request.GET.get('page', 2)
+	all_posts_qs = Post.objects.filter(author=account).order_by("-id").select_related('author')
+	paginator   = Paginator(all_posts_qs, 6)
+	posts_page  = paginator.get_page(page_number)
+	posts       = list(posts_page)
+
+	post_ids = [p.id for p in posts]
+	if post_ids:
+		reactions_qs = (
+			ReactionModel.objects.filter(post_id__in=post_ids)
+			.values('post_id', 'reaction_type')
+			.annotate(c=Count('id'))
+		)
+		reactions_by_post = {}
+		for row in reactions_qs:
+			reactions_by_post.setdefault(row['post_id'], {})[row['reaction_type']] = row['c']
+
+		user_reaction_by_post = {}
+		if request.user.is_authenticated:
+			user_reactions_qs = ReactionModel.objects.filter(
+				post_id__in=post_ids, user=request.user
+			).values_list('post_id', 'reaction_type')
+			user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
+
+		comments_all = list(CommentModel.objects.filter(
+			post_id__in=post_ids).select_related('author').order_by('created_at'))
+		top_by_post = {}
+		replies_map = {}
+		for c in comments_all:
+			if c.parent_id is None:
+				top_by_post.setdefault(c.post_id, []).append(c)
+			else:
+				replies_map.setdefault(c.parent_id, []).append(c)
+		for top_comments in top_by_post.values():
+			for c in top_comments:
+				c.reply_list = replies_map.get(c.id, [])
+
+		for post in posts:
+			post.user_reaction   = user_reaction_by_post.get(post.id)
+			post.reaction_counts = reactions_by_post.get(post.id, {})
+			post.total_reactions = sum(post.reaction_counts.values())
+			top = top_by_post.get(post.id, [])
+			for c in top:
+				if not hasattr(c, 'reply_list'):
+					c.reply_list = []
+			post.page_comments  = top
+			post.total_comments = len(top) + sum(len(c.reply_list) for c in top)
+	else:
+		for post in posts:
+			post.user_reaction   = None
+			post.reaction_counts = {}
+			post.total_reactions = 0
+			post.page_comments   = []
+			post.total_comments  = 0
+
+	html = render_to_string(
+		'post/post_cards_fragment.html',
+		{'posts_of_the_page': posts_page, 'request': request},
+		request=request
+	)
+	return JsonResponse({
+		'html':      html,
+		'has_next':  posts_page.has_next(),
+		'next_page': posts_page.next_page_number() if posts_page.has_next() else None,
+	})
 
 
 def crop_image(request, *args, **kwargs):
