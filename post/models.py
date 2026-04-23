@@ -85,6 +85,10 @@ class Comment(models.Model):
     author     = models.ForeignKey(Account, on_delete=models.CASCADE)
     body       = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
+    parent     = models.ForeignKey(
+        'self', on_delete=models.CASCADE, null=True, blank=True,
+        related_name='replies'
+    )
 
     class Meta:
         ordering = ['created_at']
