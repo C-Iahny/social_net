@@ -567,12 +567,105 @@ body { background: var(--bg); }
 .photo-thumb {
     aspect-ratio: 1; border-radius: 12px;
     overflow: hidden; background: var(--btn-bg);
+    cursor: pointer; position: relative;
 }
 .photo-thumb img {
     width: 100%; height: 100%; object-fit: cover;
-    transition: transform .25s; cursor: pointer;
+    transition: transform .3s;
+    display: block;
 }
-.photo-thumb img:hover { transform: scale(1.04); }
+.photo-thumb-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.28);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .2s;
+    border-radius: 12px;
+}
+.photo-thumb-overlay .material-icons {
+    color: #fff; font-size: 1.8rem;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.4));
+}
+.photo-thumb:hover img { transform: scale(1.06); }
+.photo-thumb:hover .photo-thumb-overlay { opacity: 1; }
+
+/* ── Lightbox ── */
+#pf-lightbox {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    align-items: center; justify-content: center;
+    flex-direction: column;
+    animation: lb-in .22s ease;
+}
+#pf-lightbox.open { display: flex; }
+@keyframes lb-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.lb-img-wrap {
+    position: relative;
+    max-width: min(92vw, 960px);
+    max-height: 82vh;
+    display: flex; align-items: center; justify-content: center;
+}
+#lb-img {
+    max-width: 100%; max-height: 82vh;
+    border-radius: 16px;
+    box-shadow: 0 8px 48px rgba(0,0,0,.7);
+    object-fit: contain;
+    transition: opacity .18s;
+}
+.lb-caption {
+    color: rgba(255,255,255,.75);
+    font-size: .88rem;
+    margin-top: .75rem;
+    text-align: center;
+    max-width: 600px;
+    padding: 0 1rem;
+}
+/* Nav arrows */
+.lb-arrow {
+    position: fixed;
+    top: 50%; transform: translateY(-50%);
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.1);
+    border: 1.5px solid rgba(255,255,255,.18);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background .18s;
+    backdrop-filter: blur(4px);
+}
+.lb-arrow:hover { background: rgba(255,255,255,.22); }
+.lb-arrow.lb-prev { left: 1.2rem; }
+.lb-arrow.lb-next { right: 1.2rem; }
+.lb-arrow .material-icons { font-size: 1.4rem; }
+/* Close button */
+.lb-close {
+    position: fixed; top: 1rem; right: 1rem;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.12);
+    border: 1.5px solid rgba(255,255,255,.2);
+    color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .18s;
+}
+.lb-close:hover { background: rgba(255,255,255,.25); }
+.lb-close .material-icons { font-size: 1.2rem; }
+/* Counter */
+.lb-counter {
+    position: fixed; top: 1.1rem; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,.55);
+    font-size: .8rem; font-weight: 600;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+@media (max-width: 600px) {
+    .lb-arrow { display: none; }
+}
 
 /* ── Friends grid ── */
 .friends-grid {
@@ -921,10 +1014,11 @@ body { background: var(--bg); }
         {% if photos %}
         <div class="photos-grid">
             {% for photo in photos %}
-            <div class="photo-thumb">
-                <a href="{{ photo.header_image.url }}" target="_blank">
-                    <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
-                </a>
+            <div class="photo-thumb" onclick="openLightbox('{{ photo.header_image.url }}', '{{ photo.title|escapejs }}', {{ forloop.counter0 }})">
+                <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}" loading="lazy">
+                <div class="photo-thumb-overlay">
+                    <span class="material-icons">zoom_in</span>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -1545,7 +1639,85 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 
+<!-- ── Lightbox modal ── -->
+<div id="pf-lightbox" role="dialog" aria-modal="true" onclick="lbBgClick(event)">
+    <button class="lb-close" onclick="closeLightbox()" aria-label="Fermer">
+        <span class="material-icons">close</span>
+    </button>
+    <span class="lb-counter" id="lb-counter"></span>
+    <button class="lb-arrow lb-prev" onclick="lbNav(-1)" aria-label="Précédent">
+        <span class="material-icons">chevron_left</span>
+    </button>
+    <div class="lb-img-wrap">
+        <img id="lb-img" src="" alt="">
+    </div>
+    <p class="lb-caption" id="lb-caption"></p>
+    <button class="lb-arrow lb-next" onclick="lbNav(1)" aria-label="Suivant">
+        <span class="material-icons">chevron_right</span>
+    </button>
+</div>
+
 <script>
+/* ══════════════════════════════════════
+   LIGHTBOX
+   ══════════════════════════════════════ */
+var _lbPhotos = [
+    {% for photo in photos %}
+    { src: '{{ photo.header_image.url }}', caption: '{{ photo.title|escapejs }}' }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+var _lbIdx = 0;
+
+function openLightbox(src, caption, idx) {
+    _lbIdx = idx || 0;
+    _lbShow();
+    document.addEventListener('keydown', lbKeyHandler);
+}
+function _lbShow() {
+    var lb  = document.getElementById('pf-lightbox');
+    var img = document.getElementById('lb-img');
+    var cap = document.getElementById('lb-caption');
+    var ctr = document.getElementById('lb-counter');
+    var p   = _lbPhotos[_lbIdx];
+    img.style.opacity = '0';
+    img.onload = function() { img.style.opacity = '1'; };
+    img.src     = p.src;
+    img.alt     = p.caption;
+    if (cap) cap.textContent = p.caption;
+    if (ctr) ctr.textContent = (_lbIdx + 1) + ' / ' + _lbPhotos.length;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+    document.getElementById('pf-lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', lbKeyHandler);
+}
+function lbNav(dir) {
+    _lbIdx = (_lbIdx + dir + _lbPhotos.length) % _lbPhotos.length;
+    _lbShow();
+}
+function lbBgClick(e) {
+    if (e.target === document.getElementById('pf-lightbox')) closeLightbox();
+}
+function lbKeyHandler(e) {
+    if (e.key === 'Escape')      closeLightbox();
+    if (e.key === 'ArrowRight')  lbNav(1);
+    if (e.key === 'ArrowLeft')   lbNav(-1);
+}
+// Swipe support (mobile)
+(function() {
+    var lb = document.getElementById('pf-lightbox');
+    var sx = null;
+    lb.addEventListener('touchstart', function(e) { sx = e.touches[0].clientX; }, {passive:true});
+    lb.addEventListener('touchend', function(e) {
+        if (sx === null) return;
+        var dx = e.changedTouches[0].clientX - sx;
+        if (Math.abs(dx) > 50) lbNav(dx < 0 ? 1 : -1);
+        sx = null;
+    }, {passive:true});
+})();
+
 /* ══════════════════════════════════════
    PROFILE — INFINITE SCROLL
    ══════════════════════════════════════ */
