@@ -403,9 +403,15 @@ function _renderPreview() {
             credentials: 'same-origin'
         }).then(function(r) {
             console.log('[ZOOT] Réponse HTTP', r.status, '— redirection vers', r.url);
+            sessionStorage.setItem('zoot_upload_log', JSON.stringify({
+                ok: true, status: r.status, dest: r.url, files: _pending.length
+            }));
             window.location.href = r.url;
         }).catch(function(err) {
             console.error('[ZOOT] Erreur fetch :', err);
+            sessionStorage.setItem('zoot_upload_log', JSON.stringify({
+                ok: false, error: String(err), files: _pending.length
+            }));
             if (btn) { btn.disabled = false; btn.style.opacity = ''; }
             form.submit();
         });

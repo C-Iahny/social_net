@@ -323,6 +323,13 @@
             if (active) el.classList.add('active');
         });
 
+        // Lire le log d'upload s'il existe (persisté depuis add_post.html via sessionStorage)
+        var _uploadLog = sessionStorage.getItem('zoot_upload_log');
+        if (_uploadLog) {
+            try { console.log('[ZOOT UPLOAD RESULT]', JSON.parse(_uploadLog)); } catch(e) {}
+            sessionStorage.removeItem('zoot_upload_log');
+        }
+
         // Sync pending friend-request badge from push-notif counter if exists
         var pendingCount = parseInt(sessionStorage.getItem('zoot_pending_fr') || '0', 10);
         if (pendingCount > 0) {
