@@ -19,7 +19,8 @@
     --bg-nav:       rgba(255,255,255,0.92);
     --bg-hover:     #ece9f7;
     --text:         #1a1535;
-    --text-muted:   #6b6590;
+    --text-muted:   #4a4568;   /* était #6b6590 — contraste ~8:1 sur blanc, ~7:1 sur bg */
+    --text-subtle:  #7a7598;   /* pour éléments vraiment secondaires (séparateurs, etc.) */
     --border:       #ddd9f0;
     --accent:       #6366f1;
     --accent2:      #a855f7;
@@ -41,7 +42,7 @@
     /* compat legacy */
     --main-background-color:    #f0eef8;
     --dark-background-color:    #ddd9f0;
-    --secondary-text-color:     #6b6590;
+    --secondary-text-color:     #4a4568;
     --light-primary-text-color: #6366f1;
     --main-radius: 12px;
     --main-padding: 8px;
@@ -54,7 +55,8 @@
     --bg-nav:       rgba(8,9,18,0.94);
     --bg-hover:     #111328;
     --text:         #dde2f0;
-    --text-muted:   #6878a0;
+    --text-muted:   #9aabcc;   /* était #6878a0 — contraste ~8:1 sur bg-card */
+    --text-subtle:  #5c6e94;   /* pour éléments vraiment secondaires */
     --border:       #1a2240;
     --accent:       #00cfff;
     --accent2:      #bf5fff;
@@ -75,7 +77,7 @@
 
     --main-background-color:    #0d0f1e;
     --dark-background-color:    #07080f;
-    --secondary-text-color:     #6878a0;
+    --secondary-text-color:     #9aabcc;
     --light-primary-text-color: #00cfff;
 }
 
@@ -95,7 +97,23 @@ body {
     font-weight: 400;
     transition: background .35s, color .35s;
     line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
+
+/* ── PLACEHOLDERS — contraste explicite ── */
+::placeholder {
+    color: var(--text-muted);
+    opacity: 1; /* Firefox applique 0.54 par défaut — annuler */
+}
+::-webkit-input-placeholder { color: var(--text-muted); opacity: 1; }
+::-moz-placeholder           { color: var(--text-muted); opacity: 1; }
+:-ms-input-placeholder       { color: var(--text-muted); }
+
+[data-theme="dark"] ::placeholder             { color: var(--text-muted); opacity: 1; }
+[data-theme="dark"] ::-webkit-input-placeholder { color: var(--text-muted); opacity: 1; }
+[data-theme="dark"] ::-moz-placeholder          { color: var(--text-muted); opacity: 1; }
 
 /* Grille cyberpunk uniquement en dark mode
    z-index: -1 → reste derrière tout le contenu SANS créer de stacking context

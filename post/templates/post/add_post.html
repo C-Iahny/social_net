@@ -341,39 +341,71 @@ function _renderPreview() {
     });
 })();
 
-/* Intercept submit — injecte les fichiers via FormData (cross-browser fiable) */
+/* Intercept submit — FormData explicite, logs console pour debug */
 (function() {
     var form = document.querySelector('form');
     if (!form) return;
     form.addEventListener('submit', function(e) {
+
         /* Sync CKEditor si présent */
         if (typeof CKEDITOR !== 'undefined') {
             for (var k in CKEDITOR.instances) {
                 try { CKEDITOR.instances[k].updateElement(); } catch(ex) {}
             }
         }
-        /* Si aucun fichier en attente, laisser le submit normal */
-        if (_pending.length === 0) return;
+
+        console.log('[ZOOT] submit — fichiers en attente :', _pending.length);
+
+        /* Si aucun fichier → submit natif */
+        if (_pending.length === 0) {
+            console.log('[ZOOT] Aucun fichier, submit natif.');
+            return;
+        }
 
         e.preventDefault();
-        var fd = new FormData(form);
-        /* Retirer l'éventuel champ vide créé par l'input file natif */
-        fd.delete('media_files');
-        /* Ajouter chaque fichier du panier */
-        _pending.forEach(function(f) { fd.append('media_files', f); });
 
-        /* Désactiver le bouton pour éviter double-submit */
+        /* ── Construire FormData manuellement (plus fiable que new FormData(form)) ── */
+        var fd = new FormData();
+
+        /* CSRF */
+        var csrf = form.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrf) fd.append('csrfmiddlewaretoken', csrf.value);
+
+        /* Titre */
+        var titleEl = form.querySelector('[name=title]');
+        if (titleEl) fd.append('title', titleEl.value);
+
+        /* Corps (textarea CKEditor synchronisée juste avant) */
+        var bodyEl = form.querySelector('[name=body]');
+        if (bodyEl) fd.append('body', bodyEl.value);
+
+        /* Fichier joint optionnel */
+        var fileEl = form.querySelector('[name=file]');
+        if (fileEl && fileEl.files && fileEl.files[0]) {
+            fd.append('file', fileEl.files[0]);
+        }
+
+        /* Fichiers médias accumulés */
+        _pending.forEach(function(f, i) {
+            fd.append('media_files', f);
+            console.log('[ZOOT]  fichier', i, ':', f.name, f.size, 'octets');
+        });
+
         var btn = form.querySelector('.btn-submit');
         if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
 
-        fetch(form.action || window.location.pathname, {
+        var url = form.action || window.location.pathname;
+        console.log('[ZOOT] POST vers :', url);
+
+        fetch(url, {
             method: 'POST',
             body: fd,
             credentials: 'same-origin'
         }).then(function(r) {
+            console.log('[ZOOT] Réponse HTTP', r.status, '— redirection vers', r.url);
             window.location.href = r.url;
-        }).catch(function() {
-            /* Fallback : submit classique sans les médias accumulés */
+        }).catch(function(err) {
+            console.error('[ZOOT] Erreur fetch :', err);
             if (btn) { btn.disabled = false; btn.style.opacity = ''; }
             form.submit();
         });

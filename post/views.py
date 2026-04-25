@@ -1,6 +1,8 @@
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.views.generic import DeleteView, UpdateView, CreateView
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
@@ -9,6 +11,8 @@ from django.utils.decorators import method_decorator
 from django.template.loader import render_to_string
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+
+_logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -306,16 +310,23 @@ class AddPostView(CreateView):
         post = self.object
 
         # ── Enregistrer les fichiers média directement sur Cloudinary ──
-        # (pas de compression locale — Cloudinary gère CDN + optimisation)
         _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
         files = self.request.FILES.getlist('media_files')
+        _logger.info("AddPostView: %d fichier(s) reçu(s) pour le post #%s", len(files), post.pk)
+        saved = 0
         for i, f in enumerate(files):
+            _logger.info("  → fichier %d : name=%s size=%s", i, f.name, getattr(f, 'size', '?'))
             ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
             mtype = 'video' if ext in _VIDEO_EXTS else 'image'
             try:
                 PostMedia.objects.create(post=post, file=f, media_type=mtype, order=i)
-            except Exception:
-                pass
+                saved += 1
+            except Exception as e:
+                _logger.exception("PostMedia create FAILED (fichier=%s): %s", f.name, e)
+        if saved:
+            messages.success(self.request, f"{saved} média(s) sauvegardé(s).")
+        elif files:
+            messages.warning(self.request, "Les fichiers n'ont pas pu être sauvegardés.")
 
         # Notify each friend via WebSocket channel layer
         author = self.request.user
