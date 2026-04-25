@@ -305,29 +305,17 @@ class AddPostView(CreateView):
         response = super().form_valid(form)
         post = self.object
 
-        # ── Save + compress multiple media files ──────────────────────
-        import logging as _log
-        _logger = _log.getLogger(__name__)
-        try:
-            from .media_utils import compress_media
-            files = self.request.FILES.getlist('media_files')
-            _logger.warning("MEDIA_DEBUG: %d file(s) received for post %s", len(files), post.id)
-            for i, f in enumerate(files):
-                _logger.warning("MEDIA_DEBUG: file[%d] name=%s size=%s", i, f.name, f.size)
-                try:
-                    compressed, mtype = compress_media(f)
-                    _logger.warning("MEDIA_DEBUG: compressed → %s (%s)", getattr(compressed, 'name', '?'), mtype)
-                except Exception as ce:
-                    _logger.error("MEDIA_DEBUG: compress failed: %s", ce)
-                    f.seek(0)
-                    compressed, mtype = f, 'image'
-                try:
-                    pm = PostMedia.objects.create(post=post, file=compressed, media_type=mtype, order=i)
-                    _logger.warning("MEDIA_DEBUG: PostMedia #%s created, url=%s", pm.id, pm.url)
-                except Exception as e:
-                    _logger.error("MEDIA_DEBUG: PostMedia.create FAILED: %s", e)
-        except Exception as e:
-            _logger.error("MEDIA_DEBUG: outer block FAILED: %s", e)
+        # ── Enregistrer les fichiers média directement sur Cloudinary ──
+        # (pas de compression locale — Cloudinary gère CDN + optimisation)
+        _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
+        files = self.request.FILES.getlist('media_files')
+        for i, f in enumerate(files):
+            ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
+            mtype = 'video' if ext in _VIDEO_EXTS else 'image'
+            try:
+                PostMedia.objects.create(post=post, file=f, media_type=mtype, order=i)
+            except Exception:
+                pass
 
         # Notify each friend via WebSocket channel layer
         author = self.request.user
@@ -389,8 +377,6 @@ class UpdatePostView(UpdateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         post = self.object
-        import logging as _log
-        _logger = _log.getLogger(__name__)
 
         # Supprimer les médias cochés
         delete_ids = self.request.POST.getlist('delete_media')
@@ -400,29 +386,21 @@ class UpdatePostView(UpdateView):
             except Exception as e:
                 _logger.error("delete_media failed: %s", e)
 
-        # Ajouter les nouveaux fichiers
+        # Ajouter les nouveaux fichiers directement sur Cloudinary
+        _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
+        files = self.request.FILES.getlist('media_files')
         try:
-            from .media_utils import compress_media
-            files = self.request.FILES.getlist('media_files')
-            _logger.warning("UPDATE MEDIA_DEBUG: %d new file(s) for post %s", len(files), post.id)
-            # Prochain ordre = max existant + 1
+            start_order = (PostMedia.objects.filter(post=post)
+                           .order_by('-order').values_list('order', flat=True).first() or -1) + 1
+        except Exception:
+            start_order = 0
+        for i, f in enumerate(files):
+            ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
+            mtype = 'video' if ext in _VIDEO_EXTS else 'image'
             try:
-                start_order = (PostMedia.objects.filter(post=post).order_by('-order').values_list('order', flat=True).first() or -1) + 1
+                PostMedia.objects.create(post=post, file=f, media_type=mtype, order=start_order + i)
             except Exception:
-                start_order = 0
-            for i, f in enumerate(files):
-                try:
-                    compressed, mtype = compress_media(f)
-                except Exception as ce:
-                    _logger.error("compress failed: %s", ce)
-                    f.seek(0)
-                    compressed, mtype = f, 'image'
-                try:
-                    PostMedia.objects.create(post=post, file=compressed, media_type=mtype, order=start_order + i)
-                except Exception as e:
-                    _logger.error("PostMedia.create FAILED: %s", e)
-        except Exception as e:
-            _logger.error("UPDATE media_files block FAILED: %s", e)
+                pass
 
         return response
 
