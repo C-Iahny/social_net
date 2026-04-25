@@ -634,6 +634,9 @@ def hashtag_view(request, tag):
     page_number = request.GET.get('page')
     posts_page = paginator.get_page(page_number)
 
+    post_ids = [p.id for p in posts_page]
+    _attach_media(list(posts_page), post_ids)
+
     return render(request, 'post/hashtag.html', {
         'tag':   '#' + tag_clean,
         'posts': posts_page,
