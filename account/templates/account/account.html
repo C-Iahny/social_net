@@ -954,7 +954,7 @@ body { background: var(--bg); }
                     <div class="mini-friends-grid">
                         {% for photo in photos|slice:":9" %}
                         <div class="mini-friend">
-                            <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}">
+                            <img src="{{ photo.url }}" alt="{{ photo.title }}">
                         </div>
                         {% endfor %}
                     </div>
