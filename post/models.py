@@ -1,10 +1,11 @@
 from django.db import models
 from django.urls import reverse
-from datetime import datetime, date 
+from datetime import datetime, date
 from ckeditor.fields import RichTextField
 import uuid
 
 from account.models import Account
+from ZOOT.storage import AutoMediaCloudinaryStorage
 
 
 class Category(models.Model):
@@ -143,7 +144,7 @@ class PostMedia(models.Model):
     VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
 
     post       = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='media_files')
-    file       = models.FileField(upload_to='post_media/')
+    file       = models.FileField(upload_to='post_media/', storage=AutoMediaCloudinaryStorage())
     media_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default=IMAGE)
     order      = models.PositiveIntegerField(default=0)
 
@@ -152,13 +153,28 @@ class PostMedia(models.Model):
 
     @property
     def url(self):
-        return self.file.url if self.file else None
+        """
+        Génère l'URL Cloudinary en utilisant le bon resource_type.
+        Cloudinary stocke le public_id sans extension (ex. 'post_media/myvideo').
+        On se base sur media_type (pas sur l'extension) pour distinguer
+        '/image/upload/...' de '/video/upload/...'.
+        """
+        if not self.file or not self.file.name:
+            return None
+        try:
+            import cloudinary
+            cloudinary_rt = 'video' if self.media_type == self.VIDEO else 'image'
+            resource = cloudinary.CloudinaryResource(
+                self.file.name,
+                default_resource_type=cloudinary_rt,
+            )
+            return resource.url
+        except Exception:
+            # Fallback : URL brute du backend de stockage
+            return self.file.url
 
     @property
     def is_video(self):
-        if self.file and self.file.name:
-            ext = self.file.name.rsplit('.', 1)[-1].lower() if '.' in self.file.name else ''
-            return ext in self.VIDEO_EXTS
         return self.media_type == self.VIDEO
 
     def __str__(self):

@@ -1,4 +1,5 @@
 import logging
+import cloudinary.uploader
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -309,24 +310,43 @@ class AddPostView(CreateView):
         response = super().form_valid(form)
         post = self.object
 
-        # ── Enregistrer les fichiers média directement sur Cloudinary ──
+        # ── Enregistrer les fichiers média sur Cloudinary ──────────────────
         _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
         files = self.request.FILES.getlist('media_files')
-        _logger.info("AddPostView: %d fichier(s) reçu(s) pour le post #%s", len(files), post.pk)
+        _logger.warning("AddPostView: %d fichier(s) reçu(s) post #%s", len(files), post.pk)
         saved = 0
         for i, f in enumerate(files):
-            _logger.info("  → fichier %d : name=%s size=%s", i, f.name, getattr(f, 'size', '?'))
             ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
-            mtype = 'video' if ext in _VIDEO_EXTS else 'image'
+            is_vid = ext in _VIDEO_EXTS
+            mtype = 'video' if is_vid else 'image'
+            _logger.warning("  fichier %d : %s  ext=%s  type=%s  size=%s",
+                            i, f.name, ext, mtype, getattr(f, 'size', '?'))
             try:
-                PostMedia.objects.create(post=post, file=f, media_type=mtype, order=i)
+                if is_vid:
+                    # Upload direct Cloudinary avec resource_type='video'
+                    # (le backend MediaCloudinaryStorage n'accepte que les images)
+                    f.seek(0)
+                    resp = cloudinary.uploader.upload(
+                        f,
+                        resource_type='video',
+                        folder='post_media',
+                        use_filename=True,
+                        unique_filename=True,
+                    )
+                    public_id = resp['public_id']
+                    _logger.warning("  → vidéo uploadée : public_id=%s", public_id)
+                    pm = PostMedia(post=post, media_type=mtype, order=i)
+                    pm.file.name = public_id
+                    pm.save()
+                else:
+                    PostMedia.objects.create(post=post, file=f, media_type=mtype, order=i)
                 saved += 1
             except Exception as e:
-                _logger.exception("PostMedia create FAILED (fichier=%s): %s", f.name, e)
+                _logger.exception("PostMedia FAILED (fichier=%s): %s", f.name, e)
         if saved:
             messages.success(self.request, f"{saved} média(s) sauvegardé(s).")
         elif files:
-            messages.warning(self.request, "Les fichiers n'ont pas pu être sauvegardés.")
+            messages.warning(self.request, "Aucun fichier sauvegardé — voir les logs.")
 
         # Notify each friend via WebSocket channel layer
         author = self.request.user
@@ -397,7 +417,7 @@ class UpdatePostView(UpdateView):
             except Exception as e:
                 _logger.error("delete_media failed: %s", e)
 
-        # Ajouter les nouveaux fichiers directement sur Cloudinary
+        # Ajouter les nouveaux fichiers
         _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
         files = self.request.FILES.getlist('media_files')
         try:
@@ -407,11 +427,22 @@ class UpdatePostView(UpdateView):
             start_order = 0
         for i, f in enumerate(files):
             ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
-            mtype = 'video' if ext in _VIDEO_EXTS else 'image'
+            is_vid = ext in _VIDEO_EXTS
+            mtype = 'video' if is_vid else 'image'
             try:
-                PostMedia.objects.create(post=post, file=f, media_type=mtype, order=start_order + i)
-            except Exception:
-                pass
+                if is_vid:
+                    f.seek(0)
+                    resp = cloudinary.uploader.upload(
+                        f, resource_type='video', folder='post_media',
+                        use_filename=True, unique_filename=True,
+                    )
+                    pm = PostMedia(post=post, media_type=mtype, order=start_order + i)
+                    pm.file.name = resp['public_id']
+                    pm.save()
+                else:
+                    PostMedia.objects.create(post=post, file=f, media_type=mtype, order=start_order + i)
+            except Exception as e:
+                _logger.exception("UpdatePost: PostMedia FAILED (fichier=%s): %s", f.name, e)
 
         return response
 
