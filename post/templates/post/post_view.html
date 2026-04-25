@@ -112,7 +112,7 @@ body { background: var(--bg); }
     margin-bottom: .1rem;
 }
 .lsb-name:hover { color: var(--accent); text-decoration: none; }
-.lsb-handle { font-size: .77rem; color: var(--text-muted); }
+.lsb-handle { font-size: .80rem; color: var(--text-muted); }
 
 .lsb-stats {
     display: flex; gap: .6rem;
@@ -125,7 +125,7 @@ body { background: var(--bg); }
 }
 .lsb-stat { text-align: center; flex: 1; }
 .lsb-stat-val { font-weight: 800; font-size: 1.05rem; color: var(--text); display: block; line-height: 1.2; }
-.lsb-stat-lbl { font-size: .7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
+.lsb-stat-lbl { font-size: .72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
 
 .lsb-profile-btn {
     display: block; text-align: center;
@@ -364,22 +364,23 @@ body { background: var(--bg); }
 }
 .pc-author:hover { color: var(--accent); text-decoration: none; }
 .pc-sub {
-    font-size: .74rem; color: var(--text-muted);
+    font-size: .78rem; color: var(--text-muted);
     display: flex; align-items: center; gap: .3rem;
-    margin-top: .05rem; opacity: .85;
+    margin-top: .05rem;
+    /* opacity retiré — dégrade le contraste sans apport visuel */
 }
-.pc-sub .material-icons { font-size: .8rem; }
+.pc-sub .material-icons { font-size: .82rem; }
 .pc-category-tag {
     display: inline-block;
     background: var(--btn-bg);
     color: var(--text-muted);
     border-radius: 6px;
     padding: .05rem .45rem;
-    font-size: .7rem;
-    font-weight: 600;
+    font-size: .72rem;
+    font-weight: 700;
     letter-spacing: .02em;
 }
-.pc-dot { opacity: .45; }
+.pc-dot { color: var(--text-subtle, var(--border)); opacity: 1; }
 
 /* Owner actions */
 .pc-owner-menu {
@@ -622,17 +623,17 @@ body { background: var(--bg); }
     display: flex; align-items: center; gap: .7rem;
     margin-top: .28rem; padding: 0 .1rem;
 }
-.pc-comment-time { font-size: .7rem; color: var(--text-muted); }
+.pc-comment-time { font-size: .72rem; color: var(--text-muted); }
 .pc-comment-reply-btn {
     background: none; border: none; padding: 0; cursor: pointer;
-    color: var(--text-muted); font-size: .7rem; font-weight: 700;
+    color: var(--text-muted); font-size: .72rem; font-weight: 700;
     transition: color .12s; letter-spacing: .02em;
     text-transform: uppercase;
 }
 .pc-comment-reply-btn:hover { color: var(--accent); }
 .pc-comment-del {
     background: none; border: none; padding: 0; cursor: pointer;
-    color: var(--text-muted); font-size: .7rem; font-weight: 600;
+    color: var(--text-muted); font-size: .72rem; font-weight: 600;
     transition: color .12s; margin-left: auto;
 }
 .pc-comment-del:hover { color: #e53935; }
@@ -844,7 +845,7 @@ body { background: var(--bg); }
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .rsb-friend-name:hover { color: var(--accent); text-decoration: none; }
-.rsb-friend-sub { font-size: .73rem; color: var(--text-muted); }
+.rsb-friend-sub { font-size: .76rem; color: var(--text-muted); }
 .rsb-chat-btn {
     width: 30px; height: 30px; border-radius: 8px;
     display: inline-flex; align-items: center; justify-content: center;
@@ -867,11 +868,11 @@ body { background: var(--bg); }
 .rsb-trending-row:last-child { border-bottom: none; }
 .rsb-trending-row:hover { background: var(--btn-bg); text-decoration: none; }
 .rsb-trending-rank {
-    width: 20px; font-size: .75rem; font-weight: 700;
+    width: 20px; font-size: .76rem; font-weight: 700;
     color: var(--text-muted); flex-shrink: 0; text-align: center;
 }
 .rsb-trending-tag { flex: 1; font-weight: 700; font-size: .87rem; color: var(--accent); padding: 0 .4rem; }
-.rsb-trending-count { font-size: .73rem; color: var(--text-muted); font-weight: 600; }
+.rsb-trending-count { font-size: .76rem; color: var(--text-muted); font-weight: 600; }
 
 /* Footer links */
 .rsb-footer-links { padding: .6rem 1rem .9rem; }
@@ -1120,7 +1121,7 @@ body { background: var(--bg); }
                         <span class="material-icons">chat_bubble_outline</span>
                         Evitra
                         <span id="comment-count-{{ post.id }}"
-                              style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.total_comments %}display:none{% endif %}">
+                              style="font-size:.76rem;margin-left:.15rem;color:var(--text-muted);{% if not post.total_comments %}display:none{% endif %}">
                             {% if post.total_comments %}({{ post.total_comments }}){% endif %}
                         </span>
                     </button>

@@ -194,6 +194,27 @@
 
 
 	<main>
+        {% if messages %}
+        <div id="django-messages" style="position:fixed;top:70px;right:1rem;z-index:9000;display:flex;flex-direction:column;gap:.4rem;max-width:340px;">
+            {% for message in messages %}
+            <div style="
+                background:{% if message.tags == 'success' %}var(--accent){% elif message.tags == 'warning' %}#f59e0b{% elif message.tags == 'error' %}#e53935{% else %}var(--bg-card){% endif %};
+                color:{% if message.tags == 'success' or message.tags == 'warning' or message.tags == 'error' %}#fff{% else %}var(--text){% endif %};
+                border:1px solid var(--border);border-radius:12px;padding:.6rem 1rem;
+                font-size:.88rem;font-weight:600;
+                box-shadow:0 4px 16px rgba(0,0,0,.15);
+                display:flex;align-items:center;gap:.5rem;
+                animation:fadeInUp .3s ease both;">
+                <span class="material-icons" style="font-size:1rem;">
+                    {% if message.tags == 'success' %}check_circle{% elif message.tags == 'warning' %}warning{% elif message.tags == 'error' %}error{% else %}info{% endif %}
+                </span>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        <script>setTimeout(function(){var el=document.getElementById('django-messages');if(el)el.style.display='none';},5000);</script>
+        {% endif %}
+
 		{% block content %}
 
 
