@@ -225,7 +225,7 @@
                                accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,.mov,.mkv,.avi,.m4v,.3gp"
                                multiple
                                style="display:none;"
-                               onchange="addToSelection(this.files); this.value='';">
+                               onchange="addToSelection(this.files); this.value=null;">
                         <span class="material-icons">add_photo_alternate</span>
                         <p id="media-zone-label"><span class="upload-label">Cliquer pour ajouter</span> ou glisser-déposer</p>
                         <p style="font-size:.78rem;margin-top:.2rem;">Images &amp; Vidéos — sélections cumulables</p>
@@ -266,35 +266,23 @@
 
 <script>
 var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
-var _pending = new DataTransfer(); // accumule tous les fichiers sélectionnés
+var _pending = []; // tableau de File objects — cross-browser fiable
 
 function isVideo(file) {
     var ext = (file.name.split('.').pop() || '').toLowerCase();
     return file.type.startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
 }
 
-/* Ajoute les nouveaux fichiers au panier et met à jour l'input + preview */
+/* Ajoute les nouveaux fichiers au panier */
 function addToSelection(newFiles) {
-    Array.from(newFiles).forEach(function(f) { _pending.items.add(f); });
-    _syncInput();
+    Array.from(newFiles).forEach(function(f) { _pending.push(f); });
     _renderPreview();
 }
 
 /* Retire le fichier à l'index idx du panier */
 function removeFromSelection(idx) {
-    var dt = new DataTransfer();
-    Array.from(_pending.files).forEach(function(f, i) {
-        if (i !== idx) dt.items.add(f);
-    });
-    _pending = dt;
-    _syncInput();
+    _pending.splice(idx, 1);
     _renderPreview();
-}
-
-/* Met à jour l'input natif avec le panier courant */
-function _syncInput() {
-    var input = document.getElementById('id_media_files');
-    try { input.files = _pending.files; } catch(e) {}
 }
 
 /* Redessine la grille de prévisualisation */
@@ -302,13 +290,13 @@ function _renderPreview() {
     var grid  = document.getElementById('media-preview-grid');
     var label = document.getElementById('media-zone-label');
     grid.innerHTML = '';
-    var count = _pending.files.length;
+    var count = _pending.length;
 
     label.innerHTML = count > 0
         ? '<span class="upload-label">' + count + ' fichier(s)</span> — cliquer pour en ajouter'
         : '<span class="upload-label">Cliquer pour ajouter</span> ou glisser-déposer';
 
-    Array.from(_pending.files).forEach(function(file, idx) {
+    _pending.forEach(function(file, idx) {
         var item = document.createElement('div');
         item.className = 'media-preview-item';
         var url = URL.createObjectURL(file);
@@ -350,6 +338,45 @@ function _renderPreview() {
     zone.addEventListener('drop', function(e) {
         e.preventDefault(); zone.classList.remove('dragover');
         addToSelection(e.dataTransfer.files);
+    });
+})();
+
+/* Intercept submit — injecte les fichiers via FormData (cross-browser fiable) */
+(function() {
+    var form = document.querySelector('form');
+    if (!form) return;
+    form.addEventListener('submit', function(e) {
+        /* Sync CKEditor si présent */
+        if (typeof CKEDITOR !== 'undefined') {
+            for (var k in CKEDITOR.instances) {
+                try { CKEDITOR.instances[k].updateElement(); } catch(ex) {}
+            }
+        }
+        /* Si aucun fichier en attente, laisser le submit normal */
+        if (_pending.length === 0) return;
+
+        e.preventDefault();
+        var fd = new FormData(form);
+        /* Retirer l'éventuel champ vide créé par l'input file natif */
+        fd.delete('media_files');
+        /* Ajouter chaque fichier du panier */
+        _pending.forEach(function(f) { fd.append('media_files', f); });
+
+        /* Désactiver le bouton pour éviter double-submit */
+        var btn = form.querySelector('.btn-submit');
+        if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
+
+        fetch(form.action || window.location.pathname, {
+            method: 'POST',
+            body: fd,
+            credentials: 'same-origin'
+        }).then(function(r) {
+            window.location.href = r.url;
+        }).catch(function() {
+            /* Fallback : submit classique sans les médias accumulés */
+            if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+            form.submit();
+        });
     });
 })();
 </script>
