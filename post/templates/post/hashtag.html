@@ -143,28 +143,7 @@ body { background: var(--bg); }
             <div class="pc-body ht-body">{{ post.body|safe }}</div>
             {% endif %}
 
-            {% if post.media_list %}
-            {% with media=post.media_list count=post.media_list|length %}
-            <div class="pc-gallery pc-gallery-{{ count|default:1 }}">
-                {% for item in media %}
-                {% if item.is_video %}
-                <div class="pc-gal-item pc-gal-video">
-                    <video class="pc-gal-vid" controls preload="metadata"><source src="{{ item.url }}"></video>
-                </div>
-                {% else %}
-                <div class="pc-gal-item" onclick="zootOpenImg('{{ item.url }}', '{{ post.title|escapejs }}')" style="cursor:zoom-in;">
-                    <img class="pc-gal-img" loading="lazy" src="{{ item.url }}" alt="{{ post.title }}">
-                    {% if count > 4 and forloop.counter == 4 %}<div class="pc-gal-more">+{{ count|add:"-4" }}</div>{% endif %}
-                </div>
-                {% endif %}
-                {% endfor %}
-            </div>
-            {% endwith %}
-            {% elif post.header_image_url %}
-            <div class="pc-image-wrap" onclick="zootOpenImg('{{ post.header_image_url }}', '{{ post.title|escapejs }}')" style="cursor:zoom-in;">
-                <img class="pc-image" src="{{ post.header_image_url }}" alt="{{ post.title }}">
-            </div>
-            {% endif %}
+            {% include 'post/_post_media.html' %}
 
             <div class="pc-footer">
                 <div class="pc-footer-info">
