@@ -313,14 +313,12 @@ class AddPostView(CreateView):
         # ── Enregistrer les fichiers média sur Cloudinary ──────────────────
         _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
         files = self.request.FILES.getlist('media_files')
-        _logger.warning("AddPostView: %d fichier(s) reçu(s) post #%s", len(files), post.pk)
+        _logger.info("AddPostView: %d fichier(s) reçu(s) post #%s", len(files), post.pk)
         saved = 0
         for i, f in enumerate(files):
             ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
             is_vid = ext in _VIDEO_EXTS
             mtype = 'video' if is_vid else 'image'
-            _logger.warning("  fichier %d : %s  ext=%s  type=%s  size=%s",
-                            i, f.name, ext, mtype, getattr(f, 'size', '?'))
             try:
                 if is_vid:
                     # Upload direct Cloudinary avec resource_type='video'
@@ -334,7 +332,7 @@ class AddPostView(CreateView):
                         unique_filename=True,
                     )
                     public_id = resp['public_id']
-                    _logger.warning("  → vidéo uploadée : public_id=%s", public_id)
+                    _logger.info("  → vidéo uploadée : public_id=%s", public_id)
                     pm = PostMedia(post=post, media_type=mtype, order=i)
                     pm.file.name = public_id
                     pm.save()
