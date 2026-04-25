@@ -1,36 +1,27 @@
-{# ── _post_media.html — carrousel multi-media ou fallback legacy ─────────── #}
-{# Attendu : post.media_list (liste PostMedia), post.title, post.id         #}
-{# Fallback : post.header_image_url, post.video, post.file, post.file_is_video #}
+{# ── _post_media.html — grille multi-photos + fallback legacy ── #}
+{# post.media_list requis (liste PostMedia); sinon fallback header_image/video/file #}
 
 {% if post.media_list %}
 {% with media=post.media_list count=post.media_list|length %}
-<div class="pc-carousel" id="car-{{ post.id }}" data-count="{{ count }}">
-    <div class="pc-carousel-track" id="car-track-{{ post.id }}">
-        {% for item in media %}
-        <div class="pc-carousel-slide">
-            {% if item.is_video %}
-            <video class="pc-car-vid" controls preload="metadata">
-                <source src="{{ item.url }}">
-            </video>
-            {% else %}
-            <img class="pc-car-img lazy-img" loading="lazy"
-                 src="{{ item.url }}" alt="{{ post.title }}"
-                 onclick="zootOpenImg('{{ item.url }}', '{{ post.title|escapejs }}', '{{ post.id }}')">
-            {% endif %}
-        </div>
-        {% endfor %}
+<div class="pc-gallery pc-gallery-{{ count }}" id="gal-{{ post.id }}">
+    {% for item in media %}
+    {% if item.is_video %}
+    <div class="pc-gal-item pc-gal-video">
+        <video class="pc-gal-vid" controls preload="metadata">
+            <source src="{{ item.url }}">
+        </video>
     </div>
-    {% if count > 1 %}
-    <button class="pc-car-btn pc-car-prev" onclick="carMove('{{ post.id }}', -1)" aria-label="Précédent">&#8249;</button>
-    <button class="pc-car-btn pc-car-next" onclick="carMove('{{ post.id }}', 1)"  aria-label="Suivant">&#8250;</button>
-    <div class="pc-car-dots" id="car-dots-{{ post.id }}">
-        {% for item in media %}
-        <span class="pc-car-dot {% if forloop.first %}active{% endif %}"
-              onclick="carGoTo('{{ post.id }}', {{ forloop.counter0 }})"></span>
-        {% endfor %}
+    {% else %}
+    <div class="pc-gal-item"
+         onclick="zootOpenImg('{{ item.url }}', '{{ post.title|escapejs }}', 'gal-{{ post.id }}')"
+         style="cursor:zoom-in;">
+        <img class="pc-gal-img lazy-img" loading="lazy" src="{{ item.url }}" alt="{{ post.title }}">
+        {% if count > 4 and forloop.counter == 4 %}
+        <div class="pc-gal-more">+{{ count|add:"-4" }}</div>
+        {% endif %}
     </div>
-    <span class="pc-car-counter">1 / {{ count }}</span>
     {% endif %}
+    {% endfor %}
 </div>
 {% endwith %}
 
