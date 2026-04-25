@@ -216,16 +216,16 @@
                         <span class="material-icons" style="font-size:1rem;vertical-align:middle;">add_photo_alternate</span>
                         Ajouter des médias
                     </label>
-                    <div class="upload-zone" id="media-upload-zone">
+                    <label for="id_media_files" class="upload-zone" id="media-upload-zone">
                         <input type="file" name="media_files" id="id_media_files"
                                accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,.mov,.mkv,.avi,.m4v,.3gp"
                                multiple
-                               style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;"
-                               onchange="previewMediaFiles(this.files)">
+                               style="display:none;"
+                               onchange="addToSelection(this.files); this.value='';">
                         <span class="material-icons">add_photo_alternate</span>
-                        <p id="media-zone-label"><span class="upload-label">Cliquer pour choisir</span> ou glisser-déposer</p>
-                        <p style="font-size:.78rem;margin-top:.2rem;">Images &amp; Vidéos — plusieurs fichiers acceptés</p>
-                    </div>
+                        <p id="media-zone-label"><span class="upload-label">Cliquer pour ajouter</span> ou glisser-déposer</p>
+                        <p style="font-size:.78rem;margin-top:.2rem;">Images &amp; Vidéos — sélections cumulables</p>
+                    </label>
                     <div class="media-preview-grid" id="media-preview-grid"></div>
                 </div>
 
@@ -261,66 +261,75 @@
 
 <script>
 var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
+var _pending = new DataTransfer();
 
 function isVideo(file) {
     var ext = (file.name.split('.').pop() || '').toLowerCase();
     return file.type.startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
 }
 
-function previewMediaFiles(fileList) {
+function addToSelection(newFiles) {
+    Array.from(newFiles).forEach(function(f) { _pending.items.add(f); });
+    _syncInput();
+    _renderPreview();
+}
+
+function removeFromSelection(idx) {
+    var dt = new DataTransfer();
+    Array.from(_pending.files).forEach(function(f, i) { if (i !== idx) dt.items.add(f); });
+    _pending = dt;
+    _syncInput();
+    _renderPreview();
+}
+
+function _syncInput() {
+    try { document.getElementById('id_media_files').files = _pending.files; } catch(e) {}
+}
+
+function _renderPreview() {
     var grid  = document.getElementById('media-preview-grid');
     var label = document.getElementById('media-zone-label');
     grid.innerHTML = '';
+    var count = _pending.files.length;
+    label.innerHTML = count > 0
+        ? '<span class="upload-label">' + count + ' fichier(s)</span> — cliquer pour en ajouter'
+        : '<span class="upload-label">Cliquer pour ajouter</span> ou glisser-déposer';
 
-    var count = fileList ? fileList.length : 0;
-    if (label) {
-        label.innerHTML = count > 0
-            ? '<span class="upload-label">' + count + ' fichier(s) sélectionné(s)</span>'
-            : '<span class="upload-label">Cliquer pour choisir</span> ou glisser-déposer';
-    }
-    if (!fileList || count === 0) return;
-
-    for (var i = 0; i < fileList.length; i++) {
-        (function(file) {
-            var item = document.createElement('div');
-            item.className = 'media-preview-item';
-            var url = URL.createObjectURL(file);
-            if (isVideo(file)) {
-                var vid = document.createElement('video');
-                vid.src = url; vid.muted = true; vid.preload = 'metadata';
-                vid.onloadedmetadata = function() { URL.revokeObjectURL(url); };
-                item.appendChild(vid);
-                var badge = document.createElement('span');
-                badge.className = 'mp-type-badge';
-                badge.textContent = 'vidéo';
-                item.appendChild(badge);
-            } else {
-                var img = document.createElement('img');
-                img.src = url;
-                img.onload = function() { URL.revokeObjectURL(url); };
-                item.appendChild(img);
-            }
-            grid.appendChild(item);
-        })(fileList[i]);
-    }
+    Array.from(_pending.files).forEach(function(file, idx) {
+        var item = document.createElement('div');
+        item.className = 'media-preview-item';
+        var url = URL.createObjectURL(file);
+        if (isVideo(file)) {
+            var vid = document.createElement('video');
+            vid.src = url; vid.muted = true; vid.preload = 'metadata';
+            vid.onloadedmetadata = function() { URL.revokeObjectURL(url); };
+            item.appendChild(vid);
+            var badge = document.createElement('span');
+            badge.className = 'mp-type-badge'; badge.textContent = 'vidéo';
+            item.appendChild(badge);
+        } else {
+            var img = document.createElement('img');
+            img.src = url;
+            img.onload = function() { URL.revokeObjectURL(url); };
+            item.appendChild(img);
+        }
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'mp-remove';
+        btn.innerHTML = '&#x2715;'; btn.title = 'Retirer';
+        (function(i){ btn.onclick = function(e){ e.stopPropagation(); removeFromSelection(i); }; })(idx);
+        item.appendChild(btn);
+        grid.appendChild(item);
+    });
 }
 
-// Drag & drop
 (function() {
     var zone = document.getElementById('media-upload-zone');
     if (!zone) return;
-    zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
-    zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+    zone.addEventListener('dragover',  function(e){ e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', function(){ zone.classList.remove('dragover'); });
     zone.addEventListener('drop', function(e) {
         e.preventDefault(); zone.classList.remove('dragover');
-        var input = document.getElementById('id_media_files');
-        try {
-            var dt = new DataTransfer();
-            var files = e.dataTransfer.files;
-            for (var i = 0; i < files.length; i++) dt.items.add(files[i]);
-            input.files = dt.files;
-        } catch(err) {}
-        previewMediaFiles(input.files);
+        addToSelection(e.dataTransfer.files);
     });
 })();
 </script>
