@@ -323,11 +323,16 @@
             if (active) el.classList.add('active');
         });
 
-        // Lire le log d'upload s'il existe (persisté depuis add_post.html via sessionStorage)
+        // Lire les logs de debug depuis add_post.html
         var _uploadLog = sessionStorage.getItem('zoot_upload_log');
         if (_uploadLog) {
-            try { console.log('[ZOOT UPLOAD RESULT]', JSON.parse(_uploadLog)); } catch(e) {}
+            try { console.log('[ZOOT SUBMIT LOG]', JSON.parse(_uploadLog)); } catch(e) {}
             sessionStorage.removeItem('zoot_upload_log');
+        }
+        var _addDebug = localStorage.getItem('zoot_add_debug');
+        if (_addDebug) {
+            try { console.log('[ZOOT SELECTION LOG]', JSON.parse(_addDebug)); } catch(e) {}
+            localStorage.removeItem('zoot_add_debug');
         }
 
         // Sync pending friend-request badge from push-notif counter if exists
