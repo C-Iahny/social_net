@@ -367,12 +367,14 @@ function _renderPreview() {
 
         console.log('[ZOOT] submit — fichiers en attente :', _pending.length);
 
-        /* Toujours logger dans sessionStorage pour le diagnostique */
-        sessionStorage.setItem('zoot_upload_log', JSON.stringify({
-            mode: _pending.length === 0 ? 'native_no_files' : 'fetch',
-            files: _pending.length,
-            ts: new Date().toISOString()
-        }));
+        /* Logger dans localStorage (plus robuste que sessionStorage) */
+        try {
+            localStorage.setItem('zoot_upload_log', JSON.stringify({
+                mode: _pending.length === 0 ? 'native_no_files' : 'fetch',
+                files: _pending.length,
+                ts: new Date().toISOString()
+            }));
+        } catch(ex) {}
 
         /* Si aucun fichier → submit natif */
         if (_pending.length === 0) {
@@ -421,15 +423,19 @@ function _renderPreview() {
             credentials: 'same-origin'
         }).then(function(r) {
             console.log('[ZOOT] Réponse HTTP', r.status, '— redirection vers', r.url);
-            sessionStorage.setItem('zoot_upload_log', JSON.stringify({
-                ok: true, status: r.status, dest: r.url, files: _pending.length
-            }));
+            try {
+                localStorage.setItem('zoot_upload_log', JSON.stringify({
+                    ok: true, status: r.status, dest: r.url, files: _pending.length
+                }));
+            } catch(ex) {}
             window.location.href = r.url;
         }).catch(function(err) {
             console.error('[ZOOT] Erreur fetch :', err);
-            sessionStorage.setItem('zoot_upload_log', JSON.stringify({
-                ok: false, error: String(err), files: _pending.length
-            }));
+            try {
+                localStorage.setItem('zoot_upload_log', JSON.stringify({
+                    ok: false, error: String(err), files: _pending.length
+                }));
+            } catch(ex) {}
             if (btn) { btn.disabled = false; btn.style.opacity = ''; }
             form.submit();
         });
