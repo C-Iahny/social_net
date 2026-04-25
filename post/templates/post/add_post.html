@@ -265,6 +265,17 @@
 </div>
 
 <script>
+/* ── Diagnostic JS errors (écriture localStorage avant navigation) ── */
+window.onerror = function(msg, src, line, col, err) {
+    try {
+        localStorage.setItem('zoot_js_error', JSON.stringify({
+            msg: String(msg), src: String(src), line: line, col: col,
+            ts: new Date().toISOString()
+        }));
+    } catch(ex) {}
+    return false; // ne pas bloquer l'affichage natif de l'erreur
+};
+
 var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
 var _pending = []; // tableau de File objects — cross-browser fiable
 
@@ -357,6 +368,13 @@ function _renderPreview() {
     var form = document.querySelector('form');
     if (!form) return;
     form.addEventListener('submit', function(e) {
+
+        /* ── Diagnostic : marque que le handler a bien été appelé ── */
+        try {
+            localStorage.setItem('zoot_submit_called', JSON.stringify({
+                pending: _pending.length, ts: new Date().toISOString()
+            }));
+        } catch(ex) {}
 
         /* Sync CKEditor si présent */
         if (typeof CKEDITOR !== 'undefined') {
