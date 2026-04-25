@@ -265,17 +265,6 @@
 </div>
 
 <script>
-/* ── Diagnostic JS errors (écriture localStorage avant navigation) ── */
-window.onerror = function(msg, src, line, col, err) {
-    try {
-        localStorage.setItem('zoot_js_error', JSON.stringify({
-            msg: String(msg), src: String(src), line: line, col: col,
-            ts: new Date().toISOString()
-        }));
-    } catch(ex) {}
-    return false; // ne pas bloquer l'affichage natif de l'erreur
-};
-
 var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
 var _pending = []; // tableau de File objects — cross-browser fiable
 
@@ -287,17 +276,6 @@ function isVideo(file) {
 /* Ajoute les nouveaux fichiers au panier */
 function addToSelection(newFiles) {
     Array.from(newFiles).forEach(function(f) { _pending.push(f); });
-    /* Log localStorage — persiste même après navigation */
-    try {
-        var existing = JSON.parse(localStorage.getItem('zoot_add_debug') || '{}');
-        existing.lastAddition = {
-            added: newFiles.length,
-            total: _pending.length,
-            names: Array.from(newFiles).map(function(f){ return f.name; }),
-            ts: new Date().toISOString()
-        };
-        localStorage.setItem('zoot_add_debug', JSON.stringify(existing));
-    } catch(e) {}
     _renderPreview();
 }
 
@@ -363,18 +341,11 @@ function _renderPreview() {
     });
 })();
 
-/* Intercept submit — FormData explicite, logs console pour debug */
+/* Intercept submit — injecte les fichiers via FormData */
 (function() {
     var form = document.getElementById('add-post-form');
     if (!form) return;
     form.addEventListener('submit', function(e) {
-
-        /* ── Diagnostic : marque que le handler a bien été appelé ── */
-        try {
-            localStorage.setItem('zoot_submit_called', JSON.stringify({
-                pending: _pending.length, ts: new Date().toISOString()
-            }));
-        } catch(ex) {}
 
         /* Sync CKEditor si présent */
         if (typeof CKEDITOR !== 'undefined') {
@@ -383,77 +354,29 @@ function _renderPreview() {
             }
         }
 
-        console.log('[ZOOT] submit — fichiers en attente :', _pending.length);
-
-        /* Logger dans localStorage (plus robuste que sessionStorage) */
-        try {
-            localStorage.setItem('zoot_upload_log', JSON.stringify({
-                mode: _pending.length === 0 ? 'native_no_files' : 'fetch',
-                files: _pending.length,
-                ts: new Date().toISOString()
-            }));
-        } catch(ex) {}
-
-        /* Si aucun fichier → submit natif */
-        if (_pending.length === 0) {
-            console.log('[ZOOT] Aucun fichier, submit natif.');
-            return;
-        }
+        if (_pending.length === 0) return; /* aucun fichier → submit natif */
 
         e.preventDefault();
 
-        /* ── Construire FormData manuellement (plus fiable que new FormData(form)) ── */
         var fd = new FormData();
-
-        /* CSRF */
         var csrf = form.querySelector('[name=csrfmiddlewaretoken]');
         if (csrf) fd.append('csrfmiddlewaretoken', csrf.value);
-
-        /* Titre */
         var titleEl = form.querySelector('[name=title]');
         if (titleEl) fd.append('title', titleEl.value);
-
-        /* Corps (textarea CKEditor synchronisée juste avant) */
         var bodyEl = form.querySelector('[name=body]');
         if (bodyEl) fd.append('body', bodyEl.value);
-
-        /* Fichier joint optionnel */
         var fileEl = form.querySelector('[name=file]');
-        if (fileEl && fileEl.files && fileEl.files[0]) {
-            fd.append('file', fileEl.files[0]);
-        }
-
-        /* Fichiers médias accumulés */
-        _pending.forEach(function(f, i) {
-            fd.append('media_files', f);
-            console.log('[ZOOT]  fichier', i, ':', f.name, f.size, 'octets');
-        });
+        if (fileEl && fileEl.files && fileEl.files[0]) fd.append('file', fileEl.files[0]);
+        _pending.forEach(function(f) { fd.append('media_files', f); });
 
         var btn = form.querySelector('.btn-submit');
         if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
 
-        var url = form.action || window.location.pathname;
-        console.log('[ZOOT] POST vers :', url);
-
-        fetch(url, {
-            method: 'POST',
-            body: fd,
-            credentials: 'same-origin'
+        fetch(form.action || window.location.pathname, {
+            method: 'POST', body: fd, credentials: 'same-origin'
         }).then(function(r) {
-            console.log('[ZOOT] Réponse HTTP', r.status, '— redirection vers', r.url);
-            try {
-                localStorage.setItem('zoot_upload_log', JSON.stringify({
-                    ok: true, status: r.status, dest: r.url, files: _pending.length
-                }));
-            } catch(ex) {}
             window.location.href = r.url;
-        }).catch(function(err) {
-            console.error('[ZOOT] Erreur fetch :', err);
-            try {
-                localStorage.setItem('zoot_upload_log', JSON.stringify({
-                    ok: false, error: String(err), files: _pending.length
-                }));
-            } catch(ex) {}
+        }).catch(function() {
             if (btn) { btn.disabled = false; btn.style.opacity = ''; }
             form.submit();
         });
