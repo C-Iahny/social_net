@@ -157,7 +157,7 @@
             </div>
         </div>
 
-        <form method="POST" enctype="multipart/form-data">
+        <form id="update-post-form" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="post-form-body">
 
@@ -327,7 +327,7 @@ function _renderPreview() {
 
 /* Intercept submit — injecte les fichiers via FormData (cross-browser fiable) */
 (function() {
-    var form = document.querySelector('form');
+    var form = document.getElementById('update-post-form');
     if (!form) return;
     form.addEventListener('submit', function(e) {
         /* Sync CKEditor si présent */
