@@ -324,10 +324,10 @@
         });
 
         // Lire les logs de debug depuis add_post.html
-        var _uploadLog = sessionStorage.getItem('zoot_upload_log');
+        var _uploadLog = localStorage.getItem('zoot_upload_log');
         if (_uploadLog) {
             try { console.log('[ZOOT SUBMIT LOG]', JSON.parse(_uploadLog)); } catch(e) {}
-            sessionStorage.removeItem('zoot_upload_log');
+            localStorage.removeItem('zoot_upload_log');
         }
         var _addDebug = localStorage.getItem('zoot_add_debug');
         if (_addDebug) {
