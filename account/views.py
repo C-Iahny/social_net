@@ -228,9 +228,33 @@ def account_view(request, *args, **kwargs):
 		context['post_count'] = all_posts_qs.count()
 		context['posts_has_next'] = first_page.has_next()
 		context['posts_next_page'] = 2 if first_page.has_next() else None
-		# Posts with images (for the Photos tab) — use all posts for photos tab
+		# Photos tab — combine header_image (legacy) + PostMedia images
+		from collections import namedtuple
+		PhotoItem = namedtuple('PhotoItem', ['url', 'title', 'post_id'])
+		photo_list = []
+		# Legacy header_image
 		all_posts_for_photos = list(all_posts_qs)
-		context['photos'] = [p for p in all_posts_for_photos if p.header_image and p.header_image.name]
+		for p in all_posts_for_photos:
+			if p.header_image and p.header_image.name:
+				try:
+					photo_list.append(PhotoItem(url=p.header_image.url, title=p.title, post_id=p.id))
+				except Exception:
+					pass
+		# PostMedia images
+		try:
+			all_photo_post_ids = [p.id for p in all_posts_for_photos]
+			media_images = PostMedia.objects.filter(
+				post_id__in=all_photo_post_ids,
+				media_type=PostMedia.IMAGE
+			).select_related('post').order_by('-post__id', 'order')
+			for m in media_images:
+				try:
+					photo_list.append(PhotoItem(url=m.file.url, title=m.post.title, post_id=m.post_id))
+				except Exception:
+					pass
+		except Exception:
+			pass
+		context['photos'] = photo_list
 		context['friends_posts'] = Post.objects.filter(author__in=list(friends)).order_by('-id')
 	#	context = {
 	#		'posts': Post.objects.filter(author=user_id).order_by('-id'),

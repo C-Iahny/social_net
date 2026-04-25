@@ -40,67 +40,7 @@
     <div class="pc-body">{{ post.body|safe }}</div>
     {% endif %}
 
-    {% if post.media_list %}
-    {# ── Multi-media gallery ── #}
-    {% with media=post.media_list count=post.media_list|length %}
-    <div class="pc-gallery pc-gallery-{{ count|default:1 }}" id="gallery-{{ post.id }}">
-        {% for item in media %}
-        {% if item.is_video %}
-        <div class="pc-gal-item pc-gal-video">
-            <video class="pc-gal-vid" controls preload="metadata">
-                <source src="{{ item.url }}">
-            </video>
-        </div>
-        {% else %}
-        <div class="pc-gal-item"
-             onclick="zootOpenImg('{{ item.url }}', '{{ post.title|escapejs }}')"
-             style="cursor:zoom-in;">
-            <img class="pc-gal-img lazy-img" loading="lazy" src="{{ item.url }}" alt="{{ post.title }}">
-            {% if count > 4 and forloop.counter == 4 %}
-            <div class="pc-gal-more">+{{ count|add:"-4" }}</div>
-            {% endif %}
-        </div>
-        {% endif %}
-        {% if count > 4 and forloop.counter >= 4 %}{% if not forloop.last %}{% comment %}hide rest{% endcomment %}{% endif %}{% endif %}
-        {% endfor %}
-    </div>
-    {% endwith %}
-
-    {% else %}
-    {# ── Legacy single image / video (backward compat) ── #}
-    {% if post.header_image_url %}
-    <div class="pc-image-wrap" onclick="zootOpenImg('{{ post.header_image_url }}', '{{ post.title|escapejs }}')" style="cursor:zoom-in;">
-        <img class="pc-image lazy-img" loading="lazy" src="{{ post.header_image_url }}"
-             alt="{{ post.title }}" decoding="async">
-    </div>
-    {% endif %}
-
-    {% if post.video %}
-    <div class="pc-video-wrap">
-        <div class="pc-video-label"><span class="material-icons">videocam</span> Vidéo</div>
-        <video class="pc-video" controls preload="metadata">
-            <source src="{{ post.video.url }}" type="video/mp4">
-            <source src="{{ post.video.url }}" type="video/webm">
-        </video>
-    </div>
-    {% endif %}
-
-    {% if post.file %}
-        {% if post.file_is_video %}
-        <div class="pc-video-wrap">
-            <div class="pc-video-label"><span class="material-icons">videocam</span> Vidéo</div>
-            <video class="pc-video" controls preload="metadata">
-                <source src="{{ post.file.url }}" type="video/mp4">
-                <source src="{{ post.file.url }}" type="video/webm">
-            </video>
-        </div>
-        {% else %}
-        <a class="pc-file-attach" href="{{ post.file.url }}" target="_blank" rel="noopener">
-            <span class="material-icons">insert_drive_file</span> Rakitra
-        </a>
-        {% endif %}
-    {% endif %}
-    {% endif %}
+    {% include 'post/_post_media.html' %}
 
     <!-- Reaction summary bar -->
     <div class="pc-reaction-bar" id="reaction-bar-{{ post.id }}"

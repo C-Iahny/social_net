@@ -1,0 +1,73 @@
+{# ── _post_media.html — carrousel multi-media ou fallback legacy ─────────── #}
+{# Attendu : post.media_list (liste PostMedia), post.title, post.id         #}
+{# Fallback : post.header_image_url, post.video, post.file, post.file_is_video #}
+
+{% if post.media_list %}
+{% with media=post.media_list count=post.media_list|length %}
+<div class="pc-carousel" id="car-{{ post.id }}" data-count="{{ count }}">
+    <div class="pc-carousel-track" id="car-track-{{ post.id }}">
+        {% for item in media %}
+        <div class="pc-carousel-slide">
+            {% if item.is_video %}
+            <video class="pc-car-vid" controls preload="metadata">
+                <source src="{{ item.url }}">
+            </video>
+            {% else %}
+            <img class="pc-car-img lazy-img" loading="lazy"
+                 src="{{ item.url }}" alt="{{ post.title }}"
+                 onclick="zootOpenImg('{{ item.url }}', '{{ post.title|escapejs }}', '{{ post.id }}')">
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% if count > 1 %}
+    <button class="pc-car-btn pc-car-prev" onclick="carMove('{{ post.id }}', -1)" aria-label="Précédent">&#8249;</button>
+    <button class="pc-car-btn pc-car-next" onclick="carMove('{{ post.id }}', 1)"  aria-label="Suivant">&#8250;</button>
+    <div class="pc-car-dots" id="car-dots-{{ post.id }}">
+        {% for item in media %}
+        <span class="pc-car-dot {% if forloop.first %}active{% endif %}"
+              onclick="carGoTo('{{ post.id }}', {{ forloop.counter0 }})"></span>
+        {% endfor %}
+    </div>
+    <span class="pc-car-counter">1 / {{ count }}</span>
+    {% endif %}
+</div>
+{% endwith %}
+
+{% else %}
+{# ── Fallback legacy : header_image / video / file ── #}
+{% if post.header_image_url %}
+<div class="pc-image-wrap"
+     onclick="zootOpenImg('{{ post.header_image_url }}', '{{ post.title|escapejs }}')"
+     style="cursor:zoom-in;">
+    <img class="pc-image lazy-img" loading="lazy"
+         src="{{ post.header_image_url }}" alt="{{ post.title }}" decoding="async">
+</div>
+{% endif %}
+
+{% if post.video %}
+<div class="pc-video-wrap">
+    <div class="pc-video-label"><span class="material-icons">videocam</span> Vidéo</div>
+    <video class="pc-video" controls preload="metadata">
+        <source src="{{ post.video.url }}" type="video/mp4">
+        <source src="{{ post.video.url }}" type="video/webm">
+    </video>
+</div>
+{% endif %}
+
+{% if post.file %}
+    {% if post.file_is_video %}
+    <div class="pc-video-wrap">
+        <div class="pc-video-label"><span class="material-icons">videocam</span> Vidéo</div>
+        <video class="pc-video" controls preload="metadata">
+            <source src="{{ post.file.url }}" type="video/mp4">
+            <source src="{{ post.file.url }}" type="video/webm">
+        </video>
+    </div>
+    {% else %}
+    <a class="pc-file-attach" href="{{ post.file.url }}" target="_blank" rel="noopener">
+        <span class="material-icons">insert_drive_file</span> Rakitra
+    </a>
+    {% endif %}
+{% endif %}
+{% endif %}

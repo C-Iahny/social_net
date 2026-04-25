@@ -1032,8 +1032,8 @@ body { background: var(--bg); }
         {% if photos %}
         <div class="photos-grid">
             {% for photo in photos %}
-            <div class="photo-thumb" onclick="openLightbox('{{ photo.header_image.url }}', '{{ photo.title|escapejs }}', {{ forloop.counter0 }})">
-                <img src="{{ photo.header_image.url }}" alt="{{ photo.title }}" loading="lazy">
+            <div class="photo-thumb" onclick="openLightbox('{{ photo.url }}', '{{ photo.title|escapejs }}', {{ forloop.counter0 }})">
+                <img src="{{ photo.url }}" alt="{{ photo.title }}" loading="lazy">
                 <div class="photo-thumb-overlay">
                     <span class="material-icons">zoom_in</span>
                 </div>
@@ -1681,7 +1681,7 @@ document.addEventListener('DOMContentLoaded', function() {
    ══════════════════════════════════════ */
 var _lbPhotos = [
     {% for photo in photos %}
-    { src: '{{ photo.header_image.url }}', caption: '{{ photo.title|escapejs }}' }{% if not forloop.last %},{% endif %}
+    { src: '{{ photo.url }}', caption: '{{ photo.title|escapejs }}' }{% if not forloop.last %},{% endif %}
     {% endfor %}
 ];
 var _lbIdx = 0;
