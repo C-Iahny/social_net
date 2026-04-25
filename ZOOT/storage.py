@@ -1,5 +1,5 @@
 """
-Storage personnalisé pour les fichiers statiques en production.
+Storage personnalisé pour les fichiers statiques et médias en production.
 
 Deux problèmes à résoudre avec WhiteNoise 6.x :
 
@@ -16,6 +16,23 @@ Deux problèmes à résoudre avec WhiteNoise 6.x :
 import logging
 import warnings
 from whitenoise.storage import CompressedManifestStaticFilesStorage, MissingFileError
+
+# ── Media Cloudinary : resource_type auto (images + vidéos) ──────────────────
+try:
+    from cloudinary_storage.storage import MediaCloudinaryStorage as _BaseMedia
+
+    class AutoMediaCloudinaryStorage(_BaseMedia):
+        """
+        Stockage Cloudinary avec resource_type='auto'.
+        Contrairement à MediaCloudinaryStorage (resource_type='image'),
+        cette classe accepte les images ET les vidéos sans configuration supplémentaire.
+        """
+        RESOURCE_TYPE = 'auto'
+
+except ImportError:
+    # En développement sans cloudinary_storage, on utilise le backend par défaut.
+    from django.core.files.storage import FileSystemStorage as AutoMediaCloudinaryStorage  # noqa: F811
+# ─────────────────────────────────────────────────────────────────────────────
 
 logger = logging.getLogger(__name__)
 
