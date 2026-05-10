@@ -5,7 +5,7 @@
     <!-- Header -->
     <div class="pc-header">
         <a class="pc-avatar-ring" href="{% url 'account:view' user_id=post.author.id %}">
-            <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+            <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy" decoding="async">
         </a>
         <div class="pc-meta">
             <a class="pc-author" href="{% url 'account:view' user_id=post.author.id %}">
