@@ -138,9 +138,10 @@ def post_feed_view(request):
         friends = friend_list.friends.none()
 
     # Posts : les siens + ceux de ses amis
+    # select_related évite le N+1 (1 JOIN au lieu de 1 requête par post)
     feed_posts = Post.objects.filter(
         author__in=list(friends) + [user]
-    ).order_by("-id")
+    ).select_related('author').order_by("-id")
 
     # Pagination (5 posts par page)
     paginator = Paginator(feed_posts, 5)
@@ -230,7 +231,7 @@ def post_feed_more(request):
 
     feed_posts = Post.objects.filter(
         author__in=list(friends) + [user]
-    ).order_by("-id")
+    ).select_related('author').order_by("-id")
 
     paginator = Paginator(feed_posts, 5)
     page_number = request.GET.get("page", 1)
