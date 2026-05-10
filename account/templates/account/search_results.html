@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -146,7 +147,7 @@ body { background: var(--bg); }
 
     <!-- Hero -->
     <div class="search-hero">
-        <h1>Recherche</h1>
+        <h1>{% trans "Search" %}</h1>
         {% if query %}
         <p>
             <span class="query-highlight">{{ total }}</span> résultat{{ total|pluralize }} pour
@@ -160,8 +161,8 @@ body { background: var(--bg); }
         <span class="material-icons">search</span>
         <input type="text" name="q" id="id_q_large"
                value="{{ query }}"
-               placeholder="Rechercher utilisateurs, posts, hashtags…" autofocus>
-        <button type="submit">Rechercher</button>
+               placeholder="{% trans "Search users, posts, hashtags…" %}" autofocus>
+        <button type="submit">{% trans "Search" %}</button>
     </form>
 
     {% if query %}
@@ -169,8 +170,8 @@ body { background: var(--bg); }
         {% if not accounts and not posts and not hashtags %}
         <div class="search-empty">
             <span class="material-icons">search_off</span>
-            <h3>Aucun résultat</h3>
-            <p>Essaie un autre terme ou vérifie l'orthographe.</p>
+            <h3>{% trans "No results" %}</h3>
+            <p>{% trans "Try another search term or check the spelling." %}</p>
         </div>
 
         {% else %}
@@ -178,7 +179,7 @@ body { background: var(--bg); }
         <!-- ── Hashtags ───────────────────────────────────────────── -->
         {% if hashtags %}
         <div class="search-section-title">
-            <span class="material-icons">tag</span> Hashtags
+            <span class="material-icons">tag</span> {% trans "Hashtags" %}
         </div>
         <div class="hashtag-grid">
             {% for ht in hashtags %}
@@ -193,7 +194,7 @@ body { background: var(--bg); }
         <!-- ── Utilisateurs ───────────────────────────────────────── -->
         {% if accounts %}
         <div class="search-section-title">
-            <span class="material-icons">group</span> Utilisateurs
+            <span class="material-icons">group</span> {% trans "Users" %}
         </div>
         <div class="results-list">
             {% for account, is_friend in accounts %}
@@ -210,24 +211,24 @@ body { background: var(--bg); }
                 <div class="result-actions">
                     {% if account == request.user %}
                         <span class="result-status status-self">
-                            <span class="material-icons">person_pin</span> Vous
+                            <span class="material-icons">person_pin</span> {% trans "You" %}
                         </span>
                     {% elif is_friend %}
                         <span class="result-status status-friend">
-                            <span class="material-icons">check</span> Ami
+                            <span class="material-icons">check</span> {% trans "Friend" %}
                         </span>
                         <a class="result-action-btn btn-msg" href="#"
                            onclick="createOrReturnPrivateChat('{{ account.id }}'); return false;">
-                            <span class="material-icons">chat_bubble_outline</span> Message
+                            <span class="material-icons">chat_bubble_outline</span> {% trans "Message" %}
                         </a>
                     {% else %}
                         <span class="result-status status-not-friend">
-                            <span class="material-icons">person_outline</span> Non ami
+                            <span class="material-icons">person_outline</span> {% trans "Not friends" %}
                         </span>
                         <a class="result-action-btn"
                            href="{% url 'account:view' user_id=account.id %}"
                            style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;">
-                            <span class="material-icons">visibility</span> Profil
+                            <span class="material-icons">visibility</span> {% trans "Profile" %}
                         </a>
                     {% endif %}
                 </div>
@@ -239,7 +240,7 @@ body { background: var(--bg); }
         <!-- ── Posts ─────────────────────────────────────────────── -->
         {% if posts %}
         <div class="search-section-title">
-            <span class="material-icons">article</span> Publications
+            <span class="material-icons">article</span> {% trans "Posts" %}
         </div>
         <div class="results-list">
             {% for post in posts %}

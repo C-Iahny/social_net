@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -59,15 +60,15 @@
 
         <div class="delete-card-icon">
             <span class="material-icons">delete_forever</span>
-            <h4>Supprimer le post ?</h4>
+            <h4>{% trans "Delete post?" %}</h4>
         </div>
 
         <div class="delete-card-body">
-            <p>Cette action est <strong>irréversible</strong>. Le post sera définitivement supprimé.</p>
+            <p>{% trans "This action is" %} <strong>{% trans "irreversible" %}</strong>. {% trans "The post will be permanently deleted." %}</p>
 
             <div class="post-preview">
                 <div class="post-preview-title">{{ object.title }}</div>
-                <div class="post-preview-date">Publié le {{ object.post_date|date:"d F Y" }}</div>
+                <div class="post-preview-date">{% trans "Published on" %} {{ object.post_date|date:"d F Y" }}</div>
             </div>
         </div>
 
@@ -75,10 +76,10 @@
             {% csrf_token %}
             <div class="delete-actions">
                 <a class="btn-cancel-delete" href="{% url 'post:post-view' %}">
-                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> Annuler
+                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> {% trans "Cancel" %}
                 </a>
                 <button class="btn-confirm-delete" type="submit">
-                    <span class="material-icons" style="font-size:1rem;">delete</span> Oui, supprimer
+                    <span class="material-icons" style="font-size:1rem;">delete</span> {% trans "Yes, delete" %}
                 </button>
             </div>
         </form>

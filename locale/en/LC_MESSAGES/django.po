@@ -290,3 +290,300 @@ msgstr "Members"
 
 msgid "View my feed"
 msgstr "View my feed"
+
+msgid "About"
+msgstr "About"
+
+msgid "Privacy"
+msgstr "Privacy"
+
+msgid "Rules"
+msgstr "Rules"
+
+msgid "Trends"
+msgstr "Trends"
+
+msgid "Write"
+msgstr "Write"
+
+msgid "New post"
+msgstr "New post"
+
+msgid "New Post — Click to refresh"
+msgstr "New Post — Click to refresh"
+
+msgid "Nothing new for now."
+msgstr "Nothing new for now."
+
+msgid "You've seen all posts!"
+msgstr "You've seen all posts!"
+
+msgid "Invite friends or post something."
+msgstr "Invite friends or post something."
+
+msgid "Link copied to clipboard!"
+msgstr "Link copied to clipboard!"
+
+msgid "Link copied!"
+msgstr "Link copied!"
+
+msgid "Share"
+msgstr "Share"
+
+msgid "Reply"
+msgstr "Reply"
+
+msgid "Reply to"
+msgstr "Reply to"
+
+msgid "Comments"
+msgstr "Comments"
+
+msgid "File"
+msgstr "File"
+
+msgid "My posts"
+msgstr "My posts"
+
+msgid "My first post"
+msgstr "My first post"
+
+msgid "Friend"
+msgstr "Friend"
+
+msgid "Info"
+msgstr "Info"
+
+msgid "Change cover"
+msgstr "Change cover"
+
+msgid "Hidden by user"
+msgstr "Hidden by user"
+
+msgid "Location"
+msgstr "Location"
+
+msgid "Member since"
+msgstr "Member since"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "New"
+msgstr "New"
+
+msgid "No photos yet."
+msgstr "No photos yet."
+
+msgid "No posts yet."
+msgstr "No posts yet."
+
+msgid "First Post"
+msgstr "First Post"
+
+msgid "Publish Photo"
+msgstr "Publish Photo"
+
+msgid "Profile photo"
+msgstr "Profile photo"
+
+msgid "Edit my profile"
+msgstr "Edit my profile"
+
+msgid "Account information"
+msgstr "Account information"
+
+msgid "Hide my email from other users"
+msgstr "Hide my email from other users"
+
+msgid "Save changes"
+msgstr "Save changes"
+
+msgid "Recommended format: square, JPG or PNG."
+msgstr "Recommended format: square, JPG or PNG."
+
+msgid "Click on the photo to change it."
+msgstr "Click on the photo to change it."
+
+msgid "About you"
+msgstr "About you"
+
+msgid "Bio"
+msgstr "Bio"
+
+msgid "Email address"
+msgstr "Email address"
+
+msgid "Post"
+msgstr "Post"
+
+msgid "Title"
+msgstr "Title"
+
+msgid "Content"
+msgstr "Content"
+
+msgid "Create a post"
+msgstr "Create a post"
+
+msgid "Edit post"
+msgstr "Edit post"
+
+msgid "Delete post?"
+msgstr "Delete post?"
+
+msgid "Yes, delete"
+msgstr "Yes, delete"
+
+msgid "This action is"
+msgstr "This action is"
+
+msgid "irreversible"
+msgstr "irreversible"
+
+msgid "The post will be permanently deleted."
+msgstr "The post will be permanently deleted."
+
+msgid "Published on"
+msgstr "Published on"
+
+msgid "Attachment (optional)"
+msgstr "Attachment (optional)"
+
+msgid "Attachment"
+msgstr "Attachment"
+
+msgid "Photos & Videos"
+msgstr "Photos & Videos"
+
+msgid "Images & Videos — multiple selections"
+msgstr "Images & Videos — multiple selections"
+
+msgid "Click to add"
+msgstr "Click to add"
+
+msgid "Click to attach"
+msgstr "Click to attach"
+
+msgid "or drag and drop"
+msgstr "or drag and drop"
+
+msgid "a file"
+msgstr "a file"
+
+msgid "Add media"
+msgstr "Add media"
+
+msgid "Current file:"
+msgstr "Current file:"
+
+msgid "Current image"
+msgstr "Current image"
+
+msgid "Current media"
+msgstr "Current media"
+
+msgid "Check to delete"
+msgstr "Check to delete"
+
+msgid "as"
+msgstr "as"
+
+msgid "video"
+msgstr "video"
+
+msgid "view"
+msgstr "view"
+
+msgid "Back"
+msgstr "Back"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "No results"
+msgstr "No results"
+
+msgid "Try another search term or check the spelling."
+msgstr "Try another search term or check the spelling."
+
+msgid "Search"
+msgstr "Search"
+
+msgid "Search users, posts, hashtags…"
+msgstr "Search users, posts, hashtags…"
+
+msgid "Users"
+msgstr "Users"
+
+msgid "Profile"
+msgstr "Profile"
+
+msgid "You"
+msgstr "You"
+
+msgid "Not friends"
+msgstr "Not friends"
+
+msgid "Hashtags"
+msgstr "Hashtags"
+
+msgid "Find people"
+msgstr "Find people"
+
+msgid "Looking for friends? Search here and start connecting!"
+msgstr "Looking for friends? Search here and start connecting!"
+
+msgid "All"
+msgstr "All"
+
+msgid "Me"
+msgstr "Me"
+
+msgid "Search friends…"
+msgstr "Search friends…"
+
+msgid "Requests"
+msgstr "Requests"
+
+msgid "People who want to be friends with you"
+msgstr "People who want to be friends with you"
+
+msgid "When someone sends you a friend request, it will appear here."
+msgstr "When someone sends you a friend request, it will appear here."
+
+msgid "No requests"
+msgstr "No requests"
+
+msgid "Wants to be your friend"
+msgstr "Wants to be your friend"
+
+msgid "Previous"
+msgstr "Previous"
+
+msgid "Next"
+msgstr "Next"
+
+msgid "Back to feed"
+msgstr "Back to feed"
+
+msgid "Be the first to post with this hashtag!"
+msgstr "Be the first to post with this hashtag!"
+
+msgid "View"
+msgstr "View"
+
+msgid "Welcome!"
+msgstr "Welcome!"
+
+msgid "Sign in to your account"
+msgstr "Sign in to your account"
+
+msgid "Join the VAZIMBA community"
+msgstr "Join the VAZIMBA community"
+
+msgid "Create my account"
+msgstr "Create my account"
+
+msgid "requests"
+msgstr "requests"

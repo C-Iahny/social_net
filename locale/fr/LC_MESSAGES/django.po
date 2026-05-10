@@ -290,3 +290,300 @@ msgstr "Membres"
 
 msgid "View my feed"
 msgstr "Voir mon fil"
+
+msgid "About"
+msgstr "À propos"
+
+msgid "Privacy"
+msgstr "Confidentialité"
+
+msgid "Rules"
+msgstr "Règles"
+
+msgid "Trends"
+msgstr "Tendances"
+
+msgid "Write"
+msgstr "Rédiger"
+
+msgid "New post"
+msgstr "Nouveau post"
+
+msgid "New Post — Click to refresh"
+msgstr "Nouveau post — Cliquez pour actualiser"
+
+msgid "Nothing new for now."
+msgstr "Rien de nouveau pour l'instant."
+
+msgid "You've seen all posts!"
+msgstr "Vous avez vu tous les posts !"
+
+msgid "Invite friends or post something."
+msgstr "Invitez des amis ou publiez quelque chose."
+
+msgid "Link copied to clipboard!"
+msgstr "Lien copié dans le presse-papiers !"
+
+msgid "Link copied!"
+msgstr "Lien copié !"
+
+msgid "Share"
+msgstr "Partager"
+
+msgid "Reply"
+msgstr "Répondre"
+
+msgid "Reply to"
+msgstr "Répondre à"
+
+msgid "Comments"
+msgstr "Commentaires"
+
+msgid "File"
+msgstr "Fichier"
+
+msgid "My posts"
+msgstr "Mes publications"
+
+msgid "My first post"
+msgstr "Mon premier post"
+
+msgid "Friend"
+msgstr "Ami"
+
+msgid "Info"
+msgstr "Infos"
+
+msgid "Change cover"
+msgstr "Changer la couverture"
+
+msgid "Hidden by user"
+msgstr "Caché par l'utilisateur"
+
+msgid "Location"
+msgstr "Localisation"
+
+msgid "Member since"
+msgstr "Membre depuis"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "New"
+msgstr "Nouveau"
+
+msgid "No photos yet."
+msgstr "Pas de photo publiée."
+
+msgid "No posts yet."
+msgstr "Pas de post encore."
+
+msgid "First Post"
+msgstr "Premier Post"
+
+msgid "Publish Photo"
+msgstr "Publier une Photo"
+
+msgid "Profile photo"
+msgstr "Photo de profil"
+
+msgid "Edit my profile"
+msgstr "Modifier mon profil"
+
+msgid "Account information"
+msgstr "Informations du compte"
+
+msgid "Hide my email from other users"
+msgstr "Masquer mon adresse e-mail aux autres utilisateurs"
+
+msgid "Save changes"
+msgstr "Enregistrer les modifications"
+
+msgid "Recommended format: square, JPG or PNG."
+msgstr "Format recommandé : carré, JPG ou PNG."
+
+msgid "Click on the photo to change it."
+msgstr "Cliquez sur la photo pour en changer."
+
+msgid "About you"
+msgstr "À propos de vous"
+
+msgid "Bio"
+msgstr "Bio"
+
+msgid "Email address"
+msgstr "Adresse e-mail"
+
+msgid "Post"
+msgstr "Publication"
+
+msgid "Title"
+msgstr "Titre"
+
+msgid "Content"
+msgstr "Contenu"
+
+msgid "Create a post"
+msgstr "Créer un post"
+
+msgid "Edit post"
+msgstr "Modifier le post"
+
+msgid "Delete post?"
+msgstr "Supprimer le post ?"
+
+msgid "Yes, delete"
+msgstr "Oui, supprimer"
+
+msgid "This action is"
+msgstr "Cette action est"
+
+msgid "irreversible"
+msgstr "irréversible"
+
+msgid "The post will be permanently deleted."
+msgstr "Le post sera définitivement supprimé."
+
+msgid "Published on"
+msgstr "Publié le"
+
+msgid "Attachment (optional)"
+msgstr "Fichier joint (optionnel)"
+
+msgid "Attachment"
+msgstr "Fichier joint"
+
+msgid "Photos & Videos"
+msgstr "Photos & Vidéos"
+
+msgid "Images & Videos — multiple selections"
+msgstr "Images & Vidéos — sélections cumulables"
+
+msgid "Click to add"
+msgstr "Cliquer pour ajouter"
+
+msgid "Click to attach"
+msgstr "Cliquer pour joindre"
+
+msgid "or drag and drop"
+msgstr "ou glisser-déposer"
+
+msgid "a file"
+msgstr "un fichier"
+
+msgid "Add media"
+msgstr "Ajouter des médias"
+
+msgid "Current file:"
+msgstr "Fichier actuel :"
+
+msgid "Current image"
+msgstr "Image actuelle"
+
+msgid "Current media"
+msgstr "Médias actuels"
+
+msgid "Check to delete"
+msgstr "Cocher pour supprimer"
+
+msgid "as"
+msgstr "en tant que"
+
+msgid "video"
+msgstr "vidéo"
+
+msgid "view"
+msgstr "voir"
+
+msgid "Back"
+msgstr "Retour"
+
+msgid "Edit"
+msgstr "Modifier"
+
+msgid "No results"
+msgstr "Aucun résultat"
+
+msgid "Try another search term or check the spelling."
+msgstr "Essayez un autre terme ou vérifiez l'orthographe."
+
+msgid "Search"
+msgstr "Rechercher"
+
+msgid "Search users, posts, hashtags…"
+msgstr "Rechercher utilisateurs, posts, hashtags…"
+
+msgid "Users"
+msgstr "Utilisateurs"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "You"
+msgstr "Vous"
+
+msgid "Not friends"
+msgstr "Non ami"
+
+msgid "Hashtags"
+msgstr "Hashtags"
+
+msgid "Find people"
+msgstr "Trouver des personnes"
+
+msgid "Looking for friends? Search here and start connecting!"
+msgstr "Cherchez des amis ? Recherchez ici et commencez à vous connecter !"
+
+msgid "All"
+msgstr "Tous"
+
+msgid "Me"
+msgstr "Moi"
+
+msgid "Search friends…"
+msgstr "Rechercher des amis…"
+
+msgid "Requests"
+msgstr "Demandes"
+
+msgid "People who want to be friends with you"
+msgstr "Personnes qui souhaitent devenir vos amis"
+
+msgid "When someone sends you a friend request, it will appear here."
+msgstr "Quand quelqu'un vous envoie une demande d'ami, elle apparaîtra ici."
+
+msgid "No requests"
+msgstr "Aucune demande"
+
+msgid "Wants to be your friend"
+msgstr "Veut être votre ami"
+
+msgid "Previous"
+msgstr "Précédent"
+
+msgid "Next"
+msgstr "Suivant"
+
+msgid "Back to feed"
+msgstr "Retour au fil"
+
+msgid "Be the first to post with this hashtag!"
+msgstr "Soyez le premier à publier avec ce hashtag !"
+
+msgid "View"
+msgstr "Voir"
+
+msgid "Welcome!"
+msgstr "Bienvenue !"
+
+msgid "Sign in to your account"
+msgstr "Connectez-vous à votre compte"
+
+msgid "Join the VAZIMBA community"
+msgstr "Rejoignez la communauté VAZIMBA"
+
+msgid "Create my account"
+msgstr "Créer mon compte"
+
+msgid "requests"
+msgstr "demandes"

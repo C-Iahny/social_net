@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -798,7 +799,7 @@ body { background: var(--bg); }
         {# Bouton visible sur la couverture #}
         <button class="cover-edit-btn" onclick="document.getElementById('cover-file-input').click()" type="button">
             <span class="material-icons">photo_camera</span>
-            Changer la couverture
+            {% trans "Change cover" %}
         </button>
         {# Input caché #}
         <input type="file" id="cover-file-input" accept="image/*" style="display:none"
@@ -826,11 +827,11 @@ body { background: var(--bg); }
                 <div class="profile-stats-row">
                     <span class="profile-stat">
                         <span class="material-icons">article</span>
-                        <span class="profile-stat-val">{{ post_count }}</span>&nbsp;post{% if post_count != 1 %}s{% endif %}
+                        <span class="profile-stat-val">{{ post_count }}</span>&nbsp;{% trans "posts" %}
                     </span>
                     <span class="profile-stat">
                         <span class="material-icons">group</span>
-                        <span class="profile-stat-val">{{ friends_count }}</span>&nbsp;namana
+                        <span class="profile-stat-val">{{ friends_count }}</span>&nbsp;{% trans "friends" %}
                     </span>
                     {% if location %}
                     <span class="profile-stat">
@@ -847,15 +848,15 @@ body { background: var(--bg); }
             {% if request.user.is_authenticated %}
                 {% if is_self %}
                     <a class="btn-p btn-p-secondary" href="{% url 'account:edit' user_id=id %}">
-                        <span class="material-icons">edit</span> Anova profil
+                        <span class="material-icons">edit</span> {% trans "Edit profile" %}
                     </a>
                     <a class="btn-p btn-p-secondary" href="{% url 'password_change' %}">
-                        <span class="material-icons">lock</span> Teny Miafina
+                        <span class="material-icons">lock</span> {% trans "Change password" %}
                     </a>
                     {% if friend_requests %}
                     <a class="btn-p btn-p-primary" href="{% url 'friend:friend-requests' user_id=id %}">
                         <span class="material-icons">notifications</span>
-                        {{ friend_requests|length }} fangatahana
+                        {{ friend_requests|length }} demande
                     </a>
                     {% endif %}
 
@@ -863,12 +864,12 @@ body { background: var(--bg); }
                     {% if request_sent == 0 %}
                     <div class="fr-banner">
                         <span class="material-icons">person_add</span>
-                        <span class="fr-text">{{ username }} nandefa fangatahana ho namana.</span>
+                        <span class="fr-text">{{ username }} a envoyé une demand d'ami.</span>
                         <button class="btn-p btn-p-success" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>
-                            <span class="material-icons">check</span> Ekena
+                            <span class="material-icons">check</span> {% trans "Accept" %}
                         </button>
                         <button class="btn-p btn-p-danger" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>
-                            <span class="material-icons">close</span> Lavina
+                            <span class="material-icons">close</span> {% trans "Decline" %}
                         </button>
                     </div>
                     {% endif %}
@@ -876,7 +877,7 @@ body { background: var(--bg); }
                     {% if is_friend %}
                     <div class="dropdown">
                         <button class="btn-p btn-p-secondary dropdown-toggle" data-toggle="dropdown" id="friends-drop">
-                            <span class="material-icons">how_to_reg</span> Namana
+                            <span class="material-icons">how_to_reg</span> Ami
                         </button>
                         <div class="dropdown-menu" aria-labelledby="friends-drop"
                              style="border-radius:12px;border-color:var(--border);background:var(--bg-card);box-shadow:0 8px 28px rgba(0,0,0,.18);padding:.4rem;">
@@ -884,28 +885,28 @@ body { background: var(--bg); }
                                style="border-radius:8px;color:#e53935;font-size:.88rem;padding:.5rem .85rem;"
                                onclick="removeFriend('{{ id }}', onFriendRemoved)">
                                 <span class="material-icons mr-1" style="font-size:.95rem;vertical-align:middle;">person_remove</span>
-                                Anala namana
+                                {% trans "Remove friend" %}
                             </a>
                         </div>
                     </div>
                     <button class="btn-p btn-p-primary" onclick="createOrReturnPrivateChat('{{ id }}')">
-                        <span class="material-icons">message</span> Hafatra
+                        <span class="material-icons">message</span> {% trans "Message" %}
                     </button>
 
                     {% elif request_sent == 1 %}
                     <button class="btn-p btn-p-secondary" id="id_cancel_friend_request_btn">
-                        <span class="material-icons">person_remove</span> Ajanona fangatahana
+                        <span class="material-icons">person_remove</span> {% trans "Cancel request" %}
                     </button>
 
                     {% elif request_sent == -1 %}
                     <button class="btn-p btn-p-primary" id="id_send_friend_request_btn">
-                        <span class="material-icons">person_add</span> Tiana ho namana
+                        <span class="material-icons">person_add</span> {% trans "Add friend" %}
                     </button>
                     {% endif %}
                 {% endif %}
             {% else %}
                 <a class="btn-p btn-p-primary" href="{% url 'login' %}">
-                    <span class="material-icons">login</span> Hiiditra
+                    <span class="material-icons">login</span> {% trans "Login" %}
                 </a>
             {% endif %}
         </div>
@@ -916,16 +917,16 @@ body { background: var(--bg); }
          ══════════════════════════════════ -->
     <div class="profile-tabs" id="profile-tabs">
         <button class="tab-btn active" data-tab="posts">
-            <span class="material-icons">article</span> Paositra
+            <span class="material-icons">article</span> {% trans "Posts" %}
         </button>
         <button class="tab-btn" data-tab="photos">
-            <span class="material-icons">photo_library</span> Sary
+            <span class="material-icons">photo_library</span> {% trans "Photos" %}
         </button>
         <button class="tab-btn" data-tab="friends-tab">
-            <span class="material-icons">group</span> Namana
+            <span class="material-icons">group</span> {% trans "Friends" %}
         </button>
         <button class="tab-btn" data-tab="about">
-            <span class="material-icons">info</span> Profile-ko
+            <span class="material-icons">info</span> {% trans "My Profile" %}
         </button>
     </div>
 
@@ -940,7 +941,7 @@ body { background: var(--bg); }
 
                 <!-- Infos -->
                 <div class="pc-sidebar-card">
-                    <p class="pc-sidebar-label">Infos</p>
+                    <p class="pc-sidebar-label">{% trans "Info" %}</p>
                     {% if location %}
                     <div class="info-row">
                         <span class="material-icons">place</span>
@@ -949,7 +950,7 @@ body { background: var(--bg); }
                     {% endif %}
                     <div class="info-row">
                         <span class="material-icons">calendar_today</span>
-                        <span>Mpikambana h@ {{ date_joined|date:"F Y" }}</span>
+                        <span>{% trans "Member since" %} {{ date_joined|date:"F Y" }}</span>
                     </div>
                     {% if is_self or not hide_email %}
                     <div class="info-row">
@@ -968,7 +969,7 @@ body { background: var(--bg); }
                 <!-- Mini friends -->
                 {% if friends %}
                 <div class="pc-sidebar-card">
-                    <p class="pc-sidebar-label">Namana · {{ friends_count }}</p>
+                    <p class="pc-sidebar-label">{% trans "Friends" %} · {{ friends_count }}</p>
                     <div class="mini-friends-grid">
                         {% for friend in friends|slice:":9" %}
                         <a class="mini-friend" href="{% url 'account:view' user_id=friend.id %}" title="{{ friend.username }}">
@@ -980,7 +981,7 @@ body { background: var(--bg); }
                     {% if friends_count > 9 %}
                     <a href="{% url 'friend:list' user_id=id %}" class="btn-p btn-p-secondary"
                        style="width:100%;margin-top:.75rem;justify-content:center;">
-                        Ny namako rehetra
+                        {% trans "My friends" %}
                     </a>
                     {% endif %}
                 </div>
@@ -989,7 +990,7 @@ body { background: var(--bg); }
                 <!-- Mini photos -->
                 {% if photos %}
                 <div class="pc-sidebar-card">
-                    <p class="pc-sidebar-label">Sary</p>
+                    <p class="pc-sidebar-label">{% trans "Photos" %}</p>
                     <div class="mini-friends-grid">
                         {% for photo in photos|slice:":9" %}
                         <div class="mini-friend">
@@ -1017,7 +1018,7 @@ body { background: var(--bg); }
                         {% if is_self %}
                         <button onclick="openStoryCreator()"
                             style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:20px;padding:.3rem .85rem;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.3rem;">
-                            <span class="material-icons" style="font-size:.85rem;">add</span> Nouvelle
+                            <span class="material-icons" style="font-size:.85rem;">add</span> {% trans "New" %}
                         </button>
                         {% endif %}
                     </div>
@@ -1028,7 +1029,7 @@ body { background: var(--bg); }
                 {% if is_self %}
                 <a class="pf-create-box" href="{% url 'post:addPost' %}">
                     <img src="{{ profile_image }}" alt="{{ username }}">
-                    <span class="pf-create-prompt">Inona ny vaovao ry {{ username }} ?</span>
+                    <span class="pf-create-prompt">{% trans "What's new" %} {{ username }} ?</span>
                 </a>
                 {% endif %}
 
@@ -1051,10 +1052,10 @@ body { background: var(--bg); }
                 {% else %}
                     <div class="pf-empty">
                         <span class="material-icons">article</span>
-                        <p>Mbola tsy misy paositra aloha hatreto.</p>
+                        <p>{% trans "No posts yet." %}</p>
                         {% if is_self %}
                         <a class="btn-p btn-p-primary" href="{% url 'post:addPost' %}" style="margin-top:.75rem;">
-                            <span class="material-icons">add</span> Paositra voalohany
+                            <span class="material-icons">add</span> {% trans "First Post" %}
                         </a>
                         {% endif %}
                     </div>
@@ -1082,10 +1083,10 @@ body { background: var(--bg); }
         {% else %}
         <div class="pf-empty">
             <span class="material-icons">photo_library</span>
-            <p>Mbola tsy misy sary voaranty.</p>
+            <p>{% trans "No photos yet." %}</p>
             {% if is_self %}
             <a class="btn-p btn-p-primary" href="{% url 'post:addPost' %}" style="margin-top:.75rem;">
-                <span class="material-icons">add_photo_alternate</span> Andranty sary
+                <span class="material-icons">add_photo_alternate</span> {% trans "Publish Photo" %}
             </a>
             {% endif %}
         </div>
@@ -1108,7 +1109,7 @@ body { background: var(--bg); }
         {% else %}
         <div class="pf-empty">
             <span class="material-icons">group</span>
-            <p>Mbola tsy misy namana.</p>
+            <p>{% trans "No friends yet" %}</p>
         </div>
         {% endif %}
     </div>
@@ -1118,22 +1119,22 @@ body { background: var(--bg); }
          ══════════════════════════════════ -->
     <div class="tab-pane" id="tab-about">
         <div class="pc-sidebar-card" style="max-width:600px;">
-            <p class="pc-sidebar-label">Mombamomba manokana</p>
+            <p class="pc-sidebar-label">{% trans "About" %}</p>
 
             <div class="info-row">
                 <span class="material-icons">person</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">Anarana</div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Name" %}</div>
                     <strong>{{ username }}</strong>
                 </div>
             </div>
             <div class="info-row">
                 <span class="material-icons">mail</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">Mailaka</div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Email" %}</div>
                     <div>
                         {% if is_self %}{{ email }}
-                        {% elif hide_email %}<em style="color:var(--text-muted)">Notakoman'ny tompony</em>
+                        {% elif hide_email %}<em style="color:var(--text-muted)">{% trans "Hidden by user" %}</em>
                         {% else %}{{ email }}{% endif %}
                     </div>
                 </div>
@@ -1142,7 +1143,7 @@ body { background: var(--bg); }
             <div class="info-row">
                 <span class="material-icons">notes</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">Bio</div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Bio" %}</div>
                     <div>{{ bio }}</div>
                 </div>
             </div>
@@ -1151,7 +1152,7 @@ body { background: var(--bg); }
             <div class="info-row">
                 <span class="material-icons">place</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">Toerana</div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Location" %}</div>
                     <div>{{ location }}</div>
                 </div>
             </div>
@@ -1159,21 +1160,21 @@ body { background: var(--bg); }
             <div class="info-row">
                 <span class="material-icons">calendar_today</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">Mpikambana h@</div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Member since" %}</div>
                     <div>{{ date_joined|date:"d F Y" }}</div>
                 </div>
             </div>
             <div class="info-row">
                 <span class="material-icons">article</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">Posts</div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Posts" %}</div>
                     <div>{{ post_count }}</div>
                 </div>
             </div>
             <div class="info-row">
                 <span class="material-icons">group</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">Namana</div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Friends" %}</div>
                     <div>{{ friends_count }}</div>
                 </div>
             </div>
@@ -1181,10 +1182,10 @@ body { background: var(--bg); }
             {% if is_self %}
             <div style="margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap;">
                 <a class="btn-p btn-p-primary" href="{% url 'account:edit' user_id=id %}">
-                    <span class="material-icons">edit</span> Anova profil
+                    <span class="material-icons">edit</span> {% trans "Edit profile" %}
                 </a>
                 <a class="btn-p btn-p-secondary" href="{% url 'password_change' %}">
-                    <span class="material-icons">lock</span> Teny miafina
+                    <span class="material-icons">lock</span> {% trans "Change password" %}
                 </a>
             </div>
             {% endif %}
@@ -1194,7 +1195,7 @@ body { background: var(--bg); }
 </div><!-- /profile-wrapper -->
 
 <!-- Share toast -->
-<div id="share-toast"><span class="material-icons">link</span> Lien copié !</div>
+<div id="share-toast"><span class="material-icons">link</span> {% trans "Link copied!" %}</div>
 
 <script>
 /* ── Tab navigation ── */
@@ -1891,3 +1892,4 @@ function uploadCoverImage(input) {
 </script>
 
 {% endblock content %}
+                                                        

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -279,8 +280,8 @@
             <span class="auth-brand-text">VAZIMBA</span>
         </a>
 
-        <h1 class="auth-heading">Bienvenue !</h1>
-        <p class="auth-sub">Connectez-vous à votre compte</p>
+        <h1 class="auth-heading">{% trans "Welcome!" %}</h1>
+        <p class="auth-sub">{% trans "Sign in to your account" %}</p>
 
         <!-- Errors -->
         {% if login_form.non_field_errors %}
@@ -300,7 +301,7 @@
         <form method="post">{% csrf_token %}
 
             <div class="auth-field">
-                <label for="inputEmail">Adresse e-mail</label>
+                <label for="inputEmail">{% trans "Email address" %}</label>
                 <div class="auth-input-wrap">
                     <span class="material-icons">mail_outline</span>
                     <input type="email" name="email" id="inputEmail"
@@ -309,7 +310,7 @@
             </div>
 
             <div class="auth-field">
-                <label for="inputPassword">Mot de passe</label>
+                <label for="inputPassword">{% trans "Password" %}</label>
                 <div class="auth-input-wrap">
                     <span class="material-icons">lock_outline</span>
                     <input type="password" name="password" id="inputPassword"
@@ -318,19 +319,19 @@
             </div>
 
             <button class="auth-btn" type="submit">
-                Se connecter
+                {% trans "Login" %}
             </button>
         </form>
 
         <div class="auth-links">
-            <a href="{% url 'password_reset' %}">Mot de passe oublié ?</a>
+            <a href="{% url 'password_reset' %}">{% trans "Forgot password?" %}</a>
         </div>
 
         <div class="auth-divider">ou</div>
 
         <div class="auth-register-link">
-            Pas encore de compte ?
-            <a href="{% url 'register' %}">Créer un compte</a>
+            {% trans "Don't have an account?" %}
+            <a href="{% url 'register' %}">{% trans "Create account" %}</a>
         </div>
 
     </div>

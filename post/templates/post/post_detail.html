@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block extra_head %}
 {# ── Open Graph : méta pour le partage sur réseaux sociaux ── #}
@@ -317,7 +318,7 @@
 
     <a href="javascript:history.back()" class="pd-back">
         <span class="material-icons">arrow_back</span>
-        Retour
+        {% trans "Back" %}
     </a>
 
     <article class="pd-card" id="post-{{ post.id }}">
@@ -341,7 +342,7 @@
             {% if request.user == post.author %}
             <div class="pd-owner-actions">
                 <a class="pd-action-btn" href="{% url 'post:edit-post' post.pk %}">
-                    <span class="material-icons">edit</span> Modifier
+                    <span class="material-icons">edit</span> {% trans "Edit" %}
                 </a>
                 <a class="pd-action-btn danger" href="{% url 'post:delete-post' post.pk %}">
                     <span class="material-icons">delete_outline</span>
@@ -429,7 +430,7 @@
 
             <button class="pd-action-item" onclick="pdSharePost()">
                 <span class="material-icons">share</span>
-                Partager
+                {% trans "Share" %}
             </button>
         </div>
 
@@ -453,10 +454,10 @@
                         <div class="pc-comment-footer">
                             <span class="pc-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
                             <button class="pc-comment-reply-btn"
-                                    onclick="pdToggleReply({{ c.id }})">Répondre</button>
+                                    onclick="pdToggleReply({{ c.id }})">{% trans "Reply" %}</button>
                             {% if request.user == c.author or request.user == post.author %}
                             <button class="pc-comment-del"
-                                    onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">Supprimer</button>
+                                    onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">{% trans "Delete" %}</button>
                             {% endif %}
                         </div>
 
@@ -476,7 +477,7 @@
                                         <span class="pc-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
                                         {% if request.user == reply.author or request.user == post.author %}
                                         <button class="pc-comment-del"
-                                                onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')">Supprimer</button>
+                                                onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')">{% trans "Delete" %}</button>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -492,14 +493,14 @@
                             <div class="pc-reply-input-wrap">
                                 <textarea class="pc-reply-textarea"
                                           id="reply-input-{{ c.id }}"
-                                          placeholder="Répondre à {{ c.author.username }}…"
+                                          placeholder="{% trans 'Reply to' %} {{ c.author.username }}…"
                                           rows="1" maxlength="1000"
                                           onkeydown="handleReplyKey(event, {{ c.id }}, {{ post.id }}, '{{ comment_url }}')"
                                           oninput="autoResize(this)"></textarea>
                             </div>
                             <button class="pc-comment-send"
                                     onclick="submitReply({{ c.id }}, {{ post.id }}, '{{ comment_url }}')"
-                                    title="Répondre">
+                                    title="{% trans 'Reply' %}">
                                 <span class="material-icons">send</span>
                             </button>
                         </div>
@@ -530,7 +531,7 @@
 </div>
 
 <!-- Share toast -->
-<div id="pd-share-toast">🔗 Lien copié !</div>
+<div id="pd-share-toast">🔗 {% trans "Link copied!" %}</div>
 
 <script>
 var POST_ID = {{ post.id }};

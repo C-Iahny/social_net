@@ -12,7 +12,7 @@ msgid "Feed"
 msgstr "Vaovao"
 
 msgid "Explore"
-msgstr "Zava-misy"
+msgstr "Tsidihana"
 
 msgid "Search..."
 msgstr "Mikaroka..."
@@ -34,10 +34,10 @@ msgid "Edit profile"
 msgstr "Anova profil"
 
 msgid "Change password"
-msgstr "Teny Miafina vaovao"
+msgstr "Anova Teny Miafina"
 
 msgid "My profile"
-msgstr "Ny Profily"
+msgstr "Profile-ko"
 
 msgid "About me"
 msgstr "Momba Ahy"
@@ -49,13 +49,13 @@ msgid "friends"
 msgstr "namana"
 
 msgid "Send message"
-msgstr "Hafatra"
+msgstr "Andefa Hafatra"
 
 msgid "Add friend"
 msgstr "Manampy namana"
 
 msgid "Friend request sent"
-msgstr "Fangatahana nalefa"
+msgstr "Fangatahana lasa"
 
 msgid "Remove friend"
 msgstr "Esory amin'ny namana"
@@ -100,19 +100,19 @@ msgid "My friends"
 msgstr "Ireo Namako"
 
 msgid "People you may know"
-msgstr "Olona mety fantatrao"
+msgstr "Olona mety ho fantatrao"
 
 msgid "Accept"
-msgstr "Ekeo"
+msgstr "Ekena"
 
 msgid "Decline"
-msgstr "Ariana"
+msgstr "Lavina"
 
 msgid "Message"
 msgstr "Hafatra"
 
 msgid "No friends yet"
-msgstr "Tsy misy namana mbola"
+msgstr "Mbola tsy misy namana"
 
 # ── Tantara (Stories) ──
 msgid "My story"
@@ -134,7 +134,7 @@ msgid "Publish"
 msgstr "Alefa"
 
 msgid "Cancel"
-msgstr "Foano"
+msgstr "Foanana"
 
 msgid "Choose a file"
 msgstr "Misafidy rakitra"
@@ -147,7 +147,7 @@ msgid "Welcome back"
 msgstr "Tonga soa indray"
 
 msgid "Username"
-msgstr "Anarana mpampiasa"
+msgstr "Anarana fampiasa"
 
 msgid "Password"
 msgstr "Teny miafina"
@@ -159,25 +159,25 @@ msgid "Don't have an account?"
 msgstr "Tsy manana kaonty?"
 
 msgid "Already have an account?"
-msgstr "Manana kaonty sahady?"
+msgstr "Efa manana kaonty?"
 
 msgid "First name"
-msgstr "Anarana voalohany"
+msgstr "Fanampin'anarana"
 
 msgid "Last name"
-msgstr "Fanamarana"
+msgstr "Anarana feno"
 
 msgid "Email"
 msgstr "Mailaka"
 
 msgid "Confirm password"
-msgstr "Marihina ny teny miafina"
+msgstr "Amafisina ny teny miafina"
 
 msgid "Create account"
 msgstr "Mamorona kaonty"
 
 msgid "Password strength"
-msgstr "Hery ny teny miafina"
+msgstr "Tanjaky ny teny miafina"
 
 msgid "Weak"
 msgstr "Malemy"
@@ -189,7 +189,7 @@ msgid "Strong"
 msgstr "Matanjaka"
 
 msgid "Excellent"
-msgstr "Tsara dia tsara"
+msgstr "Tsara be"
 
 # ── Fampandrenesana ──
 msgid "Notifications"
@@ -218,7 +218,7 @@ msgid "No messages"
 msgstr "Tsy misy hafatra"
 
 msgid "Type a message..."
-msgstr "Soraty ny hafatra..."
+msgstr "Manorata hafatra..."
 
 msgid "Send"
 msgstr "Alefa"
@@ -234,22 +234,22 @@ msgid "Home"
 msgstr "Tranon-trano"
 
 msgid "Save"
-msgstr "Tehirizo"
+msgstr "Tehirizina"
 
 msgid "Delete"
-msgstr "Fafao"
+msgstr "Fafana"
 
 msgid "Confirm"
-msgstr "Marihina"
+msgstr "Amarinina"
 
 msgid "Close"
 msgstr "Akatony"
 
 msgid "Loading..."
-msgstr "Ampidirina..."
+msgstr "Ho avy..."
 
 msgid "See all"
-msgstr "Jerena rehetra"
+msgstr "Jerena daholo"
 
 msgid "View profile"
 msgstr "Jerena profily"
@@ -290,3 +290,300 @@ msgstr "Mpikambana"
 
 msgid "View my feed"
 msgstr "Jerena ny vaovao"
+
+msgid "About"
+msgstr "Momba"
+
+msgid "Privacy"
+msgstr "Tsiambaratelo"
+
+msgid "Rules"
+msgstr "Lalàna"
+
+msgid "Trends"
+msgstr "Hira malaza"
+
+msgid "Write"
+msgstr "Soraty"
+
+msgid "New post"
+msgstr "Post vaovao"
+
+msgid "New Post — Click to refresh"
+msgstr "Post vaovao — Tsindrio hanavao"
+
+msgid "Nothing new for now."
+msgstr "Tsy misy vaovao aloha."
+
+msgid "You've seen all posts!"
+msgstr "Efa hitanao ny post rehetra!"
+
+msgid "Invite friends or post something."
+msgstr "Asao ny namanao na mamoaka zavatra."
+
+msgid "Link copied to clipboard!"
+msgstr "Rohy voaadika!"
+
+msgid "Link copied!"
+msgstr "Rohy voaadika!"
+
+msgid "Share"
+msgstr "Zaraina"
+
+msgid "Reply"
+msgstr "Valiny"
+
+msgid "Reply to"
+msgstr "Valiny ho an'"
+
+msgid "Comments"
+msgstr "Fanehoan-kevitra"
+
+msgid "File"
+msgstr "Rakitra"
+
+msgid "My posts"
+msgstr "Ny postiko"
+
+msgid "My first post"
+msgstr "Post voalohany"
+
+msgid "Friend"
+msgstr "Namana"
+
+msgid "Info"
+msgstr "Fampahalalana"
+
+msgid "Change cover"
+msgstr "Hanova ny sary farakorony"
+
+msgid "Hidden by user"
+msgstr "Nafenin'ny mpampiasa"
+
+msgid "Location"
+msgstr "Toerana"
+
+msgid "Member since"
+msgstr "Mpikambana hatramin'ny"
+
+msgid "Name"
+msgstr "Anarana"
+
+msgid "New"
+msgstr "Vaovao"
+
+msgid "No photos yet."
+msgstr "Tsy misy sary mbola."
+
+msgid "No posts yet."
+msgstr "Tsy misy post mbola."
+
+msgid "First Post"
+msgstr "Post voalohany"
+
+msgid "Publish Photo"
+msgstr "Mamoaka Sary"
+
+msgid "Profile photo"
+msgstr "Sarin'ny profil"
+
+msgid "Edit my profile"
+msgstr "Hanova ny profiliko"
+
+msgid "Account information"
+msgstr "Fampahalalana momba ny kaonty"
+
+msgid "Hide my email from other users"
+msgstr "Afeno ny email ho an'ny mpampiasa hafa"
+
+msgid "Save changes"
+msgstr "Tehirizo ny fanovana"
+
+msgid "Recommended format: square, JPG or PNG."
+msgstr "Format azo atao: efajoro, JPG na PNG."
+
+msgid "Click on the photo to change it."
+msgstr "Tsindrio ny sary mba hanova azy."
+
+msgid "About you"
+msgstr "Momba anao"
+
+msgid "Bio"
+msgstr "Tantara fohy"
+
+msgid "Email address"
+msgstr "Adiresy email"
+
+msgid "Post"
+msgstr "Famoahana"
+
+msgid "Title"
+msgstr "Lohateny"
+
+msgid "Content"
+msgstr "Votoaty"
+
+msgid "Create a post"
+msgstr "Mamorona post"
+
+msgid "Edit post"
+msgstr "Hanova ny post"
+
+msgid "Delete post?"
+msgstr "Hamafa ny post?"
+
+msgid "Yes, delete"
+msgstr "Eny, fafao"
+
+msgid "This action is"
+msgstr "Io asa io dia"
+
+msgid "irreversible"
+msgstr "tsy azo averina"
+
+msgid "The post will be permanently deleted."
+msgstr "Hofafana tanteraka ny post."
+
+msgid "Published on"
+msgstr "Navoaka ny"
+
+msgid "Attachment (optional)"
+msgstr "Rakitra (tsy voatery)"
+
+msgid "Attachment"
+msgstr "Rakitra"
+
+msgid "Photos & Videos"
+msgstr "Sary & Horonan-tsary"
+
+msgid "Images & Videos — multiple selections"
+msgstr "Sary & Horonan-tsary — safidy maro"
+
+msgid "Click to add"
+msgstr "Tsindrio hampiditra"
+
+msgid "Click to attach"
+msgstr "Tsindrio hametrahana"
+
+msgid "or drag and drop"
+msgstr "na sered-atao"
+
+msgid "a file"
+msgstr "rakitra"
+
+msgid "Add media"
+msgstr "Ampidiro média"
+
+msgid "Current file:"
+msgstr "Rakitra ankehitriny:"
+
+msgid "Current image"
+msgstr "Sary ankehitriny"
+
+msgid "Current media"
+msgstr "Média ankehitriny"
+
+msgid "Check to delete"
+msgstr "Tsindrio mba hamafa"
+
+msgid "as"
+msgstr "amin'ny maha"
+
+msgid "video"
+msgstr "horonan-tsary"
+
+msgid "view"
+msgstr "jereo"
+
+msgid "Back"
+msgstr "Hiverina"
+
+msgid "Edit"
+msgstr "Hanova"
+
+msgid "No results"
+msgstr "Tsy misy vokatra"
+
+msgid "Try another search term or check the spelling."
+msgstr "Andramo teny hafa na jereo ny fanoratan-teny."
+
+msgid "Search"
+msgstr "Mitady"
+
+msgid "Search users, posts, hashtags…"
+msgstr "Mitady mpampiasa, post, hashtag…"
+
+msgid "Users"
+msgstr "Mpampiasa"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "You"
+msgstr "Ianao"
+
+msgid "Not friends"
+msgstr "Tsy namana"
+
+msgid "Hashtags"
+msgstr "Hashtags"
+
+msgid "Find people"
+msgstr "Mitady olona"
+
+msgid "Looking for friends? Search here and start connecting!"
+msgstr "Mitady namana ianao? Mikaroka ety ary manomboka ifandraisana!"
+
+msgid "All"
+msgstr "Rehetra"
+
+msgid "Me"
+msgstr "Ahy ity"
+
+msgid "Search friends…"
+msgstr "Hikaroka namana…"
+
+msgid "Requests"
+msgstr "Fangatahana"
+
+msgid "People who want to be friends with you"
+msgstr "Olona te-ho lasa namana aminao"
+
+msgid "When someone sends you a friend request, it will appear here."
+msgstr "Raha misy olona mangataka ho lasa namana aminao, hiseho eto izy."
+
+msgid "No requests"
+msgstr "Tsy misy fangatahana"
+
+msgid "Wants to be your friend"
+msgstr "Mangataka ho lasa namana aminao"
+
+msgid "Previous"
+msgstr "Teo aloha"
+
+msgid "Next"
+msgstr "Manaraka"
+
+msgid "Back to feed"
+msgstr "Hiverina amin'ny fil"
+
+msgid "Be the first to post with this hashtag!"
+msgstr "Mba ho voalohany mamoaka amin'ity hashtag ity ianao!"
+
+msgid "View"
+msgstr "Jereo"
+
+msgid "Welcome!"
+msgstr "Tongasoa!"
+
+msgid "Sign in to your account"
+msgstr "Hiditra amin'ny kaontinao"
+
+msgid "Join the VAZIMBA community"
+msgstr "Hidiranao ao amin'ny fiarahamonina VAZIMBA"
+
+msgid "Create my account"
+msgstr "Mamorona ny kaontiko"
+
+msgid "requests"
+msgstr "fangatahana"
