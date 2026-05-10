@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -152,7 +153,7 @@
         <div class="post-form-header">
             <span class="material-icons">edit</span>
             <div>
-                <h4>Modifier le post</h4>
+                <h4>{% trans "Edit post" %}</h4>
                 <span>{{ object.title }}</span>
             </div>
         </div>
@@ -163,7 +164,7 @@
 
                 <!-- Titre -->
                 <div class="form-field">
-                    <label for="id_title">Titre <span style="color:var(--badge-danger-t,red)">*</span></label>
+                    <label for="id_title">{% trans "Title" %} <span style="color:var(--badge-danger-t,red)">*</span></label>
                     {{ form.title }}
                     {% if form.title.errors %}
                     <p style="color:var(--badge-danger-t,red);font-size:.83rem;margin-top:.3rem;">{{ form.title.errors|join:", " }}</p>
@@ -172,7 +173,7 @@
 
                 <!-- Contenu -->
                 <div class="form-field">
-                    <label>Contenu</label>
+                    <label>{% trans "Content" %}</label>
                     {{ form.body }}
                 </div>
 
@@ -181,15 +182,15 @@
                 <div class="form-field">
                     <label>
                         <span class="material-icons" style="font-size:1rem;vertical-align:middle;">perm_media</span>
-                        Médias actuels
+                        {% trans "Current media" %}
                     </label>
-                    <p class="del-hint">Cocher pour supprimer</p>
+                    <p class="del-hint">{% trans "Check to delete" %}</p>
                     <div class="existing-media-grid">
                         {% for item in existing_media %}
                         <div class="existing-media-item">
                             {% if item.is_video %}
                             <video src="{{ item.url }}" muted preload="metadata"></video>
-                            <span class="mp-type-badge">vidéo</span>
+                            <span class="mp-type-badge">{% trans "video" %}</span>
                             {% else %}
                             <img src="{{ item.url }}" alt="">
                             {% endif %}
@@ -200,7 +201,7 @@
                 </div>
                 {% elif object.header_image_url %}
                 <div class="form-field">
-                    <label>Image actuelle</label>
+                    <label>{% trans "Current image" %}</label>
                     <div class="existing-media-grid">
                         <div class="existing-media-item">
                             <img src="{{ object.header_image_url }}" alt="">
@@ -214,7 +215,7 @@
                 <div class="form-field">
                     <label>
                         <span class="material-icons" style="font-size:1rem;vertical-align:middle;">add_photo_alternate</span>
-                        Ajouter des médias
+                        {% trans "Add media" %}
                     </label>
                     <label for="id_media_files" class="upload-zone" id="media-upload-zone">
                         <input type="file" name="media_files" id="id_media_files"
@@ -223,19 +224,19 @@
                                style="display:none;"
                                onchange="addToSelection(this.files); this.value=null;">
                         <span class="material-icons">add_photo_alternate</span>
-                        <p id="media-zone-label"><span class="upload-label">Cliquer pour ajouter</span> ou glisser-déposer</p>
-                        <p style="font-size:.78rem;margin-top:.2rem;">Images &amp; Vidéos — sélections cumulables</p>
+                        <p id="media-zone-label"><span class="upload-label">{% trans "Click to add" %}</span> {% trans "or drag and drop" %}</p>
+                        <p style="font-size:.78rem;margin-top:.2rem;">{% trans "Images & Videos — multiple selections" %}</p>
                     </label>
                     <div class="media-preview-grid" id="media-preview-grid"></div>
                 </div>
 
                 <!-- Fichier joint -->
                 <div class="form-field">
-                    <label>Fichier joint</label>
+                    <label>{% trans "Attachment" %}</label>
                     {{ form.file }}
                     {% if object.file %}
                     <p class="upload-hint" style="font-size:.82rem;color:var(--text-muted);margin-top:.3rem;">
-                        Fichier actuel : <a href="{{ object.file.url }}" target="_blank" style="color:var(--accent);">voir</a>
+                        {% trans "Current file:" %} <a href="{{ object.file.url }}" target="_blank" style="color:var(--accent);">{% trans "view" %}</a>
                     </p>
                     {% endif %}
                 </div>
@@ -248,10 +249,10 @@
 
             <div class="post-form-actions">
                 <a class="btn-cancel" href="{% url 'post:post-view' %}">
-                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> Annuler
+                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> {% trans "Cancel" %}
                 </a>
                 <button class="btn-submit" type="submit">
-                    <span class="material-icons" style="font-size:1rem;">save</span> Enregistrer
+                    <span class="material-icons" style="font-size:1rem;">save</span> {% trans "Save" %}
                 </button>
             </div>
         </form>
@@ -285,7 +286,7 @@ function _renderPreview() {
     var count = _pending.length;
     label.innerHTML = count > 0
         ? '<span class="upload-label">' + count + ' fichier(s)</span> — cliquer pour en ajouter'
-        : '<span class="upload-label">Cliquer pour ajouter</span> ou glisser-déposer';
+        : '<span class="upload-label">{% trans "Click to add" %}</span> {% trans "or drag and drop" %}';
 
     _pending.forEach(function(file, idx) {
         var item = document.createElement('div');

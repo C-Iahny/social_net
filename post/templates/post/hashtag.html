@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -111,7 +112,7 @@ body { background: var(--bg); }
 
     <a class="ht-back" href="{% url 'post:post-view' %}">
         <span class="material-icons">arrow_back</span>
-        Retour au fil
+        {% trans "Back to feed" %}
     </a>
 
     <div class="hashtag-hero">
@@ -154,7 +155,7 @@ body { background: var(--bg); }
                     {{ post.comments.count }} commentaire{{ post.comments.count|pluralize }}
                 </div>
                 <a href="{% url 'post:post-view' %}" style="padding:.5rem 1rem; color:var(--accent); font-size:.85rem; font-weight:700; text-decoration:none;">
-                    Voir
+                    {% trans "View" %}
                 </a>
             </div>
         </article>
@@ -163,13 +164,13 @@ body { background: var(--bg); }
         <div class="ht-pagination">
             {% if posts.has_previous %}
             <a class="page-btn" href="?page={{ posts.previous_page_number }}">
-                <span class="material-icons">chevron_left</span> Précédent
+                <span class="material-icons">chevron_left</span> {% trans "Previous" %}
             </a>
             {% endif %}
             <span class="page-info">{{ posts.number }} / {{ posts.paginator.num_pages }}</span>
             {% if posts.has_next %}
             <a class="page-btn" href="?page={{ posts.next_page_number }}">
-                Suivant <span class="material-icons">chevron_right</span>
+                {% trans "Next" %} <span class="material-icons">chevron_right</span>
             </a>
             {% endif %}
         </div>
@@ -178,7 +179,7 @@ body { background: var(--bg); }
         <div class="empty-ht">
             <span class="ef-icon">🔍</span>
             <strong style="color:var(--text);">Aucun post trouvé pour {{ tag }}</strong>
-            <p style="margin-top:.5rem;">Soit le premier à publier avec ce hashtag !</p>
+            <p style="margin-top:.5rem;">{% trans "Be the first to post with this hashtag!" %}</p>
         </div>
     {% endif %}
 

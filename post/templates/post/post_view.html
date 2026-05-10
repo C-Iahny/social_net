@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -924,15 +925,15 @@ body { background: var(--bg); }
                 <div class="lsb-stats">
                     <div class="lsb-stat">
                         <strong class="lsb-stat-val">{{ my_post_count|default:"0" }}</strong>
-                        <span class="lsb-stat-lbl">Paositra</span>
+                        <span class="lsb-stat-lbl">{% trans "Posts" %}</span>
                     </div>
                     <div class="lsb-stat">
                         <strong class="lsb-stat-val">{{ friends_count|default:"0" }}</strong>
-                        <span class="lsb-stat-lbl">Namana</span>
+                        <span class="lsb-stat-lbl">{% trans "Friends" %}</span>
                     </div>
                 </div>
                 <a class="lsb-profile-btn" href="{% url 'account:view' user_id=request.user.id %}">
-                    Profil-ko
+                    {% trans "My profile" %}
                 </a>
             </div>
         </div>
@@ -941,30 +942,30 @@ body { background: var(--bg); }
         <div class="lsb-nav-card">
             <a class="lsb-nav-item" href="{% url 'post:addPost' %}">
                 <span class="lsb-nav-icon"><span class="material-icons">add_circle</span></span>
-                Paositra Vaovao
+                {% trans "New post" %}
             </a>
             <a class="lsb-nav-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
                 <span class="lsb-nav-icon"><span class="material-icons">person_add</span></span>
-                Fangatahana Namana
+                {% trans "Friend requests" %}
             </a>
             <a class="lsb-nav-item" href="{% url 'friend:list' user_id=request.user.id %}">
-                <span class="lsb-nav-icon"><span class="material-icons">group</span></span>
-                Ireo Namako
+                <span class="lsb-nav-icon"><span class="material-icons">groupe</span></span>
+                {% trans "My friends" %}
             </a>
             <a class="lsb-nav-item" href="{% url 'account:edit' user_id=request.user.id %}">
                 <span class="lsb-nav-icon"><span class="material-icons">settings</span></span>
-                Fikirana
+                {% trans "Settings" %}
             </a>
             <a class="lsb-nav-item danger" href="{% url 'logout' %}">
                 <span class="lsb-nav-icon"><span class="material-icons">logout</span></span>
-                Hiala
+                {% trans "Logout" %}
             </a>
         </div>
 
         <!-- Friends -->
         {% if friends %}
         <div class="lsb-friends-card">
-            <p class="lsb-section-label">Namana</p>
+            <p class="lsb-section-label">{% trans "Friends" %}</p>
             {% for friend in friends|slice:":10" %}
             <a class="lsb-friend" href="{% url 'account:view' user_id=friend.id %}">
                 <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
@@ -993,7 +994,7 @@ body { background: var(--bg); }
         <!-- New-posts banner -->
         <div id="new-posts-banner" onclick="window.location.reload()">
             <span class="material-icons" style="font-size:1rem;">fiber_new</span>
-            <span id="new-posts-banner-text">Paositra Vaovao — Tsindrio anavaozana</span>
+            <span id="new-posts-banner-text">{% trans "New Post — Click to refresh" %}</span>
         </div>
 
         <!-- Create post box -->
@@ -1001,19 +1002,19 @@ body { background: var(--bg); }
             <div class="create-box-top">
                 <img class="create-box-avatar" src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
                 <a class="create-box-trigger" href="{% url 'post:addPost' %}">
-                    Inona ny vaovao ry {{ request.user.username }} ?
+                    {% trans "What's new" %} {{ request.user.username }} ?
                 </a>
             </div>
             <hr class="create-box-divider">
             <div class="create-box-actions">
                 <a class="create-box-action photo" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">add_photo_alternate</span> Sary
+                    <span class="material-icons">add_photo_alternate</span> {% trans "Photos" %}
                 </a>
                 <a class="create-box-action file" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">attach_file</span> Rakitra
+                    <span class="material-icons">attach_file</span> {% trans "File" %}
                 </a>
                 <a class="create-box-action post" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">edit_note</span> Anoratra
+                    <span class="material-icons">edit_note</span> {% trans "Write" %}
                 </a>
             </div>
         </div>
@@ -1125,7 +1126,7 @@ body { background: var(--bg); }
                             onclick="toggleComments({{ post.id }})"
                             style="flex:1;">
                         <span class="material-icons">chat_bubble_outline</span>
-                        Evitra
+                        {% trans "Comments" %}
                         <span id="comment-count-{{ post.id }}"
                               style="font-size:.76rem;margin-left:.15rem;color:var(--text-muted);{% if not post.total_comments %}display:none{% endif %}">
                             {% if post.total_comments %}({{ post.total_comments }}){% endif %}
@@ -1134,7 +1135,7 @@ body { background: var(--bg); }
 
                     <button class="pc-footer-btn" onclick="sharePost({{ post.id }})" style="flex:1;">
                         <span class="material-icons">share</span>
-                        Zaraina
+                        {% trans "Share" %}
                     </button>
                 </div>
 
@@ -1156,12 +1157,12 @@ body { background: var(--bg); }
                                     <span class="pc-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
                                     <button class="pc-comment-reply-btn"
                                             onclick="toggleReplyForm({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')">
-                                        Répondre
+                                        {% trans "Reply" %}
                                     </button>
                                     {% if request.user == c.author or request.user == post.author %}
                                     <button class="pc-comment-del"
                                             onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">
-                                        Supprimer
+                                        {% trans "Delete" %}
                                     </button>
                                     {% endif %}
                                 </div>
@@ -1184,7 +1185,7 @@ body { background: var(--bg); }
                                                 {% if request.user == reply.author or request.user == post.author %}
                                                 <button class="pc-comment-del"
                                                         onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')">
-                                                    Supprimer
+                                                    {% trans "Delete" %}
                                                 </button>
                                                 {% endif %}
                                             </div>
@@ -1271,16 +1272,16 @@ body { background: var(--bg); }
 
             <div id="feed-end-message">
                 <span class="material-icons" style="display:block;font-size:1.8rem;margin-bottom:.4rem;color:var(--border);">check_circle_outline</span>
-                Efa hitanao ny post rehetra !
+                {% trans "You've seen all posts!" %}
             </div>
 
         {% else %}
             <div class="empty-feed">
                 <span class="material-icons ef-icon">dynamic_feed</span>
-                <h5>Mbola tsy misy vaovao aloha hatreto.</h5>
-                <p>Mangalà namana na mandefasa paositra avy hatrany.</p>
+                <h5>{% trans "Nothing new for now." %}</h5>
+                <p>{% trans "Invite friends or post something." %}</p>
                 <a class="ef-cta" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">add</span> Paositrako voalohany
+                    <span class="material-icons">add</span> {% trans "My first post" %}
                 </a>
             </div>
         {% endif %}
@@ -1295,14 +1296,14 @@ body { background: var(--bg); }
         {% if friends %}
         <div class="rsb-card">
             <p class="rsb-section-label">
-                <span class="material-icons">group</span> Namana
+                <span class="material-icons">group</span> {% trans "Friends" %}
             </p>
             {% for friend in friends|slice:":6" %}
             <div class="rsb-friend-row">
                 <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
                 <div class="rsb-friend-info">
                     <a class="rsb-friend-name" href="{% url 'account:view' user_id=friend.id %}">{{ friend.username }}</a>
-                    <span class="rsb-friend-sub">Namana</span>
+                    <span class="rsb-friend-sub">{% trans "Friend" %}</span>
                 </div>
                 <a class="rsb-chat-btn" href="{% url 'chat:private-chat-room' %}" title="Message">
                     <span class="material-icons">chat</span>
@@ -1317,7 +1318,7 @@ body { background: var(--bg); }
         {% if trending_hashtags %}
         <div class="rsb-card">
             <p class="rsb-section-label">
-                <span class="material-icons">trending_up</span> Tendances
+                <span class="material-icons">trending_up</span> {% trans "Trends" %}
             </p>
             {% for ht in trending_hashtags %}
             <a class="rsb-trending-row" href="{% url 'post:hashtag' ht.tag|slice:'1:' %}">
@@ -1334,11 +1335,11 @@ body { background: var(--bg); }
             <div style="display:flex;flex-direction:column;gap:.3rem;">
                 <span style="font-size:.84rem;color:var(--text);">
                     <span class="material-icons" style="font-size:.9rem;vertical-align:middle;color:var(--accent);">article</span>
-                    &nbsp;Post nalefako: <strong>{{ my_post_count|default:"0" }}</strong>
+                    &nbsp;{% trans "My posts" %}: <strong>{{ my_post_count|default:"0" }}</strong>
                 </span>
                 <span style="font-size:.84rem;color:var(--text);">
                     <span class="material-icons" style="font-size:.9rem;vertical-align:middle;color:var(--accent2);">group</span>
-                    &nbsp;Namana: <strong>{{ friends_count|default:"0" }}</strong>
+                    &nbsp;{% trans "Friends" %}: <strong>{{ friends_count|default:"0" }}</strong>
                 </span>
             </div>
             <a href="{% url 'account:edit' user_id=request.user.id %}"
@@ -1350,15 +1351,15 @@ body { background: var(--bg); }
                onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)';"
                onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)';">
                 <span class="material-icons" style="font-size:.9rem;">settings</span>
-                Anova Profile
+                {% trans "Edit profile" %}
             </a>
         </div>
 
         <!-- Footer links -->
         <div class="rsb-footer-links">
-            <a class="rsb-link" href="#">Tsiambaratelo</a>
-            <a class="rsb-link" href="#">Fepetra</a>
-            <a class="rsb-link" href="#">Momba anay</a>
+            <a class="rsb-link" href="#">{% trans "Privacy" %}</a>
+            <a class="rsb-link" href="#">{% trans "Rules" %}</a>
+            <a class="rsb-link" href="#">{% trans "About" %}</a>
             <br><br>
             <span style="font-size:.72rem;color:var(--text-muted);">VAZIMBA © 2026</span>
         </div>
@@ -1369,7 +1370,7 @@ body { background: var(--bg); }
 
 <div id="share-toast">
     <span class="material-icons">check_circle</span>
-    Lien lasa ao anaty presse-papiers !
+    {% trans "Link copied to clipboard!" %}
 </div>
 
 <script>
@@ -1861,3 +1862,4 @@ function escHtml(str) {
 </script>
 
 {% endblock content %}
+                                             

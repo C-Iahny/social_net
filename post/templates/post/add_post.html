@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -183,8 +184,8 @@
         <div class="post-form-header">
             <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
             <div>
-                <h4>Créer un post</h4>
-                <span>en tant que <strong>{{ request.user.username }}</strong></span>
+                <h4>{% trans "Create a post" %}</h4>
+                <span>{% trans "as" %} <strong>{{ request.user.username }}</strong></span>
             </div>
         </div>
 
@@ -196,7 +197,7 @@
 
                 <!-- Title -->
                 <div class="form-field">
-                    <label for="id_title">Titre <span style="color:var(--badge-danger-t,red)">*</span></label>
+                    <label for="id_title">{% trans "Title" %} <span style="color:var(--badge-danger-t,red)">*</span></label>
                     <input type="text" name="title" id="id_title"
                            placeholder="Donnez un titre à votre post…"
                            value="{{ form.title.value|default:'' }}" required>
@@ -207,7 +208,7 @@
 
                 <!-- Body (CKEditor) -->
                 <div class="form-field">
-                    <label>Contenu</label>
+                    <label>{% trans "Content" %}</label>
                     {{ form.body }}
                     {% if form.body.errors %}
                     <p style="color:var(--badge-danger-t,red);font-size:.83rem;margin-top:.3rem;">{{ form.body.errors|join:", " }}</p>
@@ -218,7 +219,7 @@
                 <div class="form-field">
                     <label>
                         <span class="material-icons" style="font-size:1rem;vertical-align:middle;">perm_media</span>
-                        Photos &amp; Vidéos
+                        {% trans "Photos & Videos" %}
                     </label>
                     <label for="id_media_files" class="upload-zone" id="media-upload-zone">
                         <input type="file" name="media_files" id="id_media_files"
@@ -227,19 +228,19 @@
                                style="display:none;"
                                onchange="addToSelection(this.files); this.value=null;">
                         <span class="material-icons">add_photo_alternate</span>
-                        <p id="media-zone-label"><span class="upload-label">Cliquer pour ajouter</span> ou glisser-déposer</p>
-                        <p style="font-size:.78rem;margin-top:.2rem;">Images &amp; Vidéos — sélections cumulables</p>
+                        <p id="media-zone-label"><span class="upload-label">{% trans "Click to add" %}</span> {% trans "or drag and drop" %}</p>
+                        <p style="font-size:.78rem;margin-top:.2rem;">{% trans "Images & Videos — multiple selections" %}</p>
                     </label>
                     <div class="media-preview-grid" id="media-preview-grid"></div>
                 </div>
 
                 <!-- File attachment -->
                 <div class="form-field">
-                    <label>Fichier joint (optionnel)</label>
+                    <label>{% trans "Attachment (optional)" %}</label>
                     <div class="upload-zone">
                         <input type="file" name="file" id="id_file">
                         <span class="material-icons">attach_file</span>
-                        <p><span class="upload-label">Cliquer pour joindre</span> un fichier</p>
+                        <p><span class="upload-label">{% trans "Click to attach" %}</span> {% trans "a file" %}</p>
                     </div>
                 </div>
 
@@ -253,10 +254,10 @@
 
             <div class="post-form-actions">
                 <a class="btn-cancel" href="{% url 'post:post-view' %}">
-                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> Annuler
+                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> {% trans "Cancel" %}
                 </a>
                 <button class="btn-submit" type="submit">
-                    <span class="material-icons" style="font-size:1rem;">send</span> Publier
+                    <span class="material-icons" style="font-size:1rem;">send</span> {% trans "Publish" %}
                 </button>
             </div>
         </form>
@@ -294,7 +295,7 @@ function _renderPreview() {
 
     label.innerHTML = count > 0
         ? '<span class="upload-label">' + count + ' fichier(s)</span> — cliquer pour en ajouter'
-        : '<span class="upload-label">Cliquer pour ajouter</span> ou glisser-déposer';
+        : '<span class="upload-label">Click to add</span> or drag and drop';
 
     _pending.forEach(function(file, idx) {
         var item = document.createElement('div');

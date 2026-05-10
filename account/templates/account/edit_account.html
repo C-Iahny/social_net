@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -189,7 +190,7 @@
         <!-- Header -->
         <div class="edit-card-header">
             <span class="material-icons">manage_accounts</span>
-            <h2>Modifier mon profil</h2>
+            <h2>{% trans "Edit my profile" %}</h2>
         </div>
 
         <!-- Avatar -->
@@ -211,8 +212,8 @@
                 </div>
             </div>
             <div class="avatar-info">
-                <h4>Photo de profil</h4>
-                <p>Cliquez sur la photo pour en changer.<br>Format recommandé : carré, JPG ou PNG.</p>
+                <h4>{% trans "Profile photo" %}</h4>
+                <p>{% trans "Click on the photo to change it." %}<br>{% trans "Recommended format: square, JPG or PNG." %}</p>
             </div>
         </div>
 
@@ -229,10 +230,10 @@
                 <div class="edit-errors">{{ form.non_field_errors }}</div>
                 {% endif %}
 
-                <div class="edit-section-title">Informations du compte</div>
+                <div class="edit-section-title">{% trans "Account information" %}</div>
 
                 <div class="edit-field">
-                    <label>Adresse e-mail</label>
+                    <label>{% trans "Email address" %}</label>
                     <div class="edit-input-wrap">
                         <span class="material-icons">mail_outline</span>
                         <input type="email" name="email" id="id_input_email"
@@ -242,7 +243,7 @@
                 </div>
 
                 <div class="edit-field">
-                    <label>Nom d'utilisateur</label>
+                    <label>{% trans "Username" %}</label>
                     <div class="edit-input-wrap">
                         <span class="material-icons">alternate_email</span>
                         <input type="text" name="username" id="id_input_username"
@@ -251,10 +252,10 @@
                     </div>
                 </div>
 
-                <div class="edit-section-title">À propos de vous</div>
+                <div class="edit-section-title">{% trans "About you" %}</div>
 
                 <div class="edit-field">
-                    <label>Bio</label>
+                    <label>{% trans "Bio" %}</label>
                     <div class="edit-textarea-wrap">
                         <span class="material-icons">edit_note</span>
                         <textarea name="bio" id="id_input_bio"
@@ -263,7 +264,7 @@
                 </div>
 
                 <div class="edit-field">
-                    <label>Localisation</label>
+                    <label>{% trans "Location" %}</label>
                     <div class="edit-input-wrap">
                         <span class="material-icons">location_on</span>
                         <input type="text" name="location" id="id_input_location"
@@ -272,19 +273,19 @@
                     </div>
                 </div>
 
-                <div class="edit-section-title">Confidentialité</div>
+                <div class="edit-section-title">{% trans "Privacy" %}</div>
 
                 <div class="edit-field">
                     <label class="edit-checkbox-wrap" for="id_input_hide_email">
                         <input type="checkbox" name="hide_email" id="id_input_hide_email"
                                {% if form.hide_email.value %}checked{% endif %}>
-                        <span>Masquer mon adresse e-mail aux autres utilisateurs</span>
+                        <span>{% trans "Hide my email from other users" %}</span>
                     </label>
                 </div>
 
                 <button class="edit-save-btn" type="submit">
                     <span class="material-icons">save</span>
-                    Enregistrer les modifications
+                    {% trans "Save changes" %}
                 </button>
             </form>
         </div>

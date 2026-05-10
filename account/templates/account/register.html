@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -223,8 +224,8 @@
             <span class="auth-brand-text">VAZIMBA</span>
         </a>
 
-        <h1 class="auth-heading">Créer un compte</h1>
-        <p class="auth-sub">Rejoignez la communauté VAZIMBA ✦</p>
+        <h1 class="auth-heading">{% trans "Create account" %}</h1>
+        <p class="auth-sub">{% trans "Join the VAZIMBA community" %} ✦</p>
 
         <!-- Errors -->
         {% if registration_form.non_field_errors %}
@@ -244,7 +245,7 @@
         <form method="post">{% csrf_token %}
 
             <div class="auth-field">
-                <label for="inputEmail">Adresse e-mail</label>
+                <label for="inputEmail">{% trans "Email address" %}</label>
                 <div class="auth-input-wrap">
                     <span class="material-icons">mail_outline</span>
                     <input type="email" name="email" id="inputEmail"
@@ -253,7 +254,7 @@
             </div>
 
             <div class="auth-field">
-                <label for="inputUsername">Nom d'utilisateur</label>
+                <label for="inputUsername">{% trans "Username" %}</label>
                 <div class="auth-input-wrap">
                     <span class="material-icons">person_outline</span>
                     <input type="text" name="username" id="inputUsername"
@@ -262,7 +263,7 @@
             </div>
 
             <div class="auth-field">
-                <label for="inputPassword1">Mot de passe</label>
+                <label for="inputPassword1">{% trans "Password" %}</label>
                 <div class="auth-input-wrap">
                     <span class="material-icons">lock_outline</span>
                     <input type="password" name="password1" id="inputPassword1"
@@ -274,12 +275,12 @@
                     <div class="pw-bar" id="pw-bar-2"></div>
                     <div class="pw-bar" id="pw-bar-3"></div>
                     <div class="pw-bar" id="pw-bar-4"></div>
-                    <span class="pw-label" id="pw-label">Faible</span>
+                    <span class="pw-label" id="pw-label">{% trans "Weak" %}</span>
                 </div>
             </div>
 
             <div class="auth-field">
-                <label for="inputPassword2">Confirmer le mot de passe</label>
+                <label for="inputPassword2">{% trans "Confirm password" %}</label>
                 <div class="auth-input-wrap">
                     <span class="material-icons">lock_reset</span>
                     <input type="password" name="password2" id="inputPassword2"
@@ -288,15 +289,15 @@
             </div>
 
             <button class="auth-btn" type="submit">
-                Créer mon compte
+                {% trans "Create account" %}
             </button>
         </form>
 
         <div class="auth-divider">ou</div>
 
         <div class="auth-login-link">
-            Déjà un compte ?
-            <a href="{% url 'login' %}">Se connecter</a>
+            {% trans "Already have an account?" %}
+            <a href="{% url 'login' %}">{% trans "Login" %}</a>
         </div>
 
     </div>
