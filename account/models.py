@@ -12,6 +12,7 @@ import uuid
 
 from friend.models import FriendList
 from django.contrib.auth import get_user_model
+from ZOOT.storage import AutoMediaCloudinaryStorage
 
 
 class ProfileImageFieldFile(ImageFieldFile):
@@ -81,6 +82,11 @@ class Account(AbstractBaseUser):
 	is_superuser			= models.BooleanField(default=False)
 	profile_image			= ProfileImageField(max_length=255, upload_to=get_profile_image_filepath, null=True, blank=True, default=get_default_profile_image)
 	hide_email				= models.BooleanField(default=True)
+	cover_image				= models.ImageField(
+		upload_to='cover_images/',
+		storage=AutoMediaCloudinaryStorage(),
+		null=True, blank=True,
+	)
 # From Tomi -----------------------------------------------
 	bio = models.TextField(blank=True)
 	location = models.CharField(max_length=100, blank=True)

@@ -216,6 +216,18 @@ def account_view(request, *args, **kwargs):
 		context['location'] = account.location
 		context['date_joined'] = account.date_joined
 
+		# Photo de couverture
+		cover_url = None
+		if account.cover_image and account.cover_image.name:
+			try:
+				import cloudinary
+				cover_url = cloudinary.CloudinaryResource(
+					account.cover_image.name, default_resource_type='image'
+				).url
+			except Exception:
+				pass
+		context['cover_image_url'] = cover_url
+
 		try:
 			friend_list = FriendList.objects.get(user=account)
 		except FriendList.DoesNotExist:
@@ -542,6 +554,51 @@ def profile_posts_more(request, *args, **kwargs):
 		'has_next':  posts_page.has_next(),
 		'next_page': posts_page.next_page_number() if posts_page.has_next() else None,
 	})
+
+
+# ── Photo de couverture ──────────────────────────────────────────────────────
+def update_cover_image(request, *args, **kwargs):
+    """Upload AJAX de la photo de couverture du profil."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Non authentifié.'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+
+    cover_file = request.FILES.get('cover')
+    if not cover_file:
+        return JsonResponse({'error': 'Aucun fichier reçu.'}, status=400)
+
+    # Vérifier que c'est bien une image
+    allowed_mime = {'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'}
+    mime = (cover_file.content_type or '').split(';')[0].strip().lower()
+    if mime not in allowed_mime:
+        return JsonResponse({'error': 'Format non supporté (jpeg, png, webp, gif).'}, status=400)
+
+    # Taille max 10 Mo
+    if cover_file.size > 10 * 1024 * 1024:
+        return JsonResponse({'error': 'Fichier trop volumineux (max 10 Mo).'}, status=400)
+
+    import cloudinary.uploader
+    try:
+        cover_file.seek(0)
+        resp = cloudinary.uploader.upload(
+            cover_file,
+            resource_type='image',
+            folder='cover_images',
+            use_filename=True,
+            unique_filename=True,
+        )
+        public_id = resp['public_id']
+        account = request.user
+        account.cover_image.name = public_id
+        account.save(update_fields=['cover_image'])
+
+        import cloudinary
+        url = cloudinary.CloudinaryResource(public_id, default_resource_type='image').url
+        return JsonResponse({'ok': True, 'url': url})
+    except Exception as e:
+        logger.exception("update_cover_image FAILED: %s", e)
+        return JsonResponse({'error': f'Erreur upload : {e}'}, status=500)
 
 
 def crop_image(request, *args, **kwargs):
