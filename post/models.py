@@ -60,13 +60,21 @@ class Post(models.Model):
 
     @property
     def header_image_url(self):
-        """Returns the header image URL, or None if the file is missing/unavailable."""
+        """Returns the header image URL via Cloudinary (resource_type='image'), or None."""
         if not self.header_image or not self.header_image.name:
             return None
         try:
-            return self.header_image.url
+            import cloudinary
+            resource = cloudinary.CloudinaryResource(
+                self.header_image.name,
+                default_resource_type='image',
+            )
+            return resource.url
         except Exception:
-            return None
+            try:
+                return self.header_image.url
+            except Exception:
+                return None
 
     def __str__(self):
         return self.title + ' posted by ' + str(self.author)
