@@ -249,7 +249,9 @@ def account_view(request, *args, **kwargs):
 			).select_related('post').order_by('-post__id', 'order')
 			for m in media_images:
 				try:
-					photo_list.append(PhotoItem(url=m.file.url, title=m.post.title, post_id=m.post_id))
+					media_url = m.url  # utilise la propriété (CloudinaryResource avec le bon resource_type)
+					if media_url:
+						photo_list.append(PhotoItem(url=media_url, title=m.post.title, post_id=m.post_id))
 				except Exception:
 					pass
 		except Exception:
