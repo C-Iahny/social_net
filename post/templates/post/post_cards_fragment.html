@@ -33,7 +33,9 @@
     </div>
 
     {% if post.title %}
-    <div class="pc-title">{{ post.title }}</div>
+    <div class="pc-title">
+        <a href="{% url 'post:post-detail' post.id %}" class="pc-title-link">{{ post.title }}</a>
+    </div>
     {% endif %}
 
     {% if post.body %}
