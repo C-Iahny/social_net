@@ -933,7 +933,7 @@ body { background: var(--bg); }
                     <div class="mini-friends-grid">
                         {% for friend in friends|slice:":9" %}
                         <a class="mini-friend" href="{% url 'account:view' user_id=friend.id %}" title="{{ friend.username }}">
-                            <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
+                            <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}" loading="lazy" decoding="async">
                             <span class="mini-friend-label">{{ friend.username }}</span>
                         </a>
                         {% endfor %}
@@ -954,7 +954,7 @@ body { background: var(--bg); }
                     <div class="mini-friends-grid">
                         {% for photo in photos|slice:":9" %}
                         <div class="mini-friend">
-                            <img src="{{ photo.url }}" alt="{{ photo.title }}">
+                            <img src="{{ photo.url }}" alt="{{ photo.title }}" loading="lazy" decoding="async">
                         </div>
                         {% endfor %}
                     </div>
@@ -1061,7 +1061,7 @@ body { background: var(--bg); }
         <div class="friends-grid">
             {% for friend in friends %}
             <a class="friend-card-link" href="{% url 'account:view' user_id=friend.id %}">
-                <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
+                <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}" loading="lazy" decoding="async">
                 <div class="friend-card-name">{{ friend.username }}</div>
             </a>
             {% endfor %}
