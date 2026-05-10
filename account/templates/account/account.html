@@ -22,6 +22,28 @@ body { background: var(--bg); }
     position: relative;
     background: var(--bg-card);
 }
+.profile-cover-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    display: block;
+}
+.cover-edit-btn {
+    position: absolute;
+    bottom: .75rem; right: .75rem;
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .35rem .85rem;
+    background: rgba(0,0,0,.52);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff; font-size: .8rem; font-weight: 700;
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 10px; cursor: pointer;
+    transition: background .15s;
+    z-index: 2;
+}
+.cover-edit-btn:hover { background: rgba(0,0,0,.72); }
+.cover-edit-btn .material-icons { font-size: .95rem; }
 .profile-cover-bg {
     position: absolute;
     inset: 0;
@@ -764,9 +786,24 @@ body { background: var(--bg); }
     <!-- ══════════════════════════════════
          COVER + HEADER
          ══════════════════════════════════ -->
-    <div class="profile-cover">
+    <div class="profile-cover" id="profile-cover-wrap">
+        {% if cover_image_url %}
+        <img src="{{ cover_image_url }}" class="profile-cover-img" id="cover-img" alt="Couverture" loading="lazy" decoding="async">
+        {% else %}
         <div class="profile-cover-bg"></div>
         <div class="profile-cover-noise"></div>
+        {% endif %}
+
+        {% if is_self %}
+        {# Bouton visible sur la couverture #}
+        <button class="cover-edit-btn" onclick="document.getElementById('cover-file-input').click()" type="button">
+            <span class="material-icons">photo_camera</span>
+            Changer la couverture
+        </button>
+        {# Input caché #}
+        <input type="file" id="cover-file-input" accept="image/*" style="display:none"
+               onchange="uploadCoverImage(this)">
+        {% endif %}
     </div>
 
     <div class="profile-header">
@@ -1795,6 +1832,62 @@ function lbKeyHandler(e) {
 
     observer.observe(sentinel);
 })();
+
+/* ── Photo de couverture ── */
+function uploadCoverImage(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+
+    var wrap = document.getElementById('profile-cover-wrap');
+    var btn  = wrap ? wrap.querySelector('.cover-edit-btn') : null;
+
+    // Prévisualisation immédiate
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var img = document.getElementById('cover-img');
+        if (img) {
+            img.src = e.target.result;
+        } else {
+            // Pas encore d'image — créer + supprimer le dégradé
+            var bg    = wrap.querySelector('.profile-cover-bg');
+            var noise = wrap.querySelector('.profile-cover-noise');
+            if (bg)    bg.remove();
+            if (noise) noise.remove();
+            img = document.createElement('img');
+            img.id        = 'cover-img';
+            img.className = 'profile-cover-img';
+            img.alt       = 'Couverture';
+            img.src       = e.target.result;
+            wrap.insertBefore(img, wrap.firstChild);
+        }
+    };
+    reader.readAsDataURL(file);
+
+    if (btn) { btn.disabled = true; btn.style.opacity = '.5'; }
+
+    var fd = new FormData();
+    fd.append('cover', file);
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "account:update-cover" %}', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+        if (!data.ok) {
+            alert(data.error || 'Erreur lors de l\'upload.');
+        }
+        input.value = '';
+    })
+    .catch(function(e) {
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+        console.error('Cover upload error:', e);
+        input.value = '';
+    });
+}
 </script>
 
 {% endblock content %}
