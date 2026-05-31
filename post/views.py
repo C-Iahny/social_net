@@ -19,7 +19,7 @@ User = get_user_model()
 from account.models import Account
 from django.http import JsonResponse
 from .forms import PostForm, EditForm, CommentForm
-from .models import Post, Continent, Country, Follow, Comment, Reaction, PostMedia
+from .models import Post, Repost, Continent, Country, Follow, Comment, Reaction, PostMedia
 from friend.models import FriendList
 from personal.models import HeroSettings
 
@@ -119,6 +119,25 @@ def _attach_media(posts, post_ids):
         for post in posts:
             post.media_list = []
 
+
+
+
+def _attach_reposts(posts, post_ids, user):
+    """Attache post.repost_count et post.user_reposted à chaque post."""
+    try:
+        from django.db.models import Count
+        counts_qs = Repost.objects.filter(post_id__in=post_ids).values('post_id').annotate(c=Count('id'))
+        count_map = {row['post_id']: row['c'] for row in counts_qs}
+        user_reposts = set(
+            Repost.objects.filter(post_id__in=post_ids, user=user).values_list('post_id', flat=True)
+        ) if user.is_authenticated else set()
+        for post in posts:
+            post.repost_count   = count_map.get(post.id, 0)
+            post.user_reposted  = post.id in user_reposts
+    except Exception:
+        for post in posts:
+            post.repost_count  = 0
+            post.user_reposted = False
 
 # Feed
 # ──────────────────────────────────────────────
@@ -666,6 +685,29 @@ def mention_autocomplete(request):
     ]
     return JsonResponse({'users': result})
 
+
+
+
+# ──────────────────────────────────────────────
+# Repost (toggle)
+# ──────────────────────────────────────────────
+@login_required(login_url="login")
+def repost_post(request):
+    """Toggle repost : publie ou annule la republication d'un post."""
+    if request.method != "POST":
+        return JsonResponse({"error": "POST only"}, status=405)
+    post_id = request.POST.get("post_id")
+    post = get_object_or_404(Post, id=post_id)
+
+    repost, created = Repost.objects.get_or_create(user=request.user, post=post)
+    if not created:
+        repost.delete()
+        reposted = False
+    else:
+        reposted = True
+
+    repost_count = post.reposts.count()
+    return JsonResponse({"reposted": reposted, "repost_count": repost_count})
 
 @login_required(login_url='login')
 def post_detail(request, post_id):

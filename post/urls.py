@@ -16,6 +16,7 @@ from .views import (
     add_comment,
     delete_comment,
     post_detail,
+    repost_post,
 )
 
 app_name = 'post'
@@ -36,4 +37,5 @@ urlpatterns = [
     path('hashtag/<slug:tag>/', hashtag_view,         name='hashtag'),
     path('mention/autocomplete/', mention_autocomplete, name='mention-autocomplete'),
     path('<int:post_id>/',        post_detail,         name='post-detail'),
+    path('repost/',                  repost_post,         name='repost'),
 ]

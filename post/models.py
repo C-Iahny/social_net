@@ -201,3 +201,18 @@ class Hashtag(models.Model):
 
     class Meta:
         ordering = ['-count']
+
+
+# ── Repost ────────────────────────────────────────────────────────────────────
+class Repost(models.Model):
+    """Republication d'un post par un utilisateur (comme un retweet)."""
+    user       = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='reposts')
+    post       = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reposts')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} reposted {self.post}"
