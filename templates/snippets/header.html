@@ -734,7 +734,7 @@
                 <div class="zoot-dropdown-header">
                     <span class="zoot-dropdown-header-title">
                         <span class="material-icons">notifications</span>
-                        Famantarana
+                        Notifications
                     </span>
                 </div>
             </div>
@@ -766,7 +766,7 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Navigation principale -->
-                <p class="zoot-dropdown-label">Tranoko</p>
+                <p class="zoot-dropdown-label">A propos de moi</p>
                 <a class="dropdown-item" href="{% url 'account:view' user_id=request.user.id %}">
                     <span class="material-icons">person_outline</span> {% trans "My profile" %}
                 </a>
@@ -794,7 +794,7 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Compte -->
-                <p class="zoot-dropdown-label">Kaonty</p>
+                <p class="zoot-dropdown-label">Compte</p>
                 <a class="dropdown-item" href="{% url 'account:edit' user_id=request.user.id %}">
                     <span class="material-icons">manage_accounts</span> {% trans "Settings" %}
                 </a>
@@ -941,7 +941,7 @@
         toast.innerHTML =
             '<img class="zoot-toast-avatar" src="'+(data.from_image||'')+'" alt="">' +
             '<div class="zoot-toast-body">' +
-                '<div class="zoot-toast-user">Nandefa zavatra i ' + (data.from_username||'') + '</div>' +
+                '<div class="zoot-toast-user">' + (data.from_username||'') + 'a envoyé quelque chose' '</div>' +
                 '<div class="zoot-toast-msg">'+(data.post_title||'')+'</div>' +
             '</div>' +
             '<button class="zoot-toast-close material-icons" onclick="this.closest(\'.zoot-toast-item\').remove()">close</button>';
