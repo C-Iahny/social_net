@@ -481,6 +481,20 @@ def follow(request):
         return redirect("post:post-view")
 
 
+@login_required(login_url="login")
+def unfollow(request):
+    if request.method != "POST":
+        return redirect("post:post-view")
+    userfollow_name = request.POST.get("userfollow", "")
+    try:
+        current_user = Account.objects.get(pk=request.user.id)
+        user_to_unfollow = Account.objects.get(username=userfollow_name)
+        Follow.objects.filter(user=current_user, user_follower=user_to_unfollow).delete()
+        return redirect("account:view", user_id=user_to_unfollow.id)
+    except Account.DoesNotExist:
+        return redirect("post:post-view")
+
+
 # ──────────────────────────────────────────────
 # Comments
 # ──────────────────────────────────────────────
