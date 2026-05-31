@@ -35,5 +35,5 @@ urlpatterns = [
     path('react/',             react_post,            name='react-post'),
     path('hashtag/<slug:tag>/', hashtag_view,         name='hashtag'),
     path('mention/autocomplete/', mention_autocomplete, name='mention-autocomplete'),
-    path('<int:post_id>/',        post_detail,           name='post-detail'),
+    path('<int:post_id>/',        post_detail,         name='post-detail'),
 ]

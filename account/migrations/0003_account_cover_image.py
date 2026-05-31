@@ -1,5 +1,4 @@
 from django.db import migrations, models
-from ZOOT.storage import AutoMediaCloudinaryStorage
 
 
 class Migration(migrations.Migration):
@@ -12,11 +11,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='account',
             name='cover_image',
-            field=models.ImageField(
-                blank=True,
-                null=True,
-                upload_to='cover_images/',
-                storage=AutoMediaCloudinaryStorage(),
-            ),
+            field=models.ImageField(blank=True, null=True, upload_to='cover_images/'),
         ),
     ]

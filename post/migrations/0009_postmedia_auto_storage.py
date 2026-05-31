@@ -1,5 +1,4 @@
 from django.db import migrations, models
-from ZOOT.storage import AutoMediaCloudinaryStorage
 
 
 class Migration(migrations.Migration):
@@ -12,6 +11,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='postmedia',
             name='file',
-            field=models.FileField(upload_to='post_media/', storage=AutoMediaCloudinaryStorage()),
+            field=models.FileField(upload_to='post_media/'),
         ),
     ]
