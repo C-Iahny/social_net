@@ -282,7 +282,7 @@
 <body>
   <!-- ===== NAV ===== -->
   <nav>
-    <a href="{% url 'landing' %}" class="nav-logo">ZOOT</a>
+    <a href="{% url 'landing' %}" class="nav-logo">Vazimba</a>
     <div class="nav-links">
       <a href="#features" class="hide-mobile">Fonctionnalités</a>
       <a href="#announcements" class="hide-mobile">Actualités</a>
@@ -303,7 +303,8 @@
   <section class="hero">
     <div class="hero-content">
       <h1>Connectez-vous.<br>Partagez. Grandissez.</h1>
-      <p>ZOOT est le réseau social où vous retrouvez vos amis, partagez vos idées et restez informé en temps réel.</p>
+      <p>Vazimba est comme un réseau social où vous retrouvez vos amis, 
+      partagez vos idées et restez informé en temps réel. Vous y retrouvez aussi d'autres choses.</p>
       <div class="hero-btns">
         {% if user.is_authenticated %}
           <a href="{% url 'post:post-view' %}" class="btn-white">Voir mon fil d'actualité</a>
@@ -359,7 +360,7 @@
   <section class="section-features" id="features">
     <div class="section-title">
       <i class="fa-solid fa-star"></i>
-      Ce que vous pouvez faire sur ZOOT
+      Ce que vous pouvez faire sur Vazimba
     </div>
     <div class="features-grid">
       <div class="feature-card">
@@ -416,7 +417,7 @@
   <!-- ===== CTA FINAL ===== -->
   {% if not user.is_authenticated %}
   <section class="section-cta">
-    <h2>Prêt à rejoindre ZOOT ?</h2>
+    <h2>Prêt à devenir un(e) Vazimba ?</h2>
     <p>Créez votre compte gratuitement et rejoignez la communauté dès aujourd'hui.</p>
     <div class="cta-btns">
       <a href="{% url 'register' %}" class="btn-cta-main">Créer mon compte</a>
