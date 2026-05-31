@@ -32,6 +32,6 @@ def landing_view(request):
 
 	context = {
 		'announcements': announcements,
-		'page_title': 'Bienvenue sur ZOOT',
+		'page_title': 'Bienvenue sur Vazimba',
 	}
-	return render(request, "personal/landing.html", context)
+	return render(request, "personal/landing.html", "post/index.html", context)
