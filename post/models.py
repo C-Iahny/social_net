@@ -63,6 +63,10 @@ class Post(models.Model):
     author       = models.ForeignKey(Account, on_delete=models.CASCADE)
     likes        = models.ManyToManyField(Account, blank=True, related_name='like_number')
     tags         = models.ManyToManyField(Tag, blank=True)
+    group        = models.ForeignKey(
+        'group.Group', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='posts'
+    )
 
     def is_video(self):
         if self.header_image and self.header_image.name:

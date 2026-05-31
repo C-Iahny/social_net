@@ -316,7 +316,7 @@
 
 <div class="pd-wrapper">
 
-    <a href="javascript:history.back()" class="pd-back">
+    <a href="{% url 'post:post-view' %}" onclick="return pdGoBack(event);" class="pd-back">
         <span class="material-icons">arrow_back</span>
         {% trans "Back" %}
     </a>
@@ -539,6 +539,22 @@ var COMMENT_URL = '{{ comment_url }}';
 var REACT_URL   = '{% url "post:react-post" %}';
 var CSRF_TOKEN  = '{{ csrf_token }}';
 
+/* ── Bouton Retour ──────────────────────────────────────────────
+   Ne fait history.back() QUE s'il existe un historique interne
+   (même origine). Sinon (lien partagé ouvert dans un nouvel onglet,
+   référent externe comme WhatsApp/Facebook…), on suit le href vers
+   le fil d'actualité — le bouton fonctionne donc dans tous les cas. */
+function pdGoBack(e) {
+    var sameOrigin = document.referrer &&
+        document.referrer.indexOf(window.location.origin) === 0;
+    if (window.history.length > 1 && sameOrigin) {
+        e.preventDefault();
+        window.history.back();
+        return false;
+    }
+    return true; // suit le href (fallback feed)
+}
+
 /* ── Partage : copie l'URL canonique de la page ── */
 function pdSharePost() {
     var url = window.location.href;
@@ -749,24 +765,4 @@ function sendReaction(postId, rtype) {
             if (label) label.textContent = LABELS[data.user_reaction] || 'Tiana';
         } else {
             btn.classList.remove('liked');
-            if (icon)  icon.innerHTML  = '<span class="material-icons">thumb_up_off_alt</span>';
-            if (label) label.textContent = 'Tiana';
-        }
-        // Update total count
-        var totalEl = document.getElementById('pd-reaction-total');
-        if (totalEl && data.total_reactions !== undefined) {
-            totalEl.textContent = data.total_reactions;
-        }
-        // Update picker selected states
-        document.querySelectorAll('#picker-' + postId + ' .reaction-emoji-btn').forEach(function(b) {
-            b.classList.remove('selected');
-        });
-        if (data.user_reaction) {
-            var sel = document.querySelector('#picker-' + postId + ' [onclick*="' + data.user_reaction + '"]');
-            if (sel) sel.classList.add('selected');
-        }
-    });
-}
-</script>
-
-{% endblock content %}
+            if (icon)  icon.innerHTML  = '<span class="material-icons">thumb_up_off_

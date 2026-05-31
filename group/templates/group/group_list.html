@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+.gp-wrapper { max-width: 960px; margin: 82px auto 3rem; padding: 0 1rem; }
+.gp-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.4rem; gap: 1rem; flex-wrap: wrap;
+}
+.gp-head h1 { font-size: 1.5rem; font-weight: 800; color: var(--text); margin: 0; }
+.gp-btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem 1.1rem; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-weight: 700; font-size: .9rem;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: opacity .15s, transform .1s;
+}
+.gp-btn:hover { opacity: .9; color: #fff; text-decoration: none; transform: translateY(-1px); }
+.gp-btn .material-icons { font-size: 1.1rem; }
+
+.gp-grid {
+    display: grid; gap: 1.1rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.gp-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+    box-shadow: 0 2px 14px rgba(0,0,0,.05);
+    transition: transform .18s, box-shadow .18s;
+    display: flex; flex-direction: column;
+}
+.gp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(0,0,0,.1); }
+.gp-cover {
+    height: 110px; background: linear-gradient(130deg, var(--accent), var(--accent2));
+    background-size: cover; background-position: center;
+}
+.gp-card-body { padding: .9rem 1.1rem 1.1rem; flex: 1; display: flex; flex-direction: column; }
+.gp-card-name {
+    font-size: 1.05rem; font-weight: 700; color: var(--text);
+    text-decoration: none; margin-bottom: .25rem;
+}
+.gp-card-name:hover { color: var(--accent); text-decoration: none; }
+.gp-card-meta {
+    display: flex; align-items: center; gap: .8rem;
+    font-size: .8rem; color: var(--text-muted); margin-bottom: .6rem;
+}
+.gp-card-meta .material-icons { font-size: .9rem; vertical-align: middle; }
+.gp-badge {
+    display: inline-flex; align-items: center; gap: .2rem;
+    background: var(--btn-bg); border-radius: 7px;
+    padding: .1rem .5rem; font-size: .72rem; font-weight: 700;
+}
+.gp-card-desc {
+    font-size: .85rem; color: var(--text-muted); line-height: 1.5;
+    margin-bottom: .9rem; flex: 1;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.gp-member-tag {
+    display: inline-flex; align-items: center; gap: .25rem;
+    font-size: .76rem; font-weight: 700; color: var(--accent);
+}
+.gp-member-tag .material-icons { font-size: .9rem; }
+.gp-empty {
+    text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
+}
+.gp-empty .material-icons { font-size: 3rem; color: var(--border); display: block; margin-bottom: .8rem; }
+</style>
+
+<div class="gp-wrapper">
+    <div class="gp-head">
+        <h1>{% trans "Groups" %}</h1>
+        <a class="gp-btn" href="{% url 'group:create' %}">
+            <span class="material-icons">add</span> {% trans "Create a group" %}
+        </a>
+    </div>
+
+    {% if groups %}
+    <div class="gp-grid">
+        {% for group in groups %}
+        <div class="gp-card">
+            <a href="{% url 'group:detail' group.slug %}">
+                <div class="gp-cover" {% if group.cover_url %}style="background-image:url('{{ group.cover_url }}')"{% endif %}></div>
+            </a>
+            <div class="gp-card-body">
+                <a class="gp-card-name" href="{% url 'group:detail' group.slug %}">{{ group.name }}</a>
+                <div class="gp-card-meta">
+                    <span class="gp-badge">
+                        <span class="material-icons">{% if group.privacy == 'private' %}lock{% else %}public{% endif %}</span>
+                        {{ group.get_privacy_display }}
+                    </span>
+                    <span><span class="material-icons">group</span> {{ group.num_members }}</span>
+                </div>
+                {% if group.description %}
+                <p class="gp-card-desc">{{ group.description }}</p>
+                {% endif %}
+                {% if group.id in my_group_ids %}
+                <span class="gp-member-tag"><span class="material-icons">check_circle</span> {% trans "Member" %}</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="gp-empty">
+        <span class="material-icons">groups</span>
+        <p>{% trans "No groups yet. Be the first to create one!" %}</p>
+        <a class="gp-btn" href="{% url 'group:create' %}" style="margin-top:1rem;">
+            <span class="material-icons">add</span> {% trans "Create a group" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
