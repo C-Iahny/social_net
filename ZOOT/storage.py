@@ -87,4 +87,23 @@ class RelaxedStaticFilesStorage(CompressedManifestStaticFilesStorage):
                 continue
 
             # result = (original_path, processed_path, processed)
-            #
+            # Selon la version de Django/WhiteNoise, l'exception peut être
+            # dans result[1] OU result[2] — on vérifie les deux.
+            has_error = (
+                isinstance(result, (tuple, list))
+                and len(result) >= 2
+                and any(isinstance(result[i], Exception) for i in range(len(result)))
+            )
+            if has_error:
+                skipped.append(result[0])
+                # Ne pas yield → Django ne verra jamais l'erreur
+            else:
+                yield result
+
+        if skipped:
+            logger.warning(
+                "collectstatic: %d fichier(s) ignoré(s) pour cause d'assets manquants "
+                "(principalement CKEditor). Premier : %s",
+                len(skipped),
+                skipped[0],
+            )
