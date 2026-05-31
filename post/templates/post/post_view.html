@@ -1351,6 +1351,46 @@ body { background: var(--bg); }
          ══════════════════════════ -->
     <aside class="feed-right-col">
 
+
+          <!-- ===== ANNONCES ===== -->
+  <section class="section-announcements" id="announcements">
+    <div class="section-title">
+      <i class="fa-solid fa-bullhorn"></i>
+      Annonces &amp; Actualités
+    </div>
+
+    {% if announcements %}
+      {% for ann in announcements %}
+        <div class="announcement-card ann-{{ ann.priority }}">
+          <div class="ann-icon">
+            {% if ann.priority == 'info' %}🔵
+            {% elif ann.priority == 'success' %}🟢
+            {% elif ann.priority == 'warning' %}🟡
+            {% elif ann.priority == 'danger' %}🔴
+            {% endif %}
+          </div>
+          <div class="ann-body">
+            <div class="ann-header">
+              <span class="ann-title">{{ ann.title }}</span>
+              <span class="ann-badge badge-{{ ann.priority }}">{{ ann.get_priority_display }}</span>
+            </div>
+            <div class="ann-content">{{ ann.content|linebreaksbr }}</div>
+            <div class="ann-date">
+              <i class="fa-regular fa-clock"></i>
+              Publié le {{ ann.start_date|date:"d F Y" }}
+              {% if ann.end_date %} · jusqu'au {{ ann.end_date|date:"d F Y" }}{% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-announcement">
+        <i class="fa-regular fa-bell-slash" style="font-size:2rem; margin-bottom:.5rem; display:block;"></i>
+        Aucune annonce en ce moment. Revenez bientôt !
+      </div>
+    {% endif %}
+  </section>
+
         {% if friends %}
         <div class="rsb-card">
             <p class="rsb-section-label">
