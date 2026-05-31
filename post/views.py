@@ -320,24 +320,7 @@ class AddPostView(CreateView):
             is_vid = ext in _VIDEO_EXTS
             mtype = 'video' if is_vid else 'image'
             try:
-                if is_vid:
-                    # Upload direct Cloudinary avec resource_type='video'
-                    # (le backend MediaCloudinaryStorage n'accepte que les images)
-                    f.seek(0)
-                    resp = cloudinary.uploader.upload(
-                        f,
-                        resource_type='video',
-                        folder='post_media',
-                        use_filename=True,
-                        unique_filename=True,
-                    )
-                    public_id = resp['public_id']
-                    _logger.info("  → vidéo uploadée : public_id=%s", public_id)
-                    pm = PostMedia(post=post, media_type=mtype, order=i)
-                    pm.file.name = public_id
-                    pm.save()
-                else:
-                    PostMedia.objects.create(post=post, file=f, media_type=mtype, order=i)
+                PostMedia.objects.create(post=post, file=f, media_type=mtype, order=i)
                 saved += 1
             except Exception as e:
                 _logger.exception("PostMedia FAILED (fichier=%s): %s", f.name, e)
