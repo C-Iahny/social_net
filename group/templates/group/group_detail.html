@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+.gd-wrapper { max-width: 820px; margin: 82px auto 3rem; padding: 0 1rem; }
+.gd-back {
+    display: inline-flex; align-items: center; gap: .35rem;
+    color: var(--text-muted); font-size: .88rem; font-weight: 600;
+    text-decoration: none; margin-bottom: 1rem;
+    padding: .3rem .7rem; border-radius: 8px; transition: background .15s, color .15s;
+}
+.gd-back:hover { background: var(--btn-bg); color: var(--accent); text-decoration: none; }
+.gd-back .material-icons { font-size: 1rem; }
+
+.gd-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,.06);
+}
+.gd-cover {
+    height: 180px; background: linear-gradient(130deg, var(--accent), var(--accent2));
+    background-size: cover; background-position: center;
+}
+.gd-head { padding: 1.2rem 1.4rem; }
+.gd-title-row { display: flex; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+.gd-title { font-size: 1.5rem; font-weight: 800; color: var(--text); margin: 0; flex: 1; min-width: 0; }
+.gd-meta { display: flex; align-items: center; gap: 1rem; margin-top: .5rem; font-size: .85rem; color: var(--text-muted); }
+.gd-badge {
+    display: inline-flex; align-items: center; gap: .25rem;
+    background: var(--btn-bg); border-radius: 8px; padding: .15rem .55rem;
+    font-size: .76rem; font-weight: 700;
+}
+.gd-badge .material-icons { font-size: .9rem; }
+.gd-meta .material-icons { font-size: .95rem; vertical-align: middle; }
+.gd-desc { margin-top: .9rem; font-size: .95rem; color: var(--text); line-height: 1.6; }
+.gd-creator { margin-top: .8rem; font-size: .82rem; color: var(--text-muted); }
+.gd-creator a { color: var(--accent); text-decoration: none; font-weight: 600; }
+
+.gd-actions { display: flex; gap: .6rem; flex-wrap: wrap; padding: 0 1.4rem 1.2rem; }
+.gd-action {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem 1.1rem; border-radius: 11px; border: none; cursor: pointer;
+    font-weight: 700; font-size: .88rem; text-decoration: none; font-family: inherit;
+    transition: opacity .15s, background .15s;
+}
+.gd-action .material-icons { font-size: 1.05rem; }
+.gd-join { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+.gd-join:hover { opacity: .9; color: #fff; text-decoration: none; }
+.gd-secondary {
+    background: var(--btn-bg); border: 1.5px solid var(--border); color: var(--text-muted);
+}
+.gd-secondary:hover { background: var(--btn-hover); color: var(--text); text-decoration: none; }
+.gd-danger { background: var(--btn-bg); border: 1.5px solid var(--border); color: #e53935; }
+.gd-danger:hover { background: rgba(229,57,53,.1); border-color: #e53935; }
+
+.gd-members { border-top: 1px solid var(--border); padding: 1.2rem 1.4rem 1.5rem; }
+.gd-members-title {
+    font-size: .82rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--text-muted); margin-bottom: 1rem;
+}
+.gd-member-grid { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.gd-member {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .5rem .65rem; border-radius: 12px; background: var(--btn-bg);
+    text-decoration: none;
+}
+.gd-member img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; }
+.gd-member-info { min-width: 0; }
+.gd-member-name { font-size: .88rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gd-member-role { font-size: .74rem; color: var(--accent); font-weight: 700; }
+</style>
+
+<div class="gd-wrapper">
+    <a href="{% url 'group:list' %}" class="gd-back">
+        <span class="material-icons">arrow_back</span> {% trans "All groups" %}
+    </a>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div style="margin-bottom:1rem;padding:.7rem 1rem;border-radius:12px;background:var(--btn-bg);border:1px solid var(--border);font-size:.88rem;color:var(--text);">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="gd-card">
+        <div class="gd-cover" {% if group.cover_url %}style="background-image:url('{{ group.cover_url }}')"{% endif %}></div>
+
+        <div class="gd-head">
+            <div class="gd-title-row">
+                <h1 class="gd-title">{{ group.name }}</h1>
+            </div>
+            <div class="gd-meta">
+                <span class="gd-badge">
+                    <span class="material-icons">{% if group.privacy == 'private' %}lock{% else %}public{% endif %}</span>
+                    {{ group.get_privacy_display }}
+                </span>
+                <span><span class="material-icons">group</span> {{ group.member_count }} {% trans "members" %}</span>
+                <span><span class="material-icons">schedule</span> {{ group.created_at|date:"d M Y" }}</span>
+            </div>
+            {% if group.description %}
+            <p class="gd-desc">{{ group.description }}</p>
+            {% endif %}
+            <p class="gd-creator">
+                {% trans "Created by" %}
+                <a href="{% url 'account:view' user_id=group.creator.id %}">{{ group.creator.username }}</a>
+            </p>
+        </div>
+
+        <div class="gd-actions">
+            {% if is_member %}
+                {% if request.user != group.creator %}
+                <form method="post" action="{% url 'group:leave' group.slug %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="gd-action gd-secondary">
+                        <span class="material-icons">logout</span> {% trans "Leave group" %}
+                    </button>
+                </form>
+                {% endif %}
+            {% else %}
+                <form method="post" action="{% url 'group:join' group.slug %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="gd-action gd-join">
+                        <span class="material-icons">add</span> {% trans "Join group" %}
+                    </button>
+                </form>
+            {% endif %}
+
+            {% if is_admin or request.user == group.creator %}
+            <a class="gd-action gd-secondary" href="{% url 'group:edit' group.slug %}">
+                <span class="material-icons">edit</span> {% trans "Edit" %}
+            </a>
+            {% endif %}
+            {% if request.user == group.creator %}
+            <a class="gd-action gd-danger" href="{% url 'group:delete' group.slug %}">
+                <span class="material-icons">delete_outline</span> {% trans "Delete" %}
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="gd-members">
+            <p class="gd-members-title">{% trans "Members" %} ({{ group.member_count }})</p>
+            <div class="gd-member-grid">
+                {% for m in members %}
+                <a class="gd-member" href="{% url 'account:view' user_id=m.user.id %}">
+                    <img src="{{ m.user.profile_image.url }}" alt="{{ m.user.username }}" loading="lazy">
+                    <div class="gd-member-info">
+                        <div class="gd-member-name">{{ m.user.username }}</div>
+                        {% if m.role == 'admin' %}<div class="gd-member-role">{% trans "Admin" %}</div>{% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
