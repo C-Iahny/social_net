@@ -207,4 +207,12 @@
                           oninput="autoResize(this)"></textarea>
             </div>
             <button class="pc-comment-send" id="comment-send-{{ post.id }}"
-                    onclick="submitComment({{ post.id }}, '{% 
+                    onclick="submitComment({{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                    title="{% trans 'Send' %}">
+                <span class="material-icons">send</span>
+            </button>
+        </div>
+    </div>
+
+</article>
+{% endfor %}

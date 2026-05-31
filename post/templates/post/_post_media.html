@@ -1,64 +1,18 @@
-{# ── _post_media.html — grille multi-photos + fallback legacy ── #}
-{# post.media_list requis (liste PostMedia); sinon fallback header_image/video/file #}
+{% load static %}
+{% load i18n %}
 
 {% if post.media_list %}
-{% with media=post.media_list count=post.media_list|length %}
-<div class="pc-gallery pc-gallery-{{ count }}" id="gal-{{ post.id }}">
-    {% for item in media %}
-    {% if item.is_video %}
+<div class="pc-gallery pc-gallery-{{ post.media_list|length }}">
+    {% for m in post.media_list %}
+    {% if m.is_video %}
     <div class="pc-gal-item pc-gal-video">
-        <video class="pc-gal-vid" controls preload="metadata">
-            <source src="{{ item.url }}">
-        </video>
+        <video class="pc-gal-vid" src="{{ m.url }}" muted></video>
     </div>
     {% else %}
-    <div class="pc-gal-item"
-         onclick="zootOpenImg('{{ item.url }}', '{{ post.title|escapejs }}', 'gal-{{ post.id }}')"
-         style="cursor:zoom-in;">
-        <img class="pc-gal-img lazy-img" loading="lazy" src="{{ item.url }}" alt="{{ post.title }}">
-        {% if count > 4 and forloop.counter == 4 %}
-        <div class="pc-gal-more">+{{ count|add:"-4" }}</div>
-        {% endif %}
+    <div class="pc-gal-item">
+        <img class="pc-gal-img" src="{{ m.url }}" alt="" loading="lazy" decoding="async">
     </div>
     {% endif %}
     {% endfor %}
 </div>
-{% endwith %}
-
-{% else %}
-{# ── Fallback legacy : header_image / video / file ── #}
-{% if post.header_image_url %}
-<div class="pc-image-wrap"
-     onclick="zootOpenImg('{{ post.header_image_url }}', '{{ post.title|escapejs }}')"
-     style="cursor:zoom-in;">
-    <img class="pc-image lazy-img" loading="lazy"
-         src="{{ post.header_image_url }}" alt="{{ post.title }}" decoding="async">
-</div>
-{% endif %}
-
-{% if post.video %}
-<div class="pc-video-wrap">
-    <div class="pc-video-label"><span class="material-icons">videocam</span> Vidéo</div>
-    <video class="pc-video" controls preload="metadata">
-        <source src="{{ post.video.url }}" type="video/mp4">
-        <source src="{{ post.video.url }}" type="video/webm">
-    </video>
-</div>
-{% endif %}
-
-{% if post.file %}
-    {% if post.file_is_video %}
-    <div class="pc-video-wrap">
-        <div class="pc-video-label"><span class="material-icons">videocam</span> Vidéo</div>
-        <video class="pc-video" controls preload="metadata">
-            <source src="{{ post.file.url }}" type="video/mp4">
-            <source src="{{ post.file.url }}" type="video/webm">
-        </video>
-    </div>
-    {% else %}
-    <a class="pc-file-attach" href="{{ post.file.url }}" target="_blank" rel="noopener">
-        <span class="material-icons">insert_drive_file</span> Rakitra
-    </a>
-    {% endif %}
-{% endif %}
 {% endif %}
