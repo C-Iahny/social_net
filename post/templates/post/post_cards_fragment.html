@@ -108,9 +108,14 @@
             </span>
         </button>
 
-        <button class="pc-footer-btn" onclick="sharePost({{ post.id }})" style="flex:1;">
-            <span class="material-icons">share</span>
+        <button class="pc-footer-btn" onclick="sharePost({{ post.id }}, '{{ post.title|escapejs }}')" style="flex:1;"
+                data-post-id="{{ post.id }}" data-reposted="{{ post.user_reposted|yesno:'true,false' }}">
+            <span class="material-icons" style="{% if post.user_reposted %}color:var(--accent){% endif %}">repeat</span>
             {% trans "Share" %}
+            <span id="repost-count-{{ post.id }}"
+                  style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.repost_count %}display:none{% endif %}">
+                {% if post.repost_count %}{{ post.repost_count }}{% endif %}
+            </span>
         </button>
     </div>
 
@@ -202,12 +207,4 @@
                           oninput="autoResize(this)"></textarea>
             </div>
             <button class="pc-comment-send" id="comment-send-{{ post.id }}"
-                    onclick="submitComment({{ post.id }}, '{% url 'post:add-comment' post.id %}')"
-                    title="Envoyer">
-                <span class="material-icons">send</span>
-            </button>
-        </div>
-    </div>
-
-</article>
-{% endfor %}
+                    onclick="submitComment({{ post.id }}, '{% 

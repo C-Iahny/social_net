@@ -891,7 +891,62 @@ body { background: var(--bg); }
 .rsb-link:hover { text-decoration: underline; color: var(--text); }
 .rsb-link + .rsb-link { margin-left: .45rem; }
 
-/* ── Share toast ── */
+/* ── Share modal ── */
+.share-modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.5);
+    z-index: 9000; display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.share-modal-overlay.open { opacity: 1; pointer-events: auto; }
+.share-modal {
+    background: var(--bg-card); border-radius: 20px 20px 0 0;
+    padding: 1.2rem 1.2rem 2rem;
+    width: 100%; max-width: 480px;
+    transform: translateY(100%); transition: transform .28s cubic-bezier(.32,.72,0,1);
+    box-shadow: 0 -8px 40px rgba(0,0,0,.2);
+}
+.share-modal-overlay.open .share-modal { transform: translateY(0); }
+.share-modal-title {
+    font-weight: 800; font-size: 1rem; color: var(--text);
+    text-align: center; margin-bottom: 1.2rem;
+    padding-bottom: .75rem; border-bottom: 1px solid var(--border);
+}
+.share-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem;
+    margin-bottom: 1rem;
+}
+.share-btn {
+    display: flex; flex-direction: column; align-items: center; gap: .4rem;
+    background: none; border: 1px solid var(--border);
+    border-radius: 14px; padding: .85rem .5rem;
+    cursor: pointer; transition: background .15s, transform .12s;
+    text-decoration: none; color: var(--text);
+}
+.share-btn:hover { background: var(--btn-bg); transform: translateY(-2px); color: var(--text); text-decoration: none; }
+.share-btn .sb-icon { font-size: 1.6rem; line-height: 1; }
+.share-btn .sb-label { font-size: .72rem; font-weight: 600; color: var(--text-muted); }
+.share-btn.whatsapp .sb-icon { color: #25d366; }
+.share-btn.twitter  .sb-icon { color: #1da1f2; }
+.share-btn.facebook .sb-icon { color: #1877f2; }
+.share-btn.copy     .sb-icon { color: var(--accent); }
+.share-copylink {
+    width: 100%; padding: .65rem 1rem;
+    background: var(--btn-bg); border: 1px solid var(--border);
+    border-radius: 12px; font-size: .83rem; color: var(--text-muted);
+    display: flex; align-items: center; gap: .5rem;
+    cursor: pointer; transition: background .15s;
+    margin-bottom: .75rem;
+}
+.share-copylink:hover { background: var(--border); }
+.share-copylink .material-icons { font-size: 1rem; color: var(--accent); }
+.share-copylink-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.share-cancel {
+    width: 100%; padding: .7rem; background: var(--btn-bg);
+    border: none; border-radius: 12px; font-size: .92rem; font-weight: 700;
+    color: var(--text-muted); cursor: pointer; transition: background .15s;
+}
+.share-cancel:hover { background: var(--border); }
+/* Copy toast */
 #share-toast {
     position: fixed; bottom: 1.8rem; left: 50%; transform: translateX(-50%) translateY(16px);
     background: #1c1e20; color: #fff;
@@ -900,8 +955,7 @@ body { background: var(--bg); }
     box-shadow: 0 4px 20px rgba(0,0,0,.4);
     opacity: 0; pointer-events: none;
     transition: opacity .25s, transform .25s;
-    z-index: 9999;
-    display: flex; align-items: center; gap: .5rem;
+    z-index: 9999; display: flex; align-items: center; gap: .5rem;
 }
 #share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 #share-toast .material-icons { font-size: 1.05rem; color: #4caf50; }
@@ -1137,7 +1191,7 @@ body { background: var(--bg); }
                         </span>
                     </button>
 
-                    <button class="pc-footer-btn" onclick="sharePost({{ post.id }})" style="flex:1;">
+                    <button class="pc-footer-btn" onclick="sharePost({{ post.id }}, '{{ post.title|escapejs }}')" style="flex:1;">
                         <span class="material-icons">share</span>
                         {% trans "Share" %}
                     </button>
@@ -1372,6 +1426,42 @@ body { background: var(--bg); }
 
 </div><!-- /feed-wrapper -->
 
+<!-- Share modal -->
+<div class="share-modal-overlay" id="share-modal-overlay" onclick="if(event.target===this)closeShareModal()">
+    <div class="share-modal">
+        <div class="share-modal-title" id="share-modal-title">{% trans "Share" %}</div>
+        <div class="share-grid">
+            <a class="share-btn whatsapp" id="share-wa" href="#" target="_blank" rel="noopener">
+                <span class="sb-icon">💬</span>
+                <span class="sb-label">WhatsApp</span>
+            </a>
+            <a class="share-btn twitter" id="share-tw" href="#" target="_blank" rel="noopener">
+                <span class="sb-icon">𝕏</span>
+                <span class="sb-label">X / Twitter</span>
+            </a>
+            <a class="share-btn facebook" id="share-fb" href="#" target="_blank" rel="noopener">
+                <span class="sb-icon">📘</span>
+                <span class="sb-label">Facebook</span>
+            </a>
+            <button class="share-btn copy" onclick="copyShareLink()">
+                <span class="sb-icon">🔗</span>
+                <span class="sb-label">{% trans "Copy link" %}</span>
+            </button>
+        </div>
+        {% if request.user.is_authenticated %}
+        <button class="share-btn" id="share-repost-btn" onclick="doRepost()" style="width:100%;flex-direction:row;gap:.6rem;margin-bottom:.75rem;">
+            <span class="sb-icon" style="font-size:1.2rem;">🔁</span>
+            <span style="font-size:.9rem;font-weight:700;" id="share-repost-label">{% trans "Repost" %}</span>
+        </button>
+        {% endif %}
+        <div class="share-copylink" onclick="copyShareLink()">
+            <span class="material-icons">link</span>
+            <span class="share-copylink-text" id="share-url-display"></span>
+        </div>
+        <button class="share-cancel" onclick="closeShareModal()">{% trans "Cancel" %}</button>
+    </div>
+</div>
+<!-- Copy toast -->
 <div id="share-toast">
     <span class="material-icons">check_circle</span>
     {% trans "Link copied to clipboard!" %}
@@ -1704,21 +1794,44 @@ function updateCommentCount(postId, delta) {
 }
 
 /* ══════════════════════════════════════
-   SHARE
+   SHARE MODAL
    ══════════════════════════════════════ */
+var _shareUrl = '';
 var _shareTimer = null;
-function sharePost(postId) {
-    var url = window.location.origin + window.location.pathname + '#post-' + postId;
+
+function sharePost(postId, postTitle) {
+    _shareUrl = window.location.origin + '/feed/' + postId + '/';
+    var title = postTitle || document.title;
+    var encodedUrl   = encodeURIComponent(_shareUrl);
+    var encodedTitle = encodeURIComponent(title);
+    document.getElementById('share-url-display').textContent = _shareUrl;
+    document.getElementById('share-modal-title').textContent = title ? title.substring(0, 60) : '{% trans "Share" %}';
+    document.getElementById('share-wa').href =
+        'https://wa.me/?text=' + encodedTitle + '%20' + encodedUrl;
+    document.getElementById('share-tw').href =
+        'https://x.com/intent/tweet?url=' + encodedUrl + '&text=' + encodedTitle;
+    document.getElementById('share-fb').href =
+        'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl;
+    document.getElementById('share-modal-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeShareModal() {
+    document.getElementById('share-modal-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+function copyShareLink() {
+    if (!_shareUrl) return;
     if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(showShareToast);
+        navigator.clipboard.writeText(_shareUrl).then(showShareToast);
     } else {
         var tmp = document.createElement('textarea');
-        tmp.value = url; tmp.style.cssText = 'position:fixed;opacity:0';
+        tmp.value = _shareUrl; tmp.style.cssText = 'position:fixed;opacity:0';
         document.body.appendChild(tmp); tmp.select();
         try { document.execCommand('copy'); } catch(e){}
         document.body.removeChild(tmp);
         showShareToast();
     }
+    closeShareModal();
 }
 function showShareToast() {
     var t = document.getElementById('share-toast');
@@ -1726,6 +1839,59 @@ function showShareToast() {
     t.classList.add('show');
     clearTimeout(_shareTimer);
     _shareTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+
+/* ══════════════════════════════════════
+   REPOST
+   ══════════════════════════════════════ */
+var _sharePostId = null;
+var _originalSharePost = sharePost;
+sharePost = function(postId, postTitle) {
+    _sharePostId = postId;
+    // Update repost button state
+    var btn = document.getElementById('share-repost-btn');
+    if (btn) {
+        var isReposted = btn.dataset.reposted === 'true';
+        var label = document.getElementById('share-repost-label');
+        if (label) {
+            label.textContent = isReposted ? '{% trans "Undo Repost" %}' : '{% trans "Repost" %}';
+        }
+    }
+    _originalSharePost(postId, postTitle);
+};
+
+function doRepost() {
+    if (!_sharePostId) return;
+    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ?
+        document.querySelector('[name=csrfmiddlewaretoken]').value :
+        '{{ csrf_token }}';
+    var formData = new FormData();
+    formData.append('post_id', _sharePostId);
+    formData.append('csrfmiddlewaretoken', csrfToken);
+    fetch('{% url "post:repost" %}', { method: 'POST', body: formData })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        // Update repost count in the card
+        var countEl = document.getElementById('repost-count-' + _sharePostId);
+        if (countEl) {
+            countEl.textContent = data.repost_count > 0 ? data.repost_count : '';
+            countEl.style.display = data.repost_count > 0 ? '' : 'none';
+        }
+        var btn = document.getElementById('share-repost-btn');
+        if (btn) btn.dataset.reposted = data.reposted ? 'true' : 'false';
+        var label = document.getElementById('share-repost-label');
+        if (label) label.textContent = data.reposted ? '{% trans "Undo Repost" %}' : '{% trans "Repost" %}';
+        // Show toast
+        var t = document.getElementById('share-toast');
+        if (t) {
+            t.querySelector('.material-icons').textContent = 'repeat';
+            t.childNodes[1].textContent = data.reposted ? ' {% trans "Reposted!" %}' : ' {% trans "Repost removed" %}';
+            t.classList.add('show');
+            setTimeout(function(){ t.classList.remove('show'); }, 2500);
+        }
+        closeShareModal();
+    });
 }
 
 /* ══════════════════════════════════════
