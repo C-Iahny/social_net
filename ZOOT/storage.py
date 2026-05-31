@@ -18,23 +18,6 @@ import warnings
 from django.conf import settings
 from whitenoise.storage import CompressedManifestStaticFilesStorage, MissingFileError
 
-<<<<<<< Updated upstream
-# ── Media Cloudinary : resource_type auto (images + vidéos) ──────────────────
-try:
-    from cloudinary_storage.storage import MediaCloudinaryStorage as _BaseMedia
-
-    class AutoMediaCloudinaryStorage(_BaseMedia):
-        """
-        Stockage Cloudinary avec resource_type='auto'.
-        Contrairement à MediaCloudinaryStorage (resource_type='image'),
-        cette classe accepte les images ET les vidéos sans configuration supplémentaire.
-        """
-        RESOURCE_TYPE = 'auto'
-
-except ImportError:
-    # En développement sans cloudinary_storage, on utilise le backend par défaut.
-    from django.core.files.storage import FileSystemStorage as AutoMediaCloudinaryStorage  # noqa: F811
-=======
 # ── Media Cloudflare R2 (S3-compatible) ──────────────────────────────────────
 try:
     from storages.backends.s3boto3 import S3Boto3Storage
@@ -54,7 +37,6 @@ except ImportError:
 
 # Alias rétro-compatible : les migrations existantes importent AutoMediaCloudinaryStorage
 AutoMediaCloudinaryStorage = R2MediaStorage
->>>>>>> Stashed changes
 # ─────────────────────────────────────────────────────────────────────────────
 
 logger = logging.getLogger(__name__)
@@ -105,23 +87,4 @@ class RelaxedStaticFilesStorage(CompressedManifestStaticFilesStorage):
                 continue
 
             # result = (original_path, processed_path, processed)
-            # Selon la version de Django/WhiteNoise, l'exception peut être
-            # dans result[1] OU result[2] — on vérifie les deux.
-            has_error = (
-                isinstance(result, (tuple, list))
-                and len(result) >= 2
-                and any(isinstance(result[i], Exception) for i in range(len(result)))
-            )
-            if has_error:
-                skipped.append(result[0])
-                # Ne pas yield → Django ne verra jamais l'erreur
-            else:
-                yield result
-
-        if skipped:
-            logger.warning(
-                "collectstatic: %d fichier(s) ignoré(s) pour cause d'assets manquants "
-                "(principalement CKEditor). Premier : %s",
-                len(skipped),
-                skipped[0],
-            )
+            #

@@ -311,11 +311,7 @@ class AddPostView(CreateView):
         response = super().form_valid(form)
         post = self.object
 
-<<<<<<< Updated upstream
-        # ── Enregistrer les fichiers média sur Cloudinary ──────────────────
-=======
         # ── Enregistrer les fichiers média sur R2 ────────────────────────
->>>>>>> Stashed changes
         _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
         files = self.request.FILES.getlist('media_files')
         _logger.info("AddPostView: %d fichier(s) reçu(s) post #%s", len(files), post.pk)
@@ -433,21 +429,7 @@ class UpdatePostView(UpdateView):
             is_vid = ext in _VIDEO_EXTS
             mtype = 'video' if is_vid else 'image'
             try:
-<<<<<<< Updated upstream
-                if is_vid:
-                    f.seek(0)
-                    resp = cloudinary.uploader.upload(
-                        f, resource_type='video', folder='post_media',
-                        use_filename=True, unique_filename=True,
-                    )
-                    pm = PostMedia(post=post, media_type=mtype, order=start_order + i)
-                    pm.file.name = resp['public_id']
-                    pm.save()
-                else:
-                    PostMedia.objects.create(post=post, file=f, media_type=mtype, order=start_order + i)
-=======
                 PostMedia.objects.create(post=post, file=f, media_type=mtype, order=start_order + i)
->>>>>>> Stashed changes
             except Exception as e:
                 _logger.exception("UpdatePost: PostMedia FAILED (fichier=%s): %s", f.name, e)
 
@@ -689,17 +671,16 @@ def mention_autocomplete(request):
     return JsonResponse({'users': result})
 
 
-@login_required(login_url="login")
-# ── POST DETAIL ───────────────────────────────────────────────────────────────
 @login_required(login_url='login')
 def post_detail(request, post_id):
-    """Page de détail d'un post — tous les commentaires, méta og:, URL partageable."""
+    """Page de détail d'un post — toutes les réactions et tous les commentaires."""
+    from django.shortcuts import get_object_or_404
     from django.db.models import Count
     from django.urls import reverse
 
     post = get_object_or_404(Post.objects.select_related('author'), pk=post_id)
 
-    # Réactions
+    # Reactions
     reactions_qs = (
         Reaction.objects.filter(post=post)
         .values('reaction_type')
@@ -707,49 +688,35 @@ def post_detail(request, post_id):
     )
     reaction_counts = {r['reaction_type']: r['c'] for r in reactions_qs}
     user_reaction = None
-    try:
-        user_reaction = Reaction.objects.get(post=post, user=request.user).reaction_type
-    except Reaction.DoesNotExist:
-        pass
+    if request.user.is_authenticated:
+        try:
+            user_reaction = Reaction.objects.get(post=post, user=request.user).reaction_type
+        except Reaction.DoesNotExist:
+            pass
 
-    # TOUS les commentaires (sans pagination sur la page de détail)
-    comments_all = list(
-        Comment.objects.filter(post=post)
-        .select_related('author')
-        .order_by('created_at')
+    post.reaction_counts = reaction_counts
+    post.total_reactions = sum(reaction_counts.values())
+    post.user_reaction = user_reaction
+
+    # Tous les commentaires (threaded)
+    all_comments = list(
+        Comment.objects.filter(post=post).select_related('author').order_by('created_at')
     )
-    top_comments = []
-    replies_map  = {}
-    for c in comments_all:
-        if c.parent_id is None:
-            top_comments.append(c)
-        else:
+    top_comments = [c for c in all_comments if c.parent_id is None]
+    replies_map = {}
+    for c in all_comments:
+        if c.parent_id:
             replies_map.setdefault(c.parent_id, []).append(c)
     for c in top_comments:
         c.reply_list = replies_map.get(c.id, [])
 
+    post.page_comments = top_comments
+    post.total_comments = len(all_comments)
+
+    # Médias
     _attach_media([post], [post.id])
 
-    post.reaction_counts = reaction_counts
-    post.total_reactions = sum(reaction_counts.values())
-    post.user_reaction   = user_reaction
-    post.page_comments   = top_comments
-    post.total_comments  = len(top_comments) + sum(len(c.reply_list) for c in top_comments)
-
     return render(request, 'post/post_detail.html', {
-        'post':        post,
+        'post': post,
         'comment_url': reverse('post:add-comment', args=[post.id]),
     })
-
-
-def unfollow(request):
-    if request.method != "POST":
-        return redirect("post:post-view")
-    userfollow_name = request.POST.get("userfollow", "")
-    try:
-        current_user = Account.objects.get(pk=request.user.id)
-        user_to_unfollow = Account.objects.get(username=userfollow_name)
-        Follow.objects.filter(user=current_user, user_follower=user_to_unfollow).delete()
-        return redirect("account:view", user_id=user_to_unfollow.id)
-    except Account.DoesNotExist:
-        return redirect("post:post-view")
