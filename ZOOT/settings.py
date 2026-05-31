@@ -259,18 +259,24 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn')
 #   R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID,
 #   R2_BUCKET_NAME, R2_PUBLIC_URL (ex: pub-xxx.r2.dev ou media.ton-domaine.com)
 
-R2_ACCOUNT_ID    = config('R2_ACCOUNT_ID', default=None)
-R2_ACCESS_KEY_ID = config('R2_ACCESS_KEY_ID', default=None)
+R2_ACCOUNT_ID        = config('R2_ACCOUNT_ID', default=None)
+# Support both R2_ACCESS_KEY_ID and R2_ACCESS_KEY (Railway variable name)
+R2_ACCESS_KEY_ID     = config('R2_ACCESS_KEY_ID', default=None) or config('R2_ACCESS_KEY', default=None)
 R2_SECRET_ACCESS_KEY = config('R2_SECRET_ACCESS_KEY', default=None)
-R2_BUCKET_NAME   = config('R2_BUCKET_NAME', default='vazimba-media')
-R2_PUBLIC_URL    = config('R2_PUBLIC_URL', default=None)  # ex: pub-xxx.r2.dev
+R2_BUCKET_NAME       = config('R2_BUCKET_NAME', default='vazimba-media')
+# Support both R2_PUBLIC_URL and CLOUDFLARE_R2_PUBLIC_URL
+_r2_pub_raw = config('R2_PUBLIC_URL', default=None) or config('CLOUDFLARE_R2_PUBLIC_URL', default=None)
+# Strip https:// prefix if present (we add it ourselves)
+R2_PUBLIC_URL = _r2_pub_raw.replace('https://', '').replace('http://', '').rstrip('/') if _r2_pub_raw else None
 
 if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY:
     # ── Production : Cloudflare R2 ──────────────────────────────────────────
     AWS_ACCESS_KEY_ID     = R2_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
     AWS_STORAGE_BUCKET_NAME = R2_BUCKET_NAME
-    AWS_S3_ENDPOINT_URL   = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+    # Support R2_ENDPOINT variable or build from account ID
+    _r2_endpoint = config('R2_ENDPOINT', default=None)
+    AWS_S3_ENDPOINT_URL   = _r2_endpoint or f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
     AWS_S3_REGION_NAME    = 'auto'
     AWS_DEFAULT_ACL       = 'public-read'
     AWS_S3_FILE_OVERWRITE = False
@@ -375,15 +381,4 @@ if not DEBUG:
     ]
     for _origin in _auto_csrf:
         if _origin not in CSRF_TRUSTED_ORIGINS:
-            CSRF_TRUSTED_ORIGINS.append(_origin)
-
-# En production (DEBUG=False), activer les redirections HTTPS
-if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE   = True
-    CSRF_COOKIE_SECURE      = True
-
-#cdn = constants directory network
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-au
+            CSRF_TR
