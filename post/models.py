@@ -1,14 +1,33 @@
 from django.db import models
-from django.utils import timezone
 from django.conf import settings
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.urls import reverse
+
+try:
+    from ckeditor.fields import RichTextField
+except ImportError:
+    # Fallback si CKEditor n'est pas disponible
+    RichTextField = models.TextField
 
 from account.models import Account
 
 
-# ── Tags ──────────────────────────────────────────────────────────────────────
+# ── Continent / Country ───────────────────────────────────────────────────────
+class Continent(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Country(models.Model):
+    name      = models.CharField(max_length=100)
+    continent = models.ForeignKey(Continent, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+# ── Tag ───────────────────────────────────────────────────────────────────────
 class Tag(models.Model):
     label = models.CharField(max_length=64, unique=True)
 
@@ -19,31 +38,31 @@ class Tag(models.Model):
 # ── Post ──────────────────────────────────────────────────────────────────────
 class Post(models.Model):
     CATEGORY_CHOICES = [
-        ('Category', 'Category'),
-        ('Politics', 'Politics'),
-        ('Sport', 'Sport'),
-        ('Science', 'Science'),
-        ('Tech', 'Tech'),
+        ('Category',      'Category'),
+        ('Politics',      'Politics'),
+        ('Sport',         'Sport'),
+        ('Science',       'Science'),
+        ('Tech',          'Tech'),
         ('Entertainment', 'Entertainment'),
-        ('Travel', 'Travel'),
-        ('Education', 'Education'),
-        ('Humour', 'Humour'),
-        ('Other', 'Other'),
+        ('Travel',        'Travel'),
+        ('Education',     'Education'),
+        ('Humour',        'Humour'),
+        ('Other',         'Other'),
     ]
 
     VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
 
-    title        = models.CharField(max_length=50, null=True, blank=True)
-    body         = models.TextField(max_length=10000, null=True, blank=True)
-    image        = models.ImageField(upload_to='post_images', null=True, blank=True)
-    header_image = models.ImageField(blank=True, null=True, upload_to="header_images")
-    post_date    = models.DateTimeField(auto_now_add=True)
+    title        = models.CharField(max_length=255)
+    header_image = models.ImageField(blank=True, null=True, upload_to='header_images')
+    body         = RichTextField(blank=True, null=True)
+    snippet      = models.CharField(max_length=255, blank=True, default='click the link above.')
+    post_date    = models.DateField(auto_now_add=True)
+    category     = models.CharField(max_length=255, blank=True, null=True, default='Category')
+    file         = models.FileField(upload_to='files/', blank=True, null=True)
+    video        = models.FileField(upload_to='videos/', blank=True, null=True)
     author       = models.ForeignKey(Account, on_delete=models.CASCADE)
-    likes        = models.ManyToManyField(Account, blank=True, related_name='post_likes')
+    likes        = models.ManyToManyField(Account, blank=True, related_name='like_number')
     tags         = models.ManyToManyField(Tag, blank=True)
-    category     = models.CharField(max_length=50, choices=CATEGORY_CHOICES,
-                                    default='Category')
-    file         = models.FileField(upload_to='post_files/', null=True, blank=True)
 
     def is_video(self):
         if self.header_image and self.header_image.name:
@@ -100,11 +119,11 @@ class Comment(models.Model):
 # ── Reaction ──────────────────────────────────────────────────────────────────
 class Reaction(models.Model):
     REACTION_CHOICES = [
-        ('like',   '👍'),
-        ('heart',  '❤️'),
-        ('laugh',  '😂'),
-        ('wow',    '😮'),
-        ('sad',    '😢'),
+        ('like',  '👍'),
+        ('heart', '❤️'),
+        ('laugh', '😂'),
+        ('wow',   '😮'),
+        ('sad',   '😢'),
     ]
     post          = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='reactions')
     user          = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -164,9 +183,9 @@ class PostMedia(models.Model):
 # ── Follow ────────────────────────────────────────────────────────────────────
 class Follow(models.Model):
     user          = models.ForeignKey(Account, on_delete=models.CASCADE,
-                                      related_name='following')
+                                      related_name='follower')
     user_follower = models.ForeignKey(Account, on_delete=models.CASCADE,
-                                      related_name='followers')
+                                      related_name='be_follwed')
 
     def __str__(self):
         return f"{self.user_follower} follows {self.user}"
@@ -182,19 +201,3 @@ class Hashtag(models.Model):
 
     class Meta:
         ordering = ['-count']
-
-
-# ── Continent / Country (legacy) ──────────────────────────────────────────────
-class Continent(models.Model):
-    name = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
-
-
-class Country(models.Model):
-    name      = models.CharField(max_length=100)
-    continent = models.ForeignKey(Continent, on_delete=models.SET_NULL, null=True, blank=True)
-
-    def __str__(self):
-        return self.name
