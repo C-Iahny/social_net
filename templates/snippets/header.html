@@ -632,6 +632,11 @@
             <span class="material-icons">explore</span>
             <span>{% trans "Explore" %}</span>
         </a>
+        <a href="{% url 'group:list' %}"
+           class="zoot-nav-link {% if request.resolver_match.namespace == 'group' %}active{% endif %}">
+            <span class="material-icons">groups</span>
+            <span>{% trans "Groups" %}</span>
+        </a>
     </div>
 
     <!-- Right section -->
@@ -787,6 +792,9 @@
                 <a class="dropdown-item" href="{% url 'friend:list' user_id=request.user.id %}">
                     <span class="material-icons">group</span> {% trans "My friends" %}
                 </a>
+                <a class="dropdown-item" href="{% url 'group:list' %}">
+                    <span class="material-icons">groups</span> {% trans "Groups" %}
+                </a>
                 <a class="dropdown-item" href="{% url 'chat:private-chat-room' %}">
                     <span class="material-icons">chat_bubble_outline</span> {% trans "Messages" %}
                 </a>
@@ -843,6 +851,9 @@
     </a>
     <a href="{% url 'post:index' %}" class="zoot-mobile-link">
         <span class="material-icons">explore</span> {% trans "Explore" %}
+    </a>
+    <a href="{% url 'group:list' %}" class="zoot-mobile-link">
+        <span class="material-icons">groups</span> {% trans "Groups" %}
     </a>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
         <span class="material-icons">person_outline</span> {% trans "My profile" %}
