@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>SOCIAL NET</title>
+    <title>Vazimba</title>
 
     <!-- ① Anti-FOUC : appliquer le thème AVANT tout rendu -->
     <script>
@@ -287,17 +287,17 @@
         </a>
         <a class="zbn-item" href="{% url 'search' %}?q=" data-page="search">
             <span class="material-icons">search</span>
-            <span class="zbn-label">Hikaroka</span>
+            <span class="zbn-label">Rechercher</span>
         </a>
         <a class="zbn-item zbn-new" href="{% url 'post:addPost' %}" data-page="new">
             <div class="zbn-new-icon">
                 <span class="material-icons">add</span>
             </div>
-            <span class="zbn-label">Mamorona</span>
+            <span class="zbn-label">Créer</span>
         </a>
         <a class="zbn-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}" data-page="friends" id="zbn-friends-link">
             <span class="material-icons">person_add</span>
-            <span class="zbn-label">Fangatahana</span>
+            <span class="zbn-label">Demande</span>
         </a>
         <a class="zbn-item" href="{% url 'account:view' user_id=request.user.id %}" data-page="profile">
             <span class="material-icons">person</span>

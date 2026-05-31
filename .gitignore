@@ -1,0 +1,24 @@
+# Fichiers compilés de traduction — générés automatiquement au démarrage
+*.mo
+
+# Environnement Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+env/
+
+# Médias locaux (servis par R2 en production)
+media_cdn/
+
+# Fichiers statiques collectés
+static_cdn/
+
+# Base de données locale
+db.sqlite3
+
+# Fichiers temporaires
+*.log
+*.tmp
+.DS_Store

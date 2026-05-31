@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -362,25 +363,25 @@
                 <span class="material-icons">group</span>
             </div>
             <div>
-                <h1>Ireo <span>Namako</span></h1>
+                <h1>{% trans "My friends" %}</h1>
             </div>
         </div>
         <div class="d-flex align-items-center gap-2" style="gap:.75rem;display:flex;">
             {% if friends %}
-            <span class="fl-count-badge">{{ friends|length }} namana</span>
+            <span class="fl-count-badge">{{ friends|length }} {% trans "friends" %}</span>
             {% endif %}
             <div class="fl-search-bar">
                 <span class="material-icons">search</span>
-                <input type="text" id="fl-search-input" placeholder="Hikaroka namana…" autocomplete="off">
+                <input type="text" id="fl-search-input" placeholder="{% trans "Search friends…" %}" autocomplete="off">
             </div>
         </div>
     </div>
 
     <!-- Filter chips -->
     <div class="fl-filters">
-        <button class="fl-chip active" data-filter="all">Rehetra</button>
-        <button class="fl-chip" data-filter="friend">Namana</button>
-        <button class="fl-chip" data-filter="not-friend">Tsy namana</button>
+        <button class="fl-chip active" data-filter="all">{% trans "All" %}</button>
+        <button class="fl-chip" data-filter="friend">{% trans "Friends" %}</button>
+        <button class="fl-chip" data-filter="not-friend">{% trans "Not friends" %}</button>
     </div>
 
     <!-- Grid -->
@@ -411,17 +412,17 @@
                     {% if friend.0 == request.user %}
                     <span class="fl-badge me">
                         <span class="material-icons">person_pin</span>
-                        Ahy ity
+                        {% trans "Me" %}
                     </span>
                     {% elif friend.1 %}
                     <span class="fl-badge friend">
                         <span class="material-icons">check_circle</span>
-                        Namana
+                        {% trans "Friends" %}
                     </span>
                     {% else %}
                     <span class="fl-badge not-friend">
                         <span class="material-icons">person_off</span>
-                        Tsy namana
+                        {% trans "Not friends" %}
                     </span>
                     {% endif %}
 
@@ -429,12 +430,12 @@
                     <div class="fl-actions">
                         <a class="fl-btn fl-btn-profile" href="{% url 'account:view' user_id=friend.0.pk %}">
                             <span class="material-icons">person</span>
-                            Profil
+                            {% trans "Profile" %}
                         </a>
                         {% if friend.1 and friend.0 != request.user %}
                         <a class="fl-btn fl-btn-msg" href="#" onclick="createOrReturnPrivateChat('{{ friend.0.id }}'); return false;">
                             <span class="material-icons">chat_bubble</span>
-                            Hafatra
+                            {% trans "Message" %}
                         </a>
                         {% endif %}
                     </div>
@@ -449,11 +450,11 @@
             <div class="fl-empty-icon">
                 <span class="material-icons">group_off</span>
             </div>
-            <h3>Tsy misy namana mbola</h3>
-            <p>Mitady olona ho lasa namana ianao? Mikaroka ety ary manomboka ifandraisana!</p>
+            <h3>{% trans "No friends yet" %}</h3>
+            <p>{% trans "Looking for friends? Search here and start connecting!" %}</p>
             <a href="{% url 'search' %}?q=" class="fl-empty-cta">
                 <span class="material-icons" style="font-size:1rem;">person_search</span>
-                Mitady olona
+                {% trans "Find people" %}
             </a>
         </div>
         {% endif %}
