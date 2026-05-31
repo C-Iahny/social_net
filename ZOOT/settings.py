@@ -41,12 +41,12 @@ else:
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
     DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL',  default=config('EMAIL_HOST_USER', default=''))
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,www.vazimba.io,vazimba.io', cast=Csv())
 
 # Railway health check — toujours autoriser le domaine de health check de Railway
 # (évite les boucles de redémarrage causées par les 400 sur le health check)
 if not DEBUG:
-    _railway_hosts = ['.railway.app', 'healthcheck.railway.app']
+    _railway_hosts = ['.railway.app', 'healthcheck.railway.app', 'www.vazimba.io', 'vazimba.io']
     for _h in _railway_hosts:
         if _h not in ALLOWED_HOSTS:
             ALLOWED_HOSTS.append(_h)
@@ -87,10 +87,6 @@ INSTALLED_APPS = [
     # FIX : django-crispy-forms 2.x a extrait les template packs en packages séparés.
     # 'bootstrap3' n'est plus inclus par défaut. On utilise bootstrap4 (voir CRISPY_TEMPLATE_PACK).
     'crispy_bootstrap4',
-
-    # ── Stockage cloud médias — doit être AVANT django.contrib.staticfiles ─────
-    'cloudinary_storage',
-    'cloudinary',
 
     # ── Django core ────────────────────────────────────────────────────────────
     'django.contrib.admin',
@@ -257,25 +253,46 @@ STATICFILES_DIRS = [
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn')
 
-# ── Médias (fichiers uploadés) ────────────────────────────────────────────────
-# En production : Cloudinary (fichiers persistants entre déploiements Railway)
-# En développement : stockage local
-CLOUDINARY_URL = config('CLOUDINARY_URL', default=None)
+# ── Médias (fichiers uploadés) — Cloudflare R2 ──────────────────────────────
+# R2 = stockage S3-compatible sans frais de bande passante (10 Go gratuit/mois)
+# Variables d'environnement à définir dans Railway :
+#   R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_ACCOUNT_ID,
+#   R2_BUCKET_NAME, R2_PUBLIC_URL (ex: pub-xxx.r2.dev ou media.ton-domaine.com)
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media_cdn')
+R2_ACCOUNT_ID    = config('R2_ACCOUNT_ID', default=None)
+R2_ACCESS_KEY_ID = config('R2_ACCESS_KEY_ID', default=None)
+R2_SECRET_ACCESS_KEY = config('R2_SECRET_ACCESS_KEY', default=None)
+R2_BUCKET_NAME   = config('R2_BUCKET_NAME', default='vazimba-media')
+R2_PUBLIC_URL    = config('R2_PUBLIC_URL', default=None)  # ex: pub-xxx.r2.dev
 
-if CLOUDINARY_URL:
-    import cloudinary
-    cloudinary.config(cloudinary_url=CLOUDINARY_URL)
-    CLOUDINARY_STORAGE = {'CLOUDINARY_URL': CLOUDINARY_URL}
-    _media_backend = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY:
+    # ── Production : Cloudflare R2 ──────────────────────────────────────────
+    AWS_ACCESS_KEY_ID     = R2_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY = R2_SECRET_ACCESS_KEY
+    AWS_STORAGE_BUCKET_NAME = R2_BUCKET_NAME
+    AWS_S3_ENDPOINT_URL   = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+    AWS_S3_REGION_NAME    = 'auto'
+    AWS_DEFAULT_ACL       = 'public-read'
+    AWS_S3_FILE_OVERWRITE = False
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    AWS_QUERYSTRING_AUTH  = False   # URLs publiques sans signature
+
+    # URL publique des médias servis par R2 (CDN ou r2.dev)
+    if R2_PUBLIC_URL:
+        AWS_S3_CUSTOM_DOMAIN = R2_PUBLIC_URL
+        MEDIA_URL = f"https://{R2_PUBLIC_URL}/"
+    else:
+        MEDIA_URL = f"https://{R2_ACCOUNT_ID}.r2.cloudflarestorage.com/{R2_BUCKET_NAME}/"
+
+    _media_backend = 'ZOOT.storage.R2MediaStorage'
 else:
+    # ── Développement : stockage local ──────────────────────────────────────
+    MEDIA_URL  = '/media/'
     _media_backend = 'django.core.files.storage.FileSystemStorage'
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media_cdn')
+
 # ── Stockage (Django 4.2+) ────────────────────────────────────────────────────
-# FIX : STATICFILES_STORAGE et DEFAULT_FILE_STORAGE sont dépréciés en Django 4.2.
-# On utilise le nouveau dictionnaire STORAGES à la place.
 STORAGES = {
     "default": {
         "BACKEND": _media_backend,
@@ -318,15 +335,45 @@ CACHES = {
 
 # ── Sécurité production ───────────────────────────────────────────────────────
 # Domaines autorisés pour les requêtes CSRF (obligatoire pour Railway / HTTPS)
-CSRF_TRUSTED_ORIGINS = config(
+import re as _re
+
+def _clean_csrf_origins(raw_list):
+    """
+    Nettoie les valeurs CSRF_TRUSTED_ORIGINS :
+    - Supprime les liens markdown [texte](url) → garde juste l'URL
+    - Ajoute https:// si le schéma est absent
+    - Ignore les valeurs vides
+    """
+    cleaned = []
+    for origin in raw_list:
+        origin = origin.strip()
+        if not origin:
+            continue
+        # Extraire l'URL d'un lien markdown [texte](url)
+        md = _re.match(r'\[.*?\]\((https?://[^)]+)\)', origin)
+        if md:
+            origin = md.group(1)
+        # Ajouter https:// si manquant
+        if not origin.startswith(('http://', 'https://')):
+            origin = 'https://' + origin
+        cleaned.append(origin)
+    return cleaned
+
+CSRF_TRUSTED_ORIGINS = _clean_csrf_origins(config(
     'CSRF_TRUSTED_ORIGINS',
     default='http://127.0.0.1:8000,http://localhost:8000',
     cast=Csv()
-)
-# Ajoute automatiquement les domaines Railway si non déjà présents
+))
+
+# Ajoute automatiquement les domaines Railway + domaine custom si non déjà présents
 if not DEBUG:
-    _railway_csrf = ['https://*.railway.app', 'https://*.up.railway.app']
-    for _origin in _railway_csrf:
+    _auto_csrf = [
+        'https://*.railway.app',
+        'https://*.up.railway.app',
+        'https://vazimba.io',
+        'https://www.vazimba.io',
+    ]
+    for _origin in _auto_csrf:
         if _origin not in CSRF_TRUSTED_ORIGINS:
             CSRF_TRUSTED_ORIGINS.append(_origin)
 
@@ -339,6 +386,4 @@ if not DEBUG:
 #cdn = constants directory network
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-au

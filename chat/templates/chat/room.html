@@ -860,8 +860,6 @@ function uploadAndSendFile(f){
     var roomId = null;
     var currentUserId = "{{ request.user.id }}";
 
-    onStart()
-
     function onStart(){
         {% if room %}
             if("{{ room.user1 }}" == "{{ request.user }}"){
@@ -963,6 +961,8 @@ function uploadAndSendFile(f){
                 }
             });
         }
+        // Initialisation : connecter automatiquement si une room est déjà connue
+        onStart();
     });
 
     function setupWebSocket(room_id){
@@ -1313,27 +1313,22 @@ function uploadAndSendFile(f){
     }
 
     function createOrReturnPrivateChat(id){
-        payload = {
-            "csrfmiddlewaretoken": "{{ csrf_token }}",
-            "user2_id": id,
-        }
-        $.ajax({
-            type: 'POST',
-            dataType: "json",
-            url: "{% url 'chat:create-or-return-private-chat' %}",
-            data: payload,
-            timeout: 5000,
-            success: function(data) {
-                if(data['response'] == "Successfully got the chat."){
-                    setupWebSocket(data['chatroom_id'])
-                } else if(data['response'] != null){
-                    alert(data['response'])
-                }
-            },
-            error: function(data) {
-                alert("Something went wrong.")
-            },
-        });
+        var formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        formData.append('user2_id', id);
+        fetch("{% url 'chat:create-or-return-private-chat' %}", {
+            method: 'POST',
+            body: formData,
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            if(data['response'] == "Successfully got the chat."){
+                setupWebSocket(data['chatroom_id']);
+            } else if(data['response'] != null){
+                alert(data['response']);
+            }
+        })
+        .catch(function(){ alert("Something went wrong."); });
     }
 </script>
 

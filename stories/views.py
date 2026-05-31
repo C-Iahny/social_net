@@ -1,7 +1,10 @@
 import os
 import json
 import logging
+<<<<<<< Updated upstream
 import cloudinary.uploader
+=======
+>>>>>>> Stashed changes
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth.decorators import login_required
@@ -26,6 +29,7 @@ _VIDEO_MIME = {
 
 
 def _media_url(story):
+<<<<<<< Updated upstream
     """Génère l'URL Cloudinary correcte selon media_type (image ou video)."""
     if not story.media or not story.media.name:
         return None
@@ -39,6 +43,15 @@ def _media_url(story):
             return story.media.url
         except Exception:
             return None
+=======
+    """Retourne l'URL du média (servi par R2)."""
+    if not story.media or not story.media.name:
+        return None
+    try:
+        return story.media.url
+    except Exception:
+        return None
+>>>>>>> Stashed changes
 
 
 def _story_to_dict(story, viewer):
@@ -96,6 +109,7 @@ def create_story(request):
             return JsonResponse({'error': 'Format de fichier non supporté.'}, status=400)
 
     try:
+<<<<<<< Updated upstream
         if media_file and media_type == 'video':
             # Upload direct Cloudinary avec resource_type='video'
             # (MediaCloudinaryStorage n'accepte que les images)
@@ -133,6 +147,18 @@ def create_story(request):
                 text_align  = text_align,
             )
 
+=======
+        # R2 gère images ET vidéos via le même backend Django standard
+        story = Story.objects.create(
+            user        = request.user,
+            story_type  = story_type,
+            media       = media_file,
+            media_type  = media_type,
+            caption     = caption,
+            bg_gradient = bg_gradient,
+            text_align  = text_align,
+        )
+>>>>>>> Stashed changes
     except Exception as e:
         _logger.exception("create_story FAILED: %s", e)
         return JsonResponse({'error': f'Erreur lors de la publication : {e}'}, status=500)

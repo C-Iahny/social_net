@@ -528,7 +528,7 @@
 	*/
 	function getUnreadChatNotificationsCount(){
 		if("{{request.user.is_authenticated}}"){
-			notificationSocket.send(JSON.stringify({
+			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "get_unread_chat_notifications_count",
 			}));
 		}
@@ -542,7 +542,7 @@
 		var pageNumber = document.getElementById("id_chat_page_number").innerHTML
 		// -1 means exhausted or a query is currently in progress
 		if("{{request.user.is_authenticated}}" && pageNumber != "-1"){
-			notificationSocket.send(JSON.stringify({
+			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "get_chat_notifications",
 				"page_number": pageNumber,
 			}));
@@ -557,7 +557,7 @@
 		newestTimestamp = document.getElementById("id_chat_newest_timestamp").innerHTML
 		console.log("NEWEST TS: " + newestTimestamp)
 		if("{{request.user.is_authenticated}}"){
-			notificationSocket.send(JSON.stringify({
+			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "get_new_chat_notifications",
 				"newest_timestamp": newestTimestamp,
 			}));
@@ -570,7 +570,7 @@
 	*/
 	function getFirstChatNotificationsPage(){
 		if("{{request.user.is_authenticated}}"){
-			notificationSocket.send(JSON.stringify({
+			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "get_chat_notifications",
 				"page_number": "1",
 			}));

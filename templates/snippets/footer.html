@@ -149,10 +149,10 @@
 
         <!-- Liens -->
         <nav class="footer-links">
-            <a href="{% url 'post:post-view' %}">Vaovao</a>
-            <a href="{% url 'post:index' %}">Zava-misy</a>
-            <a href="{% url 'friend:list' user_id=request.user.id %}" {% if not request.user.is_authenticated %}style="display:none"{% endif %}>Namana</a>
-            <a href="{% url 'chat:private-chat-room' %}" {% if not request.user.is_authenticated %}style="display:none"{% endif %}>Hafatra</a>
+            <a href="{% url 'post:post-view' %}">Fil d'actualités</a>
+            <a href="{% url 'post:index' %}">Explorer</a>
+            <a href="{% url 'friend:list' user_id=request.user.id %}" {% if not request.user.is_authenticated %}style="display:none"{% endif %}>Amis</a>
+            <a href="{% url 'chat:private-chat-room' %}" {% if not request.user.is_authenticated %}style="display:none"{% endif %}>Message</a>
             {% if not request.user.is_authenticated %}
             <a href="{% url 'login' %}">Connexion</a>
             <a href="{% url 'register' %}">Inscription</a>

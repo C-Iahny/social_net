@@ -15,8 +15,10 @@ Deux problèmes à résoudre avec WhiteNoise 6.x :
 """
 import logging
 import warnings
+from django.conf import settings
 from whitenoise.storage import CompressedManifestStaticFilesStorage, MissingFileError
 
+<<<<<<< Updated upstream
 # ── Media Cloudinary : resource_type auto (images + vidéos) ──────────────────
 try:
     from cloudinary_storage.storage import MediaCloudinaryStorage as _BaseMedia
@@ -32,6 +34,27 @@ try:
 except ImportError:
     # En développement sans cloudinary_storage, on utilise le backend par défaut.
     from django.core.files.storage import FileSystemStorage as AutoMediaCloudinaryStorage  # noqa: F811
+=======
+# ── Media Cloudflare R2 (S3-compatible) ──────────────────────────────────────
+try:
+    from storages.backends.s3boto3 import S3Boto3Storage
+
+    class R2MediaStorage(S3Boto3Storage):
+        """
+        Backend Cloudflare R2 via l'API S3-compatible.
+        Hérite de S3Boto3Storage mais utilise l'endpoint R2 configuré dans settings.py.
+        Les fichiers uploadés sont publics (ACL public-read via AWS_DEFAULT_ACL).
+        """
+        # Pas besoin de surcharger : tout vient de settings.py (AWS_* variables)
+        pass
+
+except ImportError:
+    # En développement sans django-storages, on utilise le backend local.
+    from django.core.files.storage import FileSystemStorage as R2MediaStorage  # noqa: F811
+
+# Alias rétro-compatible : les migrations existantes importent AutoMediaCloudinaryStorage
+AutoMediaCloudinaryStorage = R2MediaStorage
+>>>>>>> Stashed changes
 # ─────────────────────────────────────────────────────────────────────────────
 
 logger = logging.getLogger(__name__)

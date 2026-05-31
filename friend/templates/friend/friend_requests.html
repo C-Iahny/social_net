@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <style>
@@ -361,19 +362,19 @@
                 <span class="material-icons">person_add</span>
             </div>
             <div class="fr-title-text">
-                <h1>Fangatahana <span>Namana</span></h1>
-                <p>Olona te-ho lasa namana aminao</p>
+                <h1>{% trans "Friend requests" %}</h1>
+                <p>{% trans "People who want to be friends with you" %}</p>
             </div>
         </div>
         <div class="fr-header-right">
             {% if friend_requests %}
             <span class="fr-count-badge" id="fr-total-badge">
-                {{ friend_requests|length }} fangatahana
+                {{ friend_requests|length }} {% trans "requests" %}
             </span>
             {% endif %}
             <a class="fr-friends-link" href="{% url 'friend:list' user_id=request.user.id %}">
                 <span class="material-icons">group</span>
-                Ireo namako
+                {% trans "My friends" %}
             </a>
         </div>
     </div>
@@ -402,7 +403,7 @@
                     </a>
                     <div class="fr-username-sub">
                         <span class="material-icons">person_outline</span>
-                        Mangataka ho lasa namana aminao
+                        {% trans "Wants to be your friend" %}
                     </div>
 
                     <!-- Actions -->
@@ -411,13 +412,13 @@
                                 id="id_cancel_{{ request.sender.id }}"
                                 onclick="handleDecline('{{ request.id }}')">
                             <span class="material-icons">close</span>
-                            Atsaharo
+                            {% trans "Decline" %}
                         </button>
                         <button class="fr-btn fr-btn-accept"
                                 id="id_confirm_{{ request.sender.id }}"
                                 onclick="handleAccept('{{ request.id }}')">
                             <span class="material-icons">check</span>
-                            Ekeo
+                            {% trans "Accept" %}
                         </button>
                     </div>
                 </div>
@@ -431,11 +432,11 @@
             <div class="fr-empty-icon-wrap">
                 <span class="material-icons">inbox</span>
             </div>
-            <h3>Tsy misy fangatahana</h3>
-            <p>Raha misy olona mangataka ho lasa namana aminao, hiseho eto izy.</p>
+            <h3>{% trans "No requests" %}</h3>
+            <p>{% trans "When someone sends you a friend request, it will appear here." %}</p>
             <a class="fr-empty-cta" href="{% url 'search' %}?q=">
                 <span class="material-icons" style="font-size:.95rem;">person_search</span>
-                Mitady olona
+                {% trans "Find people" %}
             </a>
         </div>
         {% endif %}
@@ -488,10 +489,10 @@ function checkEmpty() {
     if (cards.length === 0) {
         grid.innerHTML = '<div class="fr-empty">' +
             '<div class="fr-empty-icon-wrap"><span class="material-icons">inbox</span></div>' +
-            '<h3>Tsy misy fangatahana</h3>' +
-            '<p>Raha misy olona mangataka ho lasa namana aminao, hiseho eto izy.</p>' +
+            '<h3>No requests</h3>' +
+            '<p>When someone sends you a friend request, it will appear here.</p>' +
             '<a class="fr-empty-cta" href="/search/?q=">' +
-            '<span class="material-icons" style="font-size:.95rem;">person_search</span>Mitady olona</a>' +
+            '<span class="material-icons" style="font-size:.95rem;">person_search</span>Find people</a>' +
             '</div>';
     }
 }

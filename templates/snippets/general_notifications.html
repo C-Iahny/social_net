@@ -767,7 +767,7 @@
 	function setGeneralNotificationsAsRead(){
 		if("{{request.user.is_authenticated}}"){
 			oldestTimestamp = document.getElementById("id_general_oldest_timestamp").innerHTML
-			notificationSocket.send(JSON.stringify({
+			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "mark_notifications_read",
 			}))
 			getUnreadGeneralNotificationsCount()
@@ -781,7 +781,7 @@
 	*/
 	function getUnreadGeneralNotificationsCount(){
 		if("{{request.user.is_authenticated}}"){
-			notificationSocket.send(JSON.stringify({
+			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "get_unread_general_notifications_count",
 			}));
 		}
@@ -795,7 +795,7 @@
 	function getNewGeneralNotifications(){
 		newestTimestamp = document.getElementById("id_general_newest_timestamp").innerHTML
 		if("{{request.user.is_authenticated}}"){
-			notificationSocket.send(JSON.stringify({
+			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "get_new_general_notifications",
 				"newest_timestamp": newestTimestamp,
 			}))
@@ -826,7 +826,7 @@
 		oldestTimestamp = document.getElementById("id_general_oldest_timestamp").innerHTML
 		newestTimestamp = document.getElementById("id_general_newest_timestamp").innerHTML
 		if("{{request.user.is_authenticated}}"){
-			notificationSocket.send(JSON.stringify({
+			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "refresh_general_notifications",
 				"oldest_timestamp": oldestTimestamp,
 				"newest_timestamp": newestTimestamp,
@@ -843,7 +843,7 @@
 	*/
 	function getFirstGeneralNotificationsPage(){
 		if("{{request.user.is_authenticated}}"){
-			notificationSocket.send(JSON.stringify({
+			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "get_general_notifications",
 				"page_number": "1",
 			}));
@@ -856,7 +856,7 @@
 		Accept a Friend request
 	*/
 	function sendAcceptFriendRequestToSocket(notification_id){
-		notificationSocket.send(JSON.stringify({
+		window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 			"command": "accept_friend_request",
 			"notification_id": notification_id,
 		}))
@@ -867,7 +867,7 @@
 		Decline a Friend request
 	*/
 	function sendDeclineFriendRequestToSocket(notification_id){
-		notificationSocket.send(JSON.stringify({
+		window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 			"command": "decline_friend_request",
 			"notification_id": notification_id,
 		}))
@@ -881,7 +881,7 @@
 		var pageNumber = document.getElementById("id_general_page_number").innerHTML
 		// -1 means exhausted or a query is currently in progress
 		if("{{request.user.is_authenticated}}" && pageNumber != "-1"){
-			notificationSocket.send(JSON.stringify({
+			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "get_general_notifications",
 				"page_number": pageNumber,
 			}));

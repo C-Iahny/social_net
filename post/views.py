@@ -311,7 +311,11 @@ class AddPostView(CreateView):
         response = super().form_valid(form)
         post = self.object
 
+<<<<<<< Updated upstream
         # ── Enregistrer les fichiers média sur Cloudinary ──────────────────
+=======
+        # ── Enregistrer les fichiers média sur R2 ────────────────────────
+>>>>>>> Stashed changes
         _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
         files = self.request.FILES.getlist('media_files')
         _logger.info("AddPostView: %d fichier(s) reçu(s) post #%s", len(files), post.pk)
@@ -429,6 +433,7 @@ class UpdatePostView(UpdateView):
             is_vid = ext in _VIDEO_EXTS
             mtype = 'video' if is_vid else 'image'
             try:
+<<<<<<< Updated upstream
                 if is_vid:
                     f.seek(0)
                     resp = cloudinary.uploader.upload(
@@ -440,6 +445,9 @@ class UpdatePostView(UpdateView):
                     pm.save()
                 else:
                     PostMedia.objects.create(post=post, file=f, media_type=mtype, order=start_order + i)
+=======
+                PostMedia.objects.create(post=post, file=f, media_type=mtype, order=start_order + i)
+>>>>>>> Stashed changes
             except Exception as e:
                 _logger.exception("UpdatePost: PostMedia FAILED (fichier=%s): %s", f.name, e)
 
