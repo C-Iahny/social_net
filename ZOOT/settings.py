@@ -381,4 +381,10 @@ if not DEBUG:
     ]
     for _origin in _auto_csrf:
         if _origin not in CSRF_TRUSTED_ORIGINS:
-            CSRF_TR
+            CSRF_TRUSTED_ORIGINS.append(_origin)
+
+# En production (DEBUG=False), activer les redirections HTTPS
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE   = True
+    CSRF_COOKIE_SECURE      = True
