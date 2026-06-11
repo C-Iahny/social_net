@@ -3,7 +3,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.db import models
 
-from .models import Announcement
+from .models import Announcement, HeroSettings
 
 DEBUG = False
 
@@ -30,8 +30,11 @@ def landing_view(request):
 		models.Q(end_date__isnull=True) | models.Q(end_date__gte=now)
 	).order_by('-start_date')
 
+	hero = HeroSettings.get()
+
 	context = {
 		'announcements': announcements,
 		'page_title': 'Bienvenue sur Vazimba',
+		'hero': hero,
 	}
 	return render(request, "personal/landing.html", context)
