@@ -57,14 +57,27 @@ body { background: var(--bg); }
         width: 100%;
     }
     .feed-left-col { display: none; }
-    /* Boite de création */
+    /* Boite de création : icônes seules sur mobile */
     .create-box { border-radius: 14px; }
-    .create-box-actions { gap: .3rem; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
-    .create-box-actions::-webkit-scrollbar { display: none; }
-    .create-box-action { flex-shrink: 0; font-size: .78rem; padding: .3rem .65rem; }
+    .create-box-actions {
+        gap: .15rem;
+        justify-content: space-around;
+        padding: .4rem .5rem;
+    }
+    .create-box-action {
+        flex: 1;
+        padding: .42rem .2rem;
+        min-width: 0;
+        justify-content: center;
+    }
+    /* Cache les labels, garde uniquement l'icône */
+    .create-box-action span.btn-label { display: none; }
+    /* Post cards : un peu plus de marge intérieure à droite */
+    .pc-body { padding-right: .85rem; }
+    .pc-title { padding-right: .85rem; }
 }
 @media (max-width: 480px) {
-    .feed-wrapper { padding: 0 .4rem; }
+    .feed-wrapper { padding: 0 .35rem; }
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -1145,23 +1158,23 @@ body { background: var(--bg); }
             <hr class="create-box-divider">
             <div class="create-box-actions">
                 <a class="create-box-action photo" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">add_photo_alternate</span> {% trans "Photos" %}
+                    <span class="material-icons">add_photo_alternate</span><span class="btn-label"> {% trans "Photos" %}</span>
                 </a>
                 <a class="create-box-action file" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">attach_file</span> {% trans "File" %}
+                    <span class="material-icons">attach_file</span><span class="btn-label"> {% trans "File" %}</span>
                 </a>
                 <a class="create-box-action post" href="{% url 'post:addPost' %}">
-                    <span class="material-icons">edit_note</span> {% trans "Write" %}
+                    <span class="material-icons">edit_note</span><span class="btn-label"> {% trans "Write" %}</span>
                 </a>
                 <a class="create-box-action" href="{% url 'post:kabary-create' %}"
                    style="background:linear-gradient(135deg,var(--accent-glow,rgba(99,102,241,.1)),transparent);
                            border:1px solid var(--accent);color:var(--accent);">
-                    <span class="material-icons">record_voice_over</span> Kabary
+                    <span class="material-icons">record_voice_over</span><span class="btn-label"> Kabary</span>
                 </a>
                 <a class="create-box-action" href="{% url 'post:vintana-create' %}"
                    style="background:linear-gradient(135deg,rgba(191,95,255,.1),rgba(0,207,255,.07));
                            border:1px solid rgba(191,95,255,.4);color:#bf5fff;">
-                    <span class="material-icons">lock_clock</span> Vintana
+                    <span class="material-icons">lock_clock</span><span class="btn-label"> Vintana</span>
                 </a>
             </div>
         </div>
