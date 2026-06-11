@@ -153,7 +153,13 @@
 }
 
 /* ── SIDEBAR ── */
-.explore-sidebar { position: sticky; top: 80px; }
+.explore-sidebar {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
 
 /* Continent list */
 .continent-item {
@@ -397,6 +403,9 @@
 
 <div class="explore-hero">
     <div class="explore-hero-content">
+        <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="Vazimba"
+             style="width:64px;height:64px;border-radius:18px;object-fit:cover;
+                    box-shadow:0 4px 20px rgba(0,0,0,.25);margin-bottom:.9rem;display:block;">
         <h1>{{ hero.title }}</h1>
         <p>{{ hero.subtitle }}</p>
         <div class="hero-search-wrap">

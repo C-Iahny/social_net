@@ -1219,7 +1219,7 @@ function quickReact(pid) {
 function sendReaction(pid, rtype) {
     closePicker(pid);
     var EMOJIS = {like:'👍',heart:'❤️',laugh:'😂',wow:'😮',sad:'😢'};
-    var LABELS = {like:'Tiana',heart:'Tiako',laugh:'Heniky',wow:'Mahagaga',sad:'Maika'};
+    var LABELS = {like:'{% trans "Tiana" %}',heart:'{% trans "Tiako" %}',laugh:'{% trans "Heniky" %}',wow:'{% trans "Mahagaga" %}',sad:'{% trans "Maika" %}'};
     fetch(GD_REACT_URL, {
         method:'POST',
         headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':GD_CSRF,'X-Requested-With':'XMLHttpRequest'},
