@@ -981,7 +981,7 @@ body { background: var(--bg); }
                 <span id="profile-story-ring-el"></span>
                 <img src="{{ profile_image }}" alt="{{ username }}"
                      style="position:relative;z-index:1;cursor:zoom-in;"
-                     onclick="openPhotoDirectLb('{{ profile_image }}', '{{ username|escapejs }}')">
+                     onclick="openPhotoDirectLb('{{ profile_image }}', '{{ username|escapejs }}'); event.stopPropagation();">
                 {% if is_self %}
                 <a class="avatar-edit-fab" href="{% url 'account:edit' user_id=id %}"
                    title="Modifier la photo" onclick="event.stopPropagation();">
@@ -1945,7 +1945,9 @@ function expandBodyBtn(btn) {
 
         if (!stories.length) {
             ringEl.innerHTML = '';
-            if (IS_SELF) wrap.onclick = function(){ openStoryCreator(); };
+            /* Sans story : cliquer sur la photo ouvre le lightbox (géré par le <img> lui-même).
+               Le badge caméra gère la modification. Aucun handler supplémentaire sur le wrapper. */
+            wrap.onclick = null;
             return;
         }
 
@@ -1966,9 +1968,10 @@ function expandBodyBtn(btn) {
         inner.style.cssText = 'position:absolute;inset:3px;border-radius:50%;background:var(--bg-card);z-index:0;display:block;';
         ringEl.appendChild(inner);
 
+        /* Avec stories : cliquer sur le wrapper (zone ring) ouvre les stories.
+           La photo elle-même a stopPropagation → ouvre le lightbox. */
         wrap.onclick = function() {
-            if (IS_SELF) openStoryCreator();
-            else openProfileStoryAt(0);
+            openProfileStoryAt(0);
         };
     }
 
