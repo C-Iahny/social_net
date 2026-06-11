@@ -1658,6 +1658,17 @@ function expandBodyBtn(btn) {
         btn.textContent = '{% trans "See less" %}';
     }
 }
-document.addEventListener('DOMContentLoaded', processAllPostBodies);
+document.addEventListener('DOMContentLoaded', function() {
+    /* Petit délai pour que le CSS line-clamp soit appliqué avant de mesurer les hauteurs */
+    setTimeout(processAllPostBodies, 50);
+});
+
+/* Re-traiter chaque fois que de nouveaux posts sont ajoutés au DOM */
+(function() {
+    var feed = document.getElementById('gd-posts-feed');
+    if (!feed) return;
+    var mo = new MutationObserver(function() { setTimeout(processAllPostBodies, 50); });
+    mo.observe(feed, { childList: true, subtree: false });
+})();
 </script>
 {% endblock %}
