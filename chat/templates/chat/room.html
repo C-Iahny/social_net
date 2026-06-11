@@ -267,7 +267,8 @@ main { padding: 0 !important; margin-top: 62px; }
     font-size: .88rem;
     line-height: 1.5;
     word-break: break-word;
-    white-space: pre-wrap;
+    /* white-space: pre-wrap retiré : markdown-it gère le formatage via HTML,
+       pre-wrap causait l'affichage du \n final comme ligne vide. */
 }
 /* Markdown-it entoure chaque texte dans <p> — supprimer les marges parasites */
 .msg-p p { margin: 0; padding: 0; }
