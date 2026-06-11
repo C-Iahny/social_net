@@ -2323,6 +2323,82 @@ function getCookie(name) {
 function escHtml(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+
+/* ══════════════════════════════════════
+   LIVE COMMENT POLLING
+   Rafraîchit les commentaires ouverts toutes les 8 s
+   ══════════════════════════════════════ */
+(function() {
+    /* Map postId → dernier comment id connu */
+    var _lastCommentId = {};
+
+    function buildCommentHtml(data, postId, addUrl) {
+        var delBtn = data.can_delete
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            : '';
+        return '<div class="pc-comment-item" id="comment-item-' + data.id + '">'
+            + '<a href="/account/' + data.author_id + '/view/"><img class="cmt-avatar" src="' + data.avatar + '" alt="' + escHtml(data.author) + '"></a>'
+            + '<div class="pc-comment-right">'
+            +   '<div class="pc-comment-bubble">'
+            +     '<a class="pc-comment-author" href="/account/' + data.author_id + '/view/">' + escHtml(data.author) + '</a>'
+            +     '<p class="pc-comment-body">' + escHtml(data.body) + '</p>'
+            +   '</div>'
+            +   '<div class="pc-comment-footer">'
+            +     '<span class="pc-comment-time">' + data.created_at + '</span>'
+            +     '<button class="pc-comment-reply-btn" onclick="toggleReplyForm(' + data.id + ', ' + postId + ', \'' + addUrl + '\')">Répondre</button>'
+            +     delBtn
+            +   '</div>'
+            +   '<div class="pc-comment-replies" id="replies-' + data.id + '" style="display:none;"></div>'
+            +   '<div class="pc-reply-form-wrap" id="reply-form-' + data.id + '"></div>'
+            + '</div>'
+            + '</div>';
+    }
+
+    function pollOpenCommentSections() {
+        /* Trouver tous les panneaux de commentaires ouverts */
+        document.querySelectorAll('.pc-comment-panel.open').forEach(function(panel) {
+            var m = panel.id.match(/comment-panel-(\d+)/);
+            if (!m) return;
+            var postId = m[1];
+            var since  = _lastCommentId[postId] || 0;
+            var addUrl = '{% url "post:add-comment" 0 %}'.replace('/0/', '/' + postId + '/');
+            var newUrl = '{% url "post:new-comments" 0 %}'.replace('/0/', '/' + postId + '/');
+
+            fetch(newUrl + '?since=' + since, {credentials: 'same-origin',
+                headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(d){
+                if (!d || !d.comments.length) return;
+                var list = document.getElementById('comment-list-' + postId);
+                d.comments.forEach(function(c) {
+                    /* Ne pas dupliquer un commentaire déjà dans le DOM */
+                    if (document.getElementById('comment-item-' + c.id)) return;
+                    if (list) list.insertAdjacentHTML('beforeend', buildCommentHtml(c, postId, addUrl));
+                    updateCommentCount(postId, 1);
+                    _lastCommentId[postId] = Math.max(_lastCommentId[postId] || 0, c.id);
+                });
+            })
+            .catch(function(){});
+        });
+    }
+
+    /* Initialiser _lastCommentId à partir des commentaires déjà dans le DOM */
+    function initLastIds() {
+        document.querySelectorAll('.pc-comment-item[id]').forEach(function(el) {
+            var m = el.id.match(/comment-item-(\d+)/);
+            if (!m) return;
+            var panel = el.closest('[id^="comment-panel-"]');
+            if (!panel) return;
+            var pm = panel.id.match(/comment-panel-(\d+)/);
+            if (pm) _lastCommentId[pm[1]] = Math.max(_lastCommentId[pm[1]] || 0, parseInt(m[1]));
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initLastIds();
+        setInterval(pollOpenCommentSections, 8000);
+    });
+})();
 </script>
 
 {% endblock content %}

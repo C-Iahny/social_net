@@ -52,6 +52,9 @@ if not DEBUG:
             ALLOWED_HOSTS.append(_h)
 
 AUTH_USER_MODEL = 'account.Account'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.AllowAllUsersModelBackend',
@@ -144,16 +147,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'ZOOT.wsgi.application'
 ASGI_APPLICATION = "ZOOT.routing.application"
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            # En production (Railway) : REDIS_URL est fourni par le plugin Redis de Railway
-            # En local : utilise redis://127.0.0.1:6379 par défaut
-            "hosts": [config('REDIS_URL', default='redis://127.0.0.1:6379')],
+# Channel layer : Redis si REDIS_URL est explicitement défini (plugin Railway),
+# sinon InMemoryChannelLayer (fonctionne pour 1 worker — Railway Starter/free tier).
+_redis_url = config('REDIS_URL', default='')
+if _redis_url:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {"hosts": [_redis_url]},
         },
-    },
-}
+    }
+else:
+    # Pas de Redis configuré → channel layer en mémoire (WS fonctionne, push cross-worker non)
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        }
+    }
 
 
 # Database
