@@ -587,3 +587,337 @@ msgstr "Créer mon compte"
 
 msgid "requests"
 msgstr "demandes"
+
+msgid "Like"
+msgstr "J'aime"
+
+# ── Explore / Index page ──
+msgid "Search users, posts…"
+msgstr "Rechercher un utilisateur, un post…"
+
+msgid "Continents"
+msgstr "Continents"
+
+msgid "Countries"
+msgstr "Pays"
+
+msgid "Countries (%(n)s)"
+msgstr "Pays (%(n)s)"
+
+msgid "+%(n)s more"
+msgstr "+%(n)s autres"
+
+msgid "Want to share something with the community?"
+msgstr "Envie de partager quelque chose avec la communauté ?"
+
+msgid "My news feed"
+msgstr "Mon fil d'actualité"
+
+msgid "Join Vazimba to post, comment and interact with the community."
+msgstr "Rejoignez Vazimba pour publier, commenter et interagir avec la communauté."
+
+msgid "Create an account"
+msgstr "Créer un compte"
+
+msgid "Sign in"
+msgstr "Se connecter"
+
+msgid "Popular posts"
+msgstr "Publications populaires"
+
+msgid "My feed →"
+msgstr "Mon fil →"
+
+msgid "Sign in →"
+msgstr "Se connecter →"
+
+msgid "Trending"
+msgstr "Tendance"
+
+msgid "My full news feed"
+msgstr "Mon fil d'actualité complet"
+
+msgid "No posts to explore yet"
+msgstr "Aucun post à explorer pour l'instant"
+
+msgid "Be the first to share something."
+msgstr "Soyez le premier à publier quelque chose."
+
+msgid "Create the first post"
+msgstr "Créer le premier post"
+
+# ── Footer ──
+msgid "Social network · Madagascar · 2025"
+msgstr "Réseau social · Madagascar · 2025"
+
+msgid "News feed"
+msgstr "Fil d'actualités"
+
+msgid "Sign up"
+msgstr "Inscription"
+
+msgid "© 2025"
+msgstr "© 2025"
+
+msgid "All rights reserved."
+msgstr "Tous droits réservés."
+
+msgid "Built with ❤️ for the Malagasy community."
+msgstr "Construit avec ❤️ pour la communauté malgache."
+
+# ── Groupes ──
+msgid "Groups"
+msgstr "Groupes"
+
+msgid "All groups"
+msgstr "Tous les groupes"
+
+msgid "Create a group"
+msgstr "Créer un groupe"
+
+msgid "No groups yet. Be the first to create one!"
+msgstr "Aucun groupe pour l'instant. Soyez le premier à en créer un !"
+
+msgid "Edit group"
+msgstr "Modifier le groupe"
+
+msgid "Delete this group?"
+msgstr "Supprimer ce groupe ?"
+
+msgid "Join group"
+msgstr "Rejoindre le groupe"
+
+msgid "Leave group"
+msgstr "Quitter le groupe"
+
+msgid "Join"
+msgstr "Rejoindre"
+
+msgid "Add a member"
+msgstr "Ajouter un membre"
+
+msgid "Add member"
+msgstr "Ajouter un membre"
+
+msgid "Added!"
+msgstr "Ajouté !"
+
+msgid "Search by name or email…"
+msgstr "Rechercher par nom ou email…"
+
+msgid "No users found."
+msgstr "Aucun utilisateur trouvé."
+
+msgid "Admin"
+msgstr "Admin"
+
+msgid "Moderator"
+msgstr "Modérateur"
+
+msgid "Member"
+msgstr "Membre"
+
+msgid "Promote to moderator"
+msgstr "Promouvoir modérateur"
+
+msgid "Demote to member"
+msgstr "Rétrograder en membre"
+
+msgid "Description (optional)"
+msgstr "Description (optionnel)"
+
+msgid "Created by"
+msgstr "Créé par"
+
+msgid "members"
+msgstr "membres"
+
+msgid "Share something with the group…"
+msgstr "Partagez quelque chose avec le groupe…"
+
+msgid "No posts yet in this group."
+msgstr "Aucune publication dans ce groupe pour l'instant."
+
+msgid "Pinned announcements"
+msgstr "Annonces épinglées"
+
+msgid "Pin this post"
+msgstr "Épingler cette publication"
+
+msgid "Unpin"
+msgstr "Désépingler"
+
+msgid "Media"
+msgstr "Médias"
+
+msgid "No media posted yet."
+msgstr "Aucun média publié pour l'instant."
+
+msgid "Videos"
+msgstr "Vidéos"
+
+# ── Événements ──
+msgid "Events"
+msgstr "Événements"
+
+msgid "Create an event"
+msgstr "Créer un événement"
+
+msgid "Event title"
+msgstr "Titre de l'événement"
+
+msgid "Location (optional)"
+msgstr "Lieu (optionnel)"
+
+msgid "Event created!"
+msgstr "Événement créé !"
+
+msgid "Upcoming events"
+msgstr "Événements à venir"
+
+msgid "No upcoming events."
+msgstr "Aucun événement à venir."
+
+msgid "Going"
+msgstr "Je participe"
+
+msgid "going"
+msgstr "participant(s)"
+
+# ── Dina (charte communautaire) ──
+msgid "Dina"
+msgstr "Dina"
+
+msgid "Community Charter"
+msgstr "Charte communautaire"
+
+msgid "Agreements, rules and traditions that govern this community."
+msgstr "Accords, règles et traditions qui gouvernent cette communauté."
+
+msgid "No Dina defined yet for this group."
+msgstr "Aucun Dina n'a encore été défini pour ce groupe."
+
+msgid "As admin, you can write the community charter below."
+msgstr "En tant qu'admin, vous pouvez rédiger la charte communautaire ci-dessous."
+
+msgid "Edit Dina"
+msgstr "Modifier le Dina"
+
+msgid "Write the Dina — rules, commitments, traditions of your community…"
+msgstr "Rédigez le Dina — règles, engagements, traditions de votre communauté…"
+
+msgid "Save Dina"
+msgstr "Sauvegarder le Dina"
+
+msgid "Saving…"
+msgstr "Sauvegarde…"
+
+msgid "Saved!"
+msgstr "Sauvegardé !"
+
+msgid "Error."
+msgstr "Erreur."
+
+msgid "Server error."
+msgstr "Erreur serveur."
+
+msgid "Server error. Please try again."
+msgstr "Erreur serveur. Veuillez réessayer."
+
+msgid "What is a Dina?"
+msgstr "Qu'est-ce qu'un Dina ?"
+
+msgid "In Malagasy culture, the Dina is a community agreement — a set of rules and commitments freely accepted by all members of a community to live together with respect and solidarity (Fihavanana)."
+msgstr "Dans la culture malgache, le Dina est un accord communautaire — un ensemble de règles et d'engagements librement acceptés par tous les membres d'une communauté pour vivre ensemble dans le respect et la solidarité (Fihavanana)."
+
+# ── Kabary numérique ──
+msgid "Kabary numérique"
+msgstr "Kabary numérique"
+
+msgid "The Kabary is a traditional Malagasy oral art form — a structured speech that opens with a salutation, develops ideas with imagery and proverbs, and closes with a blessing. Share your thoughts in this timeless format."
+msgstr "Le Kabary est un art oratoire traditionnel malgache — un discours structuré qui s'ouvre par une salutation, développe des idées avec des images et des proverbes, et se conclut par une bénédiction. Partagez vos pensées dans ce format intemporel."
+
+msgid "Title (optional)"
+msgstr "Titre (optionnel)"
+
+msgid "optional"
+msgstr "optionnel"
+
+msgid "Title of your Kabary…"
+msgstr "Titre de votre Kabary…"
+
+msgid "Give your Kabary a memorable title."
+msgstr "Donnez un titre mémorable à votre Kabary."
+
+msgid "Opening salutation. Address your audience respectfully."
+msgstr "Salutation d'ouverture. Adressez-vous respectueusement à votre auditoire."
+
+msgid "Tompokolahy, Tompokovavy, ry havana… (Respected men, respected women, dear kin…)"
+msgstr "Tompokolahy, Tompokovavy, ry havana… (Honorables messieurs, honorables dames, chers proches…)"
+
+msgid "Introduction — set the context and purpose of your speech."
+msgstr "Introduction — posez le contexte et l'objet de votre discours."
+
+msgid "Why I speak today, the occasion that brings us together…"
+msgstr "Pourquoi je prends la parole aujourd'hui, l'occasion qui nous réunit…"
+
+msgid "The heart of the Kabary — your main message, ideas and reflections. (Required)"
+msgstr "Le cœur du Kabary — votre message principal, vos idées et réflexions. (Obligatoire)"
+
+msgid "Develop your thoughts, ideas, stories…"
+msgstr "Développez vos pensées, idées, récits…"
+
+msgid "A Malagasy proverb to illuminate your message."
+msgstr "Un proverbe malgache pour éclairer votre message."
+
+msgid "Ny teny mamy, toy ny tantely… (Sweet words, like honey…)"
+msgstr "Ny teny mamy, toy ny tantely… (Les mots doux, comme le miel…)"
+
+msgid "Closing words, blessing for all…"
+msgstr "Mots de clôture, bénédiction pour tous…"
+
+msgid "Closing — conclusion, blessing, thanks."
+msgstr "Clôture — conclusion, bénédiction, remerciements."
+
+msgid "Publish Kabary"
+msgstr "Publier le Kabary"
+
+msgid "Preview"
+msgstr "Aperçu"
+
+msgid "The main content (Vato misaina) is required."
+msgstr "Le contenu principal (Vato misaina) est obligatoire."
+
+# ── Actions post ──
+msgid "Repost"
+msgstr "Repartager"
+
+msgid "Reposted!"
+msgstr "Repartagé !"
+
+msgid "Repost removed"
+msgstr "Repartage annulé"
+
+msgid "Undo Repost"
+msgstr "Annuler le repartage"
+
+msgid "Copy link"
+msgstr "Copier le lien"
+
+msgid "Create"
+msgstr "Créer"
+
+msgid "Add"
+msgstr "Ajouter"
+
+msgid "Publier"
+msgstr "Publier"
+
+msgid "Photo / Vidéo"
+msgstr "Photo / Vidéo"
+
+msgid "An error occurred."
+msgstr "Une erreur s'est produite."
+
+msgid "Be the first to share something!"
+msgstr "Soyez le premier à partager quelque chose !"
