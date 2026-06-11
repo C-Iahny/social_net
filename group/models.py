@@ -16,6 +16,11 @@ class Group(models.Model):
     members     = models.ManyToManyField(Account, through='GroupMembership', related_name='joined_groups', blank=True)
     privacy     = models.CharField(max_length=10, choices=PRIVACY_CHOICES, default=PUBLIC)
     created_at  = models.DateTimeField(auto_now_add=True)
+    dina        = models.TextField(
+        blank=True, default='',
+        verbose_name='Dina',
+        help_text='Charte communautaire du groupe (règles, engagements, traditions)',
+    )
 
     class Meta:
         ordering = ['-created_at']
@@ -58,13 +63,18 @@ class Group(models.Model):
 
 
 class GroupMembership(models.Model):
-    ADMIN  = 'admin'
-    MEMBER = 'member'
-    ROLE_CHOICES = [(ADMIN, 'Admin'), (MEMBER, 'Membre')]
+    ADMIN     = 'admin'
+    MODERATOR = 'moderator'
+    MEMBER    = 'member'
+    ROLE_CHOICES = [
+        (ADMIN,     'Admin'),
+        (MODERATOR, 'Modérateur'),
+        (MEMBER,    'Membre'),
+    ]
 
     user       = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='group_memberships')
     group      = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='memberships')
-    role       = models.CharField(max_length=10, choices=ROLE_CHOICES, default=MEMBER)
+    role       = models.CharField(max_length=12, choices=ROLE_CHOICES, default=MEMBER)
     joined_at  = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -73,3 +83,28 @@ class GroupMembership(models.Model):
 
     def __str__(self):
         return f"{self.user} — {self.group} ({self.role})"
+
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN
+
+    @property
+    def is_moderator(self):
+        return self.role in (self.ADMIN, self.MODERATOR)
+
+
+class GroupEvent(models.Model):
+    group       = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='events')
+    organizer   = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='organized_events')
+    title       = models.CharField(max_length=150, verbose_name='Titre')
+    description = models.TextField(max_length=1000, blank=True, verbose_name='Description')
+    location    = models.CharField(max_length=200, blank=True, verbose_name='Lieu')
+    event_date  = models.DateTimeField(verbose_name="Date de l'événement")
+    created_at  = models.DateTimeField(auto_now_add=True)
+    attendees   = models.ManyToManyField(Account, blank=True, related_name='attending_events')
+
+    class Meta:
+        ordering = ['event_date']
+
+    def __str__(self):
+        return f"{self.title} — {self.group.name}"

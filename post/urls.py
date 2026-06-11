@@ -17,6 +17,8 @@ from .views import (
     delete_comment,
     post_detail,
     repost_post,
+    kabary_create,
+    vintana_create,
 )
 
 app_name = 'post'
@@ -38,4 +40,6 @@ urlpatterns = [
     path('mention/autocomplete/', mention_autocomplete, name='mention-autocomplete'),
     path('<int:post_id>/',        post_detail,         name='post-detail'),
     path('repost/',                  repost_post,         name='repost'),
+    path('kabary/create/',           kabary_create,       name='kabary-create'),
+    path('vintana/create/',          vintana_create,      name='vintana-create'),
 ]

@@ -49,8 +49,22 @@ body { background: var(--bg); }
     .feed-right-col { display: none; }
 }
 @media (max-width: 768px) {
-    .feed-wrapper { grid-template-columns: 1fr; margin-top: 64px; }
+    .feed-wrapper {
+        grid-template-columns: 1fr;
+        margin-top: 64px;
+        padding: 0 .6rem;
+        box-sizing: border-box;
+        width: 100%;
+    }
     .feed-left-col { display: none; }
+    /* Boite de création */
+    .create-box { border-radius: 14px; }
+    .create-box-actions { gap: .3rem; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
+    .create-box-actions::-webkit-scrollbar { display: none; }
+    .create-box-action { flex-shrink: 0; font-size: .78rem; padding: .3rem .65rem; }
+}
+@media (max-width: 480px) {
+    .feed-wrapper { padding: 0 .4rem; }
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -306,6 +320,71 @@ body { background: var(--bg); }
 /* ════════════════════════════════════════════════════════════════
    POST CARD
    ════════════════════════════════════════════════════════════════ */
+/* ── Post de groupe : avatar cover + badge utilisateur ── */
+.pc-gp-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+}
+.pc-gp-cover-link {
+    display: block;
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    overflow: hidden;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.pc-gp-cover {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+}
+.pc-gp-cover-fallback {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+.pc-gp-cover-fallback .material-icons { font-size: 1.6rem; }
+.pc-gp-user-badge-link {
+    position: absolute;
+    bottom: -4px;
+    right: -6px;
+    display: block;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-card);
+    overflow: hidden;
+    text-decoration: none;
+    background: var(--bg-card);
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    z-index: 2;
+}
+.pc-gp-user-badge {
+    width: 22px;
+    height: 22px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+/* meta lignes pour les posts de groupe */
+.pc-sub-user-link {
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-decoration: none;
+    font-size: .78rem;
+}
+.pc-sub-user-link:hover { color: var(--accent); text-decoration: underline; }
+
 .post-card {
     background: var(--bg-card);
     border-radius: 20px;
@@ -1074,6 +1153,16 @@ body { background: var(--bg); }
                 <a class="create-box-action post" href="{% url 'post:addPost' %}">
                     <span class="material-icons">edit_note</span> {% trans "Write" %}
                 </a>
+                <a class="create-box-action" href="{% url 'post:kabary-create' %}"
+                   style="background:linear-gradient(135deg,var(--accent-glow,rgba(99,102,241,.1)),transparent);
+                           border:1px solid var(--accent);color:var(--accent);">
+                    <span class="material-icons">record_voice_over</span> Kabary
+                </a>
+                <a class="create-box-action" href="{% url 'post:vintana-create' %}"
+                   style="background:linear-gradient(135deg,rgba(191,95,255,.1),rgba(0,207,255,.07));
+                           border:1px solid rgba(191,95,255,.4);color:#bf5fff;">
+                    <span class="material-icons">lock_clock</span> Vintana
+                </a>
             </div>
         </div>
 
@@ -1083,6 +1172,47 @@ body { background: var(--bg); }
             <article class="post-card" id="post-{{ post.id }}">
 
                 <!-- Header -->
+                {% if post.group %}
+                {# ── Post de groupe dans le feed global : cover + badge utilisateur ── #}
+                <div class="pc-header">
+                    <div class="pc-gp-avatar-wrap">
+                        <a href="{% url 'group:detail' post.group.slug %}" class="pc-gp-cover-link" title="{{ post.group.name }}">
+                            {% if post.group.cover_url %}
+                            <img class="pc-gp-cover" src="{{ post.group.cover_url }}" alt="{{ post.group.name }}" loading="lazy">
+                            {% else %}
+                            <span class="pc-gp-cover pc-gp-cover-fallback">
+                                <span class="material-icons">groups</span>
+                            </span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'account:view' user_id=post.author.id %}" class="pc-gp-user-badge-link" title="{{ post.author.username }}">
+                            <img class="pc-gp-user-badge" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy">
+                        </a>
+                    </div>
+                    <div class="pc-meta">
+                        <a class="pc-author" href="{% url 'group:detail' post.group.slug %}">
+                            {{ post.group.name }}
+                        </a>
+                        <span class="pc-sub">
+                            <a class="pc-sub-user-link" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
+                            <span class="pc-dot">·</span>
+                            <span class="material-icons">schedule</span>
+                            {{ post.post_date|date:"d M Y" }}
+                        </span>
+                    </div>
+                    {% if request.user.id == post.author.id %}
+                    <div class="pc-owner-menu">
+                        <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="{% trans 'Edit' %}">
+                            <span class="material-icons">edit</span>
+                        </a>
+                        <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="{% trans 'Delete' %}">
+                            <span class="material-icons">delete_outline</span>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                {# ── Post normal : avatar auteur ── #}
                 <div class="pc-header">
                     <a class="pc-avatar-ring" href="{% url 'account:view' user_id=post.author.id %}">
                         <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
@@ -1102,15 +1232,16 @@ body { background: var(--bg); }
                     </div>
                     {% if request.user.id == post.author.id %}
                     <div class="pc-owner-menu">
-                        <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="Modifier">
+                        <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="{% trans 'Edit' %}">
                             <span class="material-icons">edit</span>
                         </a>
-                        <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="Supprimer">
+                        <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="{% trans 'Delete' %}">
                             <span class="material-icons">delete_outline</span>
                         </a>
                     </div>
                     {% endif %}
                 </div>
+                {% endif %}
 
                 <!-- Title -->
                 {% if post.title %}
@@ -1353,6 +1484,53 @@ body { background: var(--bg); }
 
 
         
+
+        <!-- Groups shortcut -->
+        <div class="rsb-card" style="padding:.85rem 1rem .9rem;">
+            <p class="rsb-section-label" style="margin-bottom:.75rem;">
+                <span class="material-icons">groups</span> {% trans "Groups" %}
+            </p>
+            {% if my_groups %}
+            {% for g in my_groups|slice:":4" %}
+            <a href="{% url 'group:detail' g.slug %}"
+               style="display:flex;align-items:center;gap:.65rem;
+                      padding:.42rem .1rem;text-decoration:none;
+                      border-radius:10px;transition:background .13s;"
+               onmouseover="this.style.background='var(--btn-bg)'"
+               onmouseout="this.style.background=''">
+                <span style="width:34px;height:34px;border-radius:10px;
+                             background:linear-gradient(135deg,var(--accent),var(--accent2));
+                             display:flex;align-items:center;justify-content:center;flex-shrink:0;
+                             {% if g.cover_url %}background-image:url('{{ g.cover_url }}');background-size:cover;{% endif %}">
+                    {% if not g.cover_url %}<span class="material-icons" style="font-size:.9rem;color:#fff;">groups</span>{% endif %}
+                </span>
+                <span style="font-size:.84rem;font-weight:600;color:var(--text);
+                             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ g.name }}</span>
+            </a>
+            {% endfor %}
+            {% endif %}
+            <div style="display:flex;gap:.5rem;margin-top:.75rem;">
+                <a href="{% url 'group:list' %}"
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;
+                          padding:.4rem .6rem;border:1.5px solid var(--border);border-radius:10px;
+                          color:var(--text-muted);font-size:.78rem;font-weight:600;
+                          text-decoration:none;transition:border-color .15s,color .15s;"
+                   onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+                   onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+                    <span class="material-icons" style="font-size:.9rem;">explore</span>
+                    {% trans "Explore" %}
+                </a>
+                <a href="{% url 'group:create' %}"
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;
+                          padding:.4rem .6rem;background:linear-gradient(135deg,var(--accent),var(--accent2));
+                          border:none;border-radius:10px;color:#fff;font-size:.78rem;font-weight:700;
+                          text-decoration:none;transition:opacity .15s;"
+                   onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                    <span class="material-icons" style="font-size:.9rem;">add</span>
+                    {% trans "Create" %}
+                </a>
+            </div>
+        </div>
 
         {% if friends %}
         <div class="rsb-card">
