@@ -233,6 +233,13 @@ body { background: var(--bg); }
     gap: 1rem;
     align-items: start;
 }
+.profile-sidebar {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
 @media (max-width: 768px) {
     .profile-body { grid-template-columns: 1fr; }
     .profile-sidebar { display: none; }
@@ -1482,7 +1489,7 @@ function triggerDeclineFriendRequest(id) { declineFriendRequest(id, onFriendRequ
    ══════════════════════════════════════ */
 var _REACT_URL    = "{% url 'post:react-post' %}";
 var _REACT_EMOJIS = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
-var _REACT_LABELS = { like:'Tiana', heart:'Tiako', laugh:'Heniky', wow:'Mahagaga', sad:'Maika' };
+var _REACT_LABELS = { like:'{% trans "Tiana" %}', heart:'{% trans "Tiako" %}', laugh:'{% trans "Heniky" %}', wow:'{% trans "Mahagaga" %}', sad:'{% trans "Maika" %}' };
 var _pickerTimers = {};
 var _userReactions = {};
 

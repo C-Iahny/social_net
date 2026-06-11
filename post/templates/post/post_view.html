@@ -85,7 +85,13 @@ body { background: var(--bg); }
 /* ════════════════════════════════════════════════════════════════
    LEFT SIDEBAR
    ════════════════════════════════════════════════════════════════ */
-.feed-left-col { position: sticky; top: 80px; }
+.feed-left-col {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
 
 /* Profile card */
 .lsb-profile-card {
@@ -917,7 +923,13 @@ body { background: var(--bg); }
 /* ════════════════════════════════════════════════════════════════
    RIGHT SIDEBAR
    ════════════════════════════════════════════════════════════════ */
-.feed-right-col { position: sticky; top: 80px; }
+.feed-right-col {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
 
 .rsb-card {
     background: var(--bg-card);
@@ -1306,27 +1318,27 @@ body { background: var(--bg); }
                                 {% endif %}
                             </span>
                             <span id="react-label-{{ post.id }}">
-                                {% if post.user_reaction == 'like' %}Tiana
-                                {% elif post.user_reaction == 'heart' %}Tiako
-                                {% elif post.user_reaction == 'laugh' %}Heniky
-                                {% elif post.user_reaction == 'wow' %}Mahagaga
-                                {% elif post.user_reaction == 'sad' %}Maika
-                                {% else %}Tiana{% endif %}
+                                {% if post.user_reaction == 'like' %}{% trans "Tiana" %}
+                                {% elif post.user_reaction == 'heart' %}{% trans "Tiako" %}
+                                {% elif post.user_reaction == 'laugh' %}{% trans "Heniky" %}
+                                {% elif post.user_reaction == 'wow' %}{% trans "Mahagaga" %}
+                                {% elif post.user_reaction == 'sad' %}{% trans "Maika" %}
+                                {% else %}{% trans "Tiana" %}{% endif %}
                             </span>
                         </button>
                         <!-- Picker -->
                         <div class="reaction-picker" id="picker-{{ post.id }}"
                              onmouseleave="closePicker({{ post.id }})">
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'like')" title="J'aime">👍</button>
+                                    onclick="sendReaction({{ post.id }}, 'like')" title="{% trans "J'aime" %}">👍</button>
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'heart')" title="J'adore">❤️</button>
+                                    onclick="sendReaction({{ post.id }}, 'heart')" title="{% trans "J'adore" %}">❤️</button>
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'laugh' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'laugh')" title="Haha">😂</button>
+                                    onclick="sendReaction({{ post.id }}, 'laugh')" title="{% trans "Haha" %}">😂</button>
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'wow' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'wow')" title="Wow">😮</button>
+                                    onclick="sendReaction({{ post.id }}, 'wow')" title="{% trans "Wow" %}">😮</button>
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'sad' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'sad')" title="Triste">😢</button>
+                                    onclick="sendReaction({{ post.id }}, 'sad')" title="{% trans "Triste" %}">😢</button>
                         </div>
                     </div>
 
@@ -1735,7 +1747,7 @@ body { background: var(--bg); }
    ══════════════════════════════════════ */
 var _REACT_URL    = "{% url 'post:react-post' %}";
 var _REACT_EMOJIS = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
-var _REACT_LABELS = { like:'Tiana', heart:'Tiako', laugh:'Heniky', wow:'Mahagaga', sad:'Maika' };
+var _REACT_LABELS = { like:'{% trans "Tiana" %}', heart:'{% trans "Tiako" %}', laugh:'{% trans "Heniky" %}', wow:'{% trans "Mahagaga" %}', sad:'{% trans "Maika" %}' };
 var _pickerTimers = {};
 var _userReactions = {};
 
