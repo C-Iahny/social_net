@@ -70,30 +70,23 @@
 }
 
 .auth-brand {
-    display: flex; align-items: center; justify-content: center; gap: .55rem;
+    display: flex; align-items: center; justify-content: center;
     margin-bottom: 1.5rem; text-decoration: none !important;
 }
-.auth-brand-icon {
-    width: 40px; height: 40px;
-    background: linear-gradient(135deg, var(--accent2), var(--accent));
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 3px 14px var(--accent-glow);
-    transition: transform .2s;
+.auth-brand-logo {
+    height: 72px; width: auto; max-width: 260px;
+    border-radius: 14px;
+    object-fit: contain;
+    transition: transform .2s, opacity .2s;
+    display: block;
+    filter: drop-shadow(0 3px 12px var(--accent-glow, rgba(99,102,241,.25)));
 }
-[data-theme="dark"] .auth-brand-icon {
-    box-shadow: 0 0 16px rgba(191,95,255,.45), 0 3px 12px rgba(0,0,0,.4);
+[data-theme="dark"] .auth-brand-logo {
+    filter: drop-shadow(0 0 18px rgba(191,95,255,.35)) drop-shadow(0 3px 10px rgba(0,0,0,.5));
 }
-.auth-brand:hover .auth-brand-icon { transform: scale(1.07); }
-.auth-brand-icon svg { display: block; }
-.auth-brand-text {
-    font-size: 1.35rem; font-weight: 800; letter-spacing: -.03em;
-    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
-    background: linear-gradient(135deg, var(--accent2), var(--accent));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-[data-theme="dark"] .auth-brand-text {
-    filter: drop-shadow(0 0 6px rgba(191,95,255,.4));
+.auth-brand:hover .auth-brand-logo {
+    transform: scale(1.04);
+    opacity: .9;
 }
 
 .auth-heading {
@@ -215,13 +208,8 @@
     <div class="auth-card">
 
         <!-- Brand -->
-        <a href="{% url 'post:index' %}" class="auth-brand">
-            <div class="auth-brand-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#fff"/>
-                </svg>
-            </div>
-            <span class="auth-brand-text">VAZIMBA</span>
+        <a href="{% url 'landing' %}" class="auth-brand">
+            <img src="{% static 'logo/Vazi_logo00.png' %}" alt="VAZIMBA" class="auth-brand-logo">
         </a>
 
         <h1 class="auth-heading">{% trans "Create account" %}</h1>
