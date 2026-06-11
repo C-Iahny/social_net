@@ -172,12 +172,18 @@ main { padding: 0 !important; margin-top: 62px; }
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 1rem .9rem .4rem;
+    padding: .75rem 1.2rem .4rem;
     display: flex;
     flex-direction: column-reverse;
     gap: 2px;
     background: var(--bg);
     scroll-behavior: smooth;
+    /* Centrer et limiter la largeur : rapproche émetteur et récepteur */
+    max-width: 780px;
+    width: 100%;
+    margin: 0 auto;
+    align-self: center;
+    box-sizing: border-box;
 }
 #id_chat_log::-webkit-scrollbar { width: 4px; }
 #id_chat_log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
@@ -211,7 +217,7 @@ main { padding: 0 !important; margin-top: 62px; }
 .msg-content-wrap {
     display: flex;
     flex-direction: column;
-    max-width: 68%;
+    max-width: 75%;
     gap: 2px;
 }
 .own-msg .msg-content-wrap { align-items: flex-end; }
@@ -457,6 +463,13 @@ main { padding: 0 !important; margin-top: 62px; }
     background: var(--bg-card);
     border-top: 1px solid var(--border);
     flex-shrink: 0;
+    /* Aligne l'input avec la colonne de messages */
+    display: flex;
+    justify-content: center;
+}
+.chat-input-inner {
+    width: 100%;
+    max-width: calc(780px - 2.4rem); /* même largeur max que #id_chat_log moins le padding */
 }
 .chat-input-inner {
     display: flex;
