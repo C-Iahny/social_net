@@ -74,9 +74,9 @@
     margin-bottom: 1.5rem; text-decoration: none !important;
 }
 .auth-brand-logo {
-    height: 72px; width: auto; max-width: 260px;
-    border-radius: 14px;
-    object-fit: contain;
+    height: 80px; width: 80px;
+    border-radius: 18px;
+    object-fit: cover;
     transition: transform .2s, opacity .2s;
     display: block;
     filter: drop-shadow(0 3px 12px var(--accent-glow, rgba(99,102,241,.25)));
@@ -209,7 +209,7 @@
 
         <!-- Brand -->
         <a href="{% url 'landing' %}" class="auth-brand">
-            <img src="{% static 'logo/Vazi_logo00.png' %}" alt="VAZIMBA" class="auth-brand-logo">
+            <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="VAZIMBA" class="auth-brand-logo">
         </a>
 
         <h1 class="auth-heading">{% trans "Create account" %}</h1>
