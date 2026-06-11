@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from .models import PushSubscription
+from django.contrib.contenttypes.models import ContentType
 
 
 @login_required(login_url='login')
@@ -52,3 +53,30 @@ def push_unsubscribe(request):
         return JsonResponse({'ok': True})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
+
+
+@login_required(login_url='login')
+@require_GET
+def unread_counts(request):
+    """
+    HTTP fallback for notification badge counts.
+    Returns {"general": N, "chat": N} — used when WebSocket is unavailable.
+    """
+    from notification.models import Notification
+    from friend.models import FriendRequest, FriendList
+    from chat.models import UnreadChatRoomMessages
+
+    user = request.user
+    fr_ct   = ContentType.objects.get_for_model(FriendRequest)
+    fl_ct   = ContentType.objects.get_for_model(FriendList)
+    chat_ct = ContentType.objects.get_for_model(UnreadChatRoomMessages)
+
+    general_count = Notification.objects.filter(
+        target=user, content_type__in=[fr_ct, fl_ct], read=False,
+    ).count()
+
+    chat_count = Notification.objects.filter(
+        target=user, content_type=chat_ct,
+    ).count()
+
+    return JsonResponse({'general': general_count, 'chat': chat_count})

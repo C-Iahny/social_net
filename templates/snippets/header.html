@@ -986,7 +986,26 @@
         _sock.onerror = function(){};
     }
 
-    window.handleNewPostNotification = function(data){
+
+    /* ── HTTP fallback: badge polling when WS is unavailable ── */
+    var _httpPollTimer = null;
+    function _pollBadgesFallback() {
+        if (window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN) return;
+        fetch('/notif/counts/', {credentials: 'same-origin'})
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(d){
+                if (!d) return;
+                if (typeof setUnreadGeneralNotificationsCount === 'function') setUnreadGeneralNotificationsCount(d.general);
+                if (typeof setChatNotificationsCount === 'function') setChatNotificationsCount(d.chat);
+            })
+            .catch(function(){});
+    }
+    /* Poll every 5 s regardless; harmless extra update when WS is alive */
+    setInterval(_pollBadgesFallback, 5000);
+    /* Also fire immediately on page load for instant badge on first render */
+    document.addEventListener('DOMContentLoaded', _pollBadgesFallback);
+
+        window.handleNewPostNotification = function(data){
         var feedUrl = "{% url 'post:post-view' %}";
         var container = document.getElementById('zoot-post-toast');
         if(!container) return;
@@ -1291,4 +1310,4 @@ document.addEventListener('click', function(e) {
     window.requestPushPermission = window.togglePushNotif;
 })();
 </script>
-{% endif %}        
+{% endif %}

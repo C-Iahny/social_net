@@ -520,12 +520,30 @@ body { background: var(--bg); }
     padding: .2rem 1.1rem .7rem; color: var(--text);
     font-size: .9rem; line-height: 1.68; opacity: .9;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    cursor: pointer;
+}
+.pc-body.expanded {
+    display: block;
+    overflow: visible;
+    cursor: default;
 }
 .pc-body img { max-width: 100%; border-radius: 8px; margin: .3rem 0; }
 .pc-body p { margin-bottom: .35rem; }
+/* Read-more link */
+.pc-read-more {
+    display: inline-block;
+    margin: -.2rem 1.1rem .4rem;
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--accent);
+    cursor: pointer;
+    user-select: none;
+}
+.pc-read-more:hover { opacity: .75; }
+.pc-read-more.hidden { display: none; }
 
 /* ── Media ── */
 .pc-image-wrap { overflow: hidden; position: relative; }
@@ -1281,7 +1299,8 @@ body { background: var(--bg); }
 
                 <!-- Body -->
                 {% if post.body %}
-                <div class="pc-body">{{ post.body|safe }}</div>
+                <div class="pc-body" onclick="expandBody(this)">{{ post.body|safe }}</div>
+                <span class="pc-read-more" onclick="expandBodyBtn(this)">{% trans "See more" %}</span>
                 {% endif %}
 
                 {% include 'post/_post_media.html' %}
@@ -2159,8 +2178,32 @@ function processAllPostBodies() {
     document.querySelectorAll('.pc-body, .pc-title').forEach(function(el) {
         if (!el.dataset.htagDone) { el.dataset.htagDone = '1'; processHashtagsAndMentions(el); }
     });
+    /* Show "See more" only when text is actually clamped */
+    document.querySelectorAll('.pc-body').forEach(function(el) {
+        if (el.classList.contains('expanded')) return;
+        var rm = el.nextElementSibling;
+        if (rm && rm.classList.contains('pc-read-more')) {
+            rm.classList.toggle('hidden', el.scrollHeight <= el.clientHeight + 2);
+        }
+    });
 }
 document.addEventListener('DOMContentLoaded', processAllPostBodies);
+
+/* Expand body on click (text area click) */
+function expandBody(el) {
+    if (el.classList.contains('expanded')) return;
+    el.classList.add('expanded');
+    var rm = el.nextElementSibling;
+    if (rm && rm.classList.contains('pc-read-more')) rm.classList.add('hidden');
+}
+/* Expand body via "See more" button */
+function expandBodyBtn(btn) {
+    var body = btn.previousElementSibling;
+    if (body && body.classList.contains('pc-body')) {
+        body.classList.add('expanded');
+    }
+    btn.classList.add('hidden');
+}
 (function() {
     var mo = new MutationObserver(function() { processAllPostBodies(); });
     mo.observe(document.querySelector('.feed-main') || document.body, { childList: true, subtree: true });
