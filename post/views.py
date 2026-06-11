@@ -586,6 +586,37 @@ def add_comment(request, post_id):
 
 
 @login_required(login_url="login")
+def new_comments(request, post_id):
+    """
+    Retourne les commentaires créés après `since` (ISO timestamp ou comment id).
+    GET /post/<id>/comments/new/?since=<comment_id>
+    """
+    from django.views.decorators.http import require_GET
+    post = get_object_or_404(Post, id=post_id)
+    since_id = request.GET.get('since', 0)
+    try:
+        since_id = int(since_id)
+    except (ValueError, TypeError):
+        since_id = 0
+
+    qs = Comment.objects.filter(post=post, id__gt=since_id, parent__isnull=True).select_related('author').order_by('id')
+    comments = []
+    for c in qs:
+        can_delete = (request.user == c.author or request.user == post.author)
+        comments.append({
+            "id":        c.id,
+            "author":    c.author.username,
+            "author_id": c.author.id,
+            "avatar":    c.author.profile_image.url,
+            "body":      c.body,
+            "created_at": c.created_at.strftime("%d %b %Y, %H:%M"),
+            "can_delete": can_delete,
+            "parent_id": c.parent_id,
+        })
+    return JsonResponse({"comments": comments})
+
+
+@login_required(login_url="login")
 def delete_comment(request, comment_id):
     """Supprime un commentaire (auteur ou auteur du post uniquement)."""
     comment = get_object_or_404(Comment, id=comment_id)
