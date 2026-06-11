@@ -250,6 +250,19 @@ body { background: var(--bg); }
     .avatar-ring-wrap { width: 88px; height: 88px; }
     .profile-username { font-size: 1.2rem; }
 
+    /* Avatar + nom en colonne sur mobile : nom toujours pleine largeur */
+    .avatar-area {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .4rem;
+        margin-top: -48px;   /* avatar 88px / 2 + quelques px de chevauchement cover */
+        padding-bottom: .5rem;
+    }
+    .profile-name-area {
+        width: 100%;
+        padding-bottom: 0;
+    }
+
     /* Wrapper profil */
     .profile-wrapper {
         margin: 70px auto 3rem;
