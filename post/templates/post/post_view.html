@@ -1840,7 +1840,7 @@ function sendReaction(postId, reactionType) {
                 icon.innerHTML = '<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>';
             }
         }
-        if (label) label.textContent = data.user_reaction ? (_REACT_LABELS[data.user_reaction] || 'Tiana') : 'Tiana';
+        if (label) label.textContent = data.user_reaction ? (_REACT_LABELS[data.user_reaction] || _REACT_LABELS.like) : _REACT_LABELS.like;
 
         var picker = document.getElementById('picker-' + postId);
         if (picker) {
