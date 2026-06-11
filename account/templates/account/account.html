@@ -181,6 +181,9 @@ body { background: var(--bg); }
 [data-theme="dark"] .btn-p-danger { color: #f28b82; border-color: rgba(242,139,130,.25); }
 .btn-p-success { background: rgba(76,175,80,.1); color: #388e3c; border: 1.5px solid rgba(76,175,80,.25); }
 [data-theme="dark"] .btn-p-success { color: #66bb6a; border-color: rgba(102,187,106,.25); }
+.btn-p-pending { background: rgba(245,158,11,.1); color: #d97706; border: 1.5px solid rgba(245,158,11,.3); cursor: default; }
+.btn-p-pending:hover { opacity: 1; transform: none; }
+[data-theme="dark"] .btn-p-pending { color: #fbbf24; border-color: rgba(251,191,36,.28); }
 
 /* Friend request banner */
 .fr-banner {
@@ -1487,11 +1490,47 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
 })();
 
 /* ── Friend callbacks ── */
-function onFriendRequestSent()      { location.reload(); }
-function onFriendRequestCancelled() { location.reload(); }
-function onFriendRemoved()          { location.reload(); }
-function onFriendRequestAccepted()  { location.reload(); }
-function onFriendRequestDeclined()  { location.reload(); }
+function onFriendRequestSent() {
+    var btn = document.getElementById("id_send_friend_request_btn");
+    if (!btn) return;
+    /* Changer l'apparence → état "demande envoyée" */
+    btn.classList.remove('btn-p-primary');
+    btn.classList.add('btn-p-pending');
+    btn.disabled = true;
+    btn.style.pointerEvents = 'none';
+    btn.innerHTML = '<span class="material-icons" style="font-size:.95rem;">schedule</span> {% trans "Request sent" %}';
+
+    /* Ajouter un lien "Annuler" discret juste après le bouton */
+    if (!document.getElementById('id_inline_cancel_link')) {
+        var cancelLink = document.createElement('button');
+        cancelLink.id = 'id_inline_cancel_link';
+        cancelLink.className = 'btn-p btn-p-secondary';
+        cancelLink.style.fontSize = '.82rem';
+        cancelLink.innerHTML = '<span class="material-icons" style="font-size:.85rem;">close</span> {% trans "Cancel" %}';
+        cancelLink.onclick = function() {
+            cancelFriendRequest("{{ id }}", onFriendRequestCancelled);
+        };
+        btn.parentNode.insertBefore(cancelLink, btn.nextSibling);
+    }
+}
+
+function onFriendRequestCancelled() {
+    /* Remettre le bouton "Ajouter en ami" */
+    var btn = document.getElementById("id_send_friend_request_btn");
+    if (btn) {
+        btn.classList.remove('btn-p-pending');
+        btn.classList.add('btn-p-primary');
+        btn.disabled = false;
+        btn.style.pointerEvents = '';
+        btn.innerHTML = '<span class="material-icons" style="font-size:.95rem;">person_add</span> {% trans "Add friend" %}';
+    }
+    var cancelLink = document.getElementById('id_inline_cancel_link');
+    if (cancelLink) cancelLink.remove();
+}
+
+function onFriendRemoved()         { location.reload(); }
+function onFriendRequestAccepted() { location.reload(); }
+function onFriendRequestDeclined() { location.reload(); }
 
 var sendBtn = document.getElementById("id_send_friend_request_btn");
 if (sendBtn) sendBtn.onclick = function() { sendFriendRequest("{{ id }}", onFriendRequestSent); };
