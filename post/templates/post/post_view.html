@@ -7,8 +7,16 @@
 /* ════════════════════════════════════════════════════════════════
    FEED — PREMIUM REDESIGN
    ════════════════════════════════════════════════════════════════ */
-/* Empêche le body de scroller — seul .feed-main scrolle */
+/* Layout feed : seul .feed-main scrolle, footer caché sur cette page */
 body { overflow: hidden; }
+main {
+    /* Annule le min-height:100vh du base.html et fixe à la hauteur restante */
+    min-height: unset !important;
+    height: calc(100vh - 62px) !important;
+    overflow: hidden !important;
+    margin-top: 62px !important;
+    padding: 0 !important;
+}
 
 body { background: var(--bg); }
 
@@ -39,21 +47,21 @@ body { background: var(--bg); }
 /* ── 3-column grid ── */
 .feed-wrapper {
     max-width: 1180px;
-    /* Position sous la navbar fixe (62px) avec un peu d'air */
-    margin: 66px auto 0;
-    padding: 0 .75rem;
+    /* main a déjà margin-top:62px — on n'ajoute qu'un petit espace */
+    margin: 0 auto;
+    padding: .5rem .75rem 0;
     display: grid;
     grid-template-columns: 274px 1fr 296px;
     gap: 1.1rem;
-    /* Occupe le reste de la hauteur — seul .feed-main scrollera */
-    height: calc(100vh - 66px);
+    /* Remplit tout main (qui fait calc(100vh - 62px)) */
+    height: 100%;
     align-items: start;
     overflow: hidden;
     box-sizing: border-box;
 }
 /* Colonne centrale — seule qui scrolle */
 .feed-main {
-    height: calc(100vh - 66px);
+    height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
@@ -66,9 +74,14 @@ body { background: var(--bg); }
     .feed-right-col { display: none; }
 }
 @media (max-width: 768px) {
+    /* Sur mobile : scroll normal, pas de layout app */
+    body { overflow: auto; }
+    main { min-height: 100vh !important; height: auto !important; overflow: visible !important; }
     .feed-wrapper {
         grid-template-columns: 1fr;
-        margin-top: 64px;
+        height: auto;
+        overflow: visible;
+        margin-top: 0;
         margin-left: 0;
         margin-right: 0;
         padding: 0 .6rem;
@@ -76,7 +89,7 @@ body { background: var(--bg); }
         width: 100%;
     }
     .feed-left-col { display: none; }
-    .feed-main { width: 100%; min-width: 0; height: 100dvh; overflow-y: auto; }
+    .feed-main { width: 100%; min-width: 0; height: auto; overflow-y: visible; }
     /* Boite de création : icônes seules sur mobile */
     .create-box { border-radius: 14px; }
     .create-box-actions {
@@ -103,11 +116,10 @@ body { background: var(--bg); }
    LEFT SIDEBAR
    ════════════════════════════════════════════════════════════════ */
 .feed-left-col {
-    /* Hauteur fixe = toute la colonne ; scroll interne si contenu dépasse */
-    height: calc(100vh - 66px);
+    height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-width: none;   /* pas de scrollbar visible */
+    scrollbar-width: thin;   /* scrollbar fine si contenu dépasse */
 }
 
 /* Profile card */
@@ -959,10 +971,10 @@ body { background: var(--bg); }
    RIGHT SIDEBAR
    ════════════════════════════════════════════════════════════════ */
 .feed-right-col {
-    height: calc(100vh - 66px);
+    height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-width: none;   /* pas de scrollbar visible */
+    scrollbar-width: thin;   /* scrollbar fine si contenu dépasse */
 }
 
 .rsb-card {
