@@ -52,11 +52,14 @@ body { background: var(--bg); }
     .feed-wrapper {
         grid-template-columns: 1fr;
         margin-top: 64px;
+        margin-left: 0;
+        margin-right: 0;
         padding: 0 .6rem;
         box-sizing: border-box;
         width: 100%;
     }
     .feed-left-col { display: none; }
+    .feed-main { width: 100%; min-width: 0; }
     /* Boite de création : icônes seules sur mobile */
     .create-box { border-radius: 14px; }
     .create-box-actions {
@@ -72,9 +75,8 @@ body { background: var(--bg); }
     }
     /* Cache les labels, garde uniquement l'icône */
     .create-box-action span.btn-label { display: none; }
-    /* Post cards : un peu plus de marge intérieure à droite */
-    .pc-body { padding-right: .85rem; }
-    .pc-title { padding-right: .85rem; }
+    /* Post cards : padding symétrique (pas d'asymétrie gauche/droite) */
+    .post-card { width: 100%; min-width: 0; }
 }
 @media (max-width: 480px) {
     .feed-wrapper { padding: 0 .35rem; }
@@ -511,6 +513,10 @@ body { background: var(--bg); }
 .pc-body {
     padding: .2rem 1.1rem .7rem; color: var(--text);
     font-size: .9rem; line-height: 1.68; opacity: .9;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 .pc-body img { max-width: 100%; border-radius: 8px; margin: .3rem 0; }
 .pc-body p { margin-bottom: .35rem; }
