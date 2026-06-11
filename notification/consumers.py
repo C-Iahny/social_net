@@ -135,7 +135,11 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 					pass
 					
 		except ClientError as e:
-			print("EXCEPTION: receive_json: " + str(e))
+			print("EXCEPTION: receive_json ClientError: " + str(e))
+			pass
+		except Exception as e:
+			# Catch-all: never let a random ValueError / KeyError close the WebSocket
+			print("EXCEPTION: receive_json unhandled: " + str(e))
 			pass
 
 	async def display_progress_bar(self, shouldDisplay):
@@ -379,6 +383,9 @@ def refresh_general_notifications(user, oldest_timestamp, newest_timestamp):
 	"""
 	payload = {}
 	if user.is_authenticated:
+		if not oldest_timestamp or not newest_timestamp:
+			payload['notifications'] = []
+			return json.dumps(payload)
 		oldest_ts = oldest_timestamp[0:oldest_timestamp.find("+")] # remove timezone because who cares
 		oldest_ts = datetime.strptime(oldest_ts, '%Y-%m-%d %H:%M:%S.%f')
 		newest_ts = newest_timestamp[0:newest_timestamp.find("+")] # remove timezone because who cares
@@ -402,6 +409,8 @@ def get_new_general_notifications(user, newest_timestamp):
 	"""
 	payload = {}
 	if user.is_authenticated:
+		if not newest_timestamp:
+			return None
 		timestamp = newest_timestamp[0:newest_timestamp.find("+")] # remove timezone because who cares
 		timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
 		friend_request_ct = ContentType.objects.get_for_model(FriendRequest)
@@ -492,6 +501,8 @@ def get_new_chat_notifications(user, newest_timestatmp):
 	"""
 	payload = {}
 	if user.is_authenticated:
+		if not newest_timestatmp:
+			return None
 		timestamp = newest_timestatmp[0:newest_timestatmp.find("+")] # remove timezone because who cares
 		timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
 		chatmessage_ct = ContentType.objects.get_for_model(UnreadChatRoomMessages)
