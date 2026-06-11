@@ -955,7 +955,7 @@ def vintana_create(request):
             return redirect('post:vintana-create')
 
         if is_ajax:
-            return JsonResponse({'ok': True, 'redirect': f'/post/{post.id}/'})
+            return JsonResponse({'ok': True, 'redirect': post.get_absolute_url()})
         messages.success(request, 'Capsule Vintana créée ! Elle sera révélée le ' + reveal_dt.strftime('%d/%m/%Y à %H:%M') + '.')
         return redirect('post:post-detail', post_id=post.id)
 
