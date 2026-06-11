@@ -154,7 +154,8 @@
     {% endif %}
 
     {% if post.body %}
-    <div class="pc-body">{{ post.body|safe }}</div>
+    <div class="pc-body" onclick="expandBody(this)">{{ post.body|safe }}</div>
+    <span class="pc-read-more" onclick="expandBodyBtn(this)">{% trans "See more" %}</span>
     {% endif %}
 
     {% include 'post/_post_media.html' %}
