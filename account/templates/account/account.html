@@ -512,9 +512,26 @@ body { background: var(--bg); }
 .pc-title { padding: .4rem 1.1rem .15rem; font-weight: 700; font-size: 1.07rem; color: var(--text); line-height: 1.4; letter-spacing: -.01em; }
 .pc-title-link { color: inherit; text-decoration: none; }
 .pc-title-link:hover { color: var(--accent); text-decoration: none; }
-.pc-body { padding: .2rem 1.1rem .7rem; color: var(--text); font-size: .9rem; line-height: 1.68; opacity: .9; }
+.pc-body {
+    padding: .2rem 1.1rem .7rem; color: var(--text);
+    font-size: .9rem; line-height: 1.68; opacity: .9;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    cursor: pointer;
+}
+.pc-body.expanded { display: block; overflow: visible; cursor: default; }
 .pc-body img { max-width: 100%; border-radius: 8px; margin: .3rem 0; }
 .pc-body p { margin-bottom: .35rem; }
+.pc-read-more {
+    display: inline-block;
+    margin: -.2rem 1.1rem .4rem;
+    font-size: .82rem; font-weight: 700;
+    color: var(--accent); cursor: pointer; user-select: none;
+}
+.pc-read-more:hover { opacity: .75; }
+.pc-read-more.hidden { display: none; }
 .pc-image-wrap { overflow: hidden; position: relative; }
 .pc-image { width: 100%; max-height: 520px; object-fit: cover; display: block; cursor: zoom-in; transition: transform .35s; }
 .pc-image-wrap:hover .pc-image { transform: scale(1.015); }
@@ -938,7 +955,9 @@ body { background: var(--bg); }
          ══════════════════════════════════ -->
     <div class="profile-cover" id="profile-cover-wrap">
         {% if cover_image_url %}
-        <img src="{{ cover_image_url }}" class="profile-cover-img" id="cover-img" alt="Couverture" loading="lazy" decoding="async">
+        <img src="{{ cover_image_url }}" class="profile-cover-img" id="cover-img" alt="Couverture" loading="lazy" decoding="async"
+             onclick="openPhotoDirectLb('{{ cover_image_url }}', '{% trans "Photo de couverture" %}')"
+             style="cursor:zoom-in;">
         {% else %}
         <div class="profile-cover-bg"></div>
         <div class="profile-cover-noise"></div>
@@ -961,7 +980,8 @@ body { background: var(--bg); }
             <div class="avatar-ring-wrap" id="profile-avatar-wrap">
                 <span id="profile-story-ring-el"></span>
                 <img src="{{ profile_image }}" alt="{{ username }}"
-                     style="position:relative;z-index:1;">
+                     style="position:relative;z-index:1;cursor:zoom-in;"
+                     onclick="openPhotoDirectLb('{{ profile_image }}', '{{ username|escapejs }}')">
                 {% if is_self %}
                 <a class="avatar-edit-fab" href="{% url 'account:edit' user_id=id %}"
                    title="Modifier la photo" onclick="event.stopPropagation();">
@@ -1795,7 +1815,37 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.pc-body, .pc-title').forEach(function(el) {
         if (!el.dataset.htagDone) { el.dataset.htagDone = '1'; processHashtagsAndMentions(el); }
     });
+    processAllPostBodies();
 });
+function processAllPostBodies() {
+    document.querySelectorAll('.pc-body').forEach(function(el) {
+        if (el.classList.contains('expanded')) return;
+        var rm = el.nextElementSibling;
+        if (rm && rm.classList.contains('pc-read-more')) {
+            rm.classList.toggle('hidden', el.scrollHeight <= el.clientHeight + 2);
+        }
+    });
+}
+function expandBody(el) {
+    if (el.classList.contains('expanded')) return;
+    el.classList.add('expanded');
+    var rm = el.nextElementSibling;
+    if (rm && rm.classList.contains('pc-read-more')) {
+        rm.textContent = '{% trans "See less" %}';
+        rm.classList.remove('hidden');
+    }
+}
+function expandBodyBtn(btn) {
+    var body = btn.previousElementSibling;
+    if (!body || !body.classList.contains('pc-body')) return;
+    if (body.classList.contains('expanded')) {
+        body.classList.remove('expanded');
+        btn.textContent = '{% trans "See more" %}';
+    } else {
+        body.classList.add('expanded');
+        btn.textContent = '{% trans "See less" %}';
+    }
+}
 </script>
 
 {% include 'friend/snippets/send_friend_request.html' %}
@@ -1991,7 +2041,7 @@ function _lbShow() {
     img.src     = p.src;
     img.alt     = p.caption;
     if (cap) cap.textContent = p.caption;
-    if (ctr) ctr.textContent = (_lbIdx + 1) + ' / ' + _lbPhotos.length;
+    if (ctr) { ctr.style.display = ''; ctr.textContent = (_lbIdx + 1) + ' / ' + _lbPhotos.length; }
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
 }
@@ -1999,6 +2049,22 @@ function closeLightbox() {
     document.getElementById('pf-lightbox').classList.remove('open');
     document.body.style.overflow = '';
     document.removeEventListener('keydown', lbKeyHandler);
+}
+/* Ouvre n'importe quelle image directement (photo de profil, couverture) */
+function openPhotoDirectLb(src, caption) {
+    var lb  = document.getElementById('pf-lightbox');
+    var img = document.getElementById('lb-img');
+    var cap = document.getElementById('lb-caption');
+    var ctr = document.getElementById('lb-counter');
+    img.style.opacity = '0';
+    img.onload = function() { img.style.opacity = '1'; };
+    img.src = src;
+    img.alt = caption || '';
+    if (cap) cap.textContent = caption || '';
+    if (ctr) ctr.style.display = 'none';
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', lbKeyHandler);
 }
 function lbNav(dir) {
     _lbIdx = (_lbIdx + dir + _lbPhotos.length) % _lbPhotos.length;

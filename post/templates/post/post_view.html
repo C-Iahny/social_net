@@ -7,6 +7,8 @@
 /* ════════════════════════════════════════════════════════════════
    FEED — PREMIUM REDESIGN
    ════════════════════════════════════════════════════════════════ */
+/* Empêche le body de scroller — seul .feed-main scrolle */
+body { overflow: hidden; }
 
 body { background: var(--bg); }
 
@@ -37,13 +39,28 @@ body { background: var(--bg); }
 /* ── 3-column grid ── */
 .feed-wrapper {
     max-width: 1180px;
-    margin: 72px auto 3rem;
+    /* Position sous la navbar fixe (62px) avec un peu d'air */
+    margin: 66px auto 0;
     padding: 0 .75rem;
     display: grid;
     grid-template-columns: 274px 1fr 296px;
     gap: 1.1rem;
+    /* Occupe le reste de la hauteur — seul .feed-main scrollera */
+    height: calc(100vh - 66px);
     align-items: start;
+    overflow: hidden;
+    box-sizing: border-box;
 }
+/* Colonne centrale — seule qui scrolle */
+.feed-main {
+    height: calc(100vh - 66px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    padding-bottom: 3rem;
+    min-width: 0;
+}
+
 @media (max-width: 1100px) {
     .feed-wrapper { grid-template-columns: 240px 1fr; }
     .feed-right-col { display: none; }
@@ -59,7 +76,7 @@ body { background: var(--bg); }
         width: 100%;
     }
     .feed-left-col { display: none; }
-    .feed-main { width: 100%; min-width: 0; }
+    .feed-main { width: 100%; min-width: 0; height: 100dvh; overflow-y: auto; }
     /* Boite de création : icônes seules sur mobile */
     .create-box { border-radius: 14px; }
     .create-box-actions {
@@ -86,11 +103,11 @@ body { background: var(--bg); }
    LEFT SIDEBAR
    ════════════════════════════════════════════════════════════════ */
 .feed-left-col {
-    position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 90px);
+    /* Hauteur fixe = toute la colonne ; scroll interne si contenu dépasse */
+    height: calc(100vh - 66px);
     overflow-y: auto;
-    scrollbar-width: thin;
+    overflow-x: hidden;
+    scrollbar-width: none;   /* pas de scrollbar visible */
 }
 
 /* Profile card */
@@ -942,11 +959,10 @@ body { background: var(--bg); }
    RIGHT SIDEBAR
    ════════════════════════════════════════════════════════════════ */
 .feed-right-col {
-    position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 90px);
+    height: calc(100vh - 66px);
     overflow-y: auto;
-    scrollbar-width: thin;
+    overflow-x: hidden;
+    scrollbar-width: none;   /* pas de scrollbar visible */
 }
 
 .rsb-card {
@@ -1752,7 +1768,7 @@ body { background: var(--bg); }
 
     var observer = new IntersectionObserver(function(entries) {
         entries.forEach(function(e) { if (e.isIntersecting) loadMore(); });
-    }, { rootMargin: '200px' });
+    }, { root: feedMain, rootMargin: '200px' });
 
     if (_nextPage !== null) {
         observer.observe(sentinel);
@@ -2191,18 +2207,29 @@ document.addEventListener('DOMContentLoaded', processAllPostBodies);
 
 /* Expand body on click (text area click) */
 function expandBody(el) {
+    /* Click directly on body text → only expand (never collapse on body click) */
     if (el.classList.contains('expanded')) return;
     el.classList.add('expanded');
     var rm = el.nextElementSibling;
-    if (rm && rm.classList.contains('pc-read-more')) rm.classList.add('hidden');
+    if (rm && rm.classList.contains('pc-read-more')) {
+        rm.textContent = '{% trans "See less" %}';
+        rm.classList.remove('hidden');
+    }
 }
-/* Expand body via "See more" button */
+/* Toggle via "See more / See less" button */
 function expandBodyBtn(btn) {
     var body = btn.previousElementSibling;
-    if (body && body.classList.contains('pc-body')) {
+    if (!body || !body.classList.contains('pc-body')) return;
+    if (body.classList.contains('expanded')) {
+        /* Collapse */
+        body.classList.remove('expanded');
+        btn.textContent = '{% trans "See more" %}';
+        /* Scroll up to card top if body is now cut off */
+    } else {
+        /* Expand */
         body.classList.add('expanded');
+        btn.textContent = '{% trans "See less" %}';
     }
-    btn.classList.add('hidden');
 }
 (function() {
     var mo = new MutationObserver(function() { processAllPostBodies(); });

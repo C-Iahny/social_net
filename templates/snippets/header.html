@@ -990,7 +990,6 @@
     /* ── HTTP fallback: badge polling when WS is unavailable ── */
     var _httpPollTimer = null;
     function _pollBadgesFallback() {
-        if (window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN) return;
         fetch('/notif/counts/', {credentials: 'same-origin'})
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d){
