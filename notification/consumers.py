@@ -34,10 +34,14 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		print("NotificationConsumer: connect: " + str(self.scope["user"]))
 		user = self.scope["user"]
+		# Accept first so the socket is alive even if channel layer (Redis) is unavailable
+		await self.accept()
 		if user.is_authenticated:
 			self.room_group_name = f"user_{user.id}"
-			await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-		await self.accept()
+			try:
+				await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+			except Exception as e:
+				print(f"NotificationConsumer: channel_layer.group_add failed (Redis?): {e}")
 
 
 	async def disconnect(self, code):
@@ -47,7 +51,10 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 		print("NotificationConsumer: disconnect")
 		user = self.scope["user"]
 		if user.is_authenticated:
-			await self.channel_layer.group_discard(f"user_{user.id}", self.channel_name)
+			try:
+				await self.channel_layer.group_discard(f"user_{user.id}", self.channel_name)
+			except Exception as e:
+				print(f"NotificationConsumer: channel_layer.group_discard failed: {e}")
 
 
 	async def receive_json(self, content):
