@@ -8,11 +8,12 @@ from django.utils import timezone
 class HeroSettings(models.Model):
     title         = models.CharField(
         max_length=200,
-        default="Explorez la communauté ZOOT",
+        default="Connectez-vous.\nPartagez. Grandissez.",
         verbose_name="Titre principal (H1)",
+        help_text="Saut de ligne possible avec \\n — il sera affiché comme <br> dans le navigateur.",
     )
     subtitle      = models.TextField(
-        default="Découvrez des publications, des personnes et des contenus du monde entier. Connectez-vous, partagez et inspirez-vous.",
+        default="Si vous connaissez ce que c'est Vazimba et que vous en êtes un(e), alors vous êtes au bon endroit car cette plateforme est conçue pour les Vazimba. Pour un partage d'idées, de messages et d'informations en temps réel.",
         verbose_name="Texte d'accroche",
     )
     gradient_from = models.CharField(
@@ -23,9 +24,9 @@ class HeroSettings(models.Model):
     )
     gradient_to   = models.CharField(
         max_length=20,
-        default="#7c3aed",
+        default="#6c2bd9",
         verbose_name="Couleur de fin (dégradé)",
-        help_text="Code couleur hexadécimal, ex. #7c3aed",
+        help_text="Code couleur hexadécimal, ex. #6c2bd9",
     )
     background_image = models.ImageField(
         upload_to="hero_bg/",

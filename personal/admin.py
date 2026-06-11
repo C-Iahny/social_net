@@ -39,10 +39,12 @@ class AnnouncementAdmin(admin.ModelAdmin):
 @admin.register(HeroSettings)
 class HeroSettingsAdmin(admin.ModelAdmin):
     """
-    Page d'administration pour les réglages du Hero de la page Explore.
+    Page d'administration pour le Hero de la Landing Page (page d'accueil publique).
+    • Titre et texte d'accroche modifiables directement
     • Color-pickers HTML5 pour les deux couleurs du dégradé
-    • Prévisualisation live du dégradé + texte
-    • Singleton : redirige la liste vers l'unique instance
+    • Upload d'une image de fond (remplace le dégradé uni)
+    • Prévisualisation live en temps réel
+    • Singleton : une seule instance, non supprimable
     """
 
     # ── Champs affichés dans le formulaire ──

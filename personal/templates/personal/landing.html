@@ -137,16 +137,26 @@
 
     /* ===== HERO ===== */
     .hero {
-      background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
       color: #fff;
       padding: 5rem 2rem 4rem;
       text-align: center;
       position: relative; overflow: hidden;
+      background-size: cover;
+      background-position: center;
     }
+    /* Calque motif croisillon semi-transparent */
     .hero::before {
       content: '';
       position: absolute; inset: 0;
       background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    /* Quand une image de fond est présente, assombrir légèrement pour garder le texte lisible */
+    .hero.has-bg-image::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.25);
+      pointer-events: none;
     }
     .hero-content { position: relative; max-width: 700px; margin: 0 auto; }
     .hero h1 {
@@ -327,13 +337,20 @@
   </nav>
 
   <!-- ===== HERO ===== -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Connectez-vous.<br>Partagez. Grandissez.</h1>
-      <p>Si vous connaissez ce que c'est Vazimba et que vous en êtes un(e), alors vous êtes au bon endroit
-      car cette plateforeme est conçue pour les Vazimba. 
-      Pour un partage d'idées, de messages et d'informations en temps réel. 
-    Vous y retrouvez aussi vos proches et plein d'autres choses.</p>
+  {% if hero.background_image %}
+  <section class="hero has-bg-image" style="
+      background-image:
+          linear-gradient(135deg, {{ hero.gradient_from }}cc 0%, {{ hero.gradient_to }}cc 100%),
+          url('{{ hero.background_image.url }}');
+  ">
+  {% else %}
+  <section class="hero" style="
+      background: linear-gradient(135deg, {{ hero.gradient_from }} 0%, {{ hero.gradient_to }} 100%);
+  ">
+  {% endif %}
+    <div class="hero-content" style="position:relative;z-index:1;">
+      <h1>{{ hero.title|linebreaksbr }}</h1>
+      <p>{{ hero.subtitle }}</p>
       <div class="hero-btns">
         {% if user.is_authenticated %}
           <a href="{% url 'post:post-view' %}" class="btn-white">Voir mon fil d'actualité</a>
