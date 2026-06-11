@@ -587,14 +587,45 @@
 .zoot-mobile-link .material-icons { font-size: 1.2rem; color: var(--accent); }
 
 /* ── Responsive breakpoints ── */
+/* Logos responsive */
+.zoot-logo-desktop {
+    height: 52px; width: auto; max-width: 220px;
+    border-radius: 10px;
+    object-fit: contain; object-position: left center;
+    transition: transform .2s, opacity .2s; flex-shrink: 0;
+    display: block;
+}
+.zoot-logo-mobile {
+    height: 40px; width: auto; max-width: 44px;
+    border-radius: 8px;
+    object-fit: contain; object-position: center;
+    transition: transform .2s, opacity .2s; flex-shrink: 0;
+    display: none;
+}
+
 @media (max-width: 991px) {
     .zoot-nav-center { display: none !important; }
     .zoot-hamburger  { display: flex; }
     .zoot-search-form { display: none !important; }
 }
+@media (max-width: 767px) {
+    /* Swap logo */
+    .zoot-logo-desktop { display: none; }
+    .zoot-logo-mobile  { display: block; }
+    /* Compact header */
+    .zoot-nav-inner  { padding: 0 .6rem; gap: .4rem; }
+    /* Masquer le code langue, garder juste le drapeau */
+    .zoot-lang-code-hide-mobile { display: none !important; }
+    /* Réduire le bouton langue */
+    .zoot-lang-btn { padding: 0 .4rem; height: 36px; gap: .15rem; }
+    /* Réduire les icônes boutons */
+    .zoot-nav-icon-btn { width: 36px; height: 36px; }
+    /* Réduire le chevron langue */
+    .zoot-lang-btn .material-icons { display: none; }
+}
 @media (max-width: 575px) {
     .zoot-brand-text { display: none; }
-    .zoot-nav-inner  { padding: 0 .75rem; }
+    .zoot-nav-inner  { padding: 0 .5rem; gap: .3rem; }
 }
 
 /* ── Scrollbar inside dropdown ── */
@@ -612,12 +643,14 @@
 
     <!-- Brand -->
     <a href="{% url 'post:index' %}" class="zoot-brand">
-        <div class="zoot-brand-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#fff"/>
-            </svg>
-        </div>
-        <span class="zoot-brand-text">VAZIMBA</span>
+        <!-- Logo desktop -->
+        <img src="{% static 'logo/Vazi_logo00.png' %}" alt="VAZIMBA"
+             class="zoot-logo-desktop"
+             onmouseover="this.style.transform='scale(1.05)';this.style.opacity='.88'"
+             onmouseout="this.style.transform='';this.style.opacity='1'">
+        <!-- Logo mobile (compact) -->
+        <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="VAZIMBA"
+             class="zoot-logo-mobile">
     </a>
 
     <!-- Center nav links (desktop) -->
@@ -636,6 +669,16 @@
            class="zoot-nav-link {% if request.resolver_match.namespace == 'group' %}active{% endif %}">
             <span class="material-icons">groups</span>
             <span>{% trans "Groups" %}</span>
+        </a>
+        <a href="{% url 'post:kabary-create' %}"
+           class="zoot-nav-link {% if request.resolver_match.url_name == 'kabary-create' %}active{% endif %}">
+            <span class="material-icons">record_voice_over</span>
+            <span>Kabary</span>
+        </a>
+        <a href="{% url 'post:vintana-create' %}"
+           class="zoot-nav-link {% if request.resolver_match.url_name == 'vintana-create' %}active{% endif %}">
+            <span class="material-icons">lock_clock</span>
+            <span>Vintana</span>
         </a>
     </div>
 
@@ -677,7 +720,7 @@
         <div style="position:relative;">
             <button class="zoot-lang-btn" id="zoot-lang-toggle" onclick="document.getElementById('zoot-lang-dd').classList.toggle('open');event.stopPropagation();" title="{% trans 'Language' %}">
                 <span class="lang-flag">{% if CURRENT_LANG == 'mg' %}🇲🇬{% elif CURRENT_LANG == 'en' %}🇬🇧{% else %}🇫🇷{% endif %}</span>
-                <span class="lang-code">{{ CURRENT_LANG|upper }}</span>
+                <span class="lang-code zoot-lang-code-hide-mobile">{{ CURRENT_LANG|upper }}</span>
                 <span class="material-icons" style="font-size:.85rem;opacity:.6">expand_more</span>
             </button>
             <div class="zoot-lang-dropdown" id="zoot-lang-dd">
@@ -1248,4 +1291,4 @@ document.addEventListener('click', function(e) {
     window.requestPushPermission = window.togglePushNotif;
 })();
 </script>
-{% endif %}
+{% endif %}        

@@ -52,6 +52,16 @@ class Post(models.Model):
 
     VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
 
+    # ── Type de post ──────────────────────────────────────────────────────────
+    DEFAULT = 'default'
+    KABARY  = 'kabary'
+    VINTANA = 'vintana'
+    TYPE_CHOICES = [
+        (DEFAULT, 'Post standard'),
+        (KABARY,  'Kabary numérique'),
+        (VINTANA, 'Capsule Vintana'),
+    ]
+
     title        = models.CharField(max_length=255)
     header_image = models.ImageField(blank=True, null=True, upload_to='header_images')
     body         = RichTextField(blank=True, null=True)
@@ -67,6 +77,26 @@ class Post(models.Model):
         'group.Group', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='posts'
     )
+    is_pinned    = models.BooleanField(default=False, verbose_name='Épinglé')
+    post_type    = models.CharField(
+        max_length=10, choices=TYPE_CHOICES, default=DEFAULT,
+        verbose_name='Type de post'
+    )
+    reveal_date  = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name='Date de révélation',
+        help_text='Pour les Capsules Vintana : date à laquelle le contenu devient visible.',
+    )
+
+    @property
+    def is_locked(self):
+        """Retourne True si c'est une capsule Vintana non encore révélée."""
+        if self.post_type != Post.VINTANA:
+            return False
+        if self.reveal_date is None:
+            return False
+        from django.utils import timezone
+        return timezone.now() < self.reveal_date
 
     def is_video(self):
         if self.header_image and self.header_image.name:

@@ -106,7 +106,7 @@ def account_view(request, *args, **kwargs):
 		return HttpResponse("Utilisateur introuvable.", status=404)
 
 	# Posts (first page)
-	all_posts_qs = Post.objects.filter(author=account).order_by("-id").select_related('author')
+	all_posts_qs = Post.objects.filter(author=account).order_by("-id").select_related('author', 'group')
 	paginator   = Paginator(all_posts_qs, 6)
 	first_page  = paginator.get_page(1)
 	posts = list(first_page)
@@ -165,6 +165,7 @@ def account_view(request, *args, **kwargs):
 			post.media_list      = []
 
 	if account:
+		context['profile_user'] = account   # objet Account complet (pour score_fihavanana, etc.)
 		context['id'] = account.id
 		context['username'] = account.username
 		context['email'] = account.email
@@ -433,7 +434,7 @@ def profile_posts_more(request, *args, **kwargs):
 		return JsonResponse({'posts_html': '', 'has_next': False})
 
 	page_num = int(request.GET.get('page', 2))
-	all_posts_qs = Post.objects.filter(author=account).order_by("-id").select_related('author')
+	all_posts_qs = Post.objects.filter(author=account).order_by("-id").select_related('author', 'group')
 	paginator = Paginator(all_posts_qs, 6)
 	page = paginator.get_page(page_num)
 	posts = list(page)

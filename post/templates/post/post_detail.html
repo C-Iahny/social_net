@@ -25,6 +25,14 @@
     max-width: 720px;
     margin: 82px auto 3rem;
     padding: 0 1rem;
+    box-sizing: border-box;
+    width: 100%;
+}
+@media (max-width: 767px) {
+    .pd-wrapper {
+        margin-top: 70px;
+        padding: 0 .6rem;
+    }
 }
 
 /* ── Back link ── */
@@ -403,7 +411,7 @@
                         {% elif post.user_reaction == 'laugh' %}Heniky
                         {% elif post.user_reaction == 'wow' %}Mahagaga
                         {% elif post.user_reaction == 'sad' %}Maika
-                        {% else %}Tiana{% endif %}
+                        {% else %}{% trans "Like" %}{% endif %}
                     </span>
                 </button>
                 <div class="reaction-picker" id="picker-{{ post.id }}" onmouseleave="closePicker({{ post.id }})">

@@ -1,9 +1,122 @@
 {% load static %}
 {% load i18n %}
 {% for post in posts_of_the_page %}
-<article class="post-card" id="post-{{ post.id }}">
+<article class="post-card{% if post.post_type == 'kabary' %} post-card-kabary{% endif %}{% if post.post_type == 'vintana' %} post-card-vintana{% endif %}" id="post-{{ post.id }}">
+    {% if post.post_type == 'kabary' %}
+    <div class="pc-kabary-badge">
+        <span class="material-icons">record_voice_over</span> Kabary
+    </div>
+    {% endif %}
+    {% if post.post_type == 'vintana' %}
+    <div class="pc-vintana-badge">
+        <span class="material-icons">lock_clock</span> Capsule Vintana
+    </div>
+    {% endif %}
+
+    {% if post.is_locked %}
+    <!-- ══ CAPSULE VERROUILLÉE ══ -->
+    <div class="pc-header">
+        <a class="pc-avatar-ring" href="{% url 'account:view' user_id=post.author.id %}">
+            <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy" decoding="async">
+        </a>
+        <div class="pc-meta">
+            <a class="pc-author" href="{% url 'account:view' user_id=post.author.id %}">
+                {{ post.author.username }}
+            </a>
+            <span class="pc-sub">
+                <span class="material-icons">schedule</span>
+                {{ post.post_date|date:"d M Y" }}
+            </span>
+        </div>
+        {% if request.user.id == post.author.id %}
+        <div class="pc-owner-menu">
+            <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="Supprimer">
+                <span class="material-icons">delete_outline</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="pc-vintana-locked">
+        <div class="pc-vintana-lock-icon">
+            <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="Vazimba"
+                 style="width:52px;height:52px;border-radius:13px;object-fit:contain;
+                        box-shadow:0 0 0 2px rgba(191,95,255,.3),0 4px 16px rgba(191,95,255,.2);
+                        background:var(--bg-card);padding:3px;">
+        </div>
+        <div class="pc-vintana-lock-title">{{ post.title|default:"Capsule Vintana" }}</div>
+        <p class="pc-vintana-lock-sub">
+            Ce message est scellé et sera révélé le<br>
+            <strong>{{ post.reveal_date|date:"d F Y à H\hi" }}</strong>.
+        </p>
+    </div>
+    <div class="pc-vintana-lock-band">
+        <span class="material-icons">hourglass_top</span>
+        <span>Révélation dans : <strong id="vt-cntdwn-{{ post.id }}">…</strong></span>
+    </div>
+    <script>
+    (function() {
+        var target = new Date('{{ post.reveal_date|date:"c" }}');
+        function tick() {
+            var diff = target - new Date();
+            if (diff <= 0) { document.getElementById('vt-cntdwn-{{ post.id }}').textContent = 'maintenant !'; return; }
+            var d = Math.floor(diff/86400000);
+            var h = Math.floor((diff%86400000)/3600000);
+            var m = Math.floor((diff%3600000)/60000);
+            var s = Math.floor((diff%60000)/1000);
+            document.getElementById('vt-cntdwn-{{ post.id }}').textContent =
+                (d > 0 ? d + 'j ' : '') + (h > 0 ? h + 'h ' : '') + (m > 0 ? m + 'min ' : '') + s + 's';
+        }
+        tick(); setInterval(tick, 1000);
+    })();
+    </script>
+
+    {% else %}
+    <!-- ══ CONTENU NORMAL ══ -->
 
     <!-- Header -->
+    {% if post.group and not in_group %}
+    {# ── Post de groupe dans le feed global : cover groupe + badge utilisateur ── #}
+    <div class="pc-header">
+        <div class="pc-gp-avatar-wrap">
+            {# Cover du groupe (avatar principal) #}
+            <a href="{% url 'group:detail' post.group.slug %}" class="pc-gp-cover-link" title="{{ post.group.name }}">
+                {% if post.group.cover_url %}
+                <img class="pc-gp-cover" src="{{ post.group.cover_url }}" alt="{{ post.group.name }}" loading="lazy">
+                {% else %}
+                <span class="pc-gp-cover pc-gp-cover-fallback">
+                    <span class="material-icons">groups</span>
+                </span>
+                {% endif %}
+            </a>
+            {# Avatar utilisateur en badge #}
+            <a href="{% url 'account:view' user_id=post.author.id %}" class="pc-gp-user-badge-link" title="{{ post.author.username }}">
+                <img class="pc-gp-user-badge" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy">
+            </a>
+        </div>
+        <div class="pc-meta">
+            <a class="pc-author" href="{% url 'group:detail' post.group.slug %}">
+                {{ post.group.name }}
+            </a>
+            <span class="pc-sub">
+                <a class="pc-sub-user-link" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
+                <span class="pc-dot">·</span>
+                <span class="material-icons">schedule</span>
+                {{ post.post_date|date:"d M Y" }}
+            </span>
+        </div>
+        {% if request.user.id == post.author.id %}
+        <div class="pc-owner-menu">
+            <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="{% trans 'Edit' %}">
+                <span class="material-icons">edit</span>
+            </a>
+            <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="{% trans 'Delete' %}">
+                <span class="material-icons">delete_outline</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    {# ── Post normal : avatar utilisateur ── #}
     <div class="pc-header">
         <a class="pc-avatar-ring" href="{% url 'account:view' user_id=post.author.id %}">
             <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy" decoding="async">
@@ -32,6 +145,7 @@
         </div>
         {% endif %}
     </div>
+    {% endif %}
 
     {% if post.title %}
     <div class="pc-title">
@@ -81,7 +195,7 @@
                     {% elif post.user_reaction == 'laugh' %}Heniky
                     {% elif post.user_reaction == 'wow' %}Mahagaga
                     {% elif post.user_reaction == 'sad' %}Maika
-                    {% else %}Tiana{% endif %}
+                    {% else %}{% trans "Like" %}{% endif %}
                 </span>
             </button>
             <div class="reaction-picker" id="picker-{{ post.id }}" onmouseleave="closePicker({{ post.id }})">
@@ -214,5 +328,7 @@
         </div>
     </div>
 
+    {% endif %}{# end is_locked #}
 </article>
 {% endfor %}
+ 

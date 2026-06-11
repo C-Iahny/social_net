@@ -4,7 +4,16 @@
 
 {% block content %}
 <style>
-.gp-wrapper { max-width: 960px; margin: 82px auto 3rem; padding: 0 1rem; }
+.gp-wrapper {
+    max-width: 960px; margin: 82px auto 3rem;
+    padding: 0 1rem;
+    box-sizing: border-box; width: 100%;
+}
+@media (max-width: 767px) {
+    .gp-wrapper { margin-top: 70px; padding: 0 .75rem; }
+    .gp-head h1 { font-size: 1.2rem; }
+    .gp-grid { grid-template-columns: 1fr; }
+}
 .gp-head {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 1.4rem; gap: 1rem; flex-wrap: wrap;

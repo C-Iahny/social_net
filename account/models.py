@@ -122,6 +122,66 @@ class Account(AbstractBaseUser):
 	def has_module_perms(self, app_label):
 		return True
 
+	@property
+	def score_fihavanana(self):
+		"""Score de solidarité communautaire (Fihavanana).
+		Calculé à la volée à partir de l'activité de l'utilisateur.
+		Retourne un entier et un niveau en chaîne.
+		"""
+		try:
+			from post.models import Post, Comment, Reaction, Repost
+			from friend.models import FriendList
+
+			# Posts publiés (+5 par post, +10 par Kabary)
+			posts = Post.objects.filter(author=self)
+			post_score = sum(10 if getattr(p, 'post_type', 'default') == 'kabary' else 5 for p in posts)
+
+			# Commentaires rédigés (+2 chacun)
+			comment_score = Comment.objects.filter(author=self).count() * 2
+
+			# Réactions reçues sur ses posts (+3 chacune)
+			reaction_score = Reaction.objects.filter(post__author=self).count() * 3
+
+			# Reposts de ses posts (+4 chacun)
+			try:
+				repost_score = Repost.objects.filter(post__author=self).count() * 4
+			except Exception:
+				repost_score = 0
+
+			# Amis (+3 chacun)
+			try:
+				fl = FriendList.objects.get(user=self)
+				friend_score = fl.friends.count() * 3
+			except Exception:
+				friend_score = 0
+
+			# Memberships de groupe (+2 chacun)
+			try:
+				from group.models import GroupMembership
+				group_score = GroupMembership.objects.filter(user=self).count() * 2
+			except Exception:
+				group_score = 0
+
+			total = post_score + comment_score + reaction_score + repost_score + friend_score + group_score
+			return max(0, total)
+		except Exception:
+			return 0
+
+	@property
+	def fihavanana_level(self):
+		"""Niveau Fihavanana basé sur le score."""
+		score = self.score_fihavanana
+		if score >= 500:
+			return ('Mpitarika', '🌟', '#f59e0b')   # Leader
+		elif score >= 200:
+			return ('Mpiahy', '💛', '#10b981')       # Bienfaiteur
+		elif score >= 80:
+			return ('Mpiray tsipy', '💙', '#3b82f6') # Solidaire
+		elif score >= 30:
+			return ('Mpankafy', '💚', '#22c55e')     # Ami
+		else:
+			return ('Vahiny', '🤍', '#94a3b8')       # Visiteur
+
 
 @receiver(post_save, sender=Account)
 def user_save(sender, instance, **kwargs):

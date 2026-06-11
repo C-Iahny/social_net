@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>Vazimba</title>
+    <link rel="icon" type="image/jpeg" href="{% static 'logo/Vazi_logo003.jpeg' %}">
+    <link rel="apple-touch-icon" href="{% static 'logo/Vazi_logo003.jpeg' %}">
 
     <!-- ① Anti-FOUC : appliquer le thème AVANT tout rendu -->
     <script>
@@ -188,7 +190,137 @@
                 pointer-events: none;
                 line-height: 1;
             }
+
+            /* ── Layout général mobile ── */
+            .profile-wrapper,
+            .vintana-wrapper,
+            .kabary-wrapper,
+            .group-detail-wrapper,
+            .post-wrapper,
+            .feed-wrapper {
+                margin-top: 72px !important;
+                padding-left: .75rem !important;
+                padding-right: .75rem !important;
+            }
+
+            /* Centrage + largeur max sur mobile */
+            .zoot-feed-inner,
+            .feed-grid,
+            .post-feed-col {
+                max-width: 100% !important;
+                padding: 0 !important;
+            }
+
+            /* Post cards mobile */
+            .post-card, .pf-post-card {
+                border-radius: 14px !important;
+                margin-bottom: .75rem !important;
+            }
         }
+
+        /* ── Layout général 480px et moins ── */
+        @media (max-width: 480px) {
+            .profile-wrapper,
+            .vintana-wrapper,
+            .kabary-wrapper {
+                padding-left: .5rem !important;
+                padding-right: .5rem !important;
+            }
+        }
+
+        /* ── Kabary numérique : style post-card spécial ── */
+        .post-card-kabary {
+            border: 1.5px solid var(--accent) !important;
+            background: linear-gradient(160deg, var(--accent-glow, rgba(99,102,241,.06)) 0%, var(--bg-card) 60%) !important;
+        }
+        [data-theme="dark"] .post-card-kabary {
+            box-shadow: 0 0 0 1px var(--accent), 0 4px 24px rgba(0,207,255,.08) !important;
+        }
+        .pc-kabary-badge {
+            display: inline-flex; align-items: center; gap: .3rem;
+            margin: .7rem 1.1rem 0;
+            padding: .18rem .65rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff; border-radius: 20px;
+            font-size: .72rem; font-weight: 800; letter-spacing: .04em;
+            text-transform: uppercase;
+        }
+        .pc-kabary-badge .material-icons { font-size: .85rem; }
+        /* Sections Kabary dans le body */
+        .kbr-body { display: flex; flex-direction: column; gap: .9rem; }
+        .kbr-fisaorana { font-style: italic; color: var(--text-muted); font-size: .9rem;
+            border-left: 3px solid var(--accent); padding-left: .8rem; }
+        .kbr-section { font-size: .92rem; color: var(--text); }
+        .kbr-vato { font-size: .95rem; font-weight: 500; }
+        .kbr-ohabolana blockquote { font-style: italic; color: var(--text-muted);
+            border-left: 3px solid var(--accent2); padding-left: .8rem; margin: .3rem 0; }
+        .kbr-famaranana { font-style: italic; color: var(--text-muted); font-size: .9rem;
+            border-left: 3px solid var(--accent2); padding-left: .8rem; }
+        .kbr-label { display: block; font-size: .7rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: .07em; color: var(--accent);
+            margin-bottom: .2rem; opacity: .8; }
+        .kbr-body p { margin: 0; line-height: 1.7; }
+
+        /* ── Capsule Vintana dans le feed ── */
+        .post-card-vintana {
+            border: 1.5px solid rgba(191,95,255,.25) !important;
+            background: linear-gradient(160deg,
+                rgba(191,95,255,.04) 0%,
+                var(--bg-card) 40%,
+                rgba(0,207,255,.03) 100%) !important;
+        }
+        [data-theme="dark"] .post-card-vintana {
+            border-color: rgba(191,95,255,.3) !important;
+            background: linear-gradient(160deg,
+                rgba(191,95,255,.07) 0%,
+                var(--bg-card) 40%,
+                rgba(0,207,255,.05) 100%) !important;
+        }
+        .pc-vintana-badge {
+            display: inline-flex; align-items: center; gap: .3rem;
+            padding: .3rem .7rem .3rem .65rem;
+            margin: .75rem 1.1rem -.3rem;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(191,95,255,.15), rgba(0,207,255,.12));
+            border: 1px solid rgba(191,95,255,.25);
+            color: #bf5fff;
+            font-size: .75rem; font-weight: 700;
+            width: fit-content;
+        }
+        [data-theme="dark"] .pc-vintana-badge { color: #d580ff; }
+        .pc-vintana-badge .material-icons { font-size: .85rem; }
+
+        /* Contenu verrouillé */
+        .pc-vintana-locked {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: .5rem; padding: 2rem 1.5rem 1.2rem;
+            text-align: center;
+        }
+        .pc-vintana-lock-icon { font-size: 2.4rem; display:flex; align-items:center; justify-content:center; }
+        .pc-vintana-lock-title {
+            font-size: 1.05rem; font-weight: 800; color: var(--text);
+            letter-spacing: -.01em;
+        }
+        .pc-vintana-lock-sub {
+            font-size: .85rem; color: var(--text-muted);
+            line-height: 1.6; max-width: 340px;
+        }
+        .pc-vintana-lock-sub strong { color: var(--accent); }
+        .pc-vintana-lock-band {
+            display: flex; align-items: center; justify-content: center; gap: .45rem;
+            padding: .55rem 1.1rem;
+            background: linear-gradient(90deg, rgba(191,95,255,.1), rgba(0,207,255,.08));
+            border-top: 1px solid rgba(191,95,255,.18);
+            font-size: .8rem; font-weight: 600; color: var(--text-muted);
+            font-family: 'Courier New', monospace;
+        }
+        .pc-vintana-lock-band .material-icons { font-size: .9rem; color: #bf5fff; }
+        .pc-vintana-lock-band strong { color: var(--accent); font-family: inherit; }
+
+        /* Contenu révélé (vintage glow) */
+        .vintana-body { display: flex; flex-direction: column; gap: .5rem; }
+        .vintana-message { margin: 0; line-height: 1.75; }
+
 	</style>
 
 
@@ -221,6 +353,126 @@
 	</main>
 
 	{% include 'snippets/footer.html' %}
+
+<!-- ══════════════════════════════════════════════════════════
+     LIGHTBOX GLOBAL — ouvert par openGalleryLightbox(srcs, idx)
+     ou openLightbox(src, title, idx) depuis la page profil.
+     ══════════════════════════════════════════════════════════ -->
+<div id="g-lightbox"
+     onclick="if(event.target===this)gLbClose()"
+     style="display:none;position:fixed;inset:0;z-index:99999;
+            background:rgba(0,0,0,.92);backdrop-filter:blur(6px);
+            -webkit-backdrop-filter:blur(6px);
+            align-items:center;justify-content:center;flex-direction:column;">
+    <!-- Close -->
+    <button onclick="gLbClose()"
+            style="position:fixed;top:1rem;right:1rem;width:42px;height:42px;
+                   border-radius:50%;background:rgba(255,255,255,.14);
+                   border:1.5px solid rgba(255,255,255,.2);color:#fff;
+                   cursor:pointer;display:flex;align-items:center;justify-content:center;
+                   transition:background .18s;z-index:1;">
+        <span class="material-icons" style="font-size:1.25rem;">close</span>
+    </button>
+    <!-- Prev -->
+    <button id="g-lb-prev" onclick="gLbNav(-1)"
+            style="position:fixed;left:1rem;top:50%;transform:translateY(-50%);
+                   width:46px;height:46px;border-radius:50%;
+                   background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);
+                   color:#fff;cursor:pointer;display:none;align-items:center;justify-content:center;
+                   transition:background .18s;">
+        <span class="material-icons">chevron_left</span>
+    </button>
+    <!-- Image -->
+    <img id="g-lb-img" src="" alt=""
+         style="max-width:92vw;max-height:88vh;border-radius:14px;
+                object-fit:contain;box-shadow:0 8px 48px rgba(0,0,0,.7);
+                transition:opacity .18s;">
+    <!-- Next -->
+    <button id="g-lb-next" onclick="gLbNav(1)"
+            style="position:fixed;right:1rem;top:50%;transform:translateY(-50%);
+                   width:46px;height:46px;border-radius:50%;
+                   background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);
+                   color:#fff;cursor:pointer;display:none;align-items:center;justify-content:center;
+                   transition:background .18s;">
+        <span class="material-icons">chevron_right</span>
+    </button>
+    <!-- Counter -->
+    <span id="g-lb-counter"
+          style="position:fixed;top:1.1rem;left:50%;transform:translateX(-50%);
+                 color:rgba(255,255,255,.55);font-size:.8rem;font-weight:600;
+                 pointer-events:none;"></span>
+</div>
+<script>
+(function(){
+    var _srcs = [], _idx = 0;
+
+    window.openGalleryLightbox = function(srcs, idx) {
+        _srcs = Array.isArray(srcs) ? srcs : [srcs];
+        _idx  = (idx >= 0 && idx < _srcs.length) ? idx : 0;
+        _show();
+    };
+
+    /* Compatibilité page profil : openLightbox(src, title, counter0) */
+    window.openLightbox = function(src, title, idx) {
+        var thumbs = document.querySelectorAll('.photo-thumb img');
+        if (thumbs.length > 0) {
+            var srcs = Array.from(thumbs).map(function(i){ return i.src; });
+            window.openGalleryLightbox(srcs, idx || 0);
+        } else {
+            window.openGalleryLightbox([src], 0);
+        }
+    };
+
+    window.gLbClose = function() {
+        var lb = document.getElementById('g-lightbox');
+        if (lb) lb.style.display = 'none';
+        document.body.style.overflow = '';
+    };
+
+    window.gLbNav = function(dir) {
+        if (_srcs.length < 2) return;
+        _idx = (_idx + dir + _srcs.length) % _srcs.length;
+        _show();
+    };
+
+    /* Ouvrir la lightbox depuis un élément .pc-gal-item */
+    window.openPostMedia = function(el) {
+        var gallery = el.closest('.pc-gallery');
+        var items   = gallery ? gallery.querySelectorAll('.pc-gal-item:not(.pc-gal-video)') : [el];
+        var srcs    = Array.from(items).map(function(it){
+            var img = it.querySelector('img');
+            return img ? img.src : '';
+        }).filter(Boolean);
+        if (!srcs.length) return;
+        var idx = Array.from(items).indexOf(el);
+        window.openGalleryLightbox(srcs, idx < 0 ? 0 : idx);
+    };
+
+    function _show() {
+        var lb  = document.getElementById('g-lightbox');
+        var img = document.getElementById('g-lb-img');
+        var cnt = document.getElementById('g-lb-counter');
+        var prev = document.getElementById('g-lb-prev');
+        var next = document.getElementById('g-lb-next');
+        if (!lb) return;
+        lb.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        if (img) { img.style.opacity = '0'; img.src = _srcs[_idx] || ''; img.onload = function(){ img.style.opacity='1'; }; }
+        if (cnt) cnt.textContent = _srcs.length > 1 ? (_idx+1)+' / '+_srcs.length : '';
+        var multi = _srcs.length > 1;
+        if (prev) prev.style.display = multi ? 'flex' : 'none';
+        if (next) next.style.display = multi ? 'flex' : 'none';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        var lb = document.getElementById('g-lightbox');
+        if (!lb || lb.style.display === 'none') return;
+        if (e.key === 'Escape')      window.gLbClose();
+        if (e.key === 'ArrowLeft')   window.gLbNav(-1);
+        if (e.key === 'ArrowRight')  window.gLbNav(1);
+    });
+})();
+</script>
 
     <!-- ── Détection automatique de langue par géolocalisation IP ──────── -->
     <!-- Appelé UNE SEULE FOIS si aucune préférence n'est déjà enregistrée  -->

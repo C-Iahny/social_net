@@ -6,10 +6,10 @@
     {% for m in post.media_list %}
     {% if m.is_video %}
     <div class="pc-gal-item pc-gal-video">
-        <video class="pc-gal-vid" src="{{ m.url }}" muted></video>
+        <video class="pc-gal-vid" src="{{ m.url }}" controls preload="metadata"></video>
     </div>
     {% else %}
-    <div class="pc-gal-item">
+    <div class="pc-gal-item" onclick="openPostMedia(this)" style="cursor:zoom-in;">
         <img class="pc-gal-img" src="{{ m.url }}" alt="" loading="lazy" decoding="async">
     </div>
     {% endif %}

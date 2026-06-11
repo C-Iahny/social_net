@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+.kbr-wrapper {
+    max-width: 720px;
+    margin: 82px auto 3rem;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    width: 100%;
+}
+@media (max-width: 767px) {
+    .kbr-wrapper { margin-top: 70px; padding: 0 .6rem; }
+    .kbr-hero { padding: 1.2rem 1rem; border-radius: 14px; }
+    .kbr-hero-title { font-size: 1.15rem; }
+    .kbr-card { border-radius: 14px; }
+}
+.kbr-back {
+    display: inline-flex; align-items: center; gap: .35rem;
+    color: var(--text-muted); font-size: .88rem; font-weight: 600;
+    text-decoration: none; margin-bottom: 1.2rem;
+    padding: .3rem .7rem; border-radius: 8px; transition: background .15s, color .15s;
+}
+.kbr-back:hover { background: var(--btn-bg); color: var(--accent); text-decoration: none; }
+.kbr-back .material-icons { font-size: 1rem; }
+
+/* ── Hero ── */
+.kbr-hero {
+    background: linear-gradient(135deg, var(--accent-glow, rgba(99,102,241,.12)) 0%, var(--bg-card) 100%);
+    border: 1.5px solid var(--accent);
+    border-radius: 20px;
+    padding: 1.6rem 1.8rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.kbr-hero::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(ellipse, var(--accent-glow, rgba(99,102,241,.18)) 0%, transparent 70%);
+    pointer-events: none;
+}
+.kbr-hero-title {
+    display: flex; align-items: center; gap: .65rem;
+    font-size: 1.4rem; font-weight: 800; color: var(--text); margin-bottom: .4rem;
+}
+.kbr-hero-logo {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    object-fit: contain;
+    background: rgba(255,255,255,.08);
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,.15);
+}
+.kbr-hero-sub { font-size: .88rem; color: var(--text-muted); line-height: 1.6; }
+
+/* ── Form card ── */
+.kbr-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.4rem 1.5rem;
+    margin-bottom: 1.2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
+}
+.kbr-section-head {
+    display: flex; align-items: flex-start; gap: .6rem;
+    margin-bottom: .75rem;
+}
+.kbr-section-icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.kbr-section-icon .material-icons { font-size: 1.1rem; color: #fff; }
+.kbr-section-name { font-size: .95rem; font-weight: 800; color: var(--text); }
+.kbr-section-desc { font-size: .79rem; color: var(--text-muted); margin-top: .1rem; font-style: italic; }
+.kbr-optional { font-size: .7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--text-muted); opacity: .65; margin-left: .4rem; }
+
+.kbr-input {
+    width: 100%; padding: .6rem .9rem;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: .92rem; color: var(--text);
+    outline: none; transition: border-color .2s; font-family: inherit;
+    resize: vertical; min-height: 80px;
+}
+.kbr-input:focus { border-color: var(--accent); }
+.kbr-input::placeholder { color: var(--text-muted); }
+.kbr-input-title {
+    width: 100%; padding: .55rem .9rem;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: .95rem; font-weight: 700; color: var(--text);
+    outline: none; transition: border-color .2s; font-family: inherit;
+}
+.kbr-input-title:focus { border-color: var(--accent); }
+.kbr-input-title::placeholder { font-weight: 400; color: var(--text-muted); }
+
+/* ── Preview block ── */
+.kbr-preview-wrap {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.4rem 1.5rem; margin-bottom: 1.2rem;
+    display: none;
+}
+.kbr-preview-wrap.visible { display: block; }
+.kbr-preview-label {
+    font-size: .78rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--text-muted); margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .4rem;
+}
+
+/* ── Submit ── */
+.kbr-actions {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+}
+.kbr-feedback { font-size: .85rem; font-weight: 600; color: #e53935; flex: 1; }
+.kbr-submit {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .7rem 1.8rem; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; font-size: .95rem; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: opacity .15s;
+    box-shadow: 0 4px 18px rgba(0,0,0,.15);
+}
+.kbr-submit:hover { opacity: .88; }
+.kbr-submit .material-icons { font-size: 1.1rem; }
+.kbr-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── In-card Kabary preview CSS (same as feed) ── */
+.kbr-body { display: flex; flex-direction: column; gap: .9rem; }
+.kbr-fisaorana { font-style: italic; color: var(--text-muted); font-size: .9rem; border-left: 3px solid var(--accent); padding-left: .8rem; }
+.kbr-section { font-size: .92rem; color: var(--text); }
+.kbr-vato { font-size: .95rem; font-weight: 500; }
+.kbr-ohabolana blockquote { font-style: italic; color: var(--text-muted); border-left: 3px solid var(--accent2); padding-left: .8rem; margin: .3rem 0; }
+.kbr-famaranana { font-style: italic; color: var(--text-muted); font-size: .9rem; border-left: 3px solid var(--accent2); padding-left: .8rem; }
+.kbr-label { display: block; font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); margin-bottom: .2rem; opacity: .8; }
+.kbr-body p { margin: 0; line-height: 1.7; }
+</style>
+
+<div class="kbr-wrapper">
+
+    <a href="{% url 'post:post-view' %}" class="kbr-back">
+        <span class="material-icons">arrow_back</span> {% trans "Back to feed" %}
+    </a>
+
+    <!-- Hero -->
+    <div class="kbr-hero">
+        <div class="kbr-hero-title">
+            <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="Vazimba" class="kbr-hero-logo">
+            {% trans "Kabary numérique" %}
+        </div>
+        <p class="kbr-hero-sub">
+            {% trans "The Kabary is a traditional Malagasy oral art form — a structured speech that opens with a salutation, develops ideas with imagery and proverbs, and closes with a blessing. Share your thoughts in this timeless format." %}
+        </p>
+    </div>
+
+    <!-- Titre -->
+    <div class="kbr-card">
+        <div class="kbr-section-head">
+            <div class="kbr-section-icon"><span class="material-icons">title</span></div>
+            <div>
+                <div class="kbr-section-name">{% trans "Title" %} <span class="kbr-optional">{% trans "optional" %}</span></div>
+                <div class="kbr-section-desc">{% trans "Give your Kabary a memorable title." %}</div>
+            </div>
+        </div>
+        <input type="text" id="kbr-title"
+               class="kbr-input-title"
+               placeholder="{% trans 'Title of your Kabary…' %}"
+               maxlength="255">
+    </div>
+
+    <!-- Fisaorana -->
+    <div class="kbr-card">
+        <div class="kbr-section-head">
+            <div class="kbr-section-icon"><span class="material-icons">waving_hand</span></div>
+            <div>
+                <div class="kbr-section-name">Fisaorana <span class="kbr-optional">{% trans "optional" %}</span></div>
+                <div class="kbr-section-desc">{% trans "Opening salutation. Address your audience respectfully." %}</div>
+            </div>
+        </div>
+        <textarea id="kbr-fisaorana" class="kbr-input" rows="3"
+                  placeholder="{% trans 'Tompokolahy, Tompokovavy, ry havana… (Respected men, respected women, dear kin…)' %}"
+                  maxlength="500"
+                  oninput="kbrUpdatePreview()"></textarea>
+    </div>
+
+    <!-- Fanafahana -->
+    <div class="kbr-card">
+        <div class="kbr-section-head">
+            <div class="kbr-section-icon"><span class="material-icons">lightbulb</span></div>
+            <div>
+                <div class="kbr-section-name">Fanafahana <span class="kbr-optional">{% trans "optional" %}</span></div>
+                <div class="kbr-section-desc">{% trans "Introduction — set the context and purpose of your speech." %}</div>
+            </div>
+        </div>
+        <textarea id="kbr-fanafahana" class="kbr-input" rows="3"
+                  placeholder="{% trans 'Why I speak today, the occasion that brings us together…' %}"
+                  maxlength="1000"
+                  oninput="kbrUpdatePreview()"></textarea>
+    </div>
+
+    <!-- Vato misaina -->
+    <div class="kbr-card">
+        <div class="kbr-section-head">
+            <div class="kbr-section-icon" style="background:linear-gradient(135deg,#8b5cf6,#3b82f6);">
+                <span class="material-icons">format_quote</span>
+            </div>
+            <div>
+                <div class="kbr-section-name">Vato misaina</div>
+                <div class="kbr-section-desc">{% trans "The heart of the Kabary — your main message, ideas and reflections. (Required)" %}</div>
+            </div>
+        </div>
+        <textarea id="kbr-vato" class="kbr-input" rows="6"
+                  placeholder="{% trans 'Develop your thoughts, ideas, stories…' %}"
+                  maxlength="3000"
+                  oninput="kbrUpdatePreview()"></textarea>
+    </div>
+
+    <!-- Ohabolana -->
+    <div class="kbr-card">
+        <div class="kbr-section-head">
+            <div class="kbr-section-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">
+                <span class="material-icons">auto_stories</span>
+            </div>
+            <div>
+                <div class="kbr-section-name">Ohabolana <span class="kbr-optional">{% trans "optional" %}</span></div>
+                <div class="kbr-section-desc">{% trans "A Malagasy proverb to illuminate your message." %}</div>
+            </div>
+        </div>
+        <textarea id="kbr-ohabolana" class="kbr-input" rows="2"
+                  placeholder="{% trans 'Ny teny mamy, toy ny tantely… (Sweet words, like honey…)' %}"
+                  maxlength="300"
+                  oninput="kbrUpdatePreview()"></textarea>
+    </div>
+
+    <!-- Famaranana -->
+    <div class="kbr-card">
+        <div class="kbr-section-head">
+            <div class="kbr-section-icon" style="background:linear-gradient(135deg,#10b981,#06b6d4);">
+                <span class="material-icons">check_circle</span>
+            </div>
+            <div>
+                <div class="kbr-section-name">Famaranana <span class="kbr-optional">{% trans "optional" %}</span></div>
+                <div class="kbr-section-desc">{% trans "Closing — conclusion, blessing, thanks." %}</div>
+            </div>
+        </div>
+        <textarea id="kbr-famaranana" class="kbr-input" rows="3"
+                  placeholder="{% trans 'Closing words, blessing for all…' %}"
+                  maxlength="500"
+                  oninput="kbrUpdatePreview()"></textarea>
+    </div>
+
+    <!-- Aperçu -->
+    <div class="kbr-preview-wrap" id="kbr-preview-wrap">
+        <p class="kbr-preview-label"><span class="material-icons">visibility</span> {% trans "Preview" %}</p>
+        <div id="kbr-preview-content"></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="kbr-actions">
+        <span class="kbr-feedback" id="kbr-feedback"></span>
+        <button class="kbr-submit" id="kbr-submit-btn" onclick="kbrSubmit()">
+            <span class="material-icons">record_voice_over</span>
+            {% trans "Publish Kabary" %}
+        </button>
+    </div>
+
+</div>
+
+<script>
+var KBR_CSRF    = '{{ csrf_token }}';
+var KBR_POST_URL = '{% url "post:kabary-create" %}';
+
+function kbrVal(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : '';
+}
+
+function kbrEscape(t) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(t));
+    return d.innerHTML;
+}
+
+function kbrUpdatePreview() {
+    var fisaorana  = kbrVal('kbr-fisaorana');
+    var fanafahana = kbrVal('kbr-fanafahana');
+    var vato       = kbrVal('kbr-vato');
+    var ohabolana  = kbrVal('kbr-ohabolana');
+    var famaranana = kbrVal('kbr-famaranana');
+
+    var wrap = document.getElementById('kbr-preview-wrap');
+    var content = document.getElementById('kbr-preview-content');
+    if (!content) return;
+
+    var hasContent = fisaorana || fanafahana || vato || ohabolana || famaranana;
+    if (!hasContent) {
+        wrap.classList.remove('visible');
+        return;
+    }
+    wrap.classList.add('visible');
+
+    var html = '<div class="kbr-body">';
+    if (fisaorana) html += '<div class="kbr-fisaorana"><span class="kbr-label">Fisaorana</span><p>' + kbrEscape(fisaorana) + '</p></div>';
+    if (fanafahana) html += '<div class="kbr-section"><span class="kbr-label">Fanafahana</span><p>' + kbrEscape(fanafahana) + '</p></div>';
+    if (vato) html += '<div class="kbr-section kbr-vato"><span class="kbr-label">Vato misaina</span><p>' + kbrEscape(vato) + '</p></div>';
+    if (ohabolana) html += '<div class="kbr-ohabolana"><span class="kbr-label">Ohabolana</span><blockquote>« ' + kbrEscape(ohabolana) + ' »</blockquote></div>';
+    if (famaranana) html += '<div class="kbr-famaranana"><span class="kbr-label">Famaranana</span><p>' + kbrEscape(famaranana) + '</p></div>';
+    html += '</div>';
+
+    content.innerHTML = html;
+}
+
+function kbrSubmit() {
+    var vato = kbrVal('kbr-vato');
+    var fanafahana = kbrVal('kbr-fanafahana');
+    var fb = document.getElementById('kbr-feedback');
+    var btn = document.getElementById('kbr-submit-btn');
+
+    if (!vato && !fanafahana) {
+        if (fb) { fb.textContent = '{% trans "The main content (Vato misaina) is required." %}'; }
+        return;
+    }
+    if (fb) fb.textContent = '';
+    if (btn) btn.disabled = true;
+
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', KBR_CSRF);
+    fd.append('title',      kbrVal('kbr-title'));
+    fd.append('fisaorana',  kbrVal('kbr-fisaorana'));
+    fd.append('fanafahana', fanafahana);
+    fd.append('vato',       vato);
+    fd.append('ohabolana',  kbrVal('kbr-ohabolana'));
+    fd.append('famaranana', kbrVal('kbr-famaranana'));
+
+    fetch(KBR_POST_URL, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': KBR_CSRF },
+        body: fd,
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (btn) btn.disabled = false;
+        if (data.ok) {
+            window.location.href = data.redirect;
+        } else {
+            if (fb) fb.textContent = data.error || '{% trans "An error occurred." %}';
+        }
+    })
+    .catch(function(e) {
+        if (btn) btn.disabled = false;
+        if (fb) fb.textContent = '{% trans "Server error. Please try again." %}';
+        console.error(e);
+    });
+}
+</script>
+{% endblock %}

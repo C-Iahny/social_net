@@ -23,6 +23,12 @@ from .models import Post, Repost, Continent, Country, Follow, Comment, Reaction,
 from friend.models import FriendList
 from personal.models import HeroSettings
 
+# Import différé pour éviter les imports circulaires
+try:
+    from group.models import Group as Group_model
+except ImportError:
+    Group_model = None
+
 
 # ──────────────────────────────────────────────────────────────
 # Trending hashtags (cached, recalculé toutes les 30 min)
@@ -159,7 +165,7 @@ def post_feed_view(request):
     # select_related évite le N+1 (1 JOIN au lieu de 1 requête par post)
     feed_posts = Post.objects.filter(
         author__in=list(friends) + [user]
-    ).select_related('author').order_by("-id")
+    ).select_related('author', 'group').order_by("-id")
 
     # Pagination (5 posts par page)
     paginator = Paginator(feed_posts, 5)
@@ -220,6 +226,15 @@ def post_feed_view(request):
         post.total_reactions = sum(post.reaction_counts.values())
     _attach_media(posts_of_the_page, post_ids)
 
+    # Groupes de l'utilisateur (raccourci sidebar droite)
+    my_groups = []
+    if Group_model is not None:
+        my_groups = list(
+            Group_model.objects.filter(memberships__user=user)
+            .select_related('creator')
+            .distinct()[:6]
+        )
+
     context = {
         "friends":            friends,
         "friends_count":      friends.count(),
@@ -227,6 +242,7 @@ def post_feed_view(request):
         "post_form":          PostForm(),
         "my_post_count":      my_post_count,
         "trending_hashtags":  get_trending_hashtags(),
+        "my_groups":          my_groups,
     }
     return render(request, "post/post_view.html", context)
 
@@ -249,7 +265,7 @@ def post_feed_more(request):
 
     feed_posts = Post.objects.filter(
         author__in=list(friends) + [user]
-    ).select_related('author').order_by("-id")
+    ).select_related('author', 'group').order_by("-id")
 
     paginator = Paginator(feed_posts, 5)
     page_number = request.GET.get("page", 1)
@@ -652,7 +668,7 @@ def hashtag_view(request, tag):
     tag_clean = tag.lstrip('#').lower()
     posts = Post.objects.filter(
         Q(body__icontains='#' + tag_clean) | Q(title__icontains='#' + tag_clean)
-    ).select_related('author').order_by('-id')
+    ).select_related('author', 'group').order_by('-id')
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -757,4 +773,162 @@ def post_detail(request, post_id):
     return render(request, 'post/post_detail.html', {
         'post': post,
         'comment_url': reverse('post:add-comment', args=[post.id]),
+    })
+
+
+# ── Kabary numérique ──────────────────────────────────────────────────────────
+
+@login_required
+def kabary_create(request):
+    """Page de création d'un Kabary numérique."""
+    if request.method == 'POST':
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+        fisaorana   = request.POST.get('fisaorana', '').strip()
+        fanafahana  = request.POST.get('fanafahana', '').strip()
+        vato        = request.POST.get('vato', '').strip()
+        ohabolana   = request.POST.get('ohabolana', '').strip()
+        famaranana  = request.POST.get('famaranana', '').strip()
+
+        if not vato and not fanafahana:
+            err = 'Le contenu principal (Vato misaina) est obligatoire.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': err})
+            messages.error(request, err)
+            return redirect('post:kabary-create')
+
+        # Assembler le body structuré en HTML
+        parts = []
+        if fisaorana:
+            parts.append(
+                f'<div class="kbr-fisaorana"><span class="kbr-label">Fisaorana</span>'
+                f'<p>{fisaorana}</p></div>'
+            )
+        if fanafahana:
+            parts.append(
+                f'<div class="kbr-section"><span class="kbr-label">Fanafahana</span>'
+                f'<p>{fanafahana}</p></div>'
+            )
+        if vato:
+            parts.append(
+                f'<div class="kbr-section kbr-vato"><span class="kbr-label">Vato misaina</span>'
+                f'<p>{vato}</p></div>'
+            )
+        if ohabolana:
+            parts.append(
+                f'<div class="kbr-ohabolana"><span class="kbr-label">Ohabolana</span>'
+                f'<blockquote>« {ohabolana} »</blockquote></div>'
+            )
+        if famaranana:
+            parts.append(
+                f'<div class="kbr-famaranana"><span class="kbr-label">Famaranana</span>'
+                f'<p>{famaranana}</p></div>'
+            )
+
+        body = '<div class="kbr-body">' + ''.join(parts) + '</div>'
+        title_text = request.POST.get('title', '').strip() or (vato or fanafahana)[:80]
+
+        try:
+            post = Post.objects.create(
+                title=title_text,
+                body=body,
+                author=request.user,
+                post_type=Post.KABARY,
+            )
+        except Exception as e:
+            logging.getLogger(__name__).exception("Kabary create failed: %s", e)
+            err = 'Erreur lors de la création du Kabary.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': err})
+            messages.error(request, err)
+            return redirect('post:kabary-create')
+
+        if is_ajax:
+            return JsonResponse({'ok': True, 'redirect': post.get_absolute_url()})
+        messages.success(request, 'Kabary publié !')
+        return redirect('post:post-detail', post_id=post.id)
+
+    return render(request, 'post/kabary_create.html', {})
+
+
+@login_required
+def vintana_create(request):
+    """Crée une Capsule Vintana (time-capsule post)."""
+    from django.utils import timezone
+
+    if request.method == 'POST':
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+        title    = request.POST.get('title', '').strip()
+        message  = request.POST.get('message', '').strip()
+        reveal_s = request.POST.get('reveal_date', '').strip()
+
+        # Validation
+        if not message:
+            err = 'Le message de la capsule est obligatoire.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': err})
+            messages.error(request, err)
+            return redirect('post:vintana-create')
+
+        if not reveal_s:
+            err = 'La date de révélation est obligatoire.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': err})
+            messages.error(request, err)
+            return redirect('post:vintana-create')
+
+        # Parsing de la date (format HTML datetime-local : YYYY-MM-DDTHH:MM)
+        try:
+            from datetime import datetime
+            import pytz
+            naive_dt = datetime.strptime(reveal_s, '%Y-%m-%dT%H:%M')
+            tz = timezone.get_current_timezone()
+            reveal_dt = timezone.make_aware(naive_dt, tz)
+        except ValueError:
+            err = 'Format de date invalide.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': err})
+            messages.error(request, err)
+            return redirect('post:vintana-create')
+
+        if reveal_dt <= timezone.now():
+            err = 'La date de révélation doit être dans le futur.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': err})
+            messages.error(request, err)
+            return redirect('post:vintana-create')
+
+        # Corps HTML de la capsule
+        body = (
+            f'<div class="vintana-body">'
+            f'<p class="vintana-message">{message}</p>'
+            f'</div>'
+        )
+        title_text = title or message[:80]
+
+        try:
+            post = Post.objects.create(
+                title=title_text,
+                body=body,
+                author=request.user,
+                post_type=Post.VINTANA,
+                reveal_date=reveal_dt,
+            )
+        except Exception as e:
+            logging.getLogger(__name__).exception("Vintana create failed: %s", e)
+            err = 'Erreur lors de la création de la capsule.'
+            if is_ajax:
+                return JsonResponse({'ok': False, 'error': err})
+            messages.error(request, err)
+            return redirect('post:vintana-create')
+
+        if is_ajax:
+            return JsonResponse({'ok': True, 'redirect': f'/post/{post.id}/'})
+        messages.success(request, 'Capsule Vintana créée ! Elle sera révélée le ' + reveal_dt.strftime('%d/%m/%Y à %H:%M') + '.')
+        return redirect('post:post-detail', post_id=post.id)
+
+    now_plus_1day = __import__('datetime').datetime.now() + __import__('datetime').timedelta(days=1)
+    return render(request, 'post/vintana_create.html', {
+        'min_reveal': now_plus_1day.strftime('%Y-%m-%dT%H:%M'),
     })

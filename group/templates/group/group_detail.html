@@ -4,7 +4,47 @@
 
 {% block content %}
 <style>
-.gd-wrapper { max-width: 820px; margin: 82px auto 3rem; padding: 0 1rem; }
+/* ── Layout ── */
+.gd-wrapper {
+    max-width: 860px;
+    margin: 82px auto 3rem;
+    padding: 0 1rem;
+    box-sizing: border-box;
+    width: 100%;
+}
+@media (max-width: 767px) {
+    .gd-wrapper {
+        margin-top: 70px;
+        padding: 0 .75rem;
+    }
+    /* Cover moins haute sur mobile */
+    .gd-cover { height: 130px; }
+    /* Head du groupe : réduire les paddings */
+    .gd-head { padding: .9rem 1rem; }
+    .gd-actions { padding: 0 1rem 1rem; gap: .45rem; }
+    .gd-title { font-size: 1.25rem; }
+    /* Stats bar en colonne compacte */
+    .gd-stats-bar {
+        gap: .75rem;
+        padding: .6rem .9rem;
+        flex-wrap: wrap;
+    }
+    /* Onglets : scrollable horizontalement */
+    .gd-tabs {
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 .1rem;
+        gap: .1rem;
+    }
+    .gd-tabs::-webkit-scrollbar { display: none; }
+    .gd-tab {
+        flex-shrink: 0;
+        padding: .55rem .75rem;
+        font-size: .82rem;
+    }
+    .gd-tab .material-icons { font-size: .9rem; }
+}
 .gd-back {
     display: inline-flex; align-items: center; gap: .35rem;
     color: var(--text-muted); font-size: .88rem; font-weight: 600;
@@ -14,9 +54,11 @@
 .gd-back:hover { background: var(--btn-bg); color: var(--accent); text-decoration: none; }
 .gd-back .material-icons { font-size: 1rem; }
 
+/* ── Group card ── */
 .gd-card {
     background: var(--bg-card); border: 1px solid var(--border);
     border-radius: 18px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,.06);
+    margin-bottom: 1.5rem;
 }
 .gd-cover {
     height: 180px; background: linear-gradient(130deg, var(--accent), var(--accent2));
@@ -54,21 +96,530 @@
 .gd-danger { background: var(--btn-bg); border: 1.5px solid var(--border); color: #e53935; }
 .gd-danger:hover { background: rgba(229,57,53,.1); border-color: #e53935; }
 
-.gd-members { border-top: 1px solid var(--border); padding: 1.2rem 1.4rem 1.5rem; }
-.gd-members-title {
-    font-size: .82rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .05em; color: var(--text-muted); margin-bottom: 1rem;
+/* ── Members strip ── */
+.gd-members-strip {
+    border-top: 1px solid var(--border); padding: 1rem 1.4rem 1.2rem;
+    display: flex; align-items: center; gap: .6rem; flex-wrap: wrap;
 }
+.gd-members-strip p { font-size: .8rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--text-muted); margin: 0 .5rem 0 0; }
+.gd-mini-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--bg-card); margin-left: -8px; }
+.gd-mini-avatar:first-of-type { margin-left: 0; }
+.gd-see-all {
+    font-size: .78rem; font-weight: 700; color: var(--accent);
+    text-decoration: none; margin-left: .5rem; transition: opacity .15s;
+}
+.gd-see-all:hover { opacity: .75; text-decoration: none; }
+
+/* ── Post create box ── */
+.gd-create-box {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1rem 1.2rem; margin-bottom: 1rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,.05);
+}
+.gd-create-row {
+    display: flex; align-items: flex-start; gap: .75rem;
+}
+.gd-create-row img {
+    width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+    border: 1.5px solid var(--border); flex-shrink: 0; margin-top: .15rem;
+}
+.gd-create-fields { flex: 1; display: flex; flex-direction: column; gap: .5rem; }
+.gd-post-title-input {
+    width: 100%; padding: .5rem .85rem;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: .9rem; font-weight: 700; color: var(--text);
+    outline: none; transition: border-color .2s; font-family: inherit;
+}
+.gd-post-title-input:focus { border-color: var(--accent); }
+.gd-post-title-input::placeholder { font-weight: 400; color: var(--text-muted); }
+.gd-post-body-input {
+    width: 100%; min-height: 70px; max-height: 200px; resize: vertical;
+    padding: .55rem .85rem;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; font-size: .88rem; color: var(--text);
+    outline: none; transition: border-color .2s; font-family: inherit; line-height: 1.55;
+}
+.gd-post-body-input:focus { border-color: var(--accent); }
+.gd-post-body-input::placeholder { color: var(--text-muted); }
+.gd-create-footer { display: flex; justify-content: flex-end; margin-top: .5rem; }
+.gd-post-submit {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 11px;
+    padding: .5rem 1.2rem; font-size: .88rem; font-weight: 700;
+    cursor: pointer; transition: opacity .15s; font-family: inherit;
+}
+.gd-post-submit:hover { opacity: .88; }
+.gd-post-submit .material-icons { font-size: 1rem; }
+
+/* ── Posts feed ── */
+#gd-posts-feed { margin-top: .5rem; }
+
+/* ── Sections label ── */
+.gd-section-label {
+    font-size: .78rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--text-muted); margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .45rem;
+}
+.gd-section-label .material-icons { font-size: .95rem; }
+
+/* ── Members full list (accordéon) ── */
+.gd-members-panel {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.2rem 1.4rem 1.5rem;
+    margin-bottom: 1.5rem; display: none;
+}
+.gd-members-panel.open { display: block; }
 .gd-member-grid { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .gd-member {
     display: flex; align-items: center; gap: .65rem;
     padding: .5rem .65rem; border-radius: 12px; background: var(--btn-bg);
     text-decoration: none;
 }
-.gd-member img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; }
+.gd-member img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+    border: 1.5px solid var(--border); flex-shrink: 0; }
 .gd-member-info { min-width: 0; }
-.gd-member-name { font-size: .88rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gd-member-name { font-size: .88rem; font-weight: 700; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gd-member-role { font-size: .74rem; color: var(--accent); font-weight: 700; }
+
+/* ── Post de groupe : avatar cover + badge utilisateur ── */
+.pc-gp-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+}
+.pc-gp-cover-link {
+    display: block;
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    overflow: hidden;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+.pc-gp-cover {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 10px;
+    display: block;
+}
+.pc-gp-cover-fallback {
+    width: 52px;
+    height: 52px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+.pc-gp-cover-fallback .material-icons { font-size: 1.6rem; }
+.pc-gp-user-badge-link {
+    position: absolute;
+    bottom: -4px;
+    right: -6px;
+    display: block;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-card);
+    overflow: hidden;
+    text-decoration: none;
+    background: var(--bg-card);
+    box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    z-index: 2;
+}
+.pc-gp-user-badge {
+    width: 22px;
+    height: 22px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+.pc-sub-user-link {
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-decoration: none;
+    font-size: .78rem;
+}
+.pc-sub-user-link:hover { color: var(--accent); text-decoration: underline; }
+
+/* Réutiliser les styles de post-card du feed */
+.post-card {
+    background: var(--bg-card); border-radius: 20px; margin-bottom: 1.1rem;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.06), 0 0 0 .5px rgba(0,0,0,.05);
+}
+.pc-header { display: flex; align-items: center; gap: .85rem; padding: 1rem 1.1rem .55rem; }
+.pc-avatar-ring {
+    width: 48px; height: 48px; border-radius: 50%; padding: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    flex-shrink: 0; text-decoration: none; display: block;
+}
+.pc-avatar-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--bg-card); display: block; }
+.pc-meta { flex: 1; min-width: 0; }
+.pc-author { font-weight: 700; color: var(--text); font-size: .93rem; text-decoration: none; display: block; }
+.pc-author:hover { color: var(--accent); }
+.pc-sub { font-size: .78rem; color: var(--text-muted); display: flex; align-items: center; gap: .3rem; }
+.pc-sub .material-icons { font-size: .82rem; }
+.pc-owner-menu { display: flex; gap: .3rem; margin-left: auto; flex-shrink: 0; }
+.pc-menu-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent; color: var(--text-muted);
+    cursor: pointer; text-decoration: none; transition: background .12s, color .12s;
+}
+.pc-menu-btn .material-icons { font-size: 1rem; }
+.pc-menu-btn:hover { background: var(--btn-bg); color: var(--text); }
+.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; }
+.pc-title { padding: .4rem 1.1rem .15rem; font-weight: 700; font-size: 1.07rem; color: var(--text); }
+.pc-title-link { color: inherit; text-decoration: none; }
+.pc-title-link:hover { color: var(--accent); }
+.pc-body { padding: .2rem 1.1rem .7rem; color: var(--text); font-size: .9rem; line-height: 1.68; opacity: .9; }
+.pc-footer { display: flex; gap: .2rem; padding: .35rem .65rem .4rem;
+    border-top: 1px solid rgba(0,0,0,.05); }
+[data-theme="dark"] .pc-footer { border-top-color: rgba(255,255,255,.05); }
+.reaction-wrap { flex: 1; position: relative; }
+.pc-footer-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: .38rem;
+    padding: .5rem; border-radius: 11px; border: none; background: none;
+    color: var(--text-muted); font-size: .81rem; font-weight: 600;
+    cursor: pointer; transition: background .13s, color .13s; font-family: inherit;
+}
+.pc-footer-btn:hover { background: var(--btn-bg); color: var(--text); }
+.pc-footer-btn .material-icons { font-size: 1.1rem; }
+.pc-footer-btn.liked { color: var(--accent); }
+.reaction-picker {
+    display: none; position: absolute; bottom: calc(100% + 10px); left: 50%;
+    transform: translateX(-50%); background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 40px; padding: .32rem .45rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.22); gap: .1rem; z-index: 200;
+    white-space: nowrap; animation: reactionPop .18s cubic-bezier(.34,1.56,.64,1) both;
+}
+.reaction-picker.open { display: flex; }
+@keyframes reactionPop {
+    from { opacity:0; transform:translateX(-50%) scale(.55) translateY(8px); }
+    to   { opacity:1; transform:translateX(-50%) scale(1) translateY(0); }
+}
+.reaction-emoji-btn { background: none; border: none; cursor: pointer;
+    font-size: 1.6rem; padding: .1rem .15rem; border-radius: 50%; transition: transform .15s; }
+.reaction-emoji-btn:hover { transform: scale(1.38) translateY(-5px); }
+.reaction-emoji-btn.selected { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 50%; }
+.pc-reaction-bar { display: flex; align-items: center; gap: .45rem; padding: .3rem 1.1rem;
+    font-size: .8rem; color: var(--text-muted); }
+.rc-emoji-group { display: flex; }
+.rc-emoji { width: 22px; height: 22px; border-radius: 50%; background: var(--bg-card);
+    border: 1.5px solid var(--border); display: inline-flex; align-items: center;
+    justify-content: center; font-size: .82rem; margin-right: -5px; position: relative; z-index: 1; }
+.rc-count { font-weight: 600; color: var(--text-muted); font-size: .78rem; margin-left: 8px; }
+.pc-comment-panel { display: none; border-top: 1px solid rgba(0,0,0,.05); background: var(--bg-card); }
+[data-theme="dark"] .pc-comment-panel { border-top-color: rgba(255,255,255,.05); }
+.pc-comment-panel.open { display: block; }
+.pc-comment-list { padding: .75rem 1.1rem .4rem; display: flex; flex-direction: column; gap: .7rem;
+    max-height: 440px; overflow-y: auto; }
+.pc-comment-item { display: flex; align-items: flex-start; gap: .6rem; }
+.cmt-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover;
+    border: 1.5px solid var(--border); flex-shrink: 0; }
+.pc-comment-right { flex: 1; min-width: 0; }
+.pc-comment-bubble { background: var(--btn-bg); border-radius: 4px 14px 14px 14px;
+    padding: .42rem .75rem .48rem; display: inline-block; max-width: 100%; }
+.pc-comment-author { font-size: .78rem; font-weight: 700; color: var(--text);
+    text-decoration: none; display: inline-block; }
+.pc-comment-author:hover { color: var(--accent); }
+.pc-comment-body { font-size: .88rem; color: var(--text); margin: .05rem 0 0; word-break: break-word; }
+.pc-comment-footer { display: flex; align-items: center; gap: .7rem; margin-top: .28rem; }
+.pc-comment-time { font-size: .72rem; color: var(--text-muted); }
+.pc-comment-reply-btn { background: none; border: none; padding: 0; cursor: pointer;
+    color: var(--text-muted); font-size: .72rem; font-weight: 700; transition: color .12s; text-transform: uppercase; }
+.pc-comment-reply-btn:hover { color: var(--accent); }
+.pc-comment-del { background: none; border: none; padding: 0; cursor: pointer;
+    color: var(--text-muted); font-size: .72rem; font-weight: 600; margin-left: auto; transition: color .12s; }
+.pc-comment-del:hover { color: #e53935; }
+.pc-comment-replies { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem;
+    border-left: 2px solid rgba(0,207,255,.22); margin-left: .6rem; padding-left: .65rem; }
+.pc-comment-reply-item { display: flex; align-items: flex-start; gap: .5rem; }
+.reply-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover;
+    border: 1.5px solid var(--border); flex-shrink: 0; }
+.pc-reply-form-wrap { display: none; margin-top: .45rem; border-left: 2px solid rgba(0,207,255,.22);
+    margin-left: .6rem; padding-left: .65rem; }
+.pc-reply-form-wrap.open { display: flex; align-items: flex-end; gap: .5rem; }
+.reply-form-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.pc-reply-input-wrap { flex: 1; }
+.pc-comment-form { display: flex; align-items: flex-end; gap: .55rem;
+    padding: .55rem 1.1rem .7rem; border-top: 1px solid rgba(0,0,0,.05); }
+.cmt-form-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.pc-comment-input-wrap { flex: 1; }
+.pc-comment-textarea, .pc-reply-textarea {
+    width: 100%; resize: none; overflow: hidden;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 18px; padding: .42rem .85rem; color: var(--text); font-size: .88rem;
+    outline: none; transition: border-color .15s; font-family: inherit; min-height: 36px; max-height: 120px;
+}
+.pc-comment-textarea:focus, .pc-reply-textarea:focus { border-color: var(--accent); }
+.pc-comment-send {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 50%; width: 34px; height: 34px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: opacity .15s;
+}
+.pc-comment-send:hover { opacity: .85; }
+.pc-comment-send .material-icons { font-size: 1rem; }
+/* Gallery styles */
+.pc-gallery { display: grid; gap: 2px; overflow: hidden; }
+.pc-gallery-1 { grid-template-columns: 1fr; }
+.pc-gallery-2 { grid-template-columns: 1fr 1fr; }
+.pc-gallery-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+.pc-gallery-3 .pc-gal-item:first-child { grid-row: 1 / 3; }
+.pc-gallery-4, .pc-gallery-5 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.pc-gallery-4 .pc-gal-item:nth-child(n+5),
+.pc-gallery-5 .pc-gal-item:nth-child(n+5) { display: none; }
+.pc-gal-item { position: relative; overflow: hidden; aspect-ratio: 1; background: #000; cursor: zoom-in; }
+.pc-gal-item:first-child:last-child { min-height: 300px; aspect-ratio: unset; }
+.pc-gal-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s; }
+.pc-gal-item:hover .pc-gal-img { transform: scale(1.04); }
+.pc-gal-video { background: #000; cursor: default; }
+.pc-gal-vid { width: 100%; height: 100%; object-fit: contain; display: block; }
+/* ── Media button & preview ── */
+.gd-media-btn {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .45rem .9rem; border-radius: 10px;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    color: var(--text-muted); font-size: .82rem; font-weight: 600;
+    cursor: pointer; transition: background .15s, color .15s; font-family: inherit;
+}
+.gd-media-btn .material-icons { font-size: 1.1rem; }
+.gd-media-btn:hover { background: var(--btn-hover); color: var(--accent); }
+#gd-media-preview {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+    padding: .5rem .2rem .2rem;
+}
+.gd-preview-item {
+    position: relative; width: 80px; height: 80px; border-radius: 10px;
+    overflow: hidden; background: #000; flex-shrink: 0;
+}
+.gd-preview-item img, .gd-preview-item video {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.gd-preview-del {
+    position: absolute; top: 3px; right: 3px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(0,0,0,.65); color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+}
+.gd-preview-del .material-icons { font-size: .8rem; }
+
+/* Share toast */
+#gd-share-toast {
+    position: fixed; bottom: 1.8rem; left: 50%; transform: translateX(-50%) translateY(16px);
+    background: #1c1e20; color: #fff; padding: .6rem 1.3rem; border-radius: 12px;
+    font-size: .88rem; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 9999;
+}
+#gd-share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Statistiques bar ── */
+.gd-stats-bar {
+    display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: .75rem 1.2rem; margin-bottom: 1rem;
+    font-size: .85rem; color: var(--text-muted);
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.gd-stat { display: flex; align-items: center; gap: .35rem; }
+.gd-stat .material-icons { font-size: 1rem; color: var(--accent); }
+.gd-stat strong { color: var(--text); font-weight: 700; }
+
+/* ── Onglets ── */
+.gd-tabs {
+    display: flex; gap: .3rem;
+    border-bottom: 2px solid var(--border); margin-bottom: 1.2rem;
+}
+.gd-tab {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .6rem 1rem; border: none; background: none; cursor: pointer;
+    font-size: .88rem; font-weight: 600; color: var(--text-muted);
+    border-bottom: 2.5px solid transparent; margin-bottom: -2px;
+    font-family: inherit; transition: color .15s, border-color .15s;
+    border-radius: 10px 10px 0 0;
+}
+.gd-tab .material-icons { font-size: 1rem; }
+.gd-tab:hover { color: var(--accent); }
+.gd-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-glow, rgba(99,102,241,.07)); }
+
+/* ── Épinglées ── */
+.gd-pinned-section { margin-bottom: 1.4rem; }
+.gd-pinned-card {
+    position: relative;
+    background: linear-gradient(135deg, var(--accent-glow, rgba(99,102,241,.07)) 0%, var(--bg-card) 100%);
+    border: 1.5px solid var(--accent);
+    border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: .75rem;
+}
+.gd-pin-btn {
+    position: absolute; top: .7rem; right: .7rem;
+    background: none; border: none; cursor: pointer; color: var(--accent); padding: .2rem;
+    border-radius: 6px; transition: background .15s;
+    display: flex; align-items: center;
+}
+.gd-pin-btn:hover { background: var(--btn-bg); }
+.gd-pin-btn .material-icons { font-size: 1.1rem; }
+.gd-pinned-header { display: flex; align-items: center; gap: .6rem; margin-bottom: .6rem; }
+.gd-pinned-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.gd-pinned-author { font-weight: 700; font-size: .88rem; color: var(--text); text-decoration: none; }
+.gd-pinned-author:hover { color: var(--accent); }
+.gd-pinned-date { font-size: .74rem; color: var(--text-muted); display: block; }
+.gd-pinned-title { font-weight: 700; font-size: .95rem; color: var(--text); margin-bottom: .3rem; }
+.gd-pinned-body { font-size: .88rem; color: var(--text-secondary); line-height: 1.5; }
+
+/* ── Bouton épingler sur post ── */
+.gd-post-pin-btn {
+    display: none; position: absolute; top: .5rem; right: 3.5rem;
+    background: var(--btn-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: .2rem .5rem; cursor: pointer; font-size: .75rem; color: var(--text-muted);
+    align-items: center; gap: .2rem; font-family: inherit;
+    transition: background .15s, color .15s;
+}
+.gd-post-pin-btn .material-icons { font-size: .9rem; }
+.gd-post-pin-btn:hover { background: var(--btn-hover); color: var(--accent); }
+.post-card:hover .gd-post-pin-btn { display: inline-flex; }
+.post-card { position: relative; }
+
+/* ── État vide ── */
+.gd-empty-state {
+    text-align: center; padding: 3rem 1rem;
+    background: var(--bg-card); border-radius: 18px; color: var(--text-muted);
+}
+.gd-empty-state .material-icons { font-size: 3rem; display: block; margin-bottom: .8rem; opacity: .35; }
+.gd-empty-sub { font-size: .85rem; margin-top: .3rem; }
+
+/* ── Galerie médias ── */
+.gd-media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px; margin-bottom: 1rem;
+}
+.gd-media-item {
+    position: relative; aspect-ratio: 1; border-radius: 10px;
+    overflow: hidden; cursor: zoom-in; background: var(--btn-bg);
+}
+.gd-media-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s; }
+.gd-media-item:hover img { transform: scale(1.06); }
+.gd-media-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,.32); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .2s;
+}
+.gd-media-item:hover .gd-media-overlay { opacity: 1; }
+.gd-media-overlay .material-icons { font-size: 1.6rem; }
+.gd-media-video { cursor: default; }
+
+/* ── Événements ── */
+.gd-event-create-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.1rem 1.2rem; margin-bottom: 1.5rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,.04);
+}
+.gd-event-fields { display: flex; flex-direction: column; gap: .5rem; }
+.gd-event-input {
+    width: 100%; padding: .5rem .85rem;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 10px; font-size: .88rem; color: var(--text);
+    outline: none; transition: border-color .2s; font-family: inherit;
+}
+.gd-event-input:focus { border-color: var(--accent); }
+.gd-event-card {
+    display: flex; gap: 1rem; align-items: flex-start;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1rem 1.2rem; margin-bottom: .85rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.gd-event-date-badge {
+    flex-shrink: 0; text-align: center;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border-radius: 12px; padding: .5rem .7rem; min-width: 50px;
+}
+.gd-event-day { display: block; font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.gd-event-month { display: block; font-size: .7rem; font-weight: 700; text-transform: uppercase; opacity: .9; }
+.gd-event-body { flex: 1; min-width: 0; }
+.gd-event-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .35rem; }
+.gd-event-meta { font-size: .8rem; color: var(--text-muted); display: flex; align-items: center; gap: .25rem; margin-bottom: .2rem; }
+.gd-event-meta .material-icons { font-size: .9rem; }
+.gd-event-desc { font-size: .85rem; color: var(--text-secondary); margin-top: .4rem; line-height: 1.5; }
+.gd-event-footer { display: flex; align-items: center; justify-content: space-between; margin-top: .7rem; }
+.gd-event-attendees { font-size: .8rem; color: var(--text-muted); display: flex; align-items: center; gap: .3rem; }
+.gd-event-attendees .material-icons { font-size: .95rem; }
+.gd-attend-btn {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .35rem .85rem; border-radius: 8px; border: 1.5px solid var(--accent);
+    background: none; color: var(--accent); font-size: .8rem; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: background .15s;
+}
+.gd-attend-btn .material-icons { font-size: .9rem; }
+.gd-attend-btn:hover, .gd-attend-btn.attending {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border-color: transparent;
+}
+
+/* ── Modal invitation ── */
+#gd-invite-overlay { display: none; }
+#gd-invite-overlay.open { display: flex !important; }
+.gd-invite-modal {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 20px; padding: 1.4rem 1.5rem 1.5rem;
+    width: 100%; max-width: 420px; max-height: 80vh;
+    overflow-y: auto; box-shadow: 0 12px 48px rgba(0,0,0,.28);
+    animation: gdInviteIn .2s ease;
+}
+@keyframes gdInviteIn { from { opacity:0; transform:scale(.94); } to { opacity:1; transform:scale(1); } }
+.gd-invite-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.gd-invite-header h3 { margin: 0; font-size: 1rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: .4rem; }
+.gd-invite-header h3 .material-icons { font-size: 1.15rem; color: var(--accent); }
+.gd-invite-close { background: none; border: none; cursor: pointer; color: var(--text-muted); padding: .2rem; border-radius: 6px; display: flex; align-items: center; transition: background .15s; }
+.gd-invite-close:hover { background: var(--btn-bg); color: var(--text); }
+.gd-invite-close .material-icons { font-size: 1.3rem; }
+.gd-invite-search-wrap {
+    display: flex; align-items: center; gap: .5rem;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: .5rem .85rem; margin-bottom: .75rem;
+}
+.gd-invite-search-wrap .material-icons { font-size: 1.1rem; color: var(--text-muted); flex-shrink: 0; }
+.gd-invite-search-wrap input {
+    flex: 1; background: none; border: none; outline: none;
+    font-size: .9rem; color: var(--text); font-family: inherit;
+}
+.gd-invite-search-wrap:focus-within { border-color: var(--accent); }
+.gd-invite-user-row {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .5rem .6rem; border-radius: 10px; transition: background .15s;
+}
+.gd-invite-user-row:hover { background: var(--btn-bg); }
+.gd-invite-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--btn-bg); }
+.gd-invite-username { flex: 1; font-size: .9rem; font-weight: 600; color: var(--text); }
+.gd-invite-add-btn {
+    display: inline-flex; align-items: center; gap: .2rem;
+    padding: .3rem .75rem; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; cursor: pointer; font-size: .8rem;
+    font-weight: 700; font-family: inherit; transition: opacity .15s;
+}
+.gd-invite-add-btn:hover { opacity: .88; }
+.gd-invite-add-btn .material-icons { font-size: .9rem; }
+.gd-invite-add-btn:disabled { opacity: .5; cursor: default; }
+.gd-invite-feedback {
+    margin-top: .6rem; font-size: .85rem; font-weight: 600;
+    text-align: center; color: var(--accent); min-height: 1.2em;
+}
+.gd-invite-empty { text-align: center; color: var(--text-muted); font-size: .85rem; padding: .8rem 0; }
+
+/* ── Feedback création événement ── */
+.gd-ev-create-feedback { font-size: .83rem; font-weight: 600; flex: 1; min-height: 1.2em; }
+.gd-ev-create-feedback.success { color: #22c55e; }
+.gd-ev-create-feedback.error { color: #e53935; }
 </style>
 
 <div class="gd-wrapper">
@@ -77,13 +628,14 @@
     </a>
 
     {% if messages %}
-        {% for message in messages %}
-        <div style="margin-bottom:1rem;padding:.7rem 1rem;border-radius:12px;background:var(--btn-bg);border:1px solid var(--border);font-size:.88rem;color:var(--text);">
-            {{ message }}
-        </div>
-        {% endfor %}
+    {% for message in messages %}
+    <div style="margin-bottom:1rem;padding:.7rem 1rem;border-radius:12px;background:var(--btn-bg);border:1px solid var(--border);font-size:.88rem;color:var(--text);">
+        {{ message }}
+    </div>
+    {% endfor %}
     {% endif %}
 
+    <!-- ── Group info card ── -->
     <div class="gd-card">
         <div class="gd-cover" {% if group.cover_url %}style="background-image:url('{{ group.cover_url }}')"{% endif %}></div>
 
@@ -99,15 +651,14 @@
                 <span><span class="material-icons">group</span> {{ group.member_count }} {% trans "members" %}</span>
                 <span><span class="material-icons">schedule</span> {{ group.created_at|date:"d M Y" }}</span>
             </div>
-            {% if group.description %}
-            <p class="gd-desc">{{ group.description }}</p>
-            {% endif %}
+            {% if group.description %}<p class="gd-desc">{{ group.description }}</p>{% endif %}
             <p class="gd-creator">
                 {% trans "Created by" %}
                 <a href="{% url 'account:view' user_id=group.creator.id %}">{{ group.creator.username }}</a>
             </p>
         </div>
 
+        <!-- Actions -->
         <div class="gd-actions">
             {% if is_member %}
                 {% if request.user != group.creator %}
@@ -126,11 +677,15 @@
                     </button>
                 </form>
             {% endif %}
-
             {% if is_admin or request.user == group.creator %}
             <a class="gd-action gd-secondary" href="{% url 'group:edit' group.slug %}">
                 <span class="material-icons">edit</span> {% trans "Edit" %}
             </a>
+            {% endif %}
+            {% if is_mod %}
+            <button class="gd-action gd-secondary" onclick="gdOpenInviteModal()" type="button">
+                <span class="material-icons">person_add</span> {% trans "Add member" %}
+            </button>
             {% endif %}
             {% if request.user == group.creator %}
             <a class="gd-action gd-danger" href="{% url 'group:delete' group.slug %}">
@@ -139,20 +694,922 @@
             {% endif %}
         </div>
 
-        <div class="gd-members">
-            <p class="gd-members-title">{% trans "Members" %} ({{ group.member_count }})</p>
-            <div class="gd-member-grid">
-                {% for m in members %}
-                <a class="gd-member" href="{% url 'account:view' user_id=m.user.id %}">
-                    <img src="{{ m.user.profile_image.url }}" alt="{{ m.user.username }}" loading="lazy">
-                    <div class="gd-member-info">
-                        <div class="gd-member-name">{{ m.user.username }}</div>
-                        {% if m.role == 'admin' %}<div class="gd-member-role">{% trans "Admin" %}</div>{% endif %}
-                    </div>
-                </a>
-                {% endfor %}
-            </div>
+        <!-- Members strip -->
+        <div class="gd-members-strip">
+            <p>{% trans "Members" %}</p>
+            {% for m in members|slice:":8" %}
+            <img class="gd-mini-avatar" src="{{ m.user.profile_image.url }}" alt="{{ m.user.username }}" title="{{ m.user.username }}">
+            {% endfor %}
+            {% if members|length > 0 %}
+            <a class="gd-see-all" href="#members" onclick="toggleMembers(event)">
+                {% if members|length > 8 %}+{{ members|length|add:"-8" }} — {% endif %}{% trans "See all" %}
+            </a>
+            {% endif %}
         </div>
     </div>
+
+    <!-- Members full panel (accordéon) -->
+    <div class="gd-members-panel" id="gd-members-panel">
+        <p class="gd-section-label"><span class="material-icons">groups</span> {% trans "Members" %} ({{ group.member_count }})</p>
+        <div class="gd-member-grid">
+            {% for m in members %}
+            <a class="gd-member" href="{% url 'account:view' user_id=m.user.id %}">
+                <img src="{{ m.user.profile_image.url }}" alt="{{ m.user.username }}" loading="lazy">
+                <div class="gd-member-info">
+                    <div class="gd-member-name">{{ m.user.username }}</div>
+                    {% if m.role == 'admin' %}<div class="gd-member-role">{% trans "Admin" %}</div>
+                    {% elif m.role == 'moderator' %}<div class="gd-member-role" style="color:var(--accent2);">{% trans "Moderator" %}</div>{% endif %}
+                    {% if is_admin and m.user != request.user and m.user != group.creator %}
+                    <div style="margin-top:.2rem;display:flex;gap:.3rem;">
+                        {% if m.role == 'member' %}
+                        <form method="post" action="{% url 'group:promote-member' group.slug m.user.id %}" style="display:inline;">
+                            {% csrf_token %}<button type="submit" style="font-size:.65rem;padding:.1rem .35rem;border-radius:5px;background:var(--accent-glow,rgba(99,102,241,.12));border:1px solid var(--accent);color:var(--accent);cursor:pointer;font-family:inherit;" title="{% trans 'Promote to moderator' %}">+mod</button>
+                        </form>
+                        {% elif m.role == 'moderator' %}
+                        <form method="post" action="{% url 'group:demote-member' group.slug m.user.id %}" style="display:inline;">
+                            {% csrf_token %}<button type="submit" style="font-size:.65rem;padding:.1rem .35rem;border-radius:5px;background:var(--btn-bg);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;font-family:inherit;" title="{% trans 'Demote to member' %}">-mod</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ── Create post box (members only) ── -->
+    {% if is_member %}
+    <div class="gd-create-box">
+        <div class="gd-create-row">
+            <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+            <div class="gd-create-fields">
+                <input type="text" id="gd-post-title"
+                       class="gd-post-title-input"
+                       placeholder="{% trans 'Title (optional)' %}">
+                <textarea id="gd-post-body"
+                          class="gd-post-body-input"
+                          placeholder="{% trans 'Share something with the group…' %}"></textarea>
+            </div>
+        </div>
+        <!-- Prévisualisation des médias sélectionnés -->
+        <div id="gd-media-preview"></div>
+        <div class="gd-create-footer">
+            <!-- Input fichier caché -->
+            <input type="file" id="gd-media-input" multiple
+                   accept="image/*,video/*" style="display:none;"
+                   onchange="gdPreviewFiles(this)">
+            <button type="button" class="gd-media-btn"
+                    onclick="document.getElementById('gd-media-input').click()">
+                <span class="material-icons">add_photo_alternate</span>
+                {% trans "Photo / Vidéo" %}
+            </button>
+            <button class="gd-post-submit" id="gd-submit-btn" onclick="gdSubmitPost()">
+                <span class="material-icons">send</span> {% trans "Publier" %}
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Statistiques rapides ── -->
+    <div class="gd-stats-bar">
+        <div class="gd-stat">
+            <span class="material-icons">article</span>
+            <strong>{{ post_count }}</strong>
+            <span>{% trans "posts" %}</span>
+        </div>
+        <div class="gd-stat">
+            <span class="material-icons">group</span>
+            <strong>{{ member_count }}</strong>
+            <span>{% trans "members" %}</span>
+        </div>
+        <div class="gd-stat">
+            <span class="material-icons">calendar_today</span>
+            <span>{{ group.created_at|date:"M Y" }}</span>
+        </div>
+    </div>
+
+    <!-- ── Onglets ── -->
+    <div class="gd-tabs">
+        <button class="gd-tab active" data-tab="posts" onclick="gdSwitchTab('posts', this)">
+            <span class="material-icons">article</span> {% trans "Posts" %}
+        </button>
+        <button class="gd-tab" data-tab="media" onclick="gdSwitchTab('media', this)">
+            <span class="material-icons">photo_library</span> {% trans "Media" %}
+        </button>
+        <button class="gd-tab" data-tab="events" onclick="gdSwitchTab('events', this)">
+            <span class="material-icons">event</span> {% trans "Events" %}
+        </button>
+        <button class="gd-tab" data-tab="dina" onclick="gdSwitchTab('dina', this)">
+            <span class="material-icons">gavel</span> {% trans "Dina" %}
+        </button>
+    </div>
+
+    <!-- ── Onglet Posts ── -->
+    <div id="gd-tab-posts" class="gd-tab-pane">
+
+        {% if pinned_posts %}
+        <div class="gd-pinned-section">
+            <div class="gd-section-label">
+                <span class="material-icons">push_pin</span>
+                {% trans "Pinned announcements" %}
+            </div>
+            {% for post in pinned_posts %}
+            <div class="gd-pinned-card">
+                {% if is_mod %}
+                <button class="gd-pin-btn active" title="{% trans 'Unpin' %}"
+                        onclick="gdTogglePin({{ post.id }}, '{% url 'group:pin-post' group.slug post.id %}', this)">
+                    <span class="material-icons">push_pin</span>
+                </button>
+                {% endif %}
+                <div class="gd-pinned-header">
+                    <a href="{% url 'account:view' user_id=post.author.id %}">
+                        <img class="gd-pinned-avatar" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+                    </a>
+                    <div>
+                        <a class="gd-pinned-author" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
+                        <span class="gd-pinned-date">{{ post.post_date|date:"d M Y" }}</span>
+                    </div>
+                </div>
+                {% if post.title %}<p class="gd-pinned-title">{{ post.title }}</p>{% endif %}
+                {% if post.body %}<p class="gd-pinned-body">{{ post.body|safe|truncatewords:40 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Feed principal -->
+        <div id="gd-posts-feed">
+            {% if posts_of_the_page %}
+            {% include 'post/post_cards_fragment.html' with in_group=True %}
+            {% else %}
+            <div class="gd-empty-state">
+                <span class="material-icons">article</span>
+                <p>{% trans "No posts yet in this group." %}</p>
+                {% if is_member %}<p class="gd-empty-sub">{% trans "Be the first to share something!" %}</p>{% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+    </div><!-- /gd-tab-posts -->
+
+    <!-- ── Onglet Médias ── -->
+    <div id="gd-tab-media" class="gd-tab-pane" style="display:none;">
+
+        {% if media_images %}
+        <p class="gd-section-label"><span class="material-icons">image</span> {% trans "Photos" %} ({{ media_images|length }})</p>
+        <div class="gd-media-grid">
+            {% for m in media_images %}
+            <div class="gd-media-item"
+                 onclick="openGalleryLightbox([{% for img in media_images %}'{{ img.url }}'{% if not forloop.last %},{% endif %}{% endfor %}], {{ forloop.counter0 }})"
+                 title="{{ m.post.title }}">
+                <img src="{{ m.url }}" alt="" loading="lazy">
+                <div class="gd-media-overlay">
+                    <span class="material-icons">zoom_in</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if media_videos %}
+        <p class="gd-section-label" style="margin-top:1.5rem;"><span class="material-icons">videocam</span> {% trans "Videos" %} ({{ media_videos|length }})</p>
+        <div class="gd-media-grid">
+            {% for m in media_videos %}
+            <div class="gd-media-item gd-media-video">
+                <video src="{{ m.url }}" controls preload="none" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"></video>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if not media_images and not media_videos %}
+        <div class="gd-empty-state">
+            <span class="material-icons">photo_library</span>
+            <p>{% trans "No media posted yet." %}</p>
+        </div>
+        {% endif %}
+
+    </div><!-- /gd-tab-media -->
+
+    <!-- ── Onglet Événements ── -->
+    <div id="gd-tab-events" class="gd-tab-pane" style="display:none;">
+
+        {% if is_member %}
+        <div class="gd-event-create-card">
+            <p class="gd-section-label"><span class="material-icons">add_circle</span> {% trans "Create an event" %}</p>
+            <form id="gd-event-form" method="post" action="{% url 'group:event-create' group.slug %}">
+                {% csrf_token %}
+                <div class="gd-event-fields">
+                    <input type="text" name="title" placeholder="{% trans 'Event title' %}" class="gd-event-input" required maxlength="150">
+                    <input type="datetime-local" name="event_date" class="gd-event-input" required>
+                    <input type="text" name="location" placeholder="{% trans 'Location (optional)' %}" class="gd-event-input" maxlength="200">
+                    <textarea name="description" placeholder="{% trans 'Description (optional)' %}" class="gd-event-input" rows="2" maxlength="1000"></textarea>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.5rem;gap:.5rem;">
+                    <div id="gd-ev-create-feedback" class="gd-ev-create-feedback"></div>
+                    <button type="submit" class="gd-post-submit">
+                        <span class="material-icons">event</span> {% trans "Create" %}
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if upcoming_events %}
+        <div class="gd-section-label" style="margin-top:1.5rem;">
+            <span class="material-icons">upcoming</span> {% trans "Upcoming events" %}
+        </div>
+        {% for ev in upcoming_events %}
+        <div class="gd-event-card" id="gd-event-{{ ev.id }}">
+            <div class="gd-event-date-badge">
+                <span class="gd-event-day">{{ ev.event_date|date:"d" }}</span>
+                <span class="gd-event-month">{{ ev.event_date|date:"M" }}</span>
+            </div>
+            <div class="gd-event-body">
+                <p class="gd-event-title">{{ ev.title }}</p>
+                {% if ev.location %}
+                <p class="gd-event-meta"><span class="material-icons">location_on</span> {{ ev.location }}</p>
+                {% endif %}
+                <p class="gd-event-meta"><span class="material-icons">schedule</span> {{ ev.event_date|date:"H:i" }}</p>
+                {% if ev.description %}<p class="gd-event-desc">{{ ev.description }}</p>{% endif %}
+                <div class="gd-event-footer">
+                    <span class="gd-event-attendees" id="gd-ev-count-{{ ev.id }}">
+                        <span class="material-icons">people</span>
+                        <span id="gd-ev-n-{{ ev.id }}">{{ ev.attendees.count }}</span> {% trans "going" %}
+                    </span>
+                    {% if is_member %}
+                    <button class="gd-attend-btn {% if request.user in ev.attendees.all %}attending{% endif %}"
+                            id="gd-attend-btn-{{ ev.id }}"
+                            onclick="gdAttendEvent({{ ev.id }}, '{% url 'group:event-attend' group.slug ev.id %}', this)">
+                        {% if request.user in ev.attendees.all %}
+                        <span class="material-icons">check_circle</span> {% trans "Going" %}
+                        {% else %}
+                        <span class="material-icons">add_circle_outline</span> {% trans "Join" %}
+                        {% endif %}
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        {% if not is_member %}
+        <div class="gd-empty-state">
+            <span class="material-icons">event</span>
+            <p>{% trans "No upcoming events." %}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+
+    </div><!-- /gd-tab-events -->
+
+    <!-- ── Onglet Dina ── -->
+    <div id="gd-tab-dina" class="gd-tab-pane" style="display:none;">
+
+        <!-- En-tête Dina -->
+        <div style="background:linear-gradient(135deg,var(--accent-glow,rgba(99,102,241,.08)),var(--bg-card));
+                    border:1.5px solid var(--accent);border-radius:18px;
+                    padding:1.4rem 1.5rem 1.5rem;margin-bottom:1.5rem;
+                    box-shadow:0 2px 16px rgba(0,0,0,.06);">
+            <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:1rem;">
+                <span class="material-icons" style="font-size:1.6rem;color:var(--accent);">gavel</span>
+                <div>
+                    <h2 style="margin:0;font-size:1.15rem;font-weight:800;color:var(--text);">Dina — {% trans "Community Charter" %}</h2>
+                    <p style="margin:0;font-size:.8rem;color:var(--text-muted);">
+                        {% trans "Agreements, rules and traditions that govern this community." %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Affichage du Dina actuel -->
+            <div id="gd-dina-display">
+                {% if group.dina %}
+                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+                            padding:1rem 1.2rem;font-size:.92rem;color:var(--text);
+                            line-height:1.75;white-space:pre-wrap;">{{ group.dina }}</div>
+                {% else %}
+                <div class="gd-empty-state" style="padding:2rem 1rem;">
+                    <span class="material-icons">article</span>
+                    <p>{% trans "No Dina defined yet for this group." %}</p>
+                    {% if is_admin or request.user == group.creator %}
+                    <p class="gd-empty-sub">{% trans "As admin, you can write the community charter below." %}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Formulaire d'édition (admin/créateur seulement) -->
+            {% if is_admin or request.user == group.creator %}
+            <div style="margin-top:1rem;">
+                <button type="button"
+                        id="gd-dina-edit-btn"
+                        onclick="gdShowDinaEditor()"
+                        style="display:inline-flex;align-items:center;gap:.35rem;
+                               padding:.42rem 1rem;border-radius:10px;
+                               background:var(--btn-bg);border:1.5px solid var(--border);
+                               color:var(--text-muted);font-size:.82rem;font-weight:600;
+                               cursor:pointer;font-family:inherit;transition:background .15s,color .15s;">
+                    <span class="material-icons" style="font-size:.95rem;">edit</span>
+                    {% trans "Edit Dina" %}
+                </button>
+            </div>
+
+            <div id="gd-dina-editor" style="display:none;margin-top:1rem;">
+                <textarea id="gd-dina-textarea"
+                          style="width:100%;min-height:200px;resize:vertical;
+                                 background:var(--btn-bg);border:1.5px solid var(--border);
+                                 border-radius:12px;padding:.8rem 1rem;
+                                 font-size:.9rem;color:var(--text);line-height:1.7;
+                                 font-family:inherit;outline:none;transition:border-color .2s;"
+                          placeholder="{% trans 'Write the Dina — rules, commitments, traditions of your community…' %}"
+                          maxlength="3000"
+                          onfocus="this.style.borderColor='var(--accent)'"
+                          onblur="this.style.borderColor='var(--border)'">{{ group.dina }}</textarea>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.6rem;gap:.5rem;">
+                    <span id="gd-dina-feedback" style="font-size:.82rem;font-weight:600;flex:1;min-height:1.2em;"></span>
+                    <div style="display:flex;gap:.5rem;">
+                        <button type="button" onclick="gdCancelDinaEdit()"
+                                style="padding:.42rem .9rem;border-radius:9px;
+                                       background:var(--btn-bg);border:1.5px solid var(--border);
+                                       color:var(--text-muted);font-size:.82rem;font-weight:600;
+                                       cursor:pointer;font-family:inherit;">
+                            {% trans "Cancel" %}
+                        </button>
+                        <button type="button" onclick="gdSaveDina()"
+                                id="gd-dina-save-btn"
+                                style="display:inline-flex;align-items:center;gap:.35rem;
+                                       padding:.42rem 1rem;border-radius:9px;
+                                       background:linear-gradient(135deg,var(--accent),var(--accent2));
+                                       border:none;color:#fff;font-size:.82rem;font-weight:700;
+                                       cursor:pointer;font-family:inherit;transition:opacity .15s;">
+                            <span class="material-icons" style="font-size:.9rem;">save</span>
+                            {% trans "Save Dina" %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Info culturelle -->
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
+                    padding:1rem 1.2rem;font-size:.84rem;color:var(--text-muted);line-height:1.65;">
+            <p style="margin:0;display:flex;align-items:flex-start;gap:.5rem;">
+                <span class="material-icons" style="font-size:1rem;color:var(--accent);flex-shrink:0;margin-top:.1rem;">info</span>
+                <span>
+                    <strong style="color:var(--text);">{% trans "What is a Dina?" %}</strong><br>
+                    {% trans "In Malagasy culture, the Dina is a community agreement — a set of rules and commitments freely accepted by all members of a community to live together with respect and solidarity (Fihavanana)." %}
+                </span>
+            </p>
+        </div>
+
+    </div><!-- /gd-tab-dina -->
+
+
+<!-- ── Modal Inviter un membre ── -->
+<div id="gd-invite-overlay" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+    <div class="gd-invite-modal">
+        <div class="gd-invite-header">
+            <h3><span class="material-icons">person_add</span> {% trans "Add a member" %}</h3>
+            <button onclick="gdCloseInviteModal()" class="gd-invite-close" type="button">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="gd-invite-search-wrap">
+            <span class="material-icons">search</span>
+            <input type="text" id="gd-invite-input"
+                   placeholder="{% trans 'Search by name or email…' %}"
+                   oninput="gdInviteSearch(this.value)"
+                   autocomplete="off">
+        </div>
+        <div id="gd-invite-results"></div>
+        <div id="gd-invite-feedback" class="gd-invite-feedback"></div>
+    </div>
 </div>
+
+</div><!-- /gd-wrapper -->
+
+<!-- Share toast -->
+<div id="gd-share-toast">🔗 {% trans "Link copied!" %}</div>
+
+<script>
+var GD_CSRF  = '{{ csrf_token }}';
+var GD_POST_URL = '{% url "group:add-post" group.slug %}';
+var GD_REACT_URL = '{% url "post:react-post" %}';
+
+/* ── Toggle members panel ── */
+function toggleMembers(e) {
+    e.preventDefault();
+    var p = document.getElementById('gd-members-panel');
+    if (p) p.classList.toggle('open');
+}
+
+/* ── Prévisualisation des médias ── */
+var _gdRemovedIdx = new Set();
+
+function gdPreviewFiles(input) {
+    _gdRemovedIdx = new Set();
+    var preview = document.getElementById('gd-media-preview');
+    if (!preview) return;
+    preview.innerHTML = '';
+    var files = Array.from(input.files);
+    if (!files.length) return;
+    files.forEach(function(f, i) {
+        var item = document.createElement('div');
+        item.className = 'gd-preview-item';
+        item.setAttribute('data-index', i);
+        var url = URL.createObjectURL(f);
+        if (f.type.startsWith('video/')) {
+            var v = document.createElement('video');
+            v.src = url; v.muted = true; v.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+            item.appendChild(v);
+        } else {
+            var img = document.createElement('img');
+            img.src = url;
+            item.appendChild(img);
+        }
+        var del = document.createElement('button');
+        del.className = 'gd-preview-del';
+        del.innerHTML = '<span class="material-icons">close</span>';
+        del.onclick = (function(idx) { return function() { gdRemovePreview(idx); }; })(i);
+        item.appendChild(del);
+        preview.appendChild(item);
+    });
+}
+
+function gdRemovePreview(idx) {
+    _gdRemovedIdx.add(idx);
+    var item = document.querySelector('.gd-preview-item[data-index="' + idx + '"]');
+    if (item) item.remove();
+}
+
+/* ── Créer un post dans le groupe ── */
+function gdSubmitPost() {
+    var title     = (document.getElementById('gd-post-title').value || '').trim();
+    var body      = (document.getElementById('gd-post-body').value  || '').trim();
+    var fileInput = document.getElementById('gd-media-input');
+    var allFiles  = fileInput ? Array.from(fileInput.files) : [];
+    var files     = allFiles.filter(function(_, i) { return !_gdRemovedIdx.has(i); });
+
+    if (!title && !body && !files.length) return;
+
+    var btn = document.getElementById('gd-submit-btn');
+    if (btn) { btn.disabled = true; btn.style.opacity = '.55'; }
+
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', GD_CSRF);
+    fd.append('title', title);
+    fd.append('body',  body);
+    files.forEach(function(f) { fd.append('media_files', f); });
+
+    fetch(GD_POST_URL, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: fd
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+        if (!data.ok) { alert(data.error || 'Erreur lors de la publication.'); return; }
+        /* Réinitialiser le formulaire */
+        document.getElementById('gd-post-title').value = '';
+        document.getElementById('gd-post-body').value  = '';
+        if (fileInput) fileInput.value = '';
+        _gdRemovedIdx = new Set();
+        var preview = document.getElementById('gd-media-preview');
+        if (preview) preview.innerHTML = '';
+        /* Insérer le nouveau post en tête du fil */
+        var feed = document.getElementById('gd-posts-feed');
+        if (feed) {
+            var empty = feed.querySelector('.gd-empty-state');
+            if (empty) empty.remove();
+            feed.insertAdjacentHTML('afterbegin', data.html);
+        }
+    })
+    .catch(function(e) {
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+        console.error('Erreur publication groupe:', e);
+    });
+}
+
+/* ── Reactions ── */
+var _pickerTimers = {};
+var _userReactions = {};
+function openPicker(pid) {
+    clearTimeout(_pickerTimers[pid]);
+    _pickerTimers[pid] = setTimeout(function(){
+        var p = document.getElementById('picker-'+pid);
+        if(p) p.classList.add('open');
+    }, 180);
+}
+function closePicker(pid) {
+    clearTimeout(_pickerTimers[pid]);
+    _pickerTimers[pid] = setTimeout(function(){
+        var p = document.getElementById('picker-'+pid);
+        if(p) p.classList.remove('open');
+    }, 150);
+}
+function quickReact(pid) {
+    var cur = _userReactions[pid] !== undefined ? _userReactions[pid]
+            : document.getElementById('react-btn-'+pid).classList.contains('liked') ? 'like' : null;
+    sendReaction(pid, cur || 'like');
+}
+function sendReaction(pid, rtype) {
+    closePicker(pid);
+    var EMOJIS = {like:'👍',heart:'❤️',laugh:'😂',wow:'😮',sad:'😢'};
+    var LABELS = {like:'Tiana',heart:'Tiako',laugh:'Heniky',wow:'Mahagaga',sad:'Maika'};
+    fetch(GD_REACT_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':GD_CSRF,'X-Requested-With':'XMLHttpRequest'},
+        body:'post_id='+pid+'&reaction_type='+(rtype||''),
+        credentials:'same-origin'
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+        _userReactions[pid] = data.user_reaction;
+        var btn   = document.getElementById('react-btn-'+pid);
+        var icon  = document.getElementById('react-icon-'+pid);
+        var label = document.getElementById('react-label-'+pid);
+        if(btn)  btn.classList.toggle('liked', !!data.user_reaction);
+        if(icon) icon.innerHTML = data.user_reaction && EMOJIS[data.user_reaction]
+            ? EMOJIS[data.user_reaction]
+            : '<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>';
+        if(label) label.textContent = data.user_reaction ? (LABELS[data.user_reaction]||'Tiana') : 'Tiana';
+        var picker = document.getElementById('picker-'+pid);
+        if(picker){
+            picker.querySelectorAll('.reaction-emoji-btn').forEach(function(b){b.classList.remove('selected');});
+            if(data.user_reaction){
+                var sel = picker.querySelector('[onclick*="\''+data.user_reaction+'\'"]');
+                if(sel) sel.classList.add('selected');
+            }
+        }
+    });
+}
+
+/* ── Comments toggle ── */
+function toggleComments(pid) {
+    var p = document.getElementById('comment-panel-'+pid);
+    if(p) p.classList.toggle('open');
+}
+function toggleReplyForm(cid, pid, url) {
+    var wrap = document.getElementById('reply-form-'+cid);
+    if(!wrap) return;
+    var open = wrap.classList.contains('open');
+    document.querySelectorAll('.pc-reply-form-wrap.open').forEach(function(el){el.classList.remove('open');});
+    if(!open){ wrap.classList.add('open'); var inp=document.getElementById('reply-input-'+cid); if(inp)inp.focus(); }
+}
+function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+
+/* ── Submit comment ── */
+function submitComment(pid, url) {
+    var inp = document.getElementById('comment-input-'+pid);
+    var text = inp ? inp.value.trim() : '';
+    if(!text) return;
+    fetch(url,{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':GD_CSRF,'X-Requested-With':'XMLHttpRequest'},
+        body:'body='+encodeURIComponent(text),credentials:'same-origin'
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+        if(!data.ok) return;
+        inp.value=''; inp.style.height='';
+        var list = document.getElementById('comment-list-'+pid);
+        if(list){
+            list.insertAdjacentHTML('beforeend',
+                '<div class="pc-comment-item" id="comment-item-'+data.id+'">'
+                +'<a href="/account/'+data.author_id+'/view/"><img class="cmt-avatar" src="'+data.avatar+'" alt=""></a>'
+                +'<div class="pc-comment-right"><div class="pc-comment-bubble">'
+                +'<a class="pc-comment-author" href="/account/'+data.author_id+'/view/">'+data.username+'</a>'
+                +'<p class="pc-comment-body">'+data.body+'</p>'
+                +'</div><div class="pc-comment-footer"><span class="pc-comment-time">À l\'instant</span></div>'
+                +'</div></div>'
+            );
+        }
+        var cnt = document.getElementById('comment-count-'+pid);
+        if(cnt){ cnt.style.display=''; var n=parseInt(cnt.textContent.replace(/\D/g,''))||0; cnt.textContent='('+(n+1)+')'; }
+    });
+}
+function handleCommentKey(e, pid, url){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitComment(pid,url);} }
+
+/* ── Submit reply ── */
+function submitReply(cid, pid, url){
+    var inp = document.getElementById('reply-input-'+cid);
+    var text = inp ? inp.value.trim() : '';
+    if(!text) return;
+    fetch(url,{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':GD_CSRF,'X-Requested-With':'XMLHttpRequest'},
+        body:'body='+encodeURIComponent(text)+'&parent_id='+cid,credentials:'same-origin'
+    })
+    .then(function(r){return r.json();})
+    .then(function(data){
+        if(!data.ok) return;
+        inp.value=''; inp.style.height='';
+        var rep = document.getElementById('replies-'+cid);
+        if(rep){ rep.style.display='';
+            rep.insertAdjacentHTML('beforeend',
+                '<div class="pc-comment-reply-item" id="comment-item-'+data.id+'">'
+                +'<a href="/account/'+data.author_id+'/view/"><img class="reply-avatar" src="'+data.avatar+'" alt=""></a>'
+                +'<div class="pc-comment-right"><div class="pc-comment-bubble">'
+                +'<a class="pc-comment-author" href="/account/'+data.author_id+'/view/">'+data.username+'</a>'
+                +'<p class="pc-comment-body">'+data.body+'</p>'
+                +'</div></div></div>'
+            );
+        }
+        var wrap = document.getElementById('reply-form-'+cid);
+        if(wrap) wrap.classList.remove('open');
+    });
+}
+function handleReplyKey(e,cid,pid,url){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();submitReply(cid,pid,url);} }
+
+/* ── Delete comment ── */
+function deleteComment(cid, url){
+    if(!confirm('Supprimer ce commentaire ?')) return;
+    fetch(url,{method:'POST',headers:{'X-CSRFToken':GD_CSRF,'X-Requested-With':'XMLHttpRequest'},credentials:'same-origin'})
+    .then(function(r){return r.json();})
+    .then(function(data){
+        if(data.ok){ var el=document.getElementById('comment-item-'+cid); if(el)el.remove(); }
+    });
+}
+
+/* ── Share ── */
+function sharePost(pid, title) {
+    var url = window.location.origin + '/post/detail/' + pid + '/';
+    if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(url).then(gdShowToast);
+    } else {
+        var t = document.createElement('textarea');
+        t.value = url; t.style.cssText='position:fixed;opacity:0';
+        document.body.appendChild(t); t.select();
+        try{document.execCommand('copy');}catch(e){}
+        document.body.removeChild(t); gdShowToast();
+    }
+}
+function gdShowToast(){
+    var t = document.getElementById('gd-share-toast');
+    if(!t) return;
+    t.classList.add('show');
+    setTimeout(function(){t.classList.remove('show');}, 2500);
+}
+
+/* ── Onglets ── */
+function gdSwitchTab(tab, btn) {
+    document.querySelectorAll('.gd-tab').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    var panes = ['posts', 'media', 'events', 'dina'];
+    panes.forEach(function(t){
+        var el = document.getElementById('gd-tab-' + t);
+        if (el) el.style.display = (t === tab) ? '' : 'none';
+    });
+}
+
+/* ── Épingler / désépingler ── */
+function gdTogglePin(postId, url, btn) {
+    fetch(url, {
+        method: 'POST',
+        headers: {'X-CSRFToken': GD_CSRF, 'X-Requested-With': 'XMLHttpRequest'},
+    }).then(function(r){ return r.json(); }).then(function(data) {
+        if (data.ok) {
+            // Recharger la page pour refléter l'état
+            window.location.reload();
+        }
+    }).catch(function(e){ console.error(e); });
+}
+
+/* ── Bouton épingler dans le post-card (admin/mod seulement) ── */
+{% if is_mod %}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('#gd-posts-feed .post-card').forEach(function(card) {
+        var postId = card.id.replace('post-', '');
+        if (!postId) return;
+        var pinBtn = document.createElement('button');
+        pinBtn.className = 'gd-post-pin-btn';
+        pinBtn.title = '{% trans "Pin this post" %}';
+        pinBtn.innerHTML = '<span class="material-icons">push_pin</span>';
+        pinBtn.onclick = function(e) {
+            e.stopPropagation();
+            var url = '{% url "group:pin-post" group.slug 0 %}'.replace('/0/', '/' + postId + '/');
+            gdTogglePin(postId, url, pinBtn);
+        };
+        card.appendChild(pinBtn);
+    });
+});
+{% endif %}
+
+/* ── Participer à un événement ── */
+function gdAttendEvent(eventId, url, btn) {
+    fetch(url, {
+        method: 'POST',
+        headers: {'X-CSRFToken': GD_CSRF, 'X-Requested-With': 'XMLHttpRequest'},
+    }).then(function(r){ return r.json(); }).then(function(data) {
+        if (data.ok) {
+            btn.classList.toggle('attending', data.attending);
+            var icon = btn.querySelector('.material-icons');
+            var countEl = document.getElementById('gd-ev-n-' + eventId);
+            if (data.attending) {
+                if (icon) icon.textContent = 'check_circle';
+                btn.childNodes[btn.childNodes.length-1].textContent = ' Going';
+            } else {
+                if (icon) icon.textContent = 'add_circle_outline';
+                btn.childNodes[btn.childNodes.length-1].textContent = ' Join';
+            }
+            if (countEl) countEl.textContent = data.count;
+        }
+    }).catch(function(e){ console.error(e); });
+}
+
+/* ── Formulaire événement en AJAX ── */
+document.addEventListener('DOMContentLoaded', function() {
+    var gdEvForm = document.getElementById('gd-event-form');
+    if (!gdEvForm) return;
+    var gdEvFeedback = document.getElementById('gd-ev-create-feedback');
+
+    gdEvForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var submitBtn = gdEvForm.querySelector('[type="submit"]');
+        if (submitBtn) { submitBtn.disabled = true; }
+        if (gdEvFeedback) { gdEvFeedback.textContent = ''; gdEvFeedback.className = 'gd-ev-create-feedback'; }
+
+        var fd = new FormData(gdEvForm);
+        fetch(gdEvForm.action, {
+            method: 'POST',
+            headers: {'X-CSRFToken': GD_CSRF, 'X-Requested-With': 'XMLHttpRequest'},
+            body: fd,
+        })
+        .then(function(r) {
+            if (!r.ok && r.status !== 400 && r.status !== 403) {
+                throw new Error('HTTP ' + r.status);
+            }
+            return r.json();
+        })
+        .then(function(data) {
+            if (data.ok) {
+                gdEvForm.reset();
+                if (gdEvFeedback) {
+                    gdEvFeedback.textContent = data.message || '{% trans "Event created!" %}';
+                    gdEvFeedback.className = 'gd-ev-create-feedback success';
+                }
+                setTimeout(function() { window.location.reload(); }, 1200);
+            } else {
+                if (gdEvFeedback) {
+                    gdEvFeedback.textContent = data.error || '{% trans "An error occurred." %}';
+                    gdEvFeedback.className = 'gd-ev-create-feedback error';
+                }
+                if (submitBtn) { submitBtn.disabled = false; }
+            }
+        })
+        .catch(function(err) {
+            console.error('Event create error:', err);
+            if (gdEvFeedback) {
+                gdEvFeedback.textContent = '{% trans "Server error. Please try again." %}';
+                gdEvFeedback.className = 'gd-ev-create-feedback error';
+            }
+            if (submitBtn) { submitBtn.disabled = false; }
+        });
+    });
+});
+
+/* ── Modal Inviter un membre ── */
+var GD_INVITE_URL  = '{% url "group:invite-member" group.slug %}';
+var GD_SEARCH_URL  = '{% url "group:invite-search" group.slug %}';
+var gdInviteTimer  = null;
+
+function gdOpenInviteModal() {
+    var overlay = document.getElementById('gd-invite-overlay');
+    overlay.classList.add('open');
+    document.getElementById('gd-invite-input').focus();
+    document.getElementById('gd-invite-results').innerHTML = '';
+    document.getElementById('gd-invite-feedback').textContent = '';
+    document.body.style.overflow = 'hidden';
+}
+
+function gdCloseInviteModal() {
+    document.getElementById('gd-invite-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') gdCloseInviteModal();
+});
+document.getElementById('gd-invite-overlay').addEventListener('click', function(e) {
+    if (e.target === this) gdCloseInviteModal();
+});
+
+function gdInviteSearch(q) {
+    clearTimeout(gdInviteTimer);
+    var results = document.getElementById('gd-invite-results');
+    if (q.length < 2) { results.innerHTML = ''; return; }
+    gdInviteTimer = setTimeout(function() {
+        fetch(GD_SEARCH_URL + '?q=' + encodeURIComponent(q), {
+            headers: {'X-Requested-With': 'XMLHttpRequest'},
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (!data.users || data.users.length === 0) {
+                results.innerHTML = '<p class="gd-invite-empty">{% trans "No users found." %}</p>';
+                return;
+            }
+            results.innerHTML = data.users.map(function(u) {
+                var avatarHtml = u.avatar
+                    ? '<img class="gd-invite-avatar" src="' + u.avatar + '" alt="' + u.username + '">'
+                    : '<span class="gd-invite-avatar material-icons" style="display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--text-muted);">account_circle</span>';
+                return '<div class="gd-invite-user-row">'
+                    + avatarHtml
+                    + '<span class="gd-invite-username">' + u.username + '</span>'
+                    + '<button class="gd-invite-add-btn" onclick="gdAddMember(' + u.id + ', this)">'
+                    + '<span class="material-icons">person_add</span> {% trans "Add" %}'
+                    + '</button></div>';
+            }).join('');
+        }).catch(function(e) { console.error(e); });
+    }, 320);
+}
+
+function gdAddMember(userId, btn) {
+    btn.disabled = true;
+    var fd = new FormData();
+    fd.append('user_id', userId);
+    fetch(GD_INVITE_URL, {
+        method: 'POST',
+        headers: {'X-CSRFToken': GD_CSRF, 'X-Requested-With': 'XMLHttpRequest'},
+        body: fd,
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        var fb = document.getElementById('gd-invite-feedback');
+        fb.textContent = data.message || (data.ok ? '{% trans "Added!" %}' : '{% trans "Error." %}');
+        if (data.ok && data.created) {
+            // Remove the row to avoid double-add
+            btn.closest('.gd-invite-user-row').remove();
+        }
+    }).catch(function(e) { btn.disabled = false; console.error(e); });
+}
+
+/* ── Dina (charte communautaire) ── */
+var GD_DINA_URL = '{% url "group:dina-save" group.slug %}';
+
+function gdShowDinaEditor() {
+    document.getElementById('gd-dina-editor').style.display = '';
+    document.getElementById('gd-dina-edit-btn').style.display = 'none';
+    var ta = document.getElementById('gd-dina-textarea');
+    if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+}
+
+function gdCancelDinaEdit() {
+    document.getElementById('gd-dina-editor').style.display = 'none';
+    document.getElementById('gd-dina-edit-btn').style.display = '';
+    var fb = document.getElementById('gd-dina-feedback');
+    if (fb) { fb.textContent = ''; fb.style.color = ''; }
+}
+
+function gdSaveDina() {
+    var ta = document.getElementById('gd-dina-textarea');
+    var saveBtn = document.getElementById('gd-dina-save-btn');
+    var fb = document.getElementById('gd-dina-feedback');
+    if (!ta) return;
+
+    var dina = ta.value.trim();
+    if (saveBtn) saveBtn.disabled = true;
+    if (fb) { fb.textContent = '{% trans "Saving…" %}'; fb.style.color = 'var(--text-muted)'; }
+
+    var fd = new FormData();
+    fd.append('dina', dina);
+
+    fetch(GD_DINA_URL, {
+        method: 'POST',
+        headers: {'X-CSRFToken': GD_CSRF, 'X-Requested-With': 'XMLHttpRequest'},
+        body: fd,
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (saveBtn) saveBtn.disabled = false;
+        if (data.ok) {
+            if (fb) { fb.textContent = data.message || '{% trans "Saved!" %}'; fb.style.color = '#22c55e'; }
+            // Mettre à jour l'affichage en direct
+            var display = document.getElementById('gd-dina-display');
+            if (display) {
+                if (dina) {
+                    display.innerHTML = '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;font-size:.92rem;color:var(--text);line-height:1.75;white-space:pre-wrap;">' + gdEscapeHtml(dina) + '</div>';
+                } else {
+                    display.innerHTML = '<div class="gd-empty-state" style="padding:2rem 1rem;"><span class="material-icons">article</span><p>{% trans "No Dina defined yet for this group." %}</p></div>';
+                }
+            }
+            setTimeout(function() {
+                gdCancelDinaEdit();
+            }, 1200);
+        } else {
+            if (fb) { fb.textContent = data.error || '{% trans "Error." %}'; fb.style.color = '#e53935'; }
+        }
+    })
+    .catch(function(err) {
+        if (saveBtn) saveBtn.disabled = false;
+        if (fb) { fb.textContent = '{% trans "Server error." %}'; fb.style.color = '#e53935'; }
+        console.error('Dina save error:', err);
+    });
+}
+
+function gdEscapeHtml(text) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(text));
+    return d.innerHTML;
+}
+</script>
 {% endblock %}
