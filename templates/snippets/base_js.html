@@ -42,7 +42,7 @@
 			linkify: true,
 		});
 		var result = md.render(str);
-		return result
+		return result.trim();   // supprime le \n final que markdown-it ajoute toujours
 	}
 
 // ======== Sidebar ==========
