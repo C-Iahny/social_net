@@ -794,6 +794,8 @@
 	*/
 	function getNewGeneralNotifications(){
 		newestTimestamp = document.getElementById("id_general_newest_timestamp").innerHTML
+		// Guard: don't send if timestamp hasn't been set yet
+		if(!newestTimestamp) return;
 		if("{{request.user.is_authenticated}}"){
 			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "get_new_general_notifications",
@@ -825,6 +827,8 @@
 	function refreshGeneralNotifications(){
 		oldestTimestamp = document.getElementById("id_general_oldest_timestamp").innerHTML
 		newestTimestamp = document.getElementById("id_general_newest_timestamp").innerHTML
+		// Guard: don't send if timestamps haven't been set yet (no notifications loaded)
+		if(!oldestTimestamp || !newestTimestamp) return;
 		if("{{request.user.is_authenticated}}"){
 			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "refresh_general_notifications",

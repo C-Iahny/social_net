@@ -555,7 +555,8 @@
 	*/
 	function getNewChatNotifications(){
 		newestTimestamp = document.getElementById("id_chat_newest_timestamp").innerHTML
-		console.log("NEWEST TS: " + newestTimestamp)
+		// Guard: don't send if timestamp hasn't been set yet (no chat notifications loaded)
+		if(!newestTimestamp) return;
 		if("{{request.user.is_authenticated}}"){
 			window.notificationSocket && window.notificationSocket.readyState === WebSocket.OPEN && window.notificationSocket.send(JSON.stringify({
 				"command": "get_new_chat_notifications",
