@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 <!DOCTYPE html>
 <html lang="fr" data-theme="light">
 <head>
@@ -28,6 +29,12 @@
       --badge-warning-t:#b45309;
       --badge-danger:  #fdecea;
       --badge-danger-t:#d93025;
+      /* Variables supplémentaires pour les snippets partagés */
+      --accent2:       #6c2bd9;
+      --accent-glow:   rgba(99,102,241,.25);
+      --btn-bg:        rgba(0,0,0,.04);
+      --btn-hover:     rgba(0,0,0,.07);
+      --font-primary:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     [data-theme="dark"] {
@@ -50,6 +57,13 @@
       --badge-warning-t:#ffd54f;
       --badge-danger:  #3b1212;
       --badge-danger-t:#f28b82;
+      /* Variables supplémentaires pour les snippets partagés */
+      --accent2:       #9f5cf7;
+      --accent-glow:   rgba(45,136,255,.25);
+      --btn-bg:        rgba(255,255,255,.06);
+      --btn-hover:     rgba(255,255,255,.10);
+      --neon-cyan:     #00cfff;
+      --font-primary:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     /* ===== RESET & BASE ===== */
@@ -75,8 +89,25 @@
       transition: background .3s, border-color .3s;
     }
     .nav-logo {
-      font-size: 1.6rem; font-weight: 900; color: var(--accent);
-      text-decoration: none; letter-spacing: -1px;
+      text-decoration: none;
+      display: flex; align-items: center; flex-shrink: 0;
+    }
+    .nav-logo img.logo-desktop {
+      height: 46px; width: auto; max-width: 200px;
+      border-radius: 9px; object-fit: contain;
+      display: block;
+      transition: transform .2s, opacity .2s;
+    }
+    .nav-logo img.logo-mobile {
+      height: 38px; width: auto; max-width: 42px;
+      border-radius: 8px; object-fit: contain;
+      display: none;
+      transition: transform .2s, opacity .2s;
+    }
+    .nav-logo img:hover { transform: scale(1.05); opacity: .88; }
+    @media (max-width: 480px) {
+      .nav-logo img.logo-desktop { display: none; }
+      .nav-logo img.logo-mobile  { display: block; }
     }
     .nav-links { display: flex; align-items: center; gap: 1rem; }
     .nav-links a {
@@ -261,14 +292,7 @@
       border: 1.5px solid var(--border);
     }
 
-    /* ===== FOOTER ===== */
-    footer {
-      text-align: center; padding: 2rem 1rem;
-      color: var(--text-muted); font-size: .88rem;
-      border-top: 1px solid var(--border);
-      margin-top: 2rem;
-    }
-    footer a { color: var(--accent); text-decoration: none; }
+    /* ===== FOOTER — géré par snippets/footer.html ===== */
 
     /* ===== RESPONSIVE ===== */
     @media (max-width: 600px) {
@@ -282,7 +306,10 @@
 <body>
   <!-- ===== NAV ===== -->
   <nav>
-    <a href="{% url 'landing' %}" class="nav-logo">Vazimba</a>
+    <a href="{% url 'landing' %}" class="nav-logo">
+      <img src="{% static 'logo/Vazi_logo00.png' %}" alt="VAZIMBA" class="logo-desktop">
+      <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="VAZIMBA" class="logo-mobile">
+    </a>
     <div class="nav-links">
       <a href="#features" class="hide-mobile">Fonctionnalités</a>
       <a href="#announcements" class="hide-mobile">Actualités</a>
@@ -429,12 +456,7 @@
   {% endif %}
 
   <!-- ===== FOOTER ===== -->
-  <footer>
-    <p>&copy; {% now "Y" %} Vazimba · Réseau Social
-      &nbsp;|&nbsp;
-      <a href="{% url 'admin:index' %}">Administration</a>
-    </p>
-  </footer>
+  {% include 'snippets/footer.html' %}
 
   <!-- ===== DARK/LIGHT TOGGLE JS ===== -->
   <script>
