@@ -269,6 +269,11 @@ main { padding: 0 !important; margin-top: 62px; }
     word-break: break-word;
     white-space: pre-wrap;
 }
+/* Markdown-it entoure chaque texte dans <p> — supprimer les marges parasites */
+.msg-p p { margin: 0; padding: 0; }
+.msg-p p + p { margin-top: .25rem; }
+.msg-p ul, .msg-p ol { margin: .25rem 0; padding-left: 1.4rem; }
+.msg-p pre { margin: .3rem 0; }
 .message-container:not(.own-msg) .msg-p {
     background: var(--bg-card);
     color: var(--text);
@@ -1113,7 +1118,7 @@ function uploadAndSendFile(f){
             wrap.appendChild(meta);
         }
 
-        var bubble = document.createElement("p");
+        var bubble = document.createElement("div");
         bubble.classList.add("msg-p");
         try { bubble.innerHTML = validateText(msg); }
         catch(e) { bubble.textContent = msg; }

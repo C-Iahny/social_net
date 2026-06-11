@@ -259,10 +259,18 @@
         <div id="kbr-preview-content"></div>
     </div>
 
+    <!-- Boîte d'erreur visible -->
+    <div id="kbr-error-box" style="
+        display:none; background:rgba(229,57,53,.08);
+        border:1.5px solid rgba(229,57,53,.3);
+        border-radius:10px; padding:.7rem 1rem;
+        color:#e53935; font-size:.88rem; margin-bottom:1rem;
+    "></div>
+
     <!-- Actions -->
     <div class="kbr-actions">
         <span class="kbr-feedback" id="kbr-feedback"></span>
-        <button class="kbr-submit" id="kbr-submit-btn" onclick="kbrSubmit()">
+        <button class="kbr-submit" type="button" id="kbr-submit-btn" onclick="kbrSubmit()">
             <span class="material-icons">record_voice_over</span>
             {% trans "Publish Kabary" %}
         </button>
@@ -283,6 +291,20 @@ function kbrEscape(t) {
     var d = document.createElement('div');
     d.appendChild(document.createTextNode(t));
     return d.innerHTML;
+}
+
+function kbrShowError(msg) {
+    var box = document.getElementById('kbr-error-box');
+    if (box) { box.textContent = msg; box.style.display = 'block'; box.scrollIntoView({behavior:'smooth', block:'center'}); }
+    var fb = document.getElementById('kbr-feedback');
+    if (fb) fb.textContent = msg;
+}
+
+function kbrHideError() {
+    var box = document.getElementById('kbr-error-box');
+    if (box) { box.textContent = ''; box.style.display = 'none'; }
+    var fb = document.getElementById('kbr-feedback');
+    if (fb) fb.textContent = '';
 }
 
 function kbrUpdatePreview() {
@@ -317,15 +339,14 @@ function kbrUpdatePreview() {
 function kbrSubmit() {
     var vato = kbrVal('kbr-vato');
     var fanafahana = kbrVal('kbr-fanafahana');
-    var fb = document.getElementById('kbr-feedback');
     var btn = document.getElementById('kbr-submit-btn');
 
     if (!vato && !fanafahana) {
-        if (fb) { fb.textContent = '{% trans "The main content (Vato misaina) is required." %}'; }
+        kbrShowError('{% trans "The main content (Vato misaina) is required." %}');
         return;
     }
-    if (fb) fb.textContent = '';
-    if (btn) btn.disabled = true;
+    kbrHideError();
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-icons" style="animation:kbr-spin .8s linear infinite">autorenew</span> Publication…'; }
 
     var fd = new FormData();
     fd.append('csrfmiddlewaretoken', KBR_CSRF);
@@ -341,20 +362,28 @@ function kbrSubmit() {
         headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': KBR_CSRF },
         body: fd,
     })
-    .then(function(r) { return r.json(); })
+    .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
     .then(function(data) {
-        if (btn) btn.disabled = false;
         if (data.ok) {
             window.location.href = data.redirect;
         } else {
-            if (fb) fb.textContent = data.error || '{% trans "An error occurred." %}';
+            if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">record_voice_over</span> {% trans "Publish Kabary" %}'; }
+            kbrShowError(data.error || '{% trans "An error occurred." %}');
         }
     })
     .catch(function(e) {
-        if (btn) btn.disabled = false;
-        if (fb) fb.textContent = '{% trans "Server error. Please try again." %}';
-        console.error(e);
+        console.error('Kabary submit error:', e);
+        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">record_voice_over</span> {% trans "Publish Kabary" %}'; }
+        kbrShowError('Erreur (' + e.message + '). Réessaie ou recharge la page.');
     });
 }
+(function(){
+    var s = document.createElement('style');
+    s.textContent = '@keyframes kbr-spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(s);
+})();
 </script>
 {% endblock %}
