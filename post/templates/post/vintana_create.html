@@ -472,7 +472,10 @@ function vtSubmit() {
         },
         body: new URLSearchParams({ title, message, reveal_date: revealDate }),
     })
-    .then(r => r.json())
+    .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
     .then(data => {
         if (data.ok) {
             window.location.href = data.redirect;
@@ -482,8 +485,9 @@ function vtSubmit() {
             btn.innerHTML = '<span class="material-icons">rocket_launch</span> Sceller la capsule';
         }
     })
-    .catch(() => {
-        vtShowError('Erreur réseau. Réessaie.');
+    .catch(e => {
+        console.error('Vintana submit error:', e);
+        vtShowError('Erreur (' + e.message + '). Réessaie ou recharge la page.');
         btn.disabled = false;
         btn.innerHTML = '<span class="material-icons">rocket_launch</span> Sceller la capsule';
     });
