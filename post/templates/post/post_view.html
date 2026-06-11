@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load i18n %}
+{% load personal_tags %}
 
 {% block content %}
 <style>
@@ -1671,6 +1672,56 @@ body { background: var(--bg); }
                 {% trans "Edit profile" %}
             </a>
         </div>
+
+        <!-- Annonces & Actualités -->
+        {% get_active_announcements 4 as feed_announcements %}
+        {% if feed_announcements %}
+        <div class="rsb-card" style="overflow:visible;">
+            <p class="rsb-section-label" style="margin-bottom:.5rem;">
+                <span class="material-icons">campaign</span> {% trans "Announcements" %}
+            </p>
+            {% for ann in feed_announcements %}
+            <div style="
+                margin: .35rem .75rem;
+                padding: .65rem .75rem;
+                border-radius: 10px;
+                border-left: 3px solid
+                    {% if ann.priority == 'danger' %}#d93025
+                    {% elif ann.priority == 'warning' %}#b45309
+                    {% elif ann.priority == 'success' %}#1a7f37
+                    {% else %}var(--accent){% endif %};
+                background: var(--btn-bg);
+                transition: background .15s;
+            ">
+                <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;">
+                    <span style="font-size:.82rem;font-weight:700;color:var(--text);
+                                 flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                        {% if ann.priority == 'danger' %}🔴{% elif ann.priority == 'warning' %}🟡{% elif ann.priority == 'success' %}🟢{% else %}🔵{% endif %}
+                        {{ ann.title }}
+                    </span>
+                </div>
+                <div style="font-size:.78rem;color:var(--text-muted);line-height:1.45;
+                             display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                    {{ ann.content }}
+                </div>
+                <div style="font-size:.7rem;color:var(--text-muted);margin-top:.3rem;opacity:.7;">
+                    {{ ann.start_date|date:"d/m/Y" }}
+                </div>
+            </div>
+            {% endfor %}
+            <a href="{% url 'landing' %}#announcements"
+               style="display:flex;align-items:center;justify-content:center;gap:.3rem;
+                      margin:.5rem .75rem .75rem;padding:.4rem;
+                      border:1.5px solid var(--border);border-radius:10px;
+                      color:var(--text-muted);font-size:.77rem;font-weight:600;
+                      text-decoration:none;transition:border-color .15s,color .15s;"
+               onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+               onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
+                <span class="material-icons" style="font-size:.85rem;">open_in_new</span>
+                {% trans "See all" %}
+            </a>
+        </div>
+        {% endif %}
 
         <!-- Footer links -->
         <div class="rsb-footer-links">
