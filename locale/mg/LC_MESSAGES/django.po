@@ -587,3 +587,337 @@ msgstr "Mamorona ny kaontiko"
 
 msgid "requests"
 msgstr "fangatahana"
+
+msgid "Like"
+msgstr "Tiana"
+
+# ── Explore / Index page ──
+msgid "Search users, posts…"
+msgstr "Hikaroka olona, lahatsoratra…"
+
+msgid "Continents"
+msgstr "Kaontinanta"
+
+msgid "Countries"
+msgstr "Firenena"
+
+msgid "Countries (%(n)s)"
+msgstr "Firenena (%(n)s)"
+
+msgid "+%(n)s more"
+msgstr "+%(n)s hafa"
+
+msgid "Want to share something with the community?"
+msgstr "Te hizara zavatra amin'ny vondron'olona ve ianao ?"
+
+msgid "My news feed"
+msgstr "Ny filako"
+
+msgid "Join Vazimba to post, comment and interact with the community."
+msgstr "Midira amin'ny Vazimba mba hamoaka, hanisy fanamarihana ary hikaroka."
+
+msgid "Create an account"
+msgstr "Mamorona kaonty"
+
+msgid "Sign in"
+msgstr "Miditra"
+
+msgid "Popular posts"
+msgstr "Lahatsoratra malaza"
+
+msgid "My feed →"
+msgstr "Ny filako →"
+
+msgid "Sign in →"
+msgstr "Miditra →"
+
+msgid "Trending"
+msgstr "Mahaliana"
+
+msgid "My full news feed"
+msgstr "Ny filako feno"
+
+msgid "No posts to explore yet"
+msgstr "Tsy misy lahatsoratra hojerena"
+
+msgid "Be the first to share something."
+msgstr "Aoka ianao no voalohany hizara zavatra."
+
+msgid "Create the first post"
+msgstr "Mamorona ny lahatsoratra voalohany"
+
+# ── Footer ──
+msgid "Social network · Madagascar · 2025"
+msgstr "Tambajotra sosialy · Madagasikara · 2025"
+
+msgid "News feed"
+msgstr "Fil vaovao"
+
+msgid "Sign up"
+msgstr "Misoratra anarana"
+
+msgid "© 2025"
+msgstr "© 2025"
+
+msgid "All rights reserved."
+msgstr "Zo rehetra voatokana."
+
+msgid "Built with ❤️ for the Malagasy community."
+msgstr "Natao tamin'ny ❤️ ho an'ny fiaraha-monina malagasy."
+
+# ── Groupes / Vondrona ──
+msgid "Groups"
+msgstr "Vondrona"
+
+msgid "All groups"
+msgstr "Vondrona rehetra"
+
+msgid "Create a group"
+msgstr "Hamorona vondrona"
+
+msgid "No groups yet. Be the first to create one!"
+msgstr "Tsy misy vondrona mbola. Aoka ianao ho voalohany hamorona !"
+
+msgid "Edit group"
+msgstr "Hanova vondrona"
+
+msgid "Delete this group?"
+msgstr "Hamafa ity vondrona ity ?"
+
+msgid "Join group"
+msgstr "Hiditra amin'ny vondrona"
+
+msgid "Leave group"
+msgstr "Hiala amin'ny vondrona"
+
+msgid "Join"
+msgstr "Hiditra"
+
+msgid "Add a member"
+msgstr "Manampy mpikambana"
+
+msgid "Add member"
+msgstr "Manampy mpikambana"
+
+msgid "Added!"
+msgstr "Nampiana !"
+
+msgid "Search by name or email…"
+msgstr "Hikaroka amin'ny anarana na email…"
+
+msgid "No users found."
+msgstr "Tsy hita mpampiasa."
+
+msgid "Admin"
+msgstr "Mpitantana"
+
+msgid "Moderator"
+msgstr "Mpitarika resaka"
+
+msgid "Member"
+msgstr "Mpikambana"
+
+msgid "Promote to moderator"
+msgstr "Hanangana ho mpitarika resaka"
+
+msgid "Demote to member"
+msgstr "Hampidinina ho mpikambana"
+
+msgid "Description (optional)"
+msgstr "Famaritana (tsy voatery)"
+
+msgid "Created by"
+msgstr "Noforonin'"
+
+msgid "members"
+msgstr "mpikambana"
+
+msgid "Share something with the group…"
+msgstr "Zarao zavatra amin'ny vondrona…"
+
+msgid "No posts yet in this group."
+msgstr "Tsy misy lahatsoratra mbola ao amin'ity vondrona ity."
+
+msgid "Pinned announcements"
+msgstr "Filazana nohamafisina"
+
+msgid "Pin this post"
+msgstr "Hamafy ity lahatsoratra ity"
+
+msgid "Unpin"
+msgstr "Esory ny famafisamana"
+
+msgid "Media"
+msgstr "Sary sy video"
+
+msgid "No media posted yet."
+msgstr "Tsy nisy sary na video nomena mbola."
+
+msgid "Videos"
+msgstr "Video"
+
+# ── Hetsika / Événements ──
+msgid "Events"
+msgstr "Hetsika"
+
+msgid "Create an event"
+msgstr "Hamorona hetsika"
+
+msgid "Event title"
+msgstr "Lohateny ny hetsika"
+
+msgid "Location (optional)"
+msgstr "Toerana (tsy voatery)"
+
+msgid "Event created!"
+msgstr "Hetsika noforonina !"
+
+msgid "Upcoming events"
+msgstr "Hetsika ho avy"
+
+msgid "No upcoming events."
+msgstr "Tsy misy hetsika ho avy."
+
+msgid "Going"
+msgstr "Manampy"
+
+msgid "going"
+msgstr "mpandray anjara"
+
+# ── Dina ──
+msgid "Dina"
+msgstr "Dina"
+
+msgid "Community Charter"
+msgstr "Dina Iombonana"
+
+msgid "Agreements, rules and traditions that govern this community."
+msgstr "Fifanarahana, fitsipika ary fomban-drazana mifanapaka amin'ity vondrona ity."
+
+msgid "No Dina defined yet for this group."
+msgstr "Tsy misy Dina voafaritra mbola ho an'ity vondrona ity."
+
+msgid "As admin, you can write the community charter below."
+msgstr "Amin'ny maha-mpitantana anao, azonao soratana eto ambany ny Dina."
+
+msgid "Edit Dina"
+msgstr "Hanova Dina"
+
+msgid "Write the Dina — rules, commitments, traditions of your community…"
+msgstr "Soraty ny Dina — fitsipika, fanekempihavanana, fomban-drazana ny vondrona…"
+
+msgid "Save Dina"
+msgstr "Tehirizo ny Dina"
+
+msgid "Saving…"
+msgstr "Tehirizina…"
+
+msgid "Saved!"
+msgstr "Voatahiry !"
+
+msgid "Error."
+msgstr "Hadisoana."
+
+msgid "Server error."
+msgstr "Hadisoana amin'ny mpizara."
+
+msgid "Server error. Please try again."
+msgstr "Hadisoana amin'ny mpizara. Andramo indray."
+
+msgid "What is a Dina?"
+msgstr "Inona ny Dina ?"
+
+msgid "In Malagasy culture, the Dina is a community agreement — a set of rules and commitments freely accepted by all members of a community to live together with respect and solidarity (Fihavanana)."
+msgstr "Ao amin'ny kolontsaina malagasy, ny Dina dia fifanarahana iombonana — andian-dàlana sy fanekempihavanana nekena an-tsitrapo nataon'ny mpikambana rehetra amin'ny vondrona iray mba hiara-monina amin'ny fanajana sy ny Fihavanana."
+
+# ── Kabary ──
+msgid "Kabary numérique"
+msgstr "Kabary nomerika"
+
+msgid "The Kabary is a traditional Malagasy oral art form — a structured speech that opens with a salutation, develops ideas with imagery and proverbs, and closes with a blessing. Share your thoughts in this timeless format."
+msgstr "Ny Kabary dia karazan-kira Malagasy nentim-paharazana — resaka voamboatra izay manomboka amin'ny fiarahabana, mamolavola hevitra amin'ny sary sy ohabolana, ary mihidy amin'ny tsodrano. Zarao ny sainao amin'ity endrika mandrakizay ity."
+
+msgid "Title (optional)"
+msgstr "Lohateny (tsy voatery)"
+
+msgid "optional"
+msgstr "tsy voatery"
+
+msgid "Title of your Kabary…"
+msgstr "Lohateny ny Kabarynao…"
+
+msgid "Give your Kabary a memorable title."
+msgstr "Omeo lohateny tsy hadinoina ny Kabarynao."
+
+msgid "Opening salutation. Address your audience respectfully."
+msgstr "Fiarahabana fanombohana. Miteny amin'ny maneho fanajana amin'ny mpifanatrika."
+
+msgid "Tompokolahy, Tompokovavy, ry havana… (Respected men, respected women, dear kin…)"
+msgstr "Tompokolahy, Tompokovavy, ry havana…"
+
+msgid "Introduction — set the context and purpose of your speech."
+msgstr "Fampidirana — asehoy ny tontolon-kevitra sy ny tanjona ny resaka."
+
+msgid "Why I speak today, the occasion that brings us together…"
+msgstr "Maninona aho no miteny androany, ny antony namorona antsika…"
+
+msgid "The heart of the Kabary — your main message, ideas and reflections. (Required)"
+msgstr "Fo-po ny Kabary — ny hafatrao, ny hevitrao ary ny fisainanao. (Ilaina)"
+
+msgid "Develop your thoughts, ideas, stories…"
+msgstr "Ampitomboy ny sainao, hevitrao, tantaranao…"
+
+msgid "A Malagasy proverb to illuminate your message."
+msgstr "Ohabolana malagasy mampihazava ny hafatrao."
+
+msgid "Ny teny mamy, toy ny tantely… (Sweet words, like honey…)"
+msgstr "Ny teny mamy, toy ny tantely…"
+
+msgid "Closing words, blessing for all…"
+msgstr "Teny farany, tsodrano ho an'ny rehetra…"
+
+msgid "Closing — conclusion, blessing, thanks."
+msgstr "Fanidiana — famaranana, tsodrano, fisaorana."
+
+msgid "Publish Kabary"
+msgstr "Hamoaka Kabary"
+
+msgid "Preview"
+msgstr "Fijery mialoha"
+
+msgid "The main content (Vato misaina) is required."
+msgstr "Ny votoatin-dresaka (Vato misaina) dia ilaina."
+
+# ── Hetsika lahatsoratra ──
+msgid "Repost"
+msgstr "Zarao indray"
+
+msgid "Reposted!"
+msgstr "Nozaraina indray !"
+
+msgid "Repost removed"
+msgstr "Fanaparitahana nesorina"
+
+msgid "Undo Repost"
+msgstr "Esory ny fizarana"
+
+msgid "Copy link"
+msgstr "Adikao ny rohy"
+
+msgid "Create"
+msgstr "Hamorona"
+
+msgid "Add"
+msgstr "Manampy"
+
+msgid "Publier"
+msgstr "Mamoaka"
+
+msgid "Photo / Vidéo"
+msgstr "Sary / Video"
+
+msgid "An error occurred."
+msgstr "Nisy hadisoana."
+
+msgid "Be the first to share something!"
+msgstr "Aoka ianao ho voalohany hizara zavatra !"
