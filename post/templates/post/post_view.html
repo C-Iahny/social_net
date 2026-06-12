@@ -1366,12 +1366,12 @@ body { background: var(--bg); }
                                 {% endif %}
                             </span>
                             <span id="react-label-{{ post.id }}">
-                                {% if post.user_reaction == 'like' %}{% trans "Tiana" %}
-                                {% elif post.user_reaction == 'heart' %}{% trans "Tiako" %}
-                                {% elif post.user_reaction == 'laugh' %}{% trans "Heniky" %}
-                                {% elif post.user_reaction == 'wow' %}{% trans "Mahagaga" %}
-                                {% elif post.user_reaction == 'sad' %}{% trans "Maika" %}
-                                {% else %}{% trans "Tiana" %}{% endif %}
+                                {% if post.user_reaction == 'like' %}{% trans "Like" %}
+                                {% elif post.user_reaction == 'heart' %}{% trans "Love" %}
+                                {% elif post.user_reaction == 'laugh' %}{% trans "Haha" %}
+                                {% elif post.user_reaction == 'wow' %}{% trans "Wow" %}
+                                {% elif post.user_reaction == 'sad' %}{% trans "Sad" %}
+                                {% else %}{% trans "Like" %}{% endif %}
                             </span>
                         </button>
                         <!-- Picker -->
@@ -1845,7 +1845,7 @@ body { background: var(--bg); }
    ══════════════════════════════════════ */
 var _REACT_URL    = "{% url 'post:react-post' %}";
 var _REACT_EMOJIS = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
-var _REACT_LABELS = { like:'{% trans "Tiana" %}', heart:'{% trans "Tiako" %}', laugh:'{% trans "Heniky" %}', wow:'{% trans "Mahagaga" %}', sad:'{% trans "Maika" %}' };
+var _REACT_LABELS = { like:'{% trans "Like" %}', heart:'{% trans "Love" %}', laugh:'{% trans "Haha" %}', wow:'{% trans "Wow" %}', sad:'{% trans "Sad" %}' };
 var _pickerTimers = {};
 var _userReactions = {};
 

@@ -173,11 +173,15 @@ main { padding: 0 !important; margin-top: 62px; }
     overflow-y: auto;
     overflow-x: hidden;
     /*
-     * Padding horizontal généreux : rapproche visuellement émetteur et récepteur
-     * sans créer de scrollbar parasite au milieu de l'écran.
-     * La scrollbar reste naturellement au bord droit du chat.
+     * Centre la colonne de messages à ~600px (même largeur que le feed).
+     * calc((100% - 600px) / 2) = padding symétrique pour centrer 600px.
+     * max(1rem, ...) = fallback sur petit écran.
+     * L'élément reste 100% large → scrollbar au bord droit, pas au milieu.
      */
-    padding: .75rem 10% .6rem;
+    padding-top: .75rem;
+    padding-bottom: .6rem;
+    padding-left:  max(1rem, calc((100% - 600px) / 2));
+    padding-right: max(1rem, calc((100% - 600px) / 2));
     display: flex;
     flex-direction: column-reverse;
     gap: 3px;
@@ -458,8 +462,11 @@ main { padding: 0 !important; margin-top: 62px; }
 
 /* ── Input bar ────────────────────────────────────────────────── */
 .chat-input-bar {
-    /* Aligner l'input avec le padding horizontal du chat log (10%) */
-    padding: .7rem 10%;
+    /* Même centrage que le chat log */
+    padding-top: .7rem;
+    padding-bottom: .7rem;
+    padding-left:  max(1rem, calc((100% - 600px) / 2));
+    padding-right: max(1rem, calc((100% - 600px) / 2));
     background: var(--bg-card);
     border-top: 1px solid var(--border);
     flex-shrink: 0;
@@ -577,11 +584,8 @@ main { padding: 0 !important; margin-top: 62px; }
     .chat-sidebar.open { transform: translateX(0); }
     .chat-sidebar-toggle { display: flex; }
     .chat-main { width: 100%; }
-    /* Sur mobile, padding réduit pour laisser plus de place aux messages */
-    #id_chat_log     { padding-left: 4%; padding-right: 4%; }
-    .chat-input-bar  { padding-left: 4%; padding-right: 4%; }
     /* Bulles légèrement plus larges sur petit écran */
-    .msg-content-wrap { max-width: 82%; }
+    .msg-content-wrap { max-width: 85%; }
 }
 </style>
 

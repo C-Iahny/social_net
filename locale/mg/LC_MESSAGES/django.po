@@ -591,6 +591,18 @@ msgstr "fangatahana"
 msgid "Like"
 msgstr "Tiana"
 
+msgid "Love"
+msgstr "Tiako"
+
+msgid "Haha"
+msgstr "Heniky"
+
+msgid "Wow"
+msgstr "Mahagaga"
+
+msgid "Sad"
+msgstr "Maika"
+
 # ── Explore / Index page ──
 msgid "Search users, posts…"
 msgstr "Hikaroka olona, lahatsoratra…"

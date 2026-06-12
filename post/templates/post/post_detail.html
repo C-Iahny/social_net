@@ -406,12 +406,12 @@
                         {% endif %}
                     </span>
                     <span id="react-label-{{ post.id }}">
-                        {% if post.user_reaction == 'like' %}{% trans "Tiana" %}
-                        {% elif post.user_reaction == 'heart' %}{% trans "Tiako" %}
-                        {% elif post.user_reaction == 'laugh' %}{% trans "Heniky" %}
-                        {% elif post.user_reaction == 'wow' %}{% trans "Mahagaga" %}
-                        {% elif post.user_reaction == 'sad' %}{% trans "Maika" %}
-                        {% else %}{% trans "Tiana" %}{% endif %}
+                        {% if post.user_reaction == 'like' %}{% trans "Like" %}
+                        {% elif post.user_reaction == 'heart' %}{% trans "Love" %}
+                        {% elif post.user_reaction == 'laugh' %}{% trans "Haha" %}
+                        {% elif post.user_reaction == 'wow' %}{% trans "Wow" %}
+                        {% elif post.user_reaction == 'sad' %}{% trans "Sad" %}
+                        {% else %}{% trans "Like" %}{% endif %}
                     </span>
                 </button>
                 <div class="reaction-picker" id="picker-{{ post.id }}" onmouseleave="closePicker({{ post.id }})">
@@ -765,16 +765,16 @@ function sendReaction(postId, rtype) {
         if (!btn) return;
 
         var EMOJIS  = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
-        var LABELS  = { like:'{% trans "Tiana" %}', heart:'{% trans "Tiako" %}', laugh:'{% trans "Heniky" %}', wow:'{% trans "Mahagaga" %}', sad:'{% trans "Maika" %}' };
+        var LABELS  = { like:'{% trans "Like" %}', heart:'{% trans "Love" %}', laugh:'{% trans "Haha" %}', wow:'{% trans "Wow" %}', sad:'{% trans "Sad" %}' };
 
         if (data.user_reaction) {
             btn.classList.add('liked');
             if (icon)  icon.innerHTML  = EMOJIS[data.user_reaction] || '👍';
-            if (label) label.textContent = LABELS[data.user_reaction] || 'Tiana';
+            if (label) label.textContent = LABELS[data.user_reaction] || '{% trans "Like" %}';
         } else {
             btn.classList.remove('liked');
             if (icon)  icon.innerHTML  = '<span class="material-icons">thumb_up_off_alt</span>';
-            if (label) label.textContent = '{% trans "J'aime" %}';
+            if (label) label.textContent = '{% trans "Like" %}';
         }
         // Update reaction summary bar
         if (data.summary !== undefined) {

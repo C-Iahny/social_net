@@ -587,3 +587,80 @@ msgstr "Create my account"
 
 msgid "requests"
 msgstr "requests"
+
+msgid "Like"
+msgstr "Like"
+
+# ── Explore / Index page ──
+msgid "Search users, posts…"
+msgstr "Search users, posts…"
+
+msgid "Continents"
+msgstr "Continents"
+
+msgid "Countries"
+msgstr "Countries"
+
+msgid "Countries (%(n)s)"
+msgstr "Countries (%(n)s)"
+
+msgid "+%(n)s more"
+msgstr "+%(n)s more"
+
+msgid "Want to share something with the community?"
+msgstr "Want to share something with the community?"
+
+msgid "My news feed"
+msgstr "My news feed"
+
+msgid "Join Vazimba to post, comment and interact with the community."
+msgstr "Join Vazimba to post, comment and interact with the community."
+
+msgid "Create an account"
+msgstr "Create an account"
+
+msgid "Sign in"
+msgstr "Sign in"
+
+msgid "Popular posts"
+msgstr "Popular posts"
+
+msgid "My feed →"
+msgstr "My feed →"
+
+msgid "Sign in →"
+msgstr "Sign in →"
+
+msgid "Trending"
+msgstr "Trending"
+
+msgid "My full news feed"
+msgstr "My full news feed"
+
+msgid "No posts to explore yet"
+msgstr "No posts to explore yet"
+
+msgid "Be the first to share something."
+msgstr "Be the first to share something."
+
+msgid "Create the first post"
+msgstr "Create the first post"
+
+# ── Footer ──
+msgid "Social network · Madagascar · 2025"
+msgstr "Social network · Madagascar · 2025"
+
+msgid "News feed"
+msgstr "News feed"
+
+msgid "Sign up"
+msgstr "Sign up"
+
+msgid "© 2025"
+msgstr "© 2025"
+
+msgid "All rights reserved."
+msgstr "All rights reserved."
+
+msgid "Built with ❤️ for the Malagasy community."
+msgstr "Built with ❤️ for the Malagasy community."
