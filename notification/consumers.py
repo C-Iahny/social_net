@@ -431,13 +431,12 @@ def get_unread_general_notification_count(user):
 	if user.is_authenticated:
 		friend_request_ct = ContentType.objects.get_for_model(FriendRequest)
 		friend_list_ct = ContentType.objects.get_for_model(FriendList)
-		notifications = Notification.objects.filter(target=user, content_type__in=[friend_request_ct, friend_list_ct])
-
-		unread_count = 0
-		if notifications:
-			for notification in notifications.all():
-				if not notification.read:
-					unread_count = unread_count + 1
+		# Un seul COUNT SQL au lieu d'une boucle Python sur tous les objets
+		unread_count = Notification.objects.filter(
+			target=user,
+			content_type__in=[friend_request_ct, friend_list_ct],
+			read=False,
+		).count()
 		payload['count'] = unread_count
 		return json.dumps(payload)
 	else:
@@ -522,11 +521,11 @@ def get_unread_chat_notification_count(user):
     payload = {}
     if user.is_authenticated:
         chatmessage_ct = ContentType.objects.get_for_model(UnreadChatRoomMessages)
-        notifications = Notification.objects.filter(target=user, content_type__in=[chatmessage_ct])
-        
-        unread_count = 0
-        if notifications:
-            unread_count = len(notifications.all())
+        # COUNT SQL direct — pas de len() / all() qui charge tous les objets
+        unread_count = Notification.objects.filter(
+            target=user,
+            content_type__in=[chatmessage_ct],
+        ).count()
         payload['count'] = unread_count
         return json.dumps(payload)
     else:

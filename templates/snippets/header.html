@@ -967,6 +967,7 @@
 
         _sock.onopen = function(){
             _reconnectDelay = 1000;
+            if(typeof window._notifWsConnected === 'function') window._notifWsConnected();
             if(typeof setupGeneralNotificationsMenu === 'function') setupGeneralNotificationsMenu();
             if(typeof getFirstGeneralNotificationsPage === 'function') getFirstGeneralNotificationsPage();
             if(typeof getUnreadGeneralNotificationsCount === 'function') getUnreadGeneralNotificationsCount();
@@ -976,6 +977,7 @@
 
         _sock.onclose = function(){
             window.notificationSocket = null;
+            if(typeof window._notifWsDisconnected === 'function') window._notifWsDisconnected();
             clearTimeout(_reconnectTimer);
             _reconnectTimer = setTimeout(function(){
                 _reconnectDelay = Math.min(_reconnectDelay * 2, 30000);
@@ -987,8 +989,10 @@
     }
 
 
-    /* ── HTTP fallback: badge polling when WS is unavailable ── */
+    /* ── HTTP fallback: badge polling quand le WebSocket est indisponible ── */
     var _httpPollTimer = null;
+    var _wsActive = false;  // mis à true quand le WS est connecté
+
     function _pollBadgesFallback() {
         fetch('/notif/counts/', {credentials: 'same-origin'})
             .then(function(r){ return r.ok ? r.json() : null; })
@@ -999,10 +1003,25 @@
             })
             .catch(function(){});
     }
-    /* Poll every 5 s regardless; harmless extra update when WS is alive */
-    setInterval(_pollBadgesFallback, 5000);
-    /* Also fire immediately on page load for instant badge on first render */
-    document.addEventListener('DOMContentLoaded', _pollBadgesFallback);
+
+    function _startHttpFallback() {
+        if (_httpPollTimer) return;   // déjà actif
+        _httpPollTimer = setInterval(_pollBadgesFallback, 5000);
+    }
+    function _stopHttpFallback() {
+        if (_httpPollTimer) { clearInterval(_httpPollTimer); _httpPollTimer = null; }
+    }
+
+    /* Appelé par le consumer WebSocket quand la connexion est établie/perdue */
+    window._notifWsConnected    = function() { _wsActive = true;  _stopHttpFallback(); };
+    window._notifWsDisconnected = function() { _wsActive = false; _startHttpFallback(); };
+
+    /* Au chargement : une seule requête HTTP pour peupler les badges immédiatement,
+       puis le WS prend le relai. Si le WS ne se connecte pas dans 3 s, on démarre le polling. */
+    document.addEventListener('DOMContentLoaded', function() {
+        _pollBadgesFallback();
+        setTimeout(function() { if (!_wsActive) _startHttpFallback(); }, 3000);
+    });
 
         window.handleNewPostNotification = function(data){
         var feedUrl = "{% url 'post:post-view' %}";

@@ -809,11 +809,12 @@ def post_detail(request, post_id):
 
 # ── Kabary numérique ──────────────────────────────────────────────────────────
 
-@login_required
+@login_required(login_url='login')
 def kabary_create(request):
     """Page de création d'un Kabary numérique."""
     if request.method == 'POST':
-        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        # La page utilise TOUJOURS fetch() — on retourne toujours du JSON pour les POST.
+        # Ne pas dépendre de X-Requested-With (peut être supprimé par Cloudflare).
 
         fisaorana   = request.POST.get('fisaorana', '').strip()
         fanafahana  = request.POST.get('fanafahana', '').strip()
@@ -822,11 +823,7 @@ def kabary_create(request):
         famaranana  = request.POST.get('famaranana', '').strip()
 
         if not vato and not fanafahana:
-            err = 'Le contenu principal (Vato misaina) est obligatoire.'
-            if is_ajax:
-                return JsonResponse({'ok': False, 'error': err})
-            messages.error(request, err)
-            return redirect('post:kabary-create')
+            return JsonResponse({'ok': False, 'error': 'Le contenu principal (Vato misaina) est obligatoire.'})
 
         # Assembler le body structuré en HTML
         parts = []
@@ -867,17 +864,14 @@ def kabary_create(request):
                 post_type=Post.KABARY,
             )
         except Exception as e:
-            logging.getLogger(__name__).exception("Kabary create failed: %s", e)
-            err = 'Erreur lors de la création du Kabary.'
-            if is_ajax:
-                return JsonResponse({'ok': False, 'error': err})
-            messages.error(request, err)
-            return redirect('post:kabary-create')
+            _logger.exception("Kabary create failed: %s", e)
+            from django.conf import settings as _s
+            err = (f'Erreur technique : {type(e).__name__}: {e}'
+                   if _s.DEBUG
+                   else 'Erreur lors de la création du Kabary. Réessaie dans quelques instants.')
+            return JsonResponse({'ok': False, 'error': err})
 
-        if is_ajax:
-            return JsonResponse({'ok': True, 'redirect': post.get_absolute_url()})
-        messages.success(request, 'Kabary publié !')
-        return redirect('post:post-detail', post_id=post.id)
+        return JsonResponse({'ok': True, 'redirect': post.get_absolute_url()})
 
     return render(request, 'post/kabary_create.html', {})
 
