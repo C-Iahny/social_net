@@ -933,3 +933,9 @@ msgstr "Nisy hadisoana."
 
 msgid "Be the first to share something!"
 msgstr "Aoka ianao ho voalohany hizara zavatra !"
+
+msgid "See more"
+msgstr "Hijery bebe kokoa"
+
+msgid "See less"
+msgstr "Hijery kely"

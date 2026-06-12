@@ -664,3 +664,9 @@ msgstr "All rights reserved."
 
 msgid "Built with ❤️ for the Malagasy community."
 msgstr "Built with ❤️ for the Malagasy community."
+
+msgid "See more"
+msgstr "See more"
+
+msgid "See less"
+msgstr "See less"

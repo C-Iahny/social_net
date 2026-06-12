@@ -933,3 +933,9 @@ msgstr "Une erreur s'est produite."
 
 msgid "Be the first to share something!"
 msgstr "Soyez le premier à partager quelque chose !"
+
+msgid "See more"
+msgstr "Voir plus"
+
+msgid "See less"
+msgstr "Voir moins"
