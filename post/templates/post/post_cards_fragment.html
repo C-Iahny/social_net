@@ -191,12 +191,12 @@
                     {% endif %}
                 </span>
                 <span id="react-label-{{ post.id }}">
-                    {% if post.user_reaction == 'like' %}{% trans "Tiana" %}
-                    {% elif post.user_reaction == 'heart' %}{% trans "Tiako" %}
-                    {% elif post.user_reaction == 'laugh' %}{% trans "Heniky" %}
-                    {% elif post.user_reaction == 'wow' %}{% trans "Mahagaga" %}
-                    {% elif post.user_reaction == 'sad' %}{% trans "Maika" %}
-                    {% else %}{% trans "Tiana" %}{% endif %}
+                    {% if post.user_reaction == 'like' %}{% trans "Like" %}
+                    {% elif post.user_reaction == 'heart' %}{% trans "Love" %}
+                    {% elif post.user_reaction == 'laugh' %}{% trans "Haha" %}
+                    {% elif post.user_reaction == 'wow' %}{% trans "Wow" %}
+                    {% elif post.user_reaction == 'sad' %}{% trans "Sad" %}
+                    {% else %}{% trans "Like" %}{% endif %}
                 </span>
             </button>
             <div class="reaction-picker" id="picker-{{ post.id }}" onmouseleave="closePicker({{ post.id }})">

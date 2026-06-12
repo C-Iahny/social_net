@@ -1236,7 +1236,7 @@ function quickReact(pid) {
 function sendReaction(pid, rtype) {
     closePicker(pid);
     var EMOJIS = {like:'👍',heart:'❤️',laugh:'😂',wow:'😮',sad:'😢'};
-    var LABELS = {like:'{% trans "Tiana" %}',heart:'{% trans "Tiako" %}',laugh:'{% trans "Heniky" %}',wow:'{% trans "Mahagaga" %}',sad:'{% trans "Maika" %}'};
+    var LABELS = {like:'{% trans "Like" %}',heart:'{% trans "Love" %}',laugh:'{% trans "Haha" %}',wow:'{% trans "Wow" %}',sad:'{% trans "Sad" %}'};
     fetch(GD_REACT_URL, {
         method:'POST',
         headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':GD_CSRF,'X-Requested-With':'XMLHttpRequest'},
@@ -1253,7 +1253,7 @@ function sendReaction(pid, rtype) {
         if(icon) icon.innerHTML = data.user_reaction && EMOJIS[data.user_reaction]
             ? EMOJIS[data.user_reaction]
             : '<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>';
-        if(label) label.textContent = data.user_reaction ? (LABELS[data.user_reaction]||'Tiana') : 'Tiana';
+        if(label) label.textContent = data.user_reaction ? (LABELS[data.user_reaction]||'{% trans "Like" %}') : '{% trans "Like" %}';
         var picker = document.getElementById('picker-'+pid);
         if(picker){
             picker.querySelectorAll('.reaction-emoji-btn').forEach(function(b){b.classList.remove('selected');});

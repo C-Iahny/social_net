@@ -591,6 +591,18 @@ msgstr "demandes"
 msgid "Like"
 msgstr "J'aime"
 
+msgid "Love"
+msgstr "J'adore"
+
+msgid "Haha"
+msgstr "Haha"
+
+msgid "Wow"
+msgstr "Wow"
+
+msgid "Sad"
+msgstr "Triste"
+
 # ── Explore / Index page ──
 msgid "Search users, posts…"
 msgstr "Rechercher un utilisateur, un post…"
