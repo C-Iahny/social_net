@@ -172,18 +172,17 @@ main { padding: 0 !important; margin-top: 62px; }
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: .75rem 1.2rem .4rem;
+    /*
+     * Padding horizontal généreux : rapproche visuellement émetteur et récepteur
+     * sans créer de scrollbar parasite au milieu de l'écran.
+     * La scrollbar reste naturellement au bord droit du chat.
+     */
+    padding: .75rem 10% .6rem;
     display: flex;
     flex-direction: column-reverse;
-    gap: 2px;
+    gap: 3px;
     background: var(--bg);
     scroll-behavior: smooth;
-    /* Centrer et limiter la largeur : rapproche émetteur et récepteur */
-    max-width: 780px;
-    width: 100%;
-    margin: 0 auto;
-    align-self: center;
-    box-sizing: border-box;
 }
 #id_chat_log::-webkit-scrollbar { width: 4px; }
 #id_chat_log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
@@ -459,17 +458,14 @@ main { padding: 0 !important; margin-top: 62px; }
 
 /* ── Input bar ────────────────────────────────────────────────── */
 .chat-input-bar {
-    padding: .7rem .9rem;
+    /* Aligner l'input avec le padding horizontal du chat log (10%) */
+    padding: .7rem 10%;
     background: var(--bg-card);
     border-top: 1px solid var(--border);
     flex-shrink: 0;
-    /* Aligne l'input avec la colonne de messages */
-    display: flex;
-    justify-content: center;
 }
 .chat-input-inner {
     width: 100%;
-    max-width: calc(780px - 2.4rem); /* même largeur max que #id_chat_log moins le padding */
 }
 .chat-input-inner {
     display: flex;
@@ -581,6 +577,11 @@ main { padding: 0 !important; margin-top: 62px; }
     .chat-sidebar.open { transform: translateX(0); }
     .chat-sidebar-toggle { display: flex; }
     .chat-main { width: 100%; }
+    /* Sur mobile, padding réduit pour laisser plus de place aux messages */
+    #id_chat_log     { padding-left: 4%; padding-right: 4%; }
+    .chat-input-bar  { padding-left: 4%; padding-right: 4%; }
+    /* Bulles légèrement plus larges sur petit écran */
+    .msg-content-wrap { max-width: 82%; }
 }
 </style>
 
