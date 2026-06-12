@@ -1,4 +1,5 @@
 from django.db import models
+from functools import cached_property
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.core.files.storage import FileSystemStorage
 from django.db.models.fields.files import ImageFieldFile, ImageField
@@ -122,40 +123,44 @@ class Account(AbstractBaseUser):
 	def has_module_perms(self, app_label):
 		return True
 
-	@property
+	@cached_property
 	def score_fihavanana(self):
 		"""Score de solidarité communautaire (Fihavanana).
-		Calculé à la volée à partir de l'activité de l'utilisateur.
-		Retourne un entier et un niveau en chaîne.
+		Calculé en une passe SQL par instance — mis en cache pour la durée de la requête
+		(cached_property évite de recalculer si le template l'appelle plusieurs fois).
 		"""
 		try:
+			from django.db.models import Case, When, IntegerField, Sum
 			from post.models import Post, Comment, Reaction, Repost
 			from friend.models import FriendList
 
-			# Posts publiés (+5 par post, +10 par Kabary)
-			posts = Post.objects.filter(author=self)
-			post_score = sum(10 if getattr(p, 'post_type', 'default') == 'kabary' else 5 for p in posts)
+			# Posts publiés : +10 par Kabary, +5 par post standard — une seule requête SQL
+			post_score = Post.objects.filter(author=self).aggregate(
+				s=Sum(Case(
+					When(post_type='kabary', then=10),
+					default=5,
+					output_field=IntegerField(),
+				))
+			)['s'] or 0
 
-			# Commentaires rédigés (+2 chacun)
-			comment_score = Comment.objects.filter(author=self).count() * 2
-
-			# Réactions reçues sur ses posts (+3 chacune)
+			# Commentaires (+2), réactions reçues (+3) — 2 COUNT SQL
+			comment_score  = Comment.objects.filter(author=self).count() * 2
 			reaction_score = Reaction.objects.filter(post__author=self).count() * 3
 
-			# Reposts de ses posts (+4 chacun)
+			# Reposts (+4)
 			try:
 				repost_score = Repost.objects.filter(post__author=self).count() * 4
 			except Exception:
 				repost_score = 0
 
-			# Amis (+3 chacun)
+			# Amis (+3)
 			try:
 				fl = FriendList.objects.get(user=self)
 				friend_score = fl.friends.count() * 3
 			except Exception:
 				friend_score = 0
 
-			# Memberships de groupe (+2 chacun)
+			# Groupes (+2)
 			try:
 				from group.models import GroupMembership
 				group_score = GroupMembership.objects.filter(user=self).count() * 2
