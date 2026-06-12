@@ -549,23 +549,31 @@ body { background: var(--bg); }
 .pc-body {
     padding: .2rem 1.1rem .7rem; color: var(--text);
     font-size: .9rem; line-height: 1.68; opacity: .9;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    max-height: 160px;
     overflow: hidden;
+    position: relative;
     cursor: pointer;
 }
+.pc-body:not(.expanded)::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 52px;
+    background: linear-gradient(transparent, var(--bg-card));
+    pointer-events: none;
+}
 .pc-body.expanded {
-    display: block;
+    max-height: none;
     overflow: visible;
     cursor: default;
 }
+.pc-body.expanded::after { display: none; }
 .pc-body img { max-width: 100%; border-radius: 8px; margin: .3rem 0; }
 .pc-body p { margin-bottom: .35rem; }
 /* Read-more link */
 .pc-read-more {
     display: inline-block;
-    margin: -.2rem 1.1rem .4rem;
+    margin: -.2rem 1.1rem .6rem;
     font-size: .82rem;
     font-weight: 700;
     color: var(--accent);
@@ -1329,7 +1337,10 @@ body { background: var(--bg); }
                 <!-- Body -->
                 {% if post.body %}
                 <div class="pc-body" onclick="expandBody(this)">{{ post.body|safe }}</div>
-                <span class="pc-read-more" onclick="expandBodyBtn(this)">{% trans "See more" %}</span>
+                <span class="pc-read-more"
+                      data-more="{% trans 'See more'|escapejs %}"
+                      data-less="{% trans 'See less'|escapejs %}"
+                      onclick="expandBodyBtn(this)">{% trans "See more" %}</span>
                 {% endif %}
 
                 {% include 'post/_post_media.html' %}
@@ -2102,6 +2113,38 @@ function updateCommentCount(postId, delta) {
     if (cnt > 0) { badge.textContent = '(' + cnt + ')'; badge.style.display = ''; }
     else           badge.style.display = 'none';
 }
+
+/* ══════════════════════════════════════
+   READ MORE / COLLAPSE
+   ══════════════════════════════════════ */
+function expandBody(el) {
+    if (el.classList.contains('expanded')) return;
+    el.classList.add('expanded');
+    var btn = el.nextElementSibling;
+    if (btn && btn.classList.contains('pc-read-more')) btn.textContent = btn.dataset.less;
+}
+function collapseBody(el) {
+    el.classList.remove('expanded');
+    var btn = el.nextElementSibling;
+    if (btn && btn.classList.contains('pc-read-more')) btn.textContent = btn.dataset.more;
+}
+function expandBodyBtn(el) {
+    var body = el.previousElementSibling;
+    if (!body || !body.classList.contains('pc-body')) return;
+    if (body.classList.contains('expanded')) collapseBody(body);
+    else expandBody(body);
+}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.pc-body').forEach(function(el) {
+        var btn = el.nextElementSibling;
+        if (!btn || !btn.classList.contains('pc-read-more')) return;
+        if (el.scrollHeight <= el.clientHeight + 4) {
+            btn.classList.add('hidden');
+            el.style.cursor = 'default';
+            el.onclick = null;
+        }
+    });
+});
 
 /* ══════════════════════════════════════
    SHARE MODAL
