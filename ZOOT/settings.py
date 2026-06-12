@@ -335,7 +335,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024    # 10 Mo (seuil mémoire↔disq
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # URL de base de l'application (utilisée dans les e-mails, liens de partage, etc.)
-BASE_URL = config('BASE_URL', default='http://127.0.0.1:8000')
+BASE_URL = config('BASE_URL', default='https://www.vazimba.io')
 
 # ── Web Push Notifications (VAPID) ───────────────────────────────────────────
 VAPID_PUBLIC_KEY   = config('VAPID_PUBLIC_KEY',   default='')
