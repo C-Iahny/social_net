@@ -178,13 +178,13 @@ _DB_PASSWORD  = config('DB_PASSWORD', default=None)
 
 if _DATABASE_URL:
     # Production (Railway, Heroku, etc.) — URL complète
-    DATABASES = {
-        'default': dj_database_url.parse(
-            _DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=False,
-        )
-    }
+    _db_config = dj_database_url.parse(
+        _DATABASE_URL,
+        conn_max_age=600,
+        ssl_require=False,
+    )
+    _db_config['CONN_HEALTH_CHECKS'] = True   # Django 4.1+ — évite les connexions stales
+    DATABASES = {'default': _db_config}
 elif _DB_PASSWORD:
     # Dev avec PostgreSQL local — credentials définis dans .env
     DATABASES = {
