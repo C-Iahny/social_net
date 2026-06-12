@@ -22,7 +22,7 @@ class Notification(models.Model):
 	timestamp 					= models.DateTimeField(auto_now_add=True)
 
 	# Some notifications can be marked as "read". (I used "read" instead of "active". I think its more appropriate)
-	read 						= models.BooleanField(default=False)
+	read 						= models.BooleanField(default=False, db_index=True)
 
 	# A generic type that can refer to a FriendRequest, Unread Message, or any other type of "Notification"
 	# See article: https://simpleisbetterthancomplex.com/tutorial/2016/10/13/how-to-use-generic-relations.html

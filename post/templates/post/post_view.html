@@ -1845,7 +1845,7 @@ body { background: var(--bg); }
    ══════════════════════════════════════ */
 var _REACT_URL    = "{% url 'post:react-post' %}";
 var _REACT_EMOJIS = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
-var _REACT_LABELS = { like:'{% trans "Like" %}', heart:'{% trans "Love" %}', laugh:'{% trans "Haha" %}', wow:'{% trans "Wow" %}', sad:'{% trans "Sad" %}' };
+var _REACT_LABELS = { like:'{% trans "Like"|escapejs %}', heart:'{% trans "Love"|escapejs %}', laugh:'{% trans "Haha"|escapejs %}', wow:'{% trans "Wow"|escapejs %}', sad:'{% trans "Sad"|escapejs %}' };
 var _pickerTimers = {};
 var _userReactions = {};
 
@@ -2165,7 +2165,7 @@ sharePost = function(postId, postTitle) {
         var isReposted = btn.dataset.reposted === 'true';
         var label = document.getElementById('share-repost-label');
         if (label) {
-            label.textContent = isReposted ? '{% trans "Undo Repost" %}' : '{% trans "Repost" %}';
+            label.textContent = isReposted ? '{% trans "Undo Repost"|escapejs %}' : '{% trans "Repost"|escapejs %}';
         }
     }
     _originalSharePost(postId, postTitle);
@@ -2191,12 +2191,12 @@ function doRepost() {
         var btn = document.getElementById('share-repost-btn');
         if (btn) btn.dataset.reposted = data.reposted ? 'true' : 'false';
         var label = document.getElementById('share-repost-label');
-        if (label) label.textContent = data.reposted ? '{% trans "Undo Repost" %}' : '{% trans "Repost" %}';
+        if (label) label.textContent = data.reposted ? '{% trans "Undo Repost"|escapejs %}' : '{% trans "Repost"|escapejs %}';
         // Show toast
         var t = document.getElementById('share-toast');
         if (t) {
             t.querySelector('.material-icons').textContent = 'repeat';
-            t.childNodes[1].textContent = data.reposted ? ' {% trans "Reposted!" %}' : ' {% trans "Repost removed" %}';
+            t.childNodes[1].textContent = data.reposted ? ' {% trans "Reposted!"|escapejs %}' : ' {% trans "Repost removed"|escapejs %}';
             t.classList.add('show');
             setTimeout(function(){ t.classList.remove('show'); }, 2500);
         }

@@ -1472,7 +1472,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 setTimeout(function() { window.location.reload(); }, 1200);
             } else {
                 if (gdEvFeedback) {
-                    gdEvFeedback.textContent = data.error || '{% trans "An error occurred." %}';
+                    gdEvFeedback.textContent = data.error || '{% trans "An error occurred."|escapejs %}';
                     gdEvFeedback.className = 'gd-ev-create-feedback error';
                 }
                 if (submitBtn) { submitBtn.disabled = false; }

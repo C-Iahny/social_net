@@ -342,7 +342,7 @@ function kbrSubmit() {
     var btn = document.getElementById('kbr-submit-btn');
 
     if (!vato && !fanafahana) {
-        kbrShowError('{% trans "The main content (Vato misaina) is required." %}');
+        kbrShowError('{% trans "The main content (Vato misaina) is required."|escapejs %}');
         return;
     }
     kbrHideError();
@@ -370,13 +370,13 @@ function kbrSubmit() {
         if (data.ok) {
             window.location.href = data.redirect;
         } else {
-            if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">record_voice_over</span> {% trans "Publish Kabary" %}'; }
-            kbrShowError(data.error || '{% trans "An error occurred." %}');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">record_voice_over</span> {% trans "Publish Kabary"|escapejs %}'; }
+            kbrShowError(data.error || '{% trans "An error occurred."|escapejs %}');
         }
     })
     .catch(function(e) {
         console.error('Kabary submit error:', e);
-        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">record_voice_over</span> {% trans "Publish Kabary" %}'; }
+        if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">record_voice_over</span> {% trans "Publish Kabary"|escapejs %}'; }
         kbrShowError('Erreur (' + e.message + '). Réessaie ou recharge la page.');
     });
 }
