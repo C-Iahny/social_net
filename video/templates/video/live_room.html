@@ -683,7 +683,7 @@ function startRecording(stream) {
     try {
         mediaRecorder = new MediaRecorder(stream, {
             mimeType: MIME,
-            videoBitsPerSecond: 1500000,
+            videoBitsPerSecond: 2500000,  /* 2.5 Mbps pour une bonne qualité match foot */
         });
     } catch(e) {
         appendSystemMsg('Erreur recorder : ' + e.message);
@@ -781,12 +781,42 @@ function initMediaSource(mime) {
             sourceBuffer = mediaSource.addSourceBuffer(mime);
             sourceBuffer.mode = 'sequence';
             sourceBuffer.addEventListener('updateend', onUpdateEnd);
+            sourceBuffer.addEventListener('error', function(e) {
+                /* Si le SourceBuffer est en erreur (chunk corrompu ou gap trop grand),
+                   on réinitialise et on attend le prochain is_init chunk du host. */
+                console.error('[VIEWER] SourceBuffer error — réinitialisation en attente', e);
+                msInited    = false;
+                sourceBuffer = null;
+                appendQueue  = [];
+                if (!hasPlayed && waitingOverlay) {
+                    var sp = waitingOverlay.querySelector('.lr-waiting-spinner');
+                    var tx = waitingOverlay.querySelector('.lr-waiting-text');
+                    waitingOverlay.classList.remove('hidden');
+                    if (sp) { sp.style.display = ''; sp.style.borderTopColor = '#f59e0b'; }
+                    if (tx) tx.textContent = 'Resynchronisation du flux…';
+                }
+            });
             processQueue();
         } catch(e) {
             console.error('SourceBuffer init error:', e);
             appendSystemMsg('Erreur lecture : ' + e.message);
         }
     });
+
+    /* Synchronisation live edge : si le video s'arrête de buffuriser,
+       on le force à sauter au dernier segment disponible (évite le gel). */
+    videoEl.addEventListener('waiting', function onWaiting() {
+        if (!msInited) return;
+        if (videoEl.buffered.length > 0) {
+            var liveEdge = videoEl.buffered.end(videoEl.buffered.length - 1);
+            if (videoEl.currentTime < liveEdge - 1.5) {
+                console.log('[VIEWER] buffer underrun — saut au live edge', liveEdge);
+                try { videoEl.currentTime = liveEdge - 0.5; } catch(e2) {}
+            }
+        }
+        videoEl.play().catch(function() {});
+    });
+
     return true;   /* ← MediaSource créé avec succès */
 }
 
@@ -923,7 +953,15 @@ function showUnmuteBtn() {
         'display:flex;align-items:center;gap:.4rem;font-family:inherit;',
         'white-space:nowrap;backdrop-filter:blur(6px);'
     ].join('');
-    btn.onclick = function() { videoEl.muted = false; btn.remove(); };
+    btn.onclick = function() {
+        videoEl.muted = false;
+        /* Sauter au live edge et relancer la lecture */
+        if (videoEl.buffered.length > 0) {
+            try { videoEl.currentTime = videoEl.buffered.end(videoEl.buffered.length - 1) - 0.3; } catch(e) {}
+        }
+        videoEl.play().catch(function() {});
+        btn.remove();
+    };
     var area = document.querySelector('.lr-video-area');
     if (area) area.appendChild(btn);
 }
