@@ -403,9 +403,9 @@
 
 <div class="explore-hero">
     <div class="explore-hero-content">
-        <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="Vazimba"
-             style="width:64px;height:64px;border-radius:18px;object-fit:cover;
-                    box-shadow:0 4px 20px rgba(0,0,0,.25);margin-bottom:.9rem;display:block;">
+        <img src="{% static 'logo/vazimba_icon.png' %}" alt="Vazimba"
+             style="width:64px;height:64px;object-fit:contain;
+                    margin-bottom:.9rem;display:block;filter:invert(1);">
         <h1>{{ hero.title }}</h1>
         <p>{{ hero.subtitle }}</p>
         <div class="hero-search-wrap">
@@ -548,9 +548,18 @@
             <a class="explore-post-card" href="{% url 'account:view' user_id=post.author.id %}">
 
                 <!-- Thumbnail -->
+                {% with thumb=post.header_image_url|default:'' %}
+                {% with first_media=post.media_list.0 %}
                 <div class="epc-thumb-wrap">
-                    {% if post.header_image_url %}
-                    <img class="epc-thumb" src="{{ post.header_image_url }}"
+                    {% if thumb %}
+                    <img class="epc-thumb" src="{{ thumb }}"
+                         alt="{{ post.title }}"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="epc-thumb-placeholder" style="display:none;">
+                        <span class="material-icons">article</span>
+                    </div>
+                    {% elif first_media and not first_media.is_video %}
+                    <img class="epc-thumb" src="{{ first_media.url }}"
                          alt="{{ post.title }}"
                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
                     <div class="epc-thumb-placeholder" style="display:none;">
@@ -570,6 +579,8 @@
                     </div>
                     {% endif %}
                 </div>
+                {% endwith %}
+                {% endwith %}
 
                 <!-- Body -->
                 <div class="epc-body">
