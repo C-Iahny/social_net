@@ -1,33 +1,37 @@
 """
-WebRTC signaling consumer for Vazimba live rooms.
+Live streaming consumer for Vazimba — MediaRecorder → WebSocket → MediaSource.
 
-Protocol (client ↔ server):
+Architecture : le host encode son écran/caméra avec MediaRecorder (WebM/VP8),
+envoie les chunks en base64 via WebSocket au serveur Django Channels, qui les
+diffuse à tous les viewers. Pas de WebRTC P2P, donc aucun problème de NAT/TURN.
 
-Client → Server
-  {type: 'join_host'}                        — host identifies itself
-  {type: 'join_viewer'}                      — viewer enters the room
-  {type: 'offer',  target, sdp}              — host sends SDP offer to viewer
-  {type: 'answer', target, sdp}              — viewer sends SDP answer to host
-  {type: 'ice',    target, candidate}        — ICE candidate relay
-  {type: 'chat',   text}                     — chat message
-  {type: 'end'}                              — host ends the stream
+Protocol (client → server):
+  {type: 'join_host'}
+  {type: 'join_viewer'}
+  {type: 'media_chunk', data: <base64>, is_init: bool, mime: str}
+  {type: 'chat',  text}
+  {type: 'end'}
 
-Server → Client
-  {type: 'viewer_joined', channel, username, avatar}
-  {type: 'viewer_left',   channel, username}
-  {type: 'offer',  sdp, from}               — host_channel in 'from'
-  {type: 'answer', sdp, from}               — viewer_channel in 'from'
-  {type: 'ice',    candidate, from}
-  {type: 'chat',   username, avatar, text}
-  {type: 'viewer_count', count}
+Protocol (server → client):
+  {type: 'viewer_joined',    username, avatar}
+  {type: 'viewer_left',      username}
+  {type: 'media_chunk',      data, is_init, mime}
+  {type: 'host_disconnected'}
+  {type: 'host_reconnected'}
+  {type: 'chat',             username, avatar, text}
+  {type: 'viewer_count',     count}
   {type: 'stream_ended'}
-  {type: 'error',  message}
 """
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.utils import timezone
 from video.models import LiveRoom
+
+# Cache en mémoire du chunk d'initialisation par salle.
+# Valide sur un seul worker (Railway free tier = 1 worker Daphne).
+# Permet aux viewers qui rejoignent en cours de route de recevoir l'init WebM.
+_init_chunks: dict = {}   # room_id (str) → { 'data': base64_str, 'mime': str }
 
 
 class LiveConsumer(AsyncJsonWebsocketConsumer):
@@ -38,10 +42,11 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             await self.close()
             return
 
-        self.room_id   = self.scope['url_route']['kwargs']['room_id']
+        self.room_id    = self.scope['url_route']['kwargs']['room_id']
         self.room_group = f'live_{self.room_id}'
         self.user       = user
         self.is_host    = False
+        self.has_joined = False   # viewers : évite le double-comptage sur rejoin
 
         room = await self._get_room()
         if not room or room.status != LiveRoom.STATUS_ACTIVE:
@@ -54,18 +59,19 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         except Exception as e:
             print(f"LiveConsumer group_add error: {e}")
 
-    # ── Disconnect ─────────────────────────────────────────────────────────────
+    # ── Disconnect ──────────────────────────────────────────────────────────────
 
     async def disconnect(self, code):
         if not hasattr(self, 'room_group'):
             return
 
         if self.is_host:
-            await self._do_end_room()
+            # Ne PAS terminer le room — l'hôte peut revenir.
+            await self._clear_host_channel()
             try:
                 await self.channel_layer.group_send(self.room_group, {
                     'type': 'room_event',
-                    'payload': {'type': 'stream_ended'},
+                    'payload': {'type': 'host_disconnected'},
                 })
             except Exception:
                 pass
@@ -77,21 +83,21 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                         'type': 'direct_event',
                         'payload': {
                             'type': 'viewer_left',
-                            'channel': self.channel_name,
                             'username': self.user.username,
                         },
                     })
                 except Exception:
                     pass
-            await self._decrement_viewer_count()
-            await self._broadcast_viewer_count()
+            if self.has_joined:
+                await self._decrement_viewer_count()
+                await self._broadcast_viewer_count()
 
         try:
             await self.channel_layer.group_discard(self.room_group, self.channel_name)
         except Exception:
             pass
 
-    # ── Receive ────────────────────────────────────────────────────────────────
+    # ── Receive ─────────────────────────────────────────────────────────────────
 
     async def receive_json(self, content):
         msg_type = content.get('type')
@@ -102,39 +108,23 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             elif msg_type == 'join_viewer':
                 await self._handle_join_viewer()
 
-            elif msg_type == 'offer':
-                target = content.get('target')
-                if target:
-                    await self.channel_layer.send(target, {
-                        'type': 'direct_event',
-                        'payload': {
-                            'type': 'offer',
-                            'sdp': content.get('sdp'),
-                            'from': self.channel_name,
-                        },
-                    })
+            elif msg_type == 'media_chunk':
+                if self.is_host:
+                    data_b64 = content.get('data', '')
+                    is_init  = bool(content.get('is_init', False))
+                    mime     = content.get('mime', 'video/webm;codecs=vp8,opus')
 
-            elif msg_type == 'answer':
-                target = content.get('target')
-                if target:
-                    await self.channel_layer.send(target, {
-                        'type': 'direct_event',
-                        'payload': {
-                            'type': 'answer',
-                            'sdp': content.get('sdp'),
-                            'from': self.channel_name,
-                        },
-                    })
+                    # Mettre en cache le chunk d'initialisation
+                    if is_init and data_b64:
+                        _init_chunks[str(self.room_id)] = {'data': data_b64, 'mime': mime}
 
-            elif msg_type == 'ice':
-                target = content.get('target')
-                if target:
-                    await self.channel_layer.send(target, {
-                        'type': 'direct_event',
+                    await self.channel_layer.group_send(self.room_group, {
+                        'type': 'room_event',
                         'payload': {
-                            'type': 'ice',
-                            'candidate': content.get('candidate'),
-                            'from': self.channel_name,
+                            'type':    'media_chunk',
+                            'data':    data_b64,
+                            'is_init': is_init,
+                            'mime':    mime,
                         },
                     })
 
@@ -145,15 +135,16 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                     await self.channel_layer.group_send(self.room_group, {
                         'type': 'room_event',
                         'payload': {
-                            'type': 'chat',
+                            'type':     'chat',
                             'username': self.user.username,
-                            'avatar': avatar,
-                            'text': text,
+                            'avatar':   avatar,
+                            'text':     text,
                         },
                     })
 
             elif msg_type == 'end':
                 if self.is_host:
+                    _init_chunks.pop(str(self.room_id), None)
                     await self._do_end_room()
                     await self.channel_layer.group_send(self.room_group, {
                         'type': 'room_event',
@@ -167,27 +158,47 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             except Exception:
                 pass
 
-    # ── Channel layer event handlers ────────────────────────────────────────────
+    # ── Channel layer handlers ───────────────────────────────────────────────────
 
     async def room_event(self, event):
-        """Broadcast to all consumers in this room's group."""
         await self.send_json(event['payload'])
 
     async def direct_event(self, event):
-        """Direct message to this specific consumer (WebRTC signaling)."""
         await self.send_json(event['payload'])
 
-    # ── Internal helpers ───────────────────────────────────────────────────────
+    # ── Internal helpers ─────────────────────────────────────────────────────────
 
     async def _handle_join_host(self):
         room = await self._get_room()
         if room and str(room.host_id) == str(self.user.id):
             self.is_host = True
             await self._save_host_channel()
+            # Notifier les viewers → ils renverront join_viewer
+            try:
+                await self.channel_layer.group_send(self.room_group, {
+                    'type': 'room_event',
+                    'payload': {'type': 'host_reconnected'},
+                })
+            except Exception:
+                pass
 
     async def _handle_join_viewer(self):
         self.is_host = False
-        await self._increment_viewer_count()
+        if not self.has_joined:
+            self.has_joined = True
+            await self._increment_viewer_count()
+
+        # Envoyer immédiatement le chunk d'init si on l'a en cache
+        cached = _init_chunks.get(str(self.room_id))
+        if cached:
+            await self.send_json({
+                'type':    'media_chunk',
+                'data':    cached['data'],
+                'mime':    cached['mime'],
+                'is_init': True,
+            })
+
+        # Notifier l'hôte
         host_ch = await self._get_host_channel()
         if host_ch:
             try:
@@ -195,14 +206,14 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                 await self.channel_layer.send(host_ch, {
                     'type': 'direct_event',
                     'payload': {
-                        'type': 'viewer_joined',
-                        'channel': self.channel_name,
+                        'type':     'viewer_joined',
                         'username': self.user.username,
-                        'avatar': avatar,
+                        'avatar':   avatar,
                     },
                 })
             except Exception as e:
                 print(f"LiveConsumer notify host error: {e}")
+
         await self._broadcast_viewer_count()
 
     async def _broadcast_viewer_count(self):
@@ -215,7 +226,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         except Exception:
             pass
 
-    # ── DB helpers (sync_to_async) ──────────────────────────────────────────────
+    # ── DB helpers (sync_to_async) ────────────────────────────────────────────────
 
     @database_sync_to_async
     def _get_room(self):
@@ -238,6 +249,11 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
     def _save_host_channel(self):
         from video.models import LiveRoom
         LiveRoom.objects.filter(id=self.room_id).update(host_channel=self.channel_name)
+
+    @database_sync_to_async
+    def _clear_host_channel(self):
+        from video.models import LiveRoom
+        LiveRoom.objects.filter(id=self.room_id).update(host_channel='')
 
     @database_sync_to_async
     def _do_end_room(self):
@@ -280,5 +296,3 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             return self.user.profile_image.url
         except Exception:
             return '/static/images/default_profile_image.png'
-
-
