@@ -589,18 +589,20 @@
 /* ── Responsive breakpoints ── */
 /* Logos responsive */
 .zoot-logo-desktop {
-    height: 52px; width: auto; max-width: 220px;
-    border-radius: 10px;
+    height: 42px; width: auto; max-width: 200px;
     object-fit: contain; object-position: left center;
     transition: transform .2s, opacity .2s; flex-shrink: 0;
     display: block;
 }
 .zoot-logo-mobile {
-    height: 40px; width: auto; max-width: 44px;
-    border-radius: 8px;
+    height: 36px; width: auto; max-width: 40px;
     object-fit: contain; object-position: center;
     transition: transform .2s, opacity .2s; flex-shrink: 0;
     display: none;
+}
+[data-theme="dark"] .zoot-logo-desktop,
+[data-theme="dark"] .zoot-logo-mobile {
+    filter: invert(1);
 }
 
 @media (max-width: 991px) {
@@ -644,12 +646,12 @@
     <!-- Brand -->
     <a href="{% url 'post:index' %}" class="zoot-brand">
         <!-- Logo desktop -->
-        <img src="{% static 'logo/Vazi_logo00.png' %}" alt="VAZIMBA"
+        <img src="{% static 'logo/vazimba_horizontal.png' %}" alt="VAZIMBA"
              class="zoot-logo-desktop"
              onmouseover="this.style.transform='scale(1.05)';this.style.opacity='.88'"
              onmouseout="this.style.transform='';this.style.opacity='1'">
         <!-- Logo mobile (compact) -->
-        <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="VAZIMBA"
+        <img src="{% static 'logo/vazimba_icon.png' %}" alt="VAZIMBA"
              class="zoot-logo-mobile">
     </a>
 
