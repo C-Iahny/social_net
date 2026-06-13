@@ -223,7 +223,7 @@
                     </label>
                     <label for="id_media_files" class="upload-zone" id="media-upload-zone">
                         <input type="file" name="media_files" id="id_media_files"
-                               accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,.mov,.mkv,.avi,.m4v,.3gp"
+                               accept="*/*"
                                multiple
                                style="display:none;"
                                onchange="addToSelection(this.files); this.value=null;">
@@ -274,10 +274,21 @@ function isVideo(file) {
     return file.type.startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
 }
 
-/* Ajoute les nouveaux fichiers au panier */
+/* Ajoute les nouveaux fichiers au panier (avec conversion WebP si possible) */
 function addToSelection(newFiles) {
-    Array.from(newFiles).forEach(function(f) { _pending.push(f); });
-    _renderPreview();
+    var raw = Array.from(newFiles);
+    if (window.ZootMediaConverter) {
+        ZootMediaConverter.processFiles(raw).then(function(converted) {
+            converted.forEach(function(f) { _pending.push(f); });
+            _renderPreview();
+        }).catch(function() {
+            raw.forEach(function(f) { _pending.push(f); });
+            _renderPreview();
+        });
+    } else {
+        raw.forEach(function(f) { _pending.push(f); });
+        _renderPreview();
+    }
 }
 
 /* Retire le fichier à l'index idx du panier */

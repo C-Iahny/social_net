@@ -54,5 +54,103 @@
 //  sidebar.classList.toggle("open")
 //})
 
-	
+</script>
+
+<!-- ══ HEIC → JPEG converter (lazy-loaded) ══════════════════════════════ -->
+<script>
+/* ────────────────────────────────────────────────────────────────────────
+   ZootMediaConverter — utilitaire global de conversion avant upload
+   Usage :
+     const files = await ZootMediaConverter.processFiles(fileList);
+     // files : tableau de File objets, images converties en WebP, vidéos inchangées
+   ──────────────────────────────────────────────────────────────────────── */
+window.ZootMediaConverter = (function() {
+
+    var HEIC2ANY_CDN = 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+    var _heic2anyLoaded = false;
+    var _heic2anyLoading = null;
+
+    function loadHeic2any() {
+        if (_heic2anyLoaded) return Promise.resolve();
+        if (_heic2anyLoading) return _heic2anyLoading;
+        _heic2anyLoading = new Promise(function(resolve, reject) {
+            var s = document.createElement('script');
+            s.src = HEIC2ANY_CDN;
+            s.onload = function() { _heic2anyLoaded = true; resolve(); };
+            s.onerror = reject;
+            document.head.appendChild(s);
+        });
+        return _heic2anyLoading;
+    }
+
+    function isHeic(file) {
+        if (file.type === 'image/heic' || file.type === 'image/heif') return true;
+        var n = (file.name || '').toLowerCase();
+        return n.endsWith('.heic') || n.endsWith('.heif');
+    }
+
+    function isImage(file) {
+        return file.type.startsWith('image/') || isHeic(file);
+    }
+
+    function canvasToWebP(imgEl, quality) {
+        return new Promise(function(resolve) {
+            var canvas = document.createElement('canvas');
+            var MAX = 1920;
+            var w = imgEl.naturalWidth || imgEl.width;
+            var h = imgEl.naturalHeight || imgEl.height;
+            if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
+            canvas.toBlob(resolve, 'image/webp', quality || 0.82);
+        });
+    }
+
+    function convertImageToWebP(file) {
+        return new Promise(function(resolve) {
+            var baseName = file.name.replace(/\.[^.]+$/, '');
+            var targetName = baseName + '.webp';
+
+            function fromBlob(blob) {
+                var url = URL.createObjectURL(blob);
+                var img = new Image();
+                img.onload = function() {
+                    canvasToWebP(img, 0.82).then(function(webpBlob) {
+                        URL.revokeObjectURL(url);
+                        if (!webpBlob) { resolve(file); return; }
+                        /* Check if WebP is actually smaller */
+                        if (webpBlob.size >= file.size) {
+                            resolve(file); return;
+                        }
+                        resolve(new File([webpBlob], targetName, { type: 'image/webp', lastModified: Date.now() }));
+                    });
+                };
+                img.onerror = function() { URL.revokeObjectURL(url); resolve(file); };
+                img.src = url;
+            }
+
+            if (isHeic(file)) {
+                loadHeic2any().then(function() {
+                    heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 })
+                        .then(function(jpegBlob) { fromBlob(jpegBlob); })
+                        .catch(function() { resolve(file); });
+                }).catch(function() { resolve(file); });
+            } else {
+                fromBlob(file);
+            }
+        });
+    }
+
+    function processFiles(fileListOrArray) {
+        var files = Array.from(fileListOrArray);
+        var promises = files.map(function(f) {
+            if (isImage(f)) return convertImageToWebP(f);
+            return Promise.resolve(f);   // vidéos et autres : inchangés
+        });
+        return Promise.all(promises);
+    }
+
+    return { processFiles: processFiles, isHeic: isHeic };
+
+})();
 </script>

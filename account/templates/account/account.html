@@ -1011,7 +1011,7 @@ body { background: var(--bg); }
             {% trans "Change cover" %}
         </button>
         {# Input caché #}
-        <input type="file" id="cover-file-input" accept="image/*" style="display:none"
+        <input type="file" id="cover-file-input" accept="*/*" style="display:none"
                onchange="uploadCoverImage(this)">
         {% endif %}
     </div>
@@ -2262,35 +2262,40 @@ function lbKeyHandler(e) {
 
 /* ── Photo de couverture ── */
 function uploadCoverImage(input) {
-    var file = input.files && input.files[0];
-    if (!file) return;
+    var rawFile = input.files && input.files[0];
+    if (!rawFile) return;
 
     var wrap = document.getElementById('profile-cover-wrap');
     var btn  = wrap ? wrap.querySelector('.cover-edit-btn') : null;
-
-    // Prévisualisation immédiate
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var img = document.getElementById('cover-img');
-        if (img) {
-            img.src = e.target.result;
-        } else {
-            // Pas encore d'image — créer + supprimer le dégradé
-            var bg    = wrap.querySelector('.profile-cover-bg');
-            var noise = wrap.querySelector('.profile-cover-noise');
-            if (bg)    bg.remove();
-            if (noise) noise.remove();
-            img = document.createElement('img');
-            img.id        = 'cover-img';
-            img.className = 'profile-cover-img';
-            img.alt       = 'Couverture';
-            img.src       = e.target.result;
-            wrap.insertBefore(img, wrap.firstChild);
-        }
-    };
-    reader.readAsDataURL(file);
-
     if (btn) { btn.disabled = true; btn.style.opacity = '.5'; }
+
+    /* Convertir HEIC / images lourdes → WebP avant upload */
+    var convPromise = (window.ZootMediaConverter && !rawFile.type.startsWith('video/'))
+        ? ZootMediaConverter.processFiles([rawFile]).then(function(a){ return a[0] || rawFile; })
+        : Promise.resolve(rawFile);
+
+    convPromise.then(function(file) {
+        // Prévisualisation immédiate
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.getElementById('cover-img');
+            if (img) {
+                img.src = e.target.result;
+            } else {
+                // Pas encore d'image — créer + supprimer le dégradé
+                var bg    = wrap.querySelector('.profile-cover-bg');
+                var noise = wrap.querySelector('.profile-cover-noise');
+                if (bg)    bg.remove();
+                if (noise) noise.remove();
+                img = document.createElement('img');
+                img.id        = 'cover-img';
+                img.className = 'profile-cover-img';
+                img.alt       = 'Couverture';
+                img.src       = e.target.result;
+                wrap.insertBefore(img, wrap.firstChild);
+            }
+        };
+        reader.readAsDataURL(file);
 
     var fd = new FormData();
     fd.append('cover', file);
@@ -2314,6 +2319,7 @@ function uploadCoverImage(input) {
         console.error('Cover upload error:', e);
         input.value = '';
     });
+    }); // fin convPromise.then
 }
 </script>
 
