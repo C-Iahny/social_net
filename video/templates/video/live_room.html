@@ -568,6 +568,13 @@ var appendQueue  = [];
 var msInited     = false;  // MediaSource déjà initialisé pour ce flux
 var hasPlayed    = false;
 
+/* Détection iOS (Safari ET Chrome/Firefox sur iOS = tous WebKit, WebM non supporté) */
+var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+/* Timer "l'hôte n'a pas démarré" — effacé dès qu'on reçoit le 1er media_chunk */
+var noChunkTimer = null;
+
 /* ── Format détecté une seule fois ── */
 var MIME = (function() {
     var types = [
@@ -650,7 +657,16 @@ window.startSource = function(src) {
             stopRecording();
             appendSystemMsg('Partage arrêté');
             if (controls) controls.style.display = 'none';
-            if (sourceOverlay) sourceOverlay.classList.remove('hidden');
+            /* Réinitialiser l'overlay source pour que l'hôte puisse reprendre */
+            if (sourceOverlay) {
+                var _title = sourceOverlay.querySelector('.lr-status-title');
+                var _sub   = sourceOverlay.querySelector('.lr-status-sub');
+                var _btns  = sourceOverlay.querySelector('.lr-source-btns');
+                if (_title) _title.textContent = '🎬 Choisir la source de diffusion';
+                if (_sub)   _sub.textContent   = 'Partage ton écran pour diffuser le match, ou utilise ta caméra.';
+                if (_btns)  _btns.style.display = '';
+                sourceOverlay.classList.remove('hidden');
+            }
         };
     }).catch(function(err) {
         if (sourceOverlay) sourceOverlay.classList.remove('hidden');
@@ -679,12 +695,28 @@ function startRecording(stream) {
         isFirstChunk = false;
         var reader = new FileReader();
         reader.onloadend = function() {
-            var b64 = reader.result.split(',')[1];
+            var result = reader.result;
+            /* IMPORTANT : le mime type peut contenir une virgule (ex: "video/webm;codecs=vp9,opus")
+               donc on ne peut pas faire split(',')[1] — on cherche le marqueur ";base64," */
+            var sep = result.indexOf(';base64,');
+            var b64 = sep >= 0 ? result.slice(sep + 8) : result.split(',').slice(1).join(',');
+            if (!b64) return;
+            console.log('[HOST] chunk envoyé, is_init:', init, ', taille base64:', b64.length);
             wsSend({ type: 'media_chunk', data: b64, is_init: init, mime: MIME });
         };
         reader.readAsDataURL(ev.data);
     };
-    mediaRecorder.start(300);  /* chunk toutes les 300 ms */
+    mediaRecorder.start(500);  /* chunk toutes les 500 ms (moins de charge réseau) */
+
+    /* Indicateur visuel "En direct" dans l'overlay source */
+    if (sourceOverlay) {
+        var _title = sourceOverlay.querySelector('.lr-status-title');
+        var _sub   = sourceOverlay.querySelector('.lr-status-sub');
+        if (_title) _title.textContent = '🔴 En direct !';
+        if (_sub)   _sub.textContent   = 'Le stream est actif. Les spectateurs peuvent vous voir.';
+        var _btns = sourceOverlay.querySelector('.lr-source-btns');
+        if (_btns) _btns.style.display = 'none';
+    }
 }
 
 function stopRecording() {
@@ -719,10 +751,20 @@ window.toggleMic = function() {
 function initMediaSource(mime) {
     if (!window.MediaSource || !MediaSource.isTypeSupported(mime)) {
         if (waitingOverlay) {
-            waitingOverlay.querySelector('.lr-waiting-text').textContent =
-                'Navigateur non supporté (essaie Chrome ou Edge)';
+            var sp2  = waitingOverlay.querySelector('.lr-waiting-spinner');
+            var txt2 = waitingOverlay.querySelector('.lr-waiting-text');
+            if (sp2)  sp2.style.display = 'none';
+            if (txt2) {
+                if (isIOS) {
+                    txt2.innerHTML = '⚠️ iPhone / iPad non supporté.<br>' +
+                        '<span style="font-size:.85em;opacity:.75">Le live utilise WebM/VP9 qui n\'est pas compatible avec iOS.<br>' +
+                        'Utilise <b>Chrome ou Firefox sur ordinateur</b> (Windows / Mac / Android).</span>';
+                } else {
+                    txt2.textContent = 'Navigateur non supporté — essaie Chrome, Firefox ou Edge.';
+                }
+            }
         }
-        return;
+        return false;   /* ← indique l'échec */
     }
     /* reset */
     appendQueue = [];
@@ -745,6 +787,7 @@ function initMediaSource(mime) {
             appendSystemMsg('Erreur lecture : ' + e.message);
         }
     });
+    return true;   /* ← MediaSource créé avec succès */
 }
 
 function onUpdateEnd() {
@@ -786,12 +829,15 @@ function onMediaChunk(d) {
     if (!d.data) return;
     var mime = d.mime || 'video/webm;codecs=vp8,opus';
 
+    console.log('[VIEWER] chunk reçu, is_init:', d.is_init, ', taille data:', d.data.length);
+
     /* Nouveau flux → réinitialiser MediaSource */
     if (d.is_init) {
         msInited = false;
         appendQueue = [];
-        initMediaSource(mime);
-        msInited = true;
+        var ok = initMediaSource(mime);  /* retourne false si navigateur non supporté */
+        if (ok) msInited = true;         /* ne mettre à true QUE si MediaSource est disponible */
+        if (noChunkTimer) { clearTimeout(noChunkTimer); noChunkTimer = null; }
     }
     if (!msInited) return;
 
@@ -802,7 +848,7 @@ function onMediaChunk(d) {
         for (var i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
         appendQueue.push(buf.buffer);
         processQueue();
-    } catch(e) { console.error('chunk decode error:', e); }
+    } catch(e) { console.error('[VIEWER] chunk decode error:', e.name, d.data.slice(0, 30)); }
 }
 
 function onHostDisconnected() {
@@ -926,6 +972,31 @@ function escH(s) {
 
 function wsSend(obj) {
     if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+}
+
+/* ── Init viewer ── */
+if (!IS_HOST) {
+    /* Avertissement iOS immédiat (avant même de recevoir un chunk) */
+    if (isIOS && waitingOverlay) {
+        var _sp = waitingOverlay.querySelector('.lr-waiting-spinner');
+        var _tx = waitingOverlay.querySelector('.lr-waiting-text');
+        if (_sp) _sp.style.display = 'none';
+        if (_tx) _tx.innerHTML =
+            '⚠️ iPhone / iPad non supporté.<br>' +
+            '<span style="font-size:.85em;opacity:.75">Le live utilise WebM/VP9 incompatible avec iOS.<br>' +
+            'Utilise <b>Chrome ou Firefox sur ordinateur</b> ou Android.</span>';
+    } else {
+        /* Timer 30 s : si aucun chunk reçu, on suggère une action à l'hôte */
+        noChunkTimer = setTimeout(function() {
+            if (!hasPlayed && waitingOverlay && !waitingOverlay.classList.contains('hidden')) {
+                var txt = waitingOverlay.querySelector('.lr-waiting-text');
+                if (txt) txt.innerHTML =
+                    "⏳ L'hôte n'a pas encore démarré.<br>" +
+                    "<span style='font-size:.85em;opacity:.7'>Demandez-lui de <b>rafraîchir la page</b> (F5)<br>" +
+                    "puis de cliquer « Partager l'écran ».</span>";
+            }
+        }, 30000);
+    }
 }
 
 /* ── Init ── */
