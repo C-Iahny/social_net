@@ -176,24 +176,16 @@
     display: block;
     width: 56px; height: 56px;
     border-radius: 50%;
-    padding: 2.5px;
-    background: linear-gradient(135deg, var(--accent2), var(--accent3));
-    box-shadow: 0 2px 12px rgba(191,95,255,.35);
-    transition: box-shadow .2s, transform .2s;
+    transition: transform .2s;
 }
 .fr-card:hover .fr-avatar-ring {
     transform: scale(1.05);
-    box-shadow: 0 4px 18px rgba(191,95,255,.45);
-}
-[data-theme="dark"] .fr-avatar-ring {
-    box-shadow: 0 0 14px rgba(191,95,255,.4);
 }
 .fr-avatar-ring img {
     width: 100%; height: 100%;
     border-radius: 50%;
     object-fit: cover;
     display: block;
-    border: 2.5px solid var(--bg-card);
 }
 
 /* Name */
