@@ -523,15 +523,15 @@ body { background: var(--bg); }
 .pc-title-link { color: inherit; text-decoration: none; }
 .pc-title-link:hover { color: var(--accent); text-decoration: none; }
 .pc-body {
-    padding: .2rem 1.1rem .7rem; color: var(--text);
-    font-size: .9rem; line-height: 1.68; opacity: .9;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    cursor: pointer;
+    max-height: 160px; overflow: hidden; position: relative; cursor: pointer;
+    padding: .2rem 1.1rem .7rem; color: var(--text); font-size: .9rem; line-height: 1.68; opacity: .9;
 }
-.pc-body.expanded { display: block; overflow: visible; cursor: default; }
+.pc-body:not(.expanded)::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 52px; background: linear-gradient(transparent, var(--bg-card)); pointer-events: none;
+}
+.pc-body.expanded { max-height: none; overflow: visible; cursor: default; }
+.pc-body.expanded::after { display: none; }
 .pc-body img { max-width: 100%; border-radius: 8px; margin: .3rem 0; }
 .pc-body p { margin-bottom: .35rem; }
 .pc-read-more {
@@ -1865,32 +1865,39 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 function processAllPostBodies() {
     document.querySelectorAll('.pc-body').forEach(function(el) {
-        if (el.classList.contains('expanded')) return;
-        var rm = el.nextElementSibling;
-        if (rm && rm.classList.contains('pc-read-more')) {
-            rm.classList.toggle('hidden', el.scrollHeight <= el.clientHeight + 2);
+        var btn = el.nextElementSibling;
+        if (!btn || !btn.classList.contains('pc-read-more')) return;
+        if (el.scrollHeight <= el.clientHeight + 4) {
+            btn.classList.add('hidden');
+            el.style.cursor = 'default';
+            el.onclick = null;
         }
     });
 }
 function expandBody(el) {
-    if (el.classList.contains('expanded')) return;
+    if (el.classList.contains('expanded')) { collapseBody(el); return; }
     el.classList.add('expanded');
-    var rm = el.nextElementSibling;
-    if (rm && rm.classList.contains('pc-read-more')) {
-        rm.textContent = '{% trans "See less" %}';
-        rm.classList.remove('hidden');
+    var btn = el.nextElementSibling;
+    if (btn && btn.classList.contains('pc-read-more')) btn.textContent = btn.dataset.less;
+}
+function collapseBody(el) {
+    el.classList.remove('expanded');
+    var btn = el.nextElementSibling;
+    if (btn && btn.classList.contains('pc-read-more')) btn.textContent = btn.dataset.more;
+    var card = el.closest('.post-card');
+    if (card) {
+        setTimeout(function() {
+            var headerH = (document.getElementById('header') || {}).offsetHeight || 64;
+            var top = card.getBoundingClientRect().top + window.scrollY - headerH - 8;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+        }, 0);
     }
 }
-function expandBodyBtn(btn) {
-    var body = btn.previousElementSibling;
+function expandBodyBtn(el) {
+    var body = el.previousElementSibling;
     if (!body || !body.classList.contains('pc-body')) return;
-    if (body.classList.contains('expanded')) {
-        body.classList.remove('expanded');
-        btn.textContent = '{% trans "See more" %}';
-    } else {
-        body.classList.add('expanded');
-        btn.textContent = '{% trans "See less" %}';
-    }
+    if (body.classList.contains('expanded')) collapseBody(body);
+    else expandBody(body);
 }
 </script>
 
@@ -2179,6 +2186,8 @@ function lbKeyHandler(e) {
                         processHashtagsAndMentions(el);
                     });
                 }
+                // Apply read-more truncation to newly inserted cards
+                if (typeof processAllPostBodies === 'function') { setTimeout(processAllPostBodies, 50); }
             }
 
             if (data.has_next && data.next_page) {

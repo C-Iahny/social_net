@@ -2111,7 +2111,7 @@ function updateCommentCount(postId, delta) {
    READ MORE / COLLAPSE
    ══════════════════════════════════════ */
 function expandBody(el) {
-    if (el.classList.contains('expanded')) return;
+    if (el.classList.contains('expanded')) { collapseBody(el); return; }
     el.classList.add('expanded');
     var btn = el.nextElementSibling;
     if (btn && btn.classList.contains('pc-read-more')) btn.textContent = btn.dataset.less;
@@ -2313,32 +2313,7 @@ function processAllPostBodies() {
 }
 document.addEventListener('DOMContentLoaded', processAllPostBodies);
 
-/* Expand body on click (text area click) */
-function expandBody(el) {
-    /* Click directly on body text → only expand (never collapse on body click) */
-    if (el.classList.contains('expanded')) return;
-    el.classList.add('expanded');
-    var rm = el.nextElementSibling;
-    if (rm && rm.classList.contains('pc-read-more')) {
-        rm.textContent = '{% trans "See less" %}';
-        rm.classList.remove('hidden');
-    }
-}
-/* Toggle via "See more / See less" button */
-function expandBodyBtn(btn) {
-    var body = btn.previousElementSibling;
-    if (!body || !body.classList.contains('pc-body')) return;
-    if (body.classList.contains('expanded')) {
-        /* Collapse */
-        body.classList.remove('expanded');
-        btn.textContent = '{% trans "See more" %}';
-        /* Scroll up to card top if body is now cut off */
-    } else {
-        /* Expand */
-        body.classList.add('expanded');
-        btn.textContent = '{% trans "See less" %}';
-    }
-}
+
 (function() {
     var mo = new MutationObserver(function() { processAllPostBodies(); });
     mo.observe(document.querySelector('.feed-main') || document.body, { childList: true, subtree: true });
