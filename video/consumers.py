@@ -23,6 +23,8 @@ Protocol (server → client):
   {type: 'stream_ended'}
 """
 
+from collections import deque
+
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.utils import timezone
@@ -30,8 +32,14 @@ from video.models import LiveRoom
 
 # Cache en mémoire du chunk d'initialisation par salle.
 # Valide sur un seul worker (Railway free tier = 1 worker Daphne).
-# Permet aux viewers qui rejoignent en cours de route de recevoir l'init WebM.
-_init_chunks: dict = {}   # room_id (str) → { 'data': base64_str, 'mime': str }
+_init_chunks: dict = {}     # room_id (str) → { 'data': base64_str, 'mime': str }
+
+# Ring buffer des derniers chunks media (non-init) par salle.
+# Permet aux viewers qui rejoignent en cours de route d'obtenir un keyframe récent :
+# VP9/VP8 insère un keyframe toutes les ~3-5 s → 20 chunks × 500 ms = 10 s de buffer
+# garantissent au moins 2 keyframes → le décodeur peut démarrer proprement.
+RING_BUFFER_SIZE = 20       # 20 chunks × 500 ms ≈ 10 secondes
+_recent_chunks: dict = {}   # room_id (str) → deque[{ 'data': str, 'mime': str }]
 
 
 class LiveConsumer(AsyncJsonWebsocketConsumer):
@@ -113,12 +121,19 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                     data_b64 = content.get('data', '')
                     is_init  = bool(content.get('is_init', False))
                     mime     = content.get('mime', 'video/webm;codecs=vp8,opus')
+                    rid      = str(self.room_id)
 
-                    # Mettre en cache le chunk d'initialisation
                     if is_init and data_b64:
-                        _init_chunks[str(self.room_id)] = {'data': data_b64, 'mime': mime}
-                        print(f"[LIVE {self.room_id}] 🎬 init_chunk reçu, mime={mime}, "
+                        # Nouveau flux : réinitialiser les deux caches
+                        _init_chunks[rid]   = {'data': data_b64, 'mime': mime}
+                        _recent_chunks[rid] = deque(maxlen=RING_BUFFER_SIZE)
+                        print(f"[LIVE {rid}] 🎬 init_chunk reçu, mime={mime}, "
                               f"taille={len(data_b64)} chars", flush=True)
+                    elif data_b64:
+                        # Chunk media ordinaire → ring buffer
+                        if rid not in _recent_chunks:
+                            _recent_chunks[rid] = deque(maxlen=RING_BUFFER_SIZE)
+                        _recent_chunks[rid].append({'data': data_b64, 'mime': mime})
 
                     await self.channel_layer.group_send(self.room_group, {
                         'type': 'room_event',
@@ -148,7 +163,9 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
 
             elif msg_type == 'end':
                 if self.is_host:
-                    _init_chunks.pop(str(self.room_id), None)
+                    rid = str(self.room_id)
+                    _init_chunks.pop(rid, None)
+                    _recent_chunks.pop(rid, None)
                     await self._do_end_room()
                     await self.channel_layer.group_send(self.room_group, {
                         'type': 'room_event',
@@ -196,8 +213,11 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             self.has_joined = True
             await self._increment_viewer_count()
 
-        # Envoyer immédiatement le chunk d'init si on l'a en cache
-        cached = _init_chunks.get(str(self.room_id))
+        # Envoyer le chunk d'init + les chunks récents au nouveau viewer.
+        # Ceci garantit qu'il reçoit un keyframe VP9/VP8 récent et peut décoder
+        # le flux courant sans attendre le prochain keyframe naturel (~5 s).
+        rid    = str(self.room_id)
+        cached = _init_chunks.get(rid)
         if cached:
             await self.send_json({
                 'type':    'media_chunk',
@@ -205,6 +225,16 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                 'mime':    cached['mime'],
                 'is_init': True,
             })
+            recent = list(_recent_chunks.get(rid, []))
+            print(f"[LIVE {rid}] 📺 nouveau viewer {self.user.username} — "
+                  f"envoi init + {len(recent)} chunks récents", flush=True)
+            for chunk in recent:
+                await self.send_json({
+                    'type':    'media_chunk',
+                    'data':    chunk['data'],
+                    'mime':    chunk['mime'],
+                    'is_init': False,
+                })
 
         # Notifier l'hôte
         host_ch = await self._get_host_channel()
