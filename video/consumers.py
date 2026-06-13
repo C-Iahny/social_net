@@ -117,6 +117,8 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                     # Mettre en cache le chunk d'initialisation
                     if is_init and data_b64:
                         _init_chunks[str(self.room_id)] = {'data': data_b64, 'mime': mime}
+                        print(f"[LIVE {self.room_id}] 🎬 init_chunk reçu, mime={mime}, "
+                              f"taille={len(data_b64)} chars", flush=True)
 
                     await self.channel_layer.group_send(self.room_group, {
                         'type': 'room_event',
@@ -127,6 +129,8 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                             'mime':    mime,
                         },
                     })
+                else:
+                    print(f"[LIVE {self.room_id}] ⚠️ media_chunk ignoré — is_host=False pour {self.user.username}", flush=True)
 
             elif msg_type == 'chat':
                 text = (content.get('text') or '').strip()[:500]
@@ -173,6 +177,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         if room and str(room.host_id) == str(self.user.id):
             self.is_host = True
             await self._save_host_channel()
+            print(f"[LIVE {self.room_id}] ✅ host connecté : {self.user.username}", flush=True)
             # Notifier les viewers → ils renverront join_viewer
             try:
                 await self.channel_layer.group_send(self.room_group, {
@@ -181,6 +186,9 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                 })
             except Exception:
                 pass
+        else:
+            print(f"[LIVE {self.room_id}] ⚠️ join_host refusé pour {self.user.username} "
+                  f"(host_id={getattr(room,'host_id','?')}, user_id={self.user.id})", flush=True)
 
     async def _handle_join_viewer(self):
         self.is_host = False
