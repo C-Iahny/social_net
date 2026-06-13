@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
-from django.shortcuts import render
 from .models import PushSubscription
 from django.contrib.contenttypes.models import ContentType
 
@@ -81,31 +80,3 @@ def unread_counts(request):
     ).count()
 
     return JsonResponse({'general': general_count, 'chat': chat_count})
-
-
-@login_required(login_url='login')
-def notification_journal(request):
-    """Page journal de toutes les notifications de l'utilisateur."""
-    from notification.models import Notification
-    from friend.models import FriendRequest, FriendList
-    from chat.models import UnreadChatRoomMessages
-    from post.models import Post as PostModel
-
-    fr_ct   = ContentType.objects.get_for_model(FriendRequest)
-    fl_ct   = ContentType.objects.get_for_model(FriendList)
-    chat_ct = ContentType.objects.get_for_model(UnreadChatRoomMessages)
-    post_ct = ContentType.objects.get_for_model(PostModel)
-
-    notifications = (
-        Notification.objects
-        .filter(target=request.user, content_type__in=[fr_ct, fl_ct, post_ct])
-        .select_related('from_user', 'content_type')
-        .order_by('-timestamp')
-    )
-
-    # Mark all as read
-    notifications.filter(read=False).update(read=True)
-
-    return render(request, 'notification/journal.html', {
-        'notifications': notifications[:100],
-    })

@@ -1547,7 +1547,7 @@ function onFriendRequestSent() {
     btn.classList.add('btn-p-pending');
     btn.disabled = true;
     btn.style.pointerEvents = 'none';
-    btn.innerHTML = '<span class="material-icons" style="font-size:.95rem;">schedule</span> {% trans "Request sent" %}';
+    btn.innerHTML = '<span class="material-icons" style="font-size:.95rem;">schedule</span> {% trans "Request sent"|escapejs %}';
 
     /* Ajouter un lien "Annuler" discret juste après le bouton */
     if (!document.getElementById('id_inline_cancel_link')) {
@@ -1555,7 +1555,7 @@ function onFriendRequestSent() {
         cancelLink.id = 'id_inline_cancel_link';
         cancelLink.className = 'btn-p btn-p-secondary';
         cancelLink.style.fontSize = '.82rem';
-        cancelLink.innerHTML = '<span class="material-icons" style="font-size:.85rem;">close</span> {% trans "Cancel" %}';
+        cancelLink.innerHTML = '<span class="material-icons" style="font-size:.85rem;">close</span> {% trans "Cancel"|escapejs %}';
         cancelLink.onclick = function() {
             cancelFriendRequest("{{ id }}", onFriendRequestCancelled);
         };
@@ -1571,7 +1571,7 @@ function onFriendRequestCancelled() {
         btn.classList.add('btn-p-primary');
         btn.disabled = false;
         btn.style.pointerEvents = '';
-        btn.innerHTML = '<span class="material-icons" style="font-size:.95rem;">person_add</span> {% trans "Add friend" %}';
+        btn.innerHTML = '<span class="material-icons" style="font-size:.95rem;">person_add</span> {% trans "Add friend"|escapejs %}';
     }
     var cancelLink = document.getElementById('id_inline_cancel_link');
     if (cancelLink) cancelLink.remove();
@@ -1597,7 +1597,7 @@ function triggerDeclineFriendRequest(id) { declineFriendRequest(id, onFriendRequ
    ══════════════════════════════════════ */
 var _REACT_URL    = "{% url 'post:react-post' %}";
 var _REACT_EMOJIS = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
-var _REACT_LABELS = { like:'{% trans "Tiana" %}', heart:'{% trans "Tiako" %}', laugh:'{% trans "Heniky" %}', wow:'{% trans "Mahagaga" %}', sad:'{% trans "Maika" %}' };
+var _REACT_LABELS = { like:'{% trans "Like"|escapejs %}', heart:'{% trans "Love"|escapejs %}', laugh:'{% trans "Haha"|escapejs %}', wow:'{% trans "Wow"|escapejs %}', sad:'{% trans "Sad"|escapejs %}' };
 var _pickerTimers = {};
 var _userReactions = {};
 
@@ -1615,6 +1615,14 @@ function closePicker(postId) {
         if (p) p.classList.remove('open');
     }, 150);
 }
+function closeAllPickers() {
+    document.querySelectorAll('.reaction-picker.open').forEach(function(p) {
+        p.classList.remove('open');
+    });
+}
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.reaction-wrap')) closeAllPickers();
+});
 function quickReact(postId) {
     var cur = _userReactions[postId] !== undefined ? _userReactions[postId]
             : document.getElementById('react-btn-' + postId).classList.contains('liked') ? 'like' : null;
@@ -1642,7 +1650,7 @@ function sendReaction(postId, reactionType) {
                 icon.innerHTML = '<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>';
             }
         }
-        if (label) label.textContent = data.user_reaction ? (_REACT_LABELS[data.user_reaction] || 'Tiana') : 'Tiana';
+        if (label) label.textContent = data.user_reaction ? (_REACT_LABELS[data.user_reaction] || _REACT_LABELS.like) : _REACT_LABELS.like;
         var picker = document.getElementById('picker-' + postId);
         if (picker) {
             picker.querySelectorAll('.reaction-emoji-btn').forEach(function(b) { b.classList.remove('selected'); });
@@ -2036,8 +2044,8 @@ document.addEventListener('zootStoriesLoaded', function(e) {
 
         window._profileStoryGroup = {
             user_id: PROFILE_USER_ID,
-            username: '{{ username }}',
-            avatar: '{{ profile_image }}',
+            username: '{{ username|escapejs }}',
+            avatar: '{{ profile_image|escapejs }}',
             is_me: IS_SELF,
             stories: stories,
             all_seen: stories.every(function(s){ return s.seen; }),
@@ -2228,9 +2236,9 @@ function lbKeyHandler(e) {
             loading = false;
             if (loader) loader.style.display = 'none';
 
-            if (data.html) {
+            if (data.posts_html) {
                 var tmp = document.createElement('div');
-                tmp.innerHTML = data.html;
+                tmp.innerHTML = data.posts_html;
                 while (tmp.firstChild) { container.appendChild(tmp.firstChild); }
                 // Apply hashtag/mention highlighting to newly inserted cards
                 if (typeof processHashtagsAndMentions === 'function') {

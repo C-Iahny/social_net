@@ -1307,6 +1307,47 @@ body { background: var(--bg); }
             </a>
         </div>
 
+        <!-- 🔴 Lives en cours widget -->
+        <div id="feed-live-widget" style="
+            background:var(--bg-card);
+            border:1px solid rgba(255,59,59,.2);
+            border-radius:16px;
+            overflow:hidden;
+            margin-bottom:.85rem;
+            display:none;
+        ">
+            <div style="
+                padding:.6rem .9rem;
+                display:flex;align-items:center;justify-content:space-between;
+                border-bottom:1px solid rgba(255,59,59,.1);
+            ">
+                <span style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:800;color:#ff3b3b;">
+                    <span style="width:7px;height:7px;background:#ff3b3b;border-radius:50%;animation:livePulse2 1.4s infinite;"></span>
+                    Lives en cours
+                </span>
+                <a href="{% url 'video:live-list' %}" style="font-size:.72rem;font-weight:700;color:var(--accent);text-decoration:none;">Voir tout</a>
+            </div>
+            <div id="feed-live-list" style="padding:.45rem 0;"></div>
+            <style>
+            @keyframes livePulse2 {
+                0%,100%{box-shadow:0 0 0 0 rgba(255,59,59,.7)}
+                50%{box-shadow:0 0 0 4px rgba(255,59,59,0)}
+            }
+            .feed-live-item {
+                display:flex;align-items:center;gap:.55rem;
+                padding:.4rem .9rem;text-decoration:none;color:var(--text);
+                transition:background .15s;
+            }
+            .feed-live-item:hover{background:var(--btn-bg);text-decoration:none;color:var(--text);}
+            .feed-live-item img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #ff3b3b;flex-shrink:0;}
+            .feed-live-item-body{flex:1;min-width:0;}
+            .feed-live-item-user{font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+            .feed-live-item-title{font-size:.72rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+            .feed-live-viewers{font-size:.7rem;color:rgba(255,59,59,.9);flex-shrink:0;display:flex;align-items:center;gap:.15rem;}
+            .feed-live-viewers .material-icons{font-size:.8rem;}
+            </style>
+        </div>
+
         <!-- Stories sidebar widget -->
         <div class="lsb-stories-card" id="lsb-stories-card">
             <div class="lsb-stories-header">
@@ -2696,6 +2737,54 @@ function escHtml(str) {
             if (g && g.length) renderSidebarStories(g);
         }
     });
+})();
+</script>
+
+<!-- ── Feed live widget JS ── -->
+<script>
+(function() {
+    var LIVE_API = '{% url "video:live-api-active" %}';
+    var widget   = document.getElementById('feed-live-widget');
+    var listEl   = document.getElementById('feed-live-list');
+
+    function refreshLives() {
+        fetch(LIVE_API, { credentials: 'same-origin' })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) {
+            if (!d || !d.lives) return;
+            var lives = d.lives;
+            if (lives.length === 0) {
+                if (widget) widget.style.display = 'none';
+                return;
+            }
+            if (widget) widget.style.display = 'block';
+            if (!listEl) return;
+            listEl.innerHTML = '';
+            lives.slice(0, 4).forEach(function(r) {
+                var a = document.createElement('a');
+                a.href = r.url;
+                a.className = 'feed-live-item';
+                var avatarHtml = r.host_avatar
+                    ? '<img src="' + escH(r.host_avatar) + '" alt="">'
+                    : '<span class="material-icons" style="font-size:1.8rem;color:rgba(255,59,59,.4);flex-shrink:0;">account_circle</span>';
+                a.innerHTML = avatarHtml +
+                    '<div class="feed-live-item-body">' +
+                    '<div class="feed-live-item-user">' + escH(r.host) + '</div>' +
+                    '<div class="feed-live-item-title">' + escH(r.title) + '</div>' +
+                    '</div>' +
+                    '<span class="feed-live-viewers"><span class="material-icons">visibility</span>' + r.viewer_count + '</span>';
+                listEl.appendChild(a);
+            });
+        })
+        .catch(function() {});
+    }
+
+    function escH(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    document.addEventListener('DOMContentLoaded', refreshLives);
+    setInterval(refreshLives, 20000);
 })();
 </script>
 

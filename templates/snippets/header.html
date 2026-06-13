@@ -717,6 +717,52 @@
             "></div>
         </div>
 
+        <!-- 🔴 Live button -->
+        <a href="{% url 'video:live-list' %}"
+           id="nav-live-btn"
+           title="Lives en cours"
+           style="
+            display:inline-flex;align-items:center;gap:.3rem;
+            padding:.3rem .7rem;
+            background:rgba(255,59,59,.1);
+            border:1.5px solid rgba(255,59,59,.35);
+            border-radius:20px;
+            color:#ff3b3b;
+            font-size:.75rem;
+            font-weight:800;
+            letter-spacing:.05em;
+            text-decoration:none;
+            transition:background .2s,border-color .2s,box-shadow .2s;
+            white-space:nowrap;
+            flex-shrink:0;
+           "
+           onmouseover="this.style.background='rgba(255,59,59,.2)';this.style.borderColor='#ff3b3b';this.style.boxShadow='0 0 12px rgba(255,59,59,.3)'"
+           onmouseout="this.style.background='rgba(255,59,59,.1)';this.style.borderColor='rgba(255,59,59,.35)';this.style.boxShadow=''"
+        >
+            <span id="nav-live-dot" style="
+                width:7px;height:7px;
+                background:#ff3b3b;
+                border-radius:50%;
+                animation:livePulse 1.4s ease-in-out infinite;
+                flex-shrink:0;
+            "></span>
+            LIVE
+            <span id="nav-live-count" style="
+                background:#ff3b3b;color:#fff;
+                font-size:.65rem;font-weight:800;
+                padding:0 5px;border-radius:8px;
+                min-width:16px;text-align:center;
+                display:none;
+            "></span>
+        </a>
+        <style>
+        @keyframes livePulse {
+            0%,100% { box-shadow:0 0 0 0 rgba(255,59,59,.7); }
+            50%      { box-shadow:0 0 0 5px rgba(255,59,59,0); }
+        }
+        @media (max-width:575px) { #nav-live-btn .nav-live-label { display:none; } }
+        </style>
+
         <!-- Language switcher -->
         {% get_current_language as CURRENT_LANG %}
         <div style="position:relative;">
@@ -1052,6 +1098,33 @@
     connect();
 })();
 </script>
+
+<!-- ── Live count badge polling ──────────────────────────────────── -->
+{% if request.user.is_authenticated %}
+<script>
+(function() {
+    function refreshLiveCount() {
+        fetch('/live/api/active/', { credentials: 'same-origin' })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) {
+            if (!d) return;
+            var badge = document.getElementById('nav-live-count');
+            if (!badge) return;
+            var n = d.lives ? d.lives.length : 0;
+            if (n > 0) {
+                badge.textContent = n;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        })
+        .catch(function() {});
+    }
+    document.addEventListener('DOMContentLoaded', refreshLiveCount);
+    setInterval(refreshLiveCount, 20000);
+})();
+</script>
+{% endif %}
 
 <!-- ── Language dropdown close on outside click ──────────────────── -->
 <script>
