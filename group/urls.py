@@ -17,7 +17,8 @@ urlpatterns = [
     path('<slug:slug>/pin/<int:post_id>/', views.group_pin_post, name='pin-post'),
     # Gestion des membres
     path('<slug:slug>/promote/<int:user_id>/', views.group_promote_member, name='promote-member'),
-    path('<slug:slug>/demote/<int:user_id>/', views.group_demote_member, name='demote-member'),
+    path('<slug:slug>/demote/<int:user_id>/',  views.group_demote_member,  name='demote-member'),
+    path('<slug:slug>/kick/<int:user_id>/',    views.group_kick_member,    name='kick-member'),
     # Événements
     path('<slug:slug>/event/create/', views.group_event_create, name='event-create'),
     path('<slug:slug>/event/<int:event_id>/attend/', views.group_event_attend, name='event-attend'),

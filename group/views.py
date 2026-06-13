@@ -333,6 +333,36 @@ def group_demote_member(request, slug, user_id):
 
 
 @login_required
+def group_kick_member(request, slug, user_id):
+    """Retirer un membre du groupe (admin ou modérateur)."""
+    if request.method != 'POST':
+        return redirect('group:detail', slug=slug)
+    group = get_object_or_404(Group, slug=slug)
+    membership = GroupMembership.objects.filter(group=group, user=request.user).first()
+    is_mod = membership and membership.role in (GroupMembership.ADMIN, GroupMembership.MODERATOR)
+    if not is_mod:
+        return JsonResponse({'ok': False, 'error': 'Non autorisé'}, status=403)
+    from account.models import Account
+    target = get_object_or_404(Account, pk=user_id)
+    if target == request.user:
+        return JsonResponse({'ok': False, 'error': 'Vous ne pouvez pas vous retirer vous-même.'}, status=400)
+    if target == group.creator:
+        return JsonResponse({'ok': False, 'error': 'Impossible de retirer le créateur du groupe.'}, status=403)
+    # Un modérateur ne peut pas expulser un autre modérateur ni un admin
+    target_membership = GroupMembership.objects.filter(group=group, user=target).first()
+    if target_membership and target_membership.role in (GroupMembership.ADMIN, GroupMembership.MODERATOR):
+        if membership.role != GroupMembership.ADMIN:
+            return JsonResponse({'ok': False, 'error': 'Seul un admin peut retirer un modérateur.'}, status=403)
+    if target_membership:
+        target_membership.delete()
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    if is_ajax:
+        return JsonResponse({'ok': True, 'username': target.username})
+    messages.success(request, f"{target.username} a été retiré du groupe.")
+    return redirect('group:detail', slug=slug)
+
+
+@login_required
 def group_event_create(request, slug):
     """Créer un événement dans le groupe (membre)."""
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'

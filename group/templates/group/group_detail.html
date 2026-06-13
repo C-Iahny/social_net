@@ -635,6 +635,95 @@
 .gd-ev-create-feedback { font-size: .83rem; font-weight: 600; flex: 1; min-height: 1.2em; }
 .gd-ev-create-feedback.success { color: #22c55e; }
 .gd-ev-create-feedback.error { color: #e53935; }
+
+/* ── Badge sur onglet ── */
+.gd-tab-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px;
+    background: var(--accent-glow, rgba(99,102,241,.15));
+    color: var(--accent);
+    font-size: .7rem; font-weight: 800;
+    line-height: 1;
+}
+.gd-tab.active .gd-tab-badge {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* ── Onglet Membres – grille de cartes ── */
+.gd-members-full-grid {
+    display: grid;
+    gap: .75rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+.gd-member-card {
+    display: flex; flex-direction: column;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+    transition: box-shadow .15s, transform .15s;
+}
+.gd-member-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,.1); transform: translateY(-2px); }
+.gd-member-card-link {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .85rem .9rem .75rem;
+    text-decoration: none; flex: 1;
+}
+.gd-member-card-link img {
+    width: 44px; height: 44px; border-radius: 50%;
+    object-fit: cover; border: 2px solid var(--border); flex-shrink: 0;
+}
+.gd-member-card-link:hover img { border-color: var(--accent); }
+.gd-member-card-info {
+    min-width: 0; display: flex; flex-direction: column; gap: .15rem;
+}
+.gd-member-card-name {
+    font-size: .9rem; font-weight: 700; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gd-member-card-link:hover .gd-member-card-name { color: var(--accent); }
+.gd-member-card-role {
+    display: inline-flex; align-items: center;
+    font-size: .7rem; font-weight: 800;
+    letter-spacing: .04em; text-transform: uppercase;
+    padding: .1rem .45rem; border-radius: 6px;
+    width: fit-content;
+}
+.gd-member-card-role.admin {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+}
+.gd-member-card-role.mod {
+    background: var(--accent-glow, rgba(99,102,241,.12));
+    color: var(--accent2);
+    border: 1px solid rgba(99,102,241,.25);
+}
+.gd-member-card-actions {
+    display: flex; gap: .35rem; align-items: center;
+    padding: .45rem .9rem;
+    border-top: 1px solid var(--border);
+    background: var(--btn-bg);
+}
+.gd-mcard-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 8px;
+    border: 1.5px solid var(--border); background: var(--bg-card);
+    color: var(--text-muted); cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+    padding: 0;
+}
+.gd-mcard-btn .material-icons { font-size: .95rem; }
+.gd-mcard-btn:hover { background: var(--btn-hover); color: var(--text); }
+.gd-mcard-btn.mod { border-color: var(--accent); color: var(--accent); }
+.gd-mcard-btn.mod:hover { background: var(--accent); color: #fff; }
+.gd-mcard-btn.kick { border-color: #e5393540; color: #e53935; margin-left: auto; }
+.gd-mcard-btn.kick:hover { background: rgba(229,57,53,.1); border-color: #e53935; }
+
+@media (max-width: 575px) {
+    .gd-members-full-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .5rem; }
+    .gd-member-card-link { padding: .7rem .75rem .6rem; }
+    .gd-member-card-link img { width: 38px; height: 38px; }
+}
 </style>
 
 <div class="gd-wrapper">
@@ -716,7 +805,7 @@
             <img class="gd-mini-avatar" src="{{ m.user.profile_image.url }}" alt="{{ m.user.username }}" title="{{ m.user.username }}">
             {% endfor %}
             {% if members|length > 0 %}
-            <a class="gd-see-all" href="#members" onclick="toggleMembers(event)">
+            <a class="gd-see-all" href="#gd-tab-members" onclick="(function(e){e.preventDefault();var btn=document.querySelector('.gd-tab[data-tab=\'members\']');if(btn)gdSwitchTab('members',btn);document.getElementById('gd-tab-members').scrollIntoView({behavior:'smooth',block:'start'});})(event)">
                 {% if members|length > 8 %}+{{ members|length|add:"-8" }} — {% endif %}{% trans "See all" %}
             </a>
             {% endif %}
@@ -817,6 +906,10 @@
         </button>
         <button class="gd-tab" data-tab="dina" onclick="gdSwitchTab('dina', this)">
             <span class="material-icons">gavel</span> {% trans "Dina" %}
+        </button>
+        <button class="gd-tab" data-tab="members" onclick="gdSwitchTab('members', this)">
+            <span class="material-icons">group</span> {% trans "Members" %}
+            <span class="gd-tab-badge">{{ member_count }}</span>
         </button>
     </div>
 
@@ -1081,6 +1174,76 @@
         </div>
 
     </div><!-- /gd-tab-dina -->
+
+    <!-- ── Onglet Membres ── -->
+    <div id="gd-tab-members" class="gd-tab-pane" style="display:none;">
+
+        {% if is_mod %}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;">
+            <p class="gd-section-label" style="margin:0;">
+                <span class="material-icons">group</span>
+                {% trans "Members" %} ({{ member_count }})
+            </p>
+            <button class="gd-action gd-secondary" onclick="gdOpenInviteModal()" type="button" style="padding:.4rem .9rem;font-size:.82rem;">
+                <span class="material-icons" style="font-size:.9rem;">person_add</span> {% trans "Add" %}
+            </button>
+        </div>
+        {% else %}
+        <p class="gd-section-label"><span class="material-icons">group</span> {% trans "Members" %} ({{ member_count }})</p>
+        {% endif %}
+
+        <div class="gd-members-full-grid" id="gd-members-full-grid">
+            {% for m in members %}
+            <div class="gd-member-card" id="gd-mcard-{{ m.user.id }}">
+                <a href="{% url 'account:view' user_id=m.user.id %}" class="gd-member-card-link">
+                    <img src="{{ m.user.profile_image.url }}" alt="{{ m.user.username }}" loading="lazy">
+                    <div class="gd-member-card-info">
+                        <span class="gd-member-card-name">{{ m.user.username }}</span>
+                        {% if m.role == 'admin' %}
+                        <span class="gd-member-card-role admin">{% trans "Admin" %}</span>
+                        {% elif m.role == 'moderator' %}
+                        <span class="gd-member-card-role mod">{% trans "Moderator" %}</span>
+                        {% endif %}
+                    </div>
+                </a>
+                {% if is_admin and m.user != request.user and m.user != group.creator %}
+                <div class="gd-member-card-actions">
+                    {% if m.role == 'member' %}
+                    <form method="post" action="{% url 'group:promote-member' group.slug m.user.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="gd-mcard-btn mod" title="{% trans 'Promote to moderator' %}">
+                            <span class="material-icons">arrow_upward</span>
+                        </button>
+                    </form>
+                    {% elif m.role == 'moderator' %}
+                    <form method="post" action="{% url 'group:demote-member' group.slug m.user.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="gd-mcard-btn" title="{% trans 'Demote to member' %}">
+                            <span class="material-icons">arrow_downward</span>
+                        </button>
+                    </form>
+                    {% endif %}
+                    <button class="gd-mcard-btn kick" type="button"
+                            onclick="gdKickMember({{ m.user.id }}, '{{ m.user.username|escapejs }}', '{% url 'group:kick-member' group.slug m.user.id %}')"
+                            title="{% trans 'Remove from group' %}">
+                        <span class="material-icons">person_remove</span>
+                    </button>
+                </div>
+                {% elif is_mod and m.user != request.user and m.user != group.creator and m.role == 'member' %}
+                {# Modérateur peut expulser des membres simples #}
+                <div class="gd-member-card-actions">
+                    <button class="gd-mcard-btn kick" type="button"
+                            onclick="gdKickMember({{ m.user.id }}, '{{ m.user.username|escapejs }}', '{% url 'group:kick-member' group.slug m.user.id %}')"
+                            title="{% trans 'Remove from group' %}">
+                        <span class="material-icons">person_remove</span>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+    </div><!-- /gd-tab-members -->
 
 
 <!-- ── Modal Inviter un membre ── -->
@@ -1374,7 +1537,7 @@ function gdShowToast(){
 function gdSwitchTab(tab, btn) {
     document.querySelectorAll('.gd-tab').forEach(function(b){ b.classList.remove('active'); });
     btn.classList.add('active');
-    var panes = ['posts', 'media', 'events', 'dina'];
+    var panes = ['posts', 'media', 'events', 'dina', 'members'];
     panes.forEach(function(t){
         var el = document.getElementById('gd-tab-' + t);
         if (el) el.style.display = (t === tab) ? '' : 'none';
@@ -1674,5 +1837,44 @@ document.addEventListener('DOMContentLoaded', function() {
     var mo = new MutationObserver(function() { setTimeout(processAllPostBodies, 50); });
     mo.observe(feed, { childList: true, subtree: false });
 })();
+
+/* ── Expulser un membre (kick) ── */
+function gdKickMember(userId, username, url) {
+    if (!confirm('{% trans "Remove" %} « ' + username + ' » {% trans "from the group?" %}')) return;
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': GD_CSRF,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin',
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.ok) {
+            /* Supprimer la carte du DOM */
+            var card = document.getElementById('gd-mcard-' + userId);
+            if (card) {
+                card.style.transition = 'opacity .25s, transform .25s';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(.92)';
+                setTimeout(function() { card.remove(); }, 260);
+            }
+            /* Décrémenter le compteur dans le badge de l'onglet */
+            var badge = document.querySelector('.gd-tab[data-tab="members"] .gd-tab-badge');
+            if (badge) {
+                var n = parseInt(badge.textContent) || 0;
+                if (n > 0) badge.textContent = n - 1;
+            }
+        } else {
+            alert(data.error || '{% trans "An error occurred." %}');
+        }
+    })
+    .catch(function(e) {
+        console.error('Kick error:', e);
+        alert('{% trans "Server error. Please try again." %}');
+    });
+}
 </script>
 {% endblock %}

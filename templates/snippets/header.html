@@ -589,7 +589,7 @@
 /* ── Responsive breakpoints ── */
 /* Logos responsive */
 .zoot-logo-desktop {
-    height: 42px; width: auto; max-width: 200px;
+    height: 50px; width: auto; max-width: 200px;
     object-fit: contain; object-position: left center;
     transition: transform .2s, opacity .2s; flex-shrink: 0;
     display: block;
@@ -602,7 +602,7 @@
 }
 [data-theme="dark"] .zoot-logo-desktop,
 [data-theme="dark"] .zoot-logo-mobile {
-    filter: invert(1);
+    filter: brightness(0) invert(1);
 }
 
 @media (max-width: 991px) {
@@ -646,12 +646,12 @@
     <!-- Brand -->
     <a href="{% url 'post:index' %}" class="zoot-brand">
         <!-- Logo desktop -->
-        <img src="{% static 'logo/vazimba_horizontal.png' %}" alt="VAZIMBA"
+        <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA"
              class="zoot-logo-desktop"
              onmouseover="this.style.transform='scale(1.05)';this.style.opacity='.88'"
              onmouseout="this.style.transform='';this.style.opacity='1'">
         <!-- Logo mobile (compact) -->
-        <img src="{% static 'logo/vazimba_icon.png' %}" alt="VAZIMBA"
+        <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="VAZIMBA"
              class="zoot-logo-mobile">
     </a>
 
@@ -786,6 +786,9 @@
                         <span class="material-icons">notifications</span>
                         Notifications
                     </span>
+                    <a href="{% url 'notification:journal' %}" class="zoot-dropdown-header-link">
+                        {% trans "See all" %}
+                    </a>
                 </div>
             </div>
         </div>
