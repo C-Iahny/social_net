@@ -445,7 +445,7 @@
 
         <!-- Video area -->
         <div class="lr-video-area">
-            <video id="lr-video" autoplay playsinline {% if is_host %}muted{% endif %}></video>
+            <video id="lr-video" autoplay playsinline muted></video>
 
             {% if is_host %}
             <!-- Host: source chooser overlay -->
@@ -537,6 +537,16 @@ var RTC_CONFIG = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
+        /* TURN relay — nécessaire si STUN échoue derrière un NAT symétrique */
+        {
+            urls: [
+                'turn:openrelayproject.org:3478',
+                'turn:openrelayproject.org:3478?transport=tcp',
+                'turns:openrelayproject.org:443?transport=tcp'
+            ],
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        }
     ]
 };
 
@@ -735,14 +745,49 @@ function onAnswer(data) {
 
 function onOffer(data) {
     hostChannel = data.from;
-    if (waitingOverlay) waitingOverlay.classList.add('hidden');
+
+    // Mettre à jour le texte mais GARDER l'overlay jusqu'à l'arrivée des tracks
+    if (waitingOverlay) {
+        var txt = waitingOverlay.querySelector('.lr-waiting-text');
+        if (txt) txt.textContent = 'Connexion au live…';
+    }
+
+    // Fermer toute connexion précédente
+    if (hostPC) { try { hostPC.close(); } catch(e) {} hostPC = null; }
 
     hostPC = new RTCPeerConnection(RTC_CONFIG);
 
-    hostPC.ontrack = function(e) {
-        if (e.streams && e.streams[0]) {
-            videoEl.srcObject = e.streams[0];
+    /* Suivi de l'état de la connexion ICE */
+    hostPC.onconnectionstatechange = function() {
+        var state = hostPC.connectionState;
+        if (state === 'connected') {
+            // ICE OK — la vidéo devrait déjà jouer via ontrack
+        } else if (state === 'failed') {
+            if (waitingOverlay) {
+                waitingOverlay.classList.remove('hidden');
+                var txt = waitingOverlay.querySelector('.lr-waiting-text');
+                if (txt) txt.textContent = 'Connexion échouée — rechargez la page';
+                var sp = waitingOverlay.querySelector('.lr-waiting-spinner');
+                if (sp) sp.style.display = 'none';
+            }
+        } else if (state === 'disconnected') {
+            if (waitingOverlay) {
+                waitingOverlay.classList.remove('hidden');
+                var txt2 = waitingOverlay.querySelector('.lr-waiting-text');
+                if (txt2) txt2.textContent = 'Connexion perdue…';
+            }
         }
+    };
+
+    /* Tracks reçus → afficher la vidéo */
+    hostPC.ontrack = function(e) {
+        if (!e.streams || !e.streams[0]) return;
+        videoEl.srcObject = e.streams[0];
+        // Masquer l'overlay maintenant qu'on a le flux
+        if (waitingOverlay) waitingOverlay.classList.add('hidden');
+        // La vidéo est muette (autoplay garanti) — afficher bouton son
+        videoEl.play().catch(function() {});
+        if (!IS_HOST) showUnmuteBtn();
     };
 
     hostPC.onicecandidate = function(e) {
@@ -754,7 +799,7 @@ function onOffer(data) {
     var desc = new RTCSessionDescription(data.sdp);
     hostPC.setRemoteDescription(desc)
       .then(function() {
-          // Apply any buffered ICE
+          // Appliquer les ICE en attente
           var pending = icePending['host'];
           if (pending) {
               pending.forEach(function(c) { hostPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){}); });
@@ -767,6 +812,28 @@ function onOffer(data) {
           wsSend({ type: 'answer', target: hostChannel, sdp: { type: answer.type, sdp: answer.sdp } });
       })
       .catch(function(e) { console.error('onOffer error:', e); });
+}
+
+/* Bouton "Activer le son" pour les viewers (vidéo muette par défaut) */
+function showUnmuteBtn() {
+    if (document.getElementById('lr-unmute-btn')) return;
+    var btn = document.createElement('button');
+    btn.id = 'lr-unmute-btn';
+    btn.innerHTML = '<span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">volume_off</span> Son coupé — Appuie pour activer';
+    btn.style.cssText = [
+        'position:absolute;bottom:1.2rem;left:50%;transform:translateX(-50%);',
+        'padding:.55rem 1.2rem;background:rgba(0,0,0,.78);color:#fff;',
+        'border:1.5px solid rgba(255,255,255,.28);border-radius:20px;',
+        'font-size:.85rem;font-weight:700;cursor:pointer;z-index:20;',
+        'display:flex;align-items:center;gap:.4rem;font-family:inherit;',
+        'white-space:nowrap;backdrop-filter:blur(6px);'
+    ].join('');
+    btn.onclick = function() {
+        videoEl.muted = false;
+        btn.remove();
+    };
+    var area = document.querySelector('.lr-video-area');
+    if (area) area.appendChild(btn);
 }
 
 /* ── ICE (both sides) ── */
