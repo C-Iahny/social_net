@@ -2127,11 +2127,14 @@ function collapseBody(el) {
     el.classList.remove('expanded');
     var btn = el.nextElementSibling;
     if (btn && btn.classList.contains('pc-read-more')) btn.textContent = btn.dataset.more;
-    // Remettre la carte en vue sans saut brutal
+    // Attendre que le DOM finisse de se réduire avant de mesurer la position
     var card = el.closest('.post-card');
     if (card) {
-        var top = card.getBoundingClientRect().top + window.scrollY - 70; // 70 = hauteur header
-        window.scrollTo({ top: top, behavior: 'smooth' });
+        setTimeout(function() {
+            var headerH = (document.getElementById('header') || {}).offsetHeight || 64;
+            var top = card.getBoundingClientRect().top + window.scrollY - headerH - 8;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+        }, 0);
     }
 }
 function expandBodyBtn(el) {
