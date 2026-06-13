@@ -2127,6 +2127,12 @@ function collapseBody(el) {
     el.classList.remove('expanded');
     var btn = el.nextElementSibling;
     if (btn && btn.classList.contains('pc-read-more')) btn.textContent = btn.dataset.more;
+    // Remettre la carte en vue sans saut brutal
+    var card = el.closest('.post-card');
+    if (card) {
+        var top = card.getBoundingClientRect().top + window.scrollY - 70; // 70 = hauteur header
+        window.scrollTo({ top: top, behavior: 'smooth' });
+    }
 }
 function expandBodyBtn(el) {
     var body = el.previousElementSibling;
