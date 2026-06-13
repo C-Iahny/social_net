@@ -865,7 +865,38 @@ body { background: var(--bg); }
     display: flex; align-items: center; justify-content: center;
 }
 .profile-story-thumb-seen .material-icons { font-size: .7rem; color: #fff; }
-#zoot-stories-bar { display: none !important; }
+
+/* ── Stories amis sur la page profil ─────────────────────────────────── */
+#pf-friends-stories-wrap {
+    margin-bottom: 1rem;
+}
+#pf-friends-stories-wrap .pf-stories-header {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    margin-bottom: .55rem;
+}
+#pf-friends-stories-wrap .pf-stories-label {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+/* On adapte le style de la barre dans ce contexte */
+#pf-friends-stories-wrap #zoot-stories-bar {
+    display: flex !important;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: .75rem;
+    padding: .25rem .1rem .5rem;
+    scrollbar-width: thin;
+}
+#pf-friends-stories-wrap #zoot-stories-bar::-webkit-scrollbar { height: 4px; }
+#pf-friends-stories-wrap #zoot-stories-bar::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
 
 /* ═══════════════════════════════════════════
    SCORE FIHAVANANA
@@ -1284,6 +1315,17 @@ body { background: var(--bg); }
 
             <!-- Main content -->
             <div class="profile-main">
+
+                <!-- Stories des amis -->
+                {% if request.user.is_authenticated %}
+                <div id="pf-friends-stories-wrap" style="display:none;">
+                    <div class="pf-stories-header">
+                        <span class="material-icons" style="color:var(--accent);font-size:1rem;">groups</span>
+                        <span class="pf-stories-label">{% trans "Friends' stories" %}</span>
+                    </div>
+                    {% include 'stories/story_bar.html' %}
+                </div>
+                {% endif %}
 
                 <!-- Stories section -->
                 <div id="profile-stories-section" style="display:none;margin-bottom:1rem;">
@@ -1899,6 +1941,18 @@ function expandBodyBtn(el) {
     if (body.classList.contains('expanded')) collapseBody(body);
     else expandBody(body);
 }
+
+/* ── Stories des amis sur la page profil ─────────────────────── */
+document.addEventListener('zootStoriesLoaded', function(e) {
+    var wrap = document.getElementById('pf-friends-stories-wrap');
+    if (!wrap) return;
+    var groups = (e.detail && e.detail.groups) || [];
+    /* Afficher seulement s'il y a des stories d'amis (autres que moi) */
+    var friendGroups = groups.filter(function(g) {
+        return g.user_id !== {{ request.user.id|default:"null" }};
+    });
+    wrap.style.display = friendGroups.length ? 'block' : 'none';
+});
 </script>
 
 {% include 'friend/snippets/send_friend_request.html' %}
@@ -1907,7 +1961,6 @@ function expandBodyBtn(el) {
 {% include 'friend/snippets/cancel_friend_request.html' %}
 {% include 'friend/snippets/remove_friend.html' %}
 {% include 'chat/snippets/create_or_return_private_chat.html' %}
-{% include 'stories/story_bar.html' %}
 
 <script>
 (function() {
