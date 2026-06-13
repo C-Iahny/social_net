@@ -970,6 +970,135 @@ body { background: var(--bg); }
 .ef-cta .material-icons { font-size: .95rem; }
 
 /* ════════════════════════════════════════════════════════════════
+   LEFT SIDEBAR — STORIES WIDGET
+   ════════════════════════════════════════════════════════════════ */
+.lsb-stories-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+.lsb-stories-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1rem .5rem;
+    border-bottom: 1px solid var(--border);
+}
+.lsb-stories-title {
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+.lsb-stories-title .material-icons { font-size: .95rem; color: var(--accent); }
+.lsb-stories-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    cursor: pointer;
+    border: none;
+    transition: transform .15s, opacity .15s;
+}
+.lsb-stories-add-btn:hover { transform: scale(1.1); opacity: .88; }
+.lsb-stories-add-btn .material-icons { font-size: .9rem; color: #fff; }
+
+.lsb-stories-list {
+    padding: .5rem 0;
+}
+.lsb-story-item {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .45rem 1rem;
+    cursor: pointer;
+    transition: background .15s;
+    border-radius: 10px;
+    margin: 0 .4rem;
+}
+.lsb-story-item:hover { background: var(--bg-hover, rgba(99,102,241,.07)); }
+
+/* Mini avatar ring */
+.lsb-story-ring {
+    position: relative;
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+}
+.lsb-story-ring::before {
+    content: '';
+    position: absolute;
+    inset: -2.5px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) 0deg, var(--accent2) 120deg, var(--accent3) 240deg, var(--accent) 360deg);
+    opacity: 0;
+    transition: opacity .25s;
+}
+.lsb-story-ring.has-unseen::before { opacity: 1; }
+.lsb-story-ring.all-seen::before {
+    background: conic-gradient(var(--text-muted) 0deg, var(--border) 360deg);
+    opacity: 1;
+}
+.lsb-story-ring-img {
+    position: relative;
+    z-index: 1;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--bg-card);
+    display: block;
+}
+.lsb-story-info { flex: 1; min-width: 0; }
+.lsb-story-name {
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+.lsb-story-unseen-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    display: none;
+}
+.lsb-story-item[data-unseen="1"] .lsb-story-unseen-dot { display: block; }
+
+.lsb-stories-more {
+    display: block;
+    text-align: center;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--accent);
+    padding: .5rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    transition: opacity .15s;
+}
+.lsb-stories-more:hover { opacity: .75; }
+
+.lsb-stories-empty {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: .78rem;
+    padding: .75rem 1rem 1rem;
+    line-height: 1.5;
+}
+
+/* ════════════════════════════════════════════════════════════════
    RIGHT SIDEBAR
    ════════════════════════════════════════════════════════════════ */
 .feed-right-col {
@@ -1178,6 +1307,22 @@ body { background: var(--bg); }
             </a>
         </div>
 
+        <!-- Stories sidebar widget -->
+        <div class="lsb-stories-card" id="lsb-stories-card">
+            <div class="lsb-stories-header">
+                <span class="lsb-stories-title">
+                    <span class="material-icons">auto_stories</span>
+                    {% trans "Stories" %}
+                </span>
+                <button class="lsb-stories-add-btn" onclick="window.zootStories && window.zootStories.openCreator()" title="{% trans 'Add a story' %}">
+                    <span class="material-icons">add</span>
+                </button>
+            </div>
+            <div class="lsb-stories-list" id="lsb-stories-list">
+                <p class="lsb-stories-empty">{% trans "Loading stories…" %}</p>
+            </div>
+        </div>
+
         <!-- Friends -->
         {% if friends %}
         <div class="lsb-friends-card">
@@ -1354,11 +1499,12 @@ body { background: var(--bg); }
                 <!-- Action bar -->
                 <div class="pc-footer">
                     <!-- Reactions -->
-                    <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}">
+                    <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}"
+                         onmouseenter="openPicker({{ post.id }})"
+                         onmouseleave="closePicker({{ post.id }})">
                         <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
                                 id="react-btn-{{ post.id }}"
                                 onclick="quickReact({{ post.id }})"
-                                onmouseenter="openPicker({{ post.id }})"
                                 title="Réagir">
                             <span id="react-icon-{{ post.id }}" style="font-size:1.05rem;line-height:1;">
                                 {% if post.user_reaction == 'like' %}👍
@@ -1379,8 +1525,7 @@ body { background: var(--bg); }
                             </span>
                         </button>
                         <!-- Picker -->
-                        <div class="reaction-picker" id="picker-{{ post.id }}"
-                             onmouseleave="closePicker({{ post.id }})">
+                        <div class="reaction-picker" id="picker-{{ post.id }}">
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
                                     onclick="sendReaction({{ post.id }}, 'like')" title="{% trans "J'aime" %}">👍</button>
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
@@ -1867,6 +2012,14 @@ function closePicker(postId) {
         if (p) p.classList.remove('open');
     }, 150);
 }
+function closeAllPickers() {
+    document.querySelectorAll('.reaction-picker.open').forEach(function(p) {
+        p.classList.remove('open');
+    });
+}
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.reaction-wrap')) closeAllPickers();
+});
 function quickReact(postId) {
     var cur = _userReactions[postId] !== undefined ? _userReactions[postId]
             : document.getElementById('react-btn-' + postId).classList.contains('liked') ? 'like' : null;
@@ -2470,7 +2623,80 @@ function escHtml(str) {
         setInterval(pollOpenCommentSections, 8000);
     });
 })();
+
+/* ══════════════════════════════════════════════
+   SIDEBAR STORIES WIDGET
+   ══════════════════════════════════════════════ */
+(function() {
+    var MAX_VISIBLE = 5;
+    var _allGroups  = [];
+    var _expanded   = false;
+
+    function renderSidebarStories(groups) {
+        _allGroups = groups || [];
+        var list = document.getElementById('lsb-stories-list');
+        if (!list) return;
+        list.innerHTML = '';
+
+        // Exclure "ma story" (celle du user connecté en position 0)
+        // mais garder si l'user a envie de voir sa propre story depuis le sidebar
+        var items = _allGroups;
+
+        if (!items.length) {
+            list.innerHTML = '<p class="lsb-stories-empty">{% trans "No active stories from your friends yet." %}</p>';
+            return;
+        }
+
+        var visible = _expanded ? items : items.slice(0, MAX_VISIBLE);
+        visible.forEach(function(group, idx) {
+            var globalIdx = _allGroups.indexOf(group);
+            var hasUnseen = group.has_unseen ? '1' : '0';
+            var ringClass = group.has_unseen ? 'has-unseen' : 'all-seen';
+
+            var item = document.createElement('div');
+            item.className = 'lsb-story-item';
+            item.dataset.unseen = hasUnseen;
+            item.setAttribute('title', group.username);
+            item.onclick = (function(gi){ return function(){ window.openStoryViewer && window.openStoryViewer(gi); }; })(globalIdx);
+            item.innerHTML =
+                '<div class="lsb-story-ring ' + ringClass + '">' +
+                    '<img class="lsb-story-ring-img" src="' + group.avatar + '" alt="' + group.username + '" loading="lazy">' +
+                '</div>' +
+                '<div class="lsb-story-info">' +
+                    '<span class="lsb-story-name">' + group.username + '</span>' +
+                '</div>' +
+                '<div class="lsb-story-unseen-dot"></div>';
+            list.appendChild(item);
+        });
+
+        // Bouton "Voir plus / moins" si besoin
+        if (items.length > MAX_VISIBLE) {
+            var more = document.createElement('button');
+            more.className = 'lsb-stories-more';
+            more.textContent = _expanded
+                ? '{% trans "See less" %}'
+                : '{% trans "See more" %} (' + (items.length - MAX_VISIBLE) + ')';
+            more.onclick = function() {
+                _expanded = !_expanded;
+                renderSidebarStories(_allGroups);
+            };
+            list.appendChild(more);
+        }
+    }
+
+    // Écouter le chargement des stories depuis story_bar.html
+    document.addEventListener('zootStoriesLoaded', function(e) {
+        renderSidebarStories(e.detail.groups);
+    });
+
+    // Si les stories sont déjà chargées (story_bar inclus avant ce script), on les affiche
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.zootStories) {
+            var g = window.zootStories.groups();
+            if (g && g.length) renderSidebarStories(g);
+        }
+    });
+})();
 </script>
 
 {% endblock content %}
-                                             
