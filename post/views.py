@@ -86,7 +86,8 @@ def Index(request):
     else:
         posts_qs = posts_qs.order_by("-id")
 
-    recent_posts = posts_qs[:12]
+    recent_posts = list(posts_qs[:12])
+    _attach_media(recent_posts, [p.id for p in recent_posts])
 
     # ── Sidebar : continents avec compte de pays en une seule requête ─────────
     # FIX N+1 : on annotate au lieu de c.country_set.count dans le template
