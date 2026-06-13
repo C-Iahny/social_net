@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static i18n humanize %}
+
+{% block content %}
+<style>
+.nj-wrapper {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 0 1rem 4rem;
+}
+.nj-header {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    margin-bottom: 1.8rem;
+}
+.nj-header-icon {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent2, #bf5fff), var(--accent3, #ff4da6));
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(191,95,255,.3);
+}
+.nj-header-icon .material-icons { color: #fff; font-size: 1.4rem; }
+.nj-title { font-size: 1.5rem; font-weight: 800; margin: 0; color: var(--text); letter-spacing: -.03em; }
+.nj-subtitle { font-size: .82rem; color: var(--text-muted); margin: .1rem 0 0; }
+
+.nj-list { display: flex; flex-direction: column; gap: .5rem; }
+
+.nj-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: .9rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    cursor: pointer;
+    transition: transform .18s, box-shadow .18s, border-color .18s;
+    text-decoration: none;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+.nj-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 18px rgba(0,0,0,.1);
+    border-color: var(--accent);
+    text-decoration: none;
+}
+.nj-card.unread {
+    border-left: 3px solid var(--accent);
+    background: rgba(99,102,241,.04);
+}
+[data-theme="dark"] .nj-card.unread {
+    background: rgba(99,102,241,.07);
+}
+
+.nj-avatar-wrap { position: relative; flex-shrink: 0; }
+.nj-avatar {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    display: block;
+}
+.nj-type-badge {
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--bg-card);
+    font-size: .6rem;
+}
+.nj-type-badge .material-icons { font-size: .7rem; }
+.nj-type-badge.type-friend-req  { background: var(--accent,  #6366f1); color: #fff; }
+.nj-type-badge.type-friend-acc  { background: #4caf7d; color: #fff; }
+.nj-type-badge.type-post  { background: var(--accent3, #f59e0b); color: #fff; }
+.nj-type-badge.type-chat  { background: var(--accent2, #bf5fff); color: #fff; }
+
+.nj-content { flex: 1; min-width: 0; }
+.nj-verb {
+    font-size: .9rem;
+    color: var(--text);
+    line-height: 1.4;
+    margin: 0 0 .2rem;
+}
+.nj-time {
+    font-size: .75rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+.nj-unread-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+}
+
+.nj-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+    gap: .75rem;
+    text-align: center;
+}
+.nj-empty .material-icons { font-size: 3rem; opacity: .3; }
+.nj-empty p { margin: 0; font-size: .9rem; }
+</style>
+
+<div class="nj-wrapper">
+    <div class="nj-header">
+        <div class="nj-header-icon">
+            <span class="material-icons">notifications</span>
+        </div>
+        <div>
+            <h1 class="nj-title">{% trans "Notifications" %}</h1>
+            <p class="nj-subtitle">{% trans "Your recent activity" %}</p>
+        </div>
+    </div>
+
+    {% if notifications %}
+    <div class="nj-list">
+        {% for notif in notifications %}
+        {% with cname=notif.content_object.get_cname %}
+        <a class="nj-card {% if not notif.read %}unread{% endif %}"
+           href="{{ notif.redirect_url|default:'#' }}">
+
+            <div class="nj-avatar-wrap">
+                {% if notif.from_user %}
+                <img class="nj-avatar"
+                     src="{{ notif.from_user.profile_image.url }}"
+                     alt="{{ notif.from_user.username }}"
+                     onerror="this.src='{% static "images/profile_pic.png" %}'">
+                {% else %}
+                <img class="nj-avatar" src="{% static 'images/profile_pic.png' %}" alt="">
+                {% endif %}
+
+                <span class="nj-type-badge
+                    {% if cname == 'FriendRequest' %}type-friend-req
+                    {% elif cname == 'FriendList' %}type-friend-acc
+                    {% elif cname == 'Post' %}type-post
+                    {% else %}type-chat{% endif %}">
+                    <span class="material-icons">
+                        {% if cname == 'FriendRequest' %}person_add
+                        {% elif cname == 'FriendList' %}check
+                        {% elif cname == 'Post' %}article
+                        {% else %}chat{% endif %}
+                    </span>
+                </span>
+            </div>
+
+            <div class="nj-content">
+                <p class="nj-verb">{{ notif.verb }}</p>
+                <p class="nj-time">{{ notif.timestamp|naturaltime }}</p>
+            </div>
+
+            {% if not notif.read %}
+            <div class="nj-unread-dot"></div>
+            {% endif %}
+        </a>
+        {% endwith %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="nj-empty">
+        <span class="material-icons">notifications_off</span>
+        <p>{% trans "No notifications yet" %}</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock content %}

@@ -174,7 +174,7 @@ def get_feed_stories(request):
         if not s['seen']:
             grouped[uid]['has_unseen'] = True
 
-    # Trier : non vus d'abord, puis soi-même en premier
+    # Trier : soi-même en premier, puis non vus d'abord
     result = sorted(
         grouped.values(),
         key=lambda g: (
@@ -182,7 +182,7 @@ def get_feed_stories(request):
             0 if g['has_unseen'] else 1,
         )
     )
-    return JsonResponse({'stories': result})
+    return JsonResponse({'groups': result})
 
 
 # ── MES STORIES ───────────────────────────────────────────────────────────────
