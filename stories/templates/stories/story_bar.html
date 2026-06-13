@@ -97,21 +97,30 @@
     object-fit: cover;
 }
 
-/* ── "Ma story" item – badge + overlay ──────────────────── */
-#my-story-item { position: relative; }
-.story-add-overlay {
-    position: absolute;
-    bottom: -2px; right: -2px;
-    width: 22px; height: 22px;
+/* ── Bouton ajouter (premier item) ─────────────────────── */
+.story-add-btn {
+    position: relative;
+    width: 60px; height: 60px;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     display: flex; align-items: center; justify-content: center;
-    border: 2px solid var(--bg-card);
-    z-index: 2;
-    transition: transform .15s;
+    border: none;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+    flex-shrink: 0;
 }
-#my-story-item:hover .story-add-overlay { transform: scale(1.15); }
-.story-add-overlay .material-icons { font-size: .75rem; color: #fff; }
+.story-add-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 20px var(--accent-glow);
+}
+[data-theme="dark"] .story-add-btn {
+    box-shadow: 0 0 16px rgba(0,207,255,.3);
+}
+[data-theme="dark"] .story-add-btn:hover {
+    box-shadow: 0 0 24px rgba(0,207,255,.5);
+}
+.story-add-btn .material-icons { color: #fff; font-size: 1.6rem; }
+[data-theme="dark"] .story-add-btn .material-icons { color: #000; }
 
 /* ══════════════════════════════════════════════════════════
    MODAL CRÉATEUR
@@ -447,23 +456,17 @@ input#sc-file-input { display: none; }
 <!-- ── BARRE STORIES ─────────────────────────────────────── -->
 <div class="zoot-stories" id="zoot-stories-bar">
 
-    <!-- Item "Ma story" : dual-mode (ouvrir mes stories OU créer) -->
+    <!-- Bouton "Ajouter" -->
     {% if request.user.is_authenticated %}
-    <div class="story-item" id="my-story-item" onclick="myStoryClick()" title="Ma story">
-        <div class="story-avatar-ring" id="my-story-ring">
-            <div class="story-avatar-inner">
-                <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" id="my-story-avatar-img">
-            </div>
-            <!-- Bouton + en overlay -->
-            <div class="story-add-overlay" id="my-story-add-overlay">
-                <span class="material-icons">add</span>
-            </div>
-        </div>
+    <div class="story-item" onclick="openStoryCreator()">
+        <button class="story-add-btn" title="Ajouter une story">
+            <span class="material-icons">add</span>
+        </button>
         <span class="story-item-label">Ma story</span>
     </div>
     {% endif %}
 
-    <!-- Stories des amis (chargées dynamiquement) -->
+    <!-- Stories chargées dynamiquement -->
     <div id="story-items-container" style="display:contents;"></div>
 
 </div>
@@ -514,7 +517,7 @@ input#sc-file-input { display: none; }
                 <p>Cliquer pour choisir un fichier</p>
             </div>
         </div>
-        <input type="file" id="sc-file-input" accept="*/*" onchange="onFileSelected(this)">
+        <input type="file" id="sc-file-input" accept="image/*,video/*" onchange="onFileSelected(this)">
 
         <!-- Sélecteur gradient (visible pour text / image_text) -->
         <div id="sc-grad-section" style="display:none;">
@@ -655,10 +658,8 @@ function loadStories() {
         .then(function(data) {
             _groups = data.groups || [];
             renderStoryBar();
-            // Notifier les autres widgets (ex: sidebar) que les stories sont prêtes
-            document.dispatchEvent(new CustomEvent('zootStoriesLoaded', { detail: { groups: _groups } }));
         })
-        .catch(function(e){ console.error('[Zoot Stories] Fetch error:', e); });
+        .catch(function(e){ console.error('stories fetch error', e); });
 }
 
 function renderStoryBar() {
@@ -666,61 +667,31 @@ function renderStoryBar() {
     if (!container) return;
     container.innerHTML = '';
 
-    // Mettre à jour le bouton "Ma story"
-    var myGroup = _groups.find(function(g){ return g.user_id === ME_ID; });
-    updateMyStoryItem(myGroup);
-
     _groups.forEach(function(group, gi) {
-        // Sauter le groupe de l'utilisateur connecté (géré par le bouton "Ma story")
-        if (group.user_id === ME_ID) return;
-
+        // Ne pas afficher "Ma story" ici si déjà dans le bouton add
+        // (si on a des stories on les affiche tout de même)
         var item = document.createElement('div');
         item.className = 'story-item';
         item.setAttribute('data-group', gi);
         item.onclick = function(){ openStoryViewer(gi); };
 
-        // Corriger: utiliser has_unseen (API) et non all_seen (non défini)
         var ringClass = 'story-avatar-ring';
-        if (group.stories && group.stories.length > 0) {
-            ringClass += ' has-story';
-            if (!group.has_unseen) ringClass += ' all-seen';
-        }
+        if (group.stories && group.stories.length > 0) ringClass += ' has-story';
+        if (group.all_seen) ringClass += ' all-seen';
+
+        var label = group.is_me ? 'Ma story' : (group.username || '').substring(0, 10);
 
         item.innerHTML =
             '<div class="' + ringClass + '">' +
                 '<div class="story-avatar-inner">' +
-                    '<img src="' + group.avatar + '" alt="' + group.username + '" loading="lazy">' +
+                    '<img src="' + group.avatar + '" alt="' + group.username + '">' +
                 '</div>' +
             '</div>' +
-            '<span class="story-item-label">' + (group.username || '').substring(0, 10) + '</span>';
+            '<span class="story-item-label">' + label + '</span>';
 
         container.appendChild(item);
     });
 }
-
-function updateMyStoryItem(myGroup) {
-    var ring = document.getElementById('my-story-ring');
-    if (!ring) return;
-    if (myGroup && myGroup.stories && myGroup.stories.length > 0) {
-        ring.classList.add('has-story');
-        if (!myGroup.has_unseen) ring.classList.add('all-seen');
-        else ring.classList.remove('all-seen');
-    } else {
-        ring.classList.remove('has-story', 'all-seen');
-    }
-}
-
-window.myStoryClick = function() {
-    var myGroup = _groups.find(function(g){ return g.user_id === ME_ID; });
-    if (myGroup && myGroup.stories && myGroup.stories.length > 0) {
-        // Ouvrir les stories de l'utilisateur
-        var gi = _groups.indexOf(myGroup);
-        openStoryViewer(gi);
-    } else {
-        // Pas encore de story → ouvrir le créateur
-        openStoryCreator();
-    }
-};
 
 /* ════════════════════════════════════════════
    CRÉATEUR
@@ -768,38 +739,27 @@ window.triggerFileInput = function() {
 };
 
 window.onFileSelected = function(input) {
-    var rawFile = input.files[0];
-    if (!rawFile) return;
+    var file = input.files[0];
+    if (!file) return;
+    _scFile = file;
+    var url  = URL.createObjectURL(file);
+    var isVid = file.type.startsWith('video/');
 
-    function _applyFile(file) {
-        _scFile = file;
-        var isVid = file.type.startsWith('video/');
-        var url = URL.createObjectURL(file);
-        hidePlaceholder();
-        if (isVid) {
-            document.getElementById('sc-preview-img').style.display = 'none';
-            var v = document.getElementById('sc-preview-video');
-            v.src = url; v.style.display = 'block';
-        } else {
-            document.getElementById('sc-preview-video').style.display = 'none';
-            var img = document.getElementById('sc-preview-img');
-            img.src = url; img.style.display = 'block';
-        }
-        if (_scType === 'image_text') {
-            showTextCard();
-            document.getElementById('sc-text-card').style.position = 'absolute';
-            document.getElementById('sc-text-card').style.background = 'transparent';
-            document.getElementById('sc-text-card').style.display = 'flex';
-        }
-    }
-
-    /* Convertir HEIC ou image lourde en WebP si ZootMediaConverter disponible */
-    if (window.ZootMediaConverter && !rawFile.type.startsWith('video/')) {
-        ZootMediaConverter.processFiles([rawFile]).then(function(arr) {
-            _applyFile(arr[0] || rawFile);
-        }).catch(function() { _applyFile(rawFile); });
+    hidePlaceholder();
+    if (isVid) {
+        document.getElementById('sc-preview-img').style.display = 'none';
+        var v = document.getElementById('sc-preview-video');
+        v.src = url; v.style.display = 'block';
     } else {
-        _applyFile(rawFile);
+        document.getElementById('sc-preview-video').style.display = 'none';
+        var img = document.getElementById('sc-preview-img');
+        img.src = url; img.style.display = 'block';
+    }
+    if (_scType === 'image_text') {
+        showTextCard();
+        document.getElementById('sc-text-card').style.position = 'absolute';
+        document.getElementById('sc-text-card').style.background = 'transparent';
+        document.getElementById('sc-text-card').style.display = 'flex';
     }
 };
 
@@ -962,25 +922,13 @@ function renderCurrentStory() {
     if (!story) { closeStoryViewer(); return; }
 
     // Marquer comme vu
-    if (!story.seen && group.user_id !== ME_ID) {
+    if (!story.seen) {
         fetch(URLS.viewed + story.id + '/', {
             method: 'POST',
             headers: {'X-CSRFToken': getCsrf(), 'X-Requested-With': 'XMLHttpRequest'},
         }).then(function() {
             story.seen = true;
-            // Mettre à jour has_unseen pour ce groupe
-            group.has_unseen = group.stories.some(function(s){ return !s.seen; });
-            // Mettre à jour le ring dans la barre
-            var storyItems = document.querySelectorAll('#story-items-container .story-item');
-            storyItems.forEach(function(el, i) {
-                if (parseInt(el.dataset.group) === _curGroup) {
-                    var ring = el.querySelector('.story-avatar-ring');
-                    if (ring) {
-                        if (!group.has_unseen) ring.classList.add('all-seen');
-                        else ring.classList.remove('all-seen');
-                    }
-                }
-            });
+            group.all_seen = group.stories.every(function(s){ return s.seen; });
         });
     }
 

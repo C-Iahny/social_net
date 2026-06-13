@@ -58,20 +58,5 @@ class LazyNotificationEncoder(Serializer):
 					"image_url": str(obj.content_object.get_other_user.profile_image.url)
 				}
 			})
-		if obj.get_content_object_type() == "Post":
-			dump_object.update({'notification_type': 'Post'})
-			dump_object.update({'notification_id': str(obj.pk)})
-			dump_object.update({'verb': obj.verb})
-			dump_object.update({'natural_timestamp': str(naturaltime(obj.timestamp))})
-			dump_object.update({'timestamp': str(obj.timestamp)})
-			dump_object.update({'is_read': str(obj.read)})
-			dump_object.update({
-				'actions': {
-					'redirect_url': str(obj.redirect_url) if obj.redirect_url else '/',
-				},
-				"from": {
-					"image_url": str(obj.from_user.profile_image.url) if obj.from_user else '',
-				}
-			})
 
 		return dump_object

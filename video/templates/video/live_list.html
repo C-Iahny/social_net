@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<style>
+/* ── Page layout ── */
+.live-page {
+    min-height: calc(100vh - 62px);
+    background: var(--bg);
+    padding: 2rem 1rem 4rem;
+}
+.live-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ── Hero create card ── */
+.live-create-card {
+    background: linear-gradient(135deg, #1a0a2e 0%, #0d1a2e 50%, #0a1a1a 100%);
+    border: 1px solid rgba(255,59,59,.25);
+    border-radius: 24px;
+    padding: 2rem 2rem 1.75rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(255,59,59,.12);
+}
+.live-create-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, rgba(255,59,59,.18) 0%, transparent 70%);
+    pointer-events: none;
+}
+.live-create-card::after {
+    content: '⚽';
+    position: absolute;
+    bottom: -10px; right: 20px;
+    font-size: 5rem;
+    opacity: .07;
+    pointer-events: none;
+    line-height: 1;
+}
+.live-create-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.25rem;
+}
+.live-badge-big {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: #ff3b3b;
+    color: #fff;
+    font-weight: 800;
+    font-size: .9rem;
+    letter-spacing: .06em;
+    padding: .3rem .75rem;
+    border-radius: 20px;
+    animation: pulse-red 1.8s ease-in-out infinite;
+}
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,59,59,.6); }
+    50%       { box-shadow: 0 0 0 8px rgba(255,59,59,0); }
+}
+.live-badge-big .dot {
+    width: 7px; height: 7px;
+    background: #fff;
+    border-radius: 50%;
+    animation: blink .9s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.live-create-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    margin: 0;
+}
+.live-create-sub {
+    color: rgba(255,255,255,.55);
+    font-size: .9rem;
+    margin: 0 0 1.5rem;
+}
+.live-form {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+.live-title-input {
+    flex: 1;
+    min-width: 200px;
+    background: rgba(255,255,255,.08);
+    border: 1.5px solid rgba(255,255,255,.15);
+    border-radius: 14px;
+    padding: .75rem 1.1rem;
+    color: #fff;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color .2s, background .2s;
+    outline: none;
+}
+.live-title-input::placeholder { color: rgba(255,255,255,.35); }
+.live-title-input:focus {
+    border-color: #ff3b3b;
+    background: rgba(255,255,255,.12);
+}
+.live-btn-start {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .75rem 1.5rem;
+    background: linear-gradient(135deg, #ff3b3b, #c0392b);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(255,59,59,.45);
+    transition: opacity .2s, transform .15s, box-shadow .2s;
+    font-family: inherit;
+}
+.live-btn-start:hover {
+    opacity: .88;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(255,59,59,.55);
+}
+.live-btn-start .material-icons { font-size: 1.1rem; }
+
+/* ── Active lives section ── */
+.live-section-title {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 1rem;
+    padding-top: .5rem;
+}
+.live-section-title .material-icons { color: var(--accent); font-size: 1.2rem; }
+
+/* ── Live room card grid ── */
+.live-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+}
+.live-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+.live-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(255,59,59,.12), 0 2px 8px rgba(0,0,0,.08);
+    text-decoration: none;
+    color: inherit;
+}
+/* Thumbnail placeholder */
+.live-card-thumb {
+    height: 140px;
+    background: linear-gradient(135deg, #1a0a2e, #0a1a1a);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.live-card-thumb-icon {
+    font-size: 3rem;
+    opacity: .25;
+}
+.live-card-live-badge {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: #ff3b3b;
+    color: #fff;
+    font-weight: 800;
+    font-size: .7rem;
+    letter-spacing: .08em;
+    padding: .2rem .55rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+}
+.live-card-live-badge .dot {
+    width: 5px; height: 5px;
+    background: #fff;
+    border-radius: 50%;
+    animation: blink .9s ease-in-out infinite;
+}
+.live-card-viewers {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(0,0,0,.65);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 700;
+    padding: .18rem .5rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+.live-card-viewers .material-icons { font-size: .9rem; }
+.live-card-body { padding: .85rem 1rem 1rem; }
+.live-card-host {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    margin-bottom: .5rem;
+}
+.live-card-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ff3b3b;
+}
+.live-card-username {
+    font-weight: 700;
+    font-size: .85rem;
+    color: var(--text);
+}
+.live-card-title {
+    font-size: .92rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: .3rem;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.live-card-group {
+    font-size: .78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+.live-card-group .material-icons { font-size: .9rem; }
+.live-card-join-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .35rem;
+    width: 100%;
+    margin-top: .75rem;
+    padding: .55rem;
+    background: linear-gradient(135deg, #ff3b3b, #c0392b);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: .88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .2s;
+    font-family: inherit;
+}
+.live-card-join-btn:hover { opacity: .85; }
+.live-card-join-btn .material-icons { font-size: 1rem; }
+
+/* ── Empty state ── */
+.live-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+.live-empty .material-icons { font-size: 3.5rem; opacity: .35; display: block; margin-bottom: .75rem; }
+.live-empty p { font-size: .95rem; margin: 0; }
+</style>
+
+<div class="live-page">
+<div class="live-container">
+
+    <!-- ── Hero : créer un live ── -->
+    <div class="live-create-card">
+        <div class="live-create-header">
+            <span class="live-badge-big"><span class="dot"></span> LIVE</span>
+            <h1 class="live-create-title">Regardez le match ensemble ⚽</h1>
+        </div>
+        <p class="live-create-sub">Partagez votre écran pour diffuser le match en direct à vos amis sur Vazimba.</p>
+
+        <form method="post" action="{% url 'video:live-create' %}" class="live-form">
+            {% csrf_token %}
+            <input type="text" name="title" class="live-title-input"
+                   placeholder="Ex : 🇲🇬 Madagascar vs France — Coupe du Monde !"
+                   maxlength="200" required>
+            <button type="submit" class="live-btn-start">
+                <span class="material-icons">live_tv</span>
+                Commencer le live
+            </button>
+        </form>
+    </div>
+
+    <!-- ── Lives actifs ── -->
+    <div class="live-section-title">
+        <span class="material-icons">videocam</span>
+        Lives en cours
+        <span id="live-count-badge" style="
+            background:rgba(255,59,59,.12);
+            color:#ff3b3b;
+            font-size:.75rem;
+            font-weight:800;
+            padding:.15rem .55rem;
+            border-radius:10px;
+        ">{{ active_rooms|length }}</span>
+    </div>
+
+    {% if active_rooms %}
+    <div class="live-grid" id="live-grid">
+        {% for room in active_rooms %}
+        <a href="{% url 'video:live-room' room_id=room.pk %}" class="live-card">
+            <div class="live-card-thumb">
+                <span class="material-icons live-card-thumb-icon">live_tv</span>
+                <span class="live-card-live-badge"><span class="dot"></span> LIVE</span>
+                <span class="live-card-viewers">
+                    <span class="material-icons">visibility</span>
+                    {{ room.viewer_count }}
+                </span>
+            </div>
+            <div class="live-card-body">
+                <div class="live-card-host">
+                    <img class="live-card-avatar"
+                         src="{{ room.host.profile_image.url }}"
+                         alt="{{ room.host.username }}">
+                    <span class="live-card-username">{{ room.host.username }}</span>
+                </div>
+                <div class="live-card-title">{{ room.title }}</div>
+                {% if room.group %}
+                <div class="live-card-group">
+                    <span class="material-icons">groups</span>
+                    {{ room.group.name }}
+                </div>
+                {% endif %}
+                <button class="live-card-join-btn" onclick="event.preventDefault();window.location.href=this.closest('a').href;">
+                    <span class="material-icons">play_circle</span>
+                    Rejoindre
+                </button>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="live-empty">
+        <span class="material-icons">live_tv</span>
+        <p>Aucun live en cours — sois le premier à diffuser !</p>
+    </div>
+    {% endif %}
+
+</div>
+</div>
+
+<!-- Auto-refresh toutes les 30s -->
+<script>
+(function() {
+    setTimeout(function() { location.reload(); }, 30000);
+})();
+</script>
+{% endblock content %}

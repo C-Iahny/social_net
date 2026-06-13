@@ -765,6 +765,32 @@
         <!-- Actions -->
         <div class="gd-actions">
             {% if is_member %}
+            <!-- 🔴 Live dans ce groupe -->
+            <form method="post" action="{% url 'video:live-create' %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="group_id" value="{{ group.pk }}">
+                <input type="hidden" name="title"    value="Live dans {{ group.name|escapejs }}">
+                <button type="submit" style="
+                    display:inline-flex;align-items:center;gap:.4rem;
+                    padding:.5rem 1rem;
+                    background:rgba(255,59,59,.1);
+                    border:1.5px solid rgba(255,59,59,.4);
+                    border-radius:12px;
+                    color:#ff3b3b;
+                    font-size:.85rem;font-weight:700;
+                    cursor:pointer;
+                    font-family:inherit;
+                    transition:background .2s,border-color .2s;
+                "
+                onmouseover="this.style.background='rgba(255,59,59,.2)';this.style.borderColor='#ff3b3b'"
+                onmouseout="this.style.background='rgba(255,59,59,.1)';this.style.borderColor='rgba(255,59,59,.4)'"
+                >
+                    <span class="material-icons" style="font-size:1rem;">live_tv</span>
+                    🔴 Live
+                </button>
+            </form>
+            {% endif %}
+            {% if is_member %}
                 {% if request.user != group.creator %}
                 <form method="post" action="{% url 'group:leave' group.slug %}" style="display:inline;">
                     {% csrf_token %}

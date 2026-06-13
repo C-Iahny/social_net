@@ -1,0 +1,869 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<style>
+/* ── Reset & base ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+.live-room-page {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 62px);
+    background: #0a0a0f;
+    color: #fff;
+}
+
+/* ── Top bar ── */
+.lr-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .6rem 1.2rem;
+    background: rgba(0,0,0,.8);
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    flex-shrink: 0;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+.lr-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    min-width: 0;
+}
+.lr-live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    background: #ff3b3b;
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    padding: .22rem .6rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+.lr-live-dot {
+    width: 6px; height: 6px;
+    background: #fff;
+    border-radius: 50%;
+    animation: liveBlink .9s ease-in-out infinite;
+}
+@keyframes liveBlink { 0%,100%{opacity:1} 50%{opacity:.25} }
+.lr-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+.lr-host-info {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .82rem;
+    color: rgba(255,255,255,.55);
+    flex-shrink: 0;
+}
+.lr-host-info img {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid rgba(255,59,59,.6);
+}
+.lr-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+.lr-viewer-count {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .82rem;
+    color: rgba(255,255,255,.6);
+    background: rgba(255,255,255,.07);
+    padding: .25rem .65rem;
+    border-radius: 20px;
+}
+.lr-viewer-count .material-icons { font-size: .95rem; color: rgba(255,59,59,.8); }
+
+/* ── Main area ── */
+.lr-main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ── Video area ── */
+.lr-video-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    position: relative;
+    min-width: 0;
+}
+#lr-video {
+    width: 100%;
+    height: 100%;
+    max-height: calc(100vh - 160px);
+    object-fit: contain;
+    display: block;
+    background: #000;
+}
+.lr-video-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    height: 100%;
+    min-height: 300px;
+    color: rgba(255,255,255,.3);
+    text-align: center;
+    padding: 2rem;
+}
+.lr-video-placeholder .material-icons { font-size: 4rem; opacity: .25; }
+.lr-video-placeholder p { font-size: .9rem; margin: 0; max-width: 280px; }
+
+/* ── Status overlay (host before start) ── */
+.lr-status-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.75);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    z-index: 10;
+}
+.lr-status-overlay.hidden { display: none; }
+.lr-status-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fff;
+    text-align: center;
+}
+.lr-status-sub {
+    font-size: .9rem;
+    color: rgba(255,255,255,.55);
+    text-align: center;
+    max-width: 320px;
+}
+.lr-source-btns {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.lr-source-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .4rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255,255,255,.08);
+    border: 1.5px solid rgba(255,255,255,.15);
+    border-radius: 16px;
+    color: #fff;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, transform .15s;
+    font-family: inherit;
+    font-size: .85rem;
+    font-weight: 600;
+    min-width: 120px;
+}
+.lr-source-btn:hover {
+    background: rgba(255,59,59,.15);
+    border-color: rgba(255,59,59,.5);
+    transform: translateY(-2px);
+}
+.lr-source-btn .material-icons { font-size: 2rem; }
+.lr-source-btn.active {
+    background: rgba(255,59,59,.2);
+    border-color: #ff3b3b;
+}
+
+/* ── Chat panel ── */
+.lr-chat {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: rgba(10,10,20,.95);
+    border-left: 1px solid rgba(255,255,255,.07);
+}
+.lr-chat-header {
+    padding: .75rem 1rem;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    font-size: .82rem;
+    font-weight: 700;
+    color: rgba(255,255,255,.5);
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-shrink: 0;
+}
+.lr-chat-header .material-icons { font-size: 1rem; }
+.lr-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: .65rem .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+    min-height: 0;
+}
+.lr-chat-messages::-webkit-scrollbar { width: 3px; }
+.lr-chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 3px; }
+.lr-chat-msg {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+}
+.lr-chat-msg-avatar {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.lr-chat-msg-body { flex: 1; min-width: 0; }
+.lr-chat-msg-user {
+    font-size: .72rem;
+    font-weight: 700;
+    color: #ff7b7b;
+    margin-bottom: 1px;
+}
+.lr-chat-msg-text {
+    font-size: .82rem;
+    color: rgba(255,255,255,.85);
+    line-height: 1.4;
+    word-break: break-word;
+}
+/* System messages */
+.lr-chat-system {
+    font-size: .75rem;
+    color: rgba(255,255,255,.35);
+    text-align: center;
+    padding: .25rem 0;
+    font-style: italic;
+}
+.lr-chat-input-wrap {
+    display: flex;
+    gap: .5rem;
+    padding: .65rem .75rem;
+    border-top: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
+}
+.lr-chat-input {
+    flex: 1;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px;
+    padding: .5rem .9rem;
+    color: #fff;
+    font-size: .85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s;
+}
+.lr-chat-input::placeholder { color: rgba(255,255,255,.3); }
+.lr-chat-input:focus { border-color: rgba(255,59,59,.5); }
+.lr-chat-send-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #ff3b3b;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity .2s, transform .15s;
+}
+.lr-chat-send-btn:hover { opacity: .85; transform: scale(1.05); }
+.lr-chat-send-btn .material-icons { font-size: 1.1rem; }
+
+/* ── Bottom controls (host only) ── */
+.lr-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    padding: .85rem 1.2rem;
+    background: rgba(0,0,0,.85);
+    border-top: 1px solid rgba(255,255,255,.06);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+.lr-ctrl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .55rem 1rem;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255,255,255,.15);
+    background: rgba(255,255,255,.07);
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, transform .15s;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.lr-ctrl-btn:hover { background: rgba(255,255,255,.13); transform: translateY(-1px); }
+.lr-ctrl-btn .material-icons { font-size: 1.1rem; }
+.lr-ctrl-btn.active {
+    background: rgba(0,207,100,.15);
+    border-color: rgba(0,207,100,.5);
+    color: #00cf64;
+}
+.lr-ctrl-btn.active .material-icons { color: #00cf64; }
+.lr-ctrl-btn.danger {
+    background: rgba(255,59,59,.15);
+    border-color: rgba(255,59,59,.4);
+    color: #ff5555;
+}
+.lr-ctrl-btn.danger:hover {
+    background: rgba(255,59,59,.3);
+    border-color: #ff3b3b;
+}
+.lr-ctrl-btn.danger .material-icons { color: #ff5555; }
+
+/* ── Ended overlay ── */
+.lr-ended-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.88);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    z-index: 200;
+}
+.lr-ended-overlay.show { display: flex; }
+.lr-ended-icon { font-size: 3.5rem; opacity: .4; }
+.lr-ended-title { font-size: 1.4rem; font-weight: 800; color: #fff; }
+.lr-ended-sub { color: rgba(255,255,255,.5); font-size: .92rem; }
+.lr-ended-btn {
+    padding: .7rem 2rem;
+    background: linear-gradient(135deg, #1877f2, #7c3aed);
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: .95rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity .2s;
+}
+.lr-ended-btn:hover { opacity: .85; }
+
+/* ── Waiting overlay (viewer) ── */
+.lr-waiting-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .75rem;
+    z-index: 5;
+}
+.lr-waiting-overlay.hidden { display: none; }
+.lr-waiting-spinner {
+    width: 44px; height: 44px;
+    border: 3px solid rgba(255,59,59,.25);
+    border-top-color: #ff3b3b;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.lr-waiting-text { color: rgba(255,255,255,.6); font-size: .88rem; }
+
+/* ── Responsive ── */
+@media (max-width: 767px) {
+    .lr-chat { display: none; }
+    .lr-main { flex-direction: column; }
+    .lr-video-area { min-height: 55vw; }
+    .lr-title { max-width: 160px; font-size: .88rem; }
+}
+</style>
+
+<!-- ── Ended overlay ── -->
+<div class="lr-ended-overlay" id="lr-ended-overlay">
+    <span class="material-icons lr-ended-icon">live_tv</span>
+    <div class="lr-ended-title">Le live est terminé</div>
+    <div class="lr-ended-sub">L'hôte a mis fin à la diffusion.</div>
+    <button class="lr-ended-btn" onclick="window.location.href='{% url 'video:live-list' %}'">
+        Voir d'autres lives
+    </button>
+</div>
+
+<!-- ── Page ── -->
+<div class="live-room-page">
+
+    <!-- Top bar -->
+    <div class="lr-topbar">
+        <div class="lr-topbar-left">
+            <span class="lr-live-indicator"><span class="lr-live-dot"></span> LIVE</span>
+            <span class="lr-title">{{ room.title }}</span>
+            <div class="lr-host-info">
+                <img src="{{ room.host.profile_image.url }}" alt="{{ room.host.username }}">
+                <span>{{ room.host.username }}</span>
+            </div>
+        </div>
+        <div class="lr-topbar-right">
+            <span class="lr-viewer-count">
+                <span class="material-icons">visibility</span>
+                <span id="lr-viewer-count">{{ room.viewer_count }}</span>
+            </span>
+            <a href="{% url 'video:live-list' %}"
+               style="color:rgba(255,255,255,.45);font-size:.82rem;text-decoration:none;display:flex;align-items:center;gap:.2rem;">
+                <span class="material-icons" style="font-size:1rem;">arrow_back</span>
+                Quitter
+            </a>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="lr-main">
+
+        <!-- Video area -->
+        <div class="lr-video-area">
+            <video id="lr-video" autoplay playsinline {% if is_host %}muted{% endif %}></video>
+
+            {% if is_host %}
+            <!-- Host: source chooser overlay -->
+            <div class="lr-status-overlay" id="lr-source-overlay">
+                <div class="lr-status-title">🎬 Choisir la source de diffusion</div>
+                <div class="lr-status-sub">Partage ton écran pour diffuser le match, ou utilise ta caméra.</div>
+                <div class="lr-source-btns">
+                    <button class="lr-source-btn" id="btn-screen" onclick="startSource('screen')">
+                        <span class="material-icons">screen_share</span>
+                        Partager l'écran
+                    </button>
+                    <button class="lr-source-btn" id="btn-camera" onclick="startSource('camera')">
+                        <span class="material-icons">videocam</span>
+                        Caméra
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <!-- Viewer: waiting overlay -->
+            <div class="lr-waiting-overlay" id="lr-waiting-overlay">
+                <div class="lr-waiting-spinner"></div>
+                <div class="lr-waiting-text">En attente de la diffusion…</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Chat -->
+        <div class="lr-chat">
+            <div class="lr-chat-header">
+                <span class="material-icons">chat_bubble_outline</span>
+                Chat en direct
+            </div>
+            <div class="lr-chat-messages" id="lr-chat-messages"></div>
+            <div class="lr-chat-input-wrap">
+                <input class="lr-chat-input" id="lr-chat-input"
+                       type="text" placeholder="Écris un message…" maxlength="500"
+                       autocomplete="off">
+                <button class="lr-chat-send-btn" onclick="sendChat()">
+                    <span class="material-icons">send</span>
+                </button>
+            </div>
+        </div>
+
+    </div><!-- /lr-main -->
+
+    <!-- Host controls -->
+    {% if is_host %}
+    <div class="lr-controls" id="lr-controls" style="display:none;">
+        <button class="lr-ctrl-btn" id="btn-toggle-screen" onclick="toggleSource('screen')">
+            <span class="material-icons">screen_share</span>
+            Écran
+        </button>
+        <button class="lr-ctrl-btn" id="btn-toggle-camera" onclick="toggleSource('camera')">
+            <span class="material-icons">videocam</span>
+            Caméra
+        </button>
+        <button class="lr-ctrl-btn" id="btn-toggle-mic" onclick="toggleMic()">
+            <span class="material-icons">mic</span>
+            Micro
+        </button>
+        <form method="post" action="{% url 'video:live-end' room_id=room.pk %}" style="display:inline;"
+              onsubmit="return confirm('Terminer le live ?');">
+            {% csrf_token %}
+            <button type="submit" class="lr-ctrl-btn danger">
+                <span class="material-icons">stop_circle</span>
+                Terminer
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+</div><!-- /live-room-page -->
+
+<!-- ── WebRTC + Chat JS ─────────────────────────────────────────── -->
+<script>
+(function() {
+'use strict';
+
+/* ── Config ── */
+var IS_HOST    = {{ is_host|yesno:'true,false' }};
+var ROOM_ID    = {{ room.pk }};
+var USERNAME   = '{{ request.user.username|escapejs }}';
+var AVATAR_URL = '{{ request.user.profile_image.url|escapejs }}';
+
+var WS_SCHEME  = window.location.protocol === 'https:' ? 'wss' : 'ws';
+var WS_URL     = WS_SCHEME + '://' + window.location.host + '/live/' + ROOM_ID + '/';
+
+var RTC_CONFIG = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+    ]
+};
+
+/* ── State ── */
+var ws          = null;
+var localStream = null;
+var pcs         = {};      // host: Map viewer_channel → RTCPeerConnection
+var hostPC      = null;    // viewer: single RTCPeerConnection to host
+var hostChannel = null;    // viewer: stores host's channel_name from offer
+var micMuted    = false;
+var icePending  = {};      // buffer ICE candidates before remoteDescription
+
+/* ── DOM ── */
+var videoEl        = document.getElementById('lr-video');
+var chatMsgs       = document.getElementById('lr-chat-messages');
+var chatInput      = document.getElementById('lr-chat-input');
+var viewerCountEl  = document.getElementById('lr-viewer-count');
+var endedOverlay   = document.getElementById('lr-ended-overlay');
+
+var sourceOverlay  = document.getElementById('lr-source-overlay');
+var waitingOverlay = document.getElementById('lr-waiting-overlay');
+var controls       = document.getElementById('lr-controls');
+
+/* ── WebSocket ── */
+function connect() {
+    ws = new WebSocket(WS_URL);
+
+    ws.onopen = function() {
+        if (IS_HOST) {
+            ws.send(JSON.stringify({ type: 'join_host' }));
+        } else {
+            ws.send(JSON.stringify({ type: 'join_viewer' }));
+        }
+    };
+
+    ws.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        switch (data.type) {
+            /* ── Host receives ── */
+            case 'viewer_joined':
+                if (IS_HOST) onViewerJoined(data);
+                break;
+            case 'viewer_left':
+                if (IS_HOST) onViewerLeft(data);
+                break;
+            case 'answer':
+                if (IS_HOST) onAnswer(data);
+                break;
+
+            /* ── Viewer receives ── */
+            case 'offer':
+                if (!IS_HOST) onOffer(data);
+                break;
+
+            /* ── Both ── */
+            case 'ice':
+                onIceCandidate(data);
+                break;
+            case 'viewer_count':
+                if (viewerCountEl) viewerCountEl.textContent = data.count;
+                break;
+            case 'chat':
+                appendChat(data.username, data.avatar, data.text);
+                break;
+            case 'stream_ended':
+                onStreamEnded();
+                break;
+        }
+    };
+
+    ws.onclose = function() {
+        setTimeout(function() { if (!document.hidden) connect(); }, 3000);
+    };
+    ws.onerror = function() {};
+}
+
+/* ── HOST logic ── */
+
+window.startSource = function(src) {
+    if (sourceOverlay) sourceOverlay.classList.add('hidden');
+    var promise;
+    if (src === 'screen') {
+        promise = navigator.mediaDevices.getDisplayMedia({
+            video: true, audio: true
+        });
+    } else {
+        promise = navigator.mediaDevices.getUserMedia({
+            video: true, audio: true
+        });
+    }
+    promise.then(function(stream) {
+        localStream = stream;
+        videoEl.srcObject = stream;
+        if (controls) controls.style.display = 'flex';
+
+        // Track which source is active
+        document.getElementById('btn-toggle-screen') &&
+            document.getElementById('btn-toggle-screen').classList.toggle('active', src === 'screen');
+        document.getElementById('btn-toggle-camera') &&
+            document.getElementById('btn-toggle-camera').classList.toggle('active', src !== 'screen');
+
+        // If viewers are already waiting, offer to them
+        Object.keys(pcs).forEach(function(ch) {
+            offerToViewer(ch);
+        });
+
+        // Handle stream ending (user clicked "Stop sharing")
+        stream.getVideoTracks()[0].onended = function() {
+            appendSystemMsg('Partage d\'écran arrêté');
+            if (controls) controls.style.display = 'none';
+            if (sourceOverlay) sourceOverlay.classList.remove('hidden');
+        };
+    }).catch(function(err) {
+        if (sourceOverlay) sourceOverlay.classList.remove('hidden');
+        if (err.name !== 'NotAllowedError') {
+            appendSystemMsg('Erreur source : ' + err.message);
+        }
+    });
+};
+
+window.toggleSource = function(src) {
+    if (localStream) {
+        localStream.getTracks().forEach(function(t) { t.stop(); });
+        localStream = null;
+    }
+    startSource(src);
+};
+
+window.toggleMic = function() {
+    if (!localStream) return;
+    micMuted = !micMuted;
+    localStream.getAudioTracks().forEach(function(t) { t.enabled = !micMuted; });
+    var btn = document.getElementById('btn-toggle-mic');
+    if (btn) {
+        btn.classList.toggle('active', !micMuted);
+        btn.querySelector('.material-icons').textContent = micMuted ? 'mic_off' : 'mic';
+    }
+};
+
+function onViewerJoined(data) {
+    var ch = data.channel;
+    appendSystemMsg(data.username + ' a rejoint le live');
+    if (localStream) {
+        offerToViewer(ch);
+    } else {
+        // Will offer when stream starts
+        if (!pcs[ch]) pcs[ch] = null;
+    }
+}
+
+function onViewerLeft(data) {
+    appendSystemMsg(data.username + ' a quitté le live');
+    var pc = pcs[data.channel];
+    if (pc) { pc.close(); }
+    delete pcs[data.channel];
+}
+
+function offerToViewer(viewerChannel) {
+    var pc = new RTCPeerConnection(RTC_CONFIG);
+    pcs[viewerChannel] = pc;
+
+    localStream.getTracks().forEach(function(track) {
+        pc.addTrack(track, localStream);
+    });
+
+    pc.onicecandidate = function(e) {
+        if (e.candidate) {
+            wsSend({ type: 'ice', target: viewerChannel, candidate: e.candidate.toJSON() });
+        }
+    };
+
+    pc.createOffer()
+      .then(function(offer) { return pc.setLocalDescription(offer).then(function() { return offer; }); })
+      .then(function(offer) {
+          wsSend({ type: 'offer', target: viewerChannel, sdp: { type: offer.type, sdp: offer.sdp } });
+      })
+      .catch(function(e) { console.error('offerToViewer error:', e); });
+}
+
+function onAnswer(data) {
+    var pc = pcs[data.from];
+    if (!pc) return;
+    var desc = new RTCSessionDescription(data.sdp);
+    pc.setRemoteDescription(desc)
+      .then(function() {
+          var pending = icePending[data.from];
+          if (pending) {
+              pending.forEach(function(c) { pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){}); });
+              delete icePending[data.from];
+          }
+      })
+      .catch(function(e) { console.error('onAnswer error:', e); });
+}
+
+/* ── VIEWER logic ── */
+
+function onOffer(data) {
+    hostChannel = data.from;
+    if (waitingOverlay) waitingOverlay.classList.add('hidden');
+
+    hostPC = new RTCPeerConnection(RTC_CONFIG);
+
+    hostPC.ontrack = function(e) {
+        if (e.streams && e.streams[0]) {
+            videoEl.srcObject = e.streams[0];
+        }
+    };
+
+    hostPC.onicecandidate = function(e) {
+        if (e.candidate) {
+            wsSend({ type: 'ice', target: hostChannel, candidate: e.candidate.toJSON() });
+        }
+    };
+
+    var desc = new RTCSessionDescription(data.sdp);
+    hostPC.setRemoteDescription(desc)
+      .then(function() {
+          // Apply any buffered ICE
+          var pending = icePending['host'];
+          if (pending) {
+              pending.forEach(function(c) { hostPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){}); });
+              delete icePending['host'];
+          }
+          return hostPC.createAnswer();
+      })
+      .then(function(answer) { return hostPC.setLocalDescription(answer).then(function() { return answer; }); })
+      .then(function(answer) {
+          wsSend({ type: 'answer', target: hostChannel, sdp: { type: answer.type, sdp: answer.sdp } });
+      })
+      .catch(function(e) { console.error('onOffer error:', e); });
+}
+
+/* ── ICE (both sides) ── */
+
+function onIceCandidate(data) {
+    var from = data.from;
+    var candidate = data.candidate;
+
+    if (IS_HOST) {
+        var pc = pcs[from];
+        if (!pc || !pc.remoteDescription) {
+            if (!icePending[from]) icePending[from] = [];
+            icePending[from].push(candidate);
+            return;
+        }
+        pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(function(){});
+    } else {
+        if (!hostPC || !hostPC.remoteDescription) {
+            if (!icePending['host']) icePending['host'] = [];
+            icePending['host'].push(candidate);
+            return;
+        }
+        hostPC.addIceCandidate(new RTCIceCandidate(candidate)).catch(function(){});
+    }
+}
+
+/* ── Stream ended ── */
+
+function onStreamEnded() {
+    if (endedOverlay) endedOverlay.classList.add('show');
+    if (hostPC) { hostPC.close(); hostPC = null; }
+    Object.keys(pcs).forEach(function(ch) { if (pcs[ch]) pcs[ch].close(); });
+    pcs = {};
+}
+
+/* ── Chat ── */
+
+window.sendChat = function() {
+    var text = chatInput ? chatInput.value.trim() : '';
+    if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+    wsSend({ type: 'chat', text: text });
+    if (chatInput) chatInput.value = '';
+};
+
+if (chatInput) {
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChat();
+        }
+    });
+}
+
+function appendChat(username, avatar, text) {
+    if (!chatMsgs) return;
+    var msg = document.createElement('div');
+    msg.className = 'lr-chat-msg';
+    var avatarHtml = avatar
+        ? '<img class="lr-chat-msg-avatar" src="' + avatar + '" alt="">'
+        : '<span class="material-icons" style="font-size:1.5rem;color:rgba(255,255,255,.3);margin-top:2px;">account_circle</span>';
+    msg.innerHTML = avatarHtml +
+        '<div class="lr-chat-msg-body">' +
+        '<div class="lr-chat-msg-user">' + escH(username) + '</div>' +
+        '<div class="lr-chat-msg-text">' + escH(text) + '</div>' +
+        '</div>';
+    chatMsgs.appendChild(msg);
+    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+}
+
+function appendSystemMsg(text) {
+    if (!chatMsgs) return;
+    var el = document.createElement('div');
+    el.className = 'lr-chat-system';
+    el.textContent = text;
+    chatMsgs.appendChild(el);
+    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+}
+
+function escH(s) {
+    return String(s)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;');
+}
+
+/* ── Helpers ── */
+
+function wsSend(data) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(data));
+    }
+}
+
+/* ── Init ── */
+connect();
+
+})();
+</script>
+{% endblock content %}

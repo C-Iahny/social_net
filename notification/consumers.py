@@ -285,13 +285,6 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 			}
 		)
 
-	async def post_action_notification(self, event):
-		"""Called when someone likes/comments on this user's post."""
-		await self.send_json({
-			"general_msg_type": GENERAL_MSG_TYPE_GET_NEW_GENERAL_NOTIFICATIONS,
-			"notifications": [event["notification"]],
-		})
-
 
 
 
@@ -310,14 +303,11 @@ def get_general_notifications(user, page_number):
 	General Notifications are:
 	1. FriendRequest
 	2. FriendList
-	3. Post (like/comment)
 	"""
 	if user.is_authenticated:
-		from post.models import Post as PostModel
 		friend_request_ct = ContentType.objects.get_for_model(FriendRequest)
 		friend_list_ct = ContentType.objects.get_for_model(FriendList)
-		post_ct = ContentType.objects.get_for_model(PostModel)
-		notifications = Notification.objects.filter(target=user, content_type__in=[friend_request_ct, friend_list_ct, post_ct]).order_by('-timestamp')
+		notifications = Notification.objects.filter(target=user, content_type__in=[friend_request_ct, friend_list_ct]).order_by('-timestamp')
 		p = Paginator(notifications, DEFAULT_NOTIFICATION_PAGE_SIZE)
 
 		payload = {}
@@ -400,11 +390,9 @@ def refresh_general_notifications(user, oldest_timestamp, newest_timestamp):
 		oldest_ts = datetime.strptime(oldest_ts, '%Y-%m-%d %H:%M:%S.%f')
 		newest_ts = newest_timestamp[0:newest_timestamp.find("+")] # remove timezone because who cares
 		newest_ts = datetime.strptime(newest_ts, '%Y-%m-%d %H:%M:%S.%f')
-		from post.models import Post as PostModel
 		friend_request_ct = ContentType.objects.get_for_model(FriendRequest)
 		friend_list_ct = ContentType.objects.get_for_model(FriendList)
-		post_ct = ContentType.objects.get_for_model(PostModel)
-		notifications = Notification.objects.filter(target=user, content_type__in=[friend_request_ct, friend_list_ct, post_ct], timestamp__gte=oldest_ts, timestamp__lte=newest_ts).order_by('-timestamp')
+		notifications = Notification.objects.filter(target=user, content_type__in=[friend_request_ct, friend_list_ct], timestamp__gte=oldest_ts, timestamp__lte=newest_ts).order_by('-timestamp')
 
 		s = LazyNotificationEncoder()
 		payload['notifications'] = s.serialize(notifications)
@@ -425,11 +413,9 @@ def get_new_general_notifications(user, newest_timestamp):
 			return None
 		timestamp = newest_timestamp[0:newest_timestamp.find("+")] # remove timezone because who cares
 		timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S.%f')
-		from post.models import Post as PostModel
 		friend_request_ct = ContentType.objects.get_for_model(FriendRequest)
 		friend_list_ct = ContentType.objects.get_for_model(FriendList)
-		post_ct = ContentType.objects.get_for_model(PostModel)
-		notifications = Notification.objects.filter(target=user, content_type__in=[friend_request_ct, friend_list_ct, post_ct], timestamp__gt=timestamp, read=False).order_by('-timestamp')
+		notifications = Notification.objects.filter(target=user, content_type__in=[friend_request_ct, friend_list_ct], timestamp__gt=timestamp, read=False).order_by('-timestamp')
 		s = LazyNotificationEncoder()
 		payload['notifications'] = s.serialize(notifications)
 	else:
@@ -443,14 +429,12 @@ def get_new_general_notifications(user, newest_timestamp):
 def get_unread_general_notification_count(user):
 	payload = {}
 	if user.is_authenticated:
-		from post.models import Post as PostModel
 		friend_request_ct = ContentType.objects.get_for_model(FriendRequest)
 		friend_list_ct = ContentType.objects.get_for_model(FriendList)
-		post_ct = ContentType.objects.get_for_model(PostModel)
 		# Un seul COUNT SQL au lieu d'une boucle Python sur tous les objets
 		unread_count = Notification.objects.filter(
 			target=user,
-			content_type__in=[friend_request_ct, friend_list_ct, post_ct],
+			content_type__in=[friend_request_ct, friend_list_ct],
 			read=False,
 		).count()
 		payload['count'] = unread_count

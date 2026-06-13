@@ -14,6 +14,7 @@ from django.core.asgi import get_asgi_application
 from chat.consumers import ChatConsumer
 from public_chat.consumers import PublicChatConsumer
 from notification.consumers import NotificationConsumer
+from video.consumers import LiveConsumer
 
 application = ProtocolTypeRouter({
 
@@ -21,10 +22,10 @@ application = ProtocolTypeRouter({
 	'websocket': AllowedHostsOriginValidator(
 		AuthMiddlewareStack(
 			URLRouter([
-
 					path('', NotificationConsumer.as_asgi()),
 					path('public_chat/<room_id>/', PublicChatConsumer.as_asgi()),
 					path('chat/<room_id>/', ChatConsumer.as_asgi()),
+					path('live/<room_id>/', LiveConsumer.as_asgi()),
 			])
 		)
 	),
