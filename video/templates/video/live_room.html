@@ -447,6 +447,17 @@
         <div class="lr-video-area">
             <video id="lr-video" autoplay playsinline muted></video>
 
+            <!-- Bouton plein écran -->
+            <button id="lr-fullscreen-btn" onclick="toggleFullscreen()" title="Plein écran"
+                    style="position:absolute;top:.75rem;right:.75rem;z-index:15;
+                           width:38px;height:38px;border-radius:10px;
+                           background:rgba(0,0,0,.55);border:1.5px solid rgba(255,255,255,.2);
+                           color:#fff;cursor:pointer;display:flex;align-items:center;
+                           justify-content:center;backdrop-filter:blur(4px);
+                           transition:background .2s,transform .15s;">
+                <span class="material-icons" style="font-size:1.3rem;">fullscreen</span>
+            </button>
+
             {% if is_host %}
             <!-- Host: source chooser overlay -->
             <div class="lr-status-overlay" id="lr-source-overlay">
@@ -519,7 +530,10 @@
 
 </div><!-- /live-room-page -->
 
-<!-- ── WebRTC + Chat JS ─────────────────────────────────────────── -->
+<!-- ── Live JS : MediaRecorder → WebSocket → MediaSource ─────────── -->
+<!-- Architecture sans WebRTC : pas de problème NAT/TURN.                -->
+<!-- Host : MediaRecorder encode l'écran en WebM et envoie via WS.      -->
+<!-- Viewer : MediaSource lit les chunks en temps réel.                  -->
 <script>
 (function() {
 'use strict';
@@ -527,37 +541,8 @@
 /* ── Config ── */
 var IS_HOST    = {{ is_host|yesno:'true,false' }};
 var ROOM_ID    = {{ room.pk }};
-var USERNAME   = '{{ request.user.username|escapejs }}';
-var AVATAR_URL = '{{ request.user.profile_image.url|escapejs }}';
-
 var WS_SCHEME  = window.location.protocol === 'https:' ? 'wss' : 'ws';
 var WS_URL     = WS_SCHEME + '://' + window.location.host + '/live/' + ROOM_ID + '/';
-
-var RTC_CONFIG = {
-    iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        /* TURN relay — nécessaire si STUN échoue derrière un NAT symétrique */
-        {
-            urls: [
-                'turn:openrelayproject.org:3478',
-                'turn:openrelayproject.org:3478?transport=tcp',
-                'turns:openrelayproject.org:443?transport=tcp'
-            ],
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        }
-    ]
-};
-
-/* ── State ── */
-var ws          = null;
-var localStream = null;
-var pcs         = {};      // host: Map viewer_channel → RTCPeerConnection
-var hostPC      = null;    // viewer: single RTCPeerConnection to host
-var hostChannel = null;    // viewer: stores host's channel_name from offer
-var micMuted    = false;
-var icePending  = {};      // buffer ICE candidates before remoteDescription
 
 /* ── DOM ── */
 var videoEl        = document.getElementById('lr-video');
@@ -565,113 +550,154 @@ var chatMsgs       = document.getElementById('lr-chat-messages');
 var chatInput      = document.getElementById('lr-chat-input');
 var viewerCountEl  = document.getElementById('lr-viewer-count');
 var endedOverlay   = document.getElementById('lr-ended-overlay');
-
 var sourceOverlay  = document.getElementById('lr-source-overlay');
 var waitingOverlay = document.getElementById('lr-waiting-overlay');
 var controls       = document.getElementById('lr-controls');
 
+/* ── State ── */
+var ws            = null;
+var localStream   = null;
+var mediaRecorder = null;
+var micMuted      = false;
+var isFirstChunk  = true;
+
+/* Viewer MediaSource state */
+var mediaSource  = null;
+var sourceBuffer = null;
+var appendQueue  = [];
+var msInited     = false;  // MediaSource déjà initialisé pour ce flux
+var hasPlayed    = false;
+
+/* ── Format détecté une seule fois ── */
+var MIME = (function() {
+    var types = [
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp8,opus',
+        'video/webm;codecs=vp9',
+        'video/webm;codecs=vp8',
+        'video/webm',
+    ];
+    if (typeof MediaRecorder === 'undefined') return '';
+    for (var i = 0; i < types.length; i++) {
+        if (MediaRecorder.isTypeSupported(types[i])) return types[i];
+    }
+    return '';
+})();
+
 /* ── WebSocket ── */
 function connect() {
     ws = new WebSocket(WS_URL);
-
     ws.onopen = function() {
-        if (IS_HOST) {
-            ws.send(JSON.stringify({ type: 'join_host' }));
-        } else {
-            ws.send(JSON.stringify({ type: 'join_viewer' }));
-        }
+        wsSend({ type: IS_HOST ? 'join_host' : 'join_viewer' });
     };
-
     ws.onmessage = function(e) {
-        var data = JSON.parse(e.data);
-        switch (data.type) {
-            /* ── Host receives ── */
+        var d = JSON.parse(e.data);
+        switch (d.type) {
             case 'viewer_joined':
-                if (IS_HOST) onViewerJoined(data);
+                if (IS_HOST) appendSystemMsg(d.username + ' a rejoint');
                 break;
             case 'viewer_left':
-                if (IS_HOST) onViewerLeft(data);
+                if (IS_HOST) appendSystemMsg(d.username + ' a quitté');
                 break;
-            case 'answer':
-                if (IS_HOST) onAnswer(data);
+            case 'media_chunk':
+                if (!IS_HOST) onMediaChunk(d);
                 break;
-
-            /* ── Viewer receives ── */
-            case 'offer':
-                if (!IS_HOST) onOffer(data);
+            case 'host_disconnected':
+                if (!IS_HOST) onHostDisconnected();
                 break;
-
-            /* ── Both ── */
-            case 'ice':
-                onIceCandidate(data);
+            case 'host_reconnected':
+                if (!IS_HOST) onHostReconnected();
                 break;
             case 'viewer_count':
-                if (viewerCountEl) viewerCountEl.textContent = data.count;
+                if (viewerCountEl) viewerCountEl.textContent = d.count;
                 break;
             case 'chat':
-                appendChat(data.username, data.avatar, data.text);
+                appendChat(d.username, d.avatar, d.text);
                 break;
             case 'stream_ended':
                 onStreamEnded();
                 break;
         }
     };
-
     ws.onclose = function() {
         setTimeout(function() { if (!document.hidden) connect(); }, 3000);
     };
     ws.onerror = function() {};
 }
 
-/* ── HOST logic ── */
+/* ══════════════════════════════════════════════════
+   HOST — capture + envoi des chunks MediaRecorder
+   ══════════════════════════════════════════════════ */
 
 window.startSource = function(src) {
     if (sourceOverlay) sourceOverlay.classList.add('hidden');
-    var promise;
-    if (src === 'screen') {
-        promise = navigator.mediaDevices.getDisplayMedia({
-            video: true, audio: true
-        });
-    } else {
-        promise = navigator.mediaDevices.getUserMedia({
-            video: true, audio: true
-        });
-    }
-    promise.then(function(stream) {
+    var p = src === 'screen'
+        ? navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+        : navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+    p.then(function(stream) {
         localStream = stream;
         videoEl.srcObject = stream;
         if (controls) controls.style.display = 'flex';
-
-        // Track which source is active
         document.getElementById('btn-toggle-screen') &&
             document.getElementById('btn-toggle-screen').classList.toggle('active', src === 'screen');
         document.getElementById('btn-toggle-camera') &&
             document.getElementById('btn-toggle-camera').classList.toggle('active', src !== 'screen');
 
-        // If viewers are already waiting, offer to them
-        Object.keys(pcs).forEach(function(ch) {
-            offerToViewer(ch);
-        });
+        startRecording(stream);
 
-        // Handle stream ending (user clicked "Stop sharing")
         stream.getVideoTracks()[0].onended = function() {
-            appendSystemMsg('Partage d\'écran arrêté');
+            stopRecording();
+            appendSystemMsg('Partage arrêté');
             if (controls) controls.style.display = 'none';
             if (sourceOverlay) sourceOverlay.classList.remove('hidden');
         };
     }).catch(function(err) {
         if (sourceOverlay) sourceOverlay.classList.remove('hidden');
-        if (err.name !== 'NotAllowedError') {
-            appendSystemMsg('Erreur source : ' + err.message);
-        }
+        if (err.name !== 'NotAllowedError') appendSystemMsg('Erreur : ' + err.message);
     });
 };
 
-window.toggleSource = function(src) {
-    if (localStream) {
-        localStream.getTracks().forEach(function(t) { t.stop(); });
-        localStream = null;
+function startRecording(stream) {
+    if (!MIME) {
+        appendSystemMsg('MediaRecorder non supporté par ce navigateur');
+        return;
     }
+    isFirstChunk = true;
+    try {
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType: MIME,
+            videoBitsPerSecond: 1500000,
+        });
+    } catch(e) {
+        appendSystemMsg('Erreur recorder : ' + e.message);
+        return;
+    }
+    mediaRecorder.ondataavailable = function(ev) {
+        if (!ev.data || ev.data.size === 0) return;
+        var init = isFirstChunk;
+        isFirstChunk = false;
+        var reader = new FileReader();
+        reader.onloadend = function() {
+            var b64 = reader.result.split(',')[1];
+            wsSend({ type: 'media_chunk', data: b64, is_init: init, mime: MIME });
+        };
+        reader.readAsDataURL(ev.data);
+    };
+    mediaRecorder.start(300);  /* chunk toutes les 300 ms */
+}
+
+function stopRecording() {
+    isFirstChunk = true;
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        try { mediaRecorder.stop(); } catch(e) {}
+        mediaRecorder = null;
+    }
+}
+
+window.toggleSource = function(src) {
+    stopRecording();
+    if (localStream) { localStream.getTracks().forEach(function(t) { t.stop(); }); localStream = null; }
     startSource(src);
 };
 
@@ -686,140 +712,163 @@ window.toggleMic = function() {
     }
 };
 
-function onViewerJoined(data) {
-    var ch = data.channel;
-    appendSystemMsg(data.username + ' a rejoint le live');
-    if (localStream) {
-        offerToViewer(ch);
-    } else {
-        // Will offer when stream starts
-        if (!pcs[ch]) pcs[ch] = null;
+/* ══════════════════════════════════════════════════
+   VIEWER — lecture via MediaSource API
+   ══════════════════════════════════════════════════ */
+
+function initMediaSource(mime) {
+    if (!window.MediaSource || !MediaSource.isTypeSupported(mime)) {
+        if (waitingOverlay) {
+            waitingOverlay.querySelector('.lr-waiting-text').textContent =
+                'Navigateur non supporté (essaie Chrome ou Edge)';
+        }
+        return;
     }
-}
+    /* reset */
+    appendQueue = [];
+    sourceBuffer = null;
+    hasPlayed = false;
+    if (mediaSource && mediaSource.readyState === 'open') {
+        try { mediaSource.endOfStream(); } catch(e) {}
+    }
+    mediaSource = new MediaSource();
+    videoEl.src = URL.createObjectURL(mediaSource);
 
-function onViewerLeft(data) {
-    appendSystemMsg(data.username + ' a quitté le live');
-    var pc = pcs[data.channel];
-    if (pc) { pc.close(); }
-    delete pcs[data.channel];
-}
-
-function offerToViewer(viewerChannel) {
-    var pc = new RTCPeerConnection(RTC_CONFIG);
-    pcs[viewerChannel] = pc;
-
-    localStream.getTracks().forEach(function(track) {
-        pc.addTrack(track, localStream);
+    mediaSource.addEventListener('sourceopen', function() {
+        try {
+            sourceBuffer = mediaSource.addSourceBuffer(mime);
+            sourceBuffer.mode = 'sequence';
+            sourceBuffer.addEventListener('updateend', onUpdateEnd);
+            processQueue();
+        } catch(e) {
+            console.error('SourceBuffer init error:', e);
+            appendSystemMsg('Erreur lecture : ' + e.message);
+        }
     });
+}
 
-    pc.onicecandidate = function(e) {
-        if (e.candidate) {
-            wsSend({ type: 'ice', target: viewerChannel, candidate: e.candidate.toJSON() });
+function onUpdateEnd() {
+    /* Purger le buffer si > 60s pour éviter les fuites mémoire */
+    if (sourceBuffer && !sourceBuffer.updating &&
+        mediaSource && mediaSource.readyState === 'open') {
+        var buf = sourceBuffer.buffered;
+        if (buf.length > 0 && buf.end(0) - buf.start(0) > 60) {
+            try { sourceBuffer.remove(buf.start(0), buf.end(0) - 30); return; } catch(e) {}
         }
-    };
-
-    pc.createOffer()
-      .then(function(offer) { return pc.setLocalDescription(offer).then(function() { return offer; }); })
-      .then(function(offer) {
-          wsSend({ type: 'offer', target: viewerChannel, sdp: { type: offer.type, sdp: offer.sdp } });
-      })
-      .catch(function(e) { console.error('offerToViewer error:', e); });
-}
-
-function onAnswer(data) {
-    var pc = pcs[data.from];
-    if (!pc) return;
-    var desc = new RTCSessionDescription(data.sdp);
-    pc.setRemoteDescription(desc)
-      .then(function() {
-          var pending = icePending[data.from];
-          if (pending) {
-              pending.forEach(function(c) { pc.addIceCandidate(new RTCIceCandidate(c)).catch(function(){}); });
-              delete icePending[data.from];
-          }
-      })
-      .catch(function(e) { console.error('onAnswer error:', e); });
-}
-
-/* ── VIEWER logic ── */
-
-function onOffer(data) {
-    hostChannel = data.from;
-
-    // Mettre à jour le texte mais GARDER l'overlay jusqu'à l'arrivée des tracks
-    if (waitingOverlay) {
-        var txt = waitingOverlay.querySelector('.lr-waiting-text');
-        if (txt) txt.textContent = 'Connexion au live…';
     }
-
-    // Fermer toute connexion précédente
-    if (hostPC) { try { hostPC.close(); } catch(e) {} hostPC = null; }
-
-    hostPC = new RTCPeerConnection(RTC_CONFIG);
-
-    /* Suivi de l'état de la connexion ICE */
-    hostPC.onconnectionstatechange = function() {
-        var state = hostPC.connectionState;
-        if (state === 'connected') {
-            // ICE OK — la vidéo devrait déjà jouer via ontrack
-        } else if (state === 'failed') {
-            if (waitingOverlay) {
-                waitingOverlay.classList.remove('hidden');
-                var txt = waitingOverlay.querySelector('.lr-waiting-text');
-                if (txt) txt.textContent = 'Connexion échouée — rechargez la page';
-                var sp = waitingOverlay.querySelector('.lr-waiting-spinner');
-                if (sp) sp.style.display = 'none';
-            }
-        } else if (state === 'disconnected') {
-            if (waitingOverlay) {
-                waitingOverlay.classList.remove('hidden');
-                var txt2 = waitingOverlay.querySelector('.lr-waiting-text');
-                if (txt2) txt2.textContent = 'Connexion perdue…';
-            }
-        }
-    };
-
-    /* Tracks reçus → afficher la vidéo */
-    hostPC.ontrack = function(e) {
-        if (!e.streams || !e.streams[0]) return;
-        videoEl.srcObject = e.streams[0];
-        // Masquer l'overlay maintenant qu'on a le flux
-        if (waitingOverlay) waitingOverlay.classList.add('hidden');
-        // La vidéo est muette (autoplay garanti) — afficher bouton son
-        videoEl.play().catch(function() {});
-        if (!IS_HOST) showUnmuteBtn();
-    };
-
-    hostPC.onicecandidate = function(e) {
-        if (e.candidate) {
-            wsSend({ type: 'ice', target: hostChannel, candidate: e.candidate.toJSON() });
-        }
-    };
-
-    var desc = new RTCSessionDescription(data.sdp);
-    hostPC.setRemoteDescription(desc)
-      .then(function() {
-          // Appliquer les ICE en attente
-          var pending = icePending['host'];
-          if (pending) {
-              pending.forEach(function(c) { hostPC.addIceCandidate(new RTCIceCandidate(c)).catch(function(){}); });
-              delete icePending['host'];
-          }
-          return hostPC.createAnswer();
-      })
-      .then(function(answer) { return hostPC.setLocalDescription(answer).then(function() { return answer; }); })
-      .then(function(answer) {
-          wsSend({ type: 'answer', target: hostChannel, sdp: { type: answer.type, sdp: answer.sdp } });
-      })
-      .catch(function(e) { console.error('onOffer error:', e); });
+    processQueue();
 }
 
-/* Bouton "Activer le son" pour les viewers (vidéo muette par défaut) */
+function processQueue() {
+    if (!sourceBuffer || sourceBuffer.updating) return;
+    if (!mediaSource || mediaSource.readyState !== 'open') return;
+    if (appendQueue.length === 0) return;
+
+    var chunk = appendQueue.shift();
+    try {
+        sourceBuffer.appendBuffer(chunk);
+        if (!hasPlayed) {
+            hasPlayed = true;
+            if (waitingOverlay) waitingOverlay.classList.add('hidden');
+            videoEl.play().catch(function() {});
+            if (!IS_HOST) showUnmuteBtn();
+        }
+    } catch(e) {
+        if (e.name === 'QuotaExceededError') {
+            var buf = sourceBuffer.buffered;
+            if (buf.length) { try { sourceBuffer.remove(buf.start(0), buf.end(0) - 10); } catch(e2){} }
+        }
+        console.error('appendBuffer error:', e.name, e.message);
+    }
+}
+
+function onMediaChunk(d) {
+    if (!d.data) return;
+    var mime = d.mime || 'video/webm;codecs=vp8,opus';
+
+    /* Nouveau flux → réinitialiser MediaSource */
+    if (d.is_init) {
+        msInited = false;
+        appendQueue = [];
+        initMediaSource(mime);
+        msInited = true;
+    }
+    if (!msInited) return;
+
+    /* Décoder base64 → ArrayBuffer */
+    try {
+        var bin = atob(d.data);
+        var buf = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+        appendQueue.push(buf.buffer);
+        processQueue();
+    } catch(e) { console.error('chunk decode error:', e); }
+}
+
+function onHostDisconnected() {
+    if (waitingOverlay) {
+        waitingOverlay.classList.remove('hidden');
+        var sp  = waitingOverlay.querySelector('.lr-waiting-spinner');
+        var txt = waitingOverlay.querySelector('.lr-waiting-text');
+        if (sp)  sp.style.borderTopColor = '#f59e0b';
+        if (txt) txt.textContent = "L'hôte se reconnecte…";
+    }
+    /* Reset état MediaSource pour le prochain flux */
+    msInited = false; appendQueue = []; sourceBuffer = null; hasPlayed = false;
+    var u = document.getElementById('lr-unmute-btn');
+    if (u) u.remove();
+}
+
+function onHostReconnected() {
+    msInited = false; appendQueue = []; sourceBuffer = null; hasPlayed = false;
+    if (waitingOverlay) {
+        waitingOverlay.classList.remove('hidden');
+        var sp  = waitingOverlay.querySelector('.lr-waiting-spinner');
+        var txt = waitingOverlay.querySelector('.lr-waiting-text');
+        if (sp)  sp.style.borderTopColor = '#ff3b3b';
+        if (txt) txt.textContent = 'Reconnexion…';
+    }
+    /* Re-rejoindre → le serveur envoie le chunk d'init caché */
+    wsSend({ type: 'join_viewer' });
+}
+
+function onStreamEnded() {
+    if (endedOverlay) endedOverlay.classList.add('show');
+    stopRecording();
+    msInited = false; appendQueue = []; sourceBuffer = null;
+}
+
+/* ══════════════════════════════════════════════════
+   Plein écran
+   ══════════════════════════════════════════════════ */
+
+window.toggleFullscreen = function() {
+    var area = document.querySelector('.lr-video-area');
+    var icon = document.querySelector('#lr-fullscreen-btn .material-icons');
+    var isFs = !!document.fullscreenElement;
+    if (!isFs) {
+        var fn = area.requestFullscreen || area.webkitRequestFullscreen || area.mozRequestFullScreen;
+        if (fn) fn.call(area);
+    } else {
+        var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+        if (ex) ex.call(document);
+    }
+    var ev = 'fullscreenchange' in document ? 'fullscreenchange' : 'webkitfullscreenchange';
+    document.addEventListener(ev, function h() {
+        document.removeEventListener(ev, h);
+        if (icon) icon.textContent = document.fullscreenElement ? 'fullscreen_exit' : 'fullscreen';
+    });
+};
+
+/* ══════════════════════════════════════════════════
+   Bouton son (viewer)
+   ══════════════════════════════════════════════════ */
+
 function showUnmuteBtn() {
     if (document.getElementById('lr-unmute-btn')) return;
     var btn = document.createElement('button');
     btn.id = 'lr-unmute-btn';
-    btn.innerHTML = '<span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">volume_off</span> Son coupé — Appuie pour activer';
+    btn.innerHTML = '<span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">volume_off</span>&nbsp;Son coupé — Appuie pour activer';
     btn.style.cssText = [
         'position:absolute;bottom:1.2rem;left:50%;transform:translateX(-50%);',
         'padding:.55rem 1.2rem;background:rgba(0,0,0,.78);color:#fff;',
@@ -828,48 +877,14 @@ function showUnmuteBtn() {
         'display:flex;align-items:center;gap:.4rem;font-family:inherit;',
         'white-space:nowrap;backdrop-filter:blur(6px);'
     ].join('');
-    btn.onclick = function() {
-        videoEl.muted = false;
-        btn.remove();
-    };
+    btn.onclick = function() { videoEl.muted = false; btn.remove(); };
     var area = document.querySelector('.lr-video-area');
     if (area) area.appendChild(btn);
 }
 
-/* ── ICE (both sides) ── */
-
-function onIceCandidate(data) {
-    var from = data.from;
-    var candidate = data.candidate;
-
-    if (IS_HOST) {
-        var pc = pcs[from];
-        if (!pc || !pc.remoteDescription) {
-            if (!icePending[from]) icePending[from] = [];
-            icePending[from].push(candidate);
-            return;
-        }
-        pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(function(){});
-    } else {
-        if (!hostPC || !hostPC.remoteDescription) {
-            if (!icePending['host']) icePending['host'] = [];
-            icePending['host'].push(candidate);
-            return;
-        }
-        hostPC.addIceCandidate(new RTCIceCandidate(candidate)).catch(function(){});
-    }
-}
-
-/* ── Stream ended ── */
-
-function onStreamEnded() {
-    if (endedOverlay) endedOverlay.classList.add('show');
-    if (hostPC) { hostPC.close(); hostPC = null; }
-    Object.keys(pcs).forEach(function(ch) { if (pcs[ch]) pcs[ch].close(); });
-    pcs = {};
-}
-
-/* ── Chat ── */
+/* ══════════════════════════════════════════════════
+   Chat
+   ══════════════════════════════════════════════════ */
 
 window.sendChat = function() {
     var text = chatInput ? chatInput.value.trim() : '';
@@ -877,13 +892,9 @@ window.sendChat = function() {
     wsSend({ type: 'chat', text: text });
     if (chatInput) chatInput.value = '';
 };
-
 if (chatInput) {
     chatInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendChat();
-        }
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
     });
 }
 
@@ -891,14 +902,11 @@ function appendChat(username, avatar, text) {
     if (!chatMsgs) return;
     var msg = document.createElement('div');
     msg.className = 'lr-chat-msg';
-    var avatarHtml = avatar
+    var av = avatar
         ? '<img class="lr-chat-msg-avatar" src="' + avatar + '" alt="">'
         : '<span class="material-icons" style="font-size:1.5rem;color:rgba(255,255,255,.3);margin-top:2px;">account_circle</span>';
-    msg.innerHTML = avatarHtml +
-        '<div class="lr-chat-msg-body">' +
-        '<div class="lr-chat-msg-user">' + escH(username) + '</div>' +
-        '<div class="lr-chat-msg-text">' + escH(text) + '</div>' +
-        '</div>';
+    msg.innerHTML = av + '<div class="lr-chat-msg-body"><div class="lr-chat-msg-user">' +
+        escH(username) + '</div><div class="lr-chat-msg-text">' + escH(text) + '</div></div>';
     chatMsgs.appendChild(msg);
     chatMsgs.scrollTop = chatMsgs.scrollHeight;
 }
@@ -913,19 +921,11 @@ function appendSystemMsg(text) {
 }
 
 function escH(s) {
-    return String(s)
-        .replace(/&/g,'&amp;')
-        .replace(/</g,'&lt;')
-        .replace(/>/g,'&gt;')
-        .replace(/"/g,'&quot;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-/* ── Helpers ── */
-
-function wsSend(data) {
-    if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify(data));
-    }
+function wsSend(obj) {
+    if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
 }
 
 /* ── Init ── */
