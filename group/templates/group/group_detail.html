@@ -861,7 +861,7 @@
         <div class="gd-create-footer">
             <!-- Input fichier caché -->
             <input type="file" id="gd-media-input" multiple
-                   accept="image/*,video/*" style="display:none;"
+                   accept="*/*" style="display:none;"
                    onchange="gdPreviewFiles(this)">
             <button type="button" class="gd-media-btn"
                     onclick="document.getElementById('gd-media-input').click()">
@@ -1286,35 +1286,49 @@ function toggleMembers(e) {
 
 /* ── Prévisualisation des médias ── */
 var _gdRemovedIdx = new Set();
+var _gdConvertedFiles = [];   // fichiers convertis (WebP/inchangés)
 
 function gdPreviewFiles(input) {
     _gdRemovedIdx = new Set();
+    _gdConvertedFiles = [];
     var preview = document.getElementById('gd-media-preview');
     if (!preview) return;
     preview.innerHTML = '';
-    var files = Array.from(input.files);
-    if (!files.length) return;
-    files.forEach(function(f, i) {
-        var item = document.createElement('div');
-        item.className = 'gd-preview-item';
-        item.setAttribute('data-index', i);
-        var url = URL.createObjectURL(f);
-        if (f.type.startsWith('video/')) {
-            var v = document.createElement('video');
-            v.src = url; v.muted = true; v.style.cssText = 'width:100%;height:100%;object-fit:cover;';
-            item.appendChild(v);
-        } else {
-            var img = document.createElement('img');
-            img.src = url;
-            item.appendChild(img);
-        }
-        var del = document.createElement('button');
-        del.className = 'gd-preview-del';
-        del.innerHTML = '<span class="material-icons">close</span>';
-        del.onclick = (function(idx) { return function() { gdRemovePreview(idx); }; })(i);
-        item.appendChild(del);
-        preview.appendChild(item);
+    var raw = Array.from(input.files);
+    if (!raw.length) return;
+
+    var btn = document.getElementById('gd-submit-btn');
+
+    /* Conversion asynchrone : HEIC → WebP, images → WebP si plus léger */
+    ZootMediaConverter.processFiles(raw).then(function(converted) {
+        _gdConvertedFiles = converted;
+        if (btn) btn.disabled = false;
+
+        converted.forEach(function(f, i) {
+            var item = document.createElement('div');
+            item.className = 'gd-preview-item';
+            item.setAttribute('data-index', i);
+            var url = URL.createObjectURL(f);
+            if (f.type.startsWith('video/')) {
+                var v = document.createElement('video');
+                v.src = url; v.muted = true; v.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+                item.appendChild(v);
+            } else {
+                var img = document.createElement('img');
+                img.src = url;
+                item.appendChild(img);
+            }
+            var del = document.createElement('button');
+            del.className = 'gd-preview-del';
+            del.innerHTML = '<span class="material-icons">close</span>';
+            del.onclick = (function(idx) { return function() { gdRemovePreview(idx); }; })(i);
+            item.appendChild(del);
+            preview.appendChild(item);
+        });
     });
+
+    /* Pendant la conversion, désactiver le bouton Publier */
+    if (btn) { btn.disabled = true; }
 }
 
 function gdRemovePreview(idx) {
@@ -1327,9 +1341,14 @@ function gdRemovePreview(idx) {
 function gdSubmitPost() {
     var title     = (document.getElementById('gd-post-title').value || '').trim();
     var body      = (document.getElementById('gd-post-body').value  || '').trim();
-    var fileInput = document.getElementById('gd-media-input');
-    var allFiles  = fileInput ? Array.from(fileInput.files) : [];
-    var files     = allFiles.filter(function(_, i) { return !_gdRemovedIdx.has(i); });
+    var files     = _gdConvertedFiles.filter(function(_, i) { return !_gdRemovedIdx.has(i); });
+
+    /* Si aucun fichier sélectionné, tomber sur l'input brut */
+    if (!files.length) {
+        var fileInput = document.getElementById('gd-media-input');
+        var raw = fileInput ? Array.from(fileInput.files) : [];
+        files = raw.filter(function(_, i) { return !_gdRemovedIdx.has(i); });
+    }
 
     if (!title && !body && !files.length) return;
 
@@ -1354,8 +1373,10 @@ function gdSubmitPost() {
         /* Réinitialiser le formulaire */
         document.getElementById('gd-post-title').value = '';
         document.getElementById('gd-post-body').value  = '';
+        var fileInput = document.getElementById('gd-media-input');
         if (fileInput) fileInput.value = '';
         _gdRemovedIdx = new Set();
+        _gdConvertedFiles = [];
         var preview = document.getElementById('gd-media-preview');
         if (preview) preview.innerHTML = '';
         /* Insérer le nouveau post en tête du fil */
@@ -1397,7 +1418,7 @@ function quickReact(pid) {
 function sendReaction(pid, rtype) {
     closePicker(pid);
     var EMOJIS = {like:'👍',heart:'❤️',laugh:'😂',wow:'😮',sad:'😢'};
-    var LABELS = {like:'{% trans "Like" %}',heart:'{% trans "Love" %}',laugh:'{% trans "Haha" %}',wow:'{% trans "Wow" %}',sad:'{% trans "Sad" %}'};
+    var LABELS = {like:'{% trans "Like"|escapejs %}',heart:'{% trans "Love"|escapejs %}',laugh:'{% trans "Haha"|escapejs %}',wow:'{% trans "Wow"|escapejs %}',sad:'{% trans "Sad"|escapejs %}'};
     fetch(GD_REACT_URL, {
         method:'POST',
         headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':GD_CSRF,'X-Requested-With':'XMLHttpRequest'},
@@ -1414,7 +1435,7 @@ function sendReaction(pid, rtype) {
         if(icon) icon.innerHTML = data.user_reaction && EMOJIS[data.user_reaction]
             ? EMOJIS[data.user_reaction]
             : '<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>';
-        if(label) label.textContent = data.user_reaction ? (LABELS[data.user_reaction]||'{% trans "Like" %}') : '{% trans "Like" %}';
+        if(label) label.textContent = data.user_reaction ? (LABELS[data.user_reaction]||'{% trans "Like"|escapejs %}') : '{% trans "Like"|escapejs %}';
         var picker = document.getElementById('picker-'+pid);
         if(picker){
             picker.querySelectorAll('.reaction-emoji-btn').forEach(function(b){b.classList.remove('selected');});
@@ -1565,7 +1586,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!postId) return;
         var pinBtn = document.createElement('button');
         pinBtn.className = 'gd-post-pin-btn';
-        pinBtn.title = '{% trans "Pin this post" %}';
+        pinBtn.title = '{% trans "Pin this post"|escapejs %}';
         pinBtn.innerHTML = '<span class="material-icons">push_pin</span>';
         pinBtn.onclick = function(e) {
             e.stopPropagation();
@@ -1627,7 +1648,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.ok) {
                 gdEvForm.reset();
                 if (gdEvFeedback) {
-                    gdEvFeedback.textContent = data.message || '{% trans "Event created!" %}';
+                    gdEvFeedback.textContent = data.message || '{% trans "Event created!"|escapejs %}';
                     gdEvFeedback.className = 'gd-ev-create-feedback success';
                 }
                 setTimeout(function() { window.location.reload(); }, 1200);
@@ -1642,7 +1663,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(function(err) {
             console.error('Event create error:', err);
             if (gdEvFeedback) {
-                gdEvFeedback.textContent = '{% trans "Server error. Please try again." %}';
+                gdEvFeedback.textContent = '{% trans "Server error. Please try again."|escapejs %}';
                 gdEvFeedback.className = 'gd-ev-create-feedback error';
             }
             if (submitBtn) { submitBtn.disabled = false; }
@@ -1685,7 +1706,7 @@ function gdInviteSearch(q) {
             headers: {'X-Requested-With': 'XMLHttpRequest'},
         }).then(function(r) { return r.json(); }).then(function(data) {
             if (!data.users || data.users.length === 0) {
-                results.innerHTML = '<p class="gd-invite-empty">{% trans "No users found." %}</p>';
+                results.innerHTML = '<p class="gd-invite-empty">{% trans "No users found."|escapejs %}</p>';
                 return;
             }
             results.innerHTML = data.users.map(function(u) {
@@ -1696,7 +1717,7 @@ function gdInviteSearch(q) {
                     + avatarHtml
                     + '<span class="gd-invite-username">' + u.username + '</span>'
                     + '<button class="gd-invite-add-btn" onclick="gdAddMember(' + u.id + ', this)">'
-                    + '<span class="material-icons">person_add</span> {% trans "Add" %}'
+                    + '<span class="material-icons">person_add</span> {% trans "Add"|escapejs %}'
                     + '</button></div>';
             }).join('');
         }).catch(function(e) { console.error(e); });
@@ -1713,7 +1734,7 @@ function gdAddMember(userId, btn) {
         body: fd,
     }).then(function(r) { return r.json(); }).then(function(data) {
         var fb = document.getElementById('gd-invite-feedback');
-        fb.textContent = data.message || (data.ok ? '{% trans "Added!" %}' : '{% trans "Error." %}');
+        fb.textContent = data.message || (data.ok ? '{% trans "Added!"|escapejs %}' : '{% trans "Error."|escapejs %}');
         if (data.ok && data.created) {
             // Remove the row to avoid double-add
             btn.closest('.gd-invite-user-row').remove();
@@ -1746,7 +1767,7 @@ function gdSaveDina() {
 
     var dina = ta.value.trim();
     if (saveBtn) saveBtn.disabled = true;
-    if (fb) { fb.textContent = '{% trans "Saving…" %}'; fb.style.color = 'var(--text-muted)'; }
+    if (fb) { fb.textContent = '{% trans "Saving…"|escapejs %}'; fb.style.color = 'var(--text-muted)'; }
 
     var fd = new FormData();
     fd.append('dina', dina);
@@ -1760,26 +1781,26 @@ function gdSaveDina() {
     .then(function(data) {
         if (saveBtn) saveBtn.disabled = false;
         if (data.ok) {
-            if (fb) { fb.textContent = data.message || '{% trans "Saved!" %}'; fb.style.color = '#22c55e'; }
+            if (fb) { fb.textContent = data.message || '{% trans "Saved!"|escapejs %}'; fb.style.color = '#22c55e'; }
             // Mettre à jour l'affichage en direct
             var display = document.getElementById('gd-dina-display');
             if (display) {
                 if (dina) {
                     display.innerHTML = '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;font-size:.92rem;color:var(--text);line-height:1.75;white-space:pre-wrap;">' + gdEscapeHtml(dina) + '</div>';
                 } else {
-                    display.innerHTML = '<div class="gd-empty-state" style="padding:2rem 1rem;"><span class="material-icons">article</span><p>{% trans "No Dina defined yet for this group." %}</p></div>';
+                    display.innerHTML = '<div class="gd-empty-state" style="padding:2rem 1rem;"><span class="material-icons">article</span><p>{% trans "No Dina defined yet for this group."|escapejs %}</p></div>';
                 }
             }
             setTimeout(function() {
                 gdCancelDinaEdit();
             }, 1200);
         } else {
-            if (fb) { fb.textContent = data.error || '{% trans "Error." %}'; fb.style.color = '#e53935'; }
+            if (fb) { fb.textContent = data.error || '{% trans "Error."|escapejs %}'; fb.style.color = '#e53935'; }
         }
     })
     .catch(function(err) {
         if (saveBtn) saveBtn.disabled = false;
-        if (fb) { fb.textContent = '{% trans "Server error." %}'; fb.style.color = '#e53935'; }
+        if (fb) { fb.textContent = '{% trans "Server error."|escapejs %}'; fb.style.color = '#e53935'; }
         console.error('Dina save error:', err);
     });
 }
@@ -1840,7 +1861,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* ── Expulser un membre (kick) ── */
 function gdKickMember(userId, username, url) {
-    if (!confirm('{% trans "Remove" %} « ' + username + ' » {% trans "from the group?" %}')) return;
+    if (!confirm('{% trans "Remove"|escapejs %} « ' + username + ' » {% trans "from the group?"|escapejs %}')) return;
 
     fetch(url, {
         method: 'POST',
@@ -1868,12 +1889,12 @@ function gdKickMember(userId, username, url) {
                 if (n > 0) badge.textContent = n - 1;
             }
         } else {
-            alert(data.error || '{% trans "An error occurred." %}');
+            alert(data.error || '{% trans "An error occurred."|escapejs %}');
         }
     })
     .catch(function(e) {
         console.error('Kick error:', e);
-        alert('{% trans "Server error. Please try again." %}');
+        alert('{% trans "Server error. Please try again."|escapejs %}');
     });
 }
 </script>
