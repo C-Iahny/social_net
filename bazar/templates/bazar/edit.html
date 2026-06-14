@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<style>
+/* Réutilise les styles de create.html + overrides spécifiques édition */
+.bazar-form-wrap {
+    max-width: 740px;
+    margin: 2rem auto 4rem;
+    padding: 0 1rem;
+}
+.bazar-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin-bottom: 1.2rem;
+}
+.bazar-section-title {
+    font-size: .82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.bazar-section .form-control {
+    background: var(--bg-secondary, #fdf8f3) !important;
+    background-color: var(--bg-secondary, #fdf8f3) !important;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    color: var(--text-primary);
+    padding: .6rem .85rem;
+    font-size: .9rem;
+    transition: border-color .2s;
+}
+[data-theme="dark"] .bazar-section .form-control {
+    background: rgba(255,255,255,.06) !important;
+    background-color: rgba(255,255,255,.06) !important;
+}
+.bazar-section .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,69,19,.12); outline: none; }
+[data-theme="dark"] .bazar-section .form-control:focus { box-shadow: 0 0 0 3px rgba(212,175,55,.12); }
+.bazar-section label { font-size: .82rem; font-weight: 700; color: var(--text-secondary,var(--text-muted)); margin-bottom: .35rem; display: block; }
+.bazar-section .form-text { font-size: .75rem; color: var(--text-muted); margin-top: .3rem; }
+.errorlist { list-style:none; padding:0; margin:.25rem 0 0; font-size:.8rem; color:#dc3545; }
+
+/* Photos existantes */
+.existing-photos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: .5rem;
+    margin-bottom: .85rem;
+}
+.existing-photo-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 1;
+}
+.existing-photo-item img { width:100%;height:100%;object-fit:cover; }
+.existing-photo-primary {
+    position:absolute;top:4px;left:4px;
+    background:var(--accent);color:#fff;
+    font-size:.6rem;font-weight:800;padding:.1rem .45rem;border-radius:12px;
+}
+[data-theme="dark"] .existing-photo-primary { color:#1a0a02; }
+.existing-photo-del {
+    position:absolute;top:4px;right:4px;
+    background:rgba(0,0,0,.65);border:none;color:#fff;
+    width:20px;height:20px;border-radius:50%;font-size:.8rem;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.existing-photo-del:hover { background:#dc3545; }
+
+/* Upload zone nouvelle photo */
+.bazar-upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+}
+.bazar-upload-zone:hover { border-color: var(--accent); background: rgba(139,69,19,.04); }
+[data-theme="dark"] .bazar-upload-zone:hover { background: rgba(212,175,55,.05); }
+.bazar-file-input { display: none !important; }
+.bazar-preview-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:.5rem;margin-top:.85rem; }
+.bazar-preview-item { position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:var(--border); }
+.bazar-preview-item img { width:100%;height:100%;object-fit:cover; }
+.bazar-preview-remove { position:absolute;top:4px;right:4px;background:rgba(0,0,0,.65);border:none;color:#fff;width:20px;height:20px;border-radius:50%;font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center; }
+
+.bazar-price-row { display:flex;gap:.75rem;align-items:flex-end; }
+.bazar-price-row > *:first-child { flex:1; }
+.bazar-submit { display:flex;justify-content:flex-end;gap:.75rem;margin-top:1.5rem; }
+.bazar-btn-submit { background:var(--accent);color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-weight:800;font-size:.95rem;cursor:pointer;transition:opacity .2s,transform .2s; }
+[data-theme="dark"] .bazar-btn-submit { color:#1a0a02; }
+.bazar-btn-submit:hover { opacity:.88;transform:translateY(-1px); }
+.bazar-btn-cancel { background:transparent;border:1.5px solid var(--border);border-radius:10px;padding:.75rem 1.5rem;font-weight:700;font-size:.95rem;color:var(--text-muted);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center; }
+.bazar-btn-cancel:hover { border-color:var(--text-muted);color:var(--text-primary);text-decoration:none; }
+@media (max-width:575px) {
+    .bazar-form-wrap { margin:1rem auto 5rem; }
+    .bazar-submit { flex-direction:column-reverse; }
+    .bazar-btn-submit,.bazar-btn-cancel { width:100%;text-align:center;justify-content:center; }
+}
+</style>
+
+<div class="bazar-form-wrap">
+    <div style="margin-bottom:1.8rem;">
+        <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.6rem;">
+            <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">Bazar</a>
+            <span> › </span>
+            <a href="{% url 'bazar:detail' annonce.pk %}" style="color:var(--accent);text-decoration:none;">{{ annonce.title|truncatechars:30 }}</a>
+            <span> › </span>Modifier
+        </nav>
+        <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.25rem;">✏️ Modifier l'annonce</h1>
+        <p style="font-size:.88rem;color:var(--text-muted);">Les modifications seront visibles immédiatement.</p>
+    </div>
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} mb-3" style="border-radius:10px;">{{ msg }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Photos existantes -->
+        <div class="bazar-section">
+            <div class="bazar-section-title">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                Photos actuelles
+            </div>
+            {% if images %}
+            <div class="existing-photos">
+                {% for img in images %}
+                <div class="existing-photo-item" id="photo-{{ img.pk }}">
+                    <img src="{{ img.image.url }}" alt="">
+                    {% if img.is_primary %}<span class="existing-photo-primary">PRINCIPALE</span>{% endif %}
+                    <button type="button" class="existing-photo-del" onclick="deletePhoto({{ img.pk }}, this)" title="Supprimer">✕</button>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.85rem;">Aucune photo pour le moment.</p>
+            {% endif %}
+
+            <!-- Ajouter nouvelles photos -->
+            {% if images|length < 8 %}
+            <div class="bazar-upload-zone" onclick="document.getElementById('id_images').click()" style="padding:1.2rem;">
+                <div style="font-size:1.5rem;margin-bottom:.3rem;">➕</div>
+                <div style="font-size:.85rem;font-weight:600;">Ajouter des photos</div>
+                <div style="font-size:.75rem;color:var(--text-muted);">Max {{ images|length|add:'8'|add:'-'|add:images|length }} photos supplémentaires</div>
+            </div>
+            <input type="file" name="images" id="id_images" class="bazar-file-input" multiple accept="image/*">
+            <div class="bazar-preview-grid" id="preview-grid"></div>
+            {% endif %}
+        </div>
+
+        <!-- Titre + Catégorie + État -->
+        <div class="bazar-section">
+            <div class="bazar-section-title">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                Article
+            </div>
+            <div class="form-group mb-3">
+                <label>{{ form.title.label }} *</label>
+                {{ form.title }}
+                {% if form.title.errors %}<ul class="errorlist">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>{{ form.category.label }} *</label>
+                    {{ form.category }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>{{ form.condition.label }} *</label>
+                    {{ form.condition }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Prix -->
+        <div class="bazar-section">
+            <div class="bazar-section-title">💰 Prix</div>
+            <div class="bazar-price-row mb-2">
+                <div>
+                    <label>{{ form.price.label }}</label>
+                    {{ form.price }}
+                    <small class="form-text">Laisser vide = « Prix à discuter »</small>
+                </div>
+                <div class="form-check" style="padding-bottom:.65rem;">
+                    {{ form.price_negotiable }}
+                    <label class="form-check-label" style="font-size:.85rem;font-weight:500;color:var(--text-primary);">{{ form.price_negotiable.label }}</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="bazar-section">
+            <div class="bazar-section-title">📝 Description</div>
+            <label>{{ form.description.label }} *</label>
+            {{ form.description }}
+        </div>
+
+        <!-- Localisation + Contact -->
+        <div class="bazar-section">
+            <div class="bazar-section-title">📍 Localisation & Contact</div>
+            <div class="form-group mb-3">
+                <label>{{ form.location.label }} *</label>
+                {{ form.location }}
+            </div>
+            <div class="form-group mb-2">
+                <label>{{ form.contact_phone.label }}</label>
+                {{ form.contact_phone }}
+            </div>
+            <div class="form-check">
+                {{ form.show_phone }}
+                <label class="form-check-label" style="font-size:.85rem;font-weight:500;color:var(--text-primary);">{{ form.show_phone.label }}</label>
+            </div>
+        </div>
+
+        <div class="bazar-submit">
+            <a href="{% url 'bazar:detail' annonce.pk %}" class="bazar-btn-cancel">Annuler</a>
+            <button type="submit" class="bazar-btn-submit">💾 Enregistrer</button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Supprimer photo existante via AJAX
+function deletePhoto(imgPk, btn) {
+    if (!confirm('Supprimer cette photo ?')) return;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    fetch(`/bazar/image/${imgPk}/supprimer/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById(`photo-${imgPk}`).remove();
+        }
+    })
+    .catch(() => alert('Erreur lors de la suppression.'));
+}
+
+// Aperçu nouvelles photos
+let selectedFiles = [];
+const fileInput = document.getElementById('id_images');
+const previewGrid = document.getElementById('preview-grid');
+
+if (fileInput) {
+    fileInput.addEventListener('change', function() {
+        selectedFiles = Array.from(this.files).slice(0, 8);
+        renderPreviews();
+    });
+}
+
+function removeFile(idx) {
+    selectedFiles.splice(idx, 1);
+    renderPreviews();
+    const dt = new DataTransfer();
+    selectedFiles.forEach(f => dt.items.add(f));
+    if (fileInput) fileInput.files = dt.files;
+}
+
+function renderPreviews() {
+    if (!previewGrid) return;
+    previewGrid.innerHTML = '';
+    selectedFiles.forEach((file, i) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const div = document.createElement('div');
+            div.className = 'bazar-preview-item';
+            div.innerHTML = `<img src="${e.target.result}" alt=""><button type="button" class="bazar-preview-remove" onclick="removeFile(${i})">✕</button>`;
+            previewGrid.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+</script>
+{% endblock %}

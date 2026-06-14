@@ -711,6 +711,11 @@
             <span class="material-icons">lock_clock</span>
             <span>Vintana</span>
         </a>
+        <a href="{% url 'bazar:index' %}"
+           class="zoot-nav-link {% if request.resolver_match.namespace == 'bazar' %}active{% endif %}">
+            <span class="material-icons">storefront</span>
+            <span>Bazar</span>
+        </a>
     </div>
 
     <!-- Right section -->
@@ -953,6 +958,9 @@
     </a>
     <a href="{% url 'group:list' %}" class="zoot-mobile-link">
         <span class="material-icons">groups</span> {% trans "Groups" %}
+    </a>
+    <a href="{% url 'bazar:index' %}" class="zoot-mobile-link">
+        <span class="material-icons">storefront</span> Bazar
     </a>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
         <span class="material-icons">person_outline</span> {% trans "My profile" %}

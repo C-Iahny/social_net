@@ -1,0 +1,522 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<style>
+/* ============================================================
+   BAZAR VAZIMBA — PAGE PRINCIPALE
+   ============================================================ */
+
+/* ── Hero ── */
+.bazar-hero {
+    background: linear-gradient(135deg, var(--hero-from, #5c2a08) 0%, var(--hero-to, #A0522D) 100%);
+    color: #fff;
+    padding: 3.5rem 1.5rem 2.8rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+[data-theme="dark"] .bazar-hero {
+    background: linear-gradient(135deg, #1a0a02 0%, #3d1a06 100%);
+}
+.bazar-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+}
+.bazar-hero-title {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    margin-bottom: .4rem;
+    position: relative;
+}
+.bazar-hero-sub {
+    font-size: .92rem;
+    opacity: .85;
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+.bazar-hero-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: #fff;
+    color: #8B4513;
+    font-weight: 700;
+    font-size: .95rem;
+    padding: .65rem 1.6rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
+    position: relative;
+}
+.bazar-hero-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    text-decoration: none;
+    color: #5c2a08;
+}
+[data-theme="dark"] .bazar-hero-btn {
+    background: var(--accent);
+    color: #1a0a02;
+}
+
+/* ── Barre de recherche hero ── */
+.bazar-search-wrap {
+    display: flex;
+    max-width: 560px;
+    margin: 0 auto 1.2rem;
+    background: rgba(0,0,0,.35);
+    border: 1.5px solid rgba(255,255,255,.25);
+    border-radius: 50px;
+    padding: .3rem .3rem .3rem 1.1rem;
+    position: relative;
+}
+.bazar-search-wrap input {
+    flex: 1;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: #fff !important;
+    font-size: .95rem;
+    outline: none;
+}
+.bazar-search-wrap input::placeholder { color: rgba(255,255,255,.6); }
+.bazar-search-btn {
+    background: #fff;
+    color: #8B4513;
+    border: none;
+    border-radius: 40px;
+    padding: .5rem 1.2rem;
+    font-weight: 700;
+    font-size: .88rem;
+    cursor: pointer;
+    transition: background .2s;
+    white-space: nowrap;
+}
+[data-theme="dark"] .bazar-search-btn {
+    background: var(--accent);
+    color: #1a0a02;
+}
+
+/* ── Filtres ── */
+.bazar-filters {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: .85rem 1rem;
+    position: sticky;
+    top: 58px;
+    z-index: 100;
+}
+.bazar-filters-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+}
+.bazar-filter-select {
+    background: var(--bg-input, var(--bg-card));
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: .42rem .85rem;
+    font-size: .85rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B4513' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 2rem;
+    min-width: 140px;
+    transition: border-color .2s;
+}
+[data-theme="dark"] .bazar-filter-select {
+    background-color: var(--bg-card);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23D4AF37' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+.bazar-filter-select:focus { border-color: var(--accent); outline: none; }
+.bazar-sort-label {
+    font-size: .8rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+/* ── Résultats info ── */
+.bazar-results-bar {
+    max-width: 1200px;
+    margin: 1.2rem auto .6rem;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.bazar-results-count {
+    font-size: .85rem;
+    color: var(--text-muted);
+}
+.bazar-results-count strong { color: var(--accent); }
+
+/* ── Grid des annonces ── */
+.bazar-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem 3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.2rem;
+}
+@media (max-width: 480px) {
+    .bazar-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: .75rem;
+        padding: 0 .6rem 5rem;
+    }
+}
+
+/* ── Carte annonce ── */
+.bazar-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    transition: transform .22s, box-shadow .22s, border-color .22s;
+}
+.bazar-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.1);
+    border-color: var(--accent);
+    text-decoration: none;
+    color: var(--text-primary);
+}
+[data-theme="dark"] .bazar-card:hover {
+    box-shadow: 0 12px 32px rgba(212,175,55,.1);
+}
+
+/* Photo */
+.bazar-card-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    background: var(--bg-secondary, #f5f0eb);
+    position: relative;
+    overflow: hidden;
+}
+.bazar-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .3s;
+}
+.bazar-card:hover .bazar-card-img img { transform: scale(1.04); }
+.bazar-card-no-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: linear-gradient(135deg, var(--bg-secondary, #f5ebe0) 0%, var(--border) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 2rem;
+}
+
+/* Badge condition */
+.bazar-badge-cond {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0,0,0,.55);
+    color: #fff;
+    font-size: .68rem;
+    font-weight: 700;
+    padding: .18rem .55rem;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+    letter-spacing: .03em;
+}
+.bazar-badge-sold {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: .08em;
+}
+
+/* Corps de la carte */
+.bazar-card-body {
+    padding: .85rem .95rem;
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    flex: 1;
+}
+.bazar-card-cat {
+    font-size: .7rem;
+    color: var(--accent);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+.bazar-card-title {
+    font-size: .92rem;
+    font-weight: 700;
+    line-height: 1.35;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+.bazar-card-price {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-top: auto;
+    padding-top: .4rem;
+}
+.bazar-card-location {
+    font-size: .75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+/* ── Empty state ── */
+.bazar-empty {
+    max-width: 420px;
+    margin: 3rem auto;
+    text-align: center;
+    color: var(--text-muted);
+    padding: 0 1rem;
+}
+.bazar-empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    opacity: .5;
+}
+
+/* ── Pagination ── */
+.bazar-pagination {
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: center;
+    gap: .4rem;
+    flex-wrap: wrap;
+}
+.bazar-page-btn {
+    min-width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: .88rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .18s;
+    padding: 0 .6rem;
+}
+.bazar-page-btn:hover, .bazar-page-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    text-decoration: none;
+}
+[data-theme="dark"] .bazar-page-btn.active { color: #1a0a02; }
+
+/* Mobile */
+@media (max-width: 575px) {
+    .bazar-hero { padding: 2.2rem 1rem 2rem; }
+    .bazar-hero-title { font-size: 1.45rem; }
+    .bazar-filters { top: 56px; padding: .65rem .75rem; }
+    .bazar-filter-select { min-width: 110px; font-size: .8rem; padding: .38rem .7rem; padding-right: 1.8rem; }
+    .bazar-sort-label { display: none; }
+    .bazar-card-body { padding: .65rem .75rem; }
+    .bazar-card-title { font-size: .82rem; }
+    .bazar-card-price { font-size: .92rem; }
+}
+</style>
+
+<!-- ── Hero ── -->
+<section class="bazar-hero">
+    <h1 class="bazar-hero-title">🛍️ Bazar Vazimba</h1>
+    <p class="bazar-hero-sub">Acheter et vendre entre Malgaches — simple, rapide, local</p>
+
+    <form method="get" action="{% url 'bazar:index' %}" class="bazar-search-wrap">
+        <input type="text" name="q" value="{{ q }}" placeholder="Chercher une annonce…" autocomplete="off">
+        {% if sel_cat %}<input type="hidden" name="cat" value="{{ sel_cat }}">{% endif %}
+        {% if sel_cond %}<input type="hidden" name="cond" value="{{ sel_cond }}">{% endif %}
+        {% if sort != 'recent' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+        <button type="submit" class="bazar-search-btn">Chercher</button>
+    </form>
+
+    {% if request.user.is_authenticated %}
+    <a href="{% url 'bazar:create' %}" class="bazar-hero-btn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Publier une annonce
+    </a>
+    {% else %}
+    <a href="{% url 'login' %}?next={% url 'bazar:create' %}" class="bazar-hero-btn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Publier une annonce
+    </a>
+    {% endif %}
+</section>
+
+<!-- ── Filtres ── -->
+<div class="bazar-filters">
+    <form method="get" action="{% url 'bazar:index' %}" class="bazar-filters-inner" id="filter-form">
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+
+        <!-- Catégorie -->
+        <select name="cat" class="bazar-filter-select" onchange="this.form.submit()">
+            <option value="">Toutes catégories</option>
+            {% for val, label in categories %}
+            <option value="{{ val }}" {% if sel_cat == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- État -->
+        <select name="cond" class="bazar-filter-select" onchange="this.form.submit()">
+            <option value="">Tout état</option>
+            {% for val, label in conditions %}
+            <option value="{{ val }}" {% if sel_cond == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Tri -->
+        <span class="bazar-sort-label">Trier par&nbsp;:</span>
+        <select name="sort" class="bazar-filter-select" onchange="this.form.submit()">
+            <option value="recent"     {% if sort == 'recent' %}selected{% endif %}>Plus récentes</option>
+            <option value="price_asc"  {% if sort == 'price_asc' %}selected{% endif %}>Prix croissant</option>
+            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
+            <option value="popular"    {% if sort == 'popular' %}selected{% endif %}>Plus vues</option>
+        </select>
+
+        {% if sel_cat or sel_cond or q or sort != 'recent' %}
+        <a href="{% url 'bazar:index' %}" style="font-size:.82rem;color:var(--text-muted);text-decoration:none;margin-left:.25rem;display:flex;align-items:center;gap:.25rem;">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Réinitialiser
+        </a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- ── Compteur de résultats ── -->
+<div class="bazar-results-bar">
+    <p class="bazar-results-count mb-0">
+        <strong>{{ total }}</strong> annonce{{ total|pluralize }} trouvée{{ total|pluralize }}
+        {% if sel_cat %} dans <em>{% for val, label in categories %}{% if val == sel_cat %}{{ label }}{% endif %}{% endfor %}</em>{% endif %}
+        {% if q %} pour « <em>{{ q }}</em> »{% endif %}
+    </p>
+    {% if request.user.is_authenticated %}
+    <a href="{% url 'bazar:mes_annonces' %}" style="font-size:.82rem;color:var(--accent);text-decoration:none;font-weight:600;">
+        Mes annonces →
+    </a>
+    {% endif %}
+</div>
+
+<!-- ── Grille annonces ── -->
+{% if page_obj.object_list %}
+<div class="bazar-grid">
+    {% for annonce in page_obj %}
+    <a href="{% url 'bazar:detail' annonce.pk %}" class="bazar-card">
+
+        <!-- Image -->
+        {% with primary=annonce.get_primary_image %}
+        {% if primary %}
+        <div class="bazar-card-img" style="position:relative;">
+            <img src="{{ primary.image.url }}" alt="{{ annonce.title }}" loading="lazy">
+            <span class="bazar-badge-cond">{{ annonce.get_condition_display }}</span>
+            {% if annonce.status == 'vendue' %}
+            <div class="bazar-badge-sold">VENDUE</div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="bazar-card-no-img" style="position:relative;">
+            🏷️
+            {% if annonce.status == 'vendue' %}
+            <div class="bazar-badge-sold">VENDUE</div>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Infos -->
+        <div class="bazar-card-body">
+            <span class="bazar-card-cat">{{ annonce.get_category_display }}</span>
+            <span class="bazar-card-title">{{ annonce.title }}</span>
+            <span class="bazar-card-location">
+                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                {{ annonce.location }}
+            </span>
+            <span class="bazar-card-price">
+                {{ annonce.formatted_price }}
+                {% if annonce.price_negotiable and annonce.price %}<small style="font-size:.72rem;font-weight:500;opacity:.7;"> · négociable</small>{% endif %}
+            </span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+
+<!-- ── Pagination ── -->
+{% if page_obj.has_other_pages %}
+<div class="bazar-pagination">
+    {% if page_obj.has_previous %}
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}" class="bazar-page-btn">←</a>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+    {% if page_obj.number == num %}
+    <span class="bazar-page-btn active">{{ num }}</span>
+    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}sort={{ sort }}&page={{ num }}" class="bazar-page-btn">{{ num }}</a>
+    {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}" class="bazar-page-btn">→</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<!-- État vide -->
+<div class="bazar-empty">
+    <div class="bazar-empty-icon">🔍</div>
+    <h4 style="color:var(--text-primary);font-weight:700;">Aucune annonce trouvée</h4>
+    <p style="font-size:.9rem;">
+        {% if q %}Aucun résultat pour <strong>« {{ q }} »</strong>. Essayez un autre mot-clé.
+        {% elif sel_cat %}Aucune annonce dans cette catégorie pour le moment.
+        {% else %}Le bazar est encore vide. Soyez le premier à publier !{% endif %}
+    </p>
+    {% if request.user.is_authenticated %}
+    <a href="{% url 'bazar:create' %}" class="btn btn-primary mt-2" style="border-radius:50px;background:var(--accent);border:none;padding:.6rem 1.6rem;font-weight:700;">
+        Publier une annonce
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

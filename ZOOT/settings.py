@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     'post',
     'group',
     'video',
+    'bazar',
     'ckeditor',
     'crispy_forms',
     # FIX : django-crispy-forms 2.x a extrait les template packs en packages séparés.
