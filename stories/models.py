@@ -50,6 +50,10 @@ class Story(models.Model):
         default='center',
     )
 
+    # Lien promotionnel (pour les commerçants)
+    link         = models.URLField(max_length=500, blank=True, default='')
+    link_label   = models.CharField(max_length=60, blank=True, default='', verbose_name='Texte du bouton')
+
     created_at   = models.DateTimeField(auto_now_add=True)
     expires_at   = models.DateTimeField(blank=True, null=True)
 

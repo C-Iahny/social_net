@@ -4,6 +4,7 @@ from stories import views
 app_name = 'stories'
 
 urlpatterns = [
+    path('',                            views.stories_page,       name='page'),
     path('create/',                     views.create_story,       name='create'),
     path('delete/<int:story_id>/',      views.delete_story,       name='delete'),
     path('viewed/<int:story_id>/',      views.mark_viewed,        name='mark-viewed'),

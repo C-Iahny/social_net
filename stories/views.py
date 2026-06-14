@@ -1,13 +1,11 @@
-import os
-import json
 import logging
+
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.db.models import Q
 
-from friend.models import FriendList
 from stories.models import Story, StoryView
 
 _logger = logging.getLogger(__name__)
@@ -24,8 +22,16 @@ _VIDEO_MIME = {
 }
 
 
+def _is_verified_seller(user):
+    """Retourne True si l'utilisateur est un commerçant avec vérification approuvée."""
+    try:
+        return user.seller_verification.is_approved
+    except Exception:
+        return False
+
+
 def _media_url(story):
-    """Retourne l'URL du média (servi par R2)."""
+    """Retourne l'URL du média."""
     if not story.media or not story.media.name:
         return None
     try:
@@ -36,35 +42,110 @@ def _media_url(story):
 
 def _story_to_dict(story, viewer):
     """Sérialise une Story en dict JSON-compatible."""
-    seen = StoryView.objects.filter(story=story, viewer=viewer).exists()
-    data = {
+    seen = False
+    if viewer and viewer.is_authenticated:
+        seen = StoryView.objects.filter(story=story, viewer=viewer).exists()
+
+    try:
+        avatar = story.user.profile_image.url
+    except Exception:
+        avatar = '/static/images/default_profile_image.png'
+
+    return {
         'id':          story.id,
         'user_id':     story.user.id,
         'username':    story.user.username,
-        'avatar':      story.user.profile_image.url,
+        'avatar':      avatar,
         'story_type':  story.story_type,
         'media_url':   _media_url(story),
         'media_type':  story.media_type,
         'caption':     story.caption,
         'bg_gradient': story.bg_gradient,
         'text_align':  story.text_align,
+        'link':        story.link,
+        'link_label':  story.link_label or 'Voir l\'offre',
         'created_at':  story.created_at.isoformat(),
         'expires_at':  story.expires_at.isoformat(),
         'time_left':   story.time_left_seconds,
         'view_count':  story.view_count,
         'seen':        seen,
+        'is_mine':     (viewer and viewer.is_authenticated and story.user_id == viewer.id),
     }
-    return data
+
+
+# ── CONTEXT helper ────────────────────────────────────────────────────────────
+def _seller_context(user):
+    """Dict de contexte indiquant si l'utilisateur peut publier des stories."""
+    is_seller = user.is_authenticated and _is_verified_seller(user)
+    return {'can_post_story': is_seller}
+
+
+# ── PAGE DÉDIÉE ───────────────────────────────────────────────────────────────
+def stories_page(request):
+    """
+    Page /stories/ — toutes les stories actives des commerçants vérifiés.
+    Accessible à tous (connectés ou non) en lecture.
+    """
+    now = timezone.now()
+    from bazar.models import SellerVerification
+
+    # Récupérer les IDs des vendeurs vérifiés approuvés
+    seller_ids = set(
+        SellerVerification.objects.filter(status='approved')
+        .values_list('seller_id', flat=True)
+    )
+
+    # Stories actives des marchands, groupées par auteur
+    stories_qs = (
+        Story.objects
+        .filter(user_id__in=seller_ids, expires_at__gt=now)
+        .select_related('user')
+        .order_by('user', '-created_at')
+    )
+
+    # Grouper par utilisateur
+    grouped = {}
+    for story in stories_qs:
+        uid = story.user_id
+        if uid not in grouped:
+            try:
+                avatar = story.user.profile_image.url
+            except Exception:
+                avatar = '/static/images/default_profile_image.png'
+            grouped[uid] = {
+                'user':    story.user,
+                'avatar':  avatar,
+                'stories': [],
+            }
+        grouped[uid]['stories'].append(story)
+
+    seller_groups = list(grouped.values())
+
+    ctx = {
+        'seller_groups':   seller_groups,
+        'now':             now,
+    }
+    ctx.update(_seller_context(request.user))
+    return render(request, 'stories/story_list.html', ctx)
 
 
 # ── CREATE ────────────────────────────────────────────────────────────────────
 @login_required(login_url='login')
 @require_POST
 def create_story(request):
+    # Restriction : commerçants vérifiés seulement
+    if not _is_verified_seller(request.user):
+        return JsonResponse(
+            {'error': 'Seuls les commerçants vérifiés peuvent publier des stories.'},
+            status=403,
+        )
+
     story_type  = request.POST.get('story_type', 'image')
     caption     = request.POST.get('caption', '').strip()[:200]
     bg_gradient = request.POST.get('bg_gradient', 'grad_cyan')
     text_align  = request.POST.get('text_align', 'center')
+    link        = request.POST.get('link', '').strip()[:500]
+    link_label  = request.POST.get('link_label', '').strip()[:60]
     media_file  = request.FILES.get('media')
 
     # Validation
@@ -89,7 +170,6 @@ def create_story(request):
             return JsonResponse({'error': 'Format de fichier non supporté.'}, status=400)
 
     try:
-        # R2 gère images ET vidéos via le même backend Django standard
         story = Story.objects.create(
             user        = request.user,
             story_type  = story_type,
@@ -98,6 +178,8 @@ def create_story(request):
             caption     = caption,
             bg_gradient = bg_gradient,
             text_align  = text_align,
+            link        = link,
+            link_label  = link_label,
         )
     except Exception as e:
         _logger.exception("create_story FAILED: %s", e)
@@ -131,44 +213,39 @@ def mark_viewed(request, story_id):
     return JsonResponse({'ok': True})
 
 
-# ── FEED : stories des amis ───────────────────────────────────────────────────
-@login_required(login_url='login')
+# ── FEED : stories de tous les commerçants vérifiés ──────────────────────────
 @require_GET
 def get_feed_stories(request):
     """
-    Retourne les stories actives de l'utilisateur connecté + ses amis.
-    Regroupées par utilisateur, triées : non-vues d'abord.
+    Retourne les stories actives de TOUS les commerçants vérifiés approuvés.
+    Si l'utilisateur est connecté, on indique également ses propres stories
+    et les stories déjà vues.
+    Accessible aux non-connectés (mode lecture seule, seen=False).
     """
     now = timezone.now()
+    from bazar.models import SellerVerification
 
-    # Récupérer la liste d'amis
-    try:
-        friend_list = FriendList.objects.get(user=request.user)
-        friends = list(friend_list.friends.all())
-    except FriendList.DoesNotExist:
-        friends = []
-        _logger.warning('[Stories] FriendList manquante pour %s', request.user.username)
+    # IDs des vendeurs vérifiés
+    seller_ids = set(
+        SellerVerification.objects.filter(status='approved')
+        .values_list('seller_id', flat=True)
+    )
 
-    print(f'[Stories] {request.user.username} — {len(friends)} ami(s): '
-          f'{[f.username for f in friends]}', flush=True)
+    # Si l'utilisateur courant est lui-même un vendeur, inclure ses propres stories
+    viewer = request.user if request.user.is_authenticated else None
+    if viewer and _is_verified_seller(viewer):
+        seller_ids.add(viewer.id)
 
-    # Inclure soi-même
-    users_to_show = [request.user] + friends
-
-    # Récupérer toutes les stories actives
     stories_qs = Story.objects.filter(
-        user__in=users_to_show,
+        user_id__in=seller_ids,
         expires_at__gt=now,
     ).select_related('user').order_by('user', '-created_at')
-
-    total_stories = stories_qs.count()
-    print(f'[Stories] {total_stories} story(s) active(s) trouvée(s)', flush=True)
 
     # Grouper par utilisateur
     grouped = {}
     for story in stories_qs:
         try:
-            uid = story.user.id
+            uid = story.user_id
             if uid not in grouped:
                 try:
                     avatar = story.user.profile_image.url
@@ -180,26 +257,24 @@ def get_feed_stories(request):
                     'avatar':     avatar,
                     'stories':    [],
                     'has_unseen': False,
+                    'is_mine':    (viewer and uid == viewer.id),
                 }
-            s = _story_to_dict(story, request.user)
+            s = _story_to_dict(story, viewer)
             grouped[uid]['stories'].append(s)
             if not s['seen']:
                 grouped[uid]['has_unseen'] = True
         except Exception as exc:
             _logger.exception('[Stories] Erreur story %s : %s', story.id, exc)
-            print(f'[Stories] ⚠️ Erreur story {story.id}: {exc}', flush=True)
             continue
 
     # Trier : soi-même en premier, puis non vus d'abord
     result = sorted(
         grouped.values(),
         key=lambda g: (
-            0 if g['user_id'] == request.user.id else 1,
+            0 if (viewer and g['user_id'] == viewer.id) else 1,
             0 if g['has_unseen'] else 1,
         )
     )
-    print(f'[Stories] → {len(result)} groupe(s) retourné(s): '
-          f'{[g["username"] for g in result]}', flush=True)
     return JsonResponse({'groups': result})
 
 
@@ -217,7 +292,6 @@ def get_my_stories(request):
 
 
 # ── STORIES D'UN PROFIL ───────────────────────────────────────────────────────
-@login_required(login_url='login')
 @require_GET
 def get_profile_stories(request, user_id):
     from account.models import Account
@@ -229,6 +303,7 @@ def get_profile_stories(request, user_id):
     stories_qs = Story.objects.filter(
         user=profile_user, expires_at__gt=now
     ).select_related('user').order_by('-created_at')
+    viewer = request.user if request.user.is_authenticated else None
     return JsonResponse({
-        'stories': [_story_to_dict(s, request.user) for s in stories_qs]
+        'stories': [_story_to_dict(s, viewer) for s in stories_qs]
     })
