@@ -227,13 +227,13 @@
         <div class="bazar-section">
             <div class="bazar-section-title">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                Photos ({{ MAX_IMAGES|default:8 }} max)
+                Photos ({{ max_images }} max)
             </div>
 
             <div class="bazar-upload-zone" id="upload-zone" onclick="document.getElementById('id_images').click()">
                 <div class="bazar-upload-icon">🖼️</div>
                 <div class="bazar-upload-text">{% trans "Cliquer pour ajouter des photos" %}</div>
-                <div class="bazar-upload-hint">{% trans "JPG, PNG, WebP · Max 8 photos · La première = photo principale" %}</div>
+                <div class="bazar-upload-hint">JPG, PNG, WebP · Max {{ max_images }} photos · La première = photo principale</div>
             </div>
             <input type="file" name="images" id="id_images" class="bazar-file-input" multiple accept="image/*,.heic,.heif">
             <div class="bazar-preview-grid" id="preview-grid"></div>
@@ -331,7 +331,7 @@
 
 <script>
 // ── Gestion upload photos ──────────────────────────────────────────────────────
-const MAX_PHOTOS = 8;
+const MAX_PHOTOS = {{ max_images }};
 let selectedFiles = [];
 
 const fileInput = document.getElementById('id_images');

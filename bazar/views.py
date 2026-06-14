@@ -1,17 +1,18 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import BooleanField, Case, Q, When
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-from .models import Annonce, AnnonceImage
+from .models import Annonce, AnnonceImage, SellerVerification
 from .forms import AnnonceForm
 
 # ── Constantes ─────────────────────────────────────────────────────────────────
-PAGE_SIZE = 12
-MAX_IMAGES = 8
+PAGE_SIZE  = 12
+MAX_IMAGES = 8           # vendeur standard
+MAX_IMAGES_VERIFIED = 12  # vendeur vérifié
 
 
 # ── Liste / Explore ─────────────────────────────────────────────────────────────
@@ -21,16 +22,30 @@ def bazar_index(request):
     Page principale du Bazar : liste des annonces actives avec filtres.
     URL: /bazar/
     """
-    qs = Annonce.objects.filter(status='active').select_related('seller').prefetch_related('images')
+    qs = (
+        Annonce.objects
+        .filter(status='active')
+        .select_related('seller', 'seller__seller_verification')
+        .prefetch_related('images')
+        # Annotation booléenne : le vendeur est-il vérifié ?
+        .annotate(
+            seller_verified=Case(
+                When(seller__seller_verification__status='approved', then=True),
+                default=False,
+                output_field=BooleanField(),
+            )
+        )
+    )
 
     # ── Filtres URL ──────────────────────────────────────────────────────────
-    q         = request.GET.get('q', '').strip()
-    category  = request.GET.get('cat', '').strip()
-    condition = request.GET.get('cond', '').strip()
-    location  = request.GET.get('loc', '').strip()
-    price_min = request.GET.get('pmin', '').strip()
-    price_max = request.GET.get('pmax', '').strip()
-    sort      = request.GET.get('sort', 'recent')
+    q            = request.GET.get('q', '').strip()
+    category     = request.GET.get('cat', '').strip()
+    condition    = request.GET.get('cond', '').strip()
+    location     = request.GET.get('loc', '').strip()
+    price_min    = request.GET.get('pmin', '').strip()
+    price_max    = request.GET.get('pmax', '').strip()
+    sort         = request.GET.get('sort', 'recent')
+    only_verified = request.GET.get('verified', '')
 
     if q:
         qs = qs.filter(
@@ -60,31 +75,37 @@ def bazar_index(request):
         except ValueError:
             pass
 
+    # Filtre vendeurs vérifiés
+    if only_verified:
+        qs = qs.filter(seller_verified=True)
+
+    # Tri — les vendeurs vérifiés sont toujours boostés en tête
     if sort == 'price_asc':
-        qs = qs.order_by('price', '-created_at')
+        qs = qs.order_by('-seller_verified', 'price', '-created_at')
     elif sort == 'price_desc':
-        qs = qs.order_by('-price', '-created_at')
+        qs = qs.order_by('-seller_verified', '-price', '-created_at')
     elif sort == 'popular':
-        qs = qs.order_by('-views_count', '-created_at')
+        qs = qs.order_by('-seller_verified', '-views_count', '-created_at')
     else:
-        qs = qs.order_by('-created_at')
+        qs = qs.order_by('-seller_verified', '-created_at')
 
     # ── Pagination ────────────────────────────────────────────────────────────
     paginator = Paginator(qs, PAGE_SIZE)
     page_obj  = paginator.get_page(request.GET.get('page'))
 
     context = {
-        'page_obj':   page_obj,
-        'categories': Annonce.CATEGORY_CHOICES,
-        'conditions': Annonce.CONDITION_CHOICES,
-        'q':          q,
-        'sel_cat':    category,
-        'sel_cond':   condition,
-        'sel_loc':    location,
-        'sel_pmin':   price_min,
-        'sel_pmax':   price_max,
-        'sort':       sort,
-        'total':      paginator.count,
+        'page_obj':      page_obj,
+        'categories':    Annonce.CATEGORY_CHOICES,
+        'conditions':    Annonce.CONDITION_CHOICES,
+        'q':             q,
+        'sel_cat':       category,
+        'sel_cond':      condition,
+        'sel_loc':       location,
+        'sel_pmin':      price_min,
+        'sel_pmax':      price_max,
+        'sort':          sort,
+        'only_verified': only_verified,
+        'total':         paginator.count,
     }
     return render(request, 'bazar/index.html', context)
 
@@ -97,7 +118,9 @@ def annonce_detail(request, pk):
     URL: /bazar/<pk>/
     """
     annonce = get_object_or_404(
-        Annonce.objects.select_related('seller').prefetch_related('images'),
+        Annonce.objects
+        .select_related('seller', 'seller__seller_verification')
+        .prefetch_related('images'),
         pk=pk,
     )
 
@@ -140,7 +163,8 @@ def annonce_create(request):
 
             # Gérer les images uploadées (multiple files)
             images = request.FILES.getlist('images')
-            for i, img_file in enumerate(images[:MAX_IMAGES]):
+            limit  = _get_max_images(request.user)
+            for i, img_file in enumerate(images[:limit]):
                 AnnonceImage.objects.create(
                     annonce=annonce,
                     image=img_file,
@@ -155,7 +179,10 @@ def annonce_create(request):
     else:
         form = AnnonceForm()
 
-    return render(request, 'bazar/create.html', {'form': form})
+    return render(request, 'bazar/create.html', {
+        'form':       form,
+        'max_images': _get_max_images(request.user),
+    })
 
 
 # ── Modifier une annonce ────────────────────────────────────────────────────────
@@ -178,10 +205,11 @@ def annonce_edit(request, pk):
             annonce = form.save()
 
             # Ajouter de nouvelles images
-            new_images = request.FILES.getlist('images')
+            new_images    = request.FILES.getlist('images')
             current_count = annonce.images.count()
+            limit         = _get_max_images(request.user)
             for i, img_file in enumerate(new_images):
-                if current_count + i >= MAX_IMAGES:
+                if current_count + i >= limit:
                     break
                 AnnonceImage.objects.create(
                     annonce=annonce,
@@ -198,9 +226,10 @@ def annonce_edit(request, pk):
         form = AnnonceForm(instance=annonce)
 
     return render(request, 'bazar/edit.html', {
-        'form':    form,
-        'annonce': annonce,
-        'images':  annonce.images.all(),
+        'form':       form,
+        'annonce':    annonce,
+        'images':     annonce.images.all(),
+        'max_images': _get_max_images(request.user),
     })
 
 
@@ -271,6 +300,18 @@ def annonce_delete(request, pk):
 
 # ── Mes annonces ────────────────────────────────────────────────────────────────
 
+# ── Helper vérification ────────────────────────────────────────────────────────
+
+def _get_max_images(user):
+    """Retourne le quota photos selon le statut de vérification du vendeur."""
+    try:
+        if user.seller_verification.is_approved:
+            return MAX_IMAGES_VERIFIED
+    except SellerVerification.DoesNotExist:
+        pass
+    return MAX_IMAGES
+
+
 @login_required
 def mes_annonces(request):
     """
@@ -283,9 +324,65 @@ def mes_annonces(request):
         .prefetch_related('images')
         .order_by('-created_at')
     )
+    # Récupérer le statut de vérification du compte
+    try:
+        verification = request.user.seller_verification
+    except SellerVerification.DoesNotExist:
+        verification = None
+
     context = {
-        'annonces': qs,
+        'annonces':     qs,
         'count_active': qs.filter(status='active').count(),
         'count_sold':   qs.filter(status='vendue').count(),
+        'verification': verification,
     }
     return render(request, 'bazar/mes_annonces.html', context)
+
+
+# ── Demande de vérification vendeur ────────────────────────────────────────────
+
+@login_required
+def request_verification(request):
+    """
+    Permet à un vendeur de soumettre une demande de vérification.
+    Si une demande existe déjà, affiche son statut.
+    URL: /bazar/verification/
+    """
+    try:
+        verification = request.user.seller_verification
+    except SellerVerification.DoesNotExist:
+        verification = None
+
+    if request.method == 'POST':
+        # Empêcher une double soumission si déjà approuvé ou en attente
+        if verification and verification.status in (
+            SellerVerification.STATUS_PENDING,
+            SellerVerification.STATUS_APPROVED,
+        ):
+            messages.info(request, 'Vous avez déjà une demande en cours ou votre compte est déjà vérifié.')
+            return redirect('bazar:mes_annonces')
+
+        message_text = request.POST.get('message', '').strip()[:2000]
+
+        if verification:
+            # Résoumission après refus
+            verification.status      = SellerVerification.STATUS_PENDING
+            verification.message     = message_text
+            verification.admin_notes = ''
+            verification.reviewed_at = None
+            verification.reviewed_by = None
+            verification.save()
+            messages.success(request, 'Votre nouvelle demande a été envoyée. L\'admin l\'examinera prochainement.')
+        else:
+            SellerVerification.objects.create(
+                seller=request.user,
+                message=message_text,
+            )
+            messages.success(request, 'Demande de vérification envoyée ! L\'admin l\'examinera prochainement.')
+
+        return redirect('bazar:mes_annonces')
+
+    context = {
+        'verification': verification,
+    }
+    return render(request, 'bazar/verification.html', context)
