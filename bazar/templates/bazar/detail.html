@@ -508,7 +508,11 @@
 <div id="lightbox" onclick="closeLightbox()">
     <button id="lightbox-close" onclick="closeLightbox()">✕</button>
     <button class="lb-nav-btn" id="lightbox-prev" onclick="event.stopPropagation(); lightboxNav(-1)">&#8249;</button>
-    <img id="lightbox-img" src="" alt="Aperçu">
+    <img id="lightbox-img" src="" alt="Aperçu" onerror="this.src='';this.style.display='none';document.getElementById('lb-error').style.display='flex'">
+    <div id="lb-error" style="display:none;color:#fff;flex-direction:column;align-items:center;gap:.75rem;font-size:.95rem;opacity:.7;">
+        <span style="font-size:2.5rem;">🖼️</span>
+        <span>Image non disponible</span>
+    </div>
     <button class="lb-nav-btn" id="lightbox-next" onclick="event.stopPropagation(); lightboxNav(1)">&#8250;</button>
     <div id="lightbox-counter"></div>
 </div>
@@ -540,7 +544,11 @@ function openLightbox(idx) {
 }
 
 function _lightboxShow() {
-    document.getElementById('lightbox-img').src = galleryUrls[currentIdx];
+    const lbImg = document.getElementById('lightbox-img');
+    const lbErr = document.getElementById('lb-error');
+    lbImg.style.display = '';
+    if (lbErr) lbErr.style.display = 'none';
+    lbImg.src = galleryUrls[currentIdx];
     const total = galleryUrls.length;
     const counter = document.getElementById('lightbox-counter');
     const showNav = total > 1;
