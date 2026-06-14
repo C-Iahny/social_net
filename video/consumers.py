@@ -38,7 +38,7 @@ _init_chunks: dict = {}     # room_id (str) → { 'data': base64_str, 'mime': st
 # Permet aux viewers qui rejoignent en cours de route d'obtenir un keyframe récent :
 # VP9/VP8 insère un keyframe toutes les ~3-5 s → 20 chunks × 500 ms = 10 s de buffer
 # garantissent au moins 2 keyframes → le décodeur peut démarrer proprement.
-RING_BUFFER_SIZE = 20       # 20 chunks × 500 ms ≈ 10 secondes
+RING_BUFFER_SIZE = 12       # 12 chunks × 250 ms ≈ 3 secondes (≥ 1 keyframe VP9)
 _recent_chunks: dict = {}   # room_id (str) → deque[{ 'data': str, 'mime': str }]
 
 
@@ -235,6 +235,8 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                     'mime':    chunk['mime'],
                     'is_init': False,
                 })
+            # Signaler au viewer que le ring buffer est épuisé → il peut syncer au live edge
+            await self.send_json({'type': 'ring_buffer_done'})
 
         # Notifier l'hôte
         host_ch = await self._get_host_channel()
