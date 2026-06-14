@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<style>
+.bazar-mes-wrap {
+    max-width: 860px;
+    margin: 2rem auto 4rem;
+    padding: 0 1rem;
+}
+.bazar-mes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+.bazar-mes-title { font-size: 1.5rem; font-weight: 800; }
+.bazar-new-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: .55rem 1.2rem;
+    font-weight: 700;
+    font-size: .88rem;
+    text-decoration: none;
+    transition: opacity .2s;
+}
+[data-theme="dark"] .bazar-new-btn { color: #1a0a02; }
+.bazar-new-btn:hover { opacity:.85; text-decoration:none; color:#fff; }
+[data-theme="dark"] .bazar-new-btn:hover { color:#1a0a02; }
+
+/* Stats pills */
+.bazar-stats {
+    display: flex;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.bazar-stat-pill {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: .45rem 1.1rem;
+    font-size: .85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+.bazar-stat-pill .num { color: var(--accent); font-size: 1.05rem; }
+
+/* Tableau annonces */
+.bazar-annonce-row {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .9rem 1rem;
+    margin-bottom: .75rem;
+    transition: border-color .2s;
+}
+.bazar-annonce-row:hover { border-color: var(--accent); }
+.bazar-annonce-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-secondary, #f5ebe0);
+}
+.bazar-annonce-no-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    background: var(--bg-secondary, #f5ebe0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    color: var(--text-muted);
+}
+.bazar-annonce-info { flex: 1; min-width: 0; }
+.bazar-annonce-title {
+    font-weight: 700;
+    font-size: .95rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+.bazar-annonce-title:hover { color: var(--accent); text-decoration: none; }
+.bazar-annonce-meta {
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-top: .2rem;
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+.bazar-annonce-price {
+    font-weight: 800;
+    font-size: .95rem;
+    color: var(--accent);
+    margin-top: .25rem;
+}
+
+/* Status badge */
+.bazar-row-status {
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .2rem .65rem;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.status-active { background: #dcfce7; color: #166534; }
+.status-vendue { background: #fee2e2; color: #991b1b; }
+.status-pause  { background: #fef9c3; color: #854d0e; }
+[data-theme="dark"] .status-active { background: rgba(22,101,52,.25); color: #86efac; }
+[data-theme="dark"] .status-vendue { background: rgba(153,27,27,.25); color: #fca5a5; }
+[data-theme="dark"] .status-pause  { background: rgba(133,77,14,.25); color: #fde68a; }
+
+/* Actions */
+.bazar-row-actions {
+    display: flex;
+    gap: .4rem;
+    flex-shrink: 0;
+}
+.bazar-action-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .18s;
+}
+.bazar-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.bazar-action-del:hover { border-color: #dc3545; color: #dc3545; }
+
+/* Empty */
+.bazar-mes-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+.bazar-mes-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .5; }
+
+@media (max-width: 575px) {
+    .bazar-annonce-row { padding: .75rem; gap: .75rem; }
+    .bazar-annonce-thumb, .bazar-annonce-no-thumb { width: 58px; height: 58px; }
+    .bazar-annonce-title { font-size: .88rem; }
+    .bazar-row-actions { display: none; } /* Accès via page détail sur mobile */
+}
+</style>
+
+<div class="bazar-mes-wrap">
+    <div class="bazar-mes-header">
+        <div>
+            <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.4rem;">
+                <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">Bazar</a>
+                <span> › </span>Mes annonces
+            </nav>
+            <h1 class="bazar-mes-title">🗂️ Mes annonces</h1>
+        </div>
+        <a href="{% url 'bazar:create' %}" class="bazar-new-btn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nouvelle annonce
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="bazar-stats">
+        <div class="bazar-stat-pill">
+            <span class="num">{{ annonces|length }}</span>
+            au total
+        </div>
+        <div class="bazar-stat-pill">
+            <span class="num" style="color:#166534;">{{ count_active }}</span>
+            active{{ count_active|pluralize }}
+        </div>
+        <div class="bazar-stat-pill">
+            <span class="num" style="color:#991b1b;">{{ count_sold }}</span>
+            vendue{{ count_sold|pluralize }}
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} mb-3" style="border-radius:10px;">{{ msg }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Liste -->
+    {% if annonces %}
+    {% for annonce in annonces %}
+    <div class="bazar-annonce-row">
+        <!-- Miniature -->
+        <a href="{% url 'bazar:detail' annonce.pk %}">
+            {% with img=annonce.get_primary_image %}
+            {% if img %}
+            <img class="bazar-annonce-thumb" src="{{ img.image.url }}" alt="{{ annonce.title }}">
+            {% else %}
+            <div class="bazar-annonce-no-thumb">🏷️</div>
+            {% endif %}
+            {% endwith %}
+        </a>
+
+        <!-- Infos -->
+        <div class="bazar-annonce-info">
+            <a class="bazar-annonce-title" href="{% url 'bazar:detail' annonce.pk %}">{{ annonce.title }}</a>
+            <div class="bazar-annonce-meta">
+                <span>{{ annonce.get_category_display }}</span>
+                <span>📍 {{ annonce.location }}</span>
+                <span>{{ annonce.created_at|date:"d/m/Y" }}</span>
+                <span>👁 {{ annonce.views_count }} vue{{ annonce.views_count|pluralize }}</span>
+            </div>
+            <div class="bazar-annonce-price">{{ annonce.formatted_price }}</div>
+        </div>
+
+        <!-- Badge statut -->
+        <span class="bazar-row-status status-{{ annonce.status }}">
+            {% if annonce.status == 'active' %}✓ Active
+            {% elif annonce.status == 'vendue' %}✕ Vendue
+            {% else %}⏸ Pause{% endif %}
+        </span>
+
+        <!-- Actions -->
+        <div class="bazar-row-actions">
+            <a href="{% url 'bazar:detail' annonce.pk %}" class="bazar-action-btn" title="Voir">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </a>
+            <a href="{% url 'bazar:edit' annonce.pk %}" class="bazar-action-btn" title="Modifier">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </a>
+            {% if annonce.status == 'active' %}
+            <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" onsubmit="return confirm('Marquer comme vendue ?')">
+                {% csrf_token %}
+                <button type="submit" class="bazar-action-btn" title="Marquer vendue" style="color:#166534;border-color:#166534;">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'bazar:delete' annonce.pk %}" onsubmit="return confirm('Supprimer définitivement ?')">
+                {% csrf_token %}
+                <button type="submit" class="bazar-action-btn bazar-action-del" title="Supprimer">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <div class="bazar-mes-empty">
+        <div class="bazar-mes-empty-icon">📦</div>
+        <h4 style="color:var(--text-primary);font-weight:700;">Vous n'avez aucune annonce</h4>
+        <p style="font-size:.9rem;">Publiez votre première annonce et touchez des milliers de Malgaches.</p>
+        <a href="{% url 'bazar:create' %}" class="bazar-new-btn" style="margin:0 auto;display:inline-flex;margin-top:.5rem;">
+            Publier maintenant
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

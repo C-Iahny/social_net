@@ -1,0 +1,499 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<style>
+/* ============================================================
+   BAZAR — DÉTAIL ANNONCE
+   ============================================================ */
+.bazar-detail-wrap {
+    max-width: 1100px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .bazar-detail-wrap { grid-template-columns: 1fr; gap: 1.2rem; }
+}
+@media (max-width: 575px) {
+    .bazar-detail-wrap { margin: 1rem auto; padding: 0 .75rem; }
+}
+
+/* ── Galerie photos ── */
+.bazar-gallery { border-radius: 16px; overflow: hidden; background: var(--bg-card); }
+.bazar-main-img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+}
+.bazar-main-placeholder {
+    width: 100%;
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary, #f5ebe0);
+    font-size: 4rem;
+    color: var(--text-muted);
+}
+.bazar-thumbs {
+    display: flex;
+    gap: .5rem;
+    padding: .6rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    overflow-x: auto;
+}
+.bazar-thumb {
+    width: 68px;
+    height: 68px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2.5px solid transparent;
+    opacity: .7;
+    transition: opacity .18s, border-color .18s;
+    flex-shrink: 0;
+}
+.bazar-thumb.active, .bazar-thumb:hover { opacity: 1; border-color: var(--accent); }
+
+/* ── Infos ── */
+.bazar-info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: sticky;
+    top: 76px;
+}
+.bazar-status-badge {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .18rem .7rem;
+    border-radius: 20px;
+    margin-bottom: .6rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+.bazar-status-active { background: #dcfce7; color: #166534; }
+.bazar-status-vendue { background: #fee2e2; color: #991b1b; }
+.bazar-status-pause  { background: #fef9c3; color: #854d0e; }
+[data-theme="dark"] .bazar-status-active { background: rgba(22,101,52,.25); color: #86efac; }
+[data-theme="dark"] .bazar-status-vendue { background: rgba(153,27,27,.25); color: #fca5a5; }
+
+.bazar-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: .5rem;
+}
+.bazar-price-big {
+    font-size: 1.7rem;
+    font-weight: 900;
+    color: var(--accent);
+    margin-bottom: .25rem;
+}
+.bazar-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem .8rem;
+    font-size: .8rem;
+    color: var(--text-muted);
+    margin-bottom: 1.1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+.bazar-meta-item {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+}
+
+/* Vendeur */
+.bazar-seller {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1rem;
+}
+.bazar-seller-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+}
+.bazar-seller-name {
+    font-weight: 700;
+    font-size: .92rem;
+}
+.bazar-seller-since {
+    font-size: .75rem;
+    color: var(--text-muted);
+}
+
+/* Boutons contact */
+.bazar-contact-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    width: 100%;
+    padding: .7rem 1rem;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: .92rem;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .2s;
+    margin-bottom: .55rem;
+}
+.bazar-btn-primary {
+    background: var(--accent);
+    color: #fff;
+}
+[data-theme="dark"] .bazar-btn-primary { color: #1a0a02; }
+.bazar-btn-primary:hover {
+    opacity: .9;
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: #fff;
+}
+[data-theme="dark"] .bazar-btn-primary:hover { color: #1a0a02; }
+.bazar-btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+}
+.bazar-btn-outline:hover {
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+}
+[data-theme="dark"] .bazar-btn-outline:hover { color: #1a0a02; }
+.bazar-btn-danger {
+    background: transparent;
+    border: 1.5px solid #dc3545;
+    color: #dc3545;
+    font-size: .85rem;
+    padding: .5rem 1rem;
+}
+.bazar-btn-danger:hover { background: #dc3545; color: #fff; text-decoration: none; }
+
+/* ── Description ── */
+.bazar-desc-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+    margin-top: .75rem;
+}
+.bazar-desc-section h4 {
+    font-weight: 800;
+    font-size: .95rem;
+    margin-bottom: .85rem;
+    color: var(--text-primary);
+}
+.bazar-desc-text {
+    font-size: .9rem;
+    line-height: 1.75;
+    color: var(--text-secondary, var(--text-primary));
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* ── Fil d'Ariane ── */
+.bazar-breadcrumb {
+    max-width: 1100px;
+    margin: 1.1rem auto .25rem;
+    padding: 0 1rem;
+    font-size: .8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-wrap: wrap;
+}
+.bazar-breadcrumb a { color: var(--accent); text-decoration: none; }
+.bazar-breadcrumb a:hover { text-decoration: underline; }
+
+/* ── Similaires ── */
+.bazar-similaires {
+    max-width: 1100px;
+    margin: 2.5rem auto;
+    padding: 0 1rem;
+}
+.bazar-similaires h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+.bazar-similaires-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+@media (max-width: 575px) {
+    .bazar-similaires-grid { grid-template-columns: repeat(2, 1fr); gap: .6rem; }
+}
+.bazar-mini-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    transition: transform .2s, border-color .2s;
+}
+.bazar-mini-card:hover { transform: translateY(-2px); border-color: var(--accent); text-decoration: none; color: var(--text-primary); }
+.bazar-mini-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
+.bazar-mini-no-img { width: 100%; aspect-ratio: 4/3; background: var(--bg-secondary, #f5ebe0); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--text-muted); }
+.bazar-mini-body { padding: .65rem .75rem; }
+.bazar-mini-title { font-size: .83rem; font-weight: 700; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.bazar-mini-price { font-size: .9rem; font-weight: 800; color: var(--accent); margin-top: .3rem; }
+
+/* Lightbox simple */
+#lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.92);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+#lightbox.open { display: flex; }
+#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
+#lightbox-close {
+    position: absolute;
+    top: 16px; right: 20px;
+    color: #fff; font-size: 2rem; cursor: pointer; line-height: 1;
+    background: none; border: none;
+}
+</style>
+
+<!-- Fil d'Ariane -->
+<nav class="bazar-breadcrumb">
+    <a href="{% url 'bazar:index' %}">Bazar</a>
+    <span>›</span>
+    <a href="{% url 'bazar:index' %}?cat={{ annonce.category }}">{{ annonce.get_category_display }}</a>
+    <span>›</span>
+    <span style="color:var(--text-primary);">{{ annonce.title|truncatechars:50 }}</span>
+</nav>
+
+<div class="bazar-detail-wrap">
+
+    <!-- Colonne gauche : galerie + description -->
+    <div>
+        <!-- Galerie -->
+        <div class="bazar-gallery">
+            {% if images %}
+            <img id="main-photo" class="bazar-main-img" src="{{ images.0.image.url }}" alt="{{ annonce.title }}" onclick="openLightbox(this.src)">
+            {% if images|length > 1 %}
+            <div class="bazar-thumbs">
+                {% for img in images %}
+                <img class="bazar-thumb {% if forloop.first %}active{% endif %}"
+                     src="{{ img.image.url }}"
+                     alt="Photo {{ forloop.counter }}"
+                     onclick="switchPhoto(this)">
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="bazar-main-placeholder">🏷️</div>
+            {% endif %}
+        </div>
+
+        <!-- Description -->
+        <div class="bazar-desc-section">
+            <h4>Description</h4>
+            <p class="bazar-desc-text">{{ annonce.description }}</p>
+        </div>
+
+        <!-- Détails techniques -->
+        <div class="bazar-desc-section" style="margin-top:.75rem;">
+            <h4>Détails</h4>
+            <table style="font-size:.88rem;width:100%;border-collapse:collapse;">
+                <tr>
+                    <td style="padding:.45rem 0;color:var(--text-muted);width:40%;">Catégorie</td>
+                    <td style="font-weight:600;">{{ annonce.get_category_display }}</td>
+                </tr>
+                <tr style="border-top:1px solid var(--border);">
+                    <td style="padding:.45rem 0;color:var(--text-muted);">État</td>
+                    <td style="font-weight:600;">{{ annonce.get_condition_display }}</td>
+                </tr>
+                <tr style="border-top:1px solid var(--border);">
+                    <td style="padding:.45rem 0;color:var(--text-muted);">Localisation</td>
+                    <td style="font-weight:600;">{{ annonce.location }}</td>
+                </tr>
+                <tr style="border-top:1px solid var(--border);">
+                    <td style="padding:.45rem 0;color:var(--text-muted);">Publiée</td>
+                    <td style="font-weight:600;">{{ annonce.created_at|date:"d/m/Y" }}</td>
+                </tr>
+                <tr style="border-top:1px solid var(--border);">
+                    <td style="padding:.45rem 0;color:var(--text-muted);">Vues</td>
+                    <td style="font-weight:600;">{{ annonce.views_count }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Colonne droite : infos + contact -->
+    <div>
+        <div class="bazar-info-card">
+            <!-- Statut -->
+            {% if annonce.status == 'active' %}
+            <span class="bazar-status-badge bazar-status-active">✓ Disponible</span>
+            {% elif annonce.status == 'vendue' %}
+            <span class="bazar-status-badge bazar-status-vendue">✕ Vendue</span>
+            {% else %}
+            <span class="bazar-status-badge bazar-status-pause">En pause</span>
+            {% endif %}
+
+            <!-- Titre + Prix -->
+            <h1 class="bazar-title">{{ annonce.title }}</h1>
+            <p class="bazar-price-big">
+                {{ annonce.formatted_price }}
+                {% if annonce.price_negotiable and annonce.price %}
+                <small style="font-size:.85rem;font-weight:500;color:var(--text-muted);"> · négociable</small>
+                {% endif %}
+            </p>
+
+            <!-- Meta -->
+            <div class="bazar-meta-row">
+                <span class="bazar-meta-item">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {{ annonce.location }}
+                </span>
+                <span class="bazar-meta-item">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    {{ annonce.created_at|date:"d M Y" }}
+                </span>
+            </div>
+
+            <!-- Vendeur -->
+            <div class="bazar-seller">
+                <a href="{% url 'account:view' user_id=annonce.seller.pk %}">
+                    <img class="bazar-seller-avatar" src="{{ annonce.seller.profile_image.url }}" alt="{{ annonce.seller.username }}">
+                </a>
+                <div>
+                    <div class="bazar-seller-name">
+                        <a href="{% url 'account:view' user_id=annonce.seller.pk %}" style="color:var(--text-primary);text-decoration:none;">
+                            {{ annonce.seller.get_full_name|default:annonce.seller.username }}
+                        </a>
+                    </div>
+                    <div class="bazar-seller-since">Membre depuis {{ annonce.seller.date_joined|date:"M Y" }}</div>
+                </div>
+            </div>
+
+            <!-- Actions propriétaire -->
+            {% if is_owner %}
+            <a href="{% url 'bazar:edit' annonce.pk %}" class="bazar-contact-btn bazar-btn-outline">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Modifier l'annonce
+            </a>
+            {% if annonce.status == 'active' %}
+            <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" onsubmit="return confirm('Marquer cette annonce comme vendue ?')">
+                {% csrf_token %}
+                <button type="submit" class="bazar-contact-btn bazar-btn-outline" style="border-color:#166534;color:#166534;">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    Marquer comme vendue
+                </button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'bazar:delete' annonce.pk %}" onsubmit="return confirm('Supprimer définitivement cette annonce ?')">
+                {% csrf_token %}
+                <button type="submit" class="bazar-contact-btn bazar-btn-danger">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    Supprimer
+                </button>
+            </form>
+
+            {% else %}
+            <!-- Actions acheteur -->
+            {% if annonce.status == 'active' %}
+            {% if annonce.contact_phone and annonce.show_phone %}
+            <a href="https://wa.me/{{ annonce.contact_phone|cut:' '|cut:'+' }}?text=Bonjour, je suis intéressé par votre annonce : {{ annonce.title }}"
+               target="_blank" rel="noopener" class="bazar-contact-btn bazar-btn-primary">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                Contacter sur WhatsApp
+            </a>
+            <div style="font-size:.82rem;color:var(--text-muted);text-align:center;margin-bottom:.8rem;">
+                📞 {{ annonce.contact_phone }}
+            </div>
+            {% else %}
+            <a href="{% url 'chat:private-chat-room' %}?user_id={{ annonce.seller.pk }}"
+               class="bazar-contact-btn bazar-btn-primary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Envoyer un message
+            </a>
+            {% endif %}
+            {% else %}
+            <div style="background:var(--bg-secondary,#f5ebe0);border-radius:10px;padding:1rem;text-align:center;font-size:.88rem;color:var(--text-muted);">
+                Cette annonce n'est plus disponible.
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ── Annonces similaires ── -->
+{% if similaires %}
+<section class="bazar-similaires">
+    <h3>Annonces similaires</h3>
+    <div class="bazar-similaires-grid">
+        {% for item in similaires %}
+        <a href="{% url 'bazar:detail' item.pk %}" class="bazar-mini-card">
+            {% with img=item.get_primary_image %}
+            {% if img %}
+            <img class="bazar-mini-img" src="{{ img.image.url }}" alt="{{ item.title }}" loading="lazy">
+            {% else %}
+            <div class="bazar-mini-no-img">🏷️</div>
+            {% endif %}
+            {% endwith %}
+            <div class="bazar-mini-body">
+                <div class="bazar-mini-title">{{ item.title }}</div>
+                <div class="bazar-mini-price">{{ item.formatted_price }}</div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+    <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+    <img id="lightbox-img" src="" alt="Aperçu">
+</div>
+
+<script>
+function switchPhoto(thumb) {
+    document.getElementById('main-photo').src = thumb.src;
+    document.querySelectorAll('.bazar-thumb').forEach(t => t.classList.remove('active'));
+    thumb.classList.add('active');
+}
+function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+{% endblock %}
