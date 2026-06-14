@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.legal-page { max-width:820px; margin:3rem auto; padding:0 1.25rem 4rem; font-family:var(--font-primary,'Space Grotesk',sans-serif); }
+.legal-logo { display:flex; align-items:center; gap:1rem; margin-bottom:2.5rem; text-decoration:none; }
+.legal-logo img { height:52px; width:auto; }
+[data-theme="dark"] .legal-logo img { filter:brightness(0) invert(1); }
+.legal-hero { background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%); border-radius:18px; padding:2.5rem 2rem; color:#fff; margin-bottom:2.5rem; position:relative; overflow:hidden; }
+.legal-hero::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Ccircle cx='20' cy='20' r='2'/%3E%3C/g%3E%3C/svg%3E"); pointer-events:none; }
+.legal-hero h1 { font-size:clamp(1.6rem,4vw,2.2rem); font-weight:900; margin:0 0 .5rem; position:relative; }
+.legal-hero p { opacity:.88; font-size:.95rem; margin:0; position:relative; }
+.legal-meta { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:2rem; font-size:.8rem; color:var(--text-muted); }
+.legal-meta-chip { background:var(--btn-bg); border:1px solid var(--border); border-radius:20px; padding:.25rem .75rem; display:flex; align-items:center; gap:.3rem; }
+.legal-meta-chip .material-icons { font-size:.9rem; color:var(--accent); }
+.legal-section { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:1.75rem 1.75rem 1.25rem; margin-bottom:1.25rem; box-shadow:var(--shadow); }
+.legal-section h2 { font-size:1.08rem; font-weight:800; color:var(--text); margin:0 0 1rem; display:flex; align-items:center; gap:.5rem; }
+.legal-section h2 .material-icons { font-size:1.15rem; color:var(--accent); flex-shrink:0; }
+.legal-section p,.legal-section li { font-size:.9rem; line-height:1.75; color:var(--text-muted); margin-bottom:.65rem; }
+.legal-section ul { padding-left:1.25rem; margin:.5rem 0; }
+.legal-section li { margin-bottom:.35rem; }
+.data-table { width:100%; border-collapse:collapse; font-size:.88rem; margin:.75rem 0; }
+.data-table th { background:var(--btn-bg); color:var(--text); font-weight:700; padding:.6rem .85rem; text-align:left; border:1px solid var(--border); font-size:.8rem; }
+.data-table td { padding:.55rem .85rem; border:1px solid var(--border); color:var(--text-muted); vertical-align:top; }
+.data-table tr:nth-child(even) td { background:var(--bg); }
+.legal-back { display:inline-flex; align-items:center; gap:.4rem; color:var(--accent); font-weight:700; text-decoration:none; font-size:.9rem; margin-bottom:2rem; transition:opacity .2s; }
+.legal-back:hover { opacity:.75; text-decoration:none; }
+.legal-back .material-icons { font-size:1rem; }
+@media(max-width:575px){ .legal-page{padding:0 .75rem 5rem;margin-top:1.5rem;} .legal-section{padding:1.25rem 1rem .85rem;} .legal-hero{padding:1.75rem 1.25rem;} }
+</style>
+
+<div class="legal-page">
+    <a href="{% url 'landing' %}" class="legal-logo">
+        <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="Vazimba">
+    </a>
+    <a href="javascript:history.back()" class="legal-back"><span class="material-icons">arrow_back</span> Hiverina</a>
+
+    <div class="legal-hero">
+        <h1>Fitsipika Mifehy ny Tsiambaratelon'ny Mpampiasa</h1>
+        <p>Ny fomba nanangonana, nampiasana ary niaro ny angon-drakitrao manokana ao amin'i Vazimba.</p>
+    </div>
+
+    <div class="legal-meta">
+        <span class="legal-meta-chip"><span class="material-icons">event</span> Fanavaozana farany: Jona 2026</span>
+        <span class="legal-meta-chip"><span class="material-icons">language</span> www.vazimba.io</span>
+        <span class="legal-meta-chip"><span class="material-icons">place</span> Madagasikara</span>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">admin_panel_settings</span> 1. Tompon'ny Fitsipika</h2>
+        <p>Ny ekipa <strong>Vazimba</strong> (www.vazimba.io) no tompon'andraikitra amin'ny fitantanana ny angon-drakitrao manokana voangona ao amin'ny sehatra. Azo hifandraisana amin'ny: <strong>contact@vazimba.io</strong>.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">storage</span> 2. Angon-draki-poizina Voangona</h2>
+        <p>Amin'ny fisoratana anarana sy fampiasana ny sehatra, dia voangonana ireto angon-drakitra manaraka ireto:</p>
+        <table class="data-table">
+            <thead>
+                <tr><th>Angon-drakitra</th><th>Tanjona</th><th>Fotoam-pitahirizana</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Adiresy e-mail</td><td>Famantarana, fanarenana teny fiafenana</td><td>Hatr'amin'ny fahafoanan'ny kaonty</td></tr>
+                <tr><td>Anaram-pseudonyme</td><td>Fampisehoana ampahibemaso amin'ny sehatra</td><td>Hatr'amin'ny fahafoanan'ny kaonty</td></tr>
+                <tr><td>Teny fiafenana (voahashy)</td><td>Fanamarinana ara-osaosa</td><td>Hatr'amin'ny fahafoanan'ny kaonty</td></tr>
+                <tr><td>Sary profily</td><td>Famantarana an-tsary amin'ny sehatra</td><td>Hatr'amin'ny fahafoanan'ny kaonty</td></tr>
+                <tr><td>Datin'ny fisoratana anarana</td><td>Fitantanana kaonty sy fiarovana</td><td>Hatr'amin'ny fahafoanan'ny kaonty</td></tr>
+                <tr><td>Datin'ny fanekena ny FAF</td><td>Porofo ara-dalàna ny fanekena</td><td>5 taona aorian'ny fahafoanan'ny kaonty</td></tr>
+                <tr><td>Votoatiny navoaka (lahatsoratra, hevitra)</td><td>Fiasan'ny tambajotra sosialy</td><td>Mandra-pahafoanan'ny mpampiasa azy</td></tr>
+                <tr><td>Adiresy IP</td><td>Fiarovana, fanadihadiana ny fampiasana diso</td><td>30 andro</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">share</span> 3. Fizarana ny Angon-drakitra</h2>
+        <p>Ny Vazimba dia <strong>tsy mivarotra</strong> ny angon-drakitrao manokana ho an'ny olon-kafa.</p>
+        <p>Ny angon-drakitrao dia mety hizaraina amin'ireto toe-javatra manaraka ireto ihany:</p>
+        <ul>
+            <li><strong>Mpamatsy teknika</strong>: hosting (Railway), fitahirizana (AWS S3 / Cloudflare), mailaka (Brevo) — amin'ny tanjona fampiasana ny serivisy ihany.</li>
+            <li><strong>Andraikitra ara-dalàna</strong>: raha takian'ny fahefana malagasy na iraisam-pirenena, ao anatin'ny fehezandalàna manan-kery.</li>
+            <li><strong>Fiarovana</strong>: mba hisorohana ny fampiasana hosoka na tsy ara-dalàna amin'ny sehatra.</li>
+        </ul>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">visibility_off</span> 4. Votoatiny Ampahibemaso sy Miafina</h2>
+        <p>Ao amin'i Vazimba, ny lahatsoratra, hevitra ary profily dia <strong>ampahibemaso amin'ny fomba default</strong> ary hita amin'ny mpampiasa rehetra voasoratra. Ny adiresy e-mail sy ny teny fiafenana dia <strong>tsy haseho na hizaraina</strong> ampahibemaso mihitsy.</p>
+        <p>Ny hafatra tsy ampahibemaso (chat) dia hitan'ny mpandray anjara amin'ny resaka irery ihany.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">lock_outline</span> 5. Fiarovana ny Angon-drakitra</h2>
+        <p>Manao paik'ady teknika mety isika mba hiarovana ny angon-drakitrao:</p>
+        <ul>
+            <li>Fampifandraisana azo antoka HTTPS amin'ny sehatra manontolo.</li>
+            <li>Teny fiafenana voatahiry amin'ny endrika hashy (tsy azo vakiana, na dia ny ekipa Vazimba aza).</li>
+            <li>Fidirana amin'ny angon-drakitra voafetra ho an'ny mpikambana ekipan'i Vazimba eken-dalàna.</li>
+            <li>Fitahirizana sandany an-koatra maharitra ny angon-drakitra.</li>
+        </ul>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">manage_accounts</span> 6. Ny Zom-panaovanao</h2>
+        <p>Araka ny fitsipika fiarovana ny angon-drakitra manokana, dia manana zo ireto ianao:</p>
+        <ul>
+            <li><strong>Fidirana</strong>: afaka hangataka copy ny angon-drakitrao manokana ianao.</li>
+            <li><strong>Fanitsiana</strong>: afaka manova ny mombamombanao ianao amin'ny pejy "Paramètres".</li>
+            <li><strong>Fanafoanana</strong>: afaka hangataka ny fanafoanana ny kaonty sy angon-drakitrao ianao.</li>
+            <li><strong>Fanohanan-kevitra</strong>: afaka manohitra ny fampiasana sasany ny angon-drakitrao ianao.</li>
+        </ul>
+        <p>Mba hampiasana ireo zo ireo, mifandraisa amin'ny: <strong>contact@vazimba.io</strong>.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">cookie</span> 7. Cookies</h2>
+        <p>Ny Vazimba dia mampiasa cookies ilaina amin'ny fiasan'ny serivisy (fitantanana session, fahalalan'ny fiteny sy loko). Tsy misy cookies ara-barotra na fanaraha-maso avy amin'ny olon-kafa ampiasaina.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">child_care</span> 8. Ankizy Madinika</h2>
+        <p>Ny Vazimba dia natao ho an'izay <strong>feno 16 taona</strong> na mihoatra. Raha mahalala fa ny ankizy madinika tsy feno 16 taona no namorona kaonty tsy nisy fanekena ny ray aman-dreny, dia mitazona ny zo hanafoana io kaonty io isika.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">update</span> 9. Fanovana Ity Fitsipika Ity</h2>
+        <p>Ny fitsipika ity dia mety havaozina mba hamaritra ny fandehanan'ny lalàna na fanovana ny sehatra. Ny fanovana lehibe dia hampahafantarina ny mpampiasa amin'ny alalan'ny sehatra.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">mail_outline</span> 10. Fifandraisana</h2>
+        <p>Ho an'ny fanontaniana rehetra momba ny fiarovana ny angon-drakitrao: <strong>contact@vazimba.io</strong></p>
+    </div>
+
+    <p style="text-align:center;font-size:.78rem;color:var(--text-muted);margin-top:2rem;">
+        © 2026 VAZIMBA · Tambajotra Sosialy Madagasikara · Zo rehetra voatokana
+    </p>
+</div>
+{% endblock content %}

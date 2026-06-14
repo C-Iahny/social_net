@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.legal-page { max-width:820px; margin:3rem auto; padding:0 1.25rem 4rem; font-family:var(--font-primary,'Space Grotesk',sans-serif); }
+.legal-logo { display:flex; align-items:center; gap:1rem; margin-bottom:2.5rem; text-decoration:none; }
+.legal-logo img { height:52px; width:auto; }
+[data-theme="dark"] .legal-logo img { filter:brightness(0) invert(1); }
+.legal-hero { background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%); border-radius:18px; padding:2.5rem 2rem; color:#fff; margin-bottom:2.5rem; position:relative; overflow:hidden; }
+.legal-hero::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Ccircle cx='20' cy='20' r='2'/%3E%3C/g%3E%3C/svg%3E"); pointer-events:none; }
+.legal-hero h1 { font-size:clamp(1.6rem,4vw,2.2rem); font-weight:900; margin:0 0 .5rem; position:relative; }
+.legal-hero p { opacity:.88; font-size:.95rem; margin:0; position:relative; }
+.legal-meta { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:2rem; font-size:.8rem; color:var(--text-muted); }
+.legal-meta-chip { background:var(--btn-bg); border:1px solid var(--border); border-radius:20px; padding:.25rem .75rem; display:flex; align-items:center; gap:.3rem; }
+.legal-meta-chip .material-icons { font-size:.9rem; color:var(--accent); }
+.legal-section { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:1.75rem 1.75rem 1.25rem; margin-bottom:1.25rem; box-shadow:var(--shadow); }
+.legal-section h2 { font-size:1.08rem; font-weight:800; color:var(--text); margin:0 0 1rem; display:flex; align-items:center; gap:.5rem; }
+.legal-section h2 .material-icons { font-size:1.15rem; color:var(--accent); flex-shrink:0; }
+.legal-section p,.legal-section li { font-size:.9rem; line-height:1.75; color:var(--text-muted); margin-bottom:.65rem; }
+.legal-section ul { padding-left:1.25rem; margin:.5rem 0; }
+.legal-section li { margin-bottom:.35rem; }
+.legal-warn { background:rgba(220,53,69,.07); border-left:4px solid #dc3545; border-radius:0 10px 10px 0; padding:.85rem 1.1rem; margin:.75rem 0; font-size:.88rem; color:var(--text); }
+[data-theme="dark"] .legal-warn { background:rgba(255,77,77,.07); }
+.legal-warn strong { color:#dc3545; }
+.legal-positive { background:rgba(40,167,69,.07); border-left:4px solid #28a745; border-radius:0 10px 10px 0; padding:.85rem 1.1rem; margin:.75rem 0; font-size:.88rem; color:var(--text); }
+[data-theme="dark"] .legal-positive { background:rgba(40,200,80,.07); }
+.legal-positive strong { color:#28a745; }
+.legal-back { display:inline-flex; align-items:center; gap:.4rem; color:var(--accent); font-weight:700; text-decoration:none; font-size:.9rem; margin-bottom:2rem; transition:opacity .2s; }
+.legal-back:hover { opacity:.75; text-decoration:none; }
+.legal-back .material-icons { font-size:1rem; }
+@media(max-width:575px){ .legal-page{padding:0 .75rem 5rem;margin-top:1.5rem;} .legal-section{padding:1.25rem 1rem .85rem;} .legal-hero{padding:1.75rem 1.25rem;} }
+</style>
+
+<div class="legal-page">
+    <a href="{% url 'landing' %}" class="legal-logo">
+        <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="Vazimba">
+    </a>
+    <a href="javascript:history.back()" class="legal-back"><span class="material-icons">arrow_back</span> Hiverina</a>
+
+    <div class="legal-hero">
+        <h1>Fepetra Ankapoben'ny Fampiasana</h1>
+        <p>Mba hamakiana tsara ireto fepetra ireto alohan'ny fampiasana ny sehatra Vazimba.</p>
+    </div>
+
+    <div class="legal-meta">
+        <span class="legal-meta-chip"><span class="material-icons">event</span> Fanavaozana farany: Jona 2026</span>
+        <span class="legal-meta-chip"><span class="material-icons">language</span> www.vazimba.io</span>
+        <span class="legal-meta-chip"><span class="material-icons">place</span> Madagasikara</span>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">info_outline</span> 1. Momba an'i Vazimba</h2>
+        <p>Vazimba dia tambajotra sosialy natao ho an'ny fiaraha-monin'ny Malagasy, azo jerena amin'ny <strong>www.vazimba.io</strong>. Ny tanjontsika dia ny hanome an'i Madagasikara feo tena izy — toerana izay hajaina sy omem-boninahitra ny kolontsaina, ny fiteny ary ny soatoavina malagasy.</p>
+        <p>Ny Vazimba dia misy anjara toerana manokana amin'ny <strong>fanabeazana sy fanatsarana</strong> ny mponin'i Madagasikara. Ny sehatra dia mankasitraka ny fizarana fahalalana, ny fifankatiavana mifampiray, ary ny fampahalalana ny talenta sy fandraharahana eo an-toerana.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">people_outline</span> 2. Fidirana sy Fisoratana anarana</h2>
+        <p>Ny fampiasana Vazimba dia misokatra ho an'izay rehetra <strong>feno 16 taona</strong> na mihoatra. Amin'ny famoronana kaonty, dia manaiky ianao fa:</p>
+        <ul>
+            <li>Feno ny taona takiana ianao.</li>
+            <li>Manome vaovao marina amin'ny fisoratana anarana.</li>
+            <li>Tompon'andraikitra amin'ny fiarovana ny teny fiafenana ao amin'ny kaontinao.</li>
+            <li>Tsy hamorona kaonty maro na hanao fampisehoana ho olon-kafa.</li>
+        </ul>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">block</span> 3. Votoatiny Voarara</h2>
+        <p>Mba hiarovana ny vondron'olona sy ny fahamendrehan'ny Malagasy, ny votoatiny manaraka dia <strong>raràna tanteraka</strong> ao amin'i Vazimba.</p>
+
+        <div class="legal-warn">
+            <strong>🚫 Votoatiny ara-nofo na manamelo-tena</strong><br>
+            Raràna ny famoahana sary, horonan-tsary na lahatsoratra ara-nofo, erotika na pornografika. Ao anatin'izany ny votoatiny mampiseho ampahany amin'ny vatana (tratrambava, vodiala, sns.) izay tanjona fampisehoana ny vatana fa tsy ny fahaizana na talenta.<br><br>
+            Mino ny Vazimba fa ny tombontsoa tena izy amin'ny olona dia ao amin'ny fahaizana, famoronana ary fahombiazana — fa tsy amin'ny fampisehoana ny vatana. Ny votoatiny toy ireny dia hofanaina ary havela ny kaonty voakasika.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Herisetra sy halozana</strong><br>
+            Raràna ny famoahana votoatiny mampiseho herisetra, fankahalana, halozana amin'olona na biby. Ireo sary ireo dia mahatezitra ny mpikambana amin'ny vondron'olona ary tsy ho ekena velively.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Fitsarana araky ny vahoaka sy antso amin'ny famaizana</strong><br>
+            Raràna ny famoahana votoatiny izay tanjona hamantarana, hanalam-boninahitra, hitsara na hamaly valifaty ny olona iray (mpangalatra, olona voasandoka ho mpamadika, sns.) amin'ny fitantarana ampahibemaso. Ireo lahatsoratra ireo dia mampisy herisetra ary mifanohitra amin'ny fahalemen'ny fahamendrehana. Ny ekipa Vazimba dia hanala avy hatrany ny votoatiny toy izany.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Fanambarana ara-politika, ara-pitsarana na antso amin'ny sazy</strong><br>
+            Raràna ny famoahana izay tanjona ny fanaovana fanambarana ara-politika, fanapahan-kevitry ny fitsarana, na fangatahana sazy na famaizana ny olon-drehetra na vondrona iray. Ny Vazimba dia tsy fitsarana na toerana ara-politika.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Fanenjehana, fanavakavahana ary resaka fankahalana</strong><br>
+            Raràna ny karazana fanenjehana, fampihorohoroana na fanavakavahana miorina amin'ny fiaviana, fivavahana, ny taranaka, ny fiheverana na ny toe-karena.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Vaovao sandoka sy fampitahorana</strong><br>
+            Raràna ny fanaparitahana tsaho, vaovao tsy voamarina nefa atolotra ho marina, ary votoatiny natao hampihodinkodina ny hevitry ny olona.
+        </div>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">star_outline</span> 4. Votoatiny Ankasitrahantsika</h2>
+        <div class="legal-positive">
+            <strong>✅ Izay ankasitrahana ao amin'i Vazimba</strong><br>
+            Fizarana fahalalana, torohevitra ara-pampianarana sy asa · Fampiasana ny kolontsaina, zavakanto ary fomban-drazana malagasy · Fizarana fahazoana asa, fampiofanana ary fandraharahana · Vaovao tsara, hetsika eo amin'ny vondron'olona ary tetikasa iombonana · Fifanakalozan-kevitra mifampiray sy mifampiova.
+        </div>
+        <p>Mino isika fa ny tanora tsara fianarana, voaomana tsara — ekena amin'ny fahaizany — no fanalahidin'ny fampandrosoana an'i Madagasikara. Vazimba dia natao ho io toerana io.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">gavel</span> 5. Fanaraha-maso sy Sazy</h2>
+        <p>Ny ekipa Vazimba dia mitazona ny zo:</p>
+        <ul>
+            <li>Hanala ny votoatiny rehetra mifanohitra amin'ireto FAF ireto, nefa tsy mila fampilazana mialoha.</li>
+            <li>Hanakana vonjimaika na maharitra ny kaonty raha misy fandikan-dalàna matetika.</li>
+            <li>Hampahafantatra ny manam-pahefana ny votoatiny tsy ara-dalàna.</li>
+        </ul>
+        <p>Ny fanapahan-kevitry ny fanaraha-maso dia raisina amin'ny fanajana ny fahamendrehan'olombelona sy ny tombontsoan'ny vondron'olona. Ny mpampiasa izay nafanaina ny votoatiny dia afaka mifandray amin'ny ekipa mba hahazo fanazavana.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">copyright</span> 6. Fananana ara-tsaina</h2>
+        <p>Mbola tompon'ny votoatiny navoakanao ianao. Amin'ny famoahana azy ao amin'i Vazimba, dia manome alalana tsy manokana ny sehatra ianao hamoaka azy ho enti-manantanteraka ny tambajotra, ary tsy enti-mahazo tombontsoa ara-barotra.</p>
+        <p>Ny Vazimba, ny mariky ny orinasa, ny endrika ivelany ary ny fomba fiasany dia fananana manokana ny mpamorona azy. Raràna ny fakana mifanitsy raha tsy manana alalana.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">update</span> 7. Fanovana ireto Fepetra ireto</h2>
+        <p>Ny Vazimba dia mitazona ny zo hanova ireto fepetra ireto amin'ny fotoana rehetra. Ny mpampiasa dia hampahafantarina amin'ny alalan'ny sehatra. Ny fampiasana mitohy ny serivisy aorian'ny fampilazana dia midika fa eken'ny mpampiasa ny fepetra vaovao.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">mail_outline</span> 8. Fifandraisana</h2>
+        <p>Ho an'ny fanontaniana momba ireto FAF ireto na ny fanononana ny fandikan-dalàna: <strong>contact@vazimba.io</strong></p>
+    </div>
+
+    <p style="text-align:center;font-size:.78rem;color:var(--text-muted);margin-top:2rem;">
+        © 2026 VAZIMBA · Tambajotra Sosialy Madagasikara · Zo rehetra voatokana
+    </p>
+</div>
+{% endblock content %}

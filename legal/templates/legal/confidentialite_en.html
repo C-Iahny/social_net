@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.legal-page { max-width:820px; margin:3rem auto; padding:0 1.25rem 4rem; font-family:var(--font-primary,'Space Grotesk',sans-serif); }
+.legal-logo { display:flex; align-items:center; gap:1rem; margin-bottom:2.5rem; text-decoration:none; }
+.legal-logo img { height:52px; width:auto; }
+[data-theme="dark"] .legal-logo img { filter:brightness(0) invert(1); }
+.legal-hero { background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%); border-radius:18px; padding:2.5rem 2rem; color:#fff; margin-bottom:2.5rem; position:relative; overflow:hidden; }
+.legal-hero::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Ccircle cx='20' cy='20' r='2'/%3E%3C/g%3E%3C/svg%3E"); pointer-events:none; }
+.legal-hero h1 { font-size:clamp(1.6rem,4vw,2.2rem); font-weight:900; margin:0 0 .5rem; position:relative; }
+.legal-hero p { opacity:.88; font-size:.95rem; margin:0; position:relative; }
+.legal-meta { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:2rem; font-size:.8rem; color:var(--text-muted); }
+.legal-meta-chip { background:var(--btn-bg); border:1px solid var(--border); border-radius:20px; padding:.25rem .75rem; display:flex; align-items:center; gap:.3rem; }
+.legal-meta-chip .material-icons { font-size:.9rem; color:var(--accent); }
+.legal-section { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:1.75rem 1.75rem 1.25rem; margin-bottom:1.25rem; box-shadow:var(--shadow); }
+.legal-section h2 { font-size:1.08rem; font-weight:800; color:var(--text); margin:0 0 1rem; display:flex; align-items:center; gap:.5rem; }
+.legal-section h2 .material-icons { font-size:1.15rem; color:var(--accent); flex-shrink:0; }
+.legal-section p,.legal-section li { font-size:.9rem; line-height:1.75; color:var(--text-muted); margin-bottom:.65rem; }
+.legal-section ul { padding-left:1.25rem; margin:.5rem 0; }
+.legal-section li { margin-bottom:.35rem; }
+.data-table { width:100%; border-collapse:collapse; font-size:.88rem; margin:.75rem 0; }
+.data-table th { background:var(--btn-bg); color:var(--text); font-weight:700; padding:.6rem .85rem; text-align:left; border:1px solid var(--border); font-size:.8rem; }
+.data-table td { padding:.55rem .85rem; border:1px solid var(--border); color:var(--text-muted); vertical-align:top; }
+.data-table tr:nth-child(even) td { background:var(--bg); }
+.legal-back { display:inline-flex; align-items:center; gap:.4rem; color:var(--accent); font-weight:700; text-decoration:none; font-size:.9rem; margin-bottom:2rem; transition:opacity .2s; }
+.legal-back:hover { opacity:.75; text-decoration:none; }
+.legal-back .material-icons { font-size:1rem; }
+@media(max-width:575px){ .legal-page{padding:0 .75rem 5rem;margin-top:1.5rem;} .legal-section{padding:1.25rem 1rem .85rem;} .legal-hero{padding:1.75rem 1.25rem;} }
+</style>
+
+<div class="legal-page">
+    <a href="{% url 'landing' %}" class="legal-logo">
+        <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="Vazimba">
+    </a>
+    <a href="javascript:history.back()" class="legal-back"><span class="material-icons">arrow_back</span> Back</a>
+
+    <div class="legal-hero">
+        <h1>Privacy Policy</h1>
+        <p>How Vazimba collects, uses and protects your personal data.</p>
+    </div>
+
+    <div class="legal-meta">
+        <span class="legal-meta-chip"><span class="material-icons">event</span> Last updated: June 2026</span>
+        <span class="legal-meta-chip"><span class="material-icons">language</span> www.vazimba.io</span>
+        <span class="legal-meta-chip"><span class="material-icons">place</span> Madagascar</span>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">admin_panel_settings</span> 1. Data Controller</h2>
+        <p>The data controller for personal data collected on the <strong>Vazimba</strong> platform (www.vazimba.io) is the Vazimba team, reachable at <strong>contact@vazimba.io</strong>.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">storage</span> 2. Data We Collect</h2>
+        <p>When you register and use the platform, we collect the following data:</p>
+        <table class="data-table">
+            <thead>
+                <tr><th>Data</th><th>Purpose</th><th>Retention period</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Email address</td><td>Identification, password recovery</td><td>Duration of account</td></tr>
+                <tr><td>Username</td><td>Public display on the platform</td><td>Duration of account</td></tr>
+                <tr><td>Password (hashed)</td><td>Secure authentication</td><td>Duration of account</td></tr>
+                <tr><td>Profile photo</td><td>Visual identification on the platform</td><td>Duration of account</td></tr>
+                <tr><td>Registration date</td><td>Account management and security</td><td>Duration of account</td></tr>
+                <tr><td>Terms acceptance date</td><td>Legal consent record</td><td>5 years after account deletion</td></tr>
+                <tr><td>Published content (posts, comments)</td><td>Social network operation</td><td>Until deleted by user</td></tr>
+                <tr><td>IP address</td><td>Security, abuse detection</td><td>30 days</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">share</span> 3. Data Sharing</h2>
+        <p>Vazimba <strong>does not sell</strong> your personal data to third parties.</p>
+        <p>Your data may be shared only in the following cases:</p>
+        <ul>
+            <li><strong>Technical providers</strong>: hosting (Railway), storage (AWS S3 / Cloudflare), transactional email (Brevo) — solely for the operation of the service.</li>
+            <li><strong>Legal obligations</strong>: if required by a competent Malagasy or international authority, strictly within the bounds of the law.</li>
+            <li><strong>Security</strong>: to prevent fraudulent or illegal activities on the platform.</li>
+        </ul>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">visibility_off</span> 4. Public and Private Content</h2>
+        <p>On Vazimba, publications, comments and profiles are <strong>public by default</strong> and visible to all registered users. Your email address and password are <strong>never displayed</strong> or shared publicly.</p>
+        <p>Private messages (chat) are only visible to the participants of the conversation.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">lock_outline</span> 5. Data Security</h2>
+        <p>We implement appropriate technical measures to protect your data:</p>
+        <ul>
+            <li>Secure HTTPS connection throughout the platform.</li>
+            <li>Passwords stored in hashed form (unreadable, even by our team).</li>
+            <li>Data access limited to authorised Vazimba team members.</li>
+            <li>Regular database backups.</li>
+        </ul>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">manage_accounts</span> 6. Your Rights</h2>
+        <p>In accordance with personal data protection principles, you have the following rights:</p>
+        <ul>
+            <li><strong>Access</strong>: you may request a copy of your personal data.</li>
+            <li><strong>Rectification</strong>: you may update your information from the Settings page.</li>
+            <li><strong>Deletion</strong>: you may request the deletion of your account and data.</li>
+            <li><strong>Objection</strong>: you may object to certain processing of your data.</li>
+        </ul>
+        <p>To exercise these rights, contact us at <strong>contact@vazimba.io</strong>.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">cookie</span> 7. Cookies</h2>
+        <p>Vazimba uses cookies that are essential to the operation of the service (authentication session, language and theme preferences). No advertising or third-party tracking cookies are used.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">child_care</span> 8. Minors</h2>
+        <p>Vazimba is intended for people aged <strong>16 and over</strong>. If we learn that a minor under 16 has created an account without parental consent, we reserve the right to delete that account.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">update</span> 9. Changes to This Policy</h2>
+        <p>This policy may be updated to reflect legal developments or changes to the platform. Any significant changes will be notified to users via the platform.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">mail_outline</span> 10. Contact</h2>
+        <p>For any questions regarding the protection of your data: <strong>contact@vazimba.io</strong></p>
+    </div>
+
+    <p style="text-align:center;font-size:.78rem;color:var(--text-muted);margin-top:2rem;">
+        © 2026 VAZIMBA · Social Network Madagascar · All rights reserved
+    </p>
+</div>
+{% endblock content %}
