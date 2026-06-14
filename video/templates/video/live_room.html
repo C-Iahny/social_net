@@ -624,6 +624,9 @@ function connect() {
             case 'ring_buffer_done':
                 if (!IS_HOST) onRingBufferDone();
                 break;
+            case 'request_keyframe':
+                if (IS_HOST) requestKeyframeRestart();
+                break;
             case 'stream_ended':
                 onStreamEnded();
                 break;
@@ -687,6 +690,7 @@ function startRecording(stream) {
         mediaRecorder = new MediaRecorder(stream, {
             mimeType: MIME,
             videoBitsPerSecond: 2500000,  /* 2.5 Mbps pour une bonne qualité match foot */
+            videoKeyFrameIntervalDuration: 2000, /* Keyframe toutes les 2 s (Chrome/Edge) */
         });
     } catch(e) {
         appendSystemMsg('Erreur recorder : ' + e.message);
@@ -730,6 +734,37 @@ function stopRecording() {
     }
 }
 
+/* ── Redémarrage propre du MediaRecorder (keyframe fresh pour Firefox/Opera) ──
+   Quand un viewer rejoint, le serveur envoie request_keyframe au host.
+   On stoppe le recorder courant, on ignore son chunk final (ce n'est pas un
+   init segment), puis on relance → premier ondataavailable = keyframe garanti.
+   Ce nouveau init chunk est diffusé à TOUS les viewers via group_send, ils
+   réinitialisent leur MediaSource proprement. */
+var _recRestartPending = false;
+function requestKeyframeRestart() {
+    if (_recRestartPending) return;
+    if (!IS_HOST || !localStream) return;
+    if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+    _recRestartPending = true;
+    console.log('[HOST] requestKeyframeRestart — redémarrage MediaRecorder pour nouveau keyframe...');
+    var oldRec   = mediaRecorder;
+    mediaRecorder = null;  /* Empêche stopRecording() de double-stopper */
+    /* Silencer le chunk final de stop() — pas un init segment */
+    oldRec.ondataavailable = function() {};
+    oldRec.onstop = function() {
+        _recRestartPending = false;
+        isFirstChunk = true;
+        startRecording(localStream);  /* Premier chunk = keyframe VP9 garanti */
+    };
+    try {
+        oldRec.stop();
+    } catch(e) {
+        _recRestartPending = false;
+        mediaRecorder = oldRec;  /* Restaurer en cas d'erreur */
+        console.error('[HOST] requestKeyframeRestart — stop() erreur:', e);
+    }
+}
+
 window.toggleSource = function(src) {
     stopRecording();
     if (localStream) { localStream.getTracks().forEach(function(t) { t.stop(); }); localStream = null; }
@@ -752,6 +787,10 @@ window.toggleMic = function() {
    ══════════════════════════════════════════════════ */
 
 function initMediaSource(mime) {
+    /* Supprimer le bouton play si présent (la resync le rend obsolète) */
+    var _existingPlayBtn = document.getElementById('lr-play-btn');
+    if (_existingPlayBtn) _existingPlayBtn.remove();
+
     if (!window.MediaSource || !MediaSource.isTypeSupported(mime)) {
         if (waitingOverlay) {
             var sp2  = waitingOverlay.querySelector('.lr-waiting-spinner');
@@ -908,9 +947,21 @@ function showPlayButton() {
         'backdrop-filter:blur(4px);font-family:inherit;'
     ].join('');
     btn.onclick = function() {
-        videoEl.muted = false;
-        syncToLiveEdge();
         btn.remove();
+        var u = document.getElementById('lr-unmute-btn');
+        if (u) u.remove();
+        /* Reconnexion complète : renvoie join_viewer → serveur envoie init + ring buffer
+           + request_keyframe au host → nouveau keyframe propre → Firefox/Opera décodent.
+           Simple play() ne suffit pas si le SourceBuffer est en état d'erreur. */
+        msInited = false; appendQueue = []; sourceBuffer = null; hasPlayed = false;
+        if (waitingOverlay) {
+            waitingOverlay.classList.remove('hidden');
+            var _rsp = waitingOverlay.querySelector('.lr-waiting-spinner');
+            var _rtx = waitingOverlay.querySelector('.lr-waiting-text');
+            if (_rsp) { _rsp.style.display = ''; _rsp.style.borderTopColor = '#3b82f6'; }
+            if (_rtx) _rtx.textContent = 'Resynchronisation…';
+        }
+        wsSend({ type: 'join_viewer' });
     };
     var area = document.querySelector('.lr-video-area');
     if (area) area.appendChild(btn);
@@ -937,8 +988,17 @@ function onMediaChunk(d) {
 
     console.log('[VIEWER] chunk reçu, is_init:', d.is_init, ', taille data:', d.data.length);
 
-    /* Nouveau flux → réinitialiser MediaSource */
+    /* Nouveau flux (ou resync host) → réinitialiser MediaSource */
     if (d.is_init) {
+        /* Si on était déjà en lecture, c'est une resync (nouveau viewer → request_keyframe).
+           Montrer l'overlay "Resynchronisation…" pendant la fraction de seconde de coupure. */
+        if (hasPlayed && waitingOverlay) {
+            waitingOverlay.classList.remove('hidden');
+            var _rsp2 = waitingOverlay.querySelector('.lr-waiting-spinner');
+            var _rtx2 = waitingOverlay.querySelector('.lr-waiting-text');
+            if (_rsp2) { _rsp2.style.display = ''; _rsp2.style.borderTopColor = '#3b82f6'; }
+            if (_rtx2) _rtx2.textContent = 'Resynchronisation…';
+        }
         msInited = false;
         appendQueue = [];
         var ok = initMediaSource(mime);  /* retourne false si navigateur non supporté */
