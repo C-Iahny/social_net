@@ -339,8 +339,9 @@ const previewGrid = document.getElementById('preview-grid');
 const uploadZone = document.getElementById('upload-zone');
 
 fileInput.addEventListener('change', function() {
-    addFiles(Array.from(this.files));
-    this.value = '';
+    const captured = Array.from(this.files); // 1. capturer avant de vider
+    this.value = '';                          // 2. vider l'input (pour permettre re-sélection du même fichier)
+    addFiles(captured);                       // 3. ajouter + syncInput remet les fichiers via DataTransfer
 });
 
 // Drag & drop
