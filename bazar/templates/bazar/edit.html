@@ -155,7 +155,7 @@
                 <div style="font-size:.85rem;font-weight:600;">{% trans "Ajouter des photos" %}</div>
                 <div style="font-size:.75rem;color:var(--text-muted);">Max {{ images|length|add:'8'|add:'-'|add:images|length }} photos supplémentaires</div>
             </div>
-            <input type="file" name="images" id="id_images" class="bazar-file-input" multiple accept="image/*">
+            <input type="file" name="images" id="id_images" class="bazar-file-input" multiple accept="image/*,.heic,.heif">
             <div class="bazar-preview-grid" id="preview-grid"></div>
             {% endif %}
         </div>
@@ -255,17 +255,38 @@ const previewGrid = document.getElementById('preview-grid');
 
 if (fileInput) {
     fileInput.addEventListener('change', function() {
-        selectedFiles = Array.from(this.files).slice(0, 8);
-        renderPreviews();
+        const captured = Array.from(this.files);
+        this.value = '';
+        // Conversion WebP + HEIC via ZootMediaConverter (même logique que le feed)
+        if (window.ZootMediaConverter) {
+            ZootMediaConverter.processFiles(captured).then(converted => {
+                selectedFiles = converted.slice(0, 8);
+                renderPreviews();
+                syncEditInput();
+            }).catch(() => {
+                selectedFiles = captured.slice(0, 8);
+                renderPreviews();
+                syncEditInput();
+            });
+        } else {
+            selectedFiles = captured.slice(0, 8);
+            renderPreviews();
+            syncEditInput();
+        }
     });
+}
+
+function syncEditInput() {
+    if (!fileInput) return;
+    const dt = new DataTransfer();
+    selectedFiles.forEach(f => dt.items.add(f));
+    fileInput.files = dt.files;
 }
 
 function removeFile(idx) {
     selectedFiles.splice(idx, 1);
     renderPreviews();
-    const dt = new DataTransfer();
-    selectedFiles.forEach(f => dt.items.add(f));
-    if (fileInput) fileInput.files = dt.files;
+    syncEditInput();
 }
 
 function renderPreviews() {

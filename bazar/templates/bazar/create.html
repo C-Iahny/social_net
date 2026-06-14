@@ -235,7 +235,7 @@
                 <div class="bazar-upload-text">{% trans "Cliquer pour ajouter des photos" %}</div>
                 <div class="bazar-upload-hint">{% trans "JPG, PNG, WebP · Max 8 photos · La première = photo principale" %}</div>
             </div>
-            <input type="file" name="images" id="id_images" class="bazar-file-input" multiple accept="image/*">
+            <input type="file" name="images" id="id_images" class="bazar-file-input" multiple accept="image/*,.heic,.heif">
             <div class="bazar-preview-grid" id="preview-grid"></div>
         </div>
 
@@ -339,9 +339,9 @@ const previewGrid = document.getElementById('preview-grid');
 const uploadZone = document.getElementById('upload-zone');
 
 fileInput.addEventListener('change', function() {
-    const captured = Array.from(this.files); // 1. capturer avant de vider
-    this.value = '';                          // 2. vider l'input (pour permettre re-sélection du même fichier)
-    addFiles(captured);                       // 3. ajouter + syncInput remet les fichiers via DataTransfer
+    const captured = Array.from(this.files);
+    this.value = '';
+    _processAndAdd(captured);
 });
 
 // Drag & drop
@@ -350,8 +350,22 @@ uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag
 uploadZone.addEventListener('drop', e => {
     e.preventDefault();
     uploadZone.classList.remove('drag-over');
-    addFiles(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    const files = Array.from(e.dataTransfer.files).filter(f =>
+        f.type.startsWith('image/') || (window.ZootMediaConverter && window.ZootMediaConverter.isHeic(f))
+    );
+    _processAndAdd(files);
 });
+
+// Conversion WebP + HEIC via ZootMediaConverter (même logique que le feed)
+function _processAndAdd(files) {
+    if (window.ZootMediaConverter) {
+        ZootMediaConverter.processFiles(files)
+            .then(converted => addFiles(converted))
+            .catch(() => addFiles(files));
+    } else {
+        addFiles(files);
+    }
+}
 
 function addFiles(files) {
     for (const file of files) {
