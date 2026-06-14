@@ -86,9 +86,17 @@
     border-radius: 50px;
     padding: .35rem .35rem .35rem 1.1rem;
 }
-.hero-search-wrap input {
-    flex: 1; background: none; border: none; outline: none;
-    color: #fff; font-size: .97rem;
+.hero-search-wrap input,
+[data-theme="dark"] .hero-search-wrap input {
+    flex: 1;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    outline: none;
+    color: #fff !important;
+    font-size: .97rem;
 }
 .hero-search-wrap input::placeholder { color: rgba(255,255,255,.72); opacity: 1; }
 .hero-search-wrap input::-moz-placeholder { color: rgba(255,255,255,.72); opacity: 1; }
