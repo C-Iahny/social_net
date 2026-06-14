@@ -8,61 +8,58 @@
   <title>ZOOT — Réseau Social</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* ===== VARIABLES THÈME ===== */
+    /* ===== VARIABLES THÈME — Palette Noble Acajou / Nuit Ambre ===== */
     :root {
-      --bg:          #f0f2f5;
+      --bg:          #faf7f4;
       --bg-card:     #ffffff;
       --bg-nav:      #ffffff;
-      --text:        #1c1e21;
-      --text-muted:  #65676b;
-      --border:      #dddfe2;
-      --accent:      #1877f2;
-      --accent-dark: #0d6efd;
-      --hero-from:   #1877f2;
-      --hero-to:     #6c2bd9;
-      --shadow:      0 2px 12px rgba(0,0,0,.10);
-      --badge-info:    #e7f3ff;
-      --badge-info-t:  #1877f2;
+      --text:        #1a0e08;
+      --text-muted:  #6b5344;
+      --border:      #e8ddd6;
+      --accent:      #8B4513;
+      --accent-dark: #6b340f;
+      --accent2:     #A0522D;
+      --hero-from:   #5c2a08;
+      --hero-to:     #A0522D;
+      --shadow:      0 2px 12px rgba(139,69,19,.10);
+      --badge-info:    #fdf0e8;
+      --badge-info-t:  #8B4513;
       --badge-success: #e6f4ea;
       --badge-success-t:#1a7f37;
       --badge-warning: #fff8e1;
       --badge-warning-t:#b45309;
       --badge-danger:  #fdecea;
       --badge-danger-t:#d93025;
-      /* Variables supplémentaires pour les snippets partagés */
-      --accent2:       #6c2bd9;
-      --accent-glow:   rgba(99,102,241,.25);
-      --btn-bg:        rgba(0,0,0,.04);
-      --btn-hover:     rgba(0,0,0,.07);
+      --accent-glow:   rgba(139,69,19,.20);
+      --btn-bg:        rgba(139,69,19,.06);
+      --btn-hover:     rgba(139,69,19,.11);
       --font-primary:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     [data-theme="dark"] {
-      --bg:          #18191a;
-      --bg-card:     #242526;
-      --bg-nav:      #242526;
-      --text:        #e4e6eb;
-      --text-muted:  #b0b3b8;
-      --border:      #3a3b3c;
-      --accent:      #2d88ff;
-      --accent-dark: #1877f2;
-      --hero-from:   #1a237e;
-      --hero-to:     #4a148c;
-      --shadow:      0 2px 12px rgba(0,0,0,.40);
-      --badge-info:    #1c3558;
-      --badge-info-t:  #6ba3f7;
+      --bg:          #16100c;
+      --bg-card:     #1f1510;
+      --bg-nav:      #1f1510;
+      --text:        #f0e6da;
+      --text-muted:  #b09070;
+      --border:      #3a2a1e;
+      --accent:      #D4AF37;
+      --accent-dark: #b8941f;
+      --accent2:     #C19A2E;
+      --hero-from:   #2a1205;
+      --hero-to:     #5c2a08;
+      --shadow:      0 2px 12px rgba(0,0,0,.45);
+      --badge-info:    #2a1e10;
+      --badge-info-t:  #D4AF37;
       --badge-success: #1a3326;
       --badge-success-t:#4caf7d;
       --badge-warning: #332b00;
       --badge-warning-t:#ffd54f;
       --badge-danger:  #3b1212;
       --badge-danger-t:#f28b82;
-      /* Variables supplémentaires pour les snippets partagés */
-      --accent2:       #9f5cf7;
-      --accent-glow:   rgba(45,136,255,.25);
+      --accent-glow:   rgba(212,175,55,.20);
       --btn-bg:        rgba(255,255,255,.06);
       --btn-hover:     rgba(255,255,255,.10);
-      --neon-cyan:     #00cfff;
       --font-primary:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
@@ -346,12 +343,12 @@
   {% if hero.background_image %}
   <section class="hero has-bg-image" style="
       background-image:
-          linear-gradient(135deg, {{ hero.gradient_from }}cc 0%, {{ hero.gradient_to }}cc 100%),
+          linear-gradient(135deg, #5c2a08cc 0%, #A0522Dcc 100%),
           url('{{ hero.background_image.url }}');
   ">
   {% else %}
   <section class="hero" style="
-      background: linear-gradient(135deg, {{ hero.gradient_from }} 0%, {{ hero.gradient_to }} 100%);
+      background: linear-gradient(135deg, #5c2a08 0%, #8B4513 55%, #A0522D 100%);
   ">
   {% endif %}
     <div class="hero-content" style="position:relative;z-index:1;">
