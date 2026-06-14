@@ -1,3 +1,5 @@
+import re
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -9,6 +11,9 @@ from django.utils import timezone
 from post.models import Post, Comment, Reaction, PostMedia, Repost
 from .forms import GroupForm
 from .models import Group, GroupMembership, GroupEvent
+
+# ── Regex pour extraire les hashtags du texte brut / HTML ────────────────────
+_HASHTAG_RE = re.compile(r'#([A-Za-zÀ-ÿ0-9_]{2,60})')
 
 
 # ── Helpers réutilisés depuis post/views ──────────────────────────────────────
@@ -89,24 +94,140 @@ def _enrich_posts(posts, post_ids, user):
     _attach_media(posts, post_ids)
 
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _strip_html(text):
+    """Supprime les balises HTML d'un texte."""
+    if not text:
+        return ''
+    return re.sub(r'<[^>]+>', ' ', str(text))
+
+
+def _get_trending_hashtags(group, limit=10):
+    """Extrait les hashtags les plus utilisés dans les posts du groupe."""
+    posts_bodies = Post.objects.filter(group=group).values_list('body', flat=True)
+    counter = {}
+    for body in posts_bodies:
+        for tag in _HASHTAG_RE.findall(_strip_html(body)):
+            tag_lower = tag.lower()
+            counter[tag_lower] = counter.get(tag_lower, 0) + 1
+    sorted_tags = sorted(counter.items(), key=lambda x: -x[1])[:limit]
+    return sorted_tags  # liste de (tag, count)
+
+
+def _get_recommended_groups(user, exclude_ids, limit=6):
+    """
+    Groupes recommandés pour `user` :
+    1. Groupes publics de la même catégorie que ses groupes actuels
+    2. Groupes publics avec beaucoup de membres
+    L'utilisateur n'est pas membre de ces groupes.
+    """
+    if not user.is_authenticated:
+        return (
+            Group.objects
+            .filter(privacy=Group.PUBLIC)
+            .exclude(id__in=exclude_ids)
+            .annotate(num_members=Count('memberships'))
+            .order_by('-num_members')
+            .select_related('creator')[:limit]
+        )
+
+    # Catégories de l'utilisateur
+    my_cats = set(
+        GroupMembership.objects
+        .filter(user=user)
+        .values_list('group__category', flat=True)
+    ) - {'', None}
+
+    qs = (
+        Group.objects
+        .filter(privacy=Group.PUBLIC)
+        .exclude(id__in=exclude_ids)
+        .annotate(num_members=Count('memberships'))
+        .select_related('creator')
+    )
+
+    if my_cats:
+        # Prioriser les groupes de même catégorie
+        from django.db.models import Case, When, IntegerField
+        qs = qs.annotate(
+            cat_match=Case(
+                When(category__in=list(my_cats), then=1),
+                default=0,
+                output_field=IntegerField(),
+            )
+        ).order_by('-cat_match', '-num_members')
+    else:
+        qs = qs.order_by('-num_members')
+
+    return qs[:limit]
+
+
 # ── Vues ──────────────────────────────────────────────────────────────────────
 
-@login_required
 def group_list(request):
-    """Liste de tous les groupes + indication d'appartenance."""
-    groups = (
+    """
+    Liste des groupes — accessible à tous (même non connecté).
+    Onglets : mes groupes | tous | recommandés.
+    Filtres : catégorie, recherche texte.
+    """
+    query    = request.GET.get('q', '').strip()
+    category = request.GET.get('cat', '').strip()
+    tab      = request.GET.get('tab', 'all')   # all | mine | recommended
+
+    # Groupes de base (publics ou le tout pour les membres)
+    qs = (
         Group.objects
         .annotate(num_members=Count('memberships'))
         .select_related('creator')
     )
-    my_group_ids = set(
-        GroupMembership.objects
-        .filter(user=request.user)
-        .values_list('group_id', flat=True)
-    )
+
+    # Filtres texte & catégorie
+    if query:
+        qs = qs.filter(Q(name__icontains=query) | Q(description__icontains=query))
+    if category:
+        qs = qs.filter(category=category)
+
+    # Onglet
+    if request.user.is_authenticated:
+        my_group_ids = set(
+            GroupMembership.objects
+            .filter(user=request.user)
+            .values_list('group_id', flat=True)
+        )
+    else:
+        my_group_ids = set()
+        tab = 'all'  # forcer onglet "tous" si non connecté
+
+    if tab == 'mine' and request.user.is_authenticated:
+        qs = qs.filter(id__in=my_group_ids)
+    elif tab == 'recommended' and request.user.is_authenticated:
+        recommended = _get_recommended_groups(request.user, exclude_ids=my_group_ids, limit=30)
+        # already a queryset / list with num_members
+        return render(request, 'group/group_list.html', {
+            'groups':         recommended,
+            'my_group_ids':   my_group_ids,
+            'query':          query,
+            'category':       category,
+            'tab':            tab,
+            'category_choices': Group.CATEGORY_CHOICES,
+        })
+    else:
+        # Onglet "tous" : groupes publics + les groupes privés de l'utilisateur
+        if request.user.is_authenticated:
+            qs = qs.filter(Q(privacy=Group.PUBLIC) | Q(id__in=my_group_ids))
+        else:
+            qs = qs.filter(privacy=Group.PUBLIC)
+
+    qs = qs.order_by('-num_members', '-created_at')
+
     return render(request, 'group/group_list.html', {
-        'groups': groups,
-        'my_group_ids': my_group_ids,
+        'groups':           qs,
+        'my_group_ids':     my_group_ids,
+        'query':            query,
+        'category':         category,
+        'tab':              tab,
+        'category_choices': Group.CATEGORY_CHOICES,
     })
 
 
@@ -134,22 +255,32 @@ def group_create(request):
     })
 
 
-@login_required
 def group_detail(request, slug):
     """Page de détail d'un groupe : infos, membres, posts, actions."""
     group = get_object_or_404(Group.objects.select_related('creator'), slug=slug)
-    membership = GroupMembership.objects.filter(group=group, user=request.user).first()
-    is_admin = membership is not None and membership.role == GroupMembership.ADMIN
-    is_mod   = membership is not None and membership.role in (GroupMembership.ADMIN, GroupMembership.MODERATOR)
+
+    # Groupe privé : seuls les membres peuvent voir le détail
+    membership = None
+    if request.user.is_authenticated:
+        membership = GroupMembership.objects.filter(group=group, user=request.user).first()
+
+    is_admin  = membership is not None and membership.role == GroupMembership.ADMIN
+    is_mod    = membership is not None and membership.role in (GroupMembership.ADMIN, GroupMembership.MODERATOR)
     is_member = membership is not None
+
+    if group.privacy == Group.PRIVATE and not is_member:
+        return render(request, 'group/group_private.html', {'group': group})
+
     members = group.memberships.select_related('user').all()
 
+    # ── Filtre hashtag ────────────────────────────────────────────
+    hashtag_filter = request.GET.get('hashtag', '').strip().lstrip('#').lower()
+
     # ── Annonces épinglées ────────────────────────────────────────
-    pinned_posts = list(
-        Post.objects.filter(group=group, is_pinned=True)
-        .select_related('author', 'group')
-        .order_by('-id')
-    )
+    pinned_qs = Post.objects.filter(group=group, is_pinned=True).select_related('author', 'group').order_by('-id')
+    if hashtag_filter:
+        pinned_qs = pinned_qs.filter(body__icontains=f'#{hashtag_filter}')
+    pinned_posts = list(pinned_qs)
     pinned_ids = [p.id for p in pinned_posts]
     if pinned_posts:
         _enrich_posts(pinned_posts, pinned_ids, request.user)
@@ -160,11 +291,17 @@ def group_detail(request, slug):
         .select_related('author', 'group')
         .order_by('-id')
     )
+    if hashtag_filter:
+        posts_qs = posts_qs.filter(body__icontains=f'#{hashtag_filter}')
+
     paginator = Paginator(posts_qs, 10)
     page_number = request.GET.get('page', 1)
     posts_page = paginator.get_page(page_number)
     post_ids = [p.id for p in posts_page]
-    _enrich_posts(posts_page, post_ids, request.user)
+    _enrich_posts(list(posts_page), post_ids, request.user)
+
+    # ── Hashtags tendance ─────────────────────────────────────────
+    trending_hashtags = _get_trending_hashtags(group, limit=12)
 
     # ── Galerie médias ────────────────────────────────────────────
     media_qs = (
@@ -185,21 +322,31 @@ def group_detail(request, slug):
     member_count = group.memberships.count()
 
     return render(request, 'group/group_detail.html', {
-        'group':           group,
-        'membership':      membership,
-        'is_member':       is_member,
-        'is_admin':        is_admin,
-        'is_mod':          is_mod,
-        'members':         members,
-        'pinned_posts':    pinned_posts,
-        'posts_of_the_page': posts_page,
-        'media_images':    media_images,
-        'media_videos':    media_videos,
-        'upcoming_events': upcoming_events,
-        'post_count':      post_count,
-        'member_count':    member_count,
+        'group':              group,
+        'membership':         membership,
+        'is_member':          is_member,
+        'is_admin':           is_admin,
+        'is_mod':             is_mod,
+        'members':            members,
+        'pinned_posts':       pinned_posts,
+        'posts_of_the_page':  posts_page,
+        'media_images':       media_images,
+        'media_videos':       media_videos,
+        'upcoming_events':    upcoming_events,
+        'post_count':         post_count,
+        'member_count':       member_count,
+        'trending_hashtags':  trending_hashtags,
+        'hashtag_filter':     hashtag_filter,
         'comment_url_template': '/post/{post_id}/add-comment/',
     })
+
+
+def group_hashtag(request, slug, tag):
+    """
+    Redirige vers group_detail avec le filtre hashtag actif.
+    Peut aussi servir comme vue dédiée si besoin.
+    """
+    return redirect(f"/groups/{slug}/?hashtag={tag.lower()}")
 
 
 @login_required

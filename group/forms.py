@@ -8,7 +8,7 @@ class GroupForm(forms.ModelForm):
 
     class Meta:
         model = Group
-        fields = ['name', 'description', 'cover', 'privacy', 'dina']
+        fields = ['name', 'category', 'description', 'cover', 'privacy', 'dina']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'gp-input',
@@ -22,6 +22,7 @@ class GroupForm(forms.ModelForm):
                 'placeholder': 'Décrivez votre groupe…',
                 'maxlength': 500,
             }),
+            'category': forms.Select(attrs={'class': 'gp-input'}),
             'privacy': forms.Select(attrs={'class': 'gp-input'}),
             'dina': forms.Textarea(attrs={
                 'class': 'gp-input',
@@ -32,6 +33,7 @@ class GroupForm(forms.ModelForm):
         }
         labels = {
             'name': 'Nom',
+            'category': 'Catégorie',
             'description': 'Description',
             'cover': 'Image de couverture',
             'privacy': 'Confidentialité',
