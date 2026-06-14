@@ -575,6 +575,12 @@ var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
 /* Timer "l'hôte n'a pas démarré" — effacé dès qu'on reçoit le 1er media_chunk */
 var noChunkTimer = null;
 
+/* Auto-retry SourceBuffer error (Firefox/Opera ne décodent pas les delta frames VP9
+   sans leur keyframe de référence).  On re-demande le ring buffer toutes les 500 ms
+   jusqu'à en obtenir un qui commence par un keyframe (≤ 2 s avec kfInterval=2000). */
+var _joinRetryCount = 0;
+var _joinRetryTimer = null;
+
 /* ── Format détecté une seule fois ── */
 var MIME = (function() {
     var types = [
@@ -824,18 +830,30 @@ function initMediaSource(mime) {
             sourceBuffer.mode = 'sequence';
             sourceBuffer.addEventListener('updateend', onUpdateEnd);
             sourceBuffer.addEventListener('error', function(e) {
-                /* Si le SourceBuffer est en erreur (chunk corrompu ou gap trop grand),
-                   on réinitialise et on attend le prochain is_init chunk du host. */
-                console.error('[VIEWER] SourceBuffer error — réinitialisation en attente', e);
-                msInited    = false;
+                /* SourceBuffer error = Firefox/Opera rencontre un delta frame VP9 sans
+                   le keyframe de référence. Solution : redemander le ring buffer au
+                   serveur (join_viewer). Après quelques essais de 500 ms, le ring buffer
+                   aura tourné jusqu'à commencer par un keyframe → décodage OK.
+                   On ne perturbe pas les autres viewers (pas de request_keyframe). */
+                console.error('[VIEWER] SourceBuffer error — retry ring buffer', e);
+                msInited     = false;
                 sourceBuffer = null;
                 appendQueue  = [];
-                if (!hasPlayed && waitingOverlay) {
+                if (waitingOverlay) {
                     var sp = waitingOverlay.querySelector('.lr-waiting-spinner');
                     var tx = waitingOverlay.querySelector('.lr-waiting-text');
                     waitingOverlay.classList.remove('hidden');
                     if (sp) { sp.style.display = ''; sp.style.borderTopColor = '#f59e0b'; }
                     if (tx) tx.textContent = 'Resynchronisation du flux…';
+                }
+                /* Auto-retry : re-demander le ring buffer jusqu'à 10 fois (≈ 5 s max) */
+                if (!IS_HOST && _joinRetryCount < 10 && !_joinRetryTimer) {
+                    _joinRetryTimer = setTimeout(function() {
+                        _joinRetryTimer = null;
+                        _joinRetryCount++;
+                        console.log('[VIEWER] auto-retry join_viewer #' + _joinRetryCount);
+                        if (!msInited) wsSend({ type: 'join_viewer' });
+                    }, 500);
                 }
             });
             processQueue();
@@ -886,6 +904,9 @@ function processQueue() {
         sourceBuffer.appendBuffer(chunk);
         if (!hasPlayed) {
             hasPlayed = true;
+            /* Succès : réinitialiser le compteur de retry SourceBuffer */
+            _joinRetryCount = 0;
+            if (_joinRetryTimer) { clearTimeout(_joinRetryTimer); _joinRetryTimer = null; }
             if (waitingOverlay) waitingOverlay.classList.add('hidden');
             /* On retarde le play() pour laisser le ring buffer se charger,
                puis on saute directement au live edge (réduit la latence). */
@@ -948,20 +969,12 @@ function showPlayButton() {
     ].join('');
     btn.onclick = function() {
         btn.remove();
-        var u = document.getElementById('lr-unmute-btn');
-        if (u) u.remove();
-        /* Reconnexion complète : renvoie join_viewer → serveur envoie init + ring buffer
-           + request_keyframe au host → nouveau keyframe propre → Firefox/Opera décodent.
-           Simple play() ne suffit pas si le SourceBuffer est en état d'erreur. */
-        msInited = false; appendQueue = []; sourceBuffer = null; hasPlayed = false;
-        if (waitingOverlay) {
-            waitingOverlay.classList.remove('hidden');
-            var _rsp = waitingOverlay.querySelector('.lr-waiting-spinner');
-            var _rtx = waitingOverlay.querySelector('.lr-waiting-text');
-            if (_rsp) { _rsp.style.display = ''; _rsp.style.borderTopColor = '#3b82f6'; }
-            if (_rtx) _rtx.textContent = 'Resynchronisation…';
-        }
-        wsSend({ type: 'join_viewer' });
+        /* Débloquer l'autoplay : jouer en muet d'abord (contourne la politique
+           autoplay des navigateurs), puis sauter au live edge et afficher
+           le bouton son pour que l'utilisateur puisse activer le son. */
+        videoEl.muted = true;
+        syncToLiveEdge();
+        showUnmuteBtn();
     };
     var area = document.querySelector('.lr-video-area');
     if (area) area.appendChild(btn);
@@ -988,17 +1001,8 @@ function onMediaChunk(d) {
 
     console.log('[VIEWER] chunk reçu, is_init:', d.is_init, ', taille data:', d.data.length);
 
-    /* Nouveau flux (ou resync host) → réinitialiser MediaSource */
+    /* Nouveau flux → réinitialiser MediaSource */
     if (d.is_init) {
-        /* Si on était déjà en lecture, c'est une resync (nouveau viewer → request_keyframe).
-           Montrer l'overlay "Resynchronisation…" pendant la fraction de seconde de coupure. */
-        if (hasPlayed && waitingOverlay) {
-            waitingOverlay.classList.remove('hidden');
-            var _rsp2 = waitingOverlay.querySelector('.lr-waiting-spinner');
-            var _rtx2 = waitingOverlay.querySelector('.lr-waiting-text');
-            if (_rsp2) { _rsp2.style.display = ''; _rsp2.style.borderTopColor = '#3b82f6'; }
-            if (_rtx2) _rtx2.textContent = 'Resynchronisation…';
-        }
         msInited = false;
         appendQueue = [];
         var ok = initMediaSource(mime);  /* retourne false si navigateur non supporté */
