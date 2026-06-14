@@ -239,13 +239,23 @@ def account_view(request, *args, **kwargs):
 					context['friend_requests'] = []
 			else:
 				context['is_friend'] = friends.filter(pk=request.user.pk).exists()
-				request_sent = get_friend_request_or_false(account, request.user)
-				if request_sent is False:
-					context['request_sent'] = FriendRequestStatus.NO_REQUEST_SENT.value
-					context['pending_friend_request_id'] = None
+
+				# Cas 1 : l'autre (account) nous a envoyé une demande → THEM_SENT_TO_YOU = 0
+				fr_from_them = get_friend_request_or_false(account, request.user)
+				if fr_from_them is not False:
+					context['request_sent'] = FriendRequestStatus.THEM_SENT_TO_YOU.value
+					context['pending_friend_request_id'] = fr_from_them.id
+
 				else:
-					context['request_sent'] = request_sent.status
-					context['pending_friend_request_id'] = request_sent.id
+					# Cas 2 : nous avons envoyé une demande à l'autre → YOU_SENT_TO_THEM = 1
+					fr_from_us = get_friend_request_or_false(request.user, account)
+					if fr_from_us is not False:
+						context['request_sent'] = FriendRequestStatus.YOU_SENT_TO_THEM.value
+						context['pending_friend_request_id'] = fr_from_us.id
+					else:
+						# Cas 3 : aucune demande en cours
+						context['request_sent'] = FriendRequestStatus.NO_REQUEST_SENT.value
+						context['pending_friend_request_id'] = None
 
 	return render(request, 'account/account.html', context)
 
