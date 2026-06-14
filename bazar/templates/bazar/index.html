@@ -361,25 +361,25 @@
 <!-- ── Hero ── -->
 <section class="bazar-hero">
     <h1 class="bazar-hero-title">🛍️ Bazar Vazimba</h1>
-    <p class="bazar-hero-sub">Acheter et vendre entre Malgaches — simple, rapide, local</p>
+    <p class="bazar-hero-sub">{% trans "Acheter et vendre entre Malgaches — simple, rapide, local" %}</p>
 
     <form method="get" action="{% url 'bazar:index' %}" class="bazar-search-wrap">
-        <input type="text" name="q" value="{{ q }}" placeholder="Chercher une annonce…" autocomplete="off">
+        <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Chercher une annonce…' %}" autocomplete="off">
         {% if sel_cat %}<input type="hidden" name="cat" value="{{ sel_cat }}">{% endif %}
         {% if sel_cond %}<input type="hidden" name="cond" value="{{ sel_cond }}">{% endif %}
         {% if sort != 'recent' %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
-        <button type="submit" class="bazar-search-btn">Chercher</button>
+        <button type="submit" class="bazar-search-btn">{% trans "Chercher" %}</button>
     </form>
 
     {% if request.user.is_authenticated %}
     <a href="{% url 'bazar:create' %}" class="bazar-hero-btn">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Publier une annonce
+        {% trans "Publier une annonce" %}
     </a>
     {% else %}
     <a href="{% url 'login' %}?next={% url 'bazar:create' %}" class="bazar-hero-btn">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Publier une annonce
+        {% trans "Publier une annonce" %}
     </a>
     {% endif %}
 </section>
@@ -391,7 +391,7 @@
 
         <!-- Catégorie -->
         <select name="cat" class="bazar-filter-select" onchange="this.form.submit()">
-            <option value="">Toutes catégories</option>
+            <option value="">{% trans "Toutes catégories" %}</option>
             {% for val, label in categories %}
             <option value="{{ val }}" {% if sel_cat == val %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
@@ -399,19 +399,19 @@
 
         <!-- État -->
         <select name="cond" class="bazar-filter-select" onchange="this.form.submit()">
-            <option value="">Tout état</option>
+            <option value="">{% trans "Tout état" %}</option>
             {% for val, label in conditions %}
             <option value="{{ val }}" {% if sel_cond == val %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
 
         <!-- Tri -->
-        <span class="bazar-sort-label">Trier par&nbsp;:</span>
+        <span class="bazar-sort-label">{% trans "Trier par" %}&nbsp;:</span>
         <select name="sort" class="bazar-filter-select" onchange="this.form.submit()">
-            <option value="recent"     {% if sort == 'recent' %}selected{% endif %}>Plus récentes</option>
-            <option value="price_asc"  {% if sort == 'price_asc' %}selected{% endif %}>Prix croissant</option>
-            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Prix décroissant</option>
-            <option value="popular"    {% if sort == 'popular' %}selected{% endif %}>Plus vues</option>
+            <option value="recent"     {% if sort == 'recent' %}selected{% endif %}>{% trans "Plus récentes" %}</option>
+            <option value="price_asc"  {% if sort == 'price_asc' %}selected{% endif %}>{% trans "Prix croissant" %}</option>
+            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>{% trans "Prix décroissant" %}</option>
+            <option value="popular"    {% if sort == 'popular' %}selected{% endif %}>{% trans "Plus vues" %}</option>
         </select>
 
         {% if sel_cat or sel_cond or q or sort != 'recent' %}
@@ -426,13 +426,13 @@
 <!-- ── Compteur de résultats ── -->
 <div class="bazar-results-bar">
     <p class="bazar-results-count mb-0">
-        <strong>{{ total }}</strong> annonce{{ total|pluralize }} trouvée{{ total|pluralize }}
+        <strong>{{ total }}</strong> {% trans "annonce" %}{{ total|pluralize }} {% trans "trouvée" %}{{ total|pluralize }}
         {% if sel_cat %} dans <em>{% for val, label in categories %}{% if val == sel_cat %}{{ label }}{% endif %}{% endfor %}</em>{% endif %}
         {% if q %} pour « <em>{{ q }}</em> »{% endif %}
     </p>
     {% if request.user.is_authenticated %}
     <a href="{% url 'bazar:mes_annonces' %}" style="font-size:.82rem;color:var(--accent);text-decoration:none;font-weight:600;">
-        Mes annonces →
+        {% trans "Mes annonces" %} →
     </a>
     {% endif %}
 </div>
@@ -450,14 +450,14 @@
             <img src="{{ primary.image.url }}" alt="{{ annonce.title }}" loading="lazy">
             <span class="bazar-badge-cond">{{ annonce.get_condition_display }}</span>
             {% if annonce.status == 'vendue' %}
-            <div class="bazar-badge-sold">VENDUE</div>
+            <div class="bazar-badge-sold">{% trans "VENDUE" %}</div>
             {% endif %}
         </div>
         {% else %}
         <div class="bazar-card-no-img" style="position:relative;">
             🏷️
             {% if annonce.status == 'vendue' %}
-            <div class="bazar-badge-sold">VENDUE</div>
+            <div class="bazar-badge-sold">{% trans "VENDUE" %}</div>
             {% endif %}
         </div>
         {% endif %}
@@ -473,7 +473,7 @@
             </span>
             <span class="bazar-card-price">
                 {{ annonce.formatted_price }}
-                {% if annonce.price_negotiable and annonce.price %}<small style="font-size:.72rem;font-weight:500;opacity:.7;"> · négociable</small>{% endif %}
+                {% if annonce.price_negotiable and annonce.price %}<small style="font-size:.72rem;font-weight:500;opacity:.7;"> · {% trans "négociable" %}</small>{% endif %}
             </span>
         </div>
     </a>
@@ -505,15 +505,15 @@
 <!-- État vide -->
 <div class="bazar-empty">
     <div class="bazar-empty-icon">🔍</div>
-    <h4 style="color:var(--text-primary);font-weight:700;">Aucune annonce trouvée</h4>
+    <h4 style="color:var(--text-primary);font-weight:700;">{% trans "Aucune annonce trouvée" %}</h4>
     <p style="font-size:.9rem;">
         {% if q %}Aucun résultat pour <strong>« {{ q }} »</strong>. Essayez un autre mot-clé.
         {% elif sel_cat %}Aucune annonce dans cette catégorie pour le moment.
-        {% else %}Le bazar est encore vide. Soyez le premier à publier !{% endif %}
+        {% else %}{% trans "Le bazar est encore vide. Soyez le premier à publier !" %}{% endif %}
     </p>
     {% if request.user.is_authenticated %}
     <a href="{% url 'bazar:create' %}" class="btn btn-primary mt-2" style="border-radius:50px;background:var(--accent);border:none;padding:.6rem 1.6rem;font-weight:700;">
-        Publier une annonce
+        {% trans "Publier une annonce" %}
     </a>
     {% endif %}
 </div>
