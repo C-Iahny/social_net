@@ -147,6 +147,10 @@ def get_feed_stories(request):
         friends = list(friend_list.friends.all())
     except FriendList.DoesNotExist:
         friends = []
+        _logger.warning('[Stories] FriendList manquante pour %s', request.user.username)
+
+    print(f'[Stories] {request.user.username} — {len(friends)} ami(s): '
+          f'{[f.username for f in friends]}', flush=True)
 
     # Inclure soi-même
     users_to_show = [request.user] + friends
@@ -157,24 +161,36 @@ def get_feed_stories(request):
         expires_at__gt=now,
     ).select_related('user').order_by('user', '-created_at')
 
+    total_stories = stories_qs.count()
+    print(f'[Stories] {total_stories} story(s) active(s) trouvée(s)', flush=True)
+
     # Grouper par utilisateur
     grouped = {}
     for story in stories_qs:
-        uid = story.user.id
-        if uid not in grouped:
-            grouped[uid] = {
-                'user_id':        story.user.id,
-                'username':       story.user.username,
-                'avatar':         story.user.profile_image.url,
-                'stories':        [],
-                'has_unseen':     False,
-            }
-        s = _story_to_dict(story, request.user)
-        grouped[uid]['stories'].append(s)
-        if not s['seen']:
-            grouped[uid]['has_unseen'] = True
+        try:
+            uid = story.user.id
+            if uid not in grouped:
+                try:
+                    avatar = story.user.profile_image.url
+                except Exception:
+                    avatar = '/static/images/default_profile_image.png'
+                grouped[uid] = {
+                    'user_id':    uid,
+                    'username':   story.user.username,
+                    'avatar':     avatar,
+                    'stories':    [],
+                    'has_unseen': False,
+                }
+            s = _story_to_dict(story, request.user)
+            grouped[uid]['stories'].append(s)
+            if not s['seen']:
+                grouped[uid]['has_unseen'] = True
+        except Exception as exc:
+            _logger.exception('[Stories] Erreur story %s : %s', story.id, exc)
+            print(f'[Stories] ⚠️ Erreur story {story.id}: {exc}', flush=True)
+            continue
 
-    # Trier : non vus d'abord, puis soi-même en premier
+    # Trier : soi-même en premier, puis non vus d'abord
     result = sorted(
         grouped.values(),
         key=lambda g: (
@@ -182,7 +198,9 @@ def get_feed_stories(request):
             0 if g['has_unseen'] else 1,
         )
     )
-    return JsonResponse({'stories': result})
+    print(f'[Stories] → {len(result)} groupe(s) retourné(s): '
+          f'{[g["username"] for g in result]}', flush=True)
+    return JsonResponse({'groups': result})
 
 
 # ── MES STORIES ───────────────────────────────────────────────────────────────
