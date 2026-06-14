@@ -30,6 +30,11 @@ def _is_verified_seller(user):
         return False
 
 
+def _can_post_story(user):
+    """Tous les utilisateurs connectés peuvent poster une story."""
+    return user.is_authenticated
+
+
 def _media_url(story):
     """Retourne l'URL du média."""
     if not story.media or not story.media.name:
@@ -76,29 +81,21 @@ def _story_to_dict(story, viewer):
 # ── CONTEXT helper ────────────────────────────────────────────────────────────
 def _seller_context(user):
     """Dict de contexte indiquant si l'utilisateur peut publier des stories."""
-    is_seller = user.is_authenticated and _is_verified_seller(user)
-    return {'can_post_story': is_seller}
+    return {'can_post_story': _can_post_story(user)}
 
 
 # ── PAGE DÉDIÉE ───────────────────────────────────────────────────────────────
 def stories_page(request):
     """
-    Page /stories/ — toutes les stories actives des commerçants vérifiés.
+    Page /stories/ — toutes les stories actives de tous les utilisateurs.
     Accessible à tous (connectés ou non) en lecture.
     """
     now = timezone.now()
-    from bazar.models import SellerVerification
 
-    # Récupérer les IDs des vendeurs vérifiés approuvés
-    seller_ids = set(
-        SellerVerification.objects.filter(status='approved')
-        .values_list('seller_id', flat=True)
-    )
-
-    # Stories actives des marchands, groupées par auteur
+    # Stories actives de tous les utilisateurs, groupées par auteur
     stories_qs = (
         Story.objects
-        .filter(user_id__in=seller_ids, expires_at__gt=now)
+        .filter(expires_at__gt=now)
         .select_related('user')
         .order_by('user', '-created_at')
     )
@@ -133,13 +130,6 @@ def stories_page(request):
 @login_required(login_url='login')
 @require_POST
 def create_story(request):
-    # Restriction : commerçants vérifiés seulement
-    if not _is_verified_seller(request.user):
-        return JsonResponse(
-            {'error': 'Seuls les commerçants vérifiés peuvent publier des stories.'},
-            status=403,
-        )
-
     story_type  = request.POST.get('story_type', 'image')
     caption     = request.POST.get('caption', '').strip()[:200]
     bg_gradient = request.POST.get('bg_gradient', 'grad_cyan')
@@ -223,21 +213,10 @@ def get_feed_stories(request):
     Accessible aux non-connectés (mode lecture seule, seen=False).
     """
     now = timezone.now()
-    from bazar.models import SellerVerification
-
-    # IDs des vendeurs vérifiés
-    seller_ids = set(
-        SellerVerification.objects.filter(status='approved')
-        .values_list('seller_id', flat=True)
-    )
-
-    # Si l'utilisateur courant est lui-même un vendeur, inclure ses propres stories
     viewer = request.user if request.user.is_authenticated else None
-    if viewer and _is_verified_seller(viewer):
-        seller_ids.add(viewer.id)
 
+    # Stories actives de tous les utilisateurs
     stories_qs = Story.objects.filter(
-        user_id__in=seller_ids,
         expires_at__gt=now,
     ).select_related('user').order_by('user', '-created_at')
 
