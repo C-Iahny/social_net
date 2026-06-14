@@ -111,11 +111,14 @@ class Annonce(models.Model):
         return f'[{self.get_category_display()}] {self.title} — {self.seller}'
 
     def get_primary_image(self):
-        """Retourne la photo principale ou None."""
-        img = self.images.filter(is_primary=True).first()
-        if not img:
-            img = self.images.first()
-        return img
+        """Retourne la photo principale ou None.
+        Utilise self.images.all() pour profiter du prefetch_related cache
+        et éviter les requêtes N+1 sur la liste des annonces."""
+        all_images = list(self.images.all())   # uses prefetch cache
+        if not all_images:
+            return None
+        primary = next((img for img in all_images if img.is_primary), None)
+        return primary or all_images[0]
 
     def increment_views(self):
         Annonce.objects.filter(pk=self.pk).update(views_count=models.F('views_count') + 1)
@@ -148,7 +151,7 @@ class AnnonceImage(models.Model):
     order      = models.PositiveSmallIntegerField(default=0, verbose_name=_('Ordre'))
 
     class Meta:
-        ordering = ['is_primary', 'order']
+        ordering = ['-is_primary', 'order']   # is_primary=True (1) > False (0) → principale en premier
         verbose_name = _('Photo d\'annonce')
         verbose_name_plural = _('Photos d\'annonce')
 
