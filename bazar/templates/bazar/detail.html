@@ -330,7 +330,7 @@
         <!-- Galerie -->
         <div class="bazar-gallery">
             {% if images %}
-            <img id="main-photo" class="bazar-main-img" src="{{ images.0.image.url }}" alt="{{ annonce.title }}" onclick="openLightbox(0)">
+            <img id="main-photo" class="bazar-main-img" src="{{ images.0.image.url }}" alt="{{ annonce.title }}" onclick="openLightbox(this.src)">
             {% if images|length > 1 %}
             <div class="bazar-thumbs">
                 {% for img in images %}
@@ -531,19 +531,36 @@ function switchPhoto(thumb, idx) {
 }
 
 // ── Lightbox ───────────────────────────────────────────────────────────────────
-function openLightbox(idx) {
-    currentIdx = (typeof idx === 'number') ? idx : 0;
-    _lightboxShow();
-    document.getElementById('lightbox').classList.add('open');
+function openLightbox(src) {
+    // src peut être une URL string (depuis this.src) ou un index number
+    if (typeof src === 'string') {
+        currentIdx = galleryUrls.findIndex(u => u === src);
+        if (currentIdx < 0) currentIdx = 0;
+        _lightboxSetSrc(src);
+    } else {
+        currentIdx = (typeof src === 'number') ? src : 0;
+        _lightboxSetSrc(galleryUrls[currentIdx]);
+    }
+    const lb = document.getElementById('lightbox');
+    lb.classList.add('open');
     document.body.style.overflow = 'hidden';
+    _updateNav();
 }
 
-function _lightboxShow() {
+function _lightboxSetSrc(url) {
     const lbImg = document.getElementById('lightbox-img');
     const lbErr = document.getElementById('lb-error');
+    lbImg.onerror = function() {
+        this.onerror = null;
+        this.style.display = 'none';
+        if (lbErr) lbErr.style.display = 'flex';
+    };
     lbImg.style.display = '';
     if (lbErr) lbErr.style.display = 'none';
-    lbImg.src = galleryUrls[currentIdx];
+    lbImg.src = url;
+}
+
+function _updateNav() {
     const total = galleryUrls.length;
     const counter = document.getElementById('lightbox-counter');
     const showNav = total > 1;
@@ -555,12 +572,12 @@ function _lightboxShow() {
 
 function lightboxNav(dir) {
     currentIdx = (currentIdx + dir + galleryUrls.length) % galleryUrls.length;
-    _lightboxShow();
+    _lightboxSetSrc(galleryUrls[currentIdx]);
+    _updateNav();
     // Sync le thumbnail principal aussi
-    if (galleryThumbs.length > 0) {
-        document.getElementById('main-photo').src = galleryUrls[currentIdx];
-        galleryThumbs.forEach((t, i) => t.classList.toggle('active', i === currentIdx));
-    }
+    const mp = document.getElementById('main-photo');
+    if (mp) mp.src = galleryUrls[currentIdx];
+    galleryThumbs.forEach((t, i) => t.classList.toggle('active', i === currentIdx));
 }
 
 function closeLightbox() {
