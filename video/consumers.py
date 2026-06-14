@@ -213,11 +213,14 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             self.has_joined = True
             await self._increment_viewer_count()
 
+        # Récupérer le canal du host une seule fois (utilisé pour viewer_joined ET request_keyframe)
+        rid     = str(self.room_id)
+        cached  = _init_chunks.get(rid)
+        host_ch = await self._get_host_channel()
+
         # Envoyer le chunk d'init + les chunks récents au nouveau viewer.
-        # Ceci garantit qu'il reçoit un keyframe VP9/VP8 récent et peut décoder
-        # le flux courant sans attendre le prochain keyframe naturel (~5 s).
-        rid    = str(self.room_id)
-        cached = _init_chunks.get(rid)
+        # Le ring buffer permet d'afficher quelque chose immédiatement pendant que
+        # le host produit un nouveau keyframe propre via request_keyframe.
         if cached:
             await self.send_json({
                 'type':    'media_chunk',
@@ -238,8 +241,23 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             # Signaler au viewer que le ring buffer est épuisé → il peut syncer au live edge
             await self.send_json({'type': 'ring_buffer_done'})
 
-        # Notifier l'hôte
-        host_ch = await self._get_host_channel()
+            # ── request_keyframe ────────────────────────────────────────────────────
+            # Demander au host de redémarrer MediaRecorder → nouveau init chunk avec
+            # un keyframe garanti, diffusé à TOUS les viewers.
+            # Corrige Firefox / Opera qui bloquent sur les delta frames VP9 sans
+            # le keyframe de référence (Chrome les saute silencieusement, pas Firefox).
+            if host_ch:
+                try:
+                    await self.channel_layer.send(host_ch, {
+                        'type': 'direct_event',
+                        'payload': {'type': 'request_keyframe'},
+                    })
+                    print(f"[LIVE {rid}] 🔑 request_keyframe envoyé → keyframe fresh pour {self.user.username}",
+                          flush=True)
+                except Exception as e:
+                    print(f"[LIVE {rid}] ⚠️ request_keyframe failed: {e}", flush=True)
+
+        # Notifier l'hôte de l'arrivée du viewer
         if host_ch:
             try:
                 avatar = await self._get_avatar_url()
