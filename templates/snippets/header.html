@@ -434,6 +434,17 @@
 .scrollable-menu::-webkit-scrollbar { width: 4px; }
 .scrollable-menu::-webkit-scrollbar-track { background: transparent; }
 .scrollable-menu::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* ── Mobile : dropdown ne déborde pas ── */
+@media (max-width: 575.98px) {
+    .scrollable-menu {
+        width: calc(100vw - 16px) !important;
+        max-width: 360px;
+    }
+    .dropdown-menu.dropdown-menu-right {
+        right: 4px !important;
+        left: auto !important;
+    }
+}
 
 /* ── Dropdown header bar (chat & notifs) ── */
 .zoot-dropdown-header {
@@ -719,50 +730,11 @@
             "></div>
         </div>
 
-        <!-- 🔴 Live button -->
-        <a href="{% url 'video:live-list' %}"
-           id="nav-live-btn"
-           title="Lives en cours"
-           style="
-            display:inline-flex;align-items:center;gap:.3rem;
-            padding:.3rem .7rem;
-            background:rgba(255,59,59,.1);
-            border:1.5px solid rgba(255,59,59,.35);
-            border-radius:20px;
-            color:#ff3b3b;
-            font-size:.75rem;
-            font-weight:800;
-            letter-spacing:.05em;
-            text-decoration:none;
-            transition:background .2s,border-color .2s,box-shadow .2s;
-            white-space:nowrap;
-            flex-shrink:0;
-           "
-           onmouseover="this.style.background='rgba(255,59,59,.2)';this.style.borderColor='#ff3b3b';this.style.boxShadow='0 0 12px rgba(255,59,59,.3)'"
-           onmouseout="this.style.background='rgba(255,59,59,.1)';this.style.borderColor='rgba(255,59,59,.35)';this.style.boxShadow=''"
-        >
-            <span id="nav-live-dot" style="
-                width:7px;height:7px;
-                background:#ff3b3b;
-                border-radius:50%;
-                animation:livePulse 1.4s ease-in-out infinite;
-                flex-shrink:0;
-            "></span>
-            LIVE
-            <span id="nav-live-count" style="
-                background:#ff3b3b;color:#fff;
-                font-size:.65rem;font-weight:800;
-                padding:0 5px;border-radius:8px;
-                min-width:16px;text-align:center;
-                display:none;
-            "></span>
-        </a>
         <style>
         @keyframes livePulse {
             0%,100% { box-shadow:0 0 0 0 rgba(255,59,59,.7); }
             50%      { box-shadow:0 0 0 5px rgba(255,59,59,0); }
         }
-        @media (max-width:575px) { #nav-live-btn .nav-live-label { display:none; } }
         </style>
 
         <!-- Language switcher -->
@@ -893,6 +865,21 @@
                 </a>
                 <a class="dropdown-item" href="{% url 'chat:private-chat-room' %}">
                     <span class="material-icons">chat_bubble_outline</span> {% trans "Messages" %}
+                </a>
+                <!-- Live -->
+                <a class="dropdown-item" href="{% url 'video:live-list' %}"
+                   id="nav-live-btn"
+                   style="color:#ff3b3b;">
+                    <span class="material-icons" style="color:#ff3b3b;">radio_button_checked</span>
+                    Live
+                    <span id="nav-live-count" style="
+                        background:#ff3b3b;color:#fff;
+                        font-size:.65rem;font-weight:800;
+                        padding:0 5px;border-radius:8px;
+                        min-width:16px;text-align:center;
+                        margin-left:auto;
+                        display:none;
+                    "></span>
                 </a>
 
                 <div class="dropdown-divider"></div>
