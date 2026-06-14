@@ -96,7 +96,10 @@ def annonce_detail(request, pk):
     Page de détail d'une annonce.
     URL: /bazar/<pk>/
     """
-    annonce = get_object_or_404(Annonce, pk=pk)
+    annonce = get_object_or_404(
+        Annonce.objects.select_related('seller').prefetch_related('images'),
+        pk=pk,
+    )
 
     # Incrémenter le compteur de vues (pas pour le vendeur lui-même)
     if request.user != annonce.seller:
