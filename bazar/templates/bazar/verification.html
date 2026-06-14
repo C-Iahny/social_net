@@ -129,36 +129,35 @@ hr.verif-sep {
 <div class="verif-wrap">
     <!-- Fil d'Ariane -->
     <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:1.25rem;">
-        <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">Bazar</a>
+        <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
         <span> › </span>
-        <a href="{% url 'bazar:mes_annonces' %}" style="color:var(--accent);text-decoration:none;">Mes annonces</a>
-        <span> › </span>Vérification vendeur
+        <a href="{% url 'bazar:mes_annonces' %}" style="color:var(--accent);text-decoration:none;">{% trans "Mes annonces" %}</a>
+        <span> › </span>{% trans "Vérification vendeur" %}
     </nav>
 
     <div class="verif-card">
-        <h1 class="verif-title">🛡️ Vérification vendeur</h1>
+        <h1 class="verif-title">🛡️ {% trans "Vérification vendeur" %}</h1>
         <p class="verif-sub">
-            Un compte vérifié renforce la confiance des acheteurs et vous donne
-            accès à des fonctionnalités exclusives.
+            {% trans "Un compte vérifié renforce la confiance des acheteurs et vous donne accès à des fonctionnalités exclusives." %}
         </p>
 
         <!-- Avantages -->
         <div class="verif-benefits">
             <div class="verif-benefit-item">
                 <span class="icon">✓</span>
-                Badge <strong>Vendeur vérifié</strong> sur toutes vos annonces et votre profil
+                {% trans "Badge <strong>Vendeur vérifié</strong> sur toutes vos annonces et votre profil" %}
             </div>
             <div class="verif-benefit-item">
                 <span class="icon">🔝</span>
-                Vos annonces apparaissent <strong>en priorité</strong> dans les résultats
+                {% trans "Vos annonces apparaissent <strong>en priorité</strong> dans les résultats" %}
             </div>
             <div class="verif-benefit-item">
                 <span class="icon">🔍</span>
-                Les acheteurs peuvent filtrer pour voir <strong>uniquement les vendeurs vérifiés</strong>
+                {% trans "Les acheteurs peuvent filtrer pour voir <strong>uniquement les vendeurs vérifiés</strong>" %}
             </div>
             <div class="verif-benefit-item">
                 <span class="icon">📷</span>
-                Quota photos porté à <strong>12 photos par annonce</strong> (au lieu de 8)
+                {% trans "Quota photos porté à <strong>12 photos par annonce</strong> (au lieu de 8)" %}
             </div>
         </div>
 
@@ -169,10 +168,10 @@ hr.verif-sep {
             <div class="verif-status-box verif-status-pending">
                 <span class="verif-status-icon">⏳</span>
                 <div>
-                    <div class="verif-status-label">Demande en attente d'examen</div>
+                    <div class="verif-status-label">{% trans "Demande en attente d'examen" %}</div>
                     <div class="verif-status-detail">
-                        Soumise le {{ verification.created_at|date:"d/m/Y à H\hi" }}.
-                        L'équipe de modération examinera votre demande prochainement.
+                        {% blocktrans with date=verification.created_at|date:"d/m/Y" %}Soumise le {{ date }}.{% endblocktrans %}
+                        {% trans "L'équipe de modération examinera votre demande prochainement." %}
                     </div>
                 </div>
             </div>
@@ -181,10 +180,10 @@ hr.verif-sep {
             <div class="verif-status-box verif-status-approved">
                 <span class="verif-status-icon">✅</span>
                 <div>
-                    <div class="verif-status-label">Compte vérifié</div>
+                    <div class="verif-status-label">{% trans "Compte vérifié" %}</div>
                     <div class="verif-status-detail">
-                        Approuvé le {{ verification.reviewed_at|date:"d/m/Y" }}.
-                        Tous les avantages sont actifs sur votre compte.
+                        {% blocktrans with date=verification.reviewed_at|date:"d/m/Y" %}Approuvé le {{ date }}.{% endblocktrans %}
+                        {% trans "Tous les avantages sont actifs sur votre compte." %}
                     </div>
                 </div>
             </div>
@@ -193,11 +192,11 @@ hr.verif-sep {
             <div class="verif-status-box verif-status-rejected">
                 <span class="verif-status-icon">❌</span>
                 <div>
-                    <div class="verif-status-label">Demande refusée</div>
+                    <div class="verif-status-label">{% trans "Demande refusée" %}</div>
                     <div class="verif-status-detail">
-                        Examinée le {{ verification.reviewed_at|date:"d/m/Y" }}.
+                        {% blocktrans with date=verification.reviewed_at|date:"d/m/Y" %}Examinée le {{ date }}.{% endblocktrans %}
                         {% if verification.admin_notes %}
-                        <br>Motif : {{ verification.admin_notes }}
+                        <br>{% trans "Motif :" %} {{ verification.admin_notes }}
                         {% endif %}
                     </div>
                 </div>
@@ -206,20 +205,20 @@ hr.verif-sep {
             <hr class="verif-sep">
 
             <p style="font-size:.88rem;color:var(--text-secondary);margin-bottom:1rem;">
-                Vous pouvez soumettre une nouvelle demande en corrigeant les points signalés.
+                {% trans "Vous pouvez soumettre une nouvelle demande en corrigeant les points signalés." %}
             </p>
 
             <!-- Formulaire re-soumission -->
             <form method="post">
                 {% csrf_token %}
-                <label class="verif-label" for="msg">Votre message (facultatif)</label>
+                <label class="verif-label" for="msg">{% trans "Votre message (facultatif)" %}</label>
                 <textarea
                     id="msg" name="message"
                     class="verif-textarea"
-                    placeholder="Expliquez pourquoi votre compte mérite d'être vérifié…">{{ verification.message }}</textarea>
-                <div class="verif-hint">Maximum 2 000 caractères.</div>
+                    placeholder="{% trans "Expliquez pourquoi votre compte mérite d'être vérifié…" %}">{{ verification.message }}</textarea>
+                <div class="verif-hint">{% trans "Maximum 2 000 caractères." %}</div>
                 <button type="submit" class="verif-submit">
-                    Envoyer une nouvelle demande
+                    {% trans "Envoyer une nouvelle demande" %}
                 </button>
             </form>
             {% endif %}
@@ -228,14 +227,14 @@ hr.verif-sep {
         <!-- Première demande -->
         <form method="post">
             {% csrf_token %}
-            <label class="verif-label" for="msg">Message (facultatif)</label>
+            <label class="verif-label" for="msg">{% trans "Message (facultatif)" %}</label>
             <textarea
                 id="msg" name="message"
                 class="verif-textarea"
-                placeholder="Présentez-vous en quelques mots : activité, types de produits vendus, pourquoi vous souhaitez être vérifié…"></textarea>
-            <div class="verif-hint">Maximum 2 000 caractères.</div>
+                placeholder="{% trans "Présentez-vous en quelques mots : activité, types de produits vendus, pourquoi vous souhaitez être vérifié…" %}"></textarea>
+            <div class="verif-hint">{% trans "Maximum 2 000 caractères." %}</div>
             <button type="submit" class="verif-submit">
-                🛡️ Soumettre ma demande
+                🛡️ {% trans "Soumettre ma demande" %}
             </button>
         </form>
         {% endif %}
