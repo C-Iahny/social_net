@@ -724,6 +724,49 @@
     .gd-member-card-link { padding: .7rem .75rem .6rem; }
     .gd-member-card-link img { width: 38px; height: 38px; }
 }
+
+/* ── Hashtags tendance ── */
+.gd-hashtag-panel {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: .85rem 1.1rem; margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+}
+.gd-hashtag-panel-title {
+    font-size: .78rem; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .05em;
+    margin-bottom: .65rem; display: flex; align-items: center; gap: .35rem;
+}
+.gd-hashtag-panel-title .material-icons { font-size: .95rem; color: var(--accent); }
+.gd-hashtag-tags { display: flex; flex-wrap: wrap; gap: .45rem; }
+.gd-hashtag-tag {
+    display: inline-flex; align-items: center; gap: .2rem;
+    padding: .3rem .75rem; border-radius: 20px;
+    background: var(--btn-bg); color: var(--accent);
+    font-size: .82rem; font-weight: 700;
+    text-decoration: none; border: 1.5px solid transparent;
+    transition: all .15s;
+}
+.gd-hashtag-tag:hover { background: var(--accent); color: #fff; text-decoration: none; }
+.gd-hashtag-tag.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.gd-hashtag-count {
+    font-size: .7rem; font-weight: 600; opacity: .75;
+}
+/* Bandeau filtre actif */
+.gd-filter-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: .6rem;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 12%, transparent),
+                                        color-mix(in srgb, var(--accent2) 8%, transparent));
+    border: 1.5px solid var(--accent); border-radius: 12px;
+    padding: .6rem 1rem; margin-bottom: 1rem; font-size: .88rem;
+}
+.gd-filter-banner span { color: var(--text); font-weight: 600; }
+.gd-filter-banner a {
+    font-size: .8rem; color: var(--text-muted); font-weight: 600;
+    text-decoration: none; padding: .25rem .6rem; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg-card);
+    transition: all .15s;
+}
+.gd-filter-banner a:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
 </style>
 
 <div class="gd-wrapper">
@@ -918,6 +961,33 @@
             <span>{{ group.created_at|date:"M Y" }}</span>
         </div>
     </div>
+
+    <!-- ── Hashtags tendance ── -->
+    {% if trending_hashtags %}
+    <div class="gd-hashtag-panel">
+        <div class="gd-hashtag-panel-title">
+            <span class="material-icons">trending_up</span>
+            {% trans "Trending hashtags" %}
+        </div>
+        <div class="gd-hashtag-tags">
+            {% for tag, cnt in trending_hashtags %}
+            <a href="{% url 'group:detail' group.slug %}?hashtag={{ tag }}"
+               class="gd-hashtag-tag {% if hashtag_filter == tag %}active{% endif %}">
+                #{{ tag }}
+                <span class="gd-hashtag-count">{{ cnt }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Bandeau filtre hashtag actif ── -->
+    {% if hashtag_filter %}
+    <div class="gd-filter-banner">
+        <span>🔍 {% trans "Filtering by" %} <strong>#{{ hashtag_filter }}</strong></span>
+        <a href="{% url 'group:detail' group.slug %}">✕ {% trans "Clear filter" %}</a>
+    </div>
+    {% endif %}
 
     <!-- ── Onglets ── -->
     <div class="gd-tabs">

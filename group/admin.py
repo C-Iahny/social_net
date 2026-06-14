@@ -11,8 +11,8 @@ class GroupMembershipInline(admin.TabularInline):
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ('name', 'creator', 'privacy', 'member_count', 'created_at')
-    list_filter = ('privacy', 'created_at')
+    list_display = ('name', 'creator', 'category', 'privacy', 'member_count', 'created_at')
+    list_filter = ('category', 'privacy', 'created_at')
     search_fields = ('name', 'description', 'creator__username')
     prepopulated_fields = {'slug': ('name',)}
     inlines = [GroupMembershipInline]

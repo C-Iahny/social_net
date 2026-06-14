@@ -8,6 +8,42 @@ class Group(models.Model):
     PRIVATE = 'private'
     PRIVACY_CHOICES = [(PUBLIC, 'Public'), (PRIVATE, 'Privé')]
 
+    # ── Catégories thématiques ────────────────────────────────────
+    CAT_SPORT      = 'sport'
+    CAT_MUSIQUE    = 'musique'
+    CAT_CUISINE    = 'cuisine'
+    CAT_TECH       = 'tech'
+    CAT_ART        = 'art'
+    CAT_EDUCATION  = 'education'
+    CAT_VOYAGE     = 'voyage'
+    CAT_BUSINESS   = 'business'
+    CAT_GAMING     = 'gaming'
+    CAT_BIENETRE   = 'bienetre'
+    CAT_NATURE     = 'nature'
+    CAT_HUMOUR     = 'humour'
+    CAT_MADAGASCAR = 'madagascar'
+    CAT_FAMILLE    = 'famille'
+    CAT_RELIGION   = 'religion'
+    CAT_AUTRE      = 'autre'
+    CATEGORY_CHOICES = [
+        (CAT_SPORT,      '🏃 Sport'),
+        (CAT_MUSIQUE,    '🎵 Musique'),
+        (CAT_CUISINE,    '🍳 Cuisine'),
+        (CAT_TECH,       '💻 Technologie'),
+        (CAT_ART,        '🎨 Art & Culture'),
+        (CAT_EDUCATION,  '📚 Éducation'),
+        (CAT_VOYAGE,     '✈️ Voyage'),
+        (CAT_BUSINESS,   '💼 Business'),
+        (CAT_GAMING,     '🎮 Gaming'),
+        (CAT_BIENETRE,   '🧘 Bien-être'),
+        (CAT_NATURE,     '🌱 Nature'),
+        (CAT_HUMOUR,     '😄 Humour'),
+        (CAT_MADAGASCAR, '🇲🇬 Madagascar'),
+        (CAT_FAMILLE,    '👨‍👩‍👧 Famille'),
+        (CAT_RELIGION,   '🙏 Religion & Spiritualité'),
+        (CAT_AUTRE,      '💬 Autre'),
+    ]
+
     name        = models.CharField(max_length=100)
     slug        = models.SlugField(max_length=110, unique=True, blank=True)
     description = models.TextField(max_length=500, blank=True)
@@ -15,6 +51,10 @@ class Group(models.Model):
     creator     = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='created_groups')
     members     = models.ManyToManyField(Account, through='GroupMembership', related_name='joined_groups', blank=True)
     privacy     = models.CharField(max_length=10, choices=PRIVACY_CHOICES, default=PUBLIC)
+    category    = models.CharField(
+        max_length=20, choices=CATEGORY_CHOICES, blank=True, default='',
+        verbose_name='Catégorie', db_index=True,
+    )
     created_at  = models.DateTimeField(auto_now_add=True)
     dina        = models.TextField(
         blank=True, default='',

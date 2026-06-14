@@ -4,19 +4,19 @@
 
 {% block content %}
 <style>
+/* ── Wrapper ─────────────────────────────────────────── */
 .gp-wrapper {
-    max-width: 960px; margin: 82px auto 3rem;
-    padding: 0 1rem;
-    box-sizing: border-box; width: 100%;
+    max-width: 1040px; margin: 82px auto 3rem;
+    padding: 0 1rem; box-sizing: border-box; width: 100%;
 }
 @media (max-width: 767px) {
     .gp-wrapper { margin-top: 70px; padding: 0 .75rem; }
-    .gp-head h1 { font-size: 1.2rem; }
-    .gp-grid { grid-template-columns: 1fr; }
 }
+
+/* ── En-tête ─────────────────────────────────────────── */
 .gp-head {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1.4rem; gap: 1rem; flex-wrap: wrap;
+    margin-bottom: 1.2rem; gap: 1rem; flex-wrap: wrap;
 }
 .gp-head h1 { font-size: 1.5rem; font-weight: 800; color: var(--text); margin: 0; }
 .gp-btn {
@@ -30,9 +30,71 @@
 .gp-btn:hover { opacity: .9; color: #fff; text-decoration: none; transform: translateY(-1px); }
 .gp-btn .material-icons { font-size: 1.1rem; }
 
+/* ── Barre de recherche ──────────────────────────────── */
+.gp-search-bar {
+    display: flex; gap: .6rem; margin-bottom: 1.1rem; flex-wrap: wrap;
+}
+.gp-search-bar input {
+    flex: 1; min-width: 200px;
+    padding: .6rem 1rem; border-radius: 12px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card); color: var(--text);
+    font-size: .9rem; outline: none;
+    transition: border-color .15s;
+}
+.gp-search-bar input:focus { border-color: var(--accent); }
+.gp-search-bar button {
+    padding: .6rem 1.1rem; border-radius: 12px;
+    background: var(--accent); color: #fff;
+    border: none; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .3rem;
+    font-size: .9rem;
+}
+.gp-search-bar button:hover { opacity: .88; }
+
+/* ── Onglets (Tous / Mes groupes / Recommandés) ──────── */
+.gp-tabs {
+    display: flex; gap: .4rem; margin-bottom: 1rem; flex-wrap: wrap;
+}
+.gp-tab {
+    padding: .45rem .95rem; border-radius: 22px;
+    font-size: .85rem; font-weight: 600; cursor: pointer;
+    border: 1.5px solid var(--border); color: var(--text-muted);
+    background: var(--bg-card); text-decoration: none;
+    transition: all .15s;
+}
+.gp-tab:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.gp-tab.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border-color: transparent;
+}
+
+/* ── Catégories ──────────────────────────────────────── */
+.gp-cats {
+    display: flex; gap: .45rem; margin-bottom: 1.4rem;
+    flex-wrap: wrap; overflow-x: auto; padding-bottom: .25rem;
+}
+.gp-cat-pill {
+    display: inline-flex; align-items: center; gap: .2rem;
+    padding: .35rem .8rem; border-radius: 20px;
+    font-size: .82rem; font-weight: 600; cursor: pointer;
+    border: 1.5px solid var(--border); color: var(--text-muted);
+    background: var(--bg-card); text-decoration: none; white-space: nowrap;
+    transition: all .15s;
+}
+.gp-cat-pill:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.gp-cat-pill.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border-color: transparent;
+}
+
+/* ── Grille de cartes ────────────────────────────────── */
 .gp-grid {
     display: grid; gap: 1.1rem;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+}
+@media (max-width: 600px) {
+    .gp-grid { grid-template-columns: 1fr; }
 }
 .gp-card {
     background: var(--bg-card); border: 1px solid var(--border);
@@ -43,20 +105,28 @@
 }
 .gp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(0,0,0,.1); }
 .gp-cover {
-    height: 110px; background: linear-gradient(130deg, var(--accent), var(--accent2));
+    height: 110px;
+    background: linear-gradient(130deg, var(--accent), var(--accent2));
     background-size: cover; background-position: center;
 }
+.gp-cat-label {
+    position: absolute; top: .55rem; right: .6rem;
+    background: rgba(0,0,0,.45); color: #fff;
+    font-size: .72rem; font-weight: 700; padding: .18rem .55rem;
+    border-radius: 10px; backdrop-filter: blur(4px);
+}
+.gp-cover-wrap { position: relative; }
 .gp-card-body { padding: .9rem 1.1rem 1.1rem; flex: 1; display: flex; flex-direction: column; }
 .gp-card-name {
     font-size: 1.05rem; font-weight: 700; color: var(--text);
-    text-decoration: none; margin-bottom: .25rem;
+    text-decoration: none; margin-bottom: .25rem; display: block;
 }
 .gp-card-name:hover { color: var(--accent); text-decoration: none; }
 .gp-card-meta {
     display: flex; align-items: center; gap: .8rem;
-    font-size: .8rem; color: var(--text-muted); margin-bottom: .6rem;
+    font-size: .8rem; color: var(--text-muted); margin-bottom: .6rem; flex-wrap: wrap;
 }
-.gp-card-meta .material-icons { font-size: .9rem; vertical-align: middle; }
+.gp-card-meta .material-icons { font-size: .95rem; vertical-align: middle; }
 .gp-badge {
     display: inline-flex; align-items: center; gap: .2rem;
     background: var(--btn-bg); border-radius: 7px;
@@ -67,11 +137,24 @@
     margin-bottom: .9rem; flex: 1;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
+.gp-card-footer {
+    display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+}
 .gp-member-tag {
     display: inline-flex; align-items: center; gap: .25rem;
     font-size: .76rem; font-weight: 700; color: var(--accent);
 }
 .gp-member-tag .material-icons { font-size: .9rem; }
+.gp-join-btn {
+    display: inline-flex; align-items: center; gap: .25rem;
+    padding: .35rem .85rem; border-radius: 10px; font-size: .8rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; cursor: pointer; text-decoration: none;
+    transition: opacity .15s;
+}
+.gp-join-btn:hover { opacity: .85; color: #fff; text-decoration: none; }
+
+/* ── Vide ────────────────────────────────────────────── */
 .gp-empty {
     text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);
     background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
@@ -80,20 +163,72 @@
 </style>
 
 <div class="gp-wrapper">
+    <!-- En-tête -->
     <div class="gp-head">
         <h1>{% trans "Groups" %}</h1>
+        {% if user.is_authenticated %}
         <a class="gp-btn" href="{% url 'group:create' %}">
             <span class="material-icons">add</span> {% trans "Create a group" %}
         </a>
+        {% endif %}
     </div>
 
+    <!-- Barre de recherche -->
+    <form class="gp-search-bar" method="get" action="">
+        {% if tab != 'all' %}<input type="hidden" name="tab" value="{{ tab }}">{% endif %}
+        {% if category %}<input type="hidden" name="cat" value="{{ category }}">{% endif %}
+        <input type="text" name="q" value="{{ query }}" placeholder="{% trans 'Search a group…' %}">
+        <button type="submit"><span class="material-icons" style="font-size:1.1rem;">search</span></button>
+        {% if query %}
+        <a href="?tab={{ tab }}&cat={{ category }}" class="gp-tab" style="align-self:center;margin:0;">✕</a>
+        {% endif %}
+    </form>
+
+    <!-- Onglets -->
+    {% if user.is_authenticated %}
+    <div class="gp-tabs">
+        <a href="?tab=all{% if query %}&q={{ query }}{% endif %}{% if category %}&cat={{ category }}{% endif %}"
+           class="gp-tab {% if tab == 'all' %}active{% endif %}">
+            {% trans "All" %}
+        </a>
+        <a href="?tab=mine{% if query %}&q={{ query }}{% endif %}{% if category %}&cat={{ category }}{% endif %}"
+           class="gp-tab {% if tab == 'mine' %}active{% endif %}">
+            {% trans "My groups" %}
+        </a>
+        <a href="?tab=recommended{% if query %}&q={{ query }}{% endif %}{% if category %}&cat={{ category }}{% endif %}"
+           class="gp-tab {% if tab == 'recommended' %}active{% endif %}">
+            ✨ {% trans "Recommended" %}
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Filtres catégories -->
+    <div class="gp-cats">
+        <a href="?tab={{ tab }}{% if query %}&q={{ query }}{% endif %}"
+           class="gp-cat-pill {% if not category %}active{% endif %}">
+            🔍 {% trans "All categories" %}
+        </a>
+        {% for cat_key, cat_label in category_choices %}
+        <a href="?tab={{ tab }}&cat={{ cat_key }}{% if query %}&q={{ query }}{% endif %}"
+           class="gp-cat-pill {% if category == cat_key %}active{% endif %}">
+            {{ cat_label }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Grille de groupes -->
     {% if groups %}
     <div class="gp-grid">
         {% for group in groups %}
         <div class="gp-card">
-            <a href="{% url 'group:detail' group.slug %}">
-                <div class="gp-cover" {% if group.cover_url %}style="background-image:url('{{ group.cover_url }}')"{% endif %}></div>
-            </a>
+            <div class="gp-cover-wrap">
+                <a href="{% url 'group:detail' group.slug %}">
+                    <div class="gp-cover" {% if group.cover_url %}style="background-image:url('{{ group.cover_url }}')"{% endif %}></div>
+                </a>
+                {% if group.category %}
+                <span class="gp-cat-label">{{ group.get_category_display }}</span>
+                {% endif %}
+            </div>
             <div class="gp-card-body">
                 <a class="gp-card-name" href="{% url 'group:detail' group.slug %}">{{ group.name }}</a>
                 <div class="gp-card-meta">
@@ -106,9 +241,20 @@
                 {% if group.description %}
                 <p class="gp-card-desc">{{ group.description }}</p>
                 {% endif %}
-                {% if group.id in my_group_ids %}
-                <span class="gp-member-tag"><span class="material-icons">check_circle</span> {% trans "Member" %}</span>
-                {% endif %}
+                <div class="gp-card-footer">
+                    {% if group.id in my_group_ids %}
+                    <span class="gp-member-tag"><span class="material-icons">check_circle</span> {% trans "Member" %}</span>
+                    {% elif user.is_authenticated %}
+                    <form method="post" action="{% url 'group:join' group.slug %}">
+                        {% csrf_token %}
+                        <button type="submit" class="gp-join-btn">
+                            <span class="material-icons" style="font-size:.9rem;">add</span> {% trans "Join" %}
+                        </button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'group:detail' group.slug %}" class="gp-join-btn">{% trans "View" %}</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -116,10 +262,22 @@
     {% else %}
     <div class="gp-empty">
         <span class="material-icons">groups</span>
-        <p>{% trans "No groups yet. Be the first to create one!" %}</p>
+        {% if query or category %}
+        <p>{% trans "No group matches your search." %}</p>
+        <a class="gp-btn" href="?tab={{ tab }}" style="margin-top:1rem;">{% trans "Clear filters" %}</a>
+        {% elif tab == 'mine' %}
+        <p>{% trans "You haven't joined any group yet." %}</p>
         <a class="gp-btn" href="{% url 'group:create' %}" style="margin-top:1rem;">
             <span class="material-icons">add</span> {% trans "Create a group" %}
         </a>
+        {% else %}
+        <p>{% trans "No groups yet. Be the first to create one!" %}</p>
+        {% if user.is_authenticated %}
+        <a class="gp-btn" href="{% url 'group:create' %}" style="margin-top:1rem;">
+            <span class="material-icons">add</span> {% trans "Create a group" %}
+        </a>
+        {% endif %}
+        {% endif %}
     </div>
     {% endif %}
 </div>
