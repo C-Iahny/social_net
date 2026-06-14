@@ -49,6 +49,7 @@ urlpatterns = [
     path('live/',   include('video.urls', namespace='video')),
     path('legal/',  include('legal.urls', namespace='legal')),
     path('bazar/',  include('bazar.urls', namespace='bazar')),
+    path('',        include('pwa.urls')),  # /sw.js, /manifest.json, /offline/
 
     path('register/', register_view, name="register"),
     path('login/', login_view, name="login"),

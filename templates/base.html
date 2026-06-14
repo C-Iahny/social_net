@@ -8,7 +8,15 @@
 
     <title>Vazimba</title>
     <link rel="icon" type="image/png" href="{% static 'logo/vazimba_icon.png' %}">
-    <link rel="apple-touch-icon" href="{% static 'logo/vazimba_icon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'logo/vazimba_v2_icon.png' %}">
+
+    <!-- ── PWA ── -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Vazimba">
 
     <!-- ① Anti-FOUC : appliquer le thème AVANT tout rendu -->
     <script>
@@ -763,5 +771,258 @@
         }, {passive:true});
     })();
     </script>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PWA — Bannière offline + Install prompt + Service Worker + IndexedDB
+     ══════════════════════════════════════════════════════════════════ -->
+<style>
+/* ── Bannière hors ligne ── */
+#pwa-offline-banner {
+    display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
+    background: #ef4444; color: #fff;
+    padding: .5rem 1rem; text-align: center;
+    font-size: .85rem; font-weight: 700;
+    box-shadow: 0 2px 12px rgba(239,68,68,.4);
+    animation: slideDown .3s ease;
+}
+@keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+#pwa-offline-banner.online { background: #22c55e; }
+
+/* ── Prompt installation ── */
+#pwa-install-prompt {
+    display: none; position: fixed; bottom: 5rem; right: 1rem; z-index: 9000;
+    background: var(--bg-card, #fff); border: 1px solid var(--border, #e5e7eb);
+    border-radius: 18px; padding: 1rem 1.1rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    max-width: 300px; animation: slideUp .3s ease;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+#pwa-install-prompt h4 {
+    font-size: .95rem; font-weight: 800; color: var(--text, #111); margin: 0 0 .3rem;
+}
+#pwa-install-prompt p {
+    font-size: .8rem; color: var(--text-muted, #666); margin: 0 0 .8rem; line-height: 1.4;
+}
+.pwa-install-actions { display: flex; gap: .5rem; }
+.pwa-btn-install {
+    flex: 1; padding: .45rem .7rem; border-radius: 10px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: #fff; border: none; cursor: pointer; font-weight: 700; font-size: .82rem;
+}
+.pwa-btn-later {
+    padding: .45rem .7rem; border-radius: 10px;
+    background: transparent; color: var(--text-muted, #666);
+    border: 1px solid var(--border, #e5e7eb); cursor: pointer; font-size: .82rem;
+}
+
+/* ── Toast de sync ── */
+#pwa-sync-toast {
+    display: none; position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%);
+    background: #1c1e20; color: #fff; border-radius: 12px;
+    padding: .55rem 1.2rem; font-size: .85rem; font-weight: 600;
+    z-index: 9999; box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+</style>
+
+<!-- Bannière offline/online -->
+<div id="pwa-offline-banner">
+    <span id="pwa-banner-text">📡 Vous êtes hors ligne — contenu mis en cache disponible</span>
+</div>
+
+<!-- Prompt installation PWA -->
+<div id="pwa-install-prompt">
+    <h4>📱 Installer Vazimba</h4>
+    <p>Accédez à l'app directement depuis votre écran d'accueil, même hors ligne.</p>
+    <div class="pwa-install-actions">
+        <button class="pwa-btn-install" onclick="pwaInstall()">Installer</button>
+        <button class="pwa-btn-later" onclick="pwaDismiss()">Plus tard</button>
+    </div>
+</div>
+
+<!-- Toast sync -->
+<div id="pwa-sync-toast"></div>
+
+<script>
+(function() {
+'use strict';
+
+/* ════════════════════════════════════════════════════════════════════
+   SERVICE WORKER
+   ════════════════════════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .then(function(reg) {
+            console.log('[PWA] SW enregistré — scope:', reg.scope);
+
+            // Écouter les messages du SW (sync réussie)
+            navigator.serviceWorker.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'SYNC_SUCCESS') {
+                    pwaShowToast('✓ Post publié avec succès !', 3000);
+                }
+            });
+
+            // Nouveau SW disponible → proposer la mise à jour
+            reg.addEventListener('updatefound', function() {
+                var newWorker = reg.installing;
+                newWorker.addEventListener('statechange', function() {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        pwaShowToast('🔄 Mise à jour disponible — rechargez la page', 0);
+                    }
+                });
+            });
+        })
+        .catch(function(err) {
+            console.warn('[PWA] SW registration failed:', err);
+        });
+    });
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   OFFLINE / ONLINE DÉTECTION
+   ════════════════════════════════════════════════════════════════════ */
+var _banner = document.getElementById('pwa-offline-banner');
+var _bannerText = document.getElementById('pwa-banner-text');
+
+function pwaUpdateBanner() {
+    if (!navigator.onLine) {
+        _banner.className = '';
+        _bannerText.textContent = '📡 Hors ligne — contenu mis en cache disponible';
+        _banner.style.display = 'block';
+    } else {
+        // Montrer brièvement "reconnecté" puis cacher
+        _banner.className = 'online';
+        _bannerText.textContent = '✓ Connexion rétablie';
+        _banner.style.display = 'block';
+        setTimeout(function() { _banner.style.display = 'none'; }, 2500);
+    }
+}
+
+window.addEventListener('offline', pwaUpdateBanner);
+window.addEventListener('online', function() {
+    pwaUpdateBanner();
+    // Déclencher Background Sync si disponible
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        navigator.serviceWorker.ready.then(function(reg) {
+            return reg.sync.register('sync-pending-posts');
+        }).catch(function() {});
+    }
+});
+
+// Vérifier l'état au chargement
+if (!navigator.onLine) pwaUpdateBanner();
+
+/* ════════════════════════════════════════════════════════════════════
+   INSTALL PROMPT
+   ════════════════════════════════════════════════════════════════════ */
+var _deferredPrompt = null;
+var _installEl = document.getElementById('pwa-install-prompt');
+
+window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    _deferredPrompt = e;
+    // N'afficher que si l'utilisateur n'a pas déjà refusé
+    if (!localStorage.getItem('pwa-install-dismissed')) {
+        setTimeout(function() {
+            _installEl.style.display = 'block';
+        }, 3000);
+    }
+});
+
+window.pwaInstall = function() {
+    _installEl.style.display = 'none';
+    if (_deferredPrompt) {
+        _deferredPrompt.prompt();
+        _deferredPrompt.userChoice.then(function(choice) {
+            if (choice.outcome === 'accepted') {
+                console.log('[PWA] App installée');
+            }
+            _deferredPrompt = null;
+        });
+    }
+};
+
+window.pwaDismiss = function() {
+    _installEl.style.display = 'none';
+    localStorage.setItem('pwa-install-dismissed', '1');
+};
+
+window.addEventListener('appinstalled', function() {
+    _installEl.style.display = 'none';
+    _deferredPrompt = null;
+    pwaShowToast('✓ Vazimba installé sur votre écran d\'accueil !', 3500);
+});
+
+/* ════════════════════════════════════════════════════════════════════
+   TOAST HELPER
+   ════════════════════════════════════════════════════════════════════ */
+var _toastEl = document.getElementById('pwa-sync-toast');
+var _toastTimer = null;
+
+window.pwaShowToast = function(msg, duration) {
+    _toastEl.textContent = msg;
+    _toastEl.style.display = 'block';
+    if (_toastTimer) clearTimeout(_toastTimer);
+    if (duration > 0) {
+        _toastTimer = setTimeout(function() { _toastEl.style.display = 'none'; }, duration);
+    }
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   INDEXEDDB — File d'attente des posts hors ligne
+   ════════════════════════════════════════════════════════════════════ */
+var _offlineDB = null;
+
+function pwaOpenDB() {
+    if (_offlineDB) return Promise.resolve(_offlineDB);
+    return new Promise(function(resolve, reject) {
+        var req = indexedDB.open('vazimba-offline', 1);
+        req.onupgradeneeded = function(e) {
+            var db = e.target.result;
+            if (!db.objectStoreNames.contains('pending-posts')) {
+                var store = db.createObjectStore('pending-posts', { keyPath: 'id', autoIncrement: true });
+                store.createIndex('timestamp', 'timestamp', { unique: false });
+            }
+        };
+        req.onsuccess = function(e) { _offlineDB = e.target.result; resolve(_offlineDB); };
+        req.onerror   = function(e) { reject(e.target.error); };
+    });
+}
+
+window.pwaSavePost = function(url, data, csrf) {
+    return pwaOpenDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+            var tx    = db.transaction('pending-posts', 'readwrite');
+            var store = tx.objectStore('pending-posts');
+            var req   = store.add({ url: url, data: data, csrf: csrf, timestamp: Date.now() });
+            req.onsuccess = function() { resolve(req.result); };
+            req.onerror   = function(e) { reject(e.target.error); };
+        });
+    });
+};
+
+window.pwaGetPendingCount = function() {
+    return pwaOpenDB().then(function(db) {
+        return new Promise(function(resolve) {
+            var tx  = db.transaction('pending-posts', 'readonly');
+            var req = tx.objectStore('pending-posts').count();
+            req.onsuccess = function() { resolve(req.result); };
+            req.onerror   = function()  { resolve(0); };
+        });
+    });
+};
+
+/* ── Intercepter la soumission de posts quand hors ligne ─────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+    // Afficher le nombre de posts en attente si > 0
+    pwaGetPendingCount().then(function(count) {
+        if (count > 0) {
+            pwaShowToast(count + ' post(s) en attente de connexion…', 4000);
+        }
+    });
+});
+
+})();
+</script>
 </body>
 </html>
