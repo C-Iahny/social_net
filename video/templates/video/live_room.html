@@ -621,6 +621,9 @@ function connect() {
             case 'chat':
                 appendChat(d.username, d.avatar, d.text);
                 break;
+            case 'ring_buffer_done':
+                if (!IS_HOST) onRingBufferDone();
+                break;
             case 'stream_ended':
                 onStreamEnded();
                 break;
@@ -706,7 +709,7 @@ function startRecording(stream) {
         };
         reader.readAsDataURL(ev.data);
     };
-    mediaRecorder.start(500);  /* chunk toutes les 500 ms (moins de charge réseau) */
+    mediaRecorder.start(250);  /* chunk toutes les 250 ms → latence ≤ 1 s */
 
     /* Indicateur visuel "En direct" dans l'overlay source */
     if (sourceOverlay) {
@@ -803,30 +806,32 @@ function initMediaSource(mime) {
         }
     });
 
-    /* Synchronisation live edge : si le video s'arrête de buffuriser,
-       on le force à sauter au dernier segment disponible (évite le gel). */
-    videoEl.addEventListener('waiting', function onWaiting() {
+    /* Buffer underrun : sauter au live edge et relancer. */
+    videoEl.addEventListener('waiting', function() {
         if (!msInited) return;
         if (videoEl.buffered.length > 0) {
             var liveEdge = videoEl.buffered.end(videoEl.buffered.length - 1);
-            if (videoEl.currentTime < liveEdge - 1.5) {
-                console.log('[VIEWER] buffer underrun — saut au live edge', liveEdge);
-                try { videoEl.currentTime = liveEdge - 0.5; } catch(e2) {}
+            if (videoEl.currentTime < liveEdge - 1.0) {
+                try { videoEl.currentTime = liveEdge - 0.3; } catch(e2) {}
             }
         }
-        videoEl.play().catch(function() {});
+        videoEl.play().catch(handlePlayError);
     });
 
     return true;   /* ← MediaSource créé avec succès */
 }
 
 function onUpdateEnd() {
-    /* Purger le buffer si > 60s pour éviter les fuites mémoire */
+    /* Purger le buffer si trop lourd (évite les fuites mémoire, sans risquer le currentTime). */
     if (sourceBuffer && !sourceBuffer.updating &&
         mediaSource && mediaSource.readyState === 'open') {
         var buf = sourceBuffer.buffered;
-        if (buf.length > 0 && buf.end(0) - buf.start(0) > 60) {
-            try { sourceBuffer.remove(buf.start(0), buf.end(0) - 30); return; } catch(e) {}
+        if (buf.length > 0) {
+            var totalBuf = buf.end(buf.length - 1) - buf.start(0);
+            if (totalBuf > 30) {
+                purgeSafeBuffer();
+                if (sourceBuffer.updating) return;  /* attend updateend du remove */
+            }
         }
     }
     processQueue();
@@ -843,15 +848,86 @@ function processQueue() {
         if (!hasPlayed) {
             hasPlayed = true;
             if (waitingOverlay) waitingOverlay.classList.add('hidden');
-            videoEl.play().catch(function() {});
-            if (!IS_HOST) showUnmuteBtn();
+            /* On retarde le play() pour laisser le ring buffer se charger,
+               puis on saute directement au live edge (réduit la latence). */
+            setTimeout(function() {
+                syncToLiveEdge();
+                if (!IS_HOST) showUnmuteBtn();
+            }, 400);
         }
     } catch(e) {
         if (e.name === 'QuotaExceededError') {
-            var buf = sourceBuffer.buffered;
-            if (buf.length) { try { sourceBuffer.remove(buf.start(0), buf.end(0) - 10); } catch(e2){} }
+            purgeSafeBuffer();
         }
         console.error('appendBuffer error:', e.name, e.message);
+    }
+}
+
+/* Saute au live edge et lance la lecture (Firefox safe). */
+function syncToLiveEdge() {
+    if (videoEl.buffered.length > 0) {
+        var liveEdge = videoEl.buffered.end(videoEl.buffered.length - 1);
+        try { videoEl.currentTime = Math.max(0, liveEdge - 0.3); } catch(e) {}
+    }
+    videoEl.play().catch(handlePlayError);
+}
+
+/* Appelé quand le serveur signale que le ring buffer est terminé */
+function onRingBufferDone() {
+    /* Attendre que la queue soit vide, puis sauter au live edge */
+    var check = function() {
+        if (appendQueue.length === 0 && sourceBuffer && !sourceBuffer.updating) {
+            syncToLiveEdge();
+        } else {
+            setTimeout(check, 100);
+        }
+    };
+    setTimeout(check, 100);
+}
+
+/* Si play() est bloqué (Firefox, politique autoplay), afficher un bouton play. */
+function handlePlayError(err) {
+    console.warn('[VIEWER] play() bloqué :', err.name);
+    if (err.name === 'NotAllowedError' || err.name === 'AbortError') {
+        showPlayButton();
+    }
+}
+
+function showPlayButton() {
+    if (document.getElementById('lr-play-btn')) return;
+    var btn = document.createElement('button');
+    btn.id = 'lr-play-btn';
+    btn.innerHTML =
+        '<span class="material-icons" style="font-size:3.5rem;display:block">play_circle</span>' +
+        '<span style="font-size:.85rem;margin-top:.3rem;display:block">Appuie pour lire</span>';
+    btn.style.cssText = [
+        'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);',
+        'background:rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.35);border-radius:16px;',
+        'padding:1rem 1.6rem;cursor:pointer;color:#fff;z-index:25;',
+        'display:flex;flex-direction:column;align-items:center;',
+        'backdrop-filter:blur(4px);font-family:inherit;'
+    ].join('');
+    btn.onclick = function() {
+        videoEl.muted = false;
+        syncToLiveEdge();
+        btn.remove();
+    };
+    var area = document.querySelector('.lr-video-area');
+    if (area) area.appendChild(btn);
+}
+
+/* Purge sûre du buffer : ne touche jamais aux données proches de currentTime. */
+function purgeSafeBuffer() {
+    if (!sourceBuffer || sourceBuffer.updating) return;
+    if (!mediaSource || mediaSource.readyState !== 'open') return;
+    var buf = sourceBuffer.buffered;
+    if (buf.length === 0) return;
+    var removeEnd = Math.min(
+        videoEl.currentTime - 5,          /* rester à ≥ 5 s du currentTime */
+        buf.end(buf.length - 1) - 10      /* garder au moins 10 s en avance */
+    );
+    if (removeEnd > buf.start(0) + 1) {
+        try { sourceBuffer.remove(buf.start(0), removeEnd); } catch(e) {}
     }
 }
 
@@ -1023,6 +1099,17 @@ if (!IS_HOST) {
             '⚠️ iPhone / iPad non supporté.<br>' +
             '<span style="font-size:.85em;opacity:.75">Le live utilise WebM/VP9 incompatible avec iOS.<br>' +
             'Utilise <b>Chrome ou Firefox sur ordinateur</b> ou Android.</span>';
+    /* Safety net : si la vidéo est en pause alors qu'il y a des données bufférisées,
+       on relance toutes les 2 secondes (corrige Firefox qui ne reprend pas seul). */
+    setInterval(function() {
+        if (msInited && hasPlayed && videoEl.paused && !videoEl.ended) {
+            if (videoEl.buffered.length > 0 &&
+                videoEl.buffered.end(videoEl.buffered.length-1) > videoEl.currentTime) {
+                videoEl.play().catch(function() {});
+            }
+        }
+    }, 2000);
+
     } else {
         /* Timer 30 s : si aucun chunk reçu, on suggère une action à l'hôte */
         noChunkTimer = setTimeout(function() {
