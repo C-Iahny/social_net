@@ -29,7 +29,7 @@
         position: fixed;
         width: 700px; height: 700px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(0,207,255,.07) 0%, transparent 65%);
+        background: radial-gradient(circle, rgba(212,175,55,.07) 0%, transparent 65%);
         top: -200px; left: -200px;
         pointer-events: none;
     }
@@ -38,7 +38,7 @@
         position: fixed;
         width: 500px; height: 500px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(191,95,255,.06) 0%, transparent 65%);
+        background: radial-gradient(circle, rgba(205,127,50,.06) 0%, transparent 65%);
         bottom: -150px; right: -150px;
         pointer-events: none;
     }
@@ -68,17 +68,17 @@
         background-clip: text;
         margin-bottom: .25rem;
         display: block;
-        filter: drop-shadow(0 0 30px rgba(0,207,255,.3));
+        filter: drop-shadow(0 0 30px rgba(212,175,55,.3));
     }
 
     [data-theme="dark"] .error-code {
-        filter: drop-shadow(0 0 40px rgba(0,207,255,.5));
+        filter: drop-shadow(0 0 40px rgba(212,175,55,.5));
         animation: pulseGlow 3s ease-in-out infinite;
     }
 
     @keyframes pulseGlow {
-        0%,100% { filter: drop-shadow(0 0 30px rgba(0,207,255,.4)); }
-        50%      { filter: drop-shadow(0 0 60px rgba(191,95,255,.6)); }
+        0%,100% { filter: drop-shadow(0 0 30px rgba(212,175,55,.4)); }
+        50%      { filter: drop-shadow(0 0 60px rgba(205,127,50,.55)); }
     }
 
     .error-icon {
@@ -133,12 +133,12 @@
     .btn-error-primary:hover {
         opacity: .88;
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px var(--accent-glow, rgba(99,102,241,.3));
+        box-shadow: 0 8px 24px var(--accent-glow, rgba(139,69,19,.28));
         color: #fff;
         text-decoration: none;
     }
     [data-theme="dark"] .btn-error-primary {
-        box-shadow: 0 0 20px rgba(0,207,255,.2);
+        box-shadow: 0 0 20px rgba(212,175,55,.2);
         color: #000;
     }
 
@@ -200,8 +200,8 @@
     /* Grille déco dark */
     [data-theme="dark"] body {
         background-image:
-            linear-gradient(rgba(0,207,255,.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,207,255,.02) 1px, transparent 1px);
+            linear-gradient(rgba(212,175,55,.015) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(212,175,55,.015) 1px, transparent 1px);
         background-size: 48px 48px;
     }
     </style>
