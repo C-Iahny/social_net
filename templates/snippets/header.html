@@ -434,21 +434,31 @@
 .scrollable-menu::-webkit-scrollbar { width: 4px; }
 .scrollable-menu::-webkit-scrollbar-track { background: transparent; }
 .scrollable-menu::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-/* ── Mobile : dropdown ne déborde pas ── */
+/* ── Mobile : dropdown en position fixed pour ne jamais déborder ── */
 @media (max-width: 575.98px) {
+    /* Chat + Notifs : fixed pleine largeur sous la navbar */
     .scrollable-menu {
-        width: calc(100vw - 16px) !important;
-        max-width: 360px;
+        position: fixed !important;
+        top: 64px !important;
+        left: 8px !important;
+        right: 8px !important;
+        width: auto !important;
+        max-width: 100% !important;
+        max-height: calc(100vh - 80px) !important;
+        transform: none !important;
     }
-    .dropdown-menu.dropdown-menu-right {
-        right: 4px !important;
-        left: auto !important;
-    }
-    /* Profil dropdown : scrollable si trop grand */
+    /* Profil dropdown : fixed aussi, scrollable */
     .dropdown-menu[aria-labelledby="id_profile_links"] {
-        max-height: calc(100vh - 72px);
-        overflow-y: auto;
+        position: fixed !important;
+        top: 64px !important;
+        right: 8px !important;
+        left: auto !important;
+        width: calc(100vw - 16px) !important;
+        max-width: 300px !important;
+        max-height: calc(100vh - 80px) !important;
+        overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
+        transform: none !important;
     }
 }
 
