@@ -172,7 +172,7 @@
 .continent-item:hover { background: var(--btn-bg); text-decoration: none; color: var(--accent); }
 .continent-dot {
     width: 10px; height: 10px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), #7c3aed);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
     flex-shrink: 0;
 }
 .continent-count {
@@ -382,6 +382,40 @@
 .explore-cta-secondary { background: var(--btn-bg); color: var(--text); border: 1px solid var(--border); margin-left: .5rem; }
 .explore-cta-secondary:hover { background: var(--btn-hover); color: var(--text); }
 .explore-cta-btn .material-icons { font-size: 1rem; }
+
+/* ── Dark mode — boutons accentués ── */
+[data-theme="dark"] .filter-tab.active {
+    background: rgba(212,175,55,0.14);
+    color: var(--accent);
+    box-shadow: 0 0 0 1px rgba(212,175,55,0.28);
+}
+[data-theme="dark"] .filter-tab.active:hover {
+    background: rgba(212,175,55,0.22);
+    color: var(--accent);
+}
+[data-theme="dark"] .cta-primary {
+    background: rgba(212,175,55,0.10);
+    color: var(--accent) !important;
+    border: 1px solid rgba(212,175,55,0.26);
+}
+[data-theme="dark"] .cta-primary:hover {
+    background: rgba(212,175,55,0.18);
+    color: var(--accent) !important;
+}
+[data-theme="dark"] .explore-cta-primary {
+    background: rgba(212,175,55,0.10);
+    color: var(--accent) !important;
+    border: 1px solid rgba(212,175,55,0.26);
+}
+[data-theme="dark"] .explore-cta-primary:hover {
+    background: rgba(212,175,55,0.18);
+    color: var(--accent) !important;
+}
+[data-theme="dark"] .country-tag:hover {
+    background: rgba(212,175,55,0.10);
+    color: var(--accent);
+    border-color: rgba(212,175,55,0.28);
+}
 </style>
 
 <!-- ═══════════════════════════════════
