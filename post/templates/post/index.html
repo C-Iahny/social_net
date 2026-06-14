@@ -426,10 +426,14 @@
     --hero-from: {{ hero.gradient_from }};
     --hero-to:   {{ hero.gradient_to }};
   }
+  /* ── Forcer la palette acajou (surpasse les valeurs DB) ── */
+  .explore-hero {
+    background: linear-gradient(135deg, #5c2a08 0%, #8B4513 55%, #A0522D 100%) !important;
+  }
   {% if hero.background_image %}
   .explore-hero {
     background:
-      linear-gradient(135deg, {{ hero.gradient_from }}cc 0%, {{ hero.gradient_to }}cc 100%),
+      linear-gradient(135deg, rgba(92,42,8,.72) 0%, rgba(139,69,19,.58) 100%),
       url('{{ hero.background_image.url }}') center / cover no-repeat !important;
   }
   {% endif %}
