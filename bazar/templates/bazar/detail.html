@@ -263,7 +263,7 @@
 .bazar-mini-title { font-size: .83rem; font-weight: 700; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .bazar-mini-price { font-size: .9rem; font-weight: 800; color: var(--accent); margin-top: .3rem; }
 
-/* Lightbox simple */
+/* Lightbox */
 #lightbox {
     display: none;
     position: fixed;
@@ -274,12 +274,43 @@
     justify-content: center;
 }
 #lightbox.open { display: flex; }
-#lightbox img { max-width: 92vw; max-height: 90vh; border-radius: 8px; object-fit: contain; }
+#lightbox-img { max-width: 88vw; max-height: 88vh; border-radius: 8px; object-fit: contain; user-select: none; }
 #lightbox-close {
     position: absolute;
     top: 16px; right: 20px;
     color: #fff; font-size: 2rem; cursor: pointer; line-height: 1;
     background: none; border: none;
+}
+.lb-nav-btn {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,.15);
+    border: none; color: #fff;
+    font-size: 2rem; font-weight: 300;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .18s;
+    z-index: 10;
+    line-height: 1;
+}
+.lb-nav-btn:hover { background: rgba(255,255,255,.32); }
+#lightbox-prev { left: 14px; }
+#lightbox-next { right: 14px; }
+#lightbox-counter {
+    position: absolute;
+    bottom: 18px; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,.85);
+    font-size: .82rem; font-weight: 600;
+    background: rgba(0,0,0,.45);
+    padding: .22rem .85rem; border-radius: 20px;
+    pointer-events: none;
+}
+@media (max-width: 575px) {
+    .lb-nav-btn { width: 40px; height: 40px; font-size: 1.5rem; }
+    #lightbox-prev { left: 6px; }
+    #lightbox-next { right: 6px; }
 }
 </style>
 
@@ -299,14 +330,14 @@
         <!-- Galerie -->
         <div class="bazar-gallery">
             {% if images %}
-            <img id="main-photo" class="bazar-main-img" src="{{ images.0.image.url }}" alt="{{ annonce.title }}" onclick="openLightbox(this.src)">
+            <img id="main-photo" class="bazar-main-img" src="{{ images.0.image.url }}" alt="{{ annonce.title }}" onclick="openLightbox(0)">
             {% if images|length > 1 %}
             <div class="bazar-thumbs">
                 {% for img in images %}
                 <img class="bazar-thumb {% if forloop.first %}active{% endif %}"
                      src="{{ img.image.url }}"
                      alt="Photo {{ forloop.counter }}"
-                     onclick="switchPhoto(this)">
+                     onclick="switchPhoto(this, {{ forloop.counter0 }})">
                 {% endfor %}
             </div>
             {% endif %}
@@ -476,24 +507,79 @@
 <!-- Lightbox -->
 <div id="lightbox" onclick="closeLightbox()">
     <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+    <button class="lb-nav-btn" id="lightbox-prev" onclick="event.stopPropagation(); lightboxNav(-1)">&#8249;</button>
     <img id="lightbox-img" src="" alt="Aperçu">
+    <button class="lb-nav-btn" id="lightbox-next" onclick="event.stopPropagation(); lightboxNav(1)">&#8250;</button>
+    <div id="lightbox-counter"></div>
 </div>
 
 <script>
-function switchPhoto(thumb) {
+// ── Galerie ────────────────────────────────────────────────────────────────────
+const galleryThumbs = Array.from(document.querySelectorAll('.bazar-thumb'));
+const galleryUrls   = galleryThumbs.map(t => t.src);
+// Si une seule photo (pas de thumbs), récupérer depuis main-photo
+if (galleryUrls.length === 0) {
+    const mp = document.getElementById('main-photo');
+    if (mp) galleryUrls.push(mp.src);
+}
+let currentIdx = 0;
+
+function switchPhoto(thumb, idx) {
+    currentIdx = idx;
     document.getElementById('main-photo').src = thumb.src;
-    document.querySelectorAll('.bazar-thumb').forEach(t => t.classList.remove('active'));
+    galleryThumbs.forEach(t => t.classList.remove('active'));
     thumb.classList.add('active');
 }
-function openLightbox(src) {
-    document.getElementById('lightbox-img').src = src;
+
+// ── Lightbox ───────────────────────────────────────────────────────────────────
+function openLightbox(idx) {
+    currentIdx = idx || 0;
+    _lightboxShow();
     document.getElementById('lightbox').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
+
+function _lightboxShow() {
+    document.getElementById('lightbox-img').src = galleryUrls[currentIdx];
+    const total = galleryUrls.length;
+    const counter = document.getElementById('lightbox-counter');
+    const showNav = total > 1;
+    document.getElementById('lightbox-prev').style.display = showNav ? 'flex' : 'none';
+    document.getElementById('lightbox-next').style.display = showNav ? 'flex' : 'none';
+    counter.style.display = showNav ? 'block' : 'none';
+    if (showNav) counter.textContent = `${currentIdx + 1} / ${total}`;
+}
+
+function lightboxNav(dir) {
+    currentIdx = (currentIdx + dir + galleryUrls.length) % galleryUrls.length;
+    _lightboxShow();
+    // Sync le thumbnail principal aussi
+    if (galleryThumbs.length > 0) {
+        document.getElementById('main-photo').src = galleryUrls[currentIdx];
+        galleryThumbs.forEach((t, i) => t.classList.toggle('active', i === currentIdx));
+    }
+}
+
 function closeLightbox() {
     document.getElementById('lightbox').classList.remove('open');
     document.body.style.overflow = '';
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft')  lightboxNav(-1);
+    if (e.key === 'ArrowRight') lightboxNav(1);
+});
+
+// Swipe tactile (mobile)
+let _tsX = null;
+document.getElementById('lightbox').addEventListener('touchstart', e => { _tsX = e.touches[0].clientX; }, {passive:true});
+document.getElementById('lightbox').addEventListener('touchend', e => {
+    if (_tsX === null) return;
+    const diff = _tsX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) lightboxNav(diff > 0 ? 1 : -1);
+    _tsX = null;
+}, {passive:true});
 </script>
 {% endblock %}
