@@ -26,6 +26,7 @@ SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
+DJANGO_DEBUG=True
 
 # ── Email ─────────────────────────────────────────────────────────────────────
 # En développement : affiche les e-mails dans la console (pas d'envoi réel)
@@ -40,6 +41,7 @@ else:
     EMAIL_HOST_USER     = config('EMAIL_HOST_USER',     default='')
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
     DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL',  default=config('EMAIL_HOST_USER', default=''))
+    EMAIL_TIMEOUT       = 10   # timeout SMTP en secondes — évite le 524 Cloudflare
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,www.vazimba.io,vazimba.io', cast=Csv())
 
