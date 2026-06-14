@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+.legal-page {
+    max-width: 820px;
+    margin: 3rem auto;
+    padding: 0 1.25rem 4rem;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+.legal-logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    text-decoration: none;
+}
+.legal-logo img {
+    height: 52px;
+    width: auto;
+}
+[data-theme="dark"] .legal-logo img { filter: brightness(0) invert(1); }
+.legal-badge {
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--btn-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: .25rem .75rem;
+}
+.legal-hero {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    border-radius: 18px;
+    padding: 2.5rem 2rem;
+    color: #fff;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.legal-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Ccircle cx='20' cy='20' r='2'/%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+}
+.legal-hero h1 {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 900; margin: 0 0 .5rem;
+    position: relative;
+}
+.legal-hero p { opacity: .88; font-size: .95rem; margin: 0; position: relative; }
+.legal-meta {
+    display: flex; flex-wrap: wrap; gap: .75rem;
+    margin-bottom: 2rem;
+    font-size: .8rem; color: var(--text-muted);
+}
+.legal-meta-chip {
+    background: var(--btn-bg); border: 1px solid var(--border);
+    border-radius: 20px; padding: .25rem .75rem;
+    display: flex; align-items: center; gap: .3rem;
+}
+.legal-meta-chip .material-icons { font-size: .9rem; color: var(--accent); }
+.legal-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.75rem 1.75rem 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: var(--shadow);
+}
+.legal-section h2 {
+    font-size: 1.08rem; font-weight: 800;
+    color: var(--text); margin: 0 0 1rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.legal-section h2 .material-icons {
+    font-size: 1.15rem; color: var(--accent); flex-shrink: 0;
+}
+.legal-section p, .legal-section li {
+    font-size: .9rem; line-height: 1.75;
+    color: var(--text-muted); margin-bottom: .65rem;
+}
+.legal-section ul {
+    padding-left: 1.25rem; margin: .5rem 0;
+}
+.legal-section li { margin-bottom: .35rem; }
+.legal-warn {
+    background: rgba(220,53,69,.07);
+    border-left: 4px solid #dc3545;
+    border-radius: 0 10px 10px 0;
+    padding: .85rem 1.1rem;
+    margin: .75rem 0;
+    font-size: .88rem; color: var(--text);
+}
+[data-theme="dark"] .legal-warn { background: rgba(255,77,77,.07); }
+.legal-warn strong { color: #dc3545; }
+.legal-positive {
+    background: rgba(40,167,69,.07);
+    border-left: 4px solid #28a745;
+    border-radius: 0 10px 10px 0;
+    padding: .85rem 1.1rem;
+    margin: .75rem 0;
+    font-size: .88rem; color: var(--text);
+}
+[data-theme="dark"] .legal-positive { background: rgba(40,200,80,.07); }
+.legal-positive strong { color: #28a745; }
+.legal-back {
+    display: inline-flex; align-items: center; gap: .4rem;
+    color: var(--accent); font-weight: 700; text-decoration: none;
+    font-size: .9rem; margin-bottom: 2rem;
+    transition: opacity .2s;
+}
+.legal-back:hover { opacity: .75; text-decoration: none; }
+.legal-back .material-icons { font-size: 1rem; }
+@media (max-width: 575px) {
+    .legal-page { padding: 0 .75rem 5rem; margin-top: 1.5rem; }
+    .legal-section { padding: 1.25rem 1rem .85rem; }
+    .legal-hero { padding: 1.75rem 1.25rem; }
+}
+</style>
+
+<div class="legal-page">
+
+    <!-- Logo -->
+    <a href="{% url 'landing' %}" class="legal-logo">
+        <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="Vazimba">
+    </a>
+
+    <!-- Retour -->
+    <a href="javascript:history.back()" class="legal-back">
+        <span class="material-icons">arrow_back</span>
+        Retour
+    </a>
+
+    <!-- Hero -->
+    <div class="legal-hero">
+        <h1>Conditions Générales d'Utilisation</h1>
+        <p>Veuillez lire attentivement ces conditions avant d'utiliser la plateforme Vazimba.</p>
+    </div>
+
+    <!-- Meta -->
+    <div class="legal-meta">
+        <span class="legal-meta-chip">
+            <span class="material-icons">event</span>
+            Dernière mise à jour : juin 2025
+        </span>
+        <span class="legal-meta-chip">
+            <span class="material-icons">language</span>
+            Applicable à www.vazimba.io
+        </span>
+        <span class="legal-meta-chip">
+            <span class="material-icons">place</span>
+            Madagascar
+        </span>
+    </div>
+
+    <!-- Section 1 -->
+    <div class="legal-section">
+        <h2><span class="material-icons">info_outline</span> 1. Présentation de Vazimba</h2>
+        <p>
+            Vazimba est un réseau social conçu pour la communauté malgache, accessible à l'adresse
+            <strong>www.vazimba.io</strong>. Notre mission est de donner une voix authentique à
+            Madagascar — un espace où la culture, la langue et les valeurs malgaches sont respectées
+            et célébrées.
+        </p>
+        <p>
+            Vazimba contribue activement à l'<strong>éducation et à l'épanouissement</strong>
+            de la population malgache. La plateforme valorise le partage de connaissances,
+            les échanges constructifs, et la mise en avant des talents et initiatives locales.
+        </p>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="legal-section">
+        <h2><span class="material-icons">people_outline</span> 2. Accès et inscription</h2>
+        <p>L'utilisation de Vazimba est ouverte à toute personne âgée de <strong>16 ans ou plus</strong>. En créant un compte, vous certifiez :</p>
+        <ul>
+            <li>Avoir l'âge requis pour utiliser la plateforme.</li>
+            <li>Fournir des informations exactes lors de l'inscription.</li>
+            <li>Être responsable de la sécurité et de la confidentialité de votre mot de passe.</li>
+            <li>Ne pas créer plusieurs comptes ou usurper l'identité d'une autre personne.</li>
+        </ul>
+    </div>
+
+    <!-- Section 3 — CONTENUS INTERDITS -->
+    <div class="legal-section">
+        <h2><span class="material-icons">block</span> 3. Contenus interdits</h2>
+        <p>Dans l'intérêt de la communauté et de la dignité de la population malgache, les contenus suivants sont <strong>strictement interdits</strong> sur Vazimba.</p>
+
+        <div class="legal-warn">
+            <strong>🚫 Contenus sexuels ou dégradants</strong><br>
+            Il est interdit de publier des photos, vidéos ou textes à caractère sexuel, érotique
+            ou pornographique. Cela inclut les contenus montrant partiellement des zones intimes
+            (décolletés excessifs, fessiers, etc.) dans le but d'attirer l'attention par la provocation
+            plutôt que par l'intelligence ou le talent.<br><br>
+            Vazimba croit que la vraie valeur d'une personne réside dans son intelligence, sa créativité
+            et ses accomplissements — pas dans la mise en scène de son corps. Ces contenus seront
+            supprimés et les comptes concernés suspendus.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Violence et cruauté</strong><br>
+            Toute publication montrant des actes de violence physique, de torture, de cruauté
+            envers des personnes ou des animaux est formellement interdite. Ces images traumatisent
+            les membres de la communauté et ne seront pas tolérées.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Justice populaire et appels à la vindicte</strong><br>
+            Il est interdit de publier des contenus visant à identifier, humilier, juger ou punir
+            publiquement une personne (voleurs, présumés coupables, etc.). Ces publications
+            encouragent la violence et violent la présomption d'innocence.
+            L'équipe Vazimba supprimera immédiatement tout contenu de ce type.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Déclarations politiques, judiciaires ou d'appel à la punition</strong><br>
+            Les publications ayant pour but de faire des déclarations politiques partisanes,
+            des jugements judiciaires, des demandes de sanctions ou de punition contre des
+            individus ou des groupes ne sont pas autorisées. Vazimba n'est pas un tribunal
+            ni une tribune politique.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Harcèlement, discrimination et discours haineux</strong><br>
+            Toute forme de harcèlement, d'intimidation, de discrimination basée sur
+            l'origine, la religion, le genre, l'orientation ou le statut social est interdite.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Désinformation et fausses nouvelles</strong><br>
+            La propagation de rumeurs, d'informations non vérifiées présentées comme vraies,
+            et de contenus destinés à manipuler l'opinion publique est interdite.
+        </div>
+    </div>
+
+    <!-- Section 4 — Contenus valorisés -->
+    <div class="legal-section">
+        <h2><span class="material-icons">star_outline</span> 4. Contenus valorisés</h2>
+        <div class="legal-positive">
+            <strong>✅ Ce que Vazimba encourage</strong><br>
+            Partage de connaissances, conseils éducatifs et professionnels · Mise en valeur
+            de la culture, de l'art et des traditions malgaches · Partage d'opportunités
+            d'emploi, de formation et d'entrepreneuriat · Actualités positives, initiatives
+            communautaires et projets solidaires · Échanges respectueux et constructifs.
+        </div>
+        <p>
+            Nous croyons qu'une jeunesse informée, éduquée et valorisée dans ses compétences
+            est la clé du développement de Madagascar. Vazimba est conçu pour être cet espace.
+        </p>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="legal-section">
+        <h2><span class="material-icons">gavel</span> 5. Modération et sanctions</h2>
+        <p>L'équipe Vazimba se réserve le droit de :</p>
+        <ul>
+            <li>Supprimer tout contenu enfreignant les présentes CGU, sans préavis.</li>
+            <li>Suspendre temporairement ou définitivement un compte en cas de violation répétée.</li>
+            <li>Signaler aux autorités compétentes tout contenu à caractère illégal.</li>
+        </ul>
+        <p>
+            Les décisions de modération sont prises dans le respect de la dignité humaine
+            et dans l'intérêt de la communauté. Un utilisateur dont le contenu est supprimé
+            peut contacter l'équipe pour obtenir des explications.
+        </p>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="legal-section">
+        <h2><span class="material-icons">copyright</span> 6. Propriété intellectuelle</h2>
+        <p>
+            Vous restez propriétaire des contenus que vous publiez. En les publiant sur Vazimba,
+            vous accordez à la plateforme une licence non exclusive d'affichage et de diffusion
+            à des fins non commerciales, dans le cadre du fonctionnement du réseau.
+        </p>
+        <p>
+            Vazimba, ses logos, son identité visuelle et ses fonctionnalités sont la propriété
+            exclusive de leurs créateurs. Toute reproduction sans autorisation est interdite.
+        </p>
+    </div>
+
+    <!-- Section 7 -->
+    <div class="legal-section">
+        <h2><span class="material-icons">update</span> 7. Modifications des CGU</h2>
+        <p>
+            Vazimba se réserve le droit de modifier les présentes conditions à tout moment.
+            Les utilisateurs seront informés par notification sur la plateforme.
+            La poursuite de l'utilisation du service après notification vaut acceptation
+            des nouvelles conditions.
+        </p>
+    </div>
+
+    <!-- Section 8 -->
+    <div class="legal-section">
+        <h2><span class="material-icons">mail_outline</span> 8. Contact</h2>
+        <p>
+            Pour toute question relative aux présentes CGU ou pour signaler un abus :
+            <strong>contact@vazimba.io</strong>
+        </p>
+    </div>
+
+    <p style="text-align:center;font-size:.78rem;color:var(--text-muted);margin-top:2rem;">
+        © 2025 VAZIMBA · Réseau Social Madagascar · Tous droits réservés
+    </p>
+</div>
+{% endblock content %}
