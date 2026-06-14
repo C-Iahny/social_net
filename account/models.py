@@ -98,6 +98,10 @@ class Account(AbstractBaseUser):
 # From Tomi -----------------------------------------------
 	bio = models.TextField(blank=True)
 	location = models.CharField(max_length=100, blank=True)
+	cgu_accepted_at = models.DateTimeField(
+		null=True, blank=True,
+		verbose_name="CGU & confidentialité acceptées le"
+	)
 # ---------------------------------------------------------
 	USERNAME_FIELD = 'email'
 	REQUIRED_FIELDS = ['username']

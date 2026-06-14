@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     # ── Applications du projet ─────────────────────────────────────────────────
     'account',
     'personal',
+    'legal',
     'friend',
     'public_chat',
     'stories',

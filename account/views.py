@@ -39,8 +39,16 @@ def register_view(request, *args, **kwargs):
 	context = {}
 	if request.POST:
 		form = RegistrationForm(request.POST)
-		if form.is_valid():
-			form.save()
+		accept_terms = request.POST.get('accept_terms')
+		if not accept_terms:
+			context['registration_form'] = form
+			context['terms_error'] = True
+		elif form.is_valid():
+			account = form.save()
+			# Enregistrer la date d'acceptation des CGU
+			from django.utils import timezone
+			account.cgu_accepted_at = timezone.now()
+			account.save(update_fields=['cgu_accepted_at'])
 			email = form.cleaned_data.get('email').lower()
 			raw_password = form.cleaned_data.get('password1')
 			account = authenticate(email=email, password=raw_password)
@@ -48,7 +56,7 @@ def register_view(request, *args, **kwargs):
 			destination = kwargs.get("next")
 			if destination:
 				return redirect(destination)
-			return redirect('home')
+			return redirect('post:post-view')
 		else:
 			context['registration_form'] = form
 	else:

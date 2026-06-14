@@ -47,6 +47,7 @@ urlpatterns = [
     path('notif/', include('notification.urls', namespace='notification')),
     path('groups/', include('group.urls', namespace='group')),
     path('live/',   include('video.urls', namespace='video')),
+    path('legal/',  include('legal.urls', namespace='legal')),
 
     path('register/', register_view, name="register"),
     path('login/', login_view, name="login"),

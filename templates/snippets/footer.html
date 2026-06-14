@@ -153,7 +153,7 @@
         <!-- Tagline -->
         <p class="footer-tagline mb-0">{% trans "Social network · Madagascar · 2025" %}</p>
 
-        <!-- Liens -->
+        <!-- Liens navigation -->
         <nav class="footer-links">
             <a href="{% url 'post:post-view' %}">{% trans "News feed" %}</a>
             <a href="{% url 'post:index' %}">{% trans "Explore" %}</a>
@@ -163,6 +163,12 @@
             <a href="{% url 'login' %}">{% trans "Sign in" %}</a>
             <a href="{% url 'register' %}">{% trans "Sign up" %}</a>
             {% endif %}
+        </nav>
+
+        <!-- Liens légaux -->
+        <nav class="footer-links" style="margin-top:-.5rem;">
+            <a href="{% url 'legal:cgu' %}">CGU</a>
+            <a href="{% url 'legal:confidentialite' %}">Confidentialité</a>
         </nav>
 
         <!-- Divider -->
