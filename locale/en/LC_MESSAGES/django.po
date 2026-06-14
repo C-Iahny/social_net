@@ -923,3 +923,115 @@ msgstr "Fair condition"
 
 msgid "Pour pièces"
 msgstr "For parts"
+
+# ── Vérification vendeur ──
+msgid "Vérification vendeur"
+msgstr "Seller verification"
+
+msgid "Un compte vérifié renforce la confiance des acheteurs et vous donne accès à des fonctionnalités exclusives."
+msgstr "A verified account builds buyer trust and gives you access to exclusive features."
+
+msgid "Badge <strong>Vendeur vérifié</strong> sur toutes vos annonces et votre profil"
+msgstr "<strong>Verified Seller</strong> badge on all your ads and your profile"
+
+msgid "Vos annonces apparaissent <strong>en priorité</strong> dans les résultats"
+msgstr "Your ads appear <strong>first</strong> in search results"
+
+msgid "Les acheteurs peuvent filtrer pour voir <strong>uniquement les vendeurs vérifiés</strong>"
+msgstr "Buyers can filter to see <strong>verified sellers only</strong>"
+
+msgid "Quota photos porté à <strong>12 photos par annonce</strong> (au lieu de 8)"
+msgstr "Photo quota raised to <strong>12 photos per ad</strong> (instead of 8)"
+
+msgid "Demande en attente d'examen"
+msgstr "Request pending review"
+
+msgid "Soumise le {{ date }}."
+msgstr "Submitted on {{ date }}."
+
+msgid "L'équipe de modération examinera votre demande prochainement."
+msgstr "The moderation team will review your request shortly."
+
+msgid "Compte vérifié"
+msgstr "Verified account"
+
+msgid "Approuvé le {{ date }}."
+msgstr "Approved on {{ date }}."
+
+msgid "Tous les avantages sont actifs sur votre compte."
+msgstr "All benefits are active on your account."
+
+msgid "Demande refusée"
+msgstr "Request rejected"
+
+msgid "Examinée le {{ date }}."
+msgstr "Reviewed on {{ date }}."
+
+msgid "Motif :"
+msgstr "Reason:"
+
+msgid "Vous pouvez soumettre une nouvelle demande en corrigeant les points signalés."
+msgstr "You can submit a new request by addressing the issues raised."
+
+msgid "Votre message (facultatif)"
+msgstr "Your message (optional)"
+
+msgid "Expliquez pourquoi votre compte mérite d'être vérifié…"
+msgstr "Explain why your account deserves to be verified…"
+
+msgid "Maximum 2 000 caractères."
+msgstr "Maximum 2,000 characters."
+
+msgid "Envoyer une nouvelle demande"
+msgstr "Submit a new request"
+
+msgid "Message (facultatif)"
+msgstr "Message (optional)"
+
+msgid "Présentez-vous en quelques mots : activité, types de produits vendus, pourquoi vous souhaitez être vérifié…"
+msgstr "Introduce yourself briefly: activity, types of products sold, why you wish to be verified…"
+
+msgid "Soumettre ma demande"
+msgstr "Submit my request"
+
+msgid "Devenez un vendeur vérifié"
+msgstr "Become a verified seller"
+
+msgid "Badge ✓, priorité dans les résultats, 12 photos par annonce."
+msgstr "✓ badge, priority in results, 12 photos per ad."
+
+msgid "Faire une demande →"
+msgstr "Apply →"
+
+msgid "Demande de vérification en attente"
+msgstr "Verification request pending"
+
+msgid "l'admin examinera votre compte prochainement."
+msgstr "the admin will review your account shortly."
+
+msgid "Vendeur vérifié"
+msgstr "Verified Seller"
+
+msgid "badge ✓ actif sur toutes vos annonces, 12 photos autorisées."
+msgstr "✓ badge active on all your ads, 12 photos allowed."
+
+msgid "Demande refusée."
+msgstr "Request rejected."
+
+msgid "Réessayer"
+msgstr "Try again"
+
+msgid "Vendeurs vérifiés"
+msgstr "Verified sellers"
+
+msgid "Vérifié"
+msgstr "Verified"
+
+msgid "En attente"
+msgstr "Pending"
+
+msgid "Approuvé"
+msgstr "Approved"
+
+msgid "Refusé"
+msgstr "Rejected"

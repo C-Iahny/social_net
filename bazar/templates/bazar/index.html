@@ -453,7 +453,7 @@
         <!-- Vendeurs vérifiés -->
         <label class="bazar-filter-verified {% if only_verified %}active{% endif %}">
             <input type="checkbox" name="verified" value="1" {% if only_verified %}checked{% endif %} onchange="this.form.submit()">
-            ✓ Vendeurs vérifiés
+            ✓ {% trans "Vendeurs vérifiés" %}
         </label>
 
         <!-- Tri -->
@@ -522,7 +522,7 @@
                 <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 {{ annonce.location }}
                 {% if annonce.seller_verified %}
-                <span class="bazar-badge-verified" style="margin-left:.3rem;">✓ Vérifié</span>
+                <span class="bazar-badge-verified" style="margin-left:.3rem;">✓ {% trans "Vérifié" %}</span>
                 {% endif %}
             </span>
             <span class="bazar-card-price">

@@ -449,7 +449,7 @@
                         </a>
                         {% with sv=annonce.seller.seller_verification %}
                         {% if sv.status == 'approved' %}
-                        <span style="display:inline-flex;align-items:center;gap:.2rem;background:#10b981;color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;">✓ Vérifié</span>
+                        <span style="display:inline-flex;align-items:center;gap:.2rem;background:#10b981;color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;">✓ {% trans "Vérifié" %}</span>
                         {% endif %}
                         {% endwith %}
                     </div>
