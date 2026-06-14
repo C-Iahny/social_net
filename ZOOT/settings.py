@@ -30,18 +30,15 @@ DJANGO_DEBUG=True
 
 # ── Email ─────────────────────────────────────────────────────────────────────
 # En développement : affiche les e-mails dans la console (pas d'envoi réel)
-# En production   : serveur SMTP configuré via variables d'environnement
+# En production   : Brevo via HTTP API (django-anymail) — Railway bloque le SMTP sortant
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
-    EMAIL_BACKEND       = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-    EMAIL_HOST          = config('EMAIL_HOST',     default='smtp.gmail.com')
-    EMAIL_PORT          = config('EMAIL_PORT',     default=587, cast=int)
-    EMAIL_USE_TLS       = config('EMAIL_USE_TLS',  default=True, cast=bool)
-    EMAIL_HOST_USER     = config('EMAIL_HOST_USER',     default='')
-    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-    DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL',  default=config('EMAIL_HOST_USER', default=''))
-    EMAIL_TIMEOUT       = 10   # timeout SMTP en secondes — évite le 524 Cloudflare
+    EMAIL_BACKEND  = 'anymail.backends.brevo.EmailBackend'
+    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@vazimba.io')
+    ANYMAIL = {
+        'BREVO_API_KEY': config('BREVO_API_KEY', default=''),
+    }
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost,www.vazimba.io,vazimba.io', cast=Csv())
 
@@ -107,6 +104,9 @@ INSTALLED_APPS = [
     # ── Utilitaires ────────────────────────────────────────────────────────────
     # FIX : présent dans requirements.txt mais absent de INSTALLED_APPS.
     'django_extensions',      # Commandes pratiques : shell_plus, graph_models, etc.
+
+    # ── Email transactionnel (HTTP API via Brevo) ───────────────────────────────
+    'anymail',
 ]
 # NOTE : 'redis' a été SUPPRIMÉ de INSTALLED_APPS — c'est un client Python
 # (bibliothèque), pas une application Django. L'inclure ici est une erreur.
