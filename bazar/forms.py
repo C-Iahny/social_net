@@ -4,20 +4,10 @@ from .models import Annonce, AnnonceImage
 
 
 class AnnonceForm(forms.ModelForm):
-    """Formulaire principal de création / modification d'annonce."""
-
-    # Champ images multiple — géré manuellement dans la vue
-    images = forms.ImageField(
-        required=False,
-        widget=forms.FileInput(attrs={
-            'multiple': True,
-            'accept': 'image/*',
-            'id': 'id_images',
-            'class': 'bazar-file-input',
-        }),
-        label='Photos',
-        help_text='Jusqu\'à 8 photos. La première sera la photo principale.',
-    )
+    """
+    Formulaire principal de création / modification d'annonce.
+    Les photos sont gérées séparément via request.FILES.getlist('images') dans la vue.
+    """
 
     class Meta:
         model = Annonce
@@ -67,10 +57,6 @@ class AnnonceForm(forms.ModelForm):
             'contact_phone':    'Téléphone / WhatsApp',
             'show_phone':       'Afficher le numéro publiquement',
         }
-
-    def clean_images(self):
-        # On récupère les fichiers depuis request.FILES dans la vue
-        return self.cleaned_data.get('images')
 
     def clean_price(self):
         price = self.cleaned_data.get('price')
