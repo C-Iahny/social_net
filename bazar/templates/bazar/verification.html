@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<style>
+.verif-wrap {
+    max-width: 620px;
+    margin: 2.5rem auto 5rem;
+    padding: 0 1rem;
+}
+.verif-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2rem;
+}
+.verif-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    margin-bottom: .35rem;
+}
+.verif-sub {
+    font-size: .88rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    line-height: 1.55;
+}
+/* Statut badge ───────────────────────────────── */
+.verif-status-box {
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.verif-status-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
+.verif-status-pending  { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.verif-status-approved { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
+.verif-status-rejected { background: #fff1f2; border: 1px solid #fca5a5; color: #9f1239; }
+[data-theme="dark"] .verif-status-pending  { background: rgba(254,243,199,.08); border-color: #92400e; color: #fde68a; }
+[data-theme="dark"] .verif-status-approved { background: rgba(6,95,70,.12); border-color: #065f46; color: #6ee7b7; }
+[data-theme="dark"] .verif-status-rejected { background: rgba(159,18,57,.12); border-color: #9f1239; color: #fca5a5; }
+.verif-status-label { font-weight: 700; font-size: 1rem; margin-bottom: .2rem; }
+.verif-status-detail { font-size: .83rem; opacity: .85; }
+
+/* Avantages ──────────────────────────────────── */
+.verif-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+    margin-bottom: 1.75rem;
+}
+.verif-benefit-item {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    font-size: .88rem;
+    color: var(--text-secondary);
+}
+.verif-benefit-item .icon {
+    width: 28px;
+    height: 28px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: .8rem;
+    flex-shrink: 0;
+}
+[data-theme="dark"] .verif-benefit-item .icon { color: #1a0a02; }
+
+/* Formulaire ─────────────────────────────────── */
+.verif-label {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: .4rem;
+    display: block;
+}
+.verif-textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: .8rem 1rem;
+    font-size: .9rem;
+    min-height: 120px;
+    resize: vertical;
+    transition: border-color .18s;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.verif-textarea:focus { border-color: var(--accent); }
+.verif-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: .65rem 1.5rem;
+    font-weight: 700;
+    font-size: .92rem;
+    cursor: pointer;
+    transition: opacity .18s;
+    margin-top: 1rem;
+}
+[data-theme="dark"] .verif-submit { color: #1a0a02; }
+.verif-submit:hover { opacity: .85; }
+.verif-hint {
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-top: .4rem;
+}
+
+hr.verif-sep {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.5rem 0;
+}
+</style>
+
+<div class="verif-wrap">
+    <!-- Fil d'Ariane -->
+    <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:1.25rem;">
+        <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">Bazar</a>
+        <span> › </span>
+        <a href="{% url 'bazar:mes_annonces' %}" style="color:var(--accent);text-decoration:none;">Mes annonces</a>
+        <span> › </span>Vérification vendeur
+    </nav>
+
+    <div class="verif-card">
+        <h1 class="verif-title">🛡️ Vérification vendeur</h1>
+        <p class="verif-sub">
+            Un compte vérifié renforce la confiance des acheteurs et vous donne
+            accès à des fonctionnalités exclusives.
+        </p>
+
+        <!-- Avantages -->
+        <div class="verif-benefits">
+            <div class="verif-benefit-item">
+                <span class="icon">✓</span>
+                Badge <strong>Vendeur vérifié</strong> sur toutes vos annonces et votre profil
+            </div>
+            <div class="verif-benefit-item">
+                <span class="icon">🔝</span>
+                Vos annonces apparaissent <strong>en priorité</strong> dans les résultats
+            </div>
+            <div class="verif-benefit-item">
+                <span class="icon">🔍</span>
+                Les acheteurs peuvent filtrer pour voir <strong>uniquement les vendeurs vérifiés</strong>
+            </div>
+            <div class="verif-benefit-item">
+                <span class="icon">📷</span>
+                Quota photos porté à <strong>12 photos par annonce</strong> (au lieu de 8)
+            </div>
+        </div>
+
+        <hr class="verif-sep">
+
+        {% if verification %}
+            {% if verification.status == 'pending' %}
+            <div class="verif-status-box verif-status-pending">
+                <span class="verif-status-icon">⏳</span>
+                <div>
+                    <div class="verif-status-label">Demande en attente d'examen</div>
+                    <div class="verif-status-detail">
+                        Soumise le {{ verification.created_at|date:"d/m/Y à H\hi" }}.
+                        L'équipe de modération examinera votre demande prochainement.
+                    </div>
+                </div>
+            </div>
+
+            {% elif verification.status == 'approved' %}
+            <div class="verif-status-box verif-status-approved">
+                <span class="verif-status-icon">✅</span>
+                <div>
+                    <div class="verif-status-label">Compte vérifié</div>
+                    <div class="verif-status-detail">
+                        Approuvé le {{ verification.reviewed_at|date:"d/m/Y" }}.
+                        Tous les avantages sont actifs sur votre compte.
+                    </div>
+                </div>
+            </div>
+
+            {% elif verification.status == 'rejected' %}
+            <div class="verif-status-box verif-status-rejected">
+                <span class="verif-status-icon">❌</span>
+                <div>
+                    <div class="verif-status-label">Demande refusée</div>
+                    <div class="verif-status-detail">
+                        Examinée le {{ verification.reviewed_at|date:"d/m/Y" }}.
+                        {% if verification.admin_notes %}
+                        <br>Motif : {{ verification.admin_notes }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <hr class="verif-sep">
+
+            <p style="font-size:.88rem;color:var(--text-secondary);margin-bottom:1rem;">
+                Vous pouvez soumettre une nouvelle demande en corrigeant les points signalés.
+            </p>
+
+            <!-- Formulaire re-soumission -->
+            <form method="post">
+                {% csrf_token %}
+                <label class="verif-label" for="msg">Votre message (facultatif)</label>
+                <textarea
+                    id="msg" name="message"
+                    class="verif-textarea"
+                    placeholder="Expliquez pourquoi votre compte mérite d'être vérifié…">{{ verification.message }}</textarea>
+                <div class="verif-hint">Maximum 2 000 caractères.</div>
+                <button type="submit" class="verif-submit">
+                    Envoyer une nouvelle demande
+                </button>
+            </form>
+            {% endif %}
+
+        {% else %}
+        <!-- Première demande -->
+        <form method="post">
+            {% csrf_token %}
+            <label class="verif-label" for="msg">Message (facultatif)</label>
+            <textarea
+                id="msg" name="message"
+                class="verif-textarea"
+                placeholder="Présentez-vous en quelques mots : activité, types de produits vendus, pourquoi vous souhaitez être vérifié…"></textarea>
+            <div class="verif-hint">Maximum 2 000 caractères.</div>
+            <button type="submit" class="verif-submit">
+                🛡️ Soumettre ma demande
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

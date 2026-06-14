@@ -443,10 +443,15 @@
                     <img class="bazar-seller-avatar" src="{{ annonce.seller.profile_image.url }}" alt="{{ annonce.seller.username }}">
                 </a>
                 <div>
-                    <div class="bazar-seller-name">
+                    <div class="bazar-seller-name" style="display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;">
                         <a href="{% url 'account:view' user_id=annonce.seller.pk %}" style="color:var(--text-primary);text-decoration:none;">
                             {{ annonce.seller.get_full_name|default:annonce.seller.username }}
                         </a>
+                        {% with sv=annonce.seller.seller_verification %}
+                        {% if sv.status == 'approved' %}
+                        <span style="display:inline-flex;align-items:center;gap:.2rem;background:#10b981;color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;">✓ Vérifié</span>
+                        {% endif %}
+                        {% endwith %}
                     </div>
                     <div class="bazar-seller-since">{% trans "Membre depuis" %} {{ annonce.seller.date_joined|date:"M Y" }}</div>
                 </div>

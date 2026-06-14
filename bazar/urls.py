@@ -27,4 +27,7 @@ urlpatterns = [
 
     # ── Supprimer une image (AJAX) ─────────────────────────────────────────────
     path('image/<int:img_pk>/supprimer/', views.delete_image, name='delete_image'),
+
+    # ── Vérification vendeur ───────────────────────────────────────────────────
+    path('verification/', views.request_verification, name='request_verification'),
 ]

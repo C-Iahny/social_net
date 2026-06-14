@@ -245,6 +245,51 @@
     backdrop-filter: blur(4px);
     letter-spacing: .03em;
 }
+
+/* Badge vendeur vérifié */
+.bazar-badge-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    background: #10b981;
+    color: #fff;
+    font-size: .65rem;
+    font-weight: 700;
+    padding: .15rem .5rem;
+    border-radius: 20px;
+    letter-spacing: .04em;
+    white-space: nowrap;
+}
+[data-theme="dark"] .bazar-badge-verified { background: #059669; }
+
+/* Filtre vérifié */
+.bazar-filter-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: .38rem .8rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-card);
+    transition: border-color .18s, color .18s;
+    white-space: nowrap;
+}
+.bazar-filter-verified:hover { border-color: #10b981; color: #10b981; }
+.bazar-filter-verified.active {
+    border-color: #10b981;
+    background: #ecfdf5;
+    color: #065f46;
+}
+[data-theme="dark"] .bazar-filter-verified.active {
+    background: rgba(6,95,70,.15);
+    color: #6ee7b7;
+    border-color: #059669;
+}
+.bazar-filter-verified input { display: none; }
 .bazar-badge-sold {
     position: absolute;
     inset: 0;
@@ -405,6 +450,12 @@
             {% endfor %}
         </select>
 
+        <!-- Vendeurs vérifiés -->
+        <label class="bazar-filter-verified {% if only_verified %}active{% endif %}">
+            <input type="checkbox" name="verified" value="1" {% if only_verified %}checked{% endif %} onchange="this.form.submit()">
+            ✓ Vendeurs vérifiés
+        </label>
+
         <!-- Tri -->
         <span class="bazar-sort-label">{% trans "Trier par" %}&nbsp;:</span>
         <select name="sort" class="bazar-filter-select" onchange="this.form.submit()">
@@ -414,7 +465,7 @@
             <option value="popular"    {% if sort == 'popular' %}selected{% endif %}>{% trans "Plus vues" %}</option>
         </select>
 
-        {% if sel_cat or sel_cond or q or sort != 'recent' %}
+        {% if sel_cat or sel_cond or q or sort != 'recent' or only_verified %}
         <a href="{% url 'bazar:index' %}" style="font-size:.82rem;color:var(--text-muted);text-decoration:none;margin-left:.25rem;display:flex;align-items:center;gap:.25rem;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             Réinitialiser
@@ -470,6 +521,9 @@
             <span class="bazar-card-location">
                 <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 {{ annonce.location }}
+                {% if annonce.seller_verified %}
+                <span class="bazar-badge-verified" style="margin-left:.3rem;">✓ Vérifié</span>
+                {% endif %}
             </span>
             <span class="bazar-card-price">
                 {{ annonce.formatted_price }}
@@ -484,19 +538,19 @@
 {% if page_obj.has_other_pages %}
 <div class="bazar-pagination">
     {% if page_obj.has_previous %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}" class="bazar-page-btn">←</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}" class="bazar-page-btn">←</a>
     {% endif %}
 
     {% for num in page_obj.paginator.page_range %}
     {% if page_obj.number == num %}
     <span class="bazar-page-btn active">{{ num }}</span>
     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}sort={{ sort }}&page={{ num }}" class="bazar-page-btn">{{ num }}</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ num }}" class="bazar-page-btn">{{ num }}</a>
     {% endif %}
     {% endfor %}
 
     {% if page_obj.has_next %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}" class="bazar-page-btn">→</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}" class="bazar-page-btn">→</a>
     {% endif %}
 </div>
 {% endif %}

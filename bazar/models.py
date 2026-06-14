@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -157,3 +158,103 @@ class AnnonceImage(models.Model):
 
     def __str__(self):
         return f'Photo {self.pk} — {self.annonce.title}'
+
+
+class SellerVerification(models.Model):
+    """
+    Demande de vérification d'un vendeur — niveau compte (OneToOne).
+    L'admin approuve ou rejette manuellement depuis l'interface d'administration.
+
+    Avantages vendeur vérifié (status='approved') :
+    - Badge ✓ sur ses annonces et son profil
+    - Priorité dans les résultats de recherche (annonces boostées)
+    - Filtre "Vendeurs vérifiés" dans le bazar
+    - Quota photos étendu : MAX_IMAGES passe de 8 à 12
+    """
+
+    # ── Statuts possibles ──────────────────────────────────────────────────────
+    STATUS_PENDING  = 'pending'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING,  _('En attente')),
+        (STATUS_APPROVED, _('Approuvé')),
+        (STATUS_REJECTED, _('Refusé')),
+    ]
+
+    # ── Champs ─────────────────────────────────────────────────────────────────
+    seller = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='seller_verification',
+        verbose_name=_('Vendeur'),
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        verbose_name=_('Statut'),
+        db_index=True,
+    )
+    # Message libre du vendeur lors de sa demande
+    message = models.TextField(
+        blank=True, default='',
+        verbose_name=_('Message du vendeur'),
+        help_text=_('Pourquoi souhaitez-vous être vérifié ? (facultatif)'),
+    )
+    # Notes internes de l'admin (non visibles par le vendeur)
+    admin_notes = models.TextField(
+        blank=True, default='',
+        verbose_name=_('Notes admin'),
+    )
+    # Timestamps
+    created_at  = models.DateTimeField(auto_now_add=True, verbose_name=_('Demande le'))
+    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name=_('Examinée le'))
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='verifications_reviewed',
+        verbose_name=_('Examinée par'),
+    )
+
+    class Meta:
+        verbose_name        = _('Vérification vendeur')
+        verbose_name_plural = _('Vérifications vendeurs')
+        ordering            = ['-created_at']
+
+    def __str__(self):
+        return f'{self.seller} — {self.get_status_display()}'
+
+    # ── Propriétés utilitaires ─────────────────────────────────────────────────
+
+    @property
+    def is_approved(self):
+        return self.status == self.STATUS_APPROVED
+
+    @property
+    def is_pending(self):
+        return self.status == self.STATUS_PENDING
+
+    @property
+    def is_rejected(self):
+        return self.status == self.STATUS_REJECTED
+
+    # ── Helpers admin ──────────────────────────────────────────────────────────
+
+    def approve(self, reviewed_by=None, notes=''):
+        self.status      = self.STATUS_APPROVED
+        self.reviewed_at = timezone.now()
+        self.reviewed_by = reviewed_by
+        if notes:
+            self.admin_notes = notes
+        self.save(update_fields=['status', 'reviewed_at', 'reviewed_by', 'admin_notes'])
+
+    def reject(self, reviewed_by=None, notes=''):
+        self.status      = self.STATUS_REJECTED
+        self.reviewed_at = timezone.now()
+        self.reviewed_by = reviewed_by
+        if notes:
+            self.admin_notes = notes
+        self.save(update_fields=['status', 'reviewed_at', 'reviewed_by', 'admin_notes'])

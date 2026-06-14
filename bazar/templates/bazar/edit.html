@@ -149,11 +149,11 @@
             {% endif %}
 
             <!-- Ajouter nouvelles photos -->
-            {% if images|length < 8 %}
+            {% if images|length < max_images %}
             <div class="bazar-upload-zone" onclick="document.getElementById('id_images').click()" style="padding:1.2rem;">
                 <div style="font-size:1.5rem;margin-bottom:.3rem;">➕</div>
                 <div style="font-size:.85rem;font-weight:600;">{% trans "Ajouter des photos" %}</div>
-                <div style="font-size:.75rem;color:var(--text-muted);">Max {{ images|length|add:'8'|add:'-'|add:images|length }} photos supplémentaires</div>
+                <div style="font-size:.75rem;color:var(--text-muted);">{{ max_images }} photos max au total ({{ images|length }} déjà ajoutée{{ images|length|pluralize }})</div>
             </div>
             <input type="file" name="images" id="id_images" class="bazar-file-input" multiple accept="image/*,.heic,.heif">
             <div class="bazar-preview-grid" id="preview-grid"></div>
