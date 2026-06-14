@@ -518,26 +518,21 @@
 </div>
 
 <script>
-// ── Galerie ────────────────────────────────────────────────────────────────────
+// ── URLs injectées directement depuis Django (plus fiable que lire le DOM) ─────
+const galleryUrls = [{% for img in images %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}];
 const galleryThumbs = Array.from(document.querySelectorAll('.bazar-thumb'));
-const galleryUrls   = galleryThumbs.map(t => t.src);
-// Si une seule photo (pas de thumbs), récupérer depuis main-photo
-if (galleryUrls.length === 0) {
-    const mp = document.getElementById('main-photo');
-    if (mp) galleryUrls.push(mp.src);
-}
 let currentIdx = 0;
 
 function switchPhoto(thumb, idx) {
     currentIdx = idx;
-    document.getElementById('main-photo').src = thumb.src;
+    document.getElementById('main-photo').src = galleryUrls[idx];
     galleryThumbs.forEach(t => t.classList.remove('active'));
     thumb.classList.add('active');
 }
 
 // ── Lightbox ───────────────────────────────────────────────────────────────────
 function openLightbox(idx) {
-    currentIdx = idx || 0;
+    currentIdx = (typeof idx === 'number') ? idx : 0;
     _lightboxShow();
     document.getElementById('lightbox').classList.add('open');
     document.body.style.overflow = 'hidden';
