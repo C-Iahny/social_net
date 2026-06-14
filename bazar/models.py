@@ -102,10 +102,10 @@ class Annonce(models.Model):
         verbose_name = _('Annonce')
         verbose_name_plural = _('Annonces')
         indexes = [
-            models.Index(fields=['-created_at']),
-            models.Index(fields=['category', '-created_at']),
-            models.Index(fields=['seller', '-created_at']),
-            models.Index(fields=['status']),
+            models.Index(fields=['-created_at'],          name='bazar_annonce_created_idx'),
+            models.Index(fields=['category', '-created_at'], name='bazar_annonce_cat_idx'),
+            models.Index(fields=['seller', '-created_at'],   name='bazar_annonce_seller_idx'),
+            models.Index(fields=['status'],                name='bazar_annonce_status_idx'),
         ]
 
     def __str__(self):
