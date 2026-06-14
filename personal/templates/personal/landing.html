@@ -94,15 +94,21 @@
     }
     .nav-logo img.logo-desktop {
       height: 46px; width: auto; max-width: 200px;
-      border-radius: 9px; object-fit: contain;
+      object-fit: contain; object-position: left center;
       display: block;
+      filter: brightness(0);
       transition: transform .2s, opacity .2s;
     }
     .nav-logo img.logo-mobile {
       height: 38px; width: auto; max-width: 42px;
-      border-radius: 8px; object-fit: contain;
+      object-fit: contain; object-position: center;
       display: none;
+      filter: brightness(0);
       transition: transform .2s, opacity .2s;
+    }
+    [data-theme="dark"] .nav-logo img.logo-desktop,
+    [data-theme="dark"] .nav-logo img.logo-mobile {
+      filter: brightness(0) invert(1);
     }
     .nav-logo img:hover { transform: scale(1.05); opacity: .88; }
     @media (max-width: 480px) {
@@ -317,8 +323,8 @@
   <!-- ===== NAV ===== -->
   <nav>
     <a href="{% url 'landing' %}" class="nav-logo">
-      <img src="{% static 'logo/Vazi_logo00.png' %}" alt="VAZIMBA" class="logo-desktop">
-      <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="VAZIMBA" class="logo-mobile">
+      <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA" class="logo-desktop">
+      <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="VAZIMBA" class="logo-mobile">
     </a>
     <div class="nav-links">
       <a href="#features" class="hide-mobile">Fonctionnalités</a>
