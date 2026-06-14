@@ -128,8 +128,12 @@
     text-shadow: 0 0 6px rgba(212,175,55,.28);
 }
 
+@media (max-width: 768px) {
+    /* Extra bottom padding pour ne pas se faire couper par la barre mobile fixe */
+    #pied { padding-bottom: calc(1.5rem + 68px); }
+}
 @media (max-width: 575px) {
-    #pied { padding: 2rem 1rem 1.25rem; }
+    #pied { padding: 2rem 1rem calc(1.25rem + 68px); }
 }
 </style>
 

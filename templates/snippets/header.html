@@ -444,6 +444,12 @@
         right: 4px !important;
         left: auto !important;
     }
+    /* Profil dropdown : scrollable si trop grand */
+    .dropdown-menu[aria-labelledby="id_profile_links"] {
+        max-height: calc(100vh - 72px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 }
 
 /* ── Dropdown header bar (chat & notifs) ── */
