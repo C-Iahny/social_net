@@ -42,6 +42,11 @@ def parse_po(path):
                 elif in_msgstr:
                     cur_str.append(val)
 
+        # Si aucun msgid trouvé dans ce bloc (bloc de commentaires pure),
+        # on ignore — sinon l'entrée header (msgid '') serait écrasée à ''
+        if not cur_id:
+            continue
+
         msgid_raw = ''.join(cur_id).replace('\\n', '\n').replace('\\"', '"').replace('\\t', '\t')
         msgstr_raw = ''.join(cur_str).replace('\\n', '\n').replace('\\"', '"').replace('\\t', '\t')
 
