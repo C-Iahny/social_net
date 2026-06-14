@@ -1304,3 +1304,91 @@ msgstr "Nekena"
 
 msgid "Refusé"
 msgstr "Nolavina"
+
+# ── Vondrona mifanaraka amin'ny lohahevitra ───────────────────────────────────
+
+msgid "My groups"
+msgstr "Ny vondronako"
+
+msgid "Recommended"
+msgstr "Torohevitra"
+
+msgid "Search a group…"
+msgstr "Hitady vondrona…"
+
+msgid "Toutes les catégories"
+msgstr "Sokajy rehetra"
+
+msgid "No group matches your search."
+msgstr "Tsy misy vondrona mifanaraka amin'ny fikarohana."
+
+msgid "Clear filters"
+msgstr "Esory ny sivana"
+
+msgid "Clear filter"
+msgstr "Esory ny sivana"
+
+msgid "You haven't joined any group yet."
+msgstr "Tsy mbola niditra vondrona ianao."
+
+msgid "from the group?"
+msgstr "amin'ny vondrona?"
+
+msgid "Trending hashtags"
+msgstr "Hashtag malaza"
+
+msgid "Filtering by"
+msgstr "Sivana araky"
+
+msgid "This group is private. You need to be a member to view its content."
+msgstr "Miafina ity vondrona ity. Mila ho mpikambana ianao mba hijery ny votoatiny."
+
+msgid "Request to join"
+msgstr "Mangata hiditra"
+
+msgid "Sign in to join"
+msgstr "Midira mba hisitraka"
+
+msgid "Back to groups"
+msgstr "Hiverina amin'ny vondrona"
+
+# ── Hafatra sy fihetsika ──────────────────────────────────────────────────────
+
+# ── Mpikambana sy fitantanana ─────────────────────────────────────────────────
+
+msgid "Remove"
+msgstr "Esoriny"
+
+# ── Sary sy horonan-tsary ─────────────────────────────────────────────────────
+
+# ── Hetsika ───────────────────────────────────────────────────────────────────
+
+# ── Dina (Fifanarahana fiaraha-monina) ────────────────────────────────────────
+
+# ── Hetsika ankapobeny ────────────────────────────────────────────────────────
+
+# ── Stories mpivarotra ────────────────────────────────────────────────────────
+
+msgid "Annonces éphémères 24h des vendeurs vérifiés"
+msgstr "Filazana 24h avy amin'ny mpivarotra voamarina"
+
+msgid "Stories des commerçants"
+msgstr "Stories ny mpivarotra"
+
+msgid "Image, vidéo, texte ou lien promo — visible par toute la communauté pendant 24 heures."
+msgstr "Sary, horonan-tsary, lahatsoratra na rohy promo — hita amin'ny fiaraha-monina manontolo nandritra ny 24 ora."
+
+msgid "Créer une story"
+msgstr "Mamorona story"
+
+msgid "Aucune story active pour l'instant."
+msgstr "Tsy misy story mavitrika ankehitriny."
+
+msgid "Commerçant vérifié"
+msgstr "Mpivarotra voamarina"
+
+msgid "Devenez commerçant vérifié pour publier des annonces éphémères."
+msgstr "Ho mpivarotra voamarina mba hamoaka filazana 24h."
+
+msgid "Publiez votre annonce du jour"
+msgstr "Fanapariaho ny filazananao anio"

@@ -1035,3 +1035,253 @@ msgstr "Approved"
 
 msgid "Refusé"
 msgstr "Rejected"
+
+# ── Groupes thématiques ───────────────────────────────────────────────────────
+
+msgid "Groups"
+msgstr "Groups"
+
+msgid "Create a group"
+msgstr "Create a group"
+
+msgid "My groups"
+msgstr "My groups"
+
+msgid "Recommended"
+msgstr "Recommended"
+
+msgid "Search a group…"
+msgstr "Search a group…"
+
+msgid "Toutes les catégories"
+msgstr "All categories"
+
+msgid "No group matches your search."
+msgstr "No group matches your search."
+
+msgid "Clear filters"
+msgstr "Clear filters"
+
+msgid "Clear filter"
+msgstr "Clear filter"
+
+msgid "You haven't joined any group yet."
+msgstr "You haven't joined any group yet."
+
+msgid "No groups yet. Be the first to create one!"
+msgstr "No groups yet. Be the first to create one!"
+
+msgid "Member"
+msgstr "Member"
+
+msgid "Join"
+msgstr "Join"
+
+msgid "Join group"
+msgstr "Join group"
+
+msgid "Leave group"
+msgstr "Leave group"
+
+msgid "from the group?"
+msgstr "from the group?"
+
+msgid "All groups"
+msgstr "All groups"
+
+msgid "Trending hashtags"
+msgstr "Trending hashtags"
+
+msgid "Filtering by"
+msgstr "Filtering by"
+
+msgid "This group is private. You need to be a member to view its content."
+msgstr "This group is private. You need to be a member to view its content."
+
+msgid "Request to join"
+msgstr "Request to join"
+
+msgid "Sign in to join"
+msgstr "Sign in to join"
+
+msgid "Back to groups"
+msgstr "Back to groups"
+
+msgid "Created by"
+msgstr "Created by"
+
+msgid "Edit group"
+msgstr "Edit group"
+
+msgid "Delete this group?"
+msgstr "Delete this group?"
+
+# ── Posts & réactions dans les groupes ───────────────────────────────────────
+
+msgid "Pinned announcements"
+msgstr "Pinned announcements"
+
+msgid "No posts yet in this group."
+msgstr "No posts yet in this group."
+
+msgid "Be the first to share something!"
+msgstr "Be the first to share something!"
+
+msgid "Pin this post"
+msgstr "Pin this post"
+
+msgid "Love"
+msgstr "Love"
+
+msgid "Haha"
+msgstr "Haha"
+
+msgid "Wow"
+msgstr "Wow"
+
+msgid "Sad"
+msgstr "Sad"
+
+# ── Membres & modération ──────────────────────────────────────────────────────
+
+msgid "members"
+msgstr "members"
+
+msgid "Admin"
+msgstr "Admin"
+
+msgid "Moderator"
+msgstr "Moderator"
+
+msgid "Add a member"
+msgstr "Add a member"
+
+msgid "Add member"
+msgstr "Add member"
+
+msgid "No users found."
+msgstr "No users found."
+
+msgid "Added!"
+msgstr "Added!"
+
+msgid "Remove"
+msgstr "Remove"
+
+# ── Médias ────────────────────────────────────────────────────────────────────
+
+msgid "Media"
+msgstr "Media"
+
+msgid "Videos"
+msgstr "Videos"
+
+msgid "No media posted yet."
+msgstr "No media posted yet."
+
+# ── Événements ────────────────────────────────────────────────────────────────
+
+msgid "Events"
+msgstr "Events"
+
+msgid "Create an event"
+msgstr "Create an event"
+
+msgid "Upcoming events"
+msgstr "Upcoming events"
+
+msgid "No upcoming events."
+msgstr "No upcoming events."
+
+msgid "Going"
+msgstr "Going"
+
+msgid "going"
+msgstr "going"
+
+msgid "Event created!"
+msgstr "Event created!"
+
+# ── Dina (charte communautaire) ───────────────────────────────────────────────
+
+msgid "Community Charter"
+msgstr "Community Charter"
+
+msgid "Dina"
+msgstr "Dina"
+
+msgid "Edit Dina"
+msgstr "Edit Dina"
+
+msgid "Save Dina"
+msgstr "Save Dina"
+
+msgid "What is a Dina?"
+msgstr "What is a Dina?"
+
+msgid "In Malagasy culture, the Dina is a community agreement — a set of rules and commitments freely accepted by all members of a community to live together with respect and solidarity (Fihavanana)."
+msgstr "In Malagasy culture, the Dina is a community agreement — a set of rules and commitments freely accepted by all members of a community to live together with respect and solidarity (Fihavanana)."
+
+msgid "No Dina defined yet for this group."
+msgstr "No Dina defined yet for this group."
+
+msgid "As admin, you can write the community charter below."
+msgstr "As admin, you can write the community charter below."
+
+msgid "Agreements, rules and traditions that govern this community."
+msgstr "Agreements, rules and traditions that govern this community."
+
+# ── Actions génériques ────────────────────────────────────────────────────────
+
+msgid "Create"
+msgstr "Create"
+
+msgid "Saved!"
+msgstr "Saved!"
+
+msgid "Saving…"
+msgstr "Saving…"
+
+msgid "Error."
+msgstr "Error."
+
+msgid "An error occurred."
+msgstr "An error occurred."
+
+msgid "Server error."
+msgstr "Server error."
+
+msgid "Server error. Please try again."
+msgstr "Server error. Please try again."
+
+# ── Stories marchands ─────────────────────────────────────────────────────────
+
+msgid "Annonces éphémères 24h des vendeurs vérifiés"
+msgstr "24h ephemeral ads from verified sellers"
+
+msgid "Stories des commerçants"
+msgstr "Merchant Stories"
+
+msgid "Image, vidéo, texte ou lien promo — visible par toute la communauté pendant 24 heures."
+msgstr "Image, video, text or promo link — visible to the entire community for 24 hours."
+
+msgid "Créer une story"
+msgstr "Create a story"
+
+msgid "Aucune story active pour l'instant."
+msgstr "No active stories right now."
+
+msgid "Commerçant vérifié"
+msgstr "Verified Merchant"
+
+msgid "Devenez commerçant vérifié pour publier des annonces éphémères."
+msgstr "Become a verified merchant to post ephemeral ads."
+
+msgid "Publier"
+msgstr "Publish"
+
+msgid "Publiez votre annonce du jour"
+msgstr "Post your daily announcement"
+
+msgid "Photo / Vidéo"
+msgstr "Photo / Video"
