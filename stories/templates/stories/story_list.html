@@ -149,8 +149,8 @@
     <!-- En-tête -->
     <div class="sl-head">
         <div>
-            <h1>📣 {% trans "Stories des commerçants" %}</h1>
-            <p class="sl-head-sub">{% trans "Annonces éphémères 24h des vendeurs vérifiés" %}</p>
+            <h1>📣 Stories</h1>
+            <p class="sl-head-sub">{% trans "Image, vidéo, texte ou lien promo — visible par toute la communauté pendant 24 heures." %}</p>
         </div>
         {% if can_post_story %}
         <button class="sl-add-btn" onclick="window.zootStories && window.zootStories.openCreator()">
@@ -159,7 +159,7 @@
         {% endif %}
     </div>
 
-    <!-- Bannière invitation si vendeur vérifié -->
+    <!-- Bannière invitation à créer -->
     {% if can_post_story %}
     <div class="sl-create-banner">
         <span class="material-icons" style="font-size:2rem;color:var(--accent);">campaign</span>
@@ -170,7 +170,7 @@
     </div>
     {% endif %}
 
-    <!-- Stories groupées par commerçant -->
+    <!-- Stories groupées par utilisateur -->
     {% if seller_groups %}
     {% for group in seller_groups %}
     <div class="sl-seller-section">
@@ -179,9 +179,6 @@
                  src="{{ group.avatar }}" alt="{{ group.user.username }}">
             <div>
                 <div class="sl-seller-name">{{ group.user.username }}</div>
-                <span class="sl-seller-badge">
-                    <span class="material-icons">verified</span> {% trans "Commerçant vérifié" %}
-                </span>
             </div>
         </div>
         <div class="sl-stories-row">
@@ -227,9 +224,9 @@
     <div class="sl-empty">
         <span class="material-icons">campaign</span>
         <p>{% trans "Aucune story active pour l'instant." %}</p>
-        {% if not can_post_story %}
+        {% if can_post_story %}
         <p style="font-size:.83rem;margin-top:.5rem;">
-            {% trans "Devenez commerçant vérifié pour publier des annonces éphémères." %}
+            {% trans "Publiez votre annonce du jour" %} ↑
         </p>
         {% endif %}
     </div>

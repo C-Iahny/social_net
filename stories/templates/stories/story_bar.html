@@ -449,25 +449,19 @@ input#sc-file-input { display: none; }
 
     <!-- Item "Ma story" : dual-mode (ouvrir mes stories OU créer) -->
     {% if request.user.is_authenticated %}
-    {# Vérifier si l'utilisateur est un commerçant vérifié #}
-    {% with can_post=request.user.seller_verification.is_approved|default:False %}
     <div class="story-item" id="my-story-item" onclick="myStoryClick()" title="Ma story">
         <div class="story-avatar-ring" id="my-story-ring">
             <div class="story-avatar-inner">
                 <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" id="my-story-avatar-img">
             </div>
-            <!-- Bouton + uniquement pour les commerçants vérifiés -->
-            {% if can_post %}
+            <!-- Bouton + pour tous les utilisateurs connectés -->
             <div class="story-add-overlay" id="my-story-add-overlay">
                 <span class="material-icons">add</span>
             </div>
-            {% endif %}
         </div>
         <span class="story-item-label">Ma story</span>
     </div>
-    {# Passer la variable JS #}
-    <script>var _canPostStory = {{ can_post|yesno:"true,false" }};</script>
-    {% endwith %}
+    <script>var _canPostStory = true;</script>
     {% endif %}
 
     <!-- Stories des amis (chargées dynamiquement) -->
@@ -745,14 +739,12 @@ function updateMyStoryItem(myGroup) {
 window.myStoryClick = function() {
     var myGroup = _groups.find(function(g){ return g.user_id === ME_ID; });
     if (myGroup && myGroup.stories && myGroup.stories.length > 0) {
-        // Ouvrir les stories de l'utilisateur
+        // Ouvrir les stories existantes de l'utilisateur
         var gi = _groups.indexOf(myGroup);
         openStoryViewer(gi);
-    } else if (typeof _canPostStory !== 'undefined' && _canPostStory) {
-        // Pas encore de story + vendeur vérifié → ouvrir le créateur
-        openStoryCreator();
     } else {
-        // Non-vendeur : ne rien faire (pas de bouton +)
+        // Pas encore de story → ouvrir le créateur
+        openStoryCreator();
     }
 };
 
