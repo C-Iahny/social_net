@@ -174,13 +174,13 @@
         <div>
             <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.4rem;">
                 <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">Bazar</a>
-                <span> › </span>Mes annonces
+                <span> › </span>{% trans "Mes annonces" %}
             </nav>
-            <h1 class="bazar-mes-title">🗂️ Mes annonces</h1>
+            <h1 class="bazar-mes-title">🗂️ {% trans "Mes annonces" %}</h1>
         </div>
         <a href="{% url 'bazar:create' %}" class="bazar-new-btn">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nouvelle annonce
+            {% trans "Nouvelle annonce" %}
         </a>
     </div>
 
@@ -188,7 +188,7 @@
     <div class="bazar-stats">
         <div class="bazar-stat-pill">
             <span class="num">{{ annonces|length }}</span>
-            au total
+            {% trans "au total" %}
         </div>
         <div class="bazar-stat-pill">
             <span class="num" style="color:#166534;">{{ count_active }}</span>
@@ -229,24 +229,24 @@
                 <span>{{ annonce.get_category_display }}</span>
                 <span>📍 {{ annonce.location }}</span>
                 <span>{{ annonce.created_at|date:"d/m/Y" }}</span>
-                <span>👁 {{ annonce.views_count }} vue{{ annonce.views_count|pluralize }}</span>
+                <span>👁 {{ annonce.views_count }} {% trans "vue" %}{{ annonce.views_count|pluralize }}</span>
             </div>
             <div class="bazar-annonce-price">{{ annonce.formatted_price }}</div>
         </div>
 
         <!-- Badge statut -->
         <span class="bazar-row-status status-{{ annonce.status }}">
-            {% if annonce.status == 'active' %}✓ Active
-            {% elif annonce.status == 'vendue' %}✕ Vendue
-            {% else %}⏸ Pause{% endif %}
+            {% if annonce.status == 'active' %}✓ {% trans "Active" %}
+            {% elif annonce.status == 'vendue' %}✕ {% trans "Vendue" %}
+            {% else %}⏸ {% trans "En pause" %}{% endif %}
         </span>
 
         <!-- Actions -->
         <div class="bazar-row-actions">
-            <a href="{% url 'bazar:detail' annonce.pk %}" class="bazar-action-btn" title="Voir">
+            <a href="{% url 'bazar:detail' annonce.pk %}" class="bazar-action-btn" title="{% trans 'Voir' %}">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </a>
-            <a href="{% url 'bazar:edit' annonce.pk %}" class="bazar-action-btn" title="Modifier">
+            <a href="{% url 'bazar:edit' annonce.pk %}" class="bazar-action-btn" title="{% trans 'Modifier' %}">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </a>
             {% if annonce.status == 'active' %}
@@ -270,10 +270,10 @@
     {% else %}
     <div class="bazar-mes-empty">
         <div class="bazar-mes-empty-icon">📦</div>
-        <h4 style="color:var(--text-primary);font-weight:700;">Vous n'avez aucune annonce</h4>
-        <p style="font-size:.9rem;">Publiez votre première annonce et touchez des milliers de Malgaches.</p>
+        <h4 style="color:var(--text-primary);font-weight:700;">{% trans "Vous n'avez aucune annonce" %}</h4>
+        <p style="font-size:.9rem;">{% trans "Publiez votre première annonce et touchez des milliers de Malgaches." %}</p>
         <a href="{% url 'bazar:create' %}" class="bazar-new-btn" style="margin:0 auto;display:inline-flex;margin-top:.5rem;">
-            Publier maintenant
+            {% trans "Publier maintenant" %}
         </a>
     </div>
     {% endif %}

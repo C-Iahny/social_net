@@ -670,3 +670,256 @@ msgstr "See more"
 
 msgid "See less"
 msgstr "See less"
+
+# ── Bazar Vazimba ──
+msgid "Bazar"
+msgstr "Marketplace"
+
+msgid "Acheter et vendre entre Malgaches — simple, rapide, local"
+msgstr "Buy and sell between Malagasy — simple, fast, local"
+
+msgid "Chercher une annonce…"
+msgstr "Search for an ad…"
+
+msgid "Chercher"
+msgstr "Search"
+
+msgid "Publier une annonce"
+msgstr "Post an ad"
+
+msgid "Toutes catégories"
+msgstr "All categories"
+
+msgid "Tout état"
+msgstr "Any condition"
+
+msgid "Trier par"
+msgstr "Sort by"
+
+msgid "Plus récentes"
+msgstr "Most recent"
+
+msgid "Prix croissant"
+msgstr "Price: low to high"
+
+msgid "Prix décroissant"
+msgstr "Price: high to low"
+
+msgid "Plus vues"
+msgstr "Most viewed"
+
+msgid "Réinitialiser"
+msgstr "Reset"
+
+msgid "annonce"
+msgstr "ad"
+
+msgid "trouvée"
+msgstr "found"
+
+msgid "Mes annonces"
+msgstr "My ads"
+
+msgid "VENDUE"
+msgstr "SOLD"
+
+msgid "négociable"
+msgstr "negotiable"
+
+msgid "Aucune annonce trouvée"
+msgstr "No ads found"
+
+msgid "Le bazar est encore vide. Soyez le premier à publier !"
+msgstr "The marketplace is still empty. Be the first to post!"
+
+msgid "✓ Disponible"
+msgstr "✓ Available"
+
+msgid "✕ Vendue"
+msgstr "✕ Sold"
+
+msgid "En pause"
+msgstr "Paused"
+
+msgid "Prix à discuter"
+msgstr "Price on request"
+
+msgid "Membre depuis"
+msgstr "Member since"
+
+msgid "Modifier l'annonce"
+msgstr "Edit ad"
+
+msgid "Marquer comme vendue"
+msgstr "Mark as sold"
+
+msgid "Supprimer"
+msgstr "Delete"
+
+msgid "Contacter sur WhatsApp"
+msgstr "Contact on WhatsApp"
+
+msgid "Envoyer un message"
+msgstr "Send a message"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Détails"
+msgstr "Details"
+
+msgid "Catégorie"
+msgstr "Category"
+
+msgid "État"
+msgstr "Condition"
+
+msgid "Localisation"
+msgstr "Location"
+
+msgid "Publiée"
+msgstr "Posted"
+
+msgid "Vues"
+msgstr "Views"
+
+msgid "vue"
+msgstr "view"
+
+msgid "Annonces similaires"
+msgstr "Similar ads"
+
+msgid "Cette annonce n'est plus disponible."
+msgstr "This ad is no longer available."
+
+msgid "Votre annonce sera visible par tous les membres Vazimba."
+msgstr "Your ad will be visible to all Vazimba members."
+
+msgid "Cliquer pour ajouter des photos"
+msgstr "Click to add photos"
+
+msgid "JPG, PNG, WebP · Max 8 photos · La première = photo principale"
+msgstr "JPG, PNG, WebP · Max 8 photos · First = main photo"
+
+msgid "Article"
+msgstr "Item"
+
+msgid "Prix"
+msgstr "Price"
+
+msgid "Localisation & Contact"
+msgstr "Location & Contact"
+
+msgid "Annuler"
+msgstr "Cancel"
+
+msgid "Publier l'annonce"
+msgstr "Post ad"
+
+msgid "Laisser vide pour « Prix à discuter »"
+msgstr "Leave empty for «Price on request»"
+
+msgid "Laisser vide = « Prix à discuter »"
+msgstr "Leave empty = «Price on request»"
+
+msgid "Soyez précis : marque, modèle, dimensions, défauts éventuels…"
+msgstr "Be specific: brand, model, dimensions, any defects…"
+
+msgid "Photos actuelles"
+msgstr "Current photos"
+
+msgid "Ajouter des photos"
+msgstr "Add photos"
+
+msgid "Aucune photo pour le moment."
+msgstr "No photos yet."
+
+msgid "Enregistrer"
+msgstr "Save"
+
+msgid "Les modifications seront visibles immédiatement."
+msgstr "Changes will be visible immediately."
+
+msgid "Modifier"
+msgstr "Edit"
+
+msgid "Nouvelle annonce"
+msgstr "New ad"
+
+msgid "au total"
+msgstr "total"
+
+msgid "Active"
+msgstr "Active"
+
+msgid "Vendue"
+msgstr "Sold"
+
+msgid "Vous n'avez aucune annonce"
+msgstr "You have no ads yet"
+
+msgid "Publiez votre première annonce et touchez des milliers de Malgaches."
+msgstr "Post your first ad and reach thousands of Malagasy people."
+
+msgid "Publier maintenant"
+msgstr "Post now"
+
+msgid "Supprimer cette photo ?"
+msgstr "Delete this photo?"
+
+msgid "Erreur lors de la suppression."
+msgstr "Error during deletion."
+
+msgid "Électronique & Téléphones"
+msgstr "Electronics & Phones"
+
+msgid "Véhicules & Motos"
+msgstr "Vehicles & Motorbikes"
+
+msgid "Immobilier & Location"
+msgstr "Real Estate & Rental"
+
+msgid "Mode & Vêtements"
+msgstr "Fashion & Clothing"
+
+msgid "Maison & Mobilier"
+msgstr "Home & Furniture"
+
+msgid "Agriculture & Élevage"
+msgstr "Agriculture & Livestock"
+
+msgid "Alimentaire & Boissons"
+msgstr "Food & Beverages"
+
+msgid "Services & Prestations"
+msgstr "Services"
+
+msgid "Emploi & Formation"
+msgstr "Jobs & Training"
+
+msgid "Artisanat & Art"
+msgstr "Crafts & Art"
+
+msgid "Sports & Loisirs"
+msgstr "Sports & Leisure"
+
+msgid "Bébé & Enfants"
+msgstr "Baby & Children"
+
+msgid "Autres"
+msgstr "Other"
+
+msgid "Neuf"
+msgstr "New"
+
+msgid "Très bon état"
+msgstr "Like new"
+
+msgid "Bon état"
+msgstr "Good condition"
+
+msgid "État correct"
+msgstr "Fair condition"
+
+msgid "Pour pièces"
+msgstr "For parts"

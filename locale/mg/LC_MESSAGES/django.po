@@ -939,3 +939,256 @@ msgstr "Hijery bebe kokoa"
 
 msgid "See less"
 msgstr "Hijery kely"
+
+# ── Bazar Vazimba ──
+msgid "Bazar"
+msgstr "Bazar"
+
+msgid "Acheter et vendre entre Malgaches — simple, rapide, local"
+msgstr "Hividy sy hivarotra amin'ny Malagasy — tsotra, haingana, eto amintsika"
+
+msgid "Chercher une annonce…"
+msgstr "Hitady fivarotana…"
+
+msgid "Chercher"
+msgstr "Hitady"
+
+msgid "Publier une annonce"
+msgstr "Mamoaka fivarotana"
+
+msgid "Toutes catégories"
+msgstr "Sokajy rehetra"
+
+msgid "Tout état"
+msgstr "Toe-javatra rehetra"
+
+msgid "Trier par"
+msgstr "Filahana araka"
+
+msgid "Plus récentes"
+msgstr "Vaovao indrindra"
+
+msgid "Prix croissant"
+msgstr "Vidiny miakatra"
+
+msgid "Prix décroissant"
+msgstr "Vidiny midina"
+
+msgid "Plus vues"
+msgstr "Hitana indrindra"
+
+msgid "Réinitialiser"
+msgstr "Avereno"
+
+msgid "annonce"
+msgstr "fivarotana"
+
+msgid "trouvée"
+msgstr "hita"
+
+msgid "Mes annonces"
+msgstr "Ny fivarotako"
+
+msgid "VENDUE"
+msgstr "NAMIDY"
+
+msgid "négociable"
+msgstr "azo dinihana"
+
+msgid "Aucune annonce trouvée"
+msgstr "Tsy nisy fivarotana hita"
+
+msgid "Le bazar est encore vide. Soyez le premier à publier !"
+msgstr "Mbola foana ny Bazar. Aoka ianao ho voalohany hamoaka !"
+
+msgid "✓ Disponible"
+msgstr "✓ Misy"
+
+msgid "✕ Vendue"
+msgstr "✕ Namidy"
+
+msgid "En pause"
+msgstr "Napetraka"
+
+msgid "Prix à discuter"
+msgstr "Vidiny hidinihana"
+
+msgid "Membre depuis"
+msgstr "Mpikambana hatramin'"
+
+msgid "Modifier l'annonce"
+msgstr "Hanova ny fivarotana"
+
+msgid "Marquer comme vendue"
+msgstr "Marihina ho namidy"
+
+msgid "Supprimer"
+msgstr "Fafao"
+
+msgid "Contacter sur WhatsApp"
+msgstr "Ifandraiso amin'ny WhatsApp"
+
+msgid "Envoyer un message"
+msgstr "Mandefa hafatra"
+
+msgid "Description"
+msgstr "Fanazavana"
+
+msgid "Détails"
+msgstr "Antsipiriany"
+
+msgid "Catégorie"
+msgstr "Sokajy"
+
+msgid "État"
+msgstr "Toe-javatra"
+
+msgid "Localisation"
+msgstr "Toerana"
+
+msgid "Publiée"
+msgstr "Navoaka"
+
+msgid "Vues"
+msgstr "Hitana"
+
+msgid "vue"
+msgstr "fijery"
+
+msgid "Annonces similaires"
+msgstr "Fivarotana mitovitovy"
+
+msgid "Cette annonce n'est plus disponible."
+msgstr "Tsy misy intsony ity fivarotana ity."
+
+msgid "Votre annonce sera visible par tous les membres Vazimba."
+msgstr "Hitan'ny mpikambana Vazimba rehetra ny fivarotanao."
+
+msgid "Cliquer pour ajouter des photos"
+msgstr "Tsindrio hanampy sary"
+
+msgid "JPG, PNG, WebP · Max 8 photos · La première = photo principale"
+msgstr "JPG, PNG, WebP · Max 8 sary · Voalohany = sary lehibe"
+
+msgid "Article"
+msgstr "Entana"
+
+msgid "Prix"
+msgstr "Vidiny"
+
+msgid "Localisation & Contact"
+msgstr "Toerana & Fifandraisan-kira"
+
+msgid "Annuler"
+msgstr "Foana"
+
+msgid "Publier l'annonce"
+msgstr "Mamoaka ny fivarotana"
+
+msgid "Laisser vide pour « Prix à discuter »"
+msgstr "Avela foana ho an'ny «Vidiny hidinihana»"
+
+msgid "Laisser vide = « Prix à discuter »"
+msgstr "Avela foana = «Vidiny hidinihana»"
+
+msgid "Soyez précis : marque, modèle, dimensions, défauts éventuels…"
+msgstr "Mba mazava : marika, modely, halavany, lesoka mety misy…"
+
+msgid "Photos actuelles"
+msgstr "Sary ankehitriny"
+
+msgid "Ajouter des photos"
+msgstr "Hanampy sary"
+
+msgid "Aucune photo pour le moment."
+msgstr "Tsy misy sary mbola."
+
+msgid "Enregistrer"
+msgstr "Tehirizo"
+
+msgid "Les modifications seront visibles immédiatement."
+msgstr "Hita avy hatrany ny fanovana."
+
+msgid "Modifier"
+msgstr "Hanova"
+
+msgid "Nouvelle annonce"
+msgstr "Fivarotana vaovao"
+
+msgid "au total"
+msgstr "iray manontolo"
+
+msgid "Active"
+msgstr "Mavitrika"
+
+msgid "Vendue"
+msgstr "Namidy"
+
+msgid "Vous n'avez aucune annonce"
+msgstr "Tsy manana fivarotana ianao"
+
+msgid "Publiez votre première annonce et touchez des milliers de Malgaches."
+msgstr "Mamoaka ny fivarotanao voalohany ary tratra an'arivony Malagasy."
+
+msgid "Publier maintenant"
+msgstr "Mamoaka aloha"
+
+msgid "Supprimer cette photo ?"
+msgstr "Hofafana ity sary ity ?"
+
+msgid "Erreur lors de la suppression."
+msgstr "Nisy hadisoana nandritra ny famafana."
+
+msgid "Électronique & Téléphones"
+msgstr "Elektronika & Finday"
+
+msgid "Véhicules & Motos"
+msgstr "Fiara & Moto"
+
+msgid "Immobilier & Location"
+msgstr "Trano & Fanofana"
+
+msgid "Mode & Vêtements"
+msgstr "Fanahy & Fitafiana"
+
+msgid "Agriculture & Élevage"
+msgstr "Fambolena & Fiompiana"
+
+msgid "Alimentaire & Boissons"
+msgstr "Sakafo & Fisotro"
+
+msgid "Services & Prestations"
+msgstr "Fanompoana"
+
+msgid "Emploi & Formation"
+msgstr "Asa & Fampiofanana"
+
+msgid "Artisanat & Art"
+msgstr "Tanana & Kanto"
+
+msgid "Sports & Loisirs"
+msgstr "Fanatanjahan-tena & Fialamboly"
+
+msgid "Bébé & Enfants"
+msgstr "Zaza & Ankizy"
+
+msgid "Maison & Mobilier"
+msgstr "Trano & Fanaka"
+
+msgid "Autres"
+msgstr "Hafa"
+
+msgid "Neuf"
+msgstr "Vaovao"
+
+msgid "Très bon état"
+msgstr "Toe-tsaina tsara"
+
+msgid "Bon état"
+msgstr "Toe-tsaina mahomby"
+
+msgid "État correct"
+msgstr "Ara-dalàna"
+
+msgid "Pour pièces"
+msgstr "Ho an'ny tapa-javatra"
