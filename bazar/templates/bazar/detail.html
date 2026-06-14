@@ -263,6 +263,24 @@
 .bazar-mini-title { font-size: .83rem; font-weight: 700; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .bazar-mini-price { font-size: .9rem; font-weight: 800; color: var(--accent); margin-top: .3rem; }
 
+/* ── Flèches de navigation sur la photo principale ── */
+.gallery-wrap { position: relative; }
+.gallery-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(0,0,0,.45); border: none; color: #fff;
+    font-size: 2rem; font-weight: 300;
+    width: 44px; height: 44px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    z-index: 5; transition: background .18s; line-height: 1;
+    user-select: none;
+}
+.gallery-arrow:hover { background: rgba(0,0,0,.75); }
+.gallery-prev-arrow { left: 10px; }
+.gallery-next-arrow { right: 10px; }
+@media (max-width: 575px) {
+    .gallery-arrow { width: 36px; height: 36px; font-size: 1.5rem; }
+}
+
 /* Lightbox */
 #lightbox {
     display: none;
@@ -286,8 +304,8 @@
     top: 50%; transform: translateY(-50%);
     background: rgba(255,255,255,.15);
     border: none; color: #fff;
-    font-size: 2rem; font-weight: 300;
-    width: 52px; height: 52px;
+    font-size: 2.5rem; font-weight: 300;
+    width: 56px; height: 56px;
     border-radius: 50%;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
@@ -308,7 +326,7 @@
     pointer-events: none;
 }
 @media (max-width: 575px) {
-    .lb-nav-btn { width: 40px; height: 40px; font-size: 1.5rem; }
+    .lb-nav-btn { width: 44px; height: 44px; font-size: 2rem; }
     #lightbox-prev { left: 6px; }
     #lightbox-next { right: 6px; }
 }
@@ -330,7 +348,13 @@
         <!-- Galerie -->
         <div class="bazar-gallery">
             {% if images %}
-            <img id="main-photo" class="bazar-main-img" src="{{ images.0.image.url }}" alt="{{ annonce.title }}" onclick="openLightbox(this.src)">
+            <div class="gallery-wrap">
+                <img id="main-photo" class="bazar-main-img" src="{{ images.0.image.url }}" alt="{{ annonce.title }}" onclick="openLightbox(this.src)" style="cursor:zoom-in;">
+                {% if images|length > 1 %}
+                <button class="gallery-arrow gallery-prev-arrow" onclick="galleryNav(-1)" aria-label="Photo précédente">&#8249;</button>
+                <button class="gallery-arrow gallery-next-arrow" onclick="galleryNav(1)" aria-label="Photo suivante">&#8250;</button>
+                {% endif %}
+            </div>
             {% if images|length > 1 %}
             <div class="bazar-thumbs">
                 {% for img in images %}
@@ -507,74 +531,78 @@
 <!-- Lightbox -->
 <div id="lightbox" onclick="closeLightbox()">
     <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+    {% if images|length > 1 %}
     <button class="lb-nav-btn" id="lightbox-prev" onclick="event.stopPropagation(); lightboxNav(-1)">&#8249;</button>
-    <img id="lightbox-img" src="" alt="Aperçu" onerror="this.src='';this.style.display='none';document.getElementById('lb-error').style.display='flex'">
+    {% endif %}
+    <img id="lightbox-img" src="" alt="Aperçu">
     <div id="lb-error" style="display:none;color:#fff;flex-direction:column;align-items:center;gap:.75rem;font-size:.95rem;opacity:.7;">
         <span style="font-size:2.5rem;">🖼️</span>
         <span>Image non disponible</span>
     </div>
+    {% if images|length > 1 %}
     <button class="lb-nav-btn" id="lightbox-next" onclick="event.stopPropagation(); lightboxNav(1)">&#8250;</button>
     <div id="lightbox-counter"></div>
+    {% endif %}
 </div>
 
 <script>
-// ── URLs injectées directement depuis Django (plus fiable que lire le DOM) ─────
+// ── Gallery ────────────────────────────────────────────────────────────────────
 const galleryUrls = [{% for img in images %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}];
 const galleryThumbs = Array.from(document.querySelectorAll('.bazar-thumb'));
 let currentIdx = 0;
 
+// Navigation sur la photo principale (flèches ‹ ›)
+function galleryNav(dir) {
+    currentIdx = (currentIdx + dir + galleryUrls.length) % galleryUrls.length;
+    const mp = document.getElementById('main-photo');
+    if (mp) mp.src = galleryUrls[currentIdx];
+    galleryThumbs.forEach((t, i) => t.classList.toggle('active', i === currentIdx));
+}
+
+// Clic sur une miniature
 function switchPhoto(thumb, idx) {
     currentIdx = idx;
-    document.getElementById('main-photo').src = galleryUrls[idx];
+    const mp = document.getElementById('main-photo');
+    if (mp) mp.src = galleryUrls[idx];
     galleryThumbs.forEach(t => t.classList.remove('active'));
     thumb.classList.add('active');
 }
 
 // ── Lightbox ───────────────────────────────────────────────────────────────────
 function openLightbox(src) {
-    // src peut être une URL string (depuis this.src) ou un index number
-    if (typeof src === 'string') {
-        currentIdx = galleryUrls.findIndex(u => u === src);
-        if (currentIdx < 0) currentIdx = 0;
-        _lightboxSetSrc(src);
-    } else {
-        currentIdx = (typeof src === 'number') ? src : 0;
-        _lightboxSetSrc(galleryUrls[currentIdx]);
-    }
-    const lb = document.getElementById('lightbox');
-    lb.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    _updateNav();
-}
+    // src = URL string depuis this.src (photo principale cliquée)
+    currentIdx = galleryUrls.findIndex(u => u === src);
+    if (currentIdx < 0) currentIdx = 0;
 
-function _lightboxSetSrc(url) {
     const lbImg = document.getElementById('lightbox-img');
     const lbErr = document.getElementById('lb-error');
-    lbImg.onerror = function() {
-        this.onerror = null;
-        this.style.display = 'none';
-        if (lbErr) lbErr.style.display = 'flex';
-    };
+    lbImg.onerror = function() { this.onerror = null; this.style.display = 'none'; if (lbErr) lbErr.style.display = 'flex'; };
     lbImg.style.display = '';
     if (lbErr) lbErr.style.display = 'none';
-    lbImg.src = url;
+    lbImg.src = galleryUrls[currentIdx] || src;
+
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    _updateCounter();
 }
 
-function _updateNav() {
-    const total = galleryUrls.length;
+function _updateCounter() {
     const counter = document.getElementById('lightbox-counter');
-    const showNav = total > 1;
-    document.getElementById('lightbox-prev').style.display = showNav ? 'flex' : 'none';
-    document.getElementById('lightbox-next').style.display = showNav ? 'flex' : 'none';
-    counter.style.display = showNav ? 'block' : 'none';
-    if (showNav) counter.textContent = `${currentIdx + 1} / ${total}`;
+    if (counter && galleryUrls.length > 1) {
+        counter.textContent = `${currentIdx + 1} / ${galleryUrls.length}`;
+    }
 }
 
 function lightboxNav(dir) {
     currentIdx = (currentIdx + dir + galleryUrls.length) % galleryUrls.length;
-    _lightboxSetSrc(galleryUrls[currentIdx]);
-    _updateNav();
-    // Sync le thumbnail principal aussi
+    const lbImg = document.getElementById('lightbox-img');
+    const lbErr = document.getElementById('lb-error');
+    lbImg.onerror = function() { this.onerror = null; this.style.display = 'none'; if (lbErr) lbErr.style.display = 'flex'; };
+    lbImg.style.display = '';
+    if (lbErr) lbErr.style.display = 'none';
+    lbImg.src = galleryUrls[currentIdx];
+    _updateCounter();
+    // Sync la photo principale et les miniatures
     const mp = document.getElementById('main-photo');
     if (mp) mp.src = galleryUrls[currentIdx];
     galleryThumbs.forEach((t, i) => t.classList.toggle('active', i === currentIdx));
