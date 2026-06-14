@@ -69,24 +69,44 @@
     color: #fff; border-color: transparent;
 }
 
-/* ── Catégories ──────────────────────────────────────── */
-.gp-cats {
-    display: flex; gap: .45rem; margin-bottom: 1.4rem;
-    flex-wrap: wrap; overflow-x: auto; padding-bottom: .25rem;
+/* ── Dropdown catégorie ──────────────────────────────── */
+.gp-cat-row {
+    display: flex; align-items: center; gap: .6rem;
+    margin-bottom: 1.4rem; flex-wrap: wrap;
 }
-.gp-cat-pill {
-    display: inline-flex; align-items: center; gap: .2rem;
-    padding: .35rem .8rem; border-radius: 20px;
-    font-size: .82rem; font-weight: 600; cursor: pointer;
-    border: 1.5px solid var(--border); color: var(--text-muted);
-    background: var(--bg-card); text-decoration: none; white-space: nowrap;
-    transition: all .15s;
+.gp-cat-select-wrap {
+    position: relative; flex: 1; max-width: 300px; min-width: 180px;
 }
-.gp-cat-pill:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
-.gp-cat-pill.active {
+.gp-cat-select-wrap::after {
+    content: '';
+    position: absolute; right: .85rem; top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--text-muted);
+    pointer-events: none;
+}
+.gp-cat-select {
+    width: 100%; appearance: none; -webkit-appearance: none;
+    padding: .55rem 2.2rem .55rem .9rem;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    background: var(--bg-card); color: var(--text);
+    font-size: .88rem; font-weight: 600; cursor: pointer;
+    outline: none; transition: border-color .15s;
+}
+.gp-cat-select:focus { border-color: var(--accent); }
+.gp-cat-active-badge {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .4rem .9rem; border-radius: 20px;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; border-color: transparent;
+    color: #fff; font-size: .82rem; font-weight: 700;
 }
+.gp-cat-active-badge a {
+    color: rgba(255,255,255,.8); text-decoration: none; font-size: .85rem;
+    margin-left: .2rem; font-weight: 900;
+}
+.gp-cat-active-badge a:hover { color: #fff; }
 
 /* ── Grille de cartes ────────────────────────────────── */
 .gp-grid {
@@ -202,19 +222,35 @@
     </div>
     {% endif %}
 
-    <!-- Filtres catégories -->
-    <div class="gp-cats">
-        <a href="?tab={{ tab }}{% if query %}&q={{ query }}{% endif %}"
-           class="gp-cat-pill {% if not category %}active{% endif %}">
-            🔍 {% trans "All categories" %}
-        </a>
-        {% for cat_key, cat_label in category_choices %}
-        <a href="?tab={{ tab }}&cat={{ cat_key }}{% if query %}&q={{ query }}{% endif %}"
-           class="gp-cat-pill {% if category == cat_key %}active{% endif %}">
-            {{ cat_label }}
-        </a>
-        {% endfor %}
+    <!-- Filtre catégorie — dropdown -->
+    <div class="gp-cat-row">
+        <div class="gp-cat-select-wrap">
+            <select class="gp-cat-select" id="gp-cat-select"
+                    onchange="gpFilterCat(this.value)">
+                <option value="">🔍 {% trans "Toutes les catégories" %}</option>
+                {% for cat_key, cat_label in category_choices %}
+                <option value="{{ cat_key }}" {% if category == cat_key %}selected{% endif %}>
+                    {{ cat_label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% if category %}
+        <span class="gp-cat-active-badge">
+            {% for cat_key, cat_label in category_choices %}{% if cat_key == category %}{{ cat_label }}{% endif %}{% endfor %}
+            <a href="?tab={{ tab }}{% if query %}&q={{ query }}{% endif %}" title="{% trans 'Effacer' %}">✕</a>
+        </span>
+        {% endif %}
     </div>
+    <script>
+    function gpFilterCat(val) {
+        var u = new URL(window.location.href);
+        if (val) u.searchParams.set('cat', val);
+        else u.searchParams.delete('cat');
+        u.searchParams.delete('page');
+        window.location = u.toString();
+    }
+    </script>
 
     <!-- Grille de groupes -->
     {% if groups %}

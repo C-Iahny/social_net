@@ -96,6 +96,23 @@ def _enrich_posts(posts, post_ids, user):
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+import unicodedata
+
+def _sorted_categories():
+    """Retourne CATEGORY_CHOICES trié alphabétiquement (sans emoji, sans accents)."""
+    def _key(item):
+        label = item[1].lstrip()
+        # Sauter les caractères non-lettre en début (emoji, symboles)
+        i = 0
+        while i < len(label) and unicodedata.category(label[i]) not in ('Ll', 'Lu', 'Lt', 'Lm', 'Lo'):
+            i += 1
+        word = label[i:]
+        # Normaliser les accents (é→e, â→a…) pour le tri
+        normalized = unicodedata.normalize('NFD', word).encode('ascii', 'ignore').decode('ascii')
+        return normalized.lower()
+    return sorted(Group.CATEGORY_CHOICES, key=_key)
+
+
 def _strip_html(text):
     """Supprime les balises HTML d'un texte."""
     if not text:
@@ -210,7 +227,7 @@ def group_list(request):
             'query':          query,
             'category':       category,
             'tab':            tab,
-            'category_choices': Group.CATEGORY_CHOICES,
+            'category_choices': _sorted_categories(),
         })
     else:
         # Onglet "tous" : groupes publics + les groupes privés de l'utilisateur
@@ -227,7 +244,7 @@ def group_list(request):
         'query':            query,
         'category':         category,
         'tab':              tab,
-        'category_choices': Group.CATEGORY_CHOICES,
+        'category_choices': _sorted_categories(),
     })
 
 
