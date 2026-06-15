@@ -273,12 +273,17 @@ self.addEventListener('push', function(event) {
         badge:   '/static/logo/vazimba_icon.png',
         data:    { url: data.url || '/' },
         vibrate: [200, 100, 200],
+        /* requireInteraction = true → la notif reste visible jusqu'à ce que
+           l'utilisateur clique dessus (pas d'auto-fermeture).             */
+        requireInteraction: true,
         actions: [
             { action: 'open',    title: 'Ouvrir' },
             { action: 'dismiss', title: 'Ignorer' },
         ],
-        tag:      'vazimba-notif',
-        renotify: true,
+        /* Tag unique par notification = elles s'accumulent au lieu de se
+           remplacer (plus d'écrasement entre like + commentaire + repost). */
+        tag:      'vazimba-' + (data.type || 'notif') + '-' + Date.now(),
+        renotify: false,
     };
 
     event.waitUntil(

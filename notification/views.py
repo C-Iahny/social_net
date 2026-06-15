@@ -68,12 +68,15 @@ def unread_counts(request):
     from chat.models import UnreadChatRoomMessages
 
     user = request.user
+    from post.models import Post as PostModel
     fr_ct   = ContentType.objects.get_for_model(FriendRequest)
     fl_ct   = ContentType.objects.get_for_model(FriendList)
     chat_ct = ContentType.objects.get_for_model(UnreadChatRoomMessages)
+    post_ct = ContentType.objects.get_for_model(PostModel)
 
+    # FIX: inclure post_ct (likes + commentaires + reposts) dans le compteur badge
     general_count = Notification.objects.filter(
-        target=user, content_type__in=[fr_ct, fl_ct], read=False,
+        target=user, content_type__in=[fr_ct, fl_ct, post_ct], read=False,
     ).count()
 
     chat_count = Notification.objects.filter(
