@@ -560,9 +560,9 @@
             </div>
             <span class="zbn-label">Créer</span>
         </a>
-        <a class="zbn-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}" data-page="friends" id="zbn-friends-link">
-            <span class="material-icons">person_add</span>
-            <span class="zbn-label">Demande</span>
+        <a class="zbn-item" href="{% url 'bazar:index' %}" data-page="bazar">
+            <span class="material-icons">storefront</span>
+            <span class="zbn-label">Bazar</span>
         </a>
         <a class="zbn-item" href="{% url 'account:view' user_id=request.user.id %}" data-page="profile">
             <span class="material-icons">person</span>
@@ -577,7 +577,7 @@
             feed:    ['/feed/'],
             explore: ['/feed/index/', '/'],
             new:     ['/feed/add-post/'],
-            friends: ['/friend/'],
+            bazar:   ['/bazar/'],
             profile: ['/account/'],
         };
         document.querySelectorAll('.zbn-item').forEach(function(el) {
