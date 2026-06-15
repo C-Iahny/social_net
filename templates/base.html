@@ -182,13 +182,95 @@
             .zbn-item.zbn-new .zbn-new-icon .material-icons {
                 font-size: 1.25rem;
                 color: #fff;
-                transform: none !important;
+                transition: transform .25s cubic-bezier(.34,1.56,.64,1) !important;
+            }
+            .zbn-item.zbn-new.menu-open .zbn-new-icon .material-icons {
+                transform: rotate(45deg) !important;
             }
             [data-theme="dark"] .zbn-item.zbn-new .zbn-new-icon .material-icons { color: #000; }
             .zbn-item.zbn-new:active .zbn-new-icon {
                 transform: scale(.93);
             }
             .zbn-item.zbn-new span.zbn-label { color: var(--text-muted); }
+
+            /* ── Create menu bottom sheet ── */
+            .create-sheet-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,.45);
+                z-index: 1100;
+                opacity: 0;
+                transition: opacity .22s;
+            }
+            .create-sheet-overlay.open {
+                display: block;
+                opacity: 1;
+            }
+            .create-sheet {
+                position: fixed;
+                bottom: 0; left: 0; right: 0;
+                background: var(--bg-card);
+                border-radius: 20px 20px 0 0;
+                padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+                z-index: 1101;
+                transform: translateY(100%);
+                transition: transform .28s cubic-bezier(.32,1,.23,1);
+                box-shadow: 0 -4px 32px rgba(0,0,0,.18);
+            }
+            .create-sheet-overlay.open .create-sheet {
+                transform: translateY(0);
+            }
+            .create-sheet-handle {
+                width: 36px; height: 4px;
+                border-radius: 2px;
+                background: var(--border);
+                margin: 0 auto .9rem;
+            }
+            .create-sheet-title {
+                font-size: .78rem;
+                font-weight: 700;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: .08em;
+                text-align: center;
+                margin-bottom: .85rem;
+            }
+            .create-sheet-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: .6rem .4rem;
+                max-width: 420px;
+                margin: 0 auto;
+            }
+            .cs-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: .3rem;
+                text-decoration: none;
+                padding: .6rem .2rem .5rem;
+                border-radius: 14px;
+                transition: background .15s, transform .15s;
+                -webkit-tap-highlight-color: transparent;
+                color: var(--text);
+            }
+            .cs-item:active { transform: scale(.93); background: var(--btn-bg); text-decoration: none; }
+            .cs-icon {
+                width: 48px; height: 48px;
+                border-radius: 14px;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 1.45rem;
+                line-height: 1;
+                flex-shrink: 0;
+            }
+            .cs-label {
+                font-size: .65rem;
+                font-weight: 700;
+                color: var(--text-muted);
+                text-align: center;
+                line-height: 1.2;
+            }
 
             /* Notification badge */
             .zbn-badge {
@@ -554,12 +636,12 @@
             <span class="material-icons">explore</span>
             <span class="zbn-label">{% trans "Explore" %}</span>
         </a>
-        <a class="zbn-item zbn-new" href="{% url 'post:addPost' %}" data-page="new">
+        <button class="zbn-item zbn-new" id="zbn-create-btn" onclick="openCreateSheet()" data-page="new" aria-label="Créer">
             <div class="zbn-new-icon">
                 <span class="material-icons">add</span>
             </div>
             <span class="zbn-label">Créer</span>
-        </a>
+        </button>
         <a class="zbn-item" href="{% url 'bazar:index' %}" data-page="bazar">
             <span class="material-icons">storefront</span>
             <span class="zbn-label">Bazar</span>
@@ -569,6 +651,120 @@
             <span class="zbn-label">Profil</span>
         </a>
     </nav>
+
+    <!-- ── Create menu bottom sheet ── -->
+    <div class="create-sheet-overlay" id="create-sheet-overlay" onclick="closeCreateSheet(event)">
+        <div class="create-sheet" id="create-sheet">
+            <div class="create-sheet-handle"></div>
+            <p class="create-sheet-title">{% trans "Que voulez-vous créer ?" %}</p>
+            <div class="create-sheet-grid">
+
+                <!-- Post -->
+                <a class="cs-item" href="{% url 'post:addPost' %}" onclick="closeCreateSheet()">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                        <span style="color:#fff;" class="material-icons">edit_note</span>
+                    </div>
+                    <span class="cs-label">Post</span>
+                </a>
+
+                <!-- Kabary -->
+                <a class="cs-item" href="{% url 'post:kabary-create' %}" onclick="closeCreateSheet()">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">
+                        <span style="color:#fff;" class="material-icons">campaign</span>
+                    </div>
+                    <span class="cs-label">Kabary</span>
+                </a>
+
+                <!-- Vintana -->
+                <a class="cs-item" href="{% url 'post:vintana-create' %}" onclick="closeCreateSheet()">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#0ea5e9,#6366f1);">
+                        <span style="color:#fff;" class="material-icons">auto_awesome</span>
+                    </div>
+                    <span class="cs-label">Vintana</span>
+                </a>
+
+                <!-- Story -->
+                <a class="cs-item" href="{% url 'stories:page' %}" onclick="closeCreateSheet()">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#ec4899,#f59e0b);">
+                        <span style="color:#fff;" class="material-icons">add_circle</span>
+                    </div>
+                    <span class="cs-label">Story</span>
+                </a>
+
+                <!-- Bazar -->
+                <a class="cs-item" href="{% url 'bazar:create' %}" onclick="closeCreateSheet()">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#10b981,#0ea5e9);">
+                        <span style="color:#fff;" class="material-icons">sell</span>
+                    </div>
+                    <span class="cs-label">Bazar</span>
+                </a>
+
+                <!-- Groupe -->
+                <a class="cs-item" href="{% url 'group:create' %}" onclick="closeCreateSheet()">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#6366f1,#10b981);">
+                        <span style="color:#fff;" class="material-icons">group_add</span>
+                    </div>
+                    <span class="cs-label">Groupe</span>
+                </a>
+
+                <!-- Live -->
+                <a class="cs-item" href="{% url 'video:live-create' %}" onclick="closeCreateSheet()">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#ef4444,#f59e0b);">
+                        <span style="color:#fff;" class="material-icons">videocam</span>
+                    </div>
+                    <span class="cs-label">Live</span>
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function openCreateSheet() {
+        var overlay = document.getElementById('create-sheet-overlay');
+        var btn     = document.getElementById('zbn-create-btn');
+        overlay.style.display = 'block';
+        requestAnimationFrame(function() {
+            overlay.classList.add('open');
+        });
+        if (btn) btn.classList.add('menu-open');
+        document.body.style.overflow = 'hidden';
+    }
+    function _doCloseSheet() {
+        var overlay = document.getElementById('create-sheet-overlay');
+        var btn     = document.getElementById('zbn-create-btn');
+        overlay.classList.remove('open');
+        if (btn) btn.classList.remove('menu-open');
+        document.body.style.overflow = '';
+        setTimeout(function() {
+            if (!overlay.classList.contains('open')) overlay.style.display = 'none';
+        }, 300);
+    }
+    function closeCreateSheet(e) {
+        /* Si appelé depuis l'overlay : fermer seulement si le clic est sur le fond, pas la sheet */
+        if (e && e.type === 'click') {
+            if (e.target !== document.getElementById('create-sheet-overlay')) return;
+        }
+        _doCloseSheet();
+    }
+    /* Fermer avec swipe vers le bas */
+    (function() {
+        var sheet = document.getElementById('create-sheet');
+        if (!sheet) return;
+        var startY = 0;
+        sheet.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+        sheet.addEventListener('touchend', function(e) {
+            if (e.changedTouches[0].clientY - startY > 60) _doCloseSheet();
+        }, { passive: true });
+    })();
+    /* Fermer avec la touche Escape */
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') _doCloseSheet();
+    });
+    </script>
+
     <script>
     (function() {
         // Highlight the active tab based on current URL
