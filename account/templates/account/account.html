@@ -242,7 +242,7 @@ body { background: var(--bg); }
     scrollbar-width: thin;
 }
 @media (max-width: 768px) {
-    .profile-body { grid-template-columns: 1fr; }
+    .profile-body { grid-template-columns: 1fr; overflow-x: hidden; }
     .profile-sidebar { display: none; }
     .profile-cover { height: 140px; }
     .avatar-ring-wrap { width: 88px; height: 88px; }
@@ -265,9 +265,66 @@ body { background: var(--bg); }
     /* Wrapper profil */
     .profile-wrapper {
         margin: 70px auto 3rem;
-        padding: 0 .6rem;
+        padding: 0 .5rem;
         box-sizing: border-box;
         width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;   /* ← verrou global sur le wrapper */
+    }
+
+    /* Colonne principale — DOIT avoir min-width:0 dans un grid sinon déborde */
+    .profile-main {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Create-box profil */
+    .pf-create-box {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    /* Post cards (profil) */
+    .post-card, .pf-post-card {
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    /* Corps des posts — empêche le HTML CKEditor de déborder */
+    .pf-post-card .pc-body,
+    .post-card    .pc-body {
+        overflow: hidden;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    .pf-post-card .pc-body *,
+    .post-card    .pc-body * {
+        max-width: 100% !important;
+        height: auto !important;
+        box-sizing: border-box;
+    }
+
+    /* Section stories */
+    #profile-stories-section {
+        max-width: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+    #profile-stories-section > div {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Tabs profil */
+    .profile-tabs {
+        max-width: 100%;
+        box-sizing: border-box;
     }
     /* Stats en ligne scrollable */
     .profile-stats-row {
@@ -533,7 +590,7 @@ body { background: var(--bg); }
     content: ''; position: absolute; bottom: 0; left: 0; right: 0;
     height: 52px; background: linear-gradient(transparent, var(--bg-card)); pointer-events: none;
 }
-.pc-body.expanded { max-height: none; overflow: visible; cursor: default; }
+.pc-body.expanded { max-height: none; overflow-x: hidden; overflow-y: visible; cursor: default; }
 .pc-body.expanded::after { display: none; }
 .pc-body img { max-width: 100%; border-radius: 8px; margin: .3rem 0; }
 .pc-body p { margin-bottom: .35rem; }
