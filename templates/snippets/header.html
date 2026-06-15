@@ -447,21 +447,19 @@
         max-height: calc(100dvh - 64px - 68px) !important;
         transform: none !important;
     }
-    /* Profil dropdown : fixed full-width, s'arrête au-dessus de la bottom nav */
+    /* Profil dropdown : flottant aligné à droite, s'arrête au-dessus de la bottom nav */
     .dropdown-menu[aria-labelledby="id_profile_links"] {
         position: fixed !important;
-        top: 64px !important;
-        bottom: 68px !important;      /* respecte la bottom nav */
-        left: 8px !important;
+        top: 68px !important;
         right: 8px !important;
-        width: auto !important;
-        max-width: none !important;
-        max-height: none !important;  /* contrôlé par top+bottom */
+        left: auto !important;
+        width: calc(100vw - 16px) !important;
+        max-width: 300px !important;
+        max-height: calc(100dvh - 68px - 72px) !important; /* navbar + bottom nav */
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
         transform: none !important;
-        border-radius: 16px !important;
     }
 }
 
