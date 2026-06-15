@@ -127,6 +127,8 @@
     justify-content: center;
     padding: 1rem;
     animation: fadeIn .2s ease;
+    /* Permettre le scroll de l'overlay si le créateur dépasse */
+    overflow-y: auto;
 }
 #story-creator-overlay.open { display: flex; }
 
@@ -135,7 +137,11 @@
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 22px;
-    overflow: hidden;
+    /* Pas de overflow:hidden global — le header reste visible, le body scrolle */
+    display: flex; flex-direction: column;
+    /* Hauteur max : ne jamais dépasser la fenêtre */
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
     box-shadow: 0 24px 80px rgba(0,0,0,.6);
     font-family: var(--font-primary, 'Space Grotesk', sans-serif);
 }
@@ -145,10 +151,33 @@
     box-shadow: 0 24px 80px rgba(0,0,0,.8), 0 0 40px rgba(0,207,255,.05);
 }
 
+/* ── Mobile : bottom sheet ────────────────────────────── */
+@media (max-width: 600px) {
+    #story-creator-overlay {
+        align-items: flex-end;
+        padding: 0;
+        overflow-y: visible; /* Le créateur gère son propre scroll */
+    }
+    #story-creator {
+        max-width: 100%;
+        max-height: 88vh;
+        max-height: 88dvh;
+        border-radius: 22px 22px 0 0;
+        /* Safe area iPhone : padding bottom */
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .sc-preview { height: 170px; } /* Plus compact en mobile */
+    .sc-type-chip { min-width: 64px; padding: .45rem .3rem; }
+    .sc-type-chip span:last-child { font-size: .62rem; }
+}
+
 .sc-header {
     display: flex; align-items: center; justify-content: space-between;
     padding: 1rem 1.25rem .75rem;
     border-bottom: 1px solid var(--border);
+    flex-shrink: 0; /* Le header ne rétrécit jamais */
+    /* Arrondir le haut du créateur correctement */
+    border-radius: 22px 22px 0 0;
 }
 .sc-title {
     font-size: 1.05rem; font-weight: 800;
@@ -163,7 +192,14 @@
 .sc-close:hover { background: var(--btn-hover); color: var(--accent3); }
 .sc-close .material-icons { font-size: 1.1rem; }
 
-.sc-body { padding: 1rem 1.25rem 1.25rem; }
+.sc-body {
+    padding: 1rem 1.25rem 1.25rem;
+    overflow-y: auto;               /* scroll interne si le contenu dépasse */
+    -webkit-overflow-scrolling: touch;
+    flex: 1;                        /* prend tout l'espace restant sous le header */
+    /* Arrondir le bas */
+    border-radius: 0 0 22px 22px;
+}
 
 /* Type chips */
 .sc-types {
@@ -284,8 +320,13 @@ input#sc-file-input { display: none; }
     transition: opacity .2s, transform .15s, box-shadow .2s;
     font-family: var(--font-primary, 'Space Grotesk', sans-serif);
     position: relative; overflow: hidden;
+    /* Toujours visible : colle en bas du zone scrollable sur mobile */
+    position: sticky;
+    bottom: 0;
+    /* Léger fond opaque pour que le sticky soit lisible si content scrolle dessous */
+    box-shadow: 0 -8px 16px var(--bg-card);
 }
-[data-theme="dark"] .sc-publish-btn { color: #000; box-shadow: 0 0 20px rgba(0,207,255,.25); }
+[data-theme="dark"] .sc-publish-btn { color: #000; box-shadow: 0 0 20px rgba(0,207,255,.25), 0 -8px 16px #0d0f1e; }
 .sc-publish-btn:hover { opacity: .9; transform: translateY(-1px); }
 .sc-publish-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 .sc-publish-btn .material-icons { font-size: 1.1rem; }
