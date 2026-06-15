@@ -436,7 +436,7 @@
 .scrollable-menu::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 /* ── Mobile : dropdown en position fixed pour ne jamais déborder ── */
 @media (max-width: 575.98px) {
-    /* Chat + Notifs : fixed pleine largeur sous la navbar */
+    /* Chat + Notifs : fixed pleine largeur sous la navbar, au-dessus de la bottom nav */
     .scrollable-menu {
         position: fixed !important;
         top: 64px !important;
@@ -444,21 +444,24 @@
         right: 8px !important;
         width: auto !important;
         max-width: 100% !important;
-        max-height: calc(100vh - 80px) !important;
+        max-height: calc(100dvh - 64px - 68px) !important;
         transform: none !important;
     }
-    /* Profil dropdown : fixed aussi, scrollable */
+    /* Profil dropdown : fixed full-width, s'arrête au-dessus de la bottom nav */
     .dropdown-menu[aria-labelledby="id_profile_links"] {
         position: fixed !important;
         top: 64px !important;
+        bottom: 68px !important;      /* respecte la bottom nav */
+        left: 8px !important;
         right: 8px !important;
-        left: auto !important;
-        width: calc(100vw - 16px) !important;
-        max-width: 300px !important;
-        max-height: calc(100vh - 80px) !important;
+        width: auto !important;
+        max-width: none !important;
+        max-height: none !important;  /* contrôlé par top+bottom */
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
         transform: none !important;
+        border-radius: 16px !important;
     }
 }
 
@@ -654,9 +657,21 @@
     /* Réduire le chevron langue */
     .zoot-lang-btn .material-icons { display: none; }
 }
-@media (max-width: 575px) {
+@media (max-width: 600px) {
     .zoot-brand-text { display: none; }
-    .zoot-nav-inner  { padding: 0 .5rem; gap: .3rem; }
+    .zoot-nav-inner  { padding: 0 .5rem; gap: .2rem; }
+
+    /* ── Nettoyer la top nav sur mobile ── */
+    /* Masquer : drapeau langue, dark mode, hamburger */
+    .zoot-lang-btn    { display: none !important; }
+    #theme-toggle-btn { display: none !important; }
+    .zoot-hamburger   { display: none !important; }
+    /* Masquer le chevron de l'avatar (économise de l'espace) */
+    .zoot-avatar-caret { display: none !important; }
+    /* Espacements réduits */
+    .zoot-nav-right   { gap: .2rem; }
+    /* Afficher l'icône recherche mobile */
+    .zoot-mobile-search-btn { display: flex !important; }
 }
 
 /* ── Scrollbar inside dropdown ── */
@@ -783,7 +798,13 @@
             </div>
         </div>
 
-        <!-- Theme toggle -->
+        <!-- Recherche (mobile uniquement — masqué sur desktop par CSS) -->
+        <a href="{% url 'search' %}?q=" class="zoot-icon-btn zoot-mobile-search-btn"
+           style="display:none;" title="{% trans 'Search' %}">
+            <span class="material-icons">search</span>
+        </a>
+
+        <!-- Theme toggle (desktop — masqué sur mobile par CSS) -->
         <button id="theme-toggle-btn" onclick="toggleTheme()" class="zoot-icon-btn" title="{% trans 'Dark mode' %}">
             <span class="material-icons" style="font-size:1.25rem">dark_mode</span>
         </button>
@@ -920,6 +941,37 @@
                 <a class="dropdown-item danger" href="{% url 'logout' %}">
                     <span class="material-icons">logout</span> {% trans "Logout" %}
                 </a>
+
+                <div class="dropdown-divider"></div>
+
+                <!-- Affichage & Langue (accessibles ici car masqués de la top nav sur mobile) -->
+                <p class="zoot-dropdown-label">{% trans "Display" %} &amp; {% trans "Language" %}</p>
+                <button class="dropdown-item" onclick="toggleTheme()" type="button"
+                        style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
+                    <span class="material-icons" id="dd-theme-icon">dark_mode</span>
+                    <span id="dd-theme-label">{% trans "Dark mode" %}</span>
+                </button>
+                <!-- Sélecteur de langue compact -->
+                <div style="display:flex;gap:.4rem;padding:.3rem .85rem .65rem;flex-wrap:wrap;">
+                    {% for lang_code, lang_name in LANGUAGES %}
+                    <form method="post" action="{% url 'set_language' %}" style="margin:0;padding:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="language" value="{{ lang_code }}">
+                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                        <button type="submit" style="
+                            border:1.5px solid {% if CURRENT_LANG == lang_code %}var(--accent){% else %}var(--border){% endif %};
+                            border-radius:20px;padding:.28rem .65rem;
+                            background:{% if CURRENT_LANG == lang_code %}var(--accent-glow,rgba(139,69,19,.1)){% else %}var(--btn-bg){% endif %};
+                            font-size:.82rem;font-weight:700;cursor:pointer;
+                            color:{% if CURRENT_LANG == lang_code %}var(--accent){% else %}var(--text){% endif %};
+                            display:inline-flex;align-items:center;gap:.3rem;font-family:inherit;
+                        ">
+                            <span>{% if lang_code == 'mg' %}🇲🇬{% elif lang_code == 'en' %}🇬🇧{% else %}🇫🇷{% endif %}</span>
+                            <span>{% if lang_code == 'fr' %}FR{% elif lang_code == 'en' %}EN{% else %}MG{% endif %}</span>
+                        </button>
+                    </form>
+                    {% endfor %}
+                </div>
 
             </div>
         </div>

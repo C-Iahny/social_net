@@ -42,6 +42,11 @@
                 var el = document.getElementById(id);
                 if (el) el.innerHTML = icon;
             });
+            /* Synchroniser l'icône dark mode dans le dropdown profil */
+            var ddIcon  = document.getElementById('dd-theme-icon');
+            var ddLabel = document.getElementById('dd-theme-label');
+            if (ddIcon)  ddIcon.textContent  = theme === 'dark' ? 'light_mode' : 'dark_mode';
+            if (ddLabel) ddLabel.textContent = theme === 'dark' ? 'Mode clair'  : 'Mode sombre';
         }
 
         function toggleTheme() {
@@ -545,9 +550,9 @@
             <span class="material-icons">home</span>
             <span class="zbn-label">Feed</span>
         </a>
-        <a class="zbn-item" href="{% url 'search' %}?q=" data-page="search">
-            <span class="material-icons">search</span>
-            <span class="zbn-label">Rechercher</span>
+        <a class="zbn-item" href="{% url 'post:index' %}" data-page="explore">
+            <span class="material-icons">explore</span>
+            <span class="zbn-label">{% trans "Explore" %}</span>
         </a>
         <a class="zbn-item zbn-new" href="{% url 'post:addPost' %}" data-page="new">
             <div class="zbn-new-icon">
@@ -569,9 +574,9 @@
         // Highlight the active tab based on current URL
         var path = window.location.pathname;
         var map = {
-            feed:    ['/post/', '/'],
-            search:  ['/search/'],
-            new:     ['/post/create/', '/post/add/'],
+            feed:    ['/feed/'],
+            explore: ['/feed/index/', '/'],
+            new:     ['/feed/add-post/'],
             friends: ['/friend/'],
             profile: ['/account/'],
         };
