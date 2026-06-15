@@ -295,15 +295,34 @@ self.addEventListener('notificationclick', function(event) {
     event.notification.close();
     if (event.action === 'dismiss') return;
 
-    var url = (event.notification.data && event.notification.data.url) || '/';
+    var rawUrl = (event.notification.data && event.notification.data.url) || '/';
+
+    // Normalise l'URL : si elle est relative, la rendre absolue avec l'origine du SW.
+    // Si elle est déjà absolue mais pointe sur une origine différente (ex: Railway interne),
+    // on la remplace par l'origine publique du SW.
+    var url;
+    try {
+        var parsed = new URL(rawUrl, self.location.origin);
+        // Forcer l'origine du SW (évite les URLs internes Railway)
+        parsed.hostname === self.location.hostname
+            ? url = parsed.href
+            : url = self.location.origin + parsed.pathname + parsed.search;
+    } catch(e) {
+        url = self.location.origin + '/';
+    }
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true })
         .then(function(clientList) {
             for (var i = 0; i < clientList.length; i++) {
                 var client = clientList[i];
-                if (client.url.includes(self.location.origin) && 'focus' in client) {
-                    client.navigate(url);
+                if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+                    if ('navigate' in client) {
+                        return client.navigate(url).then(function(c) {
+                            return c ? c.focus() : null;
+                        });
+                    }
+                    client.postMessage({ type: 'NAVIGATE', url: url });
                     return client.focus();
                 }
             }
