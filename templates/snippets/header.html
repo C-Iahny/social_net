@@ -436,6 +436,12 @@
 .scrollable-menu::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 /* ── Mobile : dropdown en position fixed pour ne jamais déborder ── */
 @media (max-width: 575.98px) {
+    /* Sur mobile, l'animation dropIn utilise transform ce qui casse position:fixed sur iOS.
+       On neutralise l'animation et on force un positionnement fixed correct. */
+    .zoot-nav-right .dropdown-menu {
+        animation: none !important;
+    }
+
     /* Chat + Notifs : fixed pleine largeur sous la navbar, au-dessus de la bottom nav */
     .scrollable-menu {
         position: fixed !important;
@@ -446,20 +452,31 @@
         max-width: 100% !important;
         max-height: calc(100dvh - 64px - 68px) !important;
         transform: none !important;
+        overflow-x: hidden !important;
+        touch-action: pan-y !important;
     }
-    /* Profil dropdown : flottant aligné à droite, s'arrête au-dessus de la bottom nav */
+    /* Profil dropdown : fixed, aligné à droite, s'arrête au-dessus de la bottom nav */
     .dropdown-menu[aria-labelledby="id_profile_links"] {
         position: fixed !important;
         top: 68px !important;
         right: 8px !important;
         left: auto !important;
         width: calc(100vw - 16px) !important;
-        max-width: 300px !important;
-        max-height: calc(100dvh - 68px - 72px) !important; /* navbar + bottom nav */
+        max-width: 310px !important;
+        max-height: calc(100dvh - 68px - 68px) !important;
         overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
+        overflow-x: hidden !important;
+        overscroll-behavior: contain !important;
+        touch-action: pan-y !important;
         transform: none !important;
+        /* Pas de -webkit-overflow-scrolling:touch → évite le bug de scroll iOS */
+    }
+    /* Quand un dropdown est ouvert : bloquer le scroll du fond de page */
+    body.zoot-dd-open {
+        overflow: hidden !important;
+        /* iOS Safari : forcer le body à rester en place */
+        position: fixed !important;
+        width: 100% !important;
     }
 }
 
@@ -894,17 +911,33 @@
 
                 <!-- Social -->
                 <p class="zoot-dropdown-label">Social</p>
-                <a class="dropdown-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
-                    <span class="material-icons">person_add_alt</span> {% trans "Friend requests" %}
-                </a>
                 <a class="dropdown-item" href="{% url 'friend:list' user_id=request.user.id %}">
                     <span class="material-icons">group</span> {% trans "My friends" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'group:list' %}">
                     <span class="material-icons">groups</span> {% trans "Groups" %}
                 </a>
+                <a class="dropdown-item" href="{% url 'bazar:index' %}">
+                    <span class="material-icons">storefront</span> Bazar
+                </a>
+                <a class="dropdown-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
+                    <span class="material-icons">person_add_alt</span> {% trans "Friend requests" %}
+                </a>
                 <a class="dropdown-item" href="{% url 'chat:private-chat-room' %}">
                     <span class="material-icons">chat_bubble_outline</span> {% trans "Messages" %}
+                </a>
+
+                <div class="dropdown-divider"></div>
+
+                <!-- Créer -->
+                <p class="zoot-dropdown-label">Créer</p>
+                <a class="dropdown-item" href="{% url 'post:kabary-create' %}"
+                   style="color:var(--accent);">
+                    <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
+                </a>
+                <a class="dropdown-item" href="{% url 'post:vintana-create' %}"
+                   style="color:#bf5fff;">
+                    <span class="material-icons" style="color:#bf5fff;">lock_clock</span> Vintana
                 </a>
                 <!-- Live -->
                 <a class="dropdown-item" href="{% url 'video:live-list' %}"
@@ -1036,6 +1069,42 @@
             menu.classList.toggle('open');
             var icon = btn.querySelector('.material-icons');
             icon.textContent = menu.classList.contains('open') ? 'close' : 'menu';
+        });
+    }
+})();
+
+/* ── Lock scroll fond de page quand un dropdown Bootstrap est ouvert (iOS fix) ── */
+(function() {
+    var _scrollY = 0;
+    function lockScroll() {
+        if (window.innerWidth > 575) return;  // desktop : ne rien faire
+        _scrollY = window.scrollY;
+        document.body.classList.add('zoot-dd-open');
+        document.body.style.top = '-' + _scrollY + 'px';
+    }
+    function unlockScroll() {
+        if (!document.body.classList.contains('zoot-dd-open')) return;
+        document.body.classList.remove('zoot-dd-open');
+        document.body.style.top = '';
+        document.body.style.position = '';
+        window.scrollTo(0, _scrollY);
+    }
+    // Bootstrap 4 événements jQuery
+    if (window.jQuery) {
+        $(document).on('show.bs.dropdown',   lockScroll);
+        $(document).on('hidden.bs.dropdown', unlockScroll);
+    } else {
+        // Fallback vanilla : observer les aria-expanded
+        document.querySelectorAll('[data-toggle="dropdown"]').forEach(function(el) {
+            el.addEventListener('click', function() {
+                setTimeout(function() {
+                    var open = document.querySelector('.dropdown-menu.show');
+                    if (open) lockScroll(); else unlockScroll();
+                }, 50);
+            });
+        });
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.dropdown')) unlockScroll();
         });
     }
 })();

@@ -76,21 +76,22 @@ body { background: var(--bg); }
 }
 @media (max-width: 768px) {
     /* Sur mobile : scroll normal, pas de layout app */
-    body { overflow: auto; }
+    body { overflow-x: hidden; overflow-y: auto; }
     main { min-height: 100vh !important; height: auto !important; overflow: visible !important; }
     .feed-wrapper {
         grid-template-columns: 1fr;
         height: auto;
-        overflow: visible;
+        overflow: hidden;
         margin-top: 0;
         margin-left: 0;
         margin-right: 0;
-        padding: 0 .6rem;
+        padding: 0 .5rem;
         box-sizing: border-box;
         width: 100%;
+        max-width: 100vw;
     }
     .feed-left-col { display: none; }
-    .feed-main { width: 100%; min-width: 0; height: auto; overflow-y: visible; }
+    .feed-main { width: 100%; min-width: 0; max-width: 100%; height: auto; overflow-x: hidden; overflow-y: visible; }
     /* Boite de création : icônes seules sur mobile */
     .create-box { border-radius: 14px; }
     .create-box-actions {
@@ -106,11 +107,18 @@ body { background: var(--bg); }
     }
     /* Cache les labels, garde uniquement l'icône */
     .create-box-action span.btn-label { display: none; }
-    /* Post cards : padding symétrique (pas d'asymétrie gauche/droite) */
-    .post-card { width: 100%; min-width: 0; }
+    /* Post cards : contenu contraint à la largeur de l'écran */
+    .post-card { width: 100%; min-width: 0; max-width: 100%; overflow: hidden; box-sizing: border-box; }
+    /* Corps du post : empêcher tout débordement de contenu CKEditor/HTML */
+    .pc-body { overflow: hidden; word-break: break-word; overflow-wrap: break-word; }
+    .pc-body * { max-width: 100% !important; height: auto !important; box-sizing: border-box; }
+    .pc-body img, .pc-body video, .pc-body iframe { max-width: 100% !important; width: 100% !important; }
+    /* Header média */
+    .pc-media-wrap { overflow: hidden; }
+    .pc-media-wrap img, .pc-media-wrap video { max-width: 100%; width: 100%; }
 }
 @media (max-width: 480px) {
-    .feed-wrapper { padding: 0 .35rem; }
+    .feed-wrapper { padding: 0 .25rem; }
 }
 
 /* ════════════════════════════════════════════════════════════════
