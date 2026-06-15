@@ -270,8 +270,28 @@ function isVideo(file) {
 }
 
 function addToSelection(newFiles) {
-    Array.from(newFiles).forEach(function(f) { _pending.push(f); });
+    var raw = Array.from(newFiles);
+    var images = raw.filter(function(f) { return f.type.startsWith('image/') || (window.ZootMediaConverter && ZootMediaConverter.isHeic(f)); });
+    var others = raw.filter(function(f) { return !f.type.startsWith('image/') && !(window.ZootMediaConverter && ZootMediaConverter.isHeic(f)); });
+
+    // Ajouter immédiatement les vidéos/autres sans attendre
+    others.forEach(function(f) { _pending.push(f); });
     _renderPreview();
+
+    if (images.length === 0) return;
+
+    if (window.ZootMediaConverter) {
+        ZootMediaConverter.processFiles(images).then(function(converted) {
+            converted.forEach(function(f) { _pending.push(f); });
+            _renderPreview();
+        }).catch(function() {
+            images.forEach(function(f) { _pending.push(f); });
+            _renderPreview();
+        });
+    } else {
+        images.forEach(function(f) { _pending.push(f); });
+        _renderPreview();
+    }
 }
 
 function removeFromSelection(idx) {
