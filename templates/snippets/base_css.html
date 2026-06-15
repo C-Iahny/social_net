@@ -184,6 +184,15 @@ code, pre {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
+/* Scrollbar sombre en mode dark (Firefox + Chromium) */
+[data-theme="dark"] {
+    color-scheme: dark;
+    scrollbar-color: var(--border) var(--bg);
+}
+[data-theme="dark"] ::-webkit-scrollbar-track { background: var(--bg); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: var(--border); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
 /* ============================================================
    GLASSMORPHISM UTILITY
    ============================================================ */
