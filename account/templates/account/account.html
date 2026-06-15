@@ -17,7 +17,7 @@ body { background: var(--bg); }
 
 /* ── Cover ── */
 .profile-cover {
-    height: 210px;
+    height: 260px;
     border-radius: 22px 22px 0 0;
     overflow: hidden;
     position: relative;
@@ -69,7 +69,10 @@ body { background: var(--bg); }
 .profile-header {
     background: var(--bg-card);
     border-radius: 0 0 22px 22px;
-    padding: 0 1.5rem 1.25rem;
+    padding: .5rem 1.5rem 1.25rem;   /* .5rem top = petit espace au-dessus du nom */
+    position: relative; /* fix: sans ça, le nom est peint avant .profile-cover (positionné)
+                           et donc caché derrière la photo de couverture quand la bio le
+                           pousse au-dessus du bord supérieur du header */
     box-shadow:
         0 1px 3px rgba(0,0,0,.04),
         0 6px 20px rgba(0,0,0,.07),
@@ -84,20 +87,19 @@ body { background: var(--bg); }
 }
 
 .avatar-area {
-    display: flex;
-    align-items: flex-end;
-    gap: 1.1rem;
-    margin-top: -62px;
+    /* L'avatar est en position:absolute → on laisse de la place à gauche */
+    padding-left: 144px;   /* 124px avatar + 20px gap */
+    padding-top: .6rem;
     padding-bottom: .75rem;
-    flex-wrap: wrap;
 }
 
 /* Avatar ring */
 .avatar-ring-wrap {
     width: 124px; height: 124px;
     border-radius: 50%;
-    flex-shrink: 0;
-    position: relative;
+    position: absolute;    /* sorti du flux — positionné par rapport au .profile-header */
+    left: 1.5rem;          /* aligné avec le padding du header */
+    top: -62px;            /* exactement moitié (62px = 124px / 2) dans le cover */
     cursor: pointer;
     transition: transform .18s;
 }
@@ -129,7 +131,7 @@ body { background: var(--bg); }
 
 /* Name area */
 .profile-name-area {
-    flex: 1; min-width: 0;
+    min-width: 0;
     padding-bottom: .4rem;
 }
 .profile-username {
@@ -139,11 +141,11 @@ body { background: var(--bg); }
 }
 .profile-bio-text {
     color: var(--text-muted); font-size: .9rem;
-    margin: .25rem 0 0; line-height: 1.5;
+    margin: .4rem 0 0; line-height: 1.5;
 }
 .profile-stats-row {
     display: flex; flex-wrap: wrap; gap: 1rem;
-    margin-top: .55rem;
+    margin-top: 1rem;
 }
 .profile-stat {
     display: flex; align-items: center; gap: .3rem;
@@ -246,16 +248,17 @@ body { background: var(--bg); }
     .avatar-ring-wrap { width: 88px; height: 88px; }
     .profile-username { font-size: 1.2rem; }
 
-    /* Avatar + nom en colonne sur mobile : nom toujours pleine largeur */
+    /* Mobile : même logique, avatar absolu + contenu décalé à droite */
+    .avatar-ring-wrap {
+        left: 1rem;
+        top: -44px;  /* avatar 88px / 2 */
+    }
     .avatar-area {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: .4rem;
-        margin-top: -48px;   /* avatar 88px / 2 + quelques px de chevauchement cover */
+        padding-left: 104px;  /* 88px avatar + 16px gap */
+        padding-top: .4rem;
         padding-bottom: .5rem;
     }
     .profile-name-area {
-        width: 100%;
         padding-bottom: 0;
     }
 
@@ -1842,6 +1845,9 @@ function updateCommentCount(postId, delta) {
 var _shareTimer = null;
 function sharePost(postId) {
     var url = window.location.origin + window.location.pathname + '#post-' + postId;
+    /* ZootShare : feuille native (iOS/Android) ou bottom-sheet WhatsApp/FB */
+    if (window.ZootShare) { ZootShare.open(url, document.title || 'Vazimba'); return; }
+    /* Fallback clipboard si ZootShare non disponible */
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(showShareToast);
     } else {

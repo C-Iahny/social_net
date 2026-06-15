@@ -1633,6 +1633,9 @@ function deleteComment(cid, url){
 /* ── Share ── */
 function sharePost(pid, title) {
     var url = window.location.origin + '/post/detail/' + pid + '/';
+    /* ZootShare : feuille native (iOS/Android) ou bottom-sheet WhatsApp/FB */
+    if (window.ZootShare) { ZootShare.open(url, title || 'Vazimba'); return; }
+    /* Fallback clipboard */
     if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(url).then(gdShowToast);
     } else {
