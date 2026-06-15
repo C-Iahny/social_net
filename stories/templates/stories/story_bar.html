@@ -257,19 +257,49 @@
 .sc-preview-placeholder p { font-size: .82rem; margin: 0; }
 input#sc-file-input { display: none; }
 
-/* Text card preview */
-.sc-text-card {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    padding: 1.5rem;
+/* Fond gradient (remplit toute la preview — stories type 'text') */
+#sc-text-bg {
     position: absolute; inset: 0;
     display: none;
+    border-radius: 12px;  /* hérite du radius de .sc-preview */
 }
-.sc-text-card p {
-    font-size: 1.1rem; font-weight: 700; color: #fff;
+
+/* Overlay texte draggable dans le créateur */
+#sc-text-overlay {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    cursor: move;
+    touch-action: none;
+    max-width: 85%;
+    padding: .4rem .85rem;
+    border-radius: 7px;
+    z-index: 5;
+    user-select: none;
+    -webkit-user-select: none;
+    outline: 1.5px dashed rgba(255,255,255,.55);
+    outline-offset: 3px;
+}
+#sc-text-overlay:active { outline-color: rgba(255,255,255,.9); }
+#sc-text-overlay p {
+    font-size: 1.05rem; font-weight: 700; color: #fff;
     text-align: center; word-break: break-word; margin: 0;
-    text-shadow: 0 1px 8px rgba(0,0,0,.5);
+    text-shadow: 0 2px 8px rgba(0,0,0,.6);
     line-height: 1.4;
+    pointer-events: none;
+}
+#sc-text-overlay::before {
+    content: '✥ déplacer';
+    position: absolute; top: -20px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,.55);
+    color: rgba(255,255,255,.85);
+    font-size: .55rem; font-weight: 700;
+    padding: 1px 7px; border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: .03em;
 }
 
 /* Gradients */
@@ -383,7 +413,7 @@ input#sc-file-input { display: none; }
     font-family: var(--font-primary, 'Space Grotesk', sans-serif);
 }
 
-/* Caption overlay */
+/* Caption overlay (image/video) */
 .sv-caption {
     position: absolute;
     bottom: 80px; left: 0; right: 0;
@@ -393,6 +423,27 @@ input#sc-file-input { display: none; }
     text-shadow: 0 1px 12px rgba(0,0,0,.8);
     font-family: var(--font-primary, 'Space Grotesk', sans-serif);
     display: none;
+    z-index: 5;
+}
+
+/* Texte positionné librement (text / image_text) */
+.sv-text-positioned {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: none;
+    max-width: 82%;
+    text-align: center;
+    padding: .4rem .9rem;
+    border-radius: 8px;
+    pointer-events: none;
+    z-index: 6;
+}
+.sv-text-positioned p {
+    font-size: 1.55rem; font-weight: 800; color: #fff;
+    text-align: center; line-height: 1.3; word-break: break-word;
+    text-shadow: 0 2px 20px rgba(0,0,0,.7), 0 1px 4px rgba(0,0,0,.9);
+    margin: 0;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
 }
 
 /* Top bar — padding-top intègre la hauteur du navbar (62px) en mode non-fullscreen,
@@ -463,6 +514,8 @@ input#sc-file-input { display: none; }
     gap: .4rem;
     color: rgba(255,255,255,.8); font-size: .82rem;
     font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    z-index: 12; /* au-dessus des zones de nav (z-index:9) */
+    pointer-events: none; /* laisse passer les clics sauf sur les enfants */
 }
 .sv-views .material-icons { font-size: 1rem; }
 
@@ -476,6 +529,8 @@ input#sc-file-input { display: none; }
     display: none; align-items: center; gap: .3rem;
     font-family: var(--font-primary, 'Space Grotesk', sans-serif);
     transition: background .2s;
+    z-index: 12; /* au-dessus des zones de nav (z-index:9) */
+    pointer-events: auto;
 }
 .sv-delete:hover { background: rgba(255,77,166,.35); }
 .sv-delete .material-icons { font-size: .9rem; }
@@ -546,9 +601,12 @@ input#sc-file-input { display: none; }
 
         <!-- Zone de preview -->
         <div class="sc-preview" id="sc-preview" onclick="triggerFileInput()">
+            <!-- Fond gradient pour les stories texte (type='text') -->
+            <div id="sc-text-bg" class="grad_cyan"></div>
             <img  id="sc-preview-img"   alt="">
             <video id="sc-preview-video" muted playsinline loop></video>
-            <div class="sc-text-card grad_cyan" id="sc-text-card">
+            <!-- Texte draggable (text / image_text) -->
+            <div id="sc-text-overlay">
                 <p id="sc-text-card-content">Votre texte ici…</p>
             </div>
             <div class="sc-preview-placeholder" id="sc-preview-placeholder">
@@ -618,9 +676,14 @@ input#sc-file-input { display: none; }
     <!-- Média -->
     <img   id="sv-img"    class="sv-media" alt="">
     <video id="sv-video"  class="sv-media" muted playsinline autoplay></video>
-    <div   id="sv-text"   class="sv-text-bg"><p id="sv-text-content"></p></div>
+    <!-- Fond gradient (type='text') -->
+    <div id="sv-text-bg" style="position:absolute;inset:0;display:none;"></div>
+    <!-- Texte positionné librement -->
+    <div id="sv-text-positioned" class="sv-text-positioned">
+        <p id="sv-text-content"></p>
+    </div>
 
-    <!-- Caption -->
+    <!-- Caption bas (image/vidéo) -->
     <div id="sv-caption" class="sv-caption"></div>
 
     <!-- Lien promotionnel (affiché si story.link existe) -->
@@ -712,6 +775,13 @@ var _svPaused    = false;
 var _scType      = 'image';
 var _scGrad      = 'grad_cyan';
 var _scFile      = null;
+var _scTextX     = 50;   // % position horizontale du texte
+var _scTextY     = 50;   // % position verticale du texte
+var _textDragging      = false;
+var _textDragStartCX   = 0;
+var _textDragStartCY   = 0;
+var _textDragStartX    = 50;
+var _textDragStartY    = 50;
 
 /* ════════════════════════════════════════════
    CHARGEMENT DES STORIES
@@ -805,20 +875,30 @@ window.selectStoryType = function(type, el) {
     document.querySelectorAll('.sc-type-chip').forEach(function(c){ c.classList.remove('active'); });
     el.classList.add('active');
 
-    var isText      = (type === 'text');
-    var hasMedia    = (type === 'image' || type === 'video' || type === 'image_text');
-    var showGrad    = (type === 'text' || type === 'image_text');
+    var isText   = (type === 'text');
+    var showGrad = (type === 'text' || type === 'image_text');
 
     document.getElementById('sc-grad-section').style.display = showGrad ? '' : 'none';
 
-    // Réinitialiser la preview si on change de type
     if (isText) {
+        // Type texte : fond gradient visible, overlay texte visible, pas de file input
         document.getElementById('sc-preview').onclick = null;
-        showTextCard();
+        document.getElementById('sc-text-bg').style.display = 'block';
+        document.getElementById('sc-text-overlay').style.display = 'block';
+        document.getElementById('sc-preview-placeholder').style.display = 'none';
+        document.getElementById('sc-preview-img').style.display = 'none';
+        document.getElementById('sc-preview-video').style.display = 'none';
     } else {
+        // Types avec média : cacher fond gradient, réinitialiser le fichier
         document.getElementById('sc-preview').onclick = triggerFileInput;
-        hideTextCard();
-        if (!_scFile) showPlaceholder();
+        document.getElementById('sc-text-bg').style.display = 'none';
+        if (!_scFile) {
+            document.getElementById('sc-text-overlay').style.display = 'none';
+            showPlaceholder();
+        } else if (type === 'image_text') {
+            // image_text : overlay texte sur l'image
+            document.getElementById('sc-text-overlay').style.display = 'block';
+        }
     }
 
     // Mettre à jour l'accept du file input
@@ -852,11 +932,9 @@ window.onFileSelected = function(input) {
             var img = document.getElementById('sc-preview-img');
             img.src = url; img.style.display = 'block';
         }
+        // Pour image+texte : montrer l'overlay texte draggable sur l'image
         if (_scType === 'image_text') {
-            showTextCard();
-            document.getElementById('sc-text-card').style.position = 'absolute';
-            document.getElementById('sc-text-card').style.background = 'transparent';
-            document.getElementById('sc-text-card').style.display = 'flex';
+            document.getElementById('sc-text-overlay').style.display = 'block';
         }
     }
 
@@ -874,27 +952,71 @@ window.selectGrad = function(grad, el) {
     _scGrad = grad;
     document.querySelectorAll('.sc-grad-swatch').forEach(function(s){ s.classList.remove('active'); });
     el.classList.add('active');
-    var card = document.getElementById('sc-text-card');
-    card.className = 'sc-text-card ' + grad;
-    if (_scType === 'image_text') card.style.background = 'transparent';
+    // Appliquer le gradient au fond (pas à l'overlay texte)
+    document.getElementById('sc-text-bg').className = grad;
 };
 
 window.onCaptionInput = function(val) {
     document.getElementById('sc-text-card-content').textContent = val || 'Votre texte ici…';
 };
 
-function showTextCard() {
-    document.getElementById('sc-text-card').style.display = 'flex';
-    document.getElementById('sc-preview-placeholder').style.display = 'none';
-}
-function hideTextCard() {
-    document.getElementById('sc-text-card').style.display = 'none';
-}
 function showPlaceholder() {
     document.getElementById('sc-preview-placeholder').style.display = 'flex';
 }
 function hidePlaceholder() {
     document.getElementById('sc-preview-placeholder').style.display = 'none';
+}
+
+/* ══════════════════════════════════════════════
+   DRAG DU TEXTE DANS LE CRÉATEUR
+   ══════════════════════════════════════════════ */
+function initTextDrag() {
+    var overlay = document.getElementById('sc-text-overlay');
+    var preview = document.getElementById('sc-preview');
+    if (!overlay || !preview) return;
+
+    function applyPos() {
+        overlay.style.left = _scTextX + '%';
+        overlay.style.top  = _scTextY + '%';
+    }
+
+    function onStart(clientX, clientY) {
+        _textDragging    = true;
+        _textDragStartCX = clientX;
+        _textDragStartCY = clientY;
+        _textDragStartX  = _scTextX;
+        _textDragStartY  = _scTextY;
+    }
+
+    function onMove(clientX, clientY) {
+        if (!_textDragging) return;
+        var rect = preview.getBoundingClientRect();
+        var dx = (clientX - _textDragStartCX) / rect.width  * 100;
+        var dy = (clientY - _textDragStartCY) / rect.height * 100;
+        _scTextX = Math.max(10, Math.min(90, _textDragStartX + dx));
+        _scTextY = Math.max(10, Math.min(90, _textDragStartY + dy));
+        applyPos();
+    }
+
+    function onEnd() { _textDragging = false; }
+
+    // Souris
+    overlay.addEventListener('mousedown', function(e) {
+        onStart(e.clientX, e.clientY);
+        e.preventDefault(); e.stopPropagation();
+    });
+    document.addEventListener('mousemove', function(e) { if (_textDragging) onMove(e.clientX, e.clientY); });
+    document.addEventListener('mouseup', onEnd);
+
+    // Toucher mobile
+    overlay.addEventListener('touchstart', function(e) {
+        onStart(e.touches[0].clientX, e.touches[0].clientY);
+        e.preventDefault(); e.stopPropagation();
+    }, { passive: false });
+    document.addEventListener('touchmove', function(e) {
+        if (_textDragging) { onMove(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }
+    }, { passive: false });
+    document.addEventListener('touchend', onEnd);
 }
 
 window.publishStory = function() {
@@ -911,6 +1033,8 @@ window.publishStory = function() {
     fd.append('caption', caption);
     fd.append('bg_gradient', _scGrad);
     fd.append('text_align', 'center');
+    fd.append('text_x', _scTextX.toFixed(1));
+    fd.append('text_y', _scTextY.toFixed(1));
     if (_scFile) fd.append('media', _scFile);
     var linkVal = (document.getElementById('sc-link-input') || {}).value || '';
     var linkLabel = (document.getElementById('sc-link-label-input') || {}).value || '';
@@ -956,21 +1080,42 @@ window.publishStory = function() {
 };
 
 function resetCreator() {
-    _scFile = null;
-    _scType = 'image'; _scGrad = 'grad_cyan';
+    _scFile  = null;
+    _scType  = 'image';
+    _scGrad  = 'grad_cyan';
+    _scTextX = 50;
+    _scTextY = 50;
+
     document.querySelectorAll('.sc-type-chip').forEach(function(c){ c.classList.remove('active'); });
     document.querySelector('.sc-type-chip[data-type="image"]').classList.add('active');
-    document.getElementById('sc-file-input').value = '';
-    document.getElementById('sc-preview-img').style.display = 'none';
+
+    var fi = document.getElementById('sc-file-input');
+    if (fi) fi.value = '';
+
+    document.getElementById('sc-preview-img').style.display   = 'none';
     document.getElementById('sc-preview-video').style.display = 'none';
-    document.getElementById('sc-text-card').style.display = 'none';
+    document.getElementById('sc-text-bg').style.display       = 'none';
+    document.getElementById('sc-text-overlay').style.display  = 'none';
     document.getElementById('sc-preview-placeholder').style.display = 'flex';
+
+    // Remettre le texte overlay au centre
+    var ov = document.getElementById('sc-text-overlay');
+    if (ov) { ov.style.left = '50%'; ov.style.top = '50%'; }
+
     document.getElementById('sc-caption-input').value = '';
     document.getElementById('sc-grad-section').style.display = 'none';
-    document.getElementById('sc-text-card').className = 'sc-text-card grad_cyan';
+    document.getElementById('sc-text-bg').className = 'grad_cyan';
     document.getElementById('sc-text-card-content').textContent = 'Votre texte ici…';
     document.querySelectorAll('.sc-grad-swatch').forEach(function(s){ s.classList.remove('active'); });
     document.querySelector('.sc-grad-swatch[data-grad="grad_cyan"]').classList.add('active');
+
+    // Réinitialiser les champs lien
+    var li = document.getElementById('sc-link-input');
+    var ll = document.getElementById('sc-link-label-input');
+    if (li) li.value = '';
+    if (ll) ll.value = '';
+
+    document.getElementById('sc-preview').onclick = triggerFileInput;
 }
 
 /* ════════════════════════════════════════════
@@ -1069,13 +1214,16 @@ function renderCurrentStory() {
         pbContainer.appendChild(pb);
     });
 
-    // Masquer tous les médias
-    document.getElementById('sv-img').style.display   = 'none';
-    document.getElementById('sv-video').style.display = 'none';
-    document.getElementById('sv-text').style.display  = 'none';
-    document.getElementById('sv-caption').style.display = 'none';
+    // Masquer tous les médias et overlays
+    document.getElementById('sv-img').style.display            = 'none';
+    document.getElementById('sv-video').style.display          = 'none';
+    document.getElementById('sv-text-bg').style.display        = 'none';
+    document.getElementById('sv-text-positioned').style.display = 'none';
+    document.getElementById('sv-caption').style.display        = 'none';
 
     var duration = _svDuration;
+    var tx = story.text_x != null ? story.text_x : 50;
+    var ty = story.text_y != null ? story.text_y : 50;
 
     if (story.story_type === 'video' && story.media_url) {
         var vid = document.getElementById('sv-video');
@@ -1083,20 +1231,42 @@ function renderCurrentStory() {
         vid.style.display = 'block';
         vid.play();
         vid.onloadedmetadata = function() { duration = vid.duration * 1000; };
-    } else if ((story.story_type === 'image' || story.story_type === 'image_text') && story.media_url) {
+
+    } else if (story.story_type === 'image' && story.media_url) {
         var img = document.getElementById('sv-img');
         img.src = story.media_url;
         img.style.display = 'block';
+
+    } else if (story.story_type === 'image_text' && story.media_url) {
+        var img2 = document.getElementById('sv-img');
+        img2.src = story.media_url;
+        img2.style.display = 'block';
+        // Texte positionné sur l'image
+        if (story.caption) {
+            var tp = document.getElementById('sv-text-positioned');
+            tp.style.left    = tx + '%';
+            tp.style.top     = ty + '%';
+            tp.style.display = 'block';
+            // Ombre de texte renforcée pour lisibilité sur image
+            document.getElementById('sv-text-content').textContent = story.caption;
+        }
+
     } else if (story.story_type === 'text') {
-        var textEl = document.getElementById('sv-text');
-        textEl.className = 'sv-text-bg ' + (story.bg_gradient || 'grad_cyan');
-        textEl.style.display = 'flex';
+        // Fond gradient
+        var bg = document.getElementById('sv-text-bg');
+        bg.className       = story.bg_gradient || 'grad_cyan';
+        bg.style.display   = 'block';
+        // Texte positionné
+        var tp2 = document.getElementById('sv-text-positioned');
+        tp2.style.left    = tx + '%';
+        tp2.style.top     = ty + '%';
+        tp2.style.display = 'block';
         document.getElementById('sv-text-content').textContent = story.caption || '';
-        duration = 7000; // texte : 7s
+        duration = 7000;
     }
 
-    // Caption
-    if (story.caption && story.story_type !== 'text') {
+    // Caption bas (image/vidéo simple uniquement)
+    if (story.caption && (story.story_type === 'image' || story.story_type === 'video')) {
         var cap = document.getElementById('sv-caption');
         cap.textContent = story.caption;
         cap.style.display = 'block';
@@ -1202,6 +1372,7 @@ function formatTimeLeft(seconds) {
    ════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function() {
     loadStories();
+    initTextDrag();
 });
 
 // Exposer pour la page profil
