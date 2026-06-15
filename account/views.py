@@ -330,10 +330,13 @@ def edit_account_view(request, *args, **kwargs):
 				'hide_email': account.hide_email,
 				'bio':        account.bio,
 				'location':   account.location,
+				'region':     account.region,
 			}
 		)
 	context['form'] = form
 	context['DATA_UPLOAD_MAX_MEMORY_SIZE'] = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
+	from regions import REGION_CHOICES
+	context['region_choices'] = REGION_CHOICES
 	return render(request, 'account/edit_account.html', context)
 
 

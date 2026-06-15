@@ -185,12 +185,12 @@ def _get_recommended_groups(user, exclude_ids, limit=6):
 def group_list(request):
     """
     Liste des groupes — accessible à tous (même non connecté).
-    Onglets : mes groupes | tous | recommandés.
-    Filtres : catégorie, recherche texte.
+    Onglets : mes groupes | tous | recommandés | local.
+    Filtres : catégorie, recherche texte, région.
     """
     query    = request.GET.get('q', '').strip()
     category = request.GET.get('cat', '').strip()
-    tab      = request.GET.get('tab', 'all')   # all | mine | recommended
+    tab      = request.GET.get('tab', 'all')   # all | mine | recommended | local
 
     # Groupes de base (publics ou le tout pour les membres)
     qs = (
@@ -216,18 +216,33 @@ def group_list(request):
         my_group_ids = set()
         tab = 'all'  # forcer onglet "tous" si non connecté
 
+    # Région de l'utilisateur (pour onglet "local")
+    user_region = ''
+    user_region_label = ''
+    if request.user.is_authenticated:
+        from regions import REGION_LABELS
+        user_region = getattr(request.user, 'region', '') or ''
+        user_region_label = REGION_LABELS.get(user_region, '')
+
     if tab == 'mine' and request.user.is_authenticated:
         qs = qs.filter(id__in=my_group_ids)
+    elif tab == 'local' and request.user.is_authenticated and user_region:
+        # Groupes de la région de l'utilisateur (publics + ses groupes privés locaux)
+        qs = qs.filter(
+            Q(region=user_region),
+        ).filter(Q(privacy=Group.PUBLIC) | Q(id__in=my_group_ids))
     elif tab == 'recommended' and request.user.is_authenticated:
         recommended = _get_recommended_groups(request.user, exclude_ids=my_group_ids, limit=30)
         # already a queryset / list with num_members
         return render(request, 'group/group_list.html', {
-            'groups':         recommended,
-            'my_group_ids':   my_group_ids,
-            'query':          query,
-            'category':       category,
-            'tab':            tab,
+            'groups':           recommended,
+            'my_group_ids':     my_group_ids,
+            'query':            query,
+            'category':         category,
+            'tab':              tab,
             'category_choices': _sorted_categories(),
+            'user_region':      user_region,
+            'user_region_label': user_region_label,
         })
     else:
         # Onglet "tous" : groupes publics + les groupes privés de l'utilisateur
@@ -239,12 +254,14 @@ def group_list(request):
     qs = qs.order_by('-num_members', '-created_at')
 
     return render(request, 'group/group_list.html', {
-        'groups':           qs,
-        'my_group_ids':     my_group_ids,
-        'query':            query,
-        'category':         category,
-        'tab':              tab,
-        'category_choices': _sorted_categories(),
+        'groups':            qs,
+        'my_group_ids':      my_group_ids,
+        'query':             query,
+        'category':          category,
+        'tab':               tab,
+        'category_choices':  _sorted_categories(),
+        'user_region':       user_region,
+        'user_region_label': user_region_label,
     })
 
 

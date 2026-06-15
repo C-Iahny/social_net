@@ -429,6 +429,18 @@
     {% endif %}
 </section>
 
+<!-- ── Raccourci "Ma région" ── -->
+{% if user_region and not sel_region %}
+<div style="padding:.5rem 1rem .1rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+    <span style="font-size:.82rem;color:var(--text-muted);">Près de chez moi :</span>
+    <a href="?region={{ user_region }}"
+       style="display:inline-flex;align-items:center;gap:.3rem;padding:.32rem .8rem;border-radius:99px;
+              background:var(--accent,#6366f1);color:#fff;font-size:.82rem;font-weight:600;text-decoration:none;">
+        📍 {{ user_region_label }}
+    </a>
+</div>
+{% endif %}
+
 <!-- ── Filtres ── -->
 <div class="bazar-filters">
     <form method="get" action="{% url 'bazar:index' %}" class="bazar-filters-inner" id="filter-form">
@@ -450,6 +462,14 @@
             {% endfor %}
         </select>
 
+        <!-- Région -->
+        <select name="region" class="bazar-filter-select" onchange="this.form.submit()">
+            <option value="">🇲🇬 Toute Madagascar</option>
+            {% for code, label in region_choices %}{% if code %}
+            <option value="{{ code }}" {% if sel_region == code %}selected{% endif %}>{{ label }}</option>
+            {% endif %}{% endfor %}
+        </select>
+
         <!-- Vendeurs vérifiés -->
         <label class="bazar-filter-verified {% if only_verified %}active{% endif %}">
             <input type="checkbox" name="verified" value="1" {% if only_verified %}checked{% endif %} onchange="this.form.submit()">
@@ -465,7 +485,7 @@
             <option value="popular"    {% if sort == 'popular' %}selected{% endif %}>{% trans "Plus vues" %}</option>
         </select>
 
-        {% if sel_cat or sel_cond or q or sort != 'recent' or only_verified %}
+        {% if sel_cat or sel_cond or sel_region or q or sort != 'recent' or only_verified %}
         <a href="{% url 'bazar:index' %}" style="font-size:.82rem;color:var(--text-muted);text-decoration:none;margin-left:.25rem;display:flex;align-items:center;gap:.25rem;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             Réinitialiser

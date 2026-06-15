@@ -150,7 +150,7 @@ def _attach_reposts(posts, post_ids, user):
 # ──────────────────────────────────────────────
 @login_required(login_url="login")
 def post_feed_view(request):
-    """Fil d'actualité : posts de l'utilisateur + ses amis."""
+    """Fil d'actualité : posts de l'utilisateur + ses amis (+ onglet région)."""
     user = request.user
 
     # Récupérer la liste d'amis (créer si absente)
@@ -162,11 +162,22 @@ def post_feed_view(request):
         friend_list.save()
         friends = friend_list.friends.none()
 
-    # Posts : les siens + ceux de ses amis
-    # select_related évite le N+1 (1 JOIN au lieu de 1 requête par post)
-    feed_posts = Post.objects.filter(
-        author__in=list(friends) + [user]
-    ).select_related('author', 'group').order_by("-id")
+    # ── Onglet actif : "feed" (défaut) ou "region" ────────────────────────────
+    tab = request.GET.get('tab', 'feed')
+    user_region = getattr(user, 'region', '')
+
+    if tab == 'region' and user_region:
+        # Posts de la région de l'utilisateur (tous auteurs, tous publics)
+        feed_posts = Post.objects.filter(
+            region=user_region
+        ).select_related('author', 'group').order_by("-id")
+    else:
+        # Posts : les siens + ceux de ses amis
+        # select_related évite le N+1 (1 JOIN au lieu de 1 requête par post)
+        feed_posts = Post.objects.filter(
+            author__in=list(friends) + [user]
+        ).select_related('author', 'group').order_by("-id")
+        tab = 'feed'  # normalise si region vide
 
     # Pagination (5 posts par page)
     paginator = Paginator(feed_posts, 5)
@@ -236,6 +247,7 @@ def post_feed_view(request):
             .distinct()[:6]
         )
 
+    from regions import REGION_LABELS
     context = {
         "friends":            friends,
         "friends_count":      friends.count(),
@@ -244,6 +256,10 @@ def post_feed_view(request):
         "my_post_count":      my_post_count,
         "trending_hashtags":  get_trending_hashtags(),
         "my_groups":          my_groups,
+        # région
+        "active_tab":         tab,
+        "user_region":        user_region,
+        "user_region_label":  REGION_LABELS.get(user_region, ''),
     }
     return render(request, "post/post_view.html", context)
 
@@ -343,6 +359,8 @@ class AddPostView(CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
+        # Auto-remplir la région depuis le profil de l'auteur
+        form.instance.region = getattr(self.request.user, 'region', '') or ''
         response = super().form_valid(form)
         post = self.object
 

@@ -66,10 +66,21 @@ class AccountUpdateForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'placeholder': 'Ville, Pays'}),
         label='Localisation',
     )
+    region = forms.ChoiceField(
+        required=False,
+        label='Région',
+        choices=[],  # rempli dynamiquement dans __init__
+        widget=forms.Select(),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from regions import REGION_CHOICES
+        self.fields['region'].choices = REGION_CHOICES
 
     class Meta:
         model = Account
-        fields = ('username', 'email', 'profile_image', 'hide_email', 'bio', 'location')
+        fields = ('username', 'email', 'profile_image', 'hide_email', 'bio', 'location', 'region')
         widgets = {
             'profile_image': forms.FileInput(attrs={
                 'accept': ACCEPTED_IMAGE_EXTENSIONS,
@@ -99,6 +110,7 @@ class AccountUpdateForm(forms.ModelForm):
         account.hide_email = self.cleaned_data['hide_email']
         account.bio        = self.cleaned_data.get('bio', '')
         account.location   = self.cleaned_data.get('location', '')
+        account.region     = self.cleaned_data.get('region', '')
         # Ne remplace la photo que si un nouveau fichier est uploadé
         new_image = self.cleaned_data.get('profile_image')
         if new_image:
