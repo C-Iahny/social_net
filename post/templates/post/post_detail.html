@@ -776,4 +776,18 @@ function sendReaction(postId, rtype) {
             if (label) label.textContent = LABELS[data.user_reaction] || 'Tiana';
         } else {
             btn.classList.remove('liked');
-            if (icon)  icon.innerHTML  = '<span class="material-icons">thumb_up_off_
+            if (icon)  icon.innerHTML  = '<span class="material-icons">thumb_up_off_alt</span>';
+            if (label) label.textContent = '';
+        }
+
+        /* Met à jour le total de réactions */
+        var totalEl = document.getElementById('pd-reaction-total');
+        if (totalEl && data.total_reactions !== undefined) {
+            totalEl.textContent = data.total_reactions || '';
+        }
+    })
+    .catch(function(){});
+}
+</script>
+</div>{# .pd-wrapper #}
+{% endblock content %}
