@@ -406,12 +406,11 @@
                         {% endif %}
                     </span>
                     <span id="react-label-{{ post.id }}">
-                        {% if post.user_reaction == 'like' %}{% trans "Like" %}
-                        {% elif post.user_reaction == 'heart' %}{% trans "Love" %}
-                        {% elif post.user_reaction == 'laugh' %}{% trans "Haha" %}
-                        {% elif post.user_reaction == 'wow' %}{% trans "Wow" %}
-                        {% elif post.user_reaction == 'sad' %}{% trans "Sad" %}
-                        {% else %}{% trans "Like" %}{% endif %}
+                        {% if post.user_reaction == 'like' %}{% trans "Tiana" %}
+                        {% elif post.user_reaction == 'heart' %}{% trans "Tiako" %}
+                        {% elif post.user_reaction == 'laugh' %}{% trans "Heniky" %}
+                        {% elif post.user_reaction == 'wow' %}{% trans "Mahagaga" %}
+                        {% elif post.user_reaction == 'sad' %}{% trans "Maika" %}
                     </span>
                 </button>
                 <div class="reaction-picker" id="picker-{{ post.id }}" onmouseleave="closePicker({{ post.id }})">
@@ -563,9 +562,12 @@ function pdGoBack(e) {
     return true; // suit le href (fallback feed)
 }
 
-/* ── Partage : copie l'URL canonique de la page ── */
+/* ── Partage : URL canonique → feuille native ou bottom-sheet WhatsApp/FB ── */
 function pdSharePost() {
     var url = window.location.href;
+    /* ZootShare : feuille native (iOS/Android) ou bottom-sheet WhatsApp/FB */
+    if (window.ZootShare) { ZootShare.open(url, document.title || 'Vazimba'); return; }
+    /* Fallback clipboard */
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(pdShowShareToast);
     } else {
@@ -765,93 +767,12 @@ function sendReaction(postId, rtype) {
         if (!btn) return;
 
         var EMOJIS  = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
-        var LABELS  = { like:'{% trans "Like"|escapejs %}', heart:'{% trans "Love"|escapejs %}', laugh:'{% trans "Haha"|escapejs %}', wow:'{% trans "Wow"|escapejs %}', sad:'{% trans "Sad"|escapejs %}' };
+        var LABELS  = { like:'{% trans "Tiana" %}', heart:'{% trans "Tiako" %}', laugh:'{% trans "Heniky" %}', wow:'{% trans "Mahagaga" %}', sad:'{% trans "Maika" %}' };
 
         if (data.user_reaction) {
             btn.classList.add('liked');
             if (icon)  icon.innerHTML  = EMOJIS[data.user_reaction] || '👍';
-            if (label) label.textContent = LABELS[data.user_reaction] || '{% trans "Like"|escapejs %}';
+            if (label) label.textContent = LABELS[data.user_reaction] || 'Tiana';
         } else {
             btn.classList.remove('liked');
-            if (icon)  icon.innerHTML  = '<span class="material-icons">thumb_up_off_alt</span>';
-            if (label) label.textContent = '{% trans "Like"|escapejs %}';
-        }
-        // Update reaction summary bar
-        if (data.summary !== undefined) {
-            var bar = document.getElementById('reaction-bar-{{ post.id }}');
-            var grp = document.getElementById('reaction-summary-{{ post.id }}');
-            var cnt = document.getElementById('reaction-count-{{ post.id }}');
-            if (bar)  bar.style.display  = data.total_reactions ? '' : 'none';
-            if (grp)  grp.innerHTML = data.summary || '';
-            if (cnt)  cnt.textContent = data.total_reactions || '';
-        }
-    })
-    .catch(function(){});
-}
-
-/* ══════════════════════════════════════
-   LIVE COMMENT POLLING — post_detail
-   ══════════════════════════════════════ */
-(function() {
-    var POST_ID   = {{ post.id }};
-    var _lastId   = 0;
-    var _addUrl   = '{% url "post:add-comment" post.id %}';
-    var _newUrl   = '{% url "post:new-comments" post.id %}';
-
-    function escH(str) {
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    // Initialiser _lastId depuis les commentaires existants
-    document.querySelectorAll('.pc-comment-item[id]').forEach(function(el) {
-        var m = el.id.match(/comment-item-(\d+)/);
-        if (m) _lastId = Math.max(_lastId, parseInt(m[1]));
-    });
-
-    function pollNewComments() {
-        fetch(_newUrl + '?since=' + _lastId, {credentials: 'same-origin',
-            headers: {'X-Requested-With': 'XMLHttpRequest'}})
-        .then(function(r){ return r.ok ? r.json() : null; })
-        .then(function(d){
-            if (!d || !d.comments.length) return;
-            var list = document.getElementById('pd-comment-list');
-            d.comments.forEach(function(c) {
-                if (document.getElementById('comment-item-' + c.id)) return;
-                var delBtn = c.can_delete
-                    ? '<button class="pc-comment-del" onclick="deleteComment(' + c.id + ', \'' + c.id + '\')">Supprimer</button>'
-                    : '';
-                var html = '<div class="pc-comment-item" id="comment-item-' + c.id + '">'
-                    + '<a href="/account/' + c.author_id + '/view/"><img class="cmt-avatar" src="' + c.avatar + '" alt="' + escH(c.author) + '"></a>'
-                    + '<div class="pc-comment-right">'
-                    +   '<div class="pc-comment-bubble">'
-                    +     '<a class="pc-comment-author" href="/account/' + c.author_id + '/view/">' + escH(c.author) + '</a>'
-                    +     '<p class="pc-comment-body">' + escH(c.body) + '</p>'
-                    +   '</div>'
-                    +   '<div class="pc-comment-footer">'
-                    +     '<span class="pc-comment-time">' + c.created_at + '</span>'
-                    +     delBtn
-                    +   '</div>'
-                    + '</div>'
-                    + '</div>';
-                if (list) list.insertAdjacentHTML('beforeend', html);
-                _lastId = Math.max(_lastId, c.id);
-            });
-        })
-        .catch(function(){});
-    }
-
-    setInterval(pollNewComments, 8000);
-})();
-
-function getCookie(name) {
-    var val = null;
-    if (document.cookie) {
-        document.cookie.split(';').forEach(function(c) {
-            c = c.trim();
-            if (c.startsWith(name + '=')) val = decodeURIComponent(c.slice(name.length + 1));
-        });
-    }
-    return val;
-}
-</script>
-{% endblock content %}
+            if (icon)  icon.innerHTML  = '<span class="material-icons">thumb_up_off_

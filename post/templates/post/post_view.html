@@ -2351,6 +2351,14 @@ var _shareTimer = null;
 function sharePost(postId, postTitle) {
     _shareUrl = window.location.origin + '/feed/' + postId + '/';
     var title = postTitle || document.title;
+
+    /* Sur iOS / Android → feuille native (inclut WhatsApp, Messenger, etc.) */
+    if (navigator.share) {
+        navigator.share({ title: title, url: _shareUrl }).catch(function(){});
+        return;
+    }
+
+    /* Desktop → modal existant (WhatsApp + Facebook + Twitter + Repost) */
     var encodedUrl   = encodeURIComponent(_shareUrl);
     var encodedTitle = encodeURIComponent(title);
     document.getElementById('share-url-display').textContent = _shareUrl;
