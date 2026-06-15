@@ -229,6 +229,12 @@
 				notificationContainer.appendChild(card)
 				break;
 
+			case "Post":
+				notificationContainer = document.getElementById("id_general_notifications_container")
+				card = createPostNotificationElement(notification)
+				notificationContainer.appendChild(card)
+				break;
+
 			default:
 				// code block
 		}
@@ -258,6 +264,47 @@
 		card.appendChild(div1)
 		card.appendChild(createGeneralTimestampElement(notification))
 
+		return card
+	}
+
+	function createPostNotificationElement(notification){
+		var card = createGeneralNotificationCard()
+		card.id = assignGeneralCardId(notification)
+		card.classList.toggle('unread', notification['is_read'] === 'False')
+		card.addEventListener("click", function(){
+			generalRedirect(notification['actions']['redirect_url'])
+		})
+
+		var div1 = document.createElement("div")
+		div1.classList.add("d-flex", "flex-row", "align-items-center")
+		div1.id = assignGeneralDiv1Id(notification)
+
+		// Avatar with post badge
+		var wrap = document.createElement("div")
+		wrap.classList.add("notif-avatar-wrap", "mr-2")
+		var img = document.createElement("img")
+		img.classList.add("notification-thumbnail-image", "img-fluid", "rounded-circle")
+		img.src = "{% static 'images/profile_pic.png' %}"
+		img.id = assignGeneralImgId(notification)
+		img.onerror = function(){ this.src = "{% static 'images/profile_pic.png' %}"; }
+		wrap.appendChild(img)
+		var badge = document.createElement("span")
+		badge.classList.add("notif-type-icon", "post-notif")
+		badge.innerHTML = '<span class="material-icons">article</span>'
+		wrap.appendChild(badge)
+		div1.appendChild(wrap)
+
+		var span = document.createElement("span")
+		span.classList.add("notif-verb")
+		span.innerHTML = notification['verb'].length > 70
+			? notification['verb'].slice(0, 70) + "…"
+			: notification['verb']
+		span.id = assignGeneralVerbId(notification)
+		div1.appendChild(span)
+
+		card.appendChild(div1)
+		card.appendChild(createGeneralTimestampElement(notification))
+		preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
 		return card
 	}
 
@@ -406,6 +453,9 @@
 		} else if(notification['notification_type'] === "FriendList"){
 			badge.classList.add("friend-acc")
 			badge.innerHTML = '<span class="material-icons">check</span>'
+		} else if(notification['notification_type'] === "Post"){
+			badge.classList.add("post-notif")
+			badge.innerHTML = '<span class="material-icons">article</span>'
 		}
 		wrap.appendChild(badge)
 
@@ -652,27 +702,46 @@
 
 
 	/*
-		Append a general notification to the TOP of the list.
+		Append a general notification to the TOP of the list (but after the sticky header).
+		childNodes[0] is the .zoot-dropdown-header — we insert after it (childNodes[1]).
 	*/
 	function appendTopGeneralNotification(notification){
+		var notificationContainer, card;
+
+		// Find the reference node to insert after (after the static header div).
+		function insertAfterHeader(container, newCard) {
+			// childNodes[0] = .zoot-dropdown-header; insert after it.
+			var header = container.querySelector('.zoot-dropdown-header');
+			if (header && header.nextSibling) {
+				container.insertBefore(newCard, header.nextSibling);
+			} else {
+				container.appendChild(newCard);
+			}
+		}
 
 		switch(notification['notification_type']) {
 
 			case "FriendRequest":
 				notificationContainer = document.getElementById("id_general_notifications_container")
 				card = createFriendRequestElement(notification)
-				notificationContainer.insertBefore(card, notificationContainer.childNodes[0]);
+				insertAfterHeader(notificationContainer, card);
 				break;
 
 			case "FriendList":
 				notificationContainer = document.getElementById("id_general_notifications_container")
 				card = createFriendListElement(notification)
-				notificationContainer.insertBefore(card, notificationContainer.childNodes[0]);
+				insertAfterHeader(notificationContainer, card);
+				break;
+
+			case "Post":
+				notificationContainer = document.getElementById("id_general_notifications_container")
+				card = createPostNotificationElement(notification)
+				insertAfterHeader(notificationContainer, card);
 				break;
 
 			default:
 				break;
-				
+
 		}
 
 		preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
