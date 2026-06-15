@@ -1393,6 +1393,24 @@ body { background: var(--bg); }
 
         {% include 'stories/story_bar.html' %}
 
+        <!-- ── Onglets région ── -->
+        {% if user_region %}
+        <div class="feed-region-tabs" style="display:flex;gap:.5rem;padding:.6rem .5rem .1rem;margin-bottom:.25rem;">
+            <a href="{% url 'post:post-view' %}"
+               class="feed-tab-pill {% if active_tab == 'feed' %}active{% endif %}"
+               style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;transition:background .15s,color .15s;
+                      {% if active_tab == 'feed' %}background:var(--accent,#6366f1);color:#fff;{% else %}background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);color:var(--text-primary,#111);{% endif %}">
+                🏠 Mon fil
+            </a>
+            <a href="{% url 'post:post-view' %}?tab=region"
+               class="feed-tab-pill {% if active_tab == 'region' %}active{% endif %}"
+               style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;transition:background .15s,color .15s;
+                      {% if active_tab == 'region' %}background:var(--accent,#6366f1);color:#fff;{% else %}background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);color:var(--text-primary,#111);{% endif %}">
+                📍 {{ user_region_label|default:"Ma région" }}
+            </a>
+        </div>
+        {% endif %}
+
         <!-- New-posts banner -->
         <div id="new-posts-banner" onclick="window.location.reload()">
             <span class="material-icons" style="font-size:1rem;">fiber_new</span>
