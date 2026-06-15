@@ -42,6 +42,7 @@ def bazar_index(request):
     category     = request.GET.get('cat', '').strip()
     condition    = request.GET.get('cond', '').strip()
     location     = request.GET.get('loc', '').strip()
+    region       = request.GET.get('region', '').strip()
     price_min    = request.GET.get('pmin', '').strip()
     price_max    = request.GET.get('pmax', '').strip()
     sort         = request.GET.get('sort', 'recent')
@@ -62,6 +63,9 @@ def bazar_index(request):
 
     if location:
         qs = qs.filter(location__icontains=location)
+
+    if region:
+        qs = qs.filter(region=region)
 
     if price_min:
         try:
@@ -93,19 +97,29 @@ def bazar_index(request):
     paginator = Paginator(qs, PAGE_SIZE)
     page_obj  = paginator.get_page(request.GET.get('page'))
 
+    from regions import REGION_CHOICES, REGION_LABELS
+    # Région courante de l'utilisateur (pour pré-sélectionner "Ma région")
+    user_region = ''
+    if request.user.is_authenticated:
+        user_region = getattr(request.user, 'region', '') or ''
+
     context = {
-        'page_obj':      page_obj,
-        'categories':    Annonce.CATEGORY_CHOICES,
-        'conditions':    Annonce.CONDITION_CHOICES,
-        'q':             q,
-        'sel_cat':       category,
-        'sel_cond':      condition,
-        'sel_loc':       location,
-        'sel_pmin':      price_min,
-        'sel_pmax':      price_max,
-        'sort':          sort,
-        'only_verified': only_verified,
-        'total':         paginator.count,
+        'page_obj':        page_obj,
+        'categories':      Annonce.CATEGORY_CHOICES,
+        'conditions':      Annonce.CONDITION_CHOICES,
+        'q':               q,
+        'sel_cat':         category,
+        'sel_cond':        condition,
+        'sel_loc':         location,
+        'sel_region':      region,
+        'sel_pmin':        price_min,
+        'sel_pmax':        price_max,
+        'sort':            sort,
+        'only_verified':   only_verified,
+        'total':           paginator.count,
+        'region_choices':  REGION_CHOICES,
+        'user_region':     user_region,
+        'user_region_label': REGION_LABELS.get(user_region, ''),
     }
     return render(request, 'bazar/index.html', context)
 
@@ -159,6 +173,9 @@ def annonce_create(request):
         if form.is_valid():
             annonce = form.save(commit=False)
             annonce.seller = request.user
+            # Auto-remplir la région depuis le profil du vendeur
+            if not annonce.region:
+                annonce.region = getattr(request.user, 'region', '') or ''
             annonce.save()
 
             # Gérer les images uploadées (multiple files)

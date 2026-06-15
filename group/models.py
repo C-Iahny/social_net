@@ -55,6 +55,12 @@ class Group(models.Model):
         max_length=20, choices=CATEGORY_CHOICES, blank=True, default='',
         verbose_name='Catégorie', db_index=True,
     )
+    region      = models.CharField(
+        max_length=30, blank=True, default='',
+        verbose_name='Région',
+        help_text='Région de Madagascar (pour le filtre "Groupes locaux")',
+        db_index=True,
+    )
     created_at  = models.DateTimeField(auto_now_add=True)
     dina        = models.TextField(
         blank=True, default='',

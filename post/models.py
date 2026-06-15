@@ -87,6 +87,12 @@ class Post(models.Model):
         verbose_name='Date de révélation',
         help_text='Pour les Capsules Vintana : date à laquelle le contenu devient visible.',
     )
+    region = models.CharField(
+        max_length=30, blank=True, default='',
+        verbose_name='Région',
+        help_text='Région de Madagascar du post (auto-remplie depuis le profil de l\'auteur)',
+        db_index=True,
+    )
 
     @property
     def is_locked(self):
@@ -127,6 +133,10 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title + ' posted by ' + str(self.author)
+
+    @property
+    def get_cname(self):
+        return "Post"
 
     def get_absolute_url(self):
         return reverse('post:post-detail', args=[self.pk])

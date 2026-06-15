@@ -77,6 +77,12 @@ class Annonce(models.Model):
         verbose_name=_('Localisation'),
         help_text=_('Ville / quartier (ex: Antananarivo, Analakely)'),
     )
+    region      = models.CharField(
+        max_length=30, blank=True, default='',
+        verbose_name=_('Région'),
+        help_text=_('Région de Madagascar (pour le filtre "Près de chez moi")'),
+        db_index=True,
+    )
 
     # ── Contact ───────────────────────────────────────────────────────────────
     contact_phone = models.CharField(

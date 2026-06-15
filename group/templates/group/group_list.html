@@ -215,9 +215,15 @@
            class="gp-tab {% if tab == 'mine' %}active{% endif %}">
             {% trans "My groups" %}
         </a>
+        {% if user_region %}
+        <a href="?tab=local{% if query %}&q={{ query }}{% endif %}{% if category %}&cat={{ category }}{% endif %}"
+           class="gp-tab {% if tab == 'local' %}active{% endif %}">
+            📍 {{ user_region_label|default:"Ma région" }}
+        </a>
+        {% endif %}
         <a href="?tab=recommended{% if query %}&q={{ query }}{% endif %}{% if category %}&cat={{ category }}{% endif %}"
            class="gp-tab {% if tab == 'recommended' %}active{% endif %}">
-            ✨ {% trans "Recommended" %}
+             {% trans "Recommended" %}
         </a>
     </div>
     {% endif %}
@@ -318,3 +324,4 @@
     {% endif %}
 </div>
 {% endblock %}
+   

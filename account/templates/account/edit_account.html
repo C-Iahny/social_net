@@ -273,6 +273,22 @@
                     </div>
                 </div>
 
+                <div class="edit-field">
+                    <label>📍 Région (Près de chez moi)</label>
+                    <div class="edit-input-wrap" style="padding:0;">
+                        <span class="material-icons" style="padding-left:.75rem;">map</span>
+                        <select name="region" id="id_input_region"
+                                style="flex:1;border:none;background:transparent;padding:.6rem .75rem;font-size:.95rem;color:var(--text-primary,#222);outline:none;cursor:pointer;">
+                            {% for code, label in region_choices %}
+                            <option value="{{ code }}" {% if form.region.value == code %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <small style="color:var(--text-muted,#888);font-size:.8rem;margin-top:.25rem;display:block;">
+                        Permet de filtrer le fil, les groupes et le Bazar par région.
+                    </small>
+                </div>
+
                 <div class="edit-section-title">{% trans "Privacy" %}</div>
 
                 <div class="edit-field">

@@ -98,6 +98,12 @@ class Account(AbstractBaseUser):
 # From Tomi -----------------------------------------------
 	bio = models.TextField(blank=True)
 	location = models.CharField(max_length=100, blank=True)
+	region = models.CharField(
+		max_length=30, blank=True, default='',
+		verbose_name='Région',
+		help_text='Région de Madagascar (pour le filtre "Près de chez moi")',
+		db_index=True,
+	)
 	cgu_accepted_at = models.DateTimeField(
 		null=True, blank=True,
 		verbose_name="CGU & confidentialité acceptées le"
