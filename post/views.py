@@ -557,18 +557,57 @@ def add_comment(request, post_id):
                 pass
         comment.save()
 
-        # Push notification au propriétaire du post
+        # Notification au propriétaire du post
         if post.author != request.user:
             try:
+                from django.urls import reverse
+                from notification.models import Notification
+                from django.contrib.contenttypes.models import ContentType
+                from post.models import Post as PostModel
+                from channels.layers import get_channel_layer
+                from asgiref.sync import async_to_sync
+                from django.contrib.humanize.templatetags.humanize import naturaltime
+
+                post_ct = ContentType.objects.get_for_model(PostModel)
+                post_url = request.build_absolute_uri(reverse('post:post-detail', args=[post.id]))
+                notif = Notification.objects.create(
+                    target=post.author,
+                    from_user=request.user,
+                    redirect_url=post_url,
+                    verb=f"{request.user.username} a commenté votre post",
+                    content_type=post_ct,
+                    object_id=post.id,
+                    read=False,
+                )
+                # Also keep VAPID push
                 from notification.models import PushSubscription
                 PushSubscription.send_notification(
-                    user  = post.author,
-                    title = 'VAZIMBA — Commentaire',
-                    body  = f"{request.user.username} a commenté votre post : {comment.body[:60]}",
-                    url   = '/feed/',
+                    user=post.author,
+                    title='VAZIMBA — Commentaire',
+                    body=f"{request.user.username} a commenté votre post : {comment.body[:60]}",
+                    url=post_url,
                 )
-            except Exception:
-                pass
+                # Real-time WebSocket push
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f"user_{post.author.id}",
+                        {
+                            "type": "post_action_notification",
+                            "notification": {
+                                "notification_type": "Post",
+                                "notification_id": str(notif.pk),
+                                "verb": notif.verb,
+                                "natural_timestamp": str(naturaltime(notif.timestamp)),
+                                "timestamp": str(notif.timestamp),
+                                "is_read": "False",
+                                "actions": {"redirect_url": post_url},
+                                "from": {"image_url": request.user.profile_image.url},
+                            }
+                        }
+                    )
+            except Exception as e:
+                import traceback; traceback.print_exc()
 
         # Réponse JSON pour AJAX
         return JsonResponse({
@@ -669,19 +708,68 @@ def react_post(request):
     counts = {row['reaction_type']: row['c'] for row in counts_qs}
     total  = sum(counts.values())
 
-    # Push notification au propriétaire du post (sauf si c'est lui-même qui réagit)
+    # Notification au propriétaire du post (only for new reactions, not toggling off)
     if user_reaction and post.author != request.user:
         try:
-            from notification.models import PushSubscription
-            EMOJI = {'like':'👍','heart':'❤️','laugh':'😂','wow':'😮','sad':'😢'}
-            PushSubscription.send_notification(
-                user  = post.author,
-                title = 'VAZIMBA — Réaction',
-                body  = f"{request.user.username} a réagi {EMOJI.get(user_reaction,'👍')} à votre post",
-                url   = '/feed/',
+            from django.urls import reverse
+            from notification.models import Notification
+            from django.contrib.contenttypes.models import ContentType
+            from post.models import Post as PostModel
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            from django.contrib.humanize.templatetags.humanize import naturaltime
+
+            EMOJI = {'like': '👍', 'heart': '❤️', 'laugh': '😂', 'wow': '😮', 'sad': '😢'}
+            emoji = EMOJI.get(user_reaction, '👍')
+            post_ct = ContentType.objects.get_for_model(PostModel)
+            post_url = request.build_absolute_uri(reverse('post:post-detail', args=[post.id]))
+
+            # Only create notification if one doesn't already exist for this user+post (avoid spam)
+            notif, created = Notification.objects.get_or_create(
+                target=post.author,
+                from_user=request.user,
+                content_type=post_ct,
+                object_id=post.id,
+                defaults={
+                    'redirect_url': post_url,
+                    'verb': f"{request.user.username} a réagi {emoji} à votre post",
+                    'read': False,
+                }
             )
-        except Exception:
-            pass
+            if not created:
+                notif.verb = f"{request.user.username} a réagi {emoji} à votre post"
+                notif.read = False
+                notif.save(update_fields=['verb', 'read'])
+
+            # Also keep VAPID push
+            from notification.models import PushSubscription
+            PushSubscription.send_notification(
+                user=post.author,
+                title='VAZIMBA — Réaction',
+                body=f"{request.user.username} a réagi {emoji} à votre post",
+                url=post_url,
+            )
+            # Real-time WebSocket push
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{post.author.id}",
+                    {
+                        "type": "post_action_notification",
+                        "notification": {
+                            "notification_type": "Post",
+                            "notification_id": str(notif.pk),
+                            "verb": notif.verb,
+                            "natural_timestamp": str(naturaltime(notif.timestamp)),
+                            "timestamp": str(notif.timestamp),
+                            "is_read": "False",
+                            "actions": {"redirect_url": post_url},
+                            "from": {"image_url": request.user.profile_image.url},
+                        }
+                    }
+                )
+        except Exception as e:
+            import traceback; traceback.print_exc()
 
     return JsonResponse({
         'user_reaction': user_reaction,
@@ -755,6 +843,60 @@ def repost_post(request):
         reposted = True
 
     repost_count = post.reposts.count()
+
+    # Notification à l'auteur du post original (uniquement lors d'un nouveau repost)
+    if reposted and post.author != request.user:
+        try:
+            from django.urls import reverse
+            from notification.models import Notification, PushSubscription
+            from django.contrib.contenttypes.models import ContentType
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            from django.contrib.humanize.templatetags.humanize import naturaltime
+
+            post_ct  = ContentType.objects.get_for_model(Post)
+            post_url = request.build_absolute_uri(reverse('post:post-detail', args=[post.id]))
+
+            notif, _ = Notification.objects.get_or_create(
+                target=post.author,
+                from_user=request.user,
+                content_type=post_ct,
+                object_id=post.id,
+                verb=f"{request.user.username} a reposté votre post",
+                defaults={'redirect_url': post_url, 'read': False},
+            )
+            notif.read = False
+            notif.redirect_url = post_url
+            notif.save(update_fields=['read', 'redirect_url'])
+
+            PushSubscription.send_notification(
+                user=post.author,
+                title='VAZIMBA — Repost',
+                body=f"{request.user.username} a reposté votre post",
+                url=post_url,
+            )
+
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{post.author.id}",
+                    {
+                        "type": "post_action_notification",
+                        "notification": {
+                            "notification_type": "Post",
+                            "notification_id":   str(notif.pk),
+                            "verb":              notif.verb,
+                            "natural_timestamp": str(naturaltime(notif.timestamp)),
+                            "timestamp":         str(notif.timestamp),
+                            "is_read":           "False",
+                            "actions":           {"redirect_url": post_url},
+                            "from":              {"image_url": request.user.profile_image.url},
+                        }
+                    }
+                )
+        except Exception:
+            import traceback; traceback.print_exc()
+
     return JsonResponse({"reposted": reposted, "repost_count": repost_count})
 
 @login_required(login_url='login')
