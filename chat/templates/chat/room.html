@@ -780,13 +780,24 @@ main { padding: 0 !important; margin-top: 62px; }
 var _selectedFile = null;
 
 document.getElementById('chat-file-input').addEventListener('change', function(){
-    var f = this.files[0];
-    if(!f) return;
-    _selectedFile = f;
-    document.getElementById('file-preview-name').textContent = f.name;
-    document.getElementById('file-preview-container').style.display = 'flex';
-    // Clear text input focus
-    document.getElementById('id_chat_message_input').focus();
+    var rawFile = this.files[0];
+    if (!rawFile) return;
+
+    function setFile(f) {
+        _selectedFile = f;
+        document.getElementById('file-preview-name').textContent = f.name;
+        document.getElementById('file-preview-container').style.display = 'flex';
+        document.getElementById('id_chat_message_input').focus();
+    }
+
+    // Compresser les images avant envoi (économise la data mobile)
+    if (rawFile.type.startsWith('image/') && window.ZootMediaConverter) {
+        ZootMediaConverter.processFiles([rawFile])
+            .then(function(arr) { setFile(arr[0] || rawFile); })
+            .catch(function()   { setFile(rawFile); });
+    } else {
+        setFile(rawFile);
+    }
 });
 
 function clearFileSelection(){
