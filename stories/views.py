@@ -67,6 +67,8 @@ def _story_to_dict(story, viewer):
         'caption':     story.caption,
         'bg_gradient': story.bg_gradient,
         'text_align':  story.text_align,
+        'text_x':      story.text_x,
+        'text_y':      story.text_y,
         'link':        story.link,
         'link_label':  story.link_label or 'Voir l\'offre',
         'created_at':  story.created_at.isoformat(),
@@ -137,6 +139,12 @@ def create_story(request):
     link        = request.POST.get('link', '').strip()[:500]
     link_label  = request.POST.get('link_label', '').strip()[:60]
     media_file  = request.FILES.get('media')
+    # Position du texte (0–100 %) — clampée côté serveur
+    try:
+        text_x = max(5.0, min(95.0, float(request.POST.get('text_x', 50))))
+        text_y = max(5.0, min(95.0, float(request.POST.get('text_y', 50))))
+    except (ValueError, TypeError):
+        text_x, text_y = 50.0, 50.0
 
     # Validation
     if story_type in ('image', 'video', 'image_text') and not media_file:
@@ -168,6 +176,8 @@ def create_story(request):
             caption     = caption,
             bg_gradient = bg_gradient,
             text_align  = text_align,
+            text_x      = text_x,
+            text_y      = text_y,
             link        = link,
             link_label  = link_label,
         )

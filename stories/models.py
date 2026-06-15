@@ -50,6 +50,10 @@ class Story(models.Model):
         default='center',
     )
 
+    # Position libre du texte (pourcentage par rapport au cadre)
+    text_x = models.FloatField(default=50.0, help_text='Position horizontale du texte (% depuis la gauche)')
+    text_y = models.FloatField(default=50.0, help_text='Position verticale du texte (% depuis le haut)')
+
     # Lien promotionnel (pour les commerçants)
     link         = models.URLField(max_length=500, blank=True, default='')
     link_label   = models.CharField(max_length=60, blank=True, default='', verbose_name='Texte du bouton')
