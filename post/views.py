@@ -57,9 +57,10 @@ def get_trending_hashtags(limit=10, days=7, hours=None, with_preview=False):
     cutoff = timezone.now() - timedelta(hours=eff_hours)
 
     # Récupérer les posts récents avec leur id pour les previews
+    # Post utilise post_date (DateField), pas created_at
     posts_qs = Post.objects.filter(
-        created_at__gte=cutoff
-    ).values_list('id', 'body', 'title', 'author__username', 'created_at')
+        post_date__gte=cutoff.date()
+    ).values_list('id', 'body', 'title', 'author__username', 'post_date')
 
     counts  = {}   # tag → count
     post_by_tag = {}   # tag → (id, preview_text, author, date) du post le plus récent
@@ -685,6 +686,56 @@ def add_comment(request, post_id):
                     )
             except Exception as e:
                 import traceback; traceback.print_exc()
+
+        # Notification à l'auteur du commentaire parent (réponse à un commentaire)
+        if comment.parent and comment.parent.author != request.user and comment.parent.author != post.author:
+            try:
+                from django.urls import reverse
+                from notification.models import Notification, PushSubscription
+                from django.contrib.contenttypes.models import ContentType
+                from post.models import Post as PostModel
+                from channels.layers import get_channel_layer
+                from asgiref.sync import async_to_sync
+                from django.contrib.humanize.templatetags.humanize import naturaltime
+
+                post_ct  = ContentType.objects.get_for_model(PostModel)
+                post_url = request.build_absolute_uri(reverse('post:post-detail', args=[post.id]))
+                reply_target = comment.parent.author
+                notif = Notification.objects.create(
+                    target=reply_target,
+                    from_user=request.user,
+                    redirect_url=post_url,
+                    verb=f"{request.user.username} a répondu à votre commentaire",
+                    content_type=post_ct,
+                    object_id=post.id,
+                    read=False,
+                )
+                PushSubscription.send_notification(
+                    user=reply_target,
+                    title='VAZIMBA — Réponse',
+                    body=f"{request.user.username} a répondu : {comment.body[:70]}",
+                    url=post_url,
+                )
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f"user_{reply_target.id}",
+                        {
+                            "type": "post_action_notification",
+                            "notification": {
+                                "notification_type": "Post",
+                                "notification_id": str(notif.pk),
+                                "verb": notif.verb,
+                                "natural_timestamp": str(naturaltime(notif.timestamp)),
+                                "timestamp": str(notif.timestamp),
+                                "is_read": "False",
+                                "actions": {"redirect_url": post_url},
+                                "from": {"image_url": request.user.profile_image.url},
+                            }
+                        }
+                    )
+            except Exception:
+                pass
 
         # Réponse JSON pour AJAX
         return JsonResponse({
