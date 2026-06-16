@@ -1092,7 +1092,15 @@ body { background: var(--bg); }
             </div>
 
             <div class="profile-name-area">
-                <h1 class="profile-username">{{ username }}</h1>
+                <h1 class="profile-username" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+                    {{ username }}
+                    {% if profile_user.phone_verified %}
+                    <span title="Numéro de téléphone vérifié par SMS"
+                          style="display:inline-flex;align-items:center;gap:.2rem;background:rgba(59,130,246,.15);color:#1d4ed8;font-size:.62rem;font-weight:700;padding:.15rem .55rem;border-radius:20px;letter-spacing:.04em;border:1px solid rgba(59,130,246,.3);vertical-align:middle;">
+                        📱 Tél. vérifié
+                    </span>
+                    {% endif %}
+                </h1>
                 {% if bio %}<p class="profile-bio-text">{{ bio }}</p>{% endif %}
                 <div class="profile-stats-row">
                     <span class="profile-stat">
