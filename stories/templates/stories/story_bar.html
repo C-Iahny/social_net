@@ -187,7 +187,7 @@
 .sc-close .material-icons { font-size: 1.1rem; }
 
 .sc-body {
-    padding: 1rem 1.25rem 1.25rem;
+    padding: 0 0 1rem;
     overflow-y: auto;               /* scroll interne si le contenu dépasse */
     -webkit-overflow-scrolling: touch;
     flex: 1;                        /* prend tout l'espace restant sous le header */
@@ -195,9 +195,15 @@
     border-radius: 0 0 22px 22px;
 }
 
+/* Zone d'édition : preview + outils latéraux */
+.sc-edit-area {
+    position: relative;
+    width: 100%;
+}
+
 /* Type chips — cachés par défaut, affichés après sélection d'un fichier */
 .sc-types {
-    display: none; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem;
+    display: none; gap: .5rem; flex-wrap: wrap; margin: .5rem .75rem .25rem;
 }
 .sc-types.visible { display: flex; }
 
@@ -241,10 +247,9 @@
 .sc-preview {
     position: relative;
     width: 100%; height: 300px;
-    border-radius: 14px;
+    border-radius: 0;
     border: 2px dashed var(--border);
     overflow: hidden;
-    margin-bottom: 1rem;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     background: var(--input-bg);
@@ -255,7 +260,7 @@
 .sc-preview.has-file {
     border: none;
     cursor: default;
-    height: 340px; /* encore plus haut pour montrer la photo en grand */
+    height: 340px;
 }
 .sc-preview.has-file:hover { border-color: transparent; }
 .sc-preview img,
@@ -290,37 +295,92 @@ input#sc-file-input { display: none; }
     padding: .4rem .85rem;
     border-radius: 7px;
     z-index: 5;
-    user-select: none;
-    -webkit-user-select: none;
+    /* PAS de user-select:none ici — le contenteditable en a besoin */
     outline: 1.5px dashed rgba(255,255,255,.55);
     outline-offset: 3px;
 }
 #sc-text-overlay:active { outline-color: rgba(255,255,255,.9); }
-#sc-text-overlay[contenteditable]:focus { outline: 2px solid rgba(255,255,255,.9); outline-offset: 3px; }
+
+/* Zone de déplacement — poignée en haut de l'overlay */
+#sc-text-drag-handle {
+    position: absolute; top: -18px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,.5);
+    color: rgba(255,255,255,.85);
+    font-size: .5rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px;
+    white-space: nowrap; pointer-events: none;
+    letter-spacing: .04em;
+}
+
+/* Outils latéraux (à droite de la preview, overlaid) */
+.sc-side-tools {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    z-index: 10;
+}
+.sc-side-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.48);
+    border: 1.5px solid rgba(255,255,255,.25);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background .18s, border-color .18s, transform .15s;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+}
+.sc-side-btn:hover { background: rgba(0,0,0,.7); transform: scale(1.08); }
+.sc-side-btn.active { background: var(--accent); border-color: var(--accent); }
+.sc-side-btn .material-icons { font-size: 1.15rem; }
+
+/* Barre de couleurs de texte */
+#sc-text-colors {
+    display: none;
+    flex-wrap: wrap;
+    gap: .4rem;
+    padding: .6rem .75rem .2rem;
+    align-items: center;
+}
+#sc-text-colors.visible { display: flex; }
+.tc-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2.5px solid transparent;
+    cursor: pointer;
+    transition: transform .15s, border-color .15s;
+    flex-shrink: 0;
+}
+.tc-dot:hover { transform: scale(1.15); }
+.tc-dot.active { border-color: var(--accent); transform: scale(1.2); }
+.tc-label {
+    font-size: .7rem; color: var(--text-muted); font-weight: 600;
+    margin-right: .2rem; white-space: nowrap;
+}
+
 #sc-text-card-content {
-    font-size: 1.1rem; font-weight: 700; color: #fff;
+    font-size: 1.3rem; font-weight: 800; color: #fff;
     text-align: center; word-break: break-word; margin: 0;
-    text-shadow: 0 2px 8px rgba(0,0,0,.6);
-    line-height: 1.4;
-    min-width: 60px; min-height: 1.4em;
+    text-shadow: 0 2px 12px rgba(0,0,0,.7);
+    line-height: 1.35;
+    min-width: 80px; min-height: 1.4em;
     outline: none;
+    /* CRITIQUE : autoriser la saisie et la sélection */
+    user-select: text;
+    -webkit-user-select: text;
+    touch-action: auto;
+    cursor: text;
 }
 #sc-text-card-content:empty::before {
     content: attr(data-placeholder);
-    color: rgba(255,255,255,.55);
+    color: rgba(255,255,255,.6);
     pointer-events: none;
-}
-#sc-text-overlay::before {
-    content: '✥ déplacer · toucher pour écrire';
-    position: absolute; top: -22px; left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,.55);
-    color: rgba(255,255,255,.85);
-    font-size: .52rem; font-weight: 700;
-    padding: 1px 7px; border-radius: 4px;
-    white-space: nowrap;
-    pointer-events: none;
-    letter-spacing: .03em;
+    cursor: text;
 }
 
 /* Barre de légende en bas de la preview (types image/video) */
@@ -815,32 +875,73 @@ input#sc-file-input { display: none; }
     </div>
 
     <div class="sc-body">
-        <!-- Zone de preview — en premier, occupe tout l'espace visuel -->
-        <div class="sc-preview" id="sc-preview" onclick="triggerFileInput()">
-            <!-- Fond gradient pour les stories texte (type='text') -->
-            <div id="sc-text-bg" class="grad_cyan"></div>
-            <img  id="sc-preview-img"   alt="">
-            <video id="sc-preview-video" muted playsinline loop></video>
-            <!-- Texte draggable + éditable directement (text / image_text) -->
-            <div id="sc-text-overlay">
-                <p id="sc-text-card-content"
-                   contenteditable="true"
-                   data-placeholder="Tapez votre texte…"
-                   spellcheck="false"></p>
+        <!-- Zone d'édition : preview + outils latéraux -->
+        <div class="sc-edit-area">
+            <div class="sc-preview" id="sc-preview" onclick="triggerFileInput()">
+                <!-- Fond gradient (stories texte) -->
+                <div id="sc-text-bg" class="grad_cyan"></div>
+                <img  id="sc-preview-img"   alt="">
+                <video id="sc-preview-video" muted playsinline loop></video>
+                <!-- Texte draggable + éditable -->
+                <div id="sc-text-overlay">
+                    <div id="sc-text-drag-handle">✥ maintenir pour déplacer</div>
+                    <p id="sc-text-card-content"
+                       contenteditable="true"
+                       data-placeholder="Tapez votre texte…"
+                       spellcheck="false"></p>
+                </div>
+                <!-- Barre légende bas (image/video sans texte) -->
+                <div id="sc-caption-bar">
+                    <input type="text" id="sc-caption-bar-input"
+                           maxlength="200" placeholder="Ajouter une légende…">
+                </div>
+                <div class="sc-preview-placeholder" id="sc-preview-placeholder">
+                    <span class="material-icons">add_photo_alternate</span>
+                    <p>Cliquer pour choisir un fichier</p>
+                </div>
             </div>
-            <!-- Barre légende bas (image / video) -->
-            <div id="sc-caption-bar">
-                <input type="text" id="sc-caption-bar-input"
-                       maxlength="200" placeholder="Ajouter une légende sur la photo…">
-            </div>
-            <div class="sc-preview-placeholder" id="sc-preview-placeholder">
-                <span class="material-icons">add_photo_alternate</span>
-                <p>Cliquer pour choisir un fichier</p>
+
+            <!-- Outils latéraux (visibles quand un fichier est chargé) -->
+            <div class="sc-side-tools" id="sc-side-tools" style="display:none;">
+                <!-- Texte on/off -->
+                <button class="sc-side-btn" id="sc-tool-text" onclick="toggleTextOverlay()"
+                        title="Texte sur la photo">
+                    <span class="material-icons">title</span>
+                </button>
+                <!-- Couleur du texte -->
+                <button class="sc-side-btn" id="sc-tool-color" onclick="toggleTextColors()"
+                        title="Couleur du texte" style="display:none;">
+                    <span class="material-icons">palette</span>
+                </button>
+                <!-- Musique -->
+                <button class="sc-side-btn" id="sc-tool-music" onclick="toggleAudioSection()"
+                        title="Ajouter de la musique">
+                    <span class="material-icons">music_note</span>
+                </button>
+                <!-- Lien -->
+                <button class="sc-side-btn" id="sc-tool-link" onclick="toggleLinkSection()"
+                        title="Ajouter un lien">
+                    <span class="material-icons">link</span>
+                </button>
             </div>
         </div>
+
         <input type="file" id="sc-file-input" accept="image/*,video/*" onchange="onFileSelected(this)">
 
-        <!-- Type chips — masqués jusqu'à la sélection d'un fichier, affichés après -->
+        <!-- Couleurs du texte (visibles quand le texte est actif) -->
+        <div id="sc-text-colors">
+            <span class="tc-label">Couleur :</span>
+            <div class="tc-dot active" data-color="#ffffff" style="background:#fff;box-shadow:0 0 0 1px #aaa;" onclick="setTextColor('#ffffff',this)" title="Blanc"></div>
+            <div class="tc-dot" data-color="#000000" style="background:#000;" onclick="setTextColor('#000000',this)" title="Noir"></div>
+            <div class="tc-dot" data-color="#FFD700" style="background:#FFD700;" onclick="setTextColor('#FFD700',this)" title="Or"></div>
+            <div class="tc-dot" data-color="#FF4444" style="background:#FF4444;" onclick="setTextColor('#FF4444',this)" title="Rouge"></div>
+            <div class="tc-dot" data-color="#00CFFF" style="background:#00CFFF;" onclick="setTextColor('#00CFFF',this)" title="Cyan"></div>
+            <div class="tc-dot" data-color="#FF8C00" style="background:#FF8C00;" onclick="setTextColor('#FF8C00',this)" title="Orange"></div>
+            <div class="tc-dot" data-color="#FF69B4" style="background:#FF69B4;" onclick="setTextColor('#FF69B4',this)" title="Rose"></div>
+            <div class="tc-dot" data-color="#7FFF00" style="background:#7FFF00;" onclick="setTextColor('#7FFF00',this)" title="Vert"></div>
+        </div>
+
+        <!-- Type chips (visibles après sélection fichier) -->
         <div class="sc-types" id="sc-types-row">
             <div class="sc-type-chip" data-type="image" onclick="selectStoryType('image',this)">
                 <span class="material-icons">photo_camera</span>
@@ -861,7 +962,7 @@ input#sc-file-input { display: none; }
         </div>
 
         <!-- Sélecteur gradient (visible pour text / image_text) -->
-        <div id="sc-grad-section" style="display:none;">
+        <div id="sc-grad-section" style="display:none; padding:.25rem .75rem .5rem;">
             <div class="sc-grad-picker">
                 <div class="sc-grad-swatch grad_cyan   active" data-grad="grad_cyan"   onclick="selectGrad('grad_cyan',this)"   title="Cyan"></div>
                 <div class="sc-grad-swatch grad_purple"       data-grad="grad_purple"  onclick="selectGrad('grad_purple',this)"  title="Violet"></div>
@@ -872,23 +973,24 @@ input#sc-file-input { display: none; }
             </div>
         </div>
 
-        <!-- Caption — champ caché (lecture seule, synchronisé depuis les overlays sur photo) -->
         <input type="hidden" id="sc-caption-input">
 
-        <!-- Lien promotionnel -->
-        <div class="sc-caption-wrap" style="margin-top:.5rem;">
-            <span class="material-icons">link</span>
-            <input type="url" id="sc-link-input" maxlength="500"
-                   placeholder="Lien vers une offre / produit (optionnel)…">
-        </div>
-        <div class="sc-caption-wrap" style="margin-top:.4rem;">
-            <span class="material-icons">label</span>
-            <input type="text" id="sc-link-label-input" maxlength="60"
-                   placeholder="Texte du bouton (ex: Voir l'offre)">
+        <!-- Lien promotionnel (masqué par défaut, révélé par outil 🔗) -->
+        <div id="sc-link-section" style="display:none; padding:.5rem .75rem 0;">
+            <div class="sc-caption-wrap">
+                <span class="material-icons">link</span>
+                <input type="url" id="sc-link-input" maxlength="500"
+                       placeholder="Lien vers une offre / produit (optionnel)…">
+            </div>
+            <div class="sc-caption-wrap" style="margin-top:.4rem;">
+                <span class="material-icons">label</span>
+                <input type="text" id="sc-link-label-input" maxlength="60"
+                       placeholder="Texte du bouton (ex: Voir l'offre)">
+            </div>
         </div>
 
-        <!-- Audio court (optionnel — image / vidéo / image+texte) -->
-        <div class="sc-audio-section" id="sc-audio-section">
+        <!-- Audio (masqué par défaut, révélé par outil ♪) -->
+        <div class="sc-audio-section" id="sc-audio-section" style="display:none;">
             <div class="sc-audio-label">
                 <span class="material-icons">music_note</span>
                 Musique (optionnel — clip de 30 s)
@@ -983,7 +1085,7 @@ input#sc-file-input { display: none; }
         </div>
 
         <!-- Publier -->
-        <button class="sc-publish-btn" id="sc-publish-btn" onclick="publishStory()">
+        <button class="sc-publish-btn" id="sc-publish-btn" onclick="publishStory()" style="margin: 0 .75rem; width: calc(100% - 1.5rem);">
             <span class="material-icons">bolt</span>
             Publier ma story
         </button>
@@ -1288,7 +1390,7 @@ window.openTextStoryCreator = function() {
    ════════════════════════════════════════════ */
 window.openStoryCreator = function() {
     document.getElementById('story-creator-overlay').classList.add('open');
-    document.getElementById('sc-audio-section').style.display = 'block';
+    document.getElementById('sc-audio-section').style.display = 'none';
 };
 window.closeStoryCreator = function() {
     stopTrimPreview();
@@ -1305,8 +1407,8 @@ window.selectStoryType = function(type, el) {
     var showGrad = (type === 'text' || type === 'image_text');
 
     document.getElementById('sc-grad-section').style.display = showGrad ? '' : 'none';
-    // Audio optionnel uniquement pour les stories avec média (pas texte pur)
-    document.getElementById('sc-audio-section').style.display = isText ? 'none' : 'block';
+    // Audio reste masqué (géré par le bouton outil latéral) — si texte pur, forcer masqué
+    if (isText) document.getElementById('sc-audio-section').style.display = 'none';
 
     var captionBar = document.getElementById('sc-caption-bar');
 
@@ -1403,9 +1505,14 @@ window.onFileSelected = function(input) {
         // ── Overlays selon le type ─────────────────────────────
         document.getElementById('sc-grad-section').style.display = 'none';
         document.getElementById('sc-text-bg').style.display = 'none';
+        // Montrer les outils latéraux
+        document.getElementById('sc-side-tools').style.display = 'flex';
+
         if (autoType === 'image_text') {
             document.getElementById('sc-text-overlay').style.display = 'block';
             document.getElementById('sc-caption-bar').style.display = 'none';
+            document.getElementById('sc-tool-text').classList.add('active');
+            document.getElementById('sc-tool-color').style.display = 'flex';
             // Focus sur le texte tout de suite
             setTimeout(function(){
                 var p = document.getElementById('sc-text-card-content');
@@ -1440,6 +1547,77 @@ window.selectGrad = function(grad, el) {
     document.getElementById('sc-text-bg').className = grad;
 };
 
+/* ── Couleur du texte ─────────────────────────────────────── */
+window.setTextColor = function(color, el) {
+    _scTextColor = color;
+    var p = document.getElementById('sc-text-card-content');
+    if (p) p.style.color = color;
+    // Ajuster la text-shadow pour lisibilité selon la couleur
+    var dark = (color === '#000000');
+    if (p) p.style.textShadow = dark
+        ? '0 1px 4px rgba(255,255,255,.5)'
+        : '0 2px 12px rgba(0,0,0,.7)';
+    document.querySelectorAll('.tc-dot').forEach(function(d){ d.classList.remove('active'); });
+    if (el) el.classList.add('active');
+};
+
+/* ── Toggles outils latéraux ──────────────────────────────── */
+window.toggleTextOverlay = function() {
+    var ov = document.getElementById('sc-text-overlay');
+    var btn = document.getElementById('sc-tool-text');
+    var colorBtn = document.getElementById('sc-tool-color');
+    var colorsBar = document.getElementById('sc-text-colors');
+    var isOn = ov && ov.style.display !== 'none';
+    if (isOn) {
+        if (ov) ov.style.display = 'none';
+        if (btn) btn.classList.remove('active');
+        if (colorBtn) colorBtn.style.display = 'none';
+        if (colorsBar) colorsBar.classList.remove('visible');
+    } else {
+        if (ov) ov.style.display = 'block';
+        if (btn) btn.classList.add('active');
+        if (colorBtn) colorBtn.style.display = 'flex';
+        // Changer le type en image_text automatiquement
+        if (_scType === 'image') {
+            _scType = 'image_text';
+            document.querySelectorAll('.sc-type-chip').forEach(function(c){ c.classList.remove('active'); });
+            var chip = document.querySelector('.sc-type-chip[data-type="image_text"]');
+            if (chip) chip.classList.add('active');
+        }
+        setTimeout(function(){
+            var p = document.getElementById('sc-text-card-content');
+            if (p) { p.focus(); moveCursorToEnd(p); }
+        }, 80);
+    }
+};
+
+window.toggleTextColors = function() {
+    var el = document.getElementById('sc-text-colors');
+    var btn = document.getElementById('sc-tool-color');
+    if (!el) return;
+    var visible = el.classList.contains('visible');
+    el.classList.toggle('visible', !visible);
+    if (btn) btn.classList.toggle('active', !visible);
+};
+
+window.toggleAudioSection = function() {
+    var el = document.getElementById('sc-audio-section');
+    var btn = document.getElementById('sc-tool-music');
+    if (!el) return;
+    var wasHidden = el.style.display === 'none' || !el.style.display;
+    el.style.display = wasHidden ? 'block' : 'none';
+    if (btn) btn.classList.toggle('active', wasHidden);
+};
+
+window.toggleLinkSection = function() {
+    var el = document.getElementById('sc-link-section');
+    var btn = document.getElementById('sc-tool-link');
+    if (!el) return;
+    var wasHidden = el.style.display === 'none' || !el.style.display;
+    el.style.display = wasHidden ? 'block' : 'none';
+    if (btn) btn.classList.toggle('active', wasHidden);
+};
+
 /* onCaptionInput supprimé — le texte est maintenant saisi directement sur la photo via contenteditable */
 
 /* ════════════════════════════════════════════
@@ -1450,6 +1628,7 @@ var _scAudioUrl      = '';    // URL Jamendo ou URL externe résolue
 var _scTrimStart     = 0;     // secondes
 var _scTrimPreviewPlaying = false;
 var _scTrimStopTimer = null;
+var _scTextColor = '#ffffff';
 
 /* ── Tabs ─────────────────────────────────── */
 window.switchAudioTab = function(panel, el) {
@@ -1653,13 +1832,18 @@ function initTextDrag() {
     var preview = document.getElementById('sc-preview');
     if (!overlay || !preview) return;
 
+    var _dragActive = false;
+    var _dragMoved  = false;
+
     function applyPos() {
         overlay.style.left = _scTextX + '%';
         overlay.style.top  = _scTextY + '%';
     }
 
     function onStart(clientX, clientY) {
-        _textDragging    = true;
+        _dragActive      = true;
+        _dragMoved       = false;
+        _textDragging    = false;
         _textDragStartCX = clientX;
         _textDragStartCY = clientY;
         _textDragStartX  = _scTextX;
@@ -1667,34 +1851,72 @@ function initTextDrag() {
     }
 
     function onMove(clientX, clientY) {
-        if (!_textDragging) return;
+        if (!_dragActive) return;
+        var dx = clientX - _textDragStartCX;
+        var dy = clientY - _textDragStartCY;
+        if (!_dragMoved && Math.abs(dx) < 6 && Math.abs(dy) < 6) return; // seuil anti-clic
+        _dragMoved    = true;
+        _textDragging = true;
         var rect = preview.getBoundingClientRect();
-        var dx = (clientX - _textDragStartCX) / rect.width  * 100;
-        var dy = (clientY - _textDragStartCY) / rect.height * 100;
-        _scTextX = Math.max(10, Math.min(90, _textDragStartX + dx));
-        _scTextY = Math.max(10, Math.min(90, _textDragStartY + dy));
+        _scTextX = Math.max(10, Math.min(90, _textDragStartX + dx / rect.width  * 100));
+        _scTextY = Math.max(10, Math.min(90, _textDragStartY + dy / rect.height * 100));
         applyPos();
     }
 
-    function onEnd() { _textDragging = false; }
+    function onEnd() {
+        if (_dragActive && !_dragMoved) {
+            // C'était un simple clic/tap — focus sur le texte
+            var p = document.getElementById('sc-text-card-content');
+            if (p) { p.focus(); moveCursorToEnd(p); }
+        }
+        _dragActive = false;
+        _textDragging = false;
+    }
 
-    // Souris
+    // Souris — PAS de preventDefault sur mousedown pour laisser le focus
     overlay.addEventListener('mousedown', function(e) {
+        // Laisser les clics sur le contenteditable passer normalement
+        if (e.target === document.getElementById('sc-text-card-content')) return;
         onStart(e.clientX, e.clientY);
-        e.preventDefault(); e.stopPropagation();
+        e.stopPropagation();
     });
-    document.addEventListener('mousemove', function(e) { if (_textDragging) onMove(e.clientX, e.clientY); });
+    document.addEventListener('mousemove', function(e) { if (_dragActive) onMove(e.clientX, e.clientY); });
     document.addEventListener('mouseup', onEnd);
 
-    // Toucher mobile
+    // Toucher — distinguer tap (écrire) vs drag (déplacer)
     overlay.addEventListener('touchstart', function(e) {
+        var target = e.target;
+        var textEl = document.getElementById('sc-text-card-content');
+        // Si le touch est directement sur le texte, laisser le clavier s'ouvrir
+        if (target === textEl || textEl.contains(target)) {
+            e.stopPropagation();
+            return; // NE PAS preventDefault → clavier iOS/Android s'ouvre
+        }
+        // Sinon (touch sur la bordure de l'overlay) = drag potentiel
         onStart(e.touches[0].clientX, e.touches[0].clientY);
-        e.preventDefault(); e.stopPropagation();
-    }, { passive: false });
+        e.stopPropagation();
+        // Pas de preventDefault non plus → permet quand même un tap simple
+    }, { passive: true });
+
     document.addEventListener('touchmove', function(e) {
-        if (_textDragging) { onMove(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }
+        if (_dragActive) {
+            onMove(e.touches[0].clientX, e.touches[0].clientY);
+            if (_dragMoved) e.preventDefault(); // empêche le scroll uniquement si on drague vraiment
+        }
     }, { passive: false });
+
     document.addEventListener('touchend', onEnd);
+}
+
+function moveCursorToEnd(el) {
+    try {
+        var range = document.createRange();
+        var sel = window.getSelection();
+        range.selectNodeContents(el);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+    } catch(e) {}
 }
 
 window.publishStory = function() {
@@ -1715,6 +1937,7 @@ window.publishStory = function() {
     }
 
     var fd = new FormData();
+    fd.append('text_color', _scTextColor);
     fd.append('story_type', _scType);
     fd.append('caption', caption);
     fd.append('bg_gradient', _scGrad);
@@ -1837,13 +2060,31 @@ function resetCreator() {
     document.querySelectorAll('.sc-audio-panel').forEach(function(p){ p.classList.remove('active'); });
     document.querySelector('.sc-audio-tab[data-panel="local"]').classList.add('active');
     document.getElementById('sc-audio-panel-local').classList.add('active');
-    document.getElementById('sc-audio-section').style.display = 'block'; // visible par défaut (type=image)
+    document.getElementById('sc-audio-section').style.display = 'none'; // masqué par défaut, révélé par le bouton outil
 
     // Réinitialiser les champs lien
     var li = document.getElementById('sc-link-input');
     var ll = document.getElementById('sc-link-label-input');
     if (li) li.value = '';
     if (ll) ll.value = '';
+
+    // Réinitialiser couleur texte
+    _scTextColor = '#ffffff';
+    var p = document.getElementById('sc-text-card-content');
+    if (p) { p.style.color = '#fff'; p.style.textShadow = ''; }
+    document.querySelectorAll('.tc-dot').forEach(function(d){ d.classList.remove('active'); });
+    var firstDot = document.querySelector('.tc-dot[data-color="#ffffff"]');
+    if (firstDot) firstDot.classList.add('active');
+    // Masquer les outils latéraux
+    var st = document.getElementById('sc-side-tools');
+    if (st) st.style.display = 'none';
+    document.querySelectorAll('.sc-side-btn').forEach(function(b){ b.classList.remove('active'); });
+    var colorBtn = document.getElementById('sc-tool-color');
+    if (colorBtn) colorBtn.style.display = 'none';
+    var textColors = document.getElementById('sc-text-colors');
+    if (textColors) textColors.classList.remove('visible');
+    var linkSec = document.getElementById('sc-link-section');
+    if (linkSec) linkSec.style.display = 'none';
 
     // La preview vide ne clique plus (c'est la carte "Ma story" qui déclenche le picker)
     document.getElementById('sc-preview').onclick = null;
@@ -1981,7 +2222,14 @@ function renderCurrentStory() {
             tp.style.top     = ty + '%';
             tp.style.display = 'block';
             // Ombre de texte renforcée pour lisibilité sur image
-            document.getElementById('sv-text-content').textContent = story.caption;
+            var tcContent = document.getElementById('sv-text-content');
+            tcContent.textContent = story.caption;
+            tcContent.style.color = story.text_color || '#fff';
+            if (story.text_color === '#000000') {
+                tcContent.style.textShadow = '0 1px 4px rgba(255,255,255,.5)';
+            } else {
+                tcContent.style.textShadow = '0 2px 20px rgba(0,0,0,.7), 0 1px 4px rgba(0,0,0,.9)';
+            }
         }
 
     } else if (story.story_type === 'text') {
@@ -1994,7 +2242,14 @@ function renderCurrentStory() {
         tp2.style.left    = tx + '%';
         tp2.style.top     = ty + '%';
         tp2.style.display = 'block';
-        document.getElementById('sv-text-content').textContent = story.caption || '';
+        var tc2Content = document.getElementById('sv-text-content');
+        tc2Content.textContent = story.caption || '';
+        tc2Content.style.color = story.text_color || '#fff';
+        if (story.text_color === '#000000') {
+            tc2Content.style.textShadow = '0 1px 4px rgba(255,255,255,.5)';
+        } else {
+            tc2Content.style.textShadow = '0 2px 20px rgba(0,0,0,.6)';
+        }
         duration = 7000;
     }
 
