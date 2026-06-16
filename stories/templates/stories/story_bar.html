@@ -159,7 +159,8 @@
         /* Safe area iPhone : padding bottom */
         padding-bottom: env(safe-area-inset-bottom, 0px);
     }
-    .sc-preview { height: 170px; } /* Plus compact en mobile */
+    .sc-preview { height: 220px; }
+    .sc-preview.has-file { height: 260px; }
     .sc-type-chip { min-width: 64px; padding: .45rem .3rem; }
     .sc-type-chip span:last-child { font-size: .62rem; }
 }
@@ -194,10 +195,23 @@
     border-radius: 0 0 22px 22px;
 }
 
-/* Type chips */
+/* Type chips — cachés par défaut, affichés après sélection d'un fichier */
 .sc-types {
-    display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem;
+    display: none; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem;
 }
+.sc-types.visible { display: flex; }
+
+/* Bouton "T" story texte sur la carte Ma story */
+.story-text-btn {
+    position: absolute; bottom: 6px; right: 6px; z-index: 5;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(0,0,0,.55); border: 1.5px solid rgba(255,255,255,.6);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0; font-size: .75rem; font-weight: 800;
+    line-height: 1; transition: background .2s, transform .15s;
+}
+.story-text-btn:hover { background: var(--accent); transform: scale(1.1); }
+.story-text-btn .material-icons { font-size: .8rem; }
 .sc-type-chip {
     flex: 1; min-width: 80px;
     display: flex; flex-direction: column; align-items: center; gap: .25rem;
@@ -226,7 +240,7 @@
 /* Preview zone */
 .sc-preview {
     position: relative;
-    width: 100%; height: 220px;
+    width: 100%; height: 300px;
     border-radius: 14px;
     border: 2px dashed var(--border);
     overflow: hidden;
@@ -237,6 +251,13 @@
     transition: border-color .2s;
 }
 .sc-preview:hover { border-color: var(--accent); }
+/* Quand une photo/vidéo est chargée — pas de bordure pointillée */
+.sc-preview.has-file {
+    border: none;
+    cursor: default;
+    height: 340px; /* encore plus haut pour montrer la photo en grand */
+}
+.sc-preview.has-file:hover { border-color: transparent; }
 .sc-preview img,
 .sc-preview video {
     width: 100%; height: 100%; object-fit: cover;
@@ -747,7 +768,7 @@ input#sc-file-input { display: none; }
 
     <!-- Carte "Ma story" -->
     {% if request.user.is_authenticated %}
-    <div class="story-item story-item-mine" id="my-story-item" onclick="myStoryClick()" title="Ma story">
+    <div class="story-item story-item-mine" id="my-story-item" onclick="myStoryClick()" title="Ajouter une photo ou vidéo">
         <!-- Avatar (visible si l'utilisateur a des stories) -->
         <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}"
              class="story-item-avatar" id="my-story-avatar-img">
@@ -762,6 +783,12 @@ input#sc-file-input { display: none; }
         <div class="story-item-overlay" id="my-story-overlay" style="display:none;">
             <span class="story-item-label">Ma story</span>
         </div>
+        <!-- Bouton "T" pour créer une story texte seulement -->
+        <button class="story-text-btn" id="my-story-text-btn" style="display:none;"
+                onclick="event.stopPropagation(); openTextStoryCreator()"
+                title="Story texte">
+            <span class="material-icons">text_fields</span>
+        </button>
     </div>
     <script>var _canPostStory = true;</script>
     {% endif %}
@@ -785,27 +812,7 @@ input#sc-file-input { display: none; }
     </div>
 
     <div class="sc-body">
-        <!-- Type -->
-        <div class="sc-types">
-            <div class="sc-type-chip active" data-type="image" onclick="selectStoryType('image',this)">
-                <span class="material-icons">photo_camera</span>
-                <span>Photo</span>
-            </div>
-            <div class="sc-type-chip" data-type="video" onclick="selectStoryType('video',this)">
-                <span class="material-icons">videocam</span>
-                <span>Vidéo</span>
-            </div>
-            <div class="sc-type-chip" data-type="text" onclick="selectStoryType('text',this)">
-                <span class="material-icons">text_fields</span>
-                <span>Texte</span>
-            </div>
-            <div class="sc-type-chip" data-type="image_text" onclick="selectStoryType('image_text',this)">
-                <span class="material-icons">add_photo_alternate</span>
-                <span>Photo+texte</span>
-            </div>
-        </div>
-
-        <!-- Zone de preview -->
+        <!-- Zone de preview — en premier, occupe tout l'espace visuel -->
         <div class="sc-preview" id="sc-preview" onclick="triggerFileInput()">
             <!-- Fond gradient pour les stories texte (type='text') -->
             <div id="sc-text-bg" class="grad_cyan"></div>
@@ -828,7 +835,27 @@ input#sc-file-input { display: none; }
                 <p>Cliquer pour choisir un fichier</p>
             </div>
         </div>
-        <input type="file" id="sc-file-input" accept="*/*" onchange="onFileSelected(this)">
+        <input type="file" id="sc-file-input" accept="image/*,video/*" onchange="onFileSelected(this)">
+
+        <!-- Type chips — masqués jusqu'à la sélection d'un fichier, affichés après -->
+        <div class="sc-types" id="sc-types-row">
+            <div class="sc-type-chip" data-type="image" onclick="selectStoryType('image',this)">
+                <span class="material-icons">photo_camera</span>
+                <span>Photo</span>
+            </div>
+            <div class="sc-type-chip" data-type="video" onclick="selectStoryType('video',this)">
+                <span class="material-icons">videocam</span>
+                <span>Vidéo</span>
+            </div>
+            <div class="sc-type-chip" data-type="text" onclick="selectStoryType('text',this)">
+                <span class="material-icons">text_fields</span>
+                <span>Texte seul</span>
+            </div>
+            <div class="sc-type-chip" data-type="image_text" onclick="selectStoryType('image_text',this)">
+                <span class="material-icons">add_photo_alternate</span>
+                <span>Photo+texte</span>
+            </div>
+        </div>
 
         <!-- Sélecteur gradient (visible pour text / image_text) -->
         <div id="sc-grad-section" style="display:none;">
@@ -1174,6 +1201,8 @@ function updateMyStoryItem(myGroup) {
     var addLabel = document.getElementById('my-story-add-label');
     var overlay  = document.getElementById('my-story-overlay');
 
+    var textBtn = document.getElementById('my-story-text-btn');
+
     if (myGroup && myGroup.stories && myGroup.stories.length > 0) {
         card.classList.add('has-story');
         if (!myGroup.has_unseen) card.classList.add('all-seen');
@@ -1189,12 +1218,16 @@ function updateMyStoryItem(myGroup) {
         if (addBtn)   addBtn.style.display   = 'none';
         if (addLabel) addLabel.style.display  = 'none';
         if (overlay)  overlay.style.display   = 'block';
+        // Bouton T : visible (l'utilisateur peut ajouter une story texte en plus)
+        if (textBtn) textBtn.style.display = 'flex';
     } else {
         card.classList.remove('has-story', 'all-seen');
         if (thumb)    { thumb.style.display = 'none'; thumb.src = ''; }
         if (addBtn)   addBtn.style.display   = 'flex';
         if (addLabel) addLabel.style.display  = 'block';
         if (overlay)  overlay.style.display   = 'none';
+        // Bouton T visible aussi quand pas de story (alternative texte)
+        if (textBtn) textBtn.style.display = 'flex';
     }
 }
 
@@ -1205,9 +1238,30 @@ window.myStoryClick = function() {
         var gi = _groups.indexOf(myGroup);
         openStoryViewer(gi);
     } else {
-        // Pas encore de story → ouvrir le créateur
-        openStoryCreator();
+        // Pas encore de story → ouvrir directement le sélecteur de fichier
+        var fi = document.getElementById('sc-file-input');
+        fi.accept = 'image/*,video/*';
+        fi.click();
     }
+};
+
+/* Story texte seulement (bouton "T" sur la carte) */
+window.openTextStoryCreator = function() {
+    document.getElementById('story-creator-overlay').classList.add('open');
+    document.getElementById('sc-audio-section').style.display = 'none';
+    // Afficher les chips pour que l'utilisateur voie qu'il est en mode "texte"
+    document.getElementById('sc-types-row').classList.add('visible');
+    // Sélectionner le type texte
+    _scType = 'text';
+    document.querySelectorAll('.sc-type-chip').forEach(function(c){ c.classList.remove('active'); });
+    var txtChip = document.querySelector('.sc-type-chip[data-type="text"]');
+    if (txtChip) txtChip.classList.add('active');
+    document.getElementById('sc-grad-section').style.display = '';
+    document.getElementById('sc-preview').onclick = null;
+    document.getElementById('sc-text-bg').style.display = 'block';
+    document.getElementById('sc-text-overlay').style.display = 'block';
+    document.getElementById('sc-preview-placeholder').style.display = 'none';
+    setTimeout(function(){ var p = document.getElementById('sc-text-card-content'); if(p) p.focus(); }, 100);
 };
 
 /* ════════════════════════════════════════════
@@ -1215,7 +1269,6 @@ window.myStoryClick = function() {
    ════════════════════════════════════════════ */
 window.openStoryCreator = function() {
     document.getElementById('story-creator-overlay').classList.add('open');
-    // Afficher la section audio par défaut (type=image)
     document.getElementById('sc-audio-section').style.display = 'block';
 };
 window.closeStoryCreator = function() {
@@ -1284,11 +1337,40 @@ window.onFileSelected = function(input) {
     var rawFile = input.files[0];
     if (!rawFile) return;
 
+    // Ouvrir le modal si pas encore ouvert (cas: sélecteur déclenché avant l'ouverture)
+    if (!document.getElementById('story-creator-overlay').classList.contains('open')) {
+        openStoryCreator();
+    }
+
     function _applyFile(file) {
         _scFile = file;
         var isVid = file.type.startsWith('video/');
         var url = URL.createObjectURL(file);
+
+        // ── Auto-sélection du type ─────────────────────────────
+        var autoType = isVid ? 'video' : 'image_text';
+        _scType = autoType;
+
+        // Mettre à jour les chips (et les rendre visibles)
+        document.querySelectorAll('.sc-type-chip').forEach(function(c){
+            c.classList.remove('active');
+            // Masquer les chips incompatibles (vidéo → cacher photo/texte, image → cacher vidéo)
+            var ct = c.getAttribute('data-type');
+            if (isVid) {
+                c.style.display = (ct === 'video') ? '' : 'none';
+            } else {
+                c.style.display = (ct === 'video') ? 'none' : '';
+            }
+        });
+        var activeChip = document.querySelector('.sc-type-chip[data-type="' + autoType + '"]');
+        if (activeChip) activeChip.classList.add('active');
+        document.getElementById('sc-types-row').classList.add('visible');
+
+        // ── Preview ────────────────────────────────────────────
         hidePlaceholder();
+        document.getElementById('sc-preview').classList.add('has-file');
+        document.getElementById('sc-preview').onclick = null; // clic sur preview ne rouvre pas le picker
+
         if (isVid) {
             document.getElementById('sc-preview-img').style.display = 'none';
             var v = document.getElementById('sc-preview-video');
@@ -1298,15 +1380,26 @@ window.onFileSelected = function(input) {
             var img = document.getElementById('sc-preview-img');
             img.src = url; img.style.display = 'block';
         }
-        // Afficher l'overlay ou la barre de légende selon le type
-        if (_scType === 'image_text') {
+
+        // ── Overlays selon le type ─────────────────────────────
+        document.getElementById('sc-grad-section').style.display = 'none';
+        document.getElementById('sc-text-bg').style.display = 'none';
+        if (autoType === 'image_text') {
             document.getElementById('sc-text-overlay').style.display = 'block';
             document.getElementById('sc-caption-bar').style.display = 'none';
-        } else if (_scType === 'image' || _scType === 'video') {
+            // Focus sur le texte tout de suite
+            setTimeout(function(){
+                var p = document.getElementById('sc-text-card-content');
+                if (p) p.focus();
+            }, 150);
+        } else {
+            // vidéo
             document.getElementById('sc-caption-bar').style.display = 'block';
             document.getElementById('sc-text-overlay').style.display = 'none';
-            // Focus sur la barre légende
-            setTimeout(function(){ var cb = document.getElementById('sc-caption-bar-input'); if(cb) cb.focus(); }, 80);
+            setTimeout(function(){
+                var cb = document.getElementById('sc-caption-bar-input');
+                if (cb) cb.focus();
+            }, 150);
         }
     }
 
@@ -1671,11 +1764,19 @@ function resetCreator() {
     _scTextX = 50;
     _scTextY = 50;
 
-    document.querySelectorAll('.sc-type-chip').forEach(function(c){ c.classList.remove('active'); });
-    document.querySelector('.sc-type-chip[data-type="image"]').classList.add('active');
+    // Réinitialiser les chips (masqués + aucun actif)
+    var typesRow = document.getElementById('sc-types-row');
+    if (typesRow) typesRow.classList.remove('visible');
+    document.querySelectorAll('.sc-type-chip').forEach(function(c){
+        c.classList.remove('active');
+        c.style.display = ''; // rétablir la visibilité
+    });
 
     var fi = document.getElementById('sc-file-input');
-    if (fi) fi.value = '';
+    if (fi) { fi.value = ''; fi.accept = 'image/*,video/*'; }
+
+    // Retirer la classe has-file de la preview
+    document.getElementById('sc-preview').classList.remove('has-file');
 
     document.getElementById('sc-preview-img').style.display   = 'none';
     document.getElementById('sc-preview-video').style.display = 'none';
@@ -1725,7 +1826,8 @@ function resetCreator() {
     if (li) li.value = '';
     if (ll) ll.value = '';
 
-    document.getElementById('sc-preview').onclick = triggerFileInput;
+    // La preview vide ne clique plus (c'est la carte "Ma story" qui déclenche le picker)
+    document.getElementById('sc-preview').onclick = null;
 }
 
 /* ════════════════════════════════════════════
