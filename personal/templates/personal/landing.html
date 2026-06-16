@@ -325,6 +325,8 @@
     </a>
     <div class="nav-links">
       <a href="#features" class="hide-mobile">Fonctionnalités</a>
+      <a href="{% url 'bazar:index' %}" class="hide-mobile">Bazar</a>
+      <a href="{% url 'post:tendances' %}" class="hide-mobile">Tendances</a>
       <a href="#announcements" class="hide-mobile">Actualités</a>
       {% if user.is_authenticated %}
         <a href="{% url 'post:post-view' %}">Mon fil</a>
@@ -412,36 +414,87 @@
       Ce que vous pouvez faire sur Vazimba
     </div>
     <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
-        <h3>Ajoutez des amis</h3>
-        <p>Envoyez des demandes d'amitié, acceptez ou refusez, et gérez votre réseau en toute simplicité.</p>
-      </div>
+
       <div class="feature-card">
         <div class="feature-icon"><i class="fa-solid fa-pen-to-square"></i></div>
         <h3>Publiez du contenu</h3>
-        <p>Partagez des textes, images et fichiers. Likez et commentez les publications de votre réseau.</p>
+        <p>Partagez textes, images et vidéos. Réagissez, commentez et repostez les publications de votre réseau.</p>
       </div>
+
+      <div class="feature-card">
+        <a href="{% url 'stories:page' %}" style="text-decoration:none;color:inherit;">
+          <div class="feature-icon"><i class="fa-solid fa-camera-retro"></i></div>
+          <h3>Stories éphémères</h3>
+          <p>Publiez des photos et vidéos qui disparaissent en 24 h — avec musique, texte sur la photo, et lien promo.</p>
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <a href="{% url 'bazar:index' %}" style="text-decoration:none;color:inherit;">
+          <div class="feature-icon"><i class="fa-solid fa-store"></i></div>
+          <h3>Bazar — Acheter &amp; Vendre</h3>
+          <p>Déposez une annonce, parcourez les articles par catégorie et région. Contactez directement les vendeurs.</p>
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <a href="{% url 'post:tendances' %}" style="text-decoration:none;color:inherit;">
+          <div class="feature-icon"><i class="fa-solid fa-fire"></i></div>
+          <h3>Tendances</h3>
+          <p>Découvrez les hashtags et sujets qui buzzent en ce moment dans toute la communauté Vazimba.</p>
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <a href="{% url 'group:list' %}" style="text-decoration:none;color:inherit;">
+          <div class="feature-icon"><i class="fa-solid fa-people-group"></i></div>
+          <h3>Groupes thématiques</h3>
+          <p>Rejoignez ou créez des communautés autour de vos passions : culture, sport, tech, cuisine et bien plus.</p>
+        </a>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-circle-play"></i></div>
+        <h3>Live streaming</h3>
+        <p>Diffusez en direct depuis votre navigateur. Vos abonnés peuvent vous regarder en temps réel, où qu'ils soient.</p>
+      </div>
+
       <div class="feature-card">
         <div class="feature-icon"><i class="fa-solid fa-message"></i></div>
         <h3>Chat en temps réel</h3>
         <p>Discutez en privé avec vos amis ou rejoignez le chat public de la communauté.</p>
       </div>
+
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <h3>Vendeurs vérifiés</h3>
+        <p>Obtenez un badge de confiance pour vos annonces du Bazar. Les acheteurs savent qu'ils traitent avec un vrai commerçant.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
+        <h3>Ajoutez des amis</h3>
+        <p>Envoyez des demandes d'amitié, acceptez ou refusez, et gérez votre réseau en toute simplicité.</p>
+      </div>
+
       <div class="feature-card">
         <div class="feature-icon"><i class="fa-solid fa-bell"></i></div>
         <h3>Notifications live</h3>
         <p>Recevez des notifications instantanées pour les demandes d'amis, les messages et les interactions.</p>
       </div>
+
       <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-user-circle"></i></div>
+        <div class="feature-icon"><i class="fa-solid fa-circle-user"></i></div>
         <h3>Profil personnalisé</h3>
-        <p>Personnalisez votre photo de profil, votre bio et vos informations de contact.</p>
+        <p>Personnalisez votre photo de profil, votre bio et vos informations de contact. Vérifiez votre numéro de téléphone.</p>
       </div>
+
       <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
-        <h3>Recherche d'utilisateurs</h3>
-        <p>Trouvez facilement d'autres membres par nom d'utilisateur et agrandissez votre réseau.</p>
+        <div class="feature-icon"><i class="fa-solid fa-signal"></i></div>
+        <h3>Mode économie de données</h3>
+        <p>Naviguez confortablement même avec une connexion lente — les médias se chargent uniquement à la demande.</p>
       </div>
+
     </div>
   </section>
 
@@ -449,8 +502,8 @@
   <section class="section-stats">
     <div class="stats-grid">
       <div class="stat-item">
-        <h2>∞</h2>
-        <p>Connexions possibles</p>
+        <h2>12+</h2>
+        <p>Fonctionnalités</p>
       </div>
       <div class="stat-item">
         <h2>100%</h2>
@@ -459,6 +512,10 @@
       <div class="stat-item">
         <h2>24/7</h2>
         <p>Disponible</p>
+      </div>
+      <div class="stat-item">
+        <h2>🇲🇬</h2>
+        <p>Fait pour Madagascar</p>
       </div>
     </div>
   </section>
