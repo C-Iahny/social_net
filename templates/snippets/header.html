@@ -1051,18 +1051,28 @@
         <span class="material-icons">explore</span> {% trans "Explore" %}
     </a>
     <a href="{% url 'post:tendances' %}" class="zoot-mobile-link">
-        <span class="material-icons">trending_up</span> Tendances
+        <span class="material-icons">trending_up</span> {% trans "Tendances" %}
     </a>
     <a href="{% url 'group:list' %}" class="zoot-mobile-link">
         <span class="material-icons">groups</span> {% trans "Groups" %}
     </a>
+    <a href="{% url 'video:live-list' %}" class="zoot-mobile-link" style="color:#ff3b3b;">
+        <span class="material-icons" style="color:#ff3b3b;">radio_button_checked</span> Live
+    </a>
+    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
+    <a href="{% url 'post:kabary-create' %}" class="zoot-mobile-link" style="color:var(--accent);">
+        <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
+    </a>
+    <a href="{% url 'post:vintana-create' %}" class="zoot-mobile-link" style="color:#bf5fff;">
+        <span class="material-icons" style="color:#bf5fff;">lock_clock</span> Vintana
+    </a>
     <a href="{% url 'bazar:index' %}" class="zoot-mobile-link">
         <span class="material-icons">storefront</span> Bazar
     </a>
+    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
         <span class="material-icons">person_outline</span> {% trans "My profile" %}
     </a>
-    <div style="border-top:1px solid var(--border);margin:.5rem 0;"></div>
     <a href="{% url 'logout' %}" class="zoot-mobile-link" style="color:#e0245e;">
         <span class="material-icons" style="color:#e0245e;">logout</span> {% trans "Logout" %}
     </a>

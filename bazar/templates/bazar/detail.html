@@ -453,7 +453,7 @@
                         {% endif %}
                         {% endwith %}
                         {% if annonce.seller.phone_verified %}
-                        <span title="Numéro de téléphone vérifié par SMS" style="display:inline-flex;align-items:center;gap:.2rem;background:rgba(59,130,246,.15);color:#1d4ed8;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;border:1px solid rgba(59,130,246,.3);">📱 {% trans "Tél. vérifié" %}</span>
+                        <span title="Numéro de téléphone vérifié par SMS" style="display:inline-flex;align-items:center;gap:.2rem;background:var(--accent-glow,rgba(139,69,19,.12));color:var(--accent);font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;border:1px solid rgba(139,69,19,.3);">📱 {% trans "Tél. vérifié" %}</span>
                         {% endif %}
                     </div>
                     <div class="bazar-seller-since">{% trans "Membre depuis" %} {{ annonce.seller.date_joined|date:"M Y" }}</div>

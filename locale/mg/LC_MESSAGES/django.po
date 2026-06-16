@@ -1392,3 +1392,23 @@ msgstr "Ho mpivarotra voamarina mba hamoaka filazana 24h."
 
 msgid "Publiez votre annonce du jour"
 msgstr "Fanapariaho ny filazananao anio"
+
+# ── Navigation (Feature 7 + bottom nav) ──────────────────────────────────────
+
+msgid "Tendances"
+msgstr "Hevitra malaza"
+
+msgid "Créer"
+msgstr "Mamorona"
+
+msgid "Profil"
+msgstr "Mombamombako"
+
+# ── Vérification finday (Feature 6) ──────────────────────────────────────────
+
+msgid "Tél. vérifié"
+msgstr "Finday voamarina"
+
+msgid "Numéro de téléphone vérifié par SMS"
+msgstr "Finday voamarina tamin'ny SMS"
+
