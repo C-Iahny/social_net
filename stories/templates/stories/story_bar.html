@@ -373,6 +373,61 @@ input#sc-file-input { display: none; }
     transition: width .2s;
 }
 
+/* Audio section in creator */
+.sc-audio-section {
+    display: none;
+    margin-bottom: .85rem;
+}
+.sc-audio-label {
+    font-size: .75rem; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .06em;
+    margin-bottom: .4rem;
+}
+.sc-audio-btn {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .5rem 1rem; border-radius: 12px; cursor: pointer;
+    border: 1.5px dashed var(--border);
+    background: var(--input-bg); color: var(--text-muted);
+    font-size: .85rem; font-weight: 600;
+    transition: border-color .2s, color .2s, background .2s;
+    width: 100%;
+}
+.sc-audio-btn:hover { border-color: var(--accent); color: var(--accent); }
+.sc-audio-btn .material-icons { font-size: 1.1rem; }
+.sc-audio-chosen {
+    display: none; align-items: center; gap: .5rem;
+    margin-top: .4rem;
+    padding: .45rem .75rem; border-radius: 10px;
+    background: var(--accent-glow, rgba(139,69,19,.1));
+    border: 1px solid var(--accent);
+}
+.sc-audio-chosen .material-icons { font-size: 1rem; color: var(--accent); }
+.sc-audio-chosen-name {
+    flex: 1; font-size: .8rem; font-weight: 600; color: var(--accent);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sc-audio-remove {
+    width: 22px; height: 22px; border-radius: 50%; border: none;
+    background: rgba(255,77,77,.15); color: #e05; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.sc-audio-remove .material-icons { font-size: .8rem; }
+
+/* Viewer audio indicator */
+.sv-audio-indicator {
+    position: absolute; top: calc(.75rem + env(safe-area-inset-top,0px) + 60px);
+    right: 1rem; z-index: 12;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(0,0,0,.45); backdrop-filter: blur(6px);
+    border: 1.5px solid rgba(255,255,255,.3);
+    display: none; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background .2s;
+}
+.sv-audio-indicator:hover { background: rgba(0,0,0,.7); }
+.sv-audio-indicator .material-icons { font-size: 1.1rem; color: #fff; }
+
 /* ══════════════════════════════════════════════════════════
    VIEWER (plein écran)
    ══════════════════════════════════════════════════════════ */
@@ -648,6 +703,26 @@ input#sc-file-input { display: none; }
                    placeholder="Texte du bouton (ex: Voir l'offre)">
         </div>
 
+        <!-- Audio court (optionnel — image / vidéo / image+texte) -->
+        <div class="sc-audio-section" id="sc-audio-section">
+            <div class="sc-audio-label">
+                <span class="material-icons" style="font-size:.85rem;vertical-align:middle;">music_note</span>
+                Musique courte (optionnel, max 8 Mo)
+            </div>
+            <label class="sc-audio-btn" id="sc-audio-btn" for="sc-audio-input">
+                <span class="material-icons">library_music</span>
+                Choisir un fichier audio…
+            </label>
+            <input type="file" id="sc-audio-input" accept="audio/*" style="display:none" onchange="onAudioSelected(this)">
+            <div class="sc-audio-chosen" id="sc-audio-chosen">
+                <span class="material-icons">audiotrack</span>
+                <span class="sc-audio-chosen-name" id="sc-audio-name"></span>
+                <button class="sc-audio-remove" onclick="removeAudio()" title="Supprimer">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Barre de progression upload -->
         <div class="sc-upload-bar" id="sc-upload-bar">
             <div class="sc-upload-bar-inner" id="sc-upload-bar-inner"></div>
@@ -716,6 +791,14 @@ input#sc-file-input { display: none; }
         <span class="material-icons">close</span>
     </button>
 
+    <!-- Indicateur audio (mute/unmute) -->
+    <div class="sv-audio-indicator" id="sv-audio-indicator" onclick="toggleStoryAudio()">
+        <span class="material-icons" id="sv-audio-icon">volume_up</span>
+    </div>
+
+    <!-- Élément audio caché -->
+    <audio id="sv-audio" loop style="display:none;"></audio>
+
     <!-- Vue count + delete (ses propres stories) -->
     <div class="sv-views" id="sv-views">
         <span class="material-icons">visibility</span>
@@ -775,6 +858,8 @@ var _svPaused    = false;
 var _scType      = 'image';
 var _scGrad      = 'grad_cyan';
 var _scFile      = null;
+var _scAudioFile = null;   // fichier audio optionnel
+var _svAudioMuted = false; // état muet/son du viewer
 var _scTextX     = 50;   // % position horizontale du texte
 var _scTextY     = 50;   // % position verticale du texte
 var _textDragging      = false;
@@ -864,6 +949,8 @@ window.myStoryClick = function() {
    ════════════════════════════════════════════ */
 window.openStoryCreator = function() {
     document.getElementById('story-creator-overlay').classList.add('open');
+    // Afficher la section audio par défaut (type=image)
+    document.getElementById('sc-audio-section').style.display = 'block';
 };
 window.closeStoryCreator = function() {
     document.getElementById('story-creator-overlay').classList.remove('open');
@@ -879,6 +966,8 @@ window.selectStoryType = function(type, el) {
     var showGrad = (type === 'text' || type === 'image_text');
 
     document.getElementById('sc-grad-section').style.display = showGrad ? '' : 'none';
+    // Audio optionnel uniquement pour les stories avec média (pas texte pur)
+    document.getElementById('sc-audio-section').style.display = isText ? 'none' : 'block';
 
     if (isText) {
         // Type texte : fond gradient visible, overlay texte visible, pas de file input
@@ -960,6 +1049,40 @@ window.onCaptionInput = function(val) {
     document.getElementById('sc-text-card-content').textContent = val || 'Votre texte ici…';
 };
 
+/* ── Audio creator helpers ─────────────────────────── */
+window.onAudioSelected = function(input) {
+    var file = input.files[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) {
+        alert('Fichier audio trop volumineux (max 8 Mo).'); input.value = ''; return;
+    }
+    _scAudioFile = file;
+    document.getElementById('sc-audio-name').textContent = file.name;
+    document.getElementById('sc-audio-chosen').style.display = 'flex';
+};
+
+window.removeAudio = function() {
+    _scAudioFile = null;
+    document.getElementById('sc-audio-input').value = '';
+    document.getElementById('sc-audio-name').textContent = '';
+    document.getElementById('sc-audio-chosen').style.display = 'none';
+};
+
+/* ── Audio viewer helpers ──────────────────────────── */
+window.toggleStoryAudio = function() {
+    var audio = document.getElementById('sv-audio');
+    var icon  = document.getElementById('sv-audio-icon');
+    if (_svAudioMuted) {
+        audio.muted = false;
+        _svAudioMuted = false;
+        icon.textContent = 'volume_up';
+    } else {
+        audio.muted = true;
+        _svAudioMuted = true;
+        icon.textContent = 'volume_off';
+    }
+};
+
 function showPlaceholder() {
     document.getElementById('sc-preview-placeholder').style.display = 'flex';
 }
@@ -1036,6 +1159,7 @@ window.publishStory = function() {
     fd.append('text_x', _scTextX.toFixed(1));
     fd.append('text_y', _scTextY.toFixed(1));
     if (_scFile) fd.append('media', _scFile);
+    if (_scAudioFile) fd.append('audio', _scAudioFile);
     var linkVal = (document.getElementById('sc-link-input') || {}).value || '';
     var linkLabel = (document.getElementById('sc-link-label-input') || {}).value || '';
     if (linkVal) { fd.append('link', linkVal.trim()); fd.append('link_label', linkLabel.trim()); }
@@ -1080,7 +1204,8 @@ window.publishStory = function() {
 };
 
 function resetCreator() {
-    _scFile  = null;
+    _scFile      = null;
+    _scAudioFile = null;
     _scType  = 'image';
     _scGrad  = 'grad_cyan';
     _scTextX = 50;
@@ -1108,6 +1233,13 @@ function resetCreator() {
     document.getElementById('sc-text-card-content').textContent = 'Votre texte ici…';
     document.querySelectorAll('.sc-grad-swatch').forEach(function(s){ s.classList.remove('active'); });
     document.querySelector('.sc-grad-swatch[data-grad="grad_cyan"]').classList.add('active');
+
+    // Réinitialiser le champ audio
+    var ai = document.getElementById('sc-audio-input');
+    if (ai) ai.value = '';
+    document.getElementById('sc-audio-chosen').style.display = 'none';
+    document.getElementById('sc-audio-name').textContent = '';
+    document.getElementById('sc-audio-section').style.display = 'block'; // visible par défaut (type=image)
 
     // Réinitialiser les champs lien
     var li = document.getElementById('sc-link-input');
@@ -1137,6 +1269,10 @@ window.closeStoryViewer = function() {
     clearTimeout(_svTimer);
     var vid = document.getElementById('sv-video');
     vid.pause(); vid.src = '';
+    var aud = document.getElementById('sv-audio');
+    if (aud) { aud.pause(); aud.src = ''; }
+    var svAudioInd = document.getElementById('sv-audio-indicator');
+    if (svAudioInd) svAudioInd.style.display = 'none';
 };
 
 window.svNavigate = function(dir) {
@@ -1294,6 +1430,23 @@ function renderCurrentStory() {
     } else {
         viewsEl.style.display  = 'none';
         deleteEl.style.display = 'none';
+    }
+
+    // Audio
+    var svAudio     = document.getElementById('sv-audio');
+    var svAudioInd  = document.getElementById('sv-audio-indicator');
+    var svAudioIcon = document.getElementById('sv-audio-icon');
+    svAudio.pause();
+    svAudio.src = '';
+    svAudioInd.style.display = 'none';
+
+    if (story.audio_url) {
+        svAudio.src   = story.audio_url;
+        svAudio.muted = _svAudioMuted;
+        svAudio.loop  = true;
+        svAudio.play().catch(function(){});  // ignorer refus autoplay
+        svAudioInd.style.display = 'flex';
+        svAudioIcon.textContent = _svAudioMuted ? 'volume_off' : 'volume_up';
     }
 
     // Lancer la progression
