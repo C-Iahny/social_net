@@ -20,6 +20,11 @@ _VIDEO_MIME = {
     'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime',
     'video/x-msvideo',
 }
+_AUDIO_MIME = {
+    'audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/wav',
+    'audio/webm', 'audio/aac', 'audio/x-m4a', 'audio/m4a',
+    'audio/x-wav',
+}
 
 
 def _is_verified_seller(user):
@@ -45,6 +50,16 @@ def _media_url(story):
         return None
 
 
+def _audio_url(story):
+    """Retourne l'URL du fichier audio, ou None."""
+    if not story.audio or not story.audio.name:
+        return None
+    try:
+        return story.audio.url
+    except Exception:
+        return None
+
+
 def _story_to_dict(story, viewer):
     """Sérialise une Story en dict JSON-compatible."""
     seen = False
@@ -64,6 +79,8 @@ def _story_to_dict(story, viewer):
         'story_type':  story.story_type,
         'media_url':   _media_url(story),
         'media_type':  story.media_type,
+        'audio_url':   _audio_url(story),
+        'audio_type':  story.audio_type,
         'caption':     story.caption,
         'bg_gradient': story.bg_gradient,
         'text_align':  story.text_align,
@@ -139,6 +156,7 @@ def create_story(request):
     link        = request.POST.get('link', '').strip()[:500]
     link_label  = request.POST.get('link_label', '').strip()[:60]
     media_file  = request.FILES.get('media')
+    audio_file  = request.FILES.get('audio')
     # Position du texte (0–100 %) — clampée côté serveur
     try:
         text_x = max(5.0, min(95.0, float(request.POST.get('text_x', 50))))
@@ -152,9 +170,19 @@ def create_story(request):
     if story_type == 'text' and not caption:
         return JsonResponse({'error': 'Le texte ne peut pas être vide.'}, status=400)
 
-    # Taille max : 50 Mo
+    # Taille max : 50 Mo pour le média, 8 Mo pour l'audio
     if media_file and media_file.size > 50 * 1024 * 1024:
         return JsonResponse({'error': 'Fichier trop volumineux (max 50 Mo).'}, status=400)
+    if audio_file and audio_file.size > 8 * 1024 * 1024:
+        return JsonResponse({'error': 'Fichier audio trop volumineux (max 8 Mo).'}, status=400)
+
+    # Valider le MIME audio
+    audio_type = ''
+    if audio_file:
+        audio_mime = (audio_file.content_type or '').split(';')[0].strip().lower()
+        if audio_mime not in _AUDIO_MIME:
+            return JsonResponse({'error': 'Format audio non supporté (MP3, OGG, WAV, AAC, M4A).'}, status=400)
+        audio_type = audio_mime
 
     # Détecter le type média
     media_type = ''
@@ -178,6 +206,8 @@ def create_story(request):
             text_align  = text_align,
             text_x      = text_x,
             text_y      = text_y,
+            audio       = audio_file,
+            audio_type  = audio_type,
             link        = link,
             link_label  = link_label,
         )

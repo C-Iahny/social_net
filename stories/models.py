@@ -8,6 +8,10 @@ def story_media_path(instance, filename):
     return f'stories/{instance.user.id}/{filename}'
 
 
+def story_audio_path(instance, filename):
+    return f'stories/audio/{instance.user.id}/{filename}'
+
+
 STORY_TYPES = (
     ('image',       'Image'),
     ('video',       'Vidéo'),
@@ -53,6 +57,10 @@ class Story(models.Model):
     # Position libre du texte (pourcentage par rapport au cadre)
     text_x = models.FloatField(default=50.0, help_text='Position horizontale du texte (% depuis la gauche)')
     text_y = models.FloatField(default=50.0, help_text='Position verticale du texte (% depuis le haut)')
+
+    # Musique courte (optionnel — surtout pour les stories photo)
+    audio      = models.FileField(upload_to=story_audio_path, blank=True, null=True)
+    audio_type = models.CharField(max_length=20, blank=True, default='')  # ex: 'audio/mpeg'
 
     # Lien promotionnel (pour les commerçants)
     link         = models.URLField(max_length=500, blank=True, default='')
