@@ -205,7 +205,7 @@
 .sc-types {
     display: none; gap: .5rem; flex-wrap: wrap; margin: .5rem .75rem .25rem;
 }
-.sc-types.visible { display: flex; }
+.sc-types.visible { display: none; }  /* toujours masqué */
 
 /* Bouton "T" story texte sur la carte Ma story */
 .story-text-btn {
@@ -260,7 +260,7 @@
 .sc-preview.has-file {
     border: none;
     cursor: default;
-    height: 340px;
+    height: min(420px, 58vh);
 }
 .sc-preview.has-file:hover { border-color: transparent; }
 .sc-preview img,
@@ -1370,8 +1370,6 @@ window.viewMyStories = function() {
 window.openTextStoryCreator = function() {
     document.getElementById('story-creator-overlay').classList.add('open');
     document.getElementById('sc-audio-section').style.display = 'none';
-    // Afficher les chips pour que l'utilisateur voie qu'il est en mode "texte"
-    document.getElementById('sc-types-row').classList.add('visible');
     // Sélectionner le type texte
     _scType = 'text';
     document.querySelectorAll('.sc-type-chip').forEach(function(c){ c.classList.remove('active'); });
@@ -1485,7 +1483,6 @@ window.onFileSelected = function(input) {
         });
         var activeChip = document.querySelector('.sc-type-chip[data-type="' + autoType + '"]');
         if (activeChip) activeChip.classList.add('active');
-        document.getElementById('sc-types-row').classList.add('visible');
 
         // ── Preview ────────────────────────────────────────────
         hidePlaceholder();
@@ -1832,18 +1829,20 @@ function initTextDrag() {
     var preview = document.getElementById('sc-preview');
     if (!overlay || !preview) return;
 
-    var _dragActive = false;
-    var _dragMoved  = false;
+    var _dragActive  = false;
+    var _dragMoved   = false;
+    var _touchOnText = false;
 
     function applyPos() {
         overlay.style.left = _scTextX + '%';
         overlay.style.top  = _scTextY + '%';
     }
 
-    function onStart(clientX, clientY) {
+    function onStart(clientX, clientY, onText) {
         _dragActive      = true;
         _dragMoved       = false;
         _textDragging    = false;
+        _touchOnText     = onText || false;
         _textDragStartCX = clientX;
         _textDragStartCY = clientY;
         _textDragStartX  = _scTextX;
@@ -1864,38 +1863,36 @@ function initTextDrag() {
     }
 
     function onEnd() {
-        if (_dragActive && !_dragMoved) {
-            // C'était un simple clic/tap — focus sur le texte
+        var wasMoved  = _dragMoved;
+        var wasOnText = _touchOnText;
+        _dragActive   = false;
+        _textDragging = false;
+        _dragMoved    = false;
+        // Si tap simple ET pas sur le texte → focus manuel
+        if (!wasMoved && !wasOnText) {
             var p = document.getElementById('sc-text-card-content');
             if (p) { p.focus(); moveCursorToEnd(p); }
         }
-        _dragActive = false;
-        _textDragging = false;
+        // Si tap sur texte : le browser gère déjà le focus (passive touchstart)
     }
 
     // Souris — PAS de preventDefault sur mousedown pour laisser le focus
     overlay.addEventListener('mousedown', function(e) {
-        // Laisser les clics sur le contenteditable passer normalement
-        if (e.target === document.getElementById('sc-text-card-content')) return;
-        onStart(e.clientX, e.clientY);
+        var textEl = document.getElementById('sc-text-card-content');
+        if (e.target === textEl || (textEl && textEl.contains(e.target))) return;
+        onStart(e.clientX, e.clientY, false);
         e.stopPropagation();
     });
     document.addEventListener('mousemove', function(e) { if (_dragActive) onMove(e.clientX, e.clientY); });
     document.addEventListener('mouseup', onEnd);
 
-    // Toucher — distinguer tap (écrire) vs drag (déplacer)
+    // TOUCH — toujours démarrer le tracking, même sur le texte
     overlay.addEventListener('touchstart', function(e) {
-        var target = e.target;
         var textEl = document.getElementById('sc-text-card-content');
-        // Si le touch est directement sur le texte, laisser le clavier s'ouvrir
-        if (target === textEl || textEl.contains(target)) {
-            e.stopPropagation();
-            return; // NE PAS preventDefault → clavier iOS/Android s'ouvre
-        }
-        // Sinon (touch sur la bordure de l'overlay) = drag potentiel
-        onStart(e.touches[0].clientX, e.touches[0].clientY);
+        var onText = e.target === textEl || (textEl && textEl.contains(e.target));
+        onStart(e.touches[0].clientX, e.touches[0].clientY, onText);
         e.stopPropagation();
-        // Pas de preventDefault non plus → permet quand même un tap simple
+        // passive:true → pas de preventDefault, le clavier peut s'ouvrir si tap sur texte
     }, { passive: true });
 
     document.addEventListener('touchmove', function(e) {
