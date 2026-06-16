@@ -143,6 +143,7 @@ def _story_to_dict(story, viewer):
         'text_align':  story.text_align,
         'text_x':      story.text_x,
         'text_y':      story.text_y,
+        'text_color':  story.text_color or '#ffffff',
         'link':        story.link,
         'link_label':  story.link_label or 'Voir l\'offre',
         'created_at':  story.created_at.isoformat(),
@@ -210,6 +211,7 @@ def create_story(request):
     caption     = request.POST.get('caption', '').strip()[:200]
     bg_gradient = request.POST.get('bg_gradient', 'grad_cyan')
     text_align  = request.POST.get('text_align', 'center')
+    text_color  = request.POST.get('text_color', '#ffffff').strip()[:20]
     link        = request.POST.get('link', '').strip()[:500]
     link_label  = request.POST.get('link_label', '').strip()[:60]
     media_file  = request.FILES.get('media')
@@ -275,6 +277,7 @@ def create_story(request):
             text_align  = text_align,
             text_x      = text_x,
             text_y      = text_y,
+            text_color  = text_color,
             audio            = audio_file,
             audio_type       = audio_type,
             audio_trim_start = audio_trim_start,
