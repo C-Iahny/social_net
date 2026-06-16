@@ -434,6 +434,23 @@
 .scrollable-menu::-webkit-scrollbar { width: 4px; }
 .scrollable-menu::-webkit-scrollbar-track { background: transparent; }
 .scrollable-menu::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* ── Desktop : profil dropdown scrollable si trop haut ── */
+@media (min-width: 576px) {
+    .dropdown-menu[aria-labelledby="id_profile_links"] {
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+    }
+    .dropdown-menu[aria-labelledby="id_profile_links"]::-webkit-scrollbar {
+        width: 4px;
+    }
+    .dropdown-menu[aria-labelledby="id_profile_links"]::-webkit-scrollbar-thumb {
+        background: var(--border); border-radius: 4px;
+    }
+}
+
 /* ── Mobile : dropdown en position fixed pour ne jamais déborder ── */
 @media (max-width: 575.98px) {
     /* Sur mobile, l'animation dropIn utilise transform ce qui casse position:fixed sur iOS.
