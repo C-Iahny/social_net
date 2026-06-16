@@ -59,8 +59,9 @@ class Story(models.Model):
     text_y = models.FloatField(default=50.0, help_text='Position verticale du texte (% depuis le haut)')
 
     # Musique courte (optionnel — surtout pour les stories photo)
-    audio      = models.FileField(upload_to=story_audio_path, blank=True, null=True)
-    audio_type = models.CharField(max_length=20, blank=True, default='')  # ex: 'audio/mpeg'
+    audio           = models.FileField(upload_to=story_audio_path, blank=True, null=True)
+    audio_type      = models.CharField(max_length=20, blank=True, default='')   # ex: 'audio/mpeg'
+    audio_trim_start = models.FloatField(default=0.0, help_text='Début du clip (secondes)')
 
     # Lien promotionnel (pour les commerçants)
     link         = models.URLField(max_length=500, blank=True, default='')
