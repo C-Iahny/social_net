@@ -126,6 +126,89 @@
 			margin-top: 62px; /* hauteur de la navbar fixe */
 		}
 
+        /* ── Create menu bottom sheet (toutes tailles d'écran) ── */
+        .create-sheet-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.45);
+            z-index: 1100;
+            opacity: 0;
+            transition: opacity .22s;
+        }
+        .create-sheet-overlay.open {
+            display: block;
+            opacity: 1;
+        }
+        .create-sheet {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--bg-card);
+            border-radius: 20px 20px 0 0;
+            padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+            z-index: 1101;
+            transform: translateY(100%);
+            transition: transform .28s cubic-bezier(.32,1,.23,1);
+            box-shadow: 0 -4px 32px rgba(0,0,0,.18);
+        }
+        .create-sheet-overlay.open .create-sheet {
+            transform: translateY(0);
+        }
+        .create-sheet-handle {
+            width: 36px; height: 4px;
+            border-radius: 2px;
+            background: var(--border);
+            margin: 0 auto .9rem;
+        }
+        .create-sheet-title {
+            font-size: .78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            text-align: center;
+            margin-bottom: .85rem;
+        }
+        .create-sheet-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: .6rem .4rem;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .cs-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .3rem;
+            text-decoration: none;
+            padding: .6rem .2rem .5rem;
+            border-radius: 14px;
+            transition: background .15s, transform .15s;
+            -webkit-tap-highlight-color: transparent;
+            color: var(--text);
+        }
+        .cs-item:hover { background: var(--btn-bg); text-decoration: none; }
+        .cs-item:active { transform: scale(.93); background: var(--btn-bg); text-decoration: none; }
+        .cs-icon {
+            width: 52px; height: 52px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .cs-label {
+            font-size: .67rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.2;
+        }
+        @media (max-width: 400px) {
+            .create-sheet-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
         /* ── Mobile bottom navigation ── */
         .zoot-bottom-nav {
             display: none;
@@ -213,84 +296,7 @@
             }
             .zbn-item.zbn-new span.zbn-label { color: var(--text-muted); }
 
-            /* ── Create menu bottom sheet ── */
-            .create-sheet-overlay {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,.45);
-                z-index: 1100;
-                opacity: 0;
-                transition: opacity .22s;
-            }
-            .create-sheet-overlay.open {
-                display: block;
-                opacity: 1;
-            }
-            .create-sheet {
-                position: fixed;
-                bottom: 0; left: 0; right: 0;
-                background: var(--bg-card);
-                border-radius: 20px 20px 0 0;
-                padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
-                z-index: 1101;
-                transform: translateY(100%);
-                transition: transform .28s cubic-bezier(.32,1,.23,1);
-                box-shadow: 0 -4px 32px rgba(0,0,0,.18);
-            }
-            .create-sheet-overlay.open .create-sheet {
-                transform: translateY(0);
-            }
-            .create-sheet-handle {
-                width: 36px; height: 4px;
-                border-radius: 2px;
-                background: var(--border);
-                margin: 0 auto .9rem;
-            }
-            .create-sheet-title {
-                font-size: .78rem;
-                font-weight: 700;
-                color: var(--text-muted);
-                text-transform: uppercase;
-                letter-spacing: .08em;
-                text-align: center;
-                margin-bottom: .85rem;
-            }
-            .create-sheet-grid {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: .6rem .4rem;
-                max-width: 420px;
-                margin: 0 auto;
-            }
-            .cs-item {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: .3rem;
-                text-decoration: none;
-                padding: .6rem .2rem .5rem;
-                border-radius: 14px;
-                transition: background .15s, transform .15s;
-                -webkit-tap-highlight-color: transparent;
-                color: var(--text);
-            }
-            .cs-item:active { transform: scale(.93); background: var(--btn-bg); text-decoration: none; }
-            .cs-icon {
-                width: 48px; height: 48px;
-                border-radius: 14px;
-                display: flex; align-items: center; justify-content: center;
-                font-size: 1.45rem;
-                line-height: 1;
-                flex-shrink: 0;
-            }
-            .cs-label {
-                font-size: .65rem;
-                font-weight: 700;
-                color: var(--text-muted);
-                text-align: center;
-                line-height: 1.2;
-            }
+            /* (create-sheet styles moved outside media query — see below) */
 
             /* Notification badge */
             .zbn-badge {
