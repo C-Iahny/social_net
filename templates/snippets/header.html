@@ -726,6 +726,11 @@
             <span class="material-icons">explore</span>
             <span>{% trans "Explore" %}</span>
         </a>
+        <a href="{% url 'post:tendances' %}"
+           class="zoot-nav-link {% if request.resolver_match.url_name == 'tendances' %}active{% endif %}">
+            <span class="material-icons">trending_up</span>
+            <span>Tendances</span>
+        </a>
         <a href="{% url 'group:list' %}"
            class="zoot-nav-link {% if request.resolver_match.namespace == 'group' %}active{% endif %}">
             <span class="material-icons">groups</span>
@@ -1044,6 +1049,9 @@
     </a>
     <a href="{% url 'post:index' %}" class="zoot-mobile-link">
         <span class="material-icons">explore</span> {% trans "Explore" %}
+    </a>
+    <a href="{% url 'post:tendances' %}" class="zoot-mobile-link">
+        <span class="material-icons">trending_up</span> Tendances
     </a>
     <a href="{% url 'group:list' %}" class="zoot-mobile-link">
         <span class="material-icons">groups</span> {% trans "Groups" %}

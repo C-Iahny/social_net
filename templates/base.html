@@ -822,9 +822,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="material-icons">home</span>
             <span class="zbn-label">Feed</span>
         </a>
-        <a class="zbn-item" href="{% url 'post:index' %}" data-page="explore">
-            <span class="material-icons">explore</span>
-            <span class="zbn-label">{% trans "Explore" %}</span>
+        <a class="zbn-item" href="{% url 'post:tendances' %}" data-page="tendances">
+            <span class="material-icons">trending_up</span>
+            <span class="zbn-label">Tendances</span>
         </a>
         <button class="zbn-item zbn-new" id="zbn-create-btn" onclick="openCreateSheet()" data-page="new" aria-label="Créer">
             <div class="zbn-new-icon">

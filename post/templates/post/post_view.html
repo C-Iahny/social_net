@@ -1859,8 +1859,14 @@ body { background: var(--bg); }
         <!-- Trending hashtags -->
         {% if trending_hashtags %}
         <div class="rsb-card">
-            <p class="rsb-section-label">
-                <span class="material-icons">trending_up</span> {% trans "Trends" %}
+            <p class="rsb-section-label" style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:.3rem;">
+                    <span class="material-icons">trending_up</span> {% trans "Trends" %}
+                </span>
+                <a href="{% url 'post:tendances' %}"
+                   style="font-size:.75rem;font-weight:700;color:var(--accent);text-decoration:none;opacity:.85;">
+                    Voir tout →
+                </a>
             </p>
             {% for ht in trending_hashtags %}
             <a class="rsb-trending-row" href="{% url 'post:hashtag' ht.tag|slice:'1:' %}">
@@ -1869,6 +1875,10 @@ body { background: var(--bg); }
                 <span class="rsb-trending-count">{{ ht.count }}</span>
             </a>
             {% endfor %}
+            <a href="{% url 'post:tendances' %}"
+               style="display:block;text-align:center;padding:.55rem .5rem .4rem;font-size:.79rem;font-weight:700;color:var(--accent);text-decoration:none;border-top:1px solid var(--border);margin-top:.25rem;">
+                🔥 Toutes les tendances
+            </a>
         </div>
         {% endif %}
 
