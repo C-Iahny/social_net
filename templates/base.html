@@ -26,6 +26,26 @@
         })();
     </script>
 
+    <!-- ① bis — Anti-FOUC mode économie (comme pour le thème, doit s'exécuter avant le rendu) -->
+    <script>
+    (function() {
+        /* Lire la préférence enregistrée */
+        var ds = localStorage.getItem('vzb-data-saver');
+        /* Auto-détection : Save-Data header OU effectiveType 2g/slow-2g */
+        var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        var autoSlow = conn && (conn.saveData === true ||
+                                conn.effectiveType === '2g' ||
+                                conn.effectiveType === 'slow-2g');
+        /* Activer si explicitement activé, ou si auto ET non explicitement désactivé */
+        if (ds === '1' || (autoSlow && ds !== '0')) {
+            document.documentElement.classList.add('data-saver');
+        }
+        /* Marquer la page avec une variable globale pour le JS aval */
+        window.__VZB_DATA_SAVER = document.documentElement.classList.contains('data-saver');
+        window.__VZB_AUTO_SLOW  = autoSlow && ds === null; /* slow détecté mais user n'a pas encore choisi */
+    })();
+    </script>
+
     <!-- ② Bootstrap chargé EN PREMIER pour que nos overrides CSS le surchargent -->
     <link rel="stylesheet" type="text/css" href="{% static 'perso/bootstrap/css/bootstrap.min.css' %}">
 
@@ -448,6 +468,176 @@
 	</main>
 
 	{% include 'snippets/footer.html' %}
+
+<!-- ══════════════════════════════════════════════════════════
+     MODE ÉCONOMIE DE DONNÉES — bannière + moteur JS
+     ══════════════════════════════════════════════════════════ -->
+
+<!-- Bannière : proposée automatiquement sur connexion lente -->
+<div id="ds-slow-banner" style="display:none;" role="alert" aria-live="polite">
+    <span class="ds-banner-icon">📶</span>
+    <div class="ds-banner-text">
+        <div class="ds-banner-title">Connexion lente détectée</div>
+        <div class="ds-banner-sub">Activer le mode économie pour réduire la consommation de données&nbsp;?</div>
+    </div>
+    <div class="ds-banner-actions">
+        <button class="ds-banner-accept" onclick="dsEnable(true, true)">Activer</button>
+        <button class="ds-banner-dismiss" onclick="dsDismissBanner()">Ignorer</button>
+    </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   MODE ÉCONOMIE DE DONNÉES — Vazimba Data Saver
+   Stockage : localStorage 'vzb-data-saver' = '1' | '0' | null (auto)
+   ═══════════════════════════════════════════════════════════════════════ */
+(function() {
+'use strict';
+
+/* ── Activer / désactiver ── */
+window.dsEnable = function(on, fromBanner) {
+    var html = document.documentElement;
+    if (on) {
+        html.classList.add('data-saver');
+        window.__VZB_DATA_SAVER = true;
+        try { localStorage.setItem('vzb-data-saver', '1'); } catch(e) {}
+        _applyDataSaver();
+    } else {
+        html.classList.remove('data-saver');
+        window.__VZB_DATA_SAVER = false;
+        try { localStorage.setItem('vzb-data-saver', '0'); } catch(e) {}
+        _removeDataSaverImages();
+    }
+    _syncDsButton(on);
+    if (fromBanner) dsDismissBanner();
+};
+
+/* ── Sync du bouton dans le dropdown ── */
+function _syncDsButton(on) {
+    var icon  = document.getElementById('dd-datasaver-icon');
+    var label = document.getElementById('dd-datasaver-label');
+    if (icon)  { icon.textContent = on ? 'data_saver_on' : 'data_saver_off'; icon.classList.toggle('active', on); }
+    if (label) { label.textContent = on ? 'Mode économie actif' : 'Mode économie'; label.classList.toggle('active', on); }
+}
+
+/* ── Toggle depuis le bouton ── */
+window.toggleDataSaver = function() {
+    dsEnable(!window.__VZB_DATA_SAVER);
+};
+
+/* ── Appliquer aux images du feed (mode économie activé) ── */
+function _applyDataSaver() {
+    /* Images feed : remplacer src par placeholder cliquable */
+    document.querySelectorAll('.ds-img:not(.ds-pending):not(.ds-loaded)').forEach(function(img) {
+        var realSrc = img.dataset.fullSrc || img.getAttribute('src');
+        if (!realSrc || realSrc.indexOf('data:') === 0) return;
+        img.dataset.fullSrc = realSrc;
+        img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23e5e7eb' width='400' height='250'/%3E%3C/svg%3E";
+        img.classList.add('ds-pending');
+        img.style.minHeight = '100px';
+        var wrap = img.closest('.ds-img-wrap');
+        if (wrap) wrap.setAttribute('data-hint', 'Toucher pour charger');
+    });
+    /* Vidéos : déjà lazy par défaut (voir _post_media.html), rien de plus à faire */
+}
+
+/* ── Retirer le mode économie des images (mode normal réactivé) ── */
+function _removeDataSaverImages() {
+    document.querySelectorAll('.ds-img.ds-pending').forEach(function(img) {
+        if (img.dataset.fullSrc) {
+            img.src = img.dataset.fullSrc;
+            delete img.dataset.fullSrc;
+        }
+        img.classList.remove('ds-pending');
+        img.style.minHeight = '';
+        var wrap = img.closest('.ds-img-wrap');
+        if (wrap) wrap.removeAttribute('data-hint');
+    });
+}
+
+/* ── Clic sur une image en mode économie → charger la vraie ── */
+document.addEventListener('click', function(e) {
+    var img = e.target.closest('.ds-img-wrap .ds-img.ds-pending');
+    if (!img) return;
+    if (img.dataset.fullSrc) {
+        e.stopPropagation(); /* Ne pas ouvrir la lightbox globale tout de suite */
+        img.src = img.dataset.fullSrc;
+        img.onload = function() {
+            img.classList.remove('ds-pending');
+            img.classList.add('ds-loaded');
+            img.style.minHeight = '';
+            var wrap = img.closest('.ds-img-wrap');
+            if (wrap) { wrap.removeAttribute('data-hint'); wrap.click(); } /* ouvrir lightbox */
+        };
+    }
+}, true);
+
+/* ── Lecture d'une vidéo lazy (overlay play button) ── */
+window.dsPlayVideo = function(overlay) {
+    var wrap = overlay.closest('.ds-vid-wrap');
+    var vid  = wrap ? wrap.querySelector('video[data-src]') : null;
+    if (!vid) return;
+    vid.src = vid.dataset.src;
+    vid.load();
+    vid.play().catch(function() { /* autoplay bloqué → l'utilisateur a le contrôle */ });
+    wrap.classList.add('ds-playing');
+};
+
+/* ── MutationObserver : appliquer aux nouveaux médias chargés dynamiquement ── */
+var _dsObserver = new MutationObserver(function(mutations) {
+    if (!window.__VZB_DATA_SAVER) return;
+    mutations.forEach(function(m) {
+        m.addedNodes.forEach(function(node) {
+            if (node.nodeType !== 1) return;
+            node.querySelectorAll && node.querySelectorAll('.ds-img:not(.ds-pending):not(.ds-loaded)').forEach(function(img) {
+                var realSrc = img.dataset.fullSrc || img.getAttribute('src');
+                if (!realSrc || realSrc.indexOf('data:') === 0) return;
+                img.dataset.fullSrc = realSrc;
+                img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23e5e7eb' width='400' height='250'/%3E%3C/svg%3E";
+                img.classList.add('ds-pending');
+                img.style.minHeight = '100px';
+                var wrap = img.closest('.ds-img-wrap');
+                if (wrap) wrap.setAttribute('data-hint', 'Toucher pour charger');
+            });
+        });
+    });
+});
+_dsObserver.observe(document.body, { childList: true, subtree: true });
+
+/* ── Bannière connexion lente ── */
+window.dsDismissBanner = function() {
+    var b = document.getElementById('ds-slow-banner');
+    if (!b) return;
+    b.classList.add('ds-hiding');
+    setTimeout(function() { b.style.display = 'none'; b.classList.remove('ds-hiding'); }, 300);
+    try { sessionStorage.setItem('vzb-ds-banner-dismissed', '1'); } catch(e) {}
+};
+
+/* ── Init au chargement ── */
+document.addEventListener('DOMContentLoaded', function() {
+    /* Sync bouton dropdown */
+    _syncDsButton(!!window.__VZB_DATA_SAVER);
+
+    /* Appliquer data-saver aux images existantes si actif */
+    if (window.__VZB_DATA_SAVER) {
+        _applyDataSaver();
+    }
+
+    /* Bannière connexion lente (auto-détecté, user n'a pas encore choisi) */
+    if (window.__VZB_AUTO_SLOW) {
+        var dismissed = false;
+        try { dismissed = !!sessionStorage.getItem('vzb-ds-banner-dismissed'); } catch(e) {}
+        if (!dismissed) {
+            setTimeout(function() {
+                var b = document.getElementById('ds-slow-banner');
+                if (b) b.style.display = 'flex';
+            }, 1500); /* attendre 1.5s que la page soit stable */
+        }
+    }
+});
+
+})(); /* /IIFE data-saver */
+</script>
 
 <!-- ══════════════════════════════════════════════════════════
      LIGHTBOX GLOBAL — ouvert par openGalleryLightbox(srcs, idx)

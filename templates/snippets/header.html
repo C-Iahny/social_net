@@ -982,6 +982,12 @@
                     <span class="material-icons" id="dd-theme-icon">dark_mode</span>
                     <span id="dd-theme-label">{% trans "Dark mode" %}</span>
                 </button>
+                <!-- Mode économie de données -->
+                <button class="dropdown-item" onclick="toggleDataSaver()" type="button"
+                        style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
+                    <span class="material-icons" id="dd-datasaver-icon" style="color:var(--text-muted);">data_saver_off</span>
+                    <span id="dd-datasaver-label">Mode économie</span>
+                </button>
                 <!-- Sélecteur de langue compact -->
                 <div style="display:flex;gap:.4rem;padding:.3rem .85rem .65rem;flex-wrap:wrap;">
                     {% for lang_code, lang_name in LANGUAGES %}
