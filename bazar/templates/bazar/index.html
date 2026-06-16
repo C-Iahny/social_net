@@ -441,6 +441,42 @@
 </div>
 {% endif %}
 
+<!-- ── Catégories en vignettes (visible seulement si aucun filtre actif) ── -->
+{% if not sel_cat and not q and not sel_cond and not sel_region %}
+<div style="max-width:1200px;margin:.8rem auto 0;padding:0 1rem;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.55rem;">
+        {% for val, label in categories %}
+        <a href="?cat={{ val }}"
+           style="background:var(--bg-card);border:1.5px solid var(--border);border-radius:12px;
+                  padding:.65rem .4rem;text-align:center;text-decoration:none;color:var(--text-primary);
+                  transition:border-color .18s,transform .18s;display:block;"
+           onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'"
+           onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+            <div style="font-size:1.45rem;margin-bottom:.3rem;">
+                {% if val == 'electronique' %}📱
+                {% elif val == 'vehicules' %}🚗
+                {% elif val == 'immobilier' %}🏠
+                {% elif val == 'mode' %}👗
+                {% elif val == 'maison' %}🛋️
+                {% elif val == 'agriculture' %}🌾
+                {% elif val == 'alimentaire' %}🍛
+                {% elif val == 'services' %}🔧
+                {% elif val == 'emploi' %}💼
+                {% elif val == 'artisanat' %}🎨
+                {% elif val == 'sports' %}⚽
+                {% elif val == 'bebe' %}👶
+                {% else %}🏷️
+                {% endif %}
+            </div>
+            <div style="font-size:.68rem;font-weight:700;line-height:1.25;color:var(--text-secondary,var(--text-muted));">
+                {{ label|truncatechars:18 }}
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <!-- ── Filtres ── -->
 <div class="bazar-filters">
     <form method="get" action="{% url 'bazar:index' %}" class="bazar-filters-inner" id="filter-form">
@@ -516,10 +552,18 @@
 
         <!-- Image -->
         {% with primary=annonce.get_primary_image %}
+        {% with nb_photos=annonce.images.all|length %}
         {% if primary %}
         <div class="bazar-card-img" style="position:relative;">
             <img src="{{ primary.image.url }}" alt="{{ annonce.title }}" loading="lazy">
             <span class="bazar-badge-cond">{{ annonce.get_condition_display }}</span>
+            {% if nb_photos > 1 %}
+            <span style="position:absolute;bottom:7px;right:7px;background:rgba(0,0,0,.55);color:#fff;
+                         font-size:.65rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;
+                         backdrop-filter:blur(4px);display:inline-flex;align-items:center;gap:.2rem;">
+                📷 {{ nb_photos }}
+            </span>
+            {% endif %}
             {% if annonce.status == 'vendue' %}
             <div class="bazar-badge-sold">{% trans "VENDUE" %}</div>
             {% endif %}
@@ -532,6 +576,7 @@
             {% endif %}
         </div>
         {% endif %}
+        {% endwith %}
         {% endwith %}
 
         <!-- Infos -->
@@ -558,19 +603,19 @@
 {% if page_obj.has_other_pages %}
 <div class="bazar-pagination">
     {% if page_obj.has_previous %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}" class="bazar-page-btn">←</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}" class="bazar-page-btn">←</a>
     {% endif %}
 
     {% for num in page_obj.paginator.page_range %}
     {% if page_obj.number == num %}
     <span class="bazar-page-btn active">{{ num }}</span>
     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ num }}" class="bazar-page-btn">{{ num }}</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ num }}" class="bazar-page-btn">{{ num }}</a>
     {% endif %}
     {% endfor %}
 
     {% if page_obj.has_next %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}" class="bazar-page-btn">→</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}" class="bazar-page-btn">→</a>
     {% endif %}
 </div>
 {% endif %}

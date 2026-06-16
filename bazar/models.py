@@ -102,6 +102,12 @@ class Annonce(models.Model):
     views_count = models.PositiveIntegerField(default=0, verbose_name=_('Vues'))
     created_at  = models.DateTimeField(auto_now_add=True)
     updated_at  = models.DateTimeField(auto_now=True)
+    bumped_at   = models.DateTimeField(
+        null=True, blank=True, default=None,
+        verbose_name=_('Rafraîchi le'),
+        help_text=_('Date du dernier bump — utilisé pour remonter en tête de liste (1 fois / 24h).'),
+        db_index=True,
+    )
 
     class Meta:
         ordering = ['-created_at']
