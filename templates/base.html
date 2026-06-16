@@ -820,17 +820,17 @@ document.addEventListener('DOMContentLoaded', function() {
     <nav class="zoot-bottom-nav" id="zoot-bottom-nav">
         <a class="zbn-item" href="{% url 'post:post-view' %}" data-page="feed">
             <span class="material-icons">home</span>
-            <span class="zbn-label">Feed</span>
+            <span class="zbn-label">{% trans "Feed" %}</span>
         </a>
         <a class="zbn-item" href="{% url 'post:tendances' %}" data-page="tendances">
             <span class="material-icons">trending_up</span>
-            <span class="zbn-label">Tendances</span>
+            <span class="zbn-label">{% trans "Tendances" %}</span>
         </a>
-        <button class="zbn-item zbn-new" id="zbn-create-btn" onclick="openCreateSheet()" data-page="new" aria-label="Créer">
+        <button class="zbn-item zbn-new" id="zbn-create-btn" onclick="openCreateSheet()" data-page="new" aria-label="{% trans 'Créer' %}">
             <div class="zbn-new-icon">
                 <span class="material-icons">add</span>
             </div>
-            <span class="zbn-label">Créer</span>
+            <span class="zbn-label">{% trans "Créer" %}</span>
         </button>
         <a class="zbn-item" href="{% url 'bazar:index' %}" data-page="bazar">
             <span class="material-icons">storefront</span>
@@ -838,7 +838,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </a>
         <a class="zbn-item" href="{% url 'account:view' user_id=request.user.id %}" data-page="profile">
             <span class="material-icons">person</span>
-            <span class="zbn-label">Profil</span>
+            <span class="zbn-label">{% trans "Profil" %}</span>
         </a>
     </nav>
 

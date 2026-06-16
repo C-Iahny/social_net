@@ -1285,3 +1285,23 @@ msgstr "Post your daily announcement"
 
 msgid "Photo / Vidéo"
 msgstr "Photo / Video"
+
+# ── Navigation (Feature 7 + bottom nav) ──────────────────────────────────────
+
+msgid "Tendances"
+msgstr "Trends"
+
+msgid "Créer"
+msgstr "Create"
+
+msgid "Profil"
+msgstr "Profile"
+
+# ── Vérification téléphone (Feature 6) ───────────────────────────────────────
+
+msgid "Tél. vérifié"
+msgstr "Tel. verified"
+
+msgid "Numéro de téléphone vérifié par SMS"
+msgstr "Phone number verified by SMS"
+
