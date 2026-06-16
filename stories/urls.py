@@ -11,4 +11,5 @@ urlpatterns = [
     path('feed/',                       views.get_feed_stories,   name='feed'),
     path('mine/',                       views.get_my_stories,     name='mine'),
     path('profile/<int:user_id>/',      views.get_profile_stories,name='profile'),
+    path('music-search/',               views.music_search,       name='music-search'),
 ]

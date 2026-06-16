@@ -365,6 +365,11 @@ SMS_OTP_VALID_MINUTES = 10
 # Max envois par numéro par heure (anti-abus)
 SMS_OTP_MAX_SENDS_PER_HOUR = 3
 
+# ── Recherche musique (Jamendo — gratuit, libre de droits) ────────────────────
+# Créer un compte gratuit sur https://developer.jamendo.com/ pour obtenir un client_id
+# La valeur par défaut est l'ID de démo Jamendo (fonctionnel, mais limité)
+JAMENDO_CLIENT_ID = config('JAMENDO_CLIENT_ID', default='b6747d04')
+
 # ── Cache (pour les trending hashtags) ───────────────────────────────────────
 CACHES = {
     'default': {
