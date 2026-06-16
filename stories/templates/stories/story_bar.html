@@ -8,14 +8,14 @@
 /* ── Variables & reset ─────────────────────────────────── */
 .zoot-stories * { box-sizing: border-box; }
 
-/* ── Conteneur scrollable ──────────────────────────────── */
+/* ── Conteneur scrollable — cartes portrait ────────────── */
 .zoot-stories {
     display: flex;
-    align-items: flex-start;
-    gap: .75rem;
-    padding: .75rem 1rem;
+    align-items: stretch;
+    gap: .6rem;
+    padding: .65rem .85rem;
     overflow-x: auto;
-    overflow-y: visible;
+    overflow-y: hidden;
     scrollbar-width: none;
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -23,95 +23,88 @@
     margin-bottom: 1.25rem;
     box-shadow: var(--shadow);
     scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
 }
 .zoot-stories::-webkit-scrollbar { display: none; }
 
-/* ── Item générique ────────────────────────────────────── */
+/* ── Carte portrait ─────────────────────────────────────── */
 .story-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: .38rem;
-    cursor: pointer;
     flex-shrink: 0;
-    width: 72px;
-}
-.story-item-label {
-    font-size: .68rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-align: center;
-    max-width: 72px;
+    width: 88px; height: 152px;
+    border-radius: 14px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 1.2;
+    position: relative;
+    cursor: pointer;
+    background: #111;
+    scroll-snap-align: start;
+    transition: transform .18s, box-shadow .18s;
+    box-shadow: 0 2px 10px rgba(0,0,0,.12);
+    border: 2.5px solid transparent;
+}
+.story-item:hover { transform: scale(1.04); box-shadow: 0 6px 22px rgba(0,0,0,.2); }
+.story-item.has-story { border-color: var(--accent); }
+.story-item.all-seen  { border-color: var(--text-muted); }
+
+/* Fond — image ou gradient */
+.story-item-bg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+}
+.story-item-bg-text {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: .5rem;
+    font-size: .72rem; font-weight: 700; color: #fff;
+    text-align: center; text-shadow: 0 1px 6px rgba(0,0,0,.5);
+    word-break: break-word; line-height: 1.3;
 }
 
-/* ── Avatar ring ────────────────────────────────────────── */
-.story-avatar-ring {
-    position: relative;
-    width: 60px; height: 60px;
-    flex-shrink: 0;
+/* Overlay bas — gradient + nom */
+.story-item-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: .4rem .38rem .32rem;
+    background: linear-gradient(transparent, rgba(0,0,0,.72));
 }
-.story-avatar-ring::before {
-    content: '';
-    position: absolute;
-    inset: -3px;
-    border-radius: 50%;
-    background: conic-gradient(
-        var(--accent) 0deg,
-        var(--accent2) 120deg,
-        var(--accent3) 240deg,
-        var(--accent) 360deg
-    );
-    animation: ringRotate 4s linear infinite;
-    opacity: 0;
-    transition: opacity .3s;
+.story-item-label {
+    font-size: .6rem; font-weight: 700; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    line-height: 1.2; text-shadow: 0 1px 4px rgba(0,0,0,.6);
+    display: block;
 }
-.story-avatar-ring.has-story::before { opacity: 1; }
-.story-avatar-ring.all-seen::before {
-    background: conic-gradient(
-        var(--text-muted) 0deg,
-        var(--border) 360deg
-    );
-    animation: none;
-}
-[data-theme="dark"] .story-avatar-ring.has-story::before {
-    box-shadow: 0 0 12px rgba(0,207,255,.4), 0 0 20px rgba(191,95,255,.2);
-}
-@keyframes ringRotate {
-    to { transform: rotate(360deg); }
-}
-.story-avatar-inner {
-    position: absolute;
-    inset: 2px;
-    border-radius: 50%;
-    background: var(--bg-card);
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-}
-.story-avatar-inner img {
-    width: 100%; height: 100%;
-    border-radius: 50%;
+
+/* Mini avatar en haut à gauche */
+.story-item-avatar {
+    position: absolute; top: .32rem; left: .32rem;
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,.85);
     object-fit: cover;
 }
 
-/* ── "Ma story" item – badge + overlay ──────────────────── */
-#my-story-item { position: relative; }
-.story-add-overlay {
-    position: absolute;
-    bottom: -2px; right: -2px;
-    width: 22px; height: 22px;
-    border-radius: 50%;
+/* ── Carte "Ma story" — bouton + ────────────────────────── */
+.story-item-mine {
+    background: linear-gradient(160deg,
+        color-mix(in srgb, var(--accent) 40%, #1a1a1a),
+        color-mix(in srgb, var(--accent2) 25%, #0a0a0a));
+}
+.story-add-btn {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -60%);
+    width: 38px; height: 38px; border-radius: 50%;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     display: flex; align-items: center; justify-content: center;
-    border: 2px solid var(--bg-card);
-    z-index: 2;
+    box-shadow: 0 2px 14px rgba(0,0,0,.45);
     transition: transform .15s;
 }
-#my-story-item:hover .story-add-overlay { transform: scale(1.15); }
-.story-add-overlay .material-icons { font-size: .75rem; color: #fff; }
+.story-item:hover .story-add-btn { transform: translate(-50%, -60%) scale(1.12); }
+.story-add-btn .material-icons { font-size: 1.2rem; color: #fff; }
+.story-add-label {
+    position: absolute; bottom: .4rem; left: 0; right: 0;
+    text-align: center;
+    font-size: .6rem; font-weight: 700; color: rgba(255,255,255,.85);
+    letter-spacing: .02em;
+}
 
 /* ══════════════════════════════════════════════════════════
    MODAL CRÉATEUR
@@ -282,25 +275,50 @@ input#sc-file-input { display: none; }
     outline-offset: 3px;
 }
 #sc-text-overlay:active { outline-color: rgba(255,255,255,.9); }
-#sc-text-overlay p {
-    font-size: 1.05rem; font-weight: 700; color: #fff;
+#sc-text-overlay[contenteditable]:focus { outline: 2px solid rgba(255,255,255,.9); outline-offset: 3px; }
+#sc-text-card-content {
+    font-size: 1.1rem; font-weight: 700; color: #fff;
     text-align: center; word-break: break-word; margin: 0;
     text-shadow: 0 2px 8px rgba(0,0,0,.6);
     line-height: 1.4;
+    min-width: 60px; min-height: 1.4em;
+    outline: none;
+}
+#sc-text-card-content:empty::before {
+    content: attr(data-placeholder);
+    color: rgba(255,255,255,.55);
     pointer-events: none;
 }
 #sc-text-overlay::before {
-    content: '✥ déplacer';
-    position: absolute; top: -20px; left: 50%;
+    content: '✥ déplacer · toucher pour écrire';
+    position: absolute; top: -22px; left: 50%;
     transform: translateX(-50%);
     background: rgba(0,0,0,.55);
     color: rgba(255,255,255,.85);
-    font-size: .55rem; font-weight: 700;
+    font-size: .52rem; font-weight: 700;
     padding: 1px 7px; border-radius: 4px;
     white-space: nowrap;
     pointer-events: none;
     letter-spacing: .03em;
 }
+
+/* Barre de légende en bas de la preview (types image/video) */
+#sc-caption-bar {
+    display: none;
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: .55rem .75rem;
+    background: linear-gradient(transparent, rgba(0,0,0,.72));
+    z-index: 6;
+}
+#sc-caption-bar-input {
+    width: 100%; background: transparent; border: none; outline: none;
+    color: #fff; font-size: .92rem; font-weight: 600;
+    text-align: center;
+    text-shadow: 0 1px 6px rgba(0,0,0,.8);
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    caret-color: #fff;
+}
+#sc-caption-bar-input::placeholder { color: rgba(255,255,255,.5); }
 
 /* Gradients */
 .grad_cyan    { background: linear-gradient(135deg, #00cfff, #0066ff); }
@@ -727,24 +745,28 @@ input#sc-file-input { display: none; }
 <!-- ── BARRE STORIES ─────────────────────────────────────── -->
 <div class="zoot-stories" id="zoot-stories-bar">
 
-    <!-- Item "Ma story" : dual-mode (ouvrir mes stories OU créer) -->
+    <!-- Carte "Ma story" -->
     {% if request.user.is_authenticated %}
-    <div class="story-item" id="my-story-item" onclick="myStoryClick()" title="Ma story">
-        <div class="story-avatar-ring" id="my-story-ring">
-            <div class="story-avatar-inner">
-                <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}" id="my-story-avatar-img">
-            </div>
-            <!-- Bouton + pour tous les utilisateurs connectés -->
-            <div class="story-add-overlay" id="my-story-add-overlay">
-                <span class="material-icons">add</span>
-            </div>
+    <div class="story-item story-item-mine" id="my-story-item" onclick="myStoryClick()" title="Ma story">
+        <!-- Avatar (visible si l'utilisateur a des stories) -->
+        <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}"
+             class="story-item-avatar" id="my-story-avatar-img">
+        <!-- Thumbnail (si story existante — rempli par JS) -->
+        <img id="my-story-thumb" class="story-item-bg" alt="" style="display:none;">
+        <!-- Bouton + par défaut (masqué si story existante) -->
+        <div class="story-add-btn" id="my-story-add-btn">
+            <span class="material-icons">add</span>
         </div>
-        <span class="story-item-label">Ma story</span>
+        <span class="story-add-label" id="my-story-add-label">Ma story</span>
+        <!-- Overlay bas (visible si story existante) -->
+        <div class="story-item-overlay" id="my-story-overlay" style="display:none;">
+            <span class="story-item-label">Ma story</span>
+        </div>
     </div>
     <script>var _canPostStory = true;</script>
     {% endif %}
 
-    <!-- Stories des amis (chargées dynamiquement) -->
+    <!-- Stories des autres (chargées dynamiquement) -->
     <div id="story-items-container" style="display:contents;"></div>
 
 </div>
@@ -789,9 +811,17 @@ input#sc-file-input { display: none; }
             <div id="sc-text-bg" class="grad_cyan"></div>
             <img  id="sc-preview-img"   alt="">
             <video id="sc-preview-video" muted playsinline loop></video>
-            <!-- Texte draggable (text / image_text) -->
+            <!-- Texte draggable + éditable directement (text / image_text) -->
             <div id="sc-text-overlay">
-                <p id="sc-text-card-content">Votre texte ici…</p>
+                <p id="sc-text-card-content"
+                   contenteditable="true"
+                   data-placeholder="Tapez votre texte…"
+                   spellcheck="false"></p>
+            </div>
+            <!-- Barre légende bas (image / video) -->
+            <div id="sc-caption-bar">
+                <input type="text" id="sc-caption-bar-input"
+                       maxlength="200" placeholder="Ajouter une légende sur la photo…">
             </div>
             <div class="sc-preview-placeholder" id="sc-preview-placeholder">
                 <span class="material-icons">add_photo_alternate</span>
@@ -812,13 +842,8 @@ input#sc-file-input { display: none; }
             </div>
         </div>
 
-        <!-- Caption -->
-        <div class="sc-caption-wrap">
-            <span class="material-icons">edit</span>
-            <input type="text" id="sc-caption-input" maxlength="200"
-                   placeholder="Ajouter un texte ou une légende…"
-                   oninput="onCaptionInput(this.value)">
-        </div>
+        <!-- Caption — champ caché (lecture seule, synchronisé depuis les overlays sur photo) -->
+        <input type="hidden" id="sc-caption-input">
 
         <!-- Lien promotionnel -->
         <div class="sc-caption-wrap" style="margin-top:.5rem;">
@@ -1068,6 +1093,15 @@ var _textDragStartX    = 50;
 var _textDragStartY    = 50;
 
 /* ════════════════════════════════════════════
+   UTILS GLOBAUX
+   ════════════════════════════════════════════ */
+function _esc(str) {
+    return String(str)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ════════════════════════════════════════════
    CHARGEMENT DES STORIES
    ════════════════════════════════════════════ */
 function loadStories() {
@@ -1092,7 +1126,7 @@ function renderStoryBar() {
     updateMyStoryItem(myGroup);
 
     _groups.forEach(function(group, gi) {
-        // Sauter le groupe de l'utilisateur connecté (géré par le bouton "Ma story")
+        // Sauter le groupe de l'utilisateur connecté (géré par "Ma story")
         if (group.user_id === ME_ID) return;
 
         var item = document.createElement('div');
@@ -1100,34 +1134,67 @@ function renderStoryBar() {
         item.setAttribute('data-group', gi);
         item.onclick = function(){ openStoryViewer(gi); };
 
-        // Corriger: utiliser has_unseen (API) et non all_seen (non défini)
-        var ringClass = 'story-avatar-ring';
         if (group.stories && group.stories.length > 0) {
-            ringClass += ' has-story';
-            if (!group.has_unseen) ringClass += ' all-seen';
+            item.classList.add('has-story');
+            if (!group.has_unseen) item.classList.add('all-seen');
+        }
+
+        // Choisir le fond : photo de la première story OU gradient pour texte
+        var firstStory = group.stories[0] || {};
+        var bgHtml = '';
+        if (firstStory.media_url) {
+            bgHtml = '<img class="story-item-bg" src="' + firstStory.media_url +
+                     '" alt="" loading="lazy">';
+        } else if (firstStory.bg_gradient) {
+            bgHtml = '<div class="story-item-bg ' + (firstStory.bg_gradient || 'grad_cyan') + '">' +
+                     '<div class="story-item-bg-text">' +
+                         _esc(firstStory.caption || '') +
+                     '</div></div>';
+        } else {
+            bgHtml = '<div class="story-item-bg grad_night"></div>';
         }
 
         item.innerHTML =
-            '<div class="' + ringClass + '">' +
-                '<div class="story-avatar-inner">' +
-                    '<img src="' + group.avatar + '" alt="' + group.username + '" loading="lazy">' +
-                '</div>' +
-            '</div>' +
-            '<span class="story-item-label">' + (group.username || '').substring(0, 10) + '</span>';
+            bgHtml +
+            '<img class="story-item-avatar" src="' + group.avatar + '" alt="' +
+                _esc(group.username || '') + '" loading="lazy">' +
+            '<div class="story-item-overlay">' +
+                '<span class="story-item-label">' + _esc((group.username || '').substring(0,12)) + '</span>' +
+            '</div>';
 
         container.appendChild(item);
     });
 }
 
 function updateMyStoryItem(myGroup) {
-    var ring = document.getElementById('my-story-ring');
-    if (!ring) return;
+    var card = document.getElementById('my-story-item');
+    if (!card) return;
+    var thumb    = document.getElementById('my-story-thumb');
+    var addBtn   = document.getElementById('my-story-add-btn');
+    var addLabel = document.getElementById('my-story-add-label');
+    var overlay  = document.getElementById('my-story-overlay');
+
     if (myGroup && myGroup.stories && myGroup.stories.length > 0) {
-        ring.classList.add('has-story');
-        if (!myGroup.has_unseen) ring.classList.add('all-seen');
-        else ring.classList.remove('all-seen');
+        card.classList.add('has-story');
+        if (!myGroup.has_unseen) card.classList.add('all-seen');
+        else card.classList.remove('all-seen');
+
+        // Afficher la miniature de la première story
+        var firstStory = myGroup.stories[0];
+        if (firstStory.media_url && thumb) {
+            thumb.src = firstStory.media_url;
+            thumb.style.display = 'block';
+        }
+        // Masquer le bouton + et label, montrer l'overlay bas
+        if (addBtn)   addBtn.style.display   = 'none';
+        if (addLabel) addLabel.style.display  = 'none';
+        if (overlay)  overlay.style.display   = 'block';
     } else {
-        ring.classList.remove('has-story', 'all-seen');
+        card.classList.remove('has-story', 'all-seen');
+        if (thumb)    { thumb.style.display = 'none'; thumb.src = ''; }
+        if (addBtn)   addBtn.style.display   = 'flex';
+        if (addLabel) addLabel.style.display  = 'block';
+        if (overlay)  overlay.style.display   = 'none';
     }
 }
 
@@ -1169,24 +1236,34 @@ window.selectStoryType = function(type, el) {
     // Audio optionnel uniquement pour les stories avec média (pas texte pur)
     document.getElementById('sc-audio-section').style.display = isText ? 'none' : 'block';
 
+    var captionBar = document.getElementById('sc-caption-bar');
+
     if (isText) {
-        // Type texte : fond gradient visible, overlay texte visible, pas de file input
+        // Type texte : fond gradient visible, overlay texte éditable visible
         document.getElementById('sc-preview').onclick = null;
         document.getElementById('sc-text-bg').style.display = 'block';
         document.getElementById('sc-text-overlay').style.display = 'block';
         document.getElementById('sc-preview-placeholder').style.display = 'none';
         document.getElementById('sc-preview-img').style.display = 'none';
         document.getElementById('sc-preview-video').style.display = 'none';
+        if (captionBar) captionBar.style.display = 'none';
+        // Focus auto sur le texte
+        setTimeout(function(){ var p = document.getElementById('sc-text-card-content'); if (p) p.focus(); }, 80);
     } else {
-        // Types avec média : cacher fond gradient, réinitialiser le fichier
+        // Types avec média : cacher fond gradient
         document.getElementById('sc-preview').onclick = triggerFileInput;
         document.getElementById('sc-text-bg').style.display = 'none';
         if (!_scFile) {
             document.getElementById('sc-text-overlay').style.display = 'none';
+            if (captionBar) captionBar.style.display = 'none';
             showPlaceholder();
         } else if (type === 'image_text') {
-            // image_text : overlay texte sur l'image
             document.getElementById('sc-text-overlay').style.display = 'block';
+            if (captionBar) captionBar.style.display = 'none';
+        } else {
+            // image / video : barre de légende en bas
+            document.getElementById('sc-text-overlay').style.display = 'none';
+            if (captionBar) captionBar.style.display = 'block';
         }
     }
 
@@ -1221,9 +1298,15 @@ window.onFileSelected = function(input) {
             var img = document.getElementById('sc-preview-img');
             img.src = url; img.style.display = 'block';
         }
-        // Pour image+texte : montrer l'overlay texte draggable sur l'image
+        // Afficher l'overlay ou la barre de légende selon le type
         if (_scType === 'image_text') {
             document.getElementById('sc-text-overlay').style.display = 'block';
+            document.getElementById('sc-caption-bar').style.display = 'none';
+        } else if (_scType === 'image' || _scType === 'video') {
+            document.getElementById('sc-caption-bar').style.display = 'block';
+            document.getElementById('sc-text-overlay').style.display = 'none';
+            // Focus sur la barre légende
+            setTimeout(function(){ var cb = document.getElementById('sc-caption-bar-input'); if(cb) cb.focus(); }, 80);
         }
     }
 
@@ -1245,9 +1328,7 @@ window.selectGrad = function(grad, el) {
     document.getElementById('sc-text-bg').className = grad;
 };
 
-window.onCaptionInput = function(val) {
-    document.getElementById('sc-text-card-content').textContent = val || 'Votre texte ici…';
-};
+/* onCaptionInput supprimé — le texte est maintenant saisi directement sur la photo via contenteditable */
 
 /* ════════════════════════════════════════════
    AUDIO CREATOR
@@ -1505,7 +1586,15 @@ function initTextDrag() {
 }
 
 window.publishStory = function() {
-    var caption = document.getElementById('sc-caption-input').value.trim();
+    // Lire la légende depuis l'overlay sur la photo (text/image_text)
+    // ou depuis la barre de légende en bas (image/video)
+    var caption = '';
+    if (_scType === 'text' || _scType === 'image_text') {
+        caption = (document.getElementById('sc-text-card-content').textContent || '').trim();
+    } else {
+        caption = (document.getElementById('sc-caption-bar-input') || {}).value || '';
+        caption = caption.trim();
+    }
     if (_scType === 'text' && !caption) {
         alert('Entrez un texte pour votre story !'); return;
     }
@@ -1598,10 +1687,15 @@ function resetCreator() {
     var ov = document.getElementById('sc-text-overlay');
     if (ov) { ov.style.left = '50%'; ov.style.top = '50%'; }
 
-    document.getElementById('sc-caption-input').value = '';
+    // Vider les champs de texte/légende
+    document.getElementById('sc-text-card-content').innerHTML = '';        // efface texte overlay
+    var cbInput = document.getElementById('sc-caption-bar-input');
+    if (cbInput) cbInput.value = '';
+    var cb = document.getElementById('sc-caption-bar');
+    if (cb) cb.style.display = 'none';
+
     document.getElementById('sc-grad-section').style.display = 'none';
     document.getElementById('sc-text-bg').className = 'grad_cyan';
-    document.getElementById('sc-text-card-content').textContent = 'Votre texte ici…';
     document.querySelectorAll('.sc-grad-swatch').forEach(function(s){ s.classList.remove('active'); });
     document.querySelector('.sc-grad-swatch[data-grad="grad_cyan"]').classList.add('active');
 
@@ -1708,13 +1802,10 @@ function renderCurrentStory() {
             group.has_unseen = group.stories.some(function(s){ return !s.seen; });
             // Mettre à jour le ring dans la barre
             var storyItems = document.querySelectorAll('#story-items-container .story-item');
-            storyItems.forEach(function(el, i) {
+            storyItems.forEach(function(el) {
                 if (parseInt(el.dataset.group) === _curGroup) {
-                    var ring = el.querySelector('.story-avatar-ring');
-                    if (ring) {
-                        if (!group.has_unseen) ring.classList.add('all-seen');
-                        else ring.classList.remove('all-seen');
-                    }
+                    if (!group.has_unseen) el.classList.add('all-seen');
+                    else el.classList.remove('all-seen');
                 }
             });
         });
