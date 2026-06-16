@@ -791,6 +791,9 @@ input#sc-file-input { display: none; }
         </button>
     </div>
     <script>var _canPostStory = true;</script>
+    <!-- Input fichier HORS du modal — toujours dans le DOM, déclenché depuis la carte -->
+    <input type="file" id="sc-direct-picker" accept="image/*,video/*" style="display:none;"
+           onchange="onFileSelected(this)">
     {% endif %}
 
     <!-- Stories des autres (chargées dynamiquement) -->
@@ -1208,40 +1211,56 @@ function updateMyStoryItem(myGroup) {
         if (!myGroup.has_unseen) card.classList.add('all-seen');
         else card.classList.remove('all-seen');
 
-        // Afficher la miniature de la première story
+        // Clic sur la carte = ouvre le picker (ajouter une nouvelle story)
+        // La miniature a son propre onclick pour voir les stories existantes
+        card.onclick = function() { myStoryClick(); };
+
+        // Afficher la miniature cliquable pour voir les stories
         var firstStory = myGroup.stories[0];
         if (firstStory.media_url && thumb) {
             thumb.src = firstStory.media_url;
             thumb.style.display = 'block';
+            thumb.onclick = function(e) { e.stopPropagation(); viewMyStories(); };
+            thumb.style.cursor = 'pointer';
         }
-        // Masquer le bouton + et label, montrer l'overlay bas
-        if (addBtn)   addBtn.style.display   = 'none';
+        // Masquer label, montrer l'overlay avec un "+" visible
         if (addLabel) addLabel.style.display  = 'none';
         if (overlay)  overlay.style.display   = 'block';
-        // Bouton T : visible (l'utilisateur peut ajouter une story texte en plus)
+        // Garder le bouton "+" mais le rendre petit en bas à gauche
+        if (addBtn) {
+            addBtn.style.display = 'flex';
+            addBtn.style.cssText += ';width:26px;height:26px;bottom:6px;left:6px;top:auto;font-size:.8rem;';
+        }
         if (textBtn) textBtn.style.display = 'flex';
     } else {
         card.classList.remove('has-story', 'all-seen');
-        if (thumb)    { thumb.style.display = 'none'; thumb.src = ''; }
-        if (addBtn)   addBtn.style.display   = 'flex';
+        card.onclick = function() { myStoryClick(); };
+        if (thumb)    { thumb.style.display = 'none'; thumb.src = ''; thumb.onclick = null; }
+        if (addBtn) {
+            addBtn.style.display = 'flex';
+            addBtn.style.cssText = ''; // remettre le style par défaut
+        }
         if (addLabel) addLabel.style.display  = 'block';
         if (overlay)  overlay.style.display   = 'none';
-        // Bouton T visible aussi quand pas de story (alternative texte)
         if (textBtn) textBtn.style.display = 'flex';
     }
 }
 
 window.myStoryClick = function() {
+    // Toujours ouvrir directement le sélecteur de fichier (photo / vidéo)
+    // L'input est HORS du modal pour être toujours accessible dans le DOM
+    var picker = document.getElementById('sc-direct-picker');
+    if (picker) { picker.value = ''; picker.click(); return; }
+    // Fallback : input dans le modal
+    var fi = document.getElementById('sc-file-input');
+    if (fi) { fi.value = ''; fi.click(); }
+};
+
+/* Voir les stories existantes (clic sur la miniature, pas sur le "+" ) */
+window.viewMyStories = function() {
     var myGroup = _groups.find(function(g){ return g.user_id === ME_ID; });
     if (myGroup && myGroup.stories && myGroup.stories.length > 0) {
-        // Ouvrir les stories existantes de l'utilisateur
-        var gi = _groups.indexOf(myGroup);
-        openStoryViewer(gi);
-    } else {
-        // Pas encore de story → ouvrir directement le sélecteur de fichier
-        var fi = document.getElementById('sc-file-input');
-        fi.accept = 'image/*,video/*';
-        fi.click();
+        openStoryViewer(_groups.indexOf(myGroup));
     }
 };
 
