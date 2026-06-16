@@ -5,12 +5,6 @@
 <div class="pc-gallery pc-gallery-{{ post.media_list|length }}">
     {% for m in post.media_list %}
     {% if m.is_video %}
-    {#
-        Vidéo : toujours lazy — src n'est JAMAIS chargé automatiquement.
-        JS (base.html) gère le déclenchement au clic.
-        En mode économie : l'overlay est affiché jusqu'au clic.
-        En mode normal   : l'overlay est affiché jusqu'au clic aussi (évite les 3G drains).
-    #}
     <div class="pc-gal-item pc-gal-video ds-vid-wrap">
         <video class="pc-gal-vid" data-src="{{ m.url }}" controls preload="none"></video>
         <div class="ds-vid-overlay" onclick="dsPlayVideo(this)">
@@ -24,11 +18,6 @@
         </div>
     </div>
     {% else %}
-    {#
-        Image : src chargé normalement (lazy natif du navigateur).
-        En mode économie : JS intercepte et remplace par un placeholder (data-full-src).
-        data-src est présent pour que l'interception JS fonctionne sans re-lire le DOM.
-    #}
     <div class="pc-gal-item ds-img-wrap" onclick="openPostMedia(this)" style="cursor:zoom-in;">
         <img class="pc-gal-img ds-img"
              src="{{ m.url }}"
