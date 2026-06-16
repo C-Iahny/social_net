@@ -10,6 +10,7 @@ from .views import (
     like_post,
     react_post,
     hashtag_view,
+    tendances_view,
     mention_autocomplete,
     follow,
     unfollow,
@@ -44,4 +45,5 @@ urlpatterns = [
     path('repost/',                  repost_post,         name='repost'),
     path('kabary/create/',           kabary_create,       name='kabary-create'),
     path('vintana/create/',          vintana_create,      name='vintana-create'),
+    path('tendances/',               tendances_view,      name='tendances'),
 ]

@@ -33,39 +33,98 @@ except ImportError:
 # ──────────────────────────────────────────────────────────────
 # Trending hashtags (cached, recalculé toutes les 30 min)
 # ──────────────────────────────────────────────────────────────
-def get_trending_hashtags(limit=10, days=7):
+def get_trending_hashtags(limit=10, days=7, hours=None, with_preview=False):
     """
     Extrait et classe les hashtags les plus utilisés dans les posts récents.
-    Résultat mis en cache 30 minutes (LocMemCache).
+    - hours  : fenêtre en heures (prioritaire sur days si fourni)
+    - days   : fenêtre en jours (défaut 7)
+    - limit  : nombre de hashtags retournés
+    - with_preview : si True, ajoute 'preview' (texte du post le plus récent)
+    Résultat mis en cache 15 min (LocMemCache).
     """
     import re
     from datetime import timedelta
     from django.utils import timezone
     from django.core.cache import cache
+    import html
 
-    cache_key = f'trending_hashtags_{limit}_{days}'
+    eff_hours = hours if hours is not None else days * 24
+    cache_key = f'trending_hashtags_{limit}_{eff_hours}_{"p" if with_preview else "n"}'
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
 
-    cutoff = timezone.now().date() - timedelta(days=days)
-    posts = Post.objects.filter(post_date__gte=cutoff).values_list('body', 'title')
+    cutoff = timezone.now() - timedelta(hours=eff_hours)
 
-    counts = {}
+    # Récupérer les posts récents avec leur id pour les previews
+    posts_qs = Post.objects.filter(
+        created_at__gte=cutoff
+    ).values_list('id', 'body', 'title', 'author__username', 'created_at')
+
+    counts  = {}   # tag → count
+    post_by_tag = {}   # tag → (id, preview_text, author, date) du post le plus récent
+
     pattern = re.compile(r'#([a-zA-ZÀ-ÿ0-9_]{2,30})')
-    for body, title in posts:
-        # Nettoyer les balises HTML avant d'extraire
-        text = re.sub(r'<[^>]+>', ' ', (body or '') + ' ' + (title or ''))
+    strip_html = re.compile(r'<[^>]+>')
+
+    for post_id, body, title, author, created_at in posts_qs:
+        raw = (body or '') + ' ' + (title or '')
+        text = html.unescape(strip_html.sub(' ', raw))
+        found = set()
         for tag in pattern.findall(text):
             t = tag.lower()
             counts[t] = counts.get(t, 0) + 1
+            if t not in found:
+                found.add(t)
+                # Garder le post le plus récent pour le preview (post_qs est non-ordonné,
+                # on garde celui dont created_at est le plus grand)
+                prev = post_by_tag.get(t)
+                if prev is None or created_at > prev[3]:
+                    # Extraire un extrait de texte propre (max 90 chars)
+                    snippet = re.sub(r'\s+', ' ', text).strip()
+                    if len(snippet) > 90:
+                        snippet = snippet[:87] + '…'
+                    post_by_tag[t] = (post_id, snippet, author, created_at)
 
-    result = [
-        {'tag': '#' + tag, 'count': cnt}
-        for tag, cnt in sorted(counts.items(), key=lambda x: -x[1])[:limit]
-    ]
-    cache.set(cache_key, result, 1800)  # 30 min
+    top = sorted(counts.items(), key=lambda x: -x[1])[:limit]
+
+    result = []
+    for tag, cnt in top:
+        item = {'tag': '#' + tag, 'slug': tag, 'count': cnt}
+        if with_preview and tag in post_by_tag:
+            pid, snippet, author, date = post_by_tag[tag]
+            item['preview_text']   = snippet
+            item['preview_author'] = author
+            item['preview_post_id'] = pid
+        result.append(item)
+
+    cache.set(cache_key, result, 900)  # 15 min
     return result
+
+
+# ──────────────────────────────────────────────
+# Tendances — page dédiée
+# ──────────────────────────────────────────────
+@login_required(login_url='login')
+def tendances_view(request):
+    """Page /tendances/ — top hashtags sur 24h / 7j / 30j."""
+    valid_hours = {24: '24h', 168: '7 jours', 720: '30 jours'}
+    try:
+        hours = int(request.GET.get('h', 24))
+        if hours not in valid_hours:
+            hours = 24
+    except (TypeError, ValueError):
+        hours = 24
+
+    hashtags = get_trending_hashtags(limit=25, hours=hours, with_preview=True)
+
+    return render(request, 'post/tendances.html', {
+        'hashtags':    hashtags,
+        'hours':       hours,
+        'hours_label': valid_hours[hours],
+        'valid_hours': valid_hours,
+        'trending_hashtags': get_trending_hashtags(limit=10),  # sidebar
+    })
 
 
 # ──────────────────────────────────────────────
