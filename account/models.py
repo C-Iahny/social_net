@@ -108,6 +108,18 @@ class Account(AbstractBaseUser):
 		null=True, blank=True,
 		verbose_name="CGU & confidentialité acceptées le"
 	)
+# ── Téléphone ─────────────────────────────────────────────
+	phone_number = models.CharField(
+		max_length=20, blank=True, default='',
+		verbose_name='Numéro de téléphone',
+		help_text='Format international : +261 34 XX XXX XX',
+		db_index=True,
+	)
+	phone_verified = models.BooleanField(
+		default=False,
+		verbose_name='Téléphone vérifié',
+		help_text='Le numéro a été confirmé par SMS.',
+	)
 # ---------------------------------------------------------
 	USERNAME_FIELD = 'email'
 	REQUIRED_FIELDS = ['username']
@@ -201,3 +213,57 @@ class Account(AbstractBaseUser):
 @receiver(post_save, sender=Account)
 def user_save(sender, instance, **kwargs):
     FriendList.objects.get_or_create(user=instance)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Vérification OTP par SMS
+# ─────────────────────────────────────────────────────────────────────────────
+import random
+import string
+
+class PhoneVerification(models.Model):
+    """Code OTP envoyé par SMS pour vérifier un numéro de téléphone."""
+
+    user = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name='phone_verifications',
+        verbose_name='Utilisateur',
+    )
+    phone = models.CharField(
+        max_length=20,
+        verbose_name='Numéro en cours de vérification',
+        help_text='Format E.164 (+261XXXXXXXXX)',
+    )
+    code = models.CharField(
+        max_length=6,
+        verbose_name='Code OTP',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Créé le')
+    attempts   = models.PositiveSmallIntegerField(default=0, verbose_name='Tentatives')
+    verified   = models.BooleanField(default=False, verbose_name='Validé')
+
+    class Meta:
+        verbose_name = 'Vérification téléphone'
+        verbose_name_plural = 'Vérifications téléphone'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.username} — {self.phone} ({"OK" if self.verified else "en attente"})'
+
+    # Durée de validité en minutes
+    OTP_VALID_MINUTES = 10
+    # Max tentatives de saisie avant invalidation
+    MAX_ATTEMPTS = 5
+    # Max envois par numéro par heure
+    MAX_SENDS_PER_HOUR = 3
+
+    @classmethod
+    def generate_code(cls):
+        return ''.join(random.choices(string.digits, k=6))
+
+    @property
+    def is_expired(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        return timezone.now() > self.created_at + timedelta(minutes=self.OTP_VALID_MINUTES)
