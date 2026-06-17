@@ -445,3 +445,41 @@ def get_profile_stories(request, user_id):
     return JsonResponse({
         'stories': [_story_to_dict(s, viewer) for s in stories_qs]
     })
+
+
+# ── VIEWERS LIST ──────────────────────────────────────────────────────────────
+@login_required(login_url='login')
+def get_story_viewers(request, story_id):
+    """
+    GET /stories/<id>/viewers/ — liste des viewers pour le créateur.
+    Uniquement accessible par le propriétaire de la story.
+    """
+    try:
+        story = Story.objects.get(pk=story_id)
+    except Story.DoesNotExist:
+        return JsonResponse({'error': 'Story introuvable.'}, status=404)
+
+    if story.user != request.user:
+        return JsonResponse({'error': 'Non autorisé.'}, status=403)
+
+    viewers_qs = (
+        StoryView.objects
+        .filter(story=story)
+        .select_related('viewer')
+        .order_by('-viewed_at')
+    )
+
+    viewers = []
+    for sv in viewers_qs:
+        try:
+            avatar = sv.viewer.profile_image.url
+        except Exception:
+            avatar = '/static/images/default_profile_image.png'
+        viewers.append({
+            'id':       sv.viewer.id,
+            'username': sv.viewer.username,
+            'avatar':   avatar,
+            'viewed_at': sv.viewed_at.strftime('%H:%M'),
+        })
+
+    return JsonResponse({'viewers': viewers, 'count': len(viewers)})

@@ -536,6 +536,16 @@
             </button>
             {% endif %}
 
+            <!-- ── Bouton Signaler ── -->
+            {% if user.is_authenticated and user != annonce.seller %}
+            <button onclick="openReportModal('annonce','{{ annonce.pk }}')"
+                    class="bazar-contact-btn bazar-btn-outline"
+                    style="width:100%;margin-top:.5rem;border-color:rgba(239,68,68,.35);color:rgba(239,68,68,.8);">
+                <span class="material-icons" style="font-size:1rem;">flag</span>
+                Signaler cette annonce
+            </button>
+            {% endif %}
+
             <!-- ── Boutons de partage ── -->
             <div style="border-top:1px solid var(--border);margin-top:.85rem;padding-top:.85rem;">
                 <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">{% trans "Partager" %}</p>
