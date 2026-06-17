@@ -999,7 +999,7 @@
 
                 <!-- Affichage & Langue (accessibles ici car masqués de la top nav sur mobile) -->
                 <p class="zoot-dropdown-label">{% trans "Display" %} &amp; {% trans "Language" %}</p>
-                <button class="dropdown-item" onclick="toggleTheme()" type="button"
+                <button class="dropdown-item" onclick="toggleTheme();_vzb_closeDropdown(this);" type="button"
                         style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
                     <span class="material-icons" id="dd-theme-icon">dark_mode</span>
                     <span id="dd-theme-label">{% trans "Dark mode" %}</span>
@@ -1161,6 +1161,18 @@
         document.body.style.position = '';
         window.scrollTo(0, _scrollY);
     }
+    /* Exposer globalement pour que les boutons du dropdown puissent fermer proprement */
+    window._vzb_unlockScroll = unlockScroll;
+    window._vzb_closeDropdown = function(btn) {
+        /* Fermer le dropdown Bootstrap + débloquer le scroll iOS */
+        if (window.jQuery) {
+            try { $(btn).closest('.dropdown').dropdown('hide'); } catch(e) {}
+        } else {
+            var menu = btn.closest('.dropdown-menu');
+            if (menu) menu.classList.remove('show');
+        }
+        unlockScroll();
+    };
     // Bootstrap 4 événements jQuery
     if (window.jQuery) {
         $(document).on('show.bs.dropdown',   lockScroll);
