@@ -1164,13 +1164,16 @@
     /* Exposer globalement pour que les boutons du dropdown puissent fermer proprement */
     window._vzb_unlockScroll = unlockScroll;
     window._vzb_closeDropdown = function(btn) {
-        /* Fermer le dropdown Bootstrap + débloquer le scroll iOS */
-        if (window.jQuery) {
-            try { $(btn).closest('.dropdown').dropdown('hide'); } catch(e) {}
-        } else {
-            var menu = btn.closest('.dropdown-menu');
-            if (menu) menu.classList.remove('show');
+        /* Fermer le dropdown via manipulation DOM directe (évite les effets de bord
+           de l'API jQuery Bootstrap qui peut déclencher d'autres dropdowns) */
+        var dropdown = btn.closest('.dropdown');
+        if (dropdown) {
+            var menu   = dropdown.querySelector('.dropdown-menu');
+            var toggle = dropdown.querySelector('[data-toggle="dropdown"]');
+            if (menu)   { menu.classList.remove('show'); }
+            if (toggle) { toggle.classList.remove('show'); toggle.setAttribute('aria-expanded','false'); }
         }
+        /* Débloquer immédiatement le scroll iOS (ne pas attendre hidden.bs.dropdown) */
         unlockScroll();
     };
     // Bootstrap 4 événements jQuery

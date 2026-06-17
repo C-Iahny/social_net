@@ -347,18 +347,20 @@ body { background: var(--bg); }
         padding: .4rem .85rem;
     }
 
-    /* Tabs profil : scrollables */
+    /* Tabs profil : 4 boutons en largeur égale, pas de scroll */
     .profile-tabs {
-        overflow-x: auto;
+        overflow-x: hidden;
         flex-wrap: nowrap;
-        scrollbar-width: none;
-        padding: 0 .3rem;
+        padding: 0;
     }
-    .profile-tabs::-webkit-scrollbar { display: none; }
     .tab-btn {
-        flex-shrink: 0;
-        padding: .7rem .85rem;
-        font-size: .82rem;
+        flex: 1;
+        min-width: 0;
+        padding: .65rem .25rem;
+        font-size: .74rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 
@@ -1609,32 +1611,31 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
 /* ── Swipe horizontal entre onglets (mobile) ── */
 (function() {
     var TABS = ['posts', 'photos', 'friends-tab', 'about'];
-    var _swX = 0, _swY = 0;
-    /* On écoute sur le document entier, mais on exclut la barre de tabs elle-même
-       (overflow-x:auto → l'utilisateur peut faire défiler les boutons)
-       et les zones avec leur propre scroll horizontal (photos grid, stats row…) */
+    var _swX = null, _swY = 0;
+
+    /* Zones à exclure : éléments avec leur propre scroll horizontal */
+    var EXCLUDE_SEL = '.profile-stats-row, .pc-gallery, .pc-comment-list, .friends-grid, .pf-stories-row';
+
     document.addEventListener('touchstart', function(e) {
+        /* Ignorer si le toucher commence dans une zone exclue */
+        if (e.target.closest(EXCLUDE_SEL)) { _swX = null; return; }
         _swX = e.touches[0].clientX;
         _swY = e.touches[0].clientY;
     }, { passive: true });
+
     document.addEventListener('touchend', function(e) {
+        if (_swX === null) return;
         var dx = e.changedTouches[0].clientX - _swX;
         var dy = e.changedTouches[0].clientY - _swY;
-        /* Seuil : au moins 55 px horizontal et plus horizontal que vertical */
-        if (Math.abs(dx) < 55 || Math.abs(dy) > Math.abs(dx) * 0.65) return;
-        /* Ne pas swiper si le geste vient de la barre de tabs elle-même */
-        if (e.target.closest('.profile-tabs')) return;
-        /* Ne pas swiper depuis un élément scrollable horizontalement */
-        var el = e.target;
-        while (el && el !== document.body) {
-            var ov = getComputedStyle(el).overflowX;
-            if ((ov === 'auto' || ov === 'scroll') && el.scrollWidth > el.clientWidth + 4) return;
-            el = el.parentElement;
-        }
+        /* Seuil : ≥ 40px horizontal, et plus horizontal que vertical */
+        if (Math.abs(dx) < 40 || Math.abs(dy) >= Math.abs(dx)) return;
+        /* Ignorer si zone exclue */
+        if (e.target.closest(EXCLUDE_SEL)) return;
+
         var activeBtn = document.querySelector('.tab-btn.active');
         if (!activeBtn) return;
         var curIdx = TABS.indexOf(activeBtn.dataset.tab);
-        var nextIdx = dx < 0 ? curIdx + 1 : curIdx - 1;  /* swipe gauche → suivant */
+        var nextIdx = dx < 0 ? curIdx + 1 : curIdx - 1;
         if (nextIdx < 0 || nextIdx >= TABS.length) return;
         var nextBtn = document.querySelector('[data-tab="' + TABS[nextIdx] + '"]');
         if (nextBtn) nextBtn.click();
