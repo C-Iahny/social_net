@@ -270,3 +270,31 @@ class SellerVerification(models.Model):
         if notes:
             self.admin_notes = notes
         self.save(update_fields=['status', 'reviewed_at', 'reviewed_by', 'admin_notes'])
+
+
+class BazarFavori(models.Model):
+    """
+    Favori Bazar — un utilisateur sauvegarde une annonce pour y revenir plus tard.
+    """
+    user    = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='bazar_favoris',
+        verbose_name=_('Utilisateur'),
+    )
+    annonce = models.ForeignKey(
+        Annonce,
+        on_delete=models.CASCADE,
+        related_name='favoris',
+        verbose_name=_('Annonce'),
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('Ajouté le'))
+
+    class Meta:
+        unique_together = ('user', 'annonce')
+        ordering        = ['-created_at']
+        verbose_name        = _('Favori Bazar')
+        verbose_name_plural = _('Favoris Bazar')
+
+    def __str__(self):
+        return f'{self.user} ♥ {self.annonce.title}'

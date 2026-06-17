@@ -942,6 +942,9 @@
                 <a class="dropdown-item" href="{% url 'bazar:index' %}">
                     <span class="material-icons">storefront</span> {% trans "Bazar" %}
                 </a>
+                <a class="dropdown-item" href="{% url 'bazar:mes_favoris' %}">
+                    <span class="material-icons">favorite_border</span> {% trans "Mes favoris" %}
+                </a>
                 <a class="dropdown-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
                     <span class="material-icons">person_add_alt</span> {% trans "Friend requests" %}
                 </a>

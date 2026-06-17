@@ -1496,3 +1496,35 @@ msgstr "Post with hashtags to feed the trends!"
 msgid "Essayez sur une période plus longue →"
 msgstr "Try a longer time period →"
 
+
+# -- Favoris Bazar
+
+msgid "Sauvegarder"
+msgstr "Save"
+
+msgid "Sauvegardé"
+msgstr "Saved"
+
+msgid "Chargement…"
+msgstr "Loading…"
+
+msgid "Retirer des favoris"
+msgstr "Remove from favorites"
+
+msgid "Mes favoris"
+msgstr "My favorites"
+
+msgid "Explorer le Bazar"
+msgstr "Browse the Marketplace"
+
+msgid "Prix à discuter"
+msgstr "Price on request"
+
+msgid "Aucun favori pour l'instant"
+msgstr "No favorites yet"
+
+msgid "Sauvegardez des annonces qui vous intéressent pour les retrouver facilement ici."
+msgstr "Save listings you're interested in to find them easily here."
+
+msgid "Parcourir le Bazar"
+msgstr "Browse the Marketplace"

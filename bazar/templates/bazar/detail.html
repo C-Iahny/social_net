@@ -188,6 +188,15 @@
     padding: .5rem 1rem;
 }
 .bazar-btn-danger:hover { background: #dc3545; color: #fff; text-decoration: none; }
+.bazar-btn-fav-saved {
+    background: #fff0f3;
+    border: 1.5px solid #e0325a;
+    color: #e0325a;
+    font-size: .85rem;
+    padding: .5rem 1rem;
+}
+[data-theme="dark"] .bazar-btn-fav-saved { background: rgba(224,50,90,.12); }
+.bazar-btn-fav-saved:hover { background: #e0325a; color: #fff; text-decoration: none; }
 
 /* ── Description ── */
 .bazar-desc-section {
@@ -507,6 +516,22 @@
             </a>
             {% endif %}
 
+            <!-- ── Bouton Sauvegarder ── -->
+            {% if user.is_authenticated %}
+            <button id="fav-btn"
+                    onclick="toggleFavori({{ annonce.pk }})"
+                    class="bazar-contact-btn {% if is_saved %}bazar-btn-fav-saved{% else %}bazar-btn-outline{% endif %}"
+                    style="width:100%;margin-top:.5rem;">
+                <svg id="fav-icon" width="16" height="16" fill="{% if is_saved %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <span id="fav-label">{% if is_saved %}{% trans "Sauvegardé" %}{% else %}{% trans "Sauvegarder" %}{% endif %}</span>
+                <span id="fav-count" style="font-size:.78rem;font-weight:400;opacity:.7;margin-left:.25rem;">
+                    {% if fav_count %}({{ fav_count }}){% endif %}
+                </span>
+            </button>
+            {% endif %}
+
             <!-- ── Boutons de partage ── -->
             <div style="border-top:1px solid var(--border);margin-top:.85rem;padding-top:.85rem;">
                 <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">{% trans "Partager" %}</p>
@@ -676,6 +701,44 @@ document.getElementById('lightbox').addEventListener('touchend', e => {
     if (Math.abs(diff) > 40) lightboxNav(diff > 0 ? 1 : -1);
     _tsX = null;
 }, {passive:true});
+
+// ── Favori ─────────────────────────────────────────────────────────────────────
+var VZB_I18N_FAV = {
+    save:    "{% trans 'Sauvegarder' %}",
+    saved:   "{% trans 'Sauvegardé' %}",
+    saving:  "{% trans 'Chargement…' %}",
+};
+function toggleFavori(pk) {
+    const btn   = document.getElementById('fav-btn');
+    const icon  = document.getElementById('fav-icon');
+    const label = document.getElementById('fav-label');
+    const count = document.getElementById('fav-count');
+    if (!btn) return;
+    btn.disabled = true;
+    label.textContent = VZB_I18N_FAV.saving;
+    fetch('/bazar/' + pk + '/favori/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '' },
+        credentials: 'same-origin',
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        if (data.saved) {
+            btn.classList.remove('bazar-btn-outline');
+            btn.classList.add('bazar-btn-fav-saved');
+            icon.setAttribute('fill', 'currentColor');
+            label.textContent = VZB_I18N_FAV.saved;
+        } else {
+            btn.classList.remove('bazar-btn-fav-saved');
+            btn.classList.add('bazar-btn-outline');
+            icon.setAttribute('fill', 'none');
+            label.textContent = VZB_I18N_FAV.save;
+        }
+        count.textContent = data.count > 0 ? '(' + data.count + ')' : '';
+    })
+    .catch(() => { btn.disabled = false; label.textContent = VZB_I18N_FAV.save; });
+}
 
 // ── Copier le lien ─────────────────────────────────────────────────────────────
 function copyLink(btn) {

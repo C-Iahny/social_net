@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import Annonce, AnnonceImage, SellerVerification
+from .models import Annonce, AnnonceImage, SellerVerification, BazarFavori
 from .forms import AnnonceForm
 
 # ── Constantes ─────────────────────────────────────────────────────────────────
@@ -155,11 +155,20 @@ def annonce_detail(request, pk):
         [:6]
     )
 
+    # Favori : est-ce que l'utilisateur a déjà sauvegardé cette annonce ?
+    is_saved = (
+        request.user.is_authenticated
+        and BazarFavori.objects.filter(user=request.user, annonce=annonce).exists()
+    )
+    fav_count = annonce.favoris.count()
+
     context = {
         'annonce':    annonce,
         'images':     annonce.images.all(),
         'similaires': similaires,
         'is_owner':   request.user.is_authenticated and request.user == annonce.seller,
+        'is_saved':   is_saved,
+        'fav_count':  fav_count,
     }
     return render(request, 'bazar/detail.html', context)
 
@@ -468,3 +477,46 @@ def request_verification(request):
         'verification': verification,
     }
     return render(request, 'bazar/verification.html', context)
+
+
+# ── Favoris ────────────────────────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def toggle_favori(request, pk):
+    """
+    AJAX : ajoute ou retire une annonce des favoris de l'utilisateur connecté.
+    Retourne JSON { saved: bool, count: int }
+    """
+    annonce = get_object_or_404(Annonce, pk=pk)
+    fav, created = BazarFavori.objects.get_or_create(user=request.user, annonce=annonce)
+    if not created:
+        fav.delete()
+        saved = False
+    else:
+        saved = True
+    count = annonce.favoris.count()
+    return JsonResponse({'saved': saved, 'count': count})
+
+
+@login_required
+def mes_favoris(request):
+    """
+    Page listant les annonces sauvegardées par l'utilisateur connecté.
+    """
+    favoris_qs = (
+        BazarFavori.objects
+        .filter(user=request.user)
+        .select_related('annonce__seller')
+        .prefetch_related('annonce__images')
+    )
+    # Exclure les annonces supprimées ou expirées
+    favoris_qs = [f for f in favoris_qs if f.annonce.status != 'expiree']
+
+    paginator = Paginator(favoris_qs, PAGE_SIZE)
+    page      = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'bazar/favoris.html', {
+        'page_obj': page,
+        'total':    paginator.count,
+    })
