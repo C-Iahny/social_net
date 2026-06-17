@@ -24,16 +24,42 @@ _VIDEO_TYPES = {'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime',
 
 def private_chat_room_view(request, *args, **kwargs):
 	user = request.user
-	room_id = request.GET.get("room_id")
 
 	# Redirect them if not authenticated
 	if not user.is_authenticated:
-		return redirect("login")
+		next_url = request.get_full_path()
+		return redirect(f"/login/?next={next_url}")
+
+	room_id    = request.GET.get("room_id")
+	user_id    = request.GET.get("user_id")     # ouvrir directement avec cet utilisateur
+	annonce_pk = request.GET.get("annonce")     # référence annonce bazar (optionnel)
 
 	context = {}
+
 	if room_id:
-		room = PrivateChatRoom.objects.get(pk=room_id)
-		context["room"] = room
+		try:
+			room = PrivateChatRoom.objects.get(pk=room_id)
+			context["room"] = room
+		except PrivateChatRoom.DoesNotExist:
+			pass
+	elif user_id:
+		# Ouvrir (ou créer) la conversation avec l'utilisateur demandé
+		try:
+			other_user = Account.objects.get(pk=user_id)
+			if other_user != user:
+				room = find_or_create_private_chat(user, other_user)
+				context["room"] = room
+		except Account.DoesNotExist:
+			pass
+
+	# Passer la référence annonce au template (pour pré-remplir le message)
+	if annonce_pk:
+		try:
+			from bazar.models import Annonce
+			annonce = Annonce.objects.select_related('seller').prefetch_related('images').get(pk=annonce_pk)
+			context["bazar_annonce"] = annonce
+		except Exception:
+			pass
 
 	# 1. Find all the rooms this user is a part of 
 	rooms1 = PrivateChatRoom.objects.filter(user1=user, is_active=True)
