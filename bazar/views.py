@@ -509,14 +509,17 @@ def mes_favoris(request):
     """
     Page listant les annonces sauvegardées par l'utilisateur connecté.
     """
-    favoris_qs = (
-        BazarFavori.objects
-        .filter(user=request.user)
-        .select_related('annonce__seller')
-        .prefetch_related('annonce__images')
-    )
-    # Exclure les annonces supprimées ou expirées
-    favoris_qs = [f for f in favoris_qs if f.annonce.status != 'expiree']
+    try:
+        favoris_qs = (
+            BazarFavori.objects
+            .filter(user=request.user)
+            .select_related('annonce__seller')
+            .prefetch_related('annonce__images')
+        )
+        # Exclure les annonces supprimées ou expirées
+        favoris_qs = [f for f in favoris_qs if f.annonce.status != 'expiree']
+    except Exception:
+        favoris_qs = []
 
     paginator = Paginator(favoris_qs, PAGE_SIZE)
     page      = paginator.get_page(request.GET.get('page'))
