@@ -222,6 +222,8 @@
 
     <form method="post" enctype="multipart/form-data" id="bazar-create-form">
         {% csrf_token %}
+        {# status par défaut 'active' — le champ est requis dans AnnonceForm mais non affiché à la création #}
+        <input type="hidden" name="status" value="active">
 
         <!-- Photos -->
         <div class="bazar-section">
