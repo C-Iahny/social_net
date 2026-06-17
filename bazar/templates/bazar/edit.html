@@ -269,34 +269,42 @@ function deletePhoto(imgPk, btn) {
 
 // Aperçu nouvelles photos
 let selectedFiles = [];
-const fileInput = document.getElementById('id_images');
+const fileInput  = document.getElementById('id_images');
 const previewGrid = document.getElementById('preview-grid');
+
+/* Détection support DataTransfer (absent sur iOS Safari < 17) */
+const _supportsFileSync = (function() {
+    try {
+        const dt = new DataTransfer();
+        dt.items.add(new File([''], '_chk_', { type: 'text/plain' }));
+        const tmp = document.createElement('input');
+        tmp.type = 'file';
+        tmp.files = dt.files;
+        return tmp.files.length === 1;
+    } catch(e) { return false; }
+})();
 
 if (fileInput) {
     fileInput.addEventListener('change', function() {
         const captured = Array.from(this.files);
-        this.value = '';
-        // Conversion WebP + HEIC via ZootMediaConverter (même logique que le feed)
+        try { this.value = ''; } catch(e) {}
         if (window.ZootMediaConverter) {
             ZootMediaConverter.processFiles(captured).then(converted => {
                 selectedFiles = converted.slice(0, 8);
-                renderPreviews();
-                syncEditInput();
+                renderPreviews(); syncEditInput();
             }).catch(() => {
                 selectedFiles = captured.slice(0, 8);
-                renderPreviews();
-                syncEditInput();
+                renderPreviews(); syncEditInput();
             });
         } else {
             selectedFiles = captured.slice(0, 8);
-            renderPreviews();
-            syncEditInput();
+            renderPreviews(); syncEditInput();
         }
     });
 }
 
 function syncEditInput() {
-    if (!fileInput) return;
+    if (!fileInput || !_supportsFileSync) return;
     const dt = new DataTransfer();
     selectedFiles.forEach(f => dt.items.add(f));
     fileInput.files = dt.files;
@@ -313,13 +321,41 @@ function renderPreviews() {
     previewGrid.innerHTML = '';
     selectedFiles.forEach((file, i) => {
         const reader = new FileReader();
-        reader.onload = e => {
+        reader.onload = ev => {
             const div = document.createElement('div');
             div.className = 'bazar-preview-item';
-            div.innerHTML = `<img src="${e.target.result}" alt=""><button type="button" class="bazar-preview-remove" onclick="removeFile(${i})">✕</button>`;
+            div.innerHTML = `<img src="${ev.target.result}" alt=""><button type="button" class="bazar-preview-remove" onclick="removeFile(${i})">✕</button>`;
             previewGrid.appendChild(div);
         };
         reader.readAsDataURL(file);
+    });
+}
+
+/* Soumission iOS-safe via FormData + fetch */
+const _editForm = document.querySelector('form[enctype="multipart/form-data"]');
+if (_editForm) {
+    _editForm.addEventListener('submit', function(e) {
+        if (_supportsFileSync || selectedFiles.length === 0) return;
+        e.preventDefault();
+        const btn  = this.querySelector('button[type="submit"]');
+        const orig = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.innerHTML = 'Enregistrement…'; }
+
+        const fd = new FormData(this);
+        fd.delete('images');
+        selectedFiles.forEach(f => fd.append('images', f));
+
+        fetch(this.action || window.location.pathname, {
+            method: 'POST', body: fd, credentials: 'same-origin'
+        }).then(function(r) {
+            if (r.redirected) { window.location.href = r.url; }
+            else { return r.text().then(function(html) {
+                document.open(); document.write(html); document.close();
+            }); }
+        }).catch(function() {
+            if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+            alert('Erreur réseau. Réessayez.');
+        });
     });
 }
 </script>
