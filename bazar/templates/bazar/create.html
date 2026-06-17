@@ -345,17 +345,32 @@
 const MAX_PHOTOS = {{ max_images }};
 let selectedFiles = [];
 
-const fileInput = document.getElementById('id_images');
+const fileInput  = document.getElementById('id_images');
 const previewGrid = document.getElementById('preview-grid');
-const uploadZone = document.getElementById('upload-zone');
+const uploadZone  = document.getElementById('upload-zone');
+
+/* ── Détection support DataTransfer (absent / bogué sur iOS Safari < 17) ──
+   On teste réellement l'assignation de fileInput.files car certains iOS
+   acceptent new DataTransfer() mais rejettent silencieusement l'assignation. */
+const _supportsFileSync = (function() {
+    try {
+        const dt = new DataTransfer();
+        dt.items.add(new File([''], '_chk_', { type: 'text/plain' }));
+        const tmp = document.createElement('input');
+        tmp.type = 'file';
+        tmp.files = dt.files;
+        return tmp.files.length === 1;
+    } catch(e) { return false; }
+})();
 
 fileInput.addEventListener('change', function() {
     const captured = Array.from(this.files);
-    this.value = '';
+    /* Vider l'input pour permettre de resélectionner les mêmes fichiers */
+    try { this.value = ''; } catch(e) {}
     _processAndAdd(captured);
 });
 
-// Drag & drop
+// Drag & drop (desktop uniquement)
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
 uploadZone.addEventListener('drop', e => {
@@ -367,7 +382,7 @@ uploadZone.addEventListener('drop', e => {
     _processAndAdd(files);
 });
 
-// Conversion WebP + HEIC via ZootMediaConverter (même logique que le feed)
+// Conversion WebP + HEIC via ZootMediaConverter
 function _processAndAdd(files) {
     if (window.ZootMediaConverter) {
         ZootMediaConverter.processFiles(files)
@@ -397,11 +412,11 @@ function renderPreviews() {
     previewGrid.innerHTML = '';
     selectedFiles.forEach((file, i) => {
         const reader = new FileReader();
-        reader.onload = e => {
+        reader.onload = ev => {
             const div = document.createElement('div');
             div.className = 'bazar-preview-item';
             div.innerHTML = `
-                <img src="${e.target.result}" alt="">
+                <img src="${ev.target.result}" alt="">
                 ${i === 0 ? '<span class="bazar-preview-badge">PRINCIPALE</span>' : ''}
                 <button type="button" class="bazar-preview-remove" onclick="removeFile(${i})">✕</button>
             `;
@@ -413,10 +428,49 @@ function renderPreviews() {
 }
 
 function syncInput() {
-    // Recréer un DataTransfer pour mettre les fichiers sélectionnés dans l'input
+    if (!_supportsFileSync) return; /* iOS : les fichiers seront envoyés via FormData */
     const dt = new DataTransfer();
     selectedFiles.forEach(f => dt.items.add(f));
     fileInput.files = dt.files;
 }
+
+/* ── Soumission iOS-safe via FormData + fetch ───────────────────────────────
+   Sur iOS Safari, fileInput.files est en lecture seule → le formulaire
+   natif enverrait 0 fichier. On intercepte le submit et on construit
+   le FormData manuellement avec selectedFiles.                             */
+document.getElementById('bazar-create-form').addEventListener('submit', function(e) {
+    if (_supportsFileSync || selectedFiles.length === 0) return; /* desktop : chemin normal */
+    e.preventDefault();
+
+    const form = this;
+    const btn  = form.querySelector('button[type="submit"]');
+    const orig = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = 'Publication…'; }
+
+    const fd = new FormData(form);
+    fd.delete('images');                          /* vider le champ vide */
+    selectedFiles.forEach(f => fd.append('images', f)); /* ajouter les vrais fichiers */
+
+    fetch(form.action || window.location.pathname, {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin'
+    })
+    .then(function(r) {
+        if (r.redirected) {
+            /* Succès → le serveur a redirigé vers la page de détail */
+            window.location.href = r.url;
+        } else {
+            /* Erreurs de validation → remplacer la page par la réponse */
+            return r.text().then(function(html) {
+                document.open(); document.write(html); document.close();
+            });
+        }
+    })
+    .catch(function() {
+        if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+        alert('Erreur réseau. Vérifiez votre connexion et réessayez.');
+    });
+});
 </script>
 {% endblock %}
