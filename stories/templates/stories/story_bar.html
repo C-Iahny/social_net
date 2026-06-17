@@ -363,6 +363,22 @@ input#sc-file-input { display: none; }
     margin-right: .2rem; white-space: nowrap;
 }
 
+/* Slider taille de police */
+#sc-font-size-wrap {
+    display: none;
+    align-items: center;
+    gap: .6rem;
+    padding: .35rem .75rem;
+}
+#sc-font-size-wrap.visible { display: flex; }
+#sc-font-size-wrap .material-icons { font-size: .9rem; color: var(--text-muted); }
+#sc-font-size-slider {
+    flex: 1;
+    accent-color: var(--accent);
+    height: 3px;
+    cursor: pointer;
+}
+
 #sc-text-card-content {
     font-size: 1.3rem; font-weight: 800; color: #fff;
     text-align: center; word-break: break-word; margin: 0;
@@ -915,6 +931,11 @@ input#sc-file-input { display: none; }
                         title="Couleur du texte" style="display:none;">
                     <span class="material-icons">palette</span>
                 </button>
+                <!-- Taille de police -->
+                <button class="sc-side-btn" id="sc-tool-font" onclick="toggleFontSizeSlider()"
+                        title="Taille du texte" style="display:none;">
+                    <span class="material-icons" style="font-size:.9rem;font-weight:900;">Aa</span>
+                </button>
                 <!-- Musique -->
                 <button class="sc-side-btn" id="sc-tool-music" onclick="toggleAudioSection()"
                         title="Ajouter de la musique">
@@ -941,6 +962,14 @@ input#sc-file-input { display: none; }
             <div class="tc-dot" data-color="#FF8C00" style="background:#FF8C00;" onclick="setTextColor('#FF8C00',this)" title="Orange"></div>
             <div class="tc-dot" data-color="#FF69B4" style="background:#FF69B4;" onclick="setTextColor('#FF69B4',this)" title="Rose"></div>
             <div class="tc-dot" data-color="#7FFF00" style="background:#7FFF00;" onclick="setTextColor('#7FFF00',this)" title="Vert"></div>
+        </div>
+
+        <!-- Slider taille de police -->
+        <div id="sc-font-size-wrap">
+            <span class="material-icons">text_fields</span>
+            <input type="range" id="sc-font-size-slider" min="14" max="56" value="21"
+                   step="1" oninput="applyFontSize(this.value)">
+            <span class="material-icons">format_size</span>
         </div>
 
         <!-- Type chips (visibles après sélection fichier) -->
@@ -1572,10 +1601,14 @@ window.toggleTextOverlay = function() {
         if (btn) btn.classList.remove('active');
         if (colorBtn) colorBtn.style.display = 'none';
         if (colorsBar) colorsBar.classList.remove('visible');
+        var fontBtn = document.getElementById('sc-tool-font');
+        if (fontBtn) fontBtn.style.display = 'none';
     } else {
         if (ov) ov.style.display = 'block';
         if (btn) btn.classList.add('active');
         if (colorBtn) colorBtn.style.display = 'flex';
+        var fontBtn = document.getElementById('sc-tool-font');
+        if (fontBtn) fontBtn.style.display = 'flex';
         // Changer le type en image_text automatiquement
         if (_scType === 'image') {
             _scType = 'image_text';
@@ -1597,6 +1630,22 @@ window.toggleTextColors = function() {
     var visible = el.classList.contains('visible');
     el.classList.toggle('visible', !visible);
     if (btn) btn.classList.toggle('active', !visible);
+};
+
+window.toggleFontSizeSlider = function() {
+    var wrap = document.getElementById('sc-font-size-wrap');
+    var btn  = document.getElementById('sc-tool-font');
+    if (!wrap) return;
+    var visible = wrap.classList.contains('visible');
+    wrap.classList.toggle('visible', !visible);
+    if (btn) btn.classList.toggle('active', !visible);
+};
+
+window.applyFontSize = function(val) {
+    var p = document.getElementById('sc-text-card-content');
+    if (p) p.style.fontSize = val + 'px';
+    // Stocker pour publier
+    window._scFontSize = parseInt(val);
 };
 
 window.toggleAudioSection = function() {
@@ -1628,6 +1677,7 @@ var _scTrimStart     = 0;     // secondes
 var _scTrimPreviewPlaying = false;
 var _scTrimStopTimer = null;
 var _scTextColor = '#ffffff';
+var _scFontSize  = 21;
 
 /* ── Tabs ─────────────────────────────────── */
 window.switchAudioTab = function(panel, el) {
@@ -2074,6 +2124,17 @@ function resetCreator() {
     document.querySelectorAll('.tc-dot').forEach(function(d){ d.classList.remove('active'); });
     var firstDot = document.querySelector('.tc-dot[data-color="#ffffff"]');
     if (firstDot) firstDot.classList.add('active');
+    // Réinitialiser taille de police
+    _scFontSize = 21;
+    var fsp = document.getElementById('sc-font-size-slider');
+    if (fsp) fsp.value = 21;
+    var p2 = document.getElementById('sc-text-card-content');
+    if (p2) p2.style.fontSize = '';
+    var fsw = document.getElementById('sc-font-size-wrap');
+    if (fsw) fsw.classList.remove('visible');
+    var fontBtn = document.getElementById('sc-tool-font');
+    if (fontBtn) { fontBtn.style.display = 'none'; fontBtn.classList.remove('active'); }
+
     // Masquer les outils latéraux
     var st = document.getElementById('sc-side-tools');
     if (st) st.style.display = 'none';
@@ -2403,6 +2464,40 @@ window.zootStories = {
     openViewer: openStoryViewer,
     groups: function(){ return _groups; },
 };
+
+/* ── Swipe horizontal viewer ─────────────────────── */
+(function() {
+    var el = document.getElementById('story-viewer-overlay');
+    var _swTouchX = 0, _swTouchY = 0;
+    el.addEventListener('touchstart', function(e) {
+        _swTouchX = e.touches[0].clientX;
+        _swTouchY = e.touches[0].clientY;
+    }, { passive: true });
+    el.addEventListener('touchend', function(e) {
+        var dx = e.changedTouches[0].clientX - _swTouchX;
+        var dy = e.changedTouches[0].clientY - _swTouchY;
+        // Swipe horizontal seulement si plus horizontal que vertical et > 50px
+        if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+            svNavigate(dx < 0 ? 1 : -1);
+        }
+    }, { passive: true });
+})();
+
+/* ── Pause au maintien du doigt ──────────────────── */
+(function() {
+    var el = document.getElementById('story-viewer-overlay');
+    el.addEventListener('pointerdown', function(e) {
+        // Ne pas interférer avec les boutons close/delete/link
+        if (e.target.closest('button, a, .sv-close, .sv-delete, .sv-audio-indicator')) return;
+        if (typeof _svPaused !== 'undefined') _svPaused = true;
+    });
+    el.addEventListener('pointerup', function() {
+        if (typeof _svPaused !== 'undefined') _svPaused = false;
+    });
+    el.addEventListener('pointercancel', function() {
+        if (typeof _svPaused !== 'undefined') _svPaused = false;
+    });
+})();
 
 })();
 </script>

@@ -390,6 +390,31 @@
 }
 [data-theme="dark"] .bazar-page-btn.active { color: #1a0a02; }
 
+/* ── Filtre prix ── */
+.bazar-price-range {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-wrap: nowrap;
+}
+.bazar-price-range input {
+    width: 110px;
+    padding: .4rem .6rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-input, var(--bg-card));
+    color: var(--text-primary);
+    font-size: .8rem;
+}
+.bazar-price-range input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+.bazar-price-range span {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
 /* Mobile */
 @media (max-width: 575px) {
     .bazar-hero { padding: 2.2rem 1rem 2rem; }
@@ -400,6 +425,7 @@
     .bazar-card-body { padding: .65rem .75rem; }
     .bazar-card-title { font-size: .82rem; }
     .bazar-card-price { font-size: .92rem; }
+    .bazar-price-range input { width: 88px; }
 }
 </style>
 
@@ -512,6 +538,17 @@
             ✓ {% trans "Vendeurs vérifiés" %}
         </label>
 
+        <!-- Prix min / max -->
+        <div class="bazar-price-range">
+            <input type="number" name="pmin" min="0" step="100"
+                   value="{{ sel_pmin }}"
+                   placeholder="{% trans 'Prix min (Ar)' %}">
+            <span>—</span>
+            <input type="number" name="pmax" min="0" step="100"
+                   value="{{ sel_pmax }}"
+                   placeholder="{% trans 'Prix max (Ar)' %}">
+        </div>
+
         <!-- Tri -->
         <span class="bazar-sort-label">{% trans "Trier par" %}&nbsp;:</span>
         <select name="sort" class="bazar-filter-select" onchange="this.form.submit()">
@@ -521,7 +558,7 @@
             <option value="popular"    {% if sort == 'popular' %}selected{% endif %}>{% trans "Plus vues" %}</option>
         </select>
 
-        {% if sel_cat or sel_cond or sel_region or q or sort != 'recent' or only_verified %}
+        {% if sel_cat or sel_cond or sel_region or q or sort != 'recent' or only_verified or sel_pmin or sel_pmax %}
         <a href="{% url 'bazar:index' %}" style="font-size:.82rem;color:var(--text-muted);text-decoration:none;margin-left:.25rem;display:flex;align-items:center;gap:.25rem;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             Réinitialiser
@@ -603,19 +640,19 @@
 {% if page_obj.has_other_pages %}
 <div class="bazar-pagination">
     {% if page_obj.has_previous %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}" class="bazar-page-btn">←</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}{% if sel_pmin %}pmin={{ sel_pmin }}&{% endif %}{% if sel_pmax %}pmax={{ sel_pmax }}&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}" class="bazar-page-btn">←</a>
     {% endif %}
 
     {% for num in page_obj.paginator.page_range %}
     {% if page_obj.number == num %}
     <span class="bazar-page-btn active">{{ num }}</span>
     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ num }}" class="bazar-page-btn">{{ num }}</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}{% if sel_pmin %}pmin={{ sel_pmin }}&{% endif %}{% if sel_pmax %}pmax={{ sel_pmax }}&{% endif %}sort={{ sort }}&page={{ num }}" class="bazar-page-btn">{{ num }}</a>
     {% endif %}
     {% endfor %}
 
     {% if page_obj.has_next %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}" class="bazar-page-btn">→</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}{% if sel_pmin %}pmin={{ sel_pmin }}&{% endif %}{% if sel_pmax %}pmax={{ sel_pmax }}&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}" class="bazar-page-btn">→</a>
     {% endif %}
 </div>
 {% endif %}
