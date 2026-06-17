@@ -836,6 +836,70 @@ input#sc-file-input { display: none; }
 .sv-delete:hover { background: rgba(255,77,166,.35); }
 .sv-delete .material-icons { font-size: .9rem; }
 
+/* Réponse rapide à une story */
+.sv-reply-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: .6rem 1rem calc(.6rem + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 100%);
+    display: none;
+    align-items: center;
+    gap: .5rem;
+    z-index: 13;
+    animation: slideUp .2s ease;
+}
+.sv-reply-bar.open { display: flex; }
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+.sv-reply-input {
+    flex: 1;
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.35);
+    border-radius: 22px;
+    padding: .45rem 1rem;
+    color: #fff;
+    font-size: .9rem;
+    outline: none;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+.sv-reply-input::placeholder { color: rgba(255,255,255,.6); }
+.sv-reply-send {
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    width: 38px; height: 38px;
+    color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: opacity .18s;
+}
+.sv-reply-send:disabled { opacity: .5; }
+.sv-reply-send .material-icons { font-size: 1.1rem; }
+.sv-reply-btn {
+    position: absolute;
+    bottom: 60px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.35);
+    border-radius: 22px;
+    padding: .4rem 1.1rem;
+    color: #fff;
+    font-size: .82rem; font-weight: 600;
+    cursor: pointer;
+    display: none;
+    align-items: center; gap: .35rem;
+    z-index: 12;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    transition: background .18s;
+}
+.sv-reply-btn:hover { background: rgba(255,255,255,.25); }
+.sv-reply-btn .material-icons { font-size: .95rem; }
+
 @keyframes fadeIn {
     from { opacity: 0; } to { opacity: 1; }
 }
@@ -1195,6 +1259,23 @@ input#sc-file-input { display: none; }
         <span class="material-icons">delete</span>
         Supprimer
     </button>
+
+    <!-- Bouton répondre (affiché pour les stories des autres) -->
+    <button class="sv-reply-btn" id="sv-reply-btn" onclick="openStoryReply()">
+        <span class="material-icons">reply</span>
+        Répondre
+    </button>
+
+    <!-- Barre de réponse rapide -->
+    <div class="sv-reply-bar" id="sv-reply-bar">
+        <input type="text" class="sv-reply-input" id="sv-reply-input"
+               placeholder="Envoyer un message…" maxlength="500"
+               onkeydown="if(event.key==='Enter'){sendStoryReply();}"
+               oninput="document.getElementById('sv-reply-send').disabled=!this.value.trim();">
+        <button class="sv-reply-send" id="sv-reply-send" disabled onclick="sendStoryReply()">
+            <span class="material-icons">send</span>
+        </button>
+    </div>
 
 </div>
 </div>
@@ -2163,6 +2244,9 @@ window.openStoryViewer = function(groupIndex) {
 };
 
 window.closeStoryViewer = function() {
+    if (typeof closeStoryReply === 'function') closeStoryReply();
+    var replyBar = document.getElementById('sv-reply-bar');
+    if (replyBar) replyBar.classList.remove('open');
     document.getElementById('story-viewer-overlay').classList.remove('open');
     document.body.style.overflow = '';
     cancelAnimationFrame(_svProgress);
@@ -2344,6 +2428,12 @@ function renderCurrentStory() {
         deleteEl.style.display = 'none';
     }
 
+    // Bouton répondre : visible pour les stories des AUTRES uniquement
+    var replyBtn = document.getElementById('sv-reply-btn');
+    var replyBar = document.getElementById('sv-reply-bar');
+    if (replyBtn) replyBtn.style.display = (group.user_id !== ME_ID) ? 'flex' : 'none';
+    if (replyBar) replyBar.classList.remove('open'); // fermer si on change de story
+
     // Audio
     var svAudio     = document.getElementById('sv-audio');
     var svAudioInd  = document.getElementById('sv-audio-indicator');
@@ -2449,6 +2539,74 @@ function formatTimeLeft(seconds) {
     return 'Expire dans ' + m + 'min';
 }
 
+/* ── Réponse à une story ─────────────────────────────────────── */
+window.openStoryReply = function() {
+    var bar = document.getElementById('sv-reply-bar');
+    var inp = document.getElementById('sv-reply-input');
+    if (!bar) return;
+    // Mettre le viewer en pause
+    if (typeof _svPaused !== 'undefined') _svPaused = true;
+    bar.classList.add('open');
+    if (inp) { inp.value = ''; inp.focus(); }
+    document.getElementById('sv-reply-btn').style.display = 'none';
+};
+
+window.closeStoryReply = function() {
+    var bar = document.getElementById('sv-reply-bar');
+    if (bar) bar.classList.remove('open');
+    var btn = document.getElementById('sv-reply-btn');
+    // Remettre le bouton visible seulement si c'est la story de quelqu'un d'autre
+    var group = _groups[_curGroup];
+    if (group && group.user_id !== ME_ID) {
+        if (btn) btn.style.display = 'flex';
+    }
+    if (typeof _svPaused !== 'undefined') _svPaused = false;
+};
+
+window.sendStoryReply = function() {
+    var inp     = document.getElementById('sv-reply-input');
+    var sendBtn = document.getElementById('sv-reply-send');
+    if (!inp) return;
+    var msg = inp.value.trim();
+    if (!msg) return;
+
+    var group = _groups && _groups[_curGroup];
+    if (!group) return;
+    var authorId = group.user_id;
+
+    if (sendBtn) sendBtn.disabled = true;
+
+    fetch('/chat/story-reply/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCsrf(),
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'story_author_id=' + encodeURIComponent(authorId) +
+              '&message=' + encodeURIComponent(msg),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.ok) {
+            // Feedback visuel
+            inp.value = '';
+            inp.placeholder = '✓ Message envoyé !';
+            setTimeout(function() {
+                inp.placeholder = 'Envoyer un message…';
+                closeStoryReply();
+            }, 1500);
+        } else {
+            alert(data.error || 'Erreur lors de l\'envoi');
+            if (sendBtn) sendBtn.disabled = false;
+        }
+    })
+    .catch(function() {
+        alert('Erreur réseau');
+        if (sendBtn) sendBtn.disabled = false;
+    });
+};
+
 /* ════════════════════════════════════════════
    INIT
    ════════════════════════════════════════════ */
@@ -2487,14 +2645,19 @@ window.zootStories = {
 (function() {
     var el = document.getElementById('story-viewer-overlay');
     el.addEventListener('pointerdown', function(e) {
-        // Ne pas interférer avec les boutons close/delete/link
-        if (e.target.closest('button, a, .sv-close, .sv-delete, .sv-audio-indicator')) return;
+        // Ne pas interférer avec les boutons close/delete/link/reply ni les inputs
+        if (e.target.closest('button, a, input, .sv-close, .sv-delete, .sv-audio-indicator, .sv-reply-bar, .sv-reply-btn')) return;
         if (typeof _svPaused !== 'undefined') _svPaused = true;
     });
-    el.addEventListener('pointerup', function() {
+    el.addEventListener('pointerup', function(e) {
+        // Ne pas reprendre si le viewer est en mode saisie de réponse
+        var replyBar = document.getElementById('sv-reply-bar');
+        if (replyBar && replyBar.classList.contains('open')) return;
         if (typeof _svPaused !== 'undefined') _svPaused = false;
     });
     el.addEventListener('pointercancel', function() {
+        var replyBar = document.getElementById('sv-reply-bar');
+        if (replyBar && replyBar.classList.contains('open')) return;
         if (typeof _svPaused !== 'undefined') _svPaused = false;
     });
 })();
