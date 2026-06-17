@@ -825,4 +825,78 @@ html.data-saver .ds-img-wrap { position: relative; }
 #dd-datasaver-icon.active { color: #10b981 !important; }
 #dd-datasaver-label.active { color: #10b981 !important; font-weight: 800 !important; }
 
+/* ═══════════════════════════════════════════════════
+   BOTTOM TAB BAR — mobile uniquement
+   ═══════════════════════════════════════════════════ */
+.zoot-bottom-nav {
+    display: none; /* masqué sur desktop */
+}
+
+@media (max-width: 767px) {
+    .zoot-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        height: calc(58px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        background: var(--card-bg);
+        border-top: 1px solid var(--border);
+        z-index: 9000;
+        align-items: stretch;
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+    }
+    .zoot-bottom-nav a {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: .6rem;
+        font-weight: 600;
+        letter-spacing: .02em;
+        transition: color .18s;
+        position: relative;
+        padding-bottom: 2px;
+    }
+    .zoot-bottom-nav a .material-icons {
+        font-size: 1.45rem;
+        transition: transform .18s;
+    }
+    .zoot-bottom-nav a.active,
+    .zoot-bottom-nav a:hover {
+        color: var(--accent);
+    }
+    .zoot-bottom-nav a.active .material-icons {
+        transform: scale(1.12);
+    }
+    /* Badge de notification */
+    .zoot-bottom-nav a .bn-badge {
+        position: absolute;
+        top: 4px; right: calc(50% - 14px);
+        background: var(--accent);
+        color: #fff;
+        font-size: .5rem; font-weight: 700;
+        border-radius: 10px;
+        min-width: 14px; height: 14px;
+        padding: 0 3px;
+        display: flex; align-items: center; justify-content: center;
+        display: none; /* montré via JS si count > 0 */
+    }
+    /* Décaler le contenu principal pour éviter la barre */
+    body {
+        padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+    }
+    /* Onglet central (Stories) légèrement surélevé */
+    .zoot-bottom-nav a.bn-stories {
+        position: relative;
+    }
+    .zoot-bottom-nav a.bn-stories .material-icons {
+        font-size: 1.65rem;
+    }
+}
+
 </style>
