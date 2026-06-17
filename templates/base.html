@@ -26,23 +26,16 @@
         })();
     </script>
 
-    <!-- ① bis — Anti-FOUC mode économie (comme pour le thème, doit s'exécuter avant le rendu) -->
+    <!-- ① bis — Anti-FOUC mode économie (uniquement si activé manuellement) -->
     <script>
     (function() {
-        /* Lire la préférence enregistrée */
+        /* Mode économie : uniquement si l'utilisateur l'a explicitement activé (jamais auto) */
         var ds = localStorage.getItem('vzb-data-saver');
-        /* Auto-détection : Save-Data header OU effectiveType 2g/slow-2g */
-        var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        var autoSlow = conn && (conn.saveData === true ||
-                                conn.effectiveType === '2g' ||
-                                conn.effectiveType === 'slow-2g');
-        /* Activer si explicitement activé, ou si auto ET non explicitement désactivé */
-        if (ds === '1' || (autoSlow && ds !== '0')) {
+        if (ds === '1') {
             document.documentElement.classList.add('data-saver');
         }
-        /* Marquer la page avec une variable globale pour le JS aval */
-        window.__VZB_DATA_SAVER = document.documentElement.classList.contains('data-saver');
-        window.__VZB_AUTO_SLOW  = autoSlow && ds === null; /* slow détecté mais user n'a pas encore choisi */
+        window.__VZB_DATA_SAVER = (ds === '1');
+        window.__VZB_AUTO_SLOW  = false;
     })();
     </script>
 
@@ -531,34 +524,15 @@ window.toggleDataSaver = function() {
     dsEnable(!window.__VZB_DATA_SAVER);
 };
 
-/* ── Appliquer aux images du feed (mode économie activé) ── */
+/* ── Appliquer le mode économie (photos toujours chargées, vidéos lazy) ── */
 function _applyDataSaver() {
-    /* Images feed : remplacer src par placeholder cliquable */
-    document.querySelectorAll('.ds-img:not(.ds-pending):not(.ds-loaded)').forEach(function(img) {
-        var realSrc = img.dataset.fullSrc || img.getAttribute('src');
-        if (!realSrc || realSrc.indexOf('data:') === 0) return;
-        img.dataset.fullSrc = realSrc;
-        img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23e5e7eb' width='400' height='250'/%3E%3C/svg%3E";
-        img.classList.add('ds-pending');
-        img.style.minHeight = '100px';
-        var wrap = img.closest('.ds-img-wrap');
-        if (wrap) wrap.setAttribute('data-hint', 'Toucher pour charger');
-    });
-    /* Vidéos : déjà lazy par défaut (voir _post_media.html), rien de plus à faire */
+    /* Les images se chargent toujours normalement (loading="lazy" natif suffit).
+       Le mode économie n'affecte que les vidéos, déjà lazy par défaut via ds-vid-overlay. */
 }
 
-/* ── Retirer le mode économie des images (mode normal réactivé) ── */
+/* ── Retirer le mode économie (no-op pour images, vidéos non affectées) ── */
 function _removeDataSaverImages() {
-    document.querySelectorAll('.ds-img.ds-pending').forEach(function(img) {
-        if (img.dataset.fullSrc) {
-            img.src = img.dataset.fullSrc;
-            delete img.dataset.fullSrc;
-        }
-        img.classList.remove('ds-pending');
-        img.style.minHeight = '';
-        var wrap = img.closest('.ds-img-wrap');
-        if (wrap) wrap.removeAttribute('data-hint');
-    });
+    /* Les images ne sont plus gérées par le data-saver : rien à faire */
 }
 
 /* ── Clic sur une image en mode économie → charger la vraie ── */
@@ -589,26 +563,7 @@ window.dsPlayVideo = function(overlay) {
     wrap.classList.add('ds-playing');
 };
 
-/* ── MutationObserver : appliquer aux nouveaux médias chargés dynamiquement ── */
-var _dsObserver = new MutationObserver(function(mutations) {
-    if (!window.__VZB_DATA_SAVER) return;
-    mutations.forEach(function(m) {
-        m.addedNodes.forEach(function(node) {
-            if (node.nodeType !== 1) return;
-            node.querySelectorAll && node.querySelectorAll('.ds-img:not(.ds-pending):not(.ds-loaded)').forEach(function(img) {
-                var realSrc = img.dataset.fullSrc || img.getAttribute('src');
-                if (!realSrc || realSrc.indexOf('data:') === 0) return;
-                img.dataset.fullSrc = realSrc;
-                img.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 250'%3E%3Crect fill='%23e5e7eb' width='400' height='250'/%3E%3C/svg%3E";
-                img.classList.add('ds-pending');
-                img.style.minHeight = '100px';
-                var wrap = img.closest('.ds-img-wrap');
-                if (wrap) wrap.setAttribute('data-hint', 'Toucher pour charger');
-            });
-        });
-    });
-});
-_dsObserver.observe(document.body, { childList: true, subtree: true });
+/* MutationObserver supprimé : les images se chargent toujours normalement */
 
 /* ── Bannière connexion lente ── */
 window.dsDismissBanner = function() {
