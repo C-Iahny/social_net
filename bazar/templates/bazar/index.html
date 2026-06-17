@@ -487,42 +487,6 @@
 </div>
 {% endif %}
 
-<!-- ── Catégories en vignettes (visible seulement si aucun filtre actif) ── -->
-{% if not sel_cat and not q and not sel_cond and not sel_region %}
-<div style="max-width:1200px;margin:.8rem auto 0;padding:0 1rem;">
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:.55rem;">
-        {% for val, label in categories %}
-        <a href="?cat={{ val }}"
-           style="background:var(--bg-card);border:1.5px solid var(--border);border-radius:12px;
-                  padding:.65rem .4rem;text-align:center;text-decoration:none;color:var(--text-primary);
-                  transition:border-color .18s,transform .18s;display:block;"
-           onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-2px)'"
-           onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
-            <div style="font-size:1.45rem;margin-bottom:.3rem;">
-                {% if val == 'electronique' %}📱
-                {% elif val == 'vehicules' %}🚗
-                {% elif val == 'immobilier' %}🏠
-                {% elif val == 'mode' %}👗
-                {% elif val == 'maison' %}🛋️
-                {% elif val == 'agriculture' %}🌾
-                {% elif val == 'alimentaire' %}🍛
-                {% elif val == 'services' %}🔧
-                {% elif val == 'emploi' %}💼
-                {% elif val == 'artisanat' %}🎨
-                {% elif val == 'sports' %}⚽
-                {% elif val == 'bebe' %}👶
-                {% else %}🏷️
-                {% endif %}
-            </div>
-            <div style="font-size:.68rem;font-weight:700;line-height:1.25;color:var(--text-secondary,var(--text-muted));">
-                {{ label|truncatechars:18 }}
-            </div>
-        </a>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
 <!-- ── Filtres ── -->
 <div class="bazar-filters">
     <form method="get" action="{% url 'bazar:index' %}" class="bazar-filters-inner" id="filter-form">
