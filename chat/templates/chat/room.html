@@ -460,6 +460,48 @@ main { padding: 0 !important; margin-top: 62px; }
 #id_chatroom_loading_spinner_container { padding: .4rem 0; }
 #id_chatroom_loading_spinner { color: var(--accent) !important; }
 
+/* ── Bazar annonce mini-card ───────────────────────────────────── */
+#bazar-annonce-ref {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .55rem max(1rem, calc((100% - 600px) / 2));
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.bazar-ref-thumb {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+}
+.bazar-ref-no-img {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; flex-shrink: 0;
+}
+.bazar-ref-info { flex: 1; min-width: 0; }
+.bazar-ref-title {
+    font-size: .8rem; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+.bazar-ref-title:hover { color: var(--accent); }
+.bazar-ref-price {
+    font-size: .75rem; color: var(--accent); font-weight: 700;
+}
+.bazar-ref-close {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); padding: 0; line-height: 1;
+    flex-shrink: 0;
+}
+.bazar-ref-close:hover { color: var(--text-primary); }
+
 /* ── Input bar ────────────────────────────────────────────────── */
 .chat-input-bar {
     /* Même centrage que le chat log */
@@ -688,6 +730,30 @@ main { padding: 0 !important; margin-top: 62px; }
                 <div class="progress"><div id="chat-upload-bar"></div></div>
                 <span id="upload-progress-pct" style="font-size:.78rem;min-width:32px;">0%</span>
             </div>
+
+            <!-- Référence annonce bazar (si venu depuis une fiche bazar) -->
+            {% if bazar_annonce %}
+            <div id="bazar-annonce-ref">
+                {% with img=bazar_annonce.get_primary_image %}
+                {% if img %}
+                <img class="bazar-ref-thumb" src="{{ img.image.url }}" alt="{{ bazar_annonce.title }}">
+                {% else %}
+                <div class="bazar-ref-no-img">🏷️</div>
+                {% endif %}
+                {% endwith %}
+                <div class="bazar-ref-info">
+                    <a class="bazar-ref-title" href="{% url 'bazar:detail' bazar_annonce.pk %}" target="_blank">
+                        {{ bazar_annonce.title }}
+                    </a>
+                    {% if bazar_annonce.price %}
+                    <div class="bazar-ref-price">{{ bazar_annonce.formatted_price }}</div>
+                    {% endif %}
+                </div>
+                <button class="bazar-ref-close" onclick="closeBazarRef()" title="Fermer">
+                    <span class="material-icons" style="font-size:1.1rem;">close</span>
+                </button>
+            </div>
+            {% endif %}
 
             <!-- Input bar -->
             <div class="chat-input-bar">
@@ -998,7 +1064,27 @@ function uploadAndSendFile(f){
         }
         // Initialisation : connecter automatiquement si une room est déjà connue
         onStart();
+
+        // Pré-remplir le message si on vient d'une fiche bazar
+        {% if bazar_annonce %}
+        (function(){
+            var ta = document.getElementById('id_chat_message_input');
+            if(ta && !ta.value.trim()){
+                ta.value = "Bonjour, je suis intéressé(e) par votre annonce « {{ bazar_annonce.title|escapejs }} » (réf. #{{ bazar_annonce.pk }}). Est-elle toujours disponible ?";
+                // Auto-resize
+                ta.style.height = 'auto';
+                ta.style.height = ta.scrollHeight + 'px';
+                ta.focus();
+                ta.setSelectionRange(ta.value.length, ta.value.length);
+            }
+        })();
+        {% endif %}
     });
+
+    function closeBazarRef(){
+        var el = document.getElementById('bazar-annonce-ref');
+        if(el){ el.style.display = 'none'; }
+    }
 
     function setupWebSocket(room_id){
         roomId = room_id

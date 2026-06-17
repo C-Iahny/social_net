@@ -156,11 +156,16 @@ def annonce_detail(request, pk):
     )
 
     # Favori : est-ce que l'utilisateur a déjà sauvegardé cette annonce ?
-    is_saved = (
-        request.user.is_authenticated
-        and BazarFavori.objects.filter(user=request.user, annonce=annonce).exists()
-    )
-    fav_count = annonce.favoris.count()
+    try:
+        is_saved = (
+            request.user.is_authenticated
+            and BazarFavori.objects.filter(user=request.user, annonce=annonce).exists()
+        )
+        fav_count = annonce.favoris.count()
+    except Exception:
+        # Sécurité si la migration 0006 n'a pas encore été appliquée
+        is_saved  = False
+        fav_count = 0
 
     context = {
         'annonce':    annonce,
