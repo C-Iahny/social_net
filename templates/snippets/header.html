@@ -1100,18 +1100,18 @@
 <!-- ── Bottom Tab Bar (mobile) ───────────────────── -->
 {% if request.user.is_authenticated %}
 <nav class="zoot-bottom-nav" aria-label="Navigation principale">
-    <a href="{% url 'post:home' %}"
-       class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+    <a href="{% url 'post:post-view' %}"
+       class="{% if request.resolver_match.url_name == 'post-view' %}active{% endif %}">
         <span class="material-icons">home</span>
         <span>Feed</span>
     </a>
     <a href="{% url 'stories:page' %}"
-       class="bn-stories {% if 'stories' in request.resolver_match.namespace %}active{% endif %}">
+       class="bn-stories {% if request.resolver_match.namespace == 'stories' %}active{% endif %}">
         <span class="material-icons">auto_stories</span>
         <span>Stories</span>
     </a>
     <a href="{% url 'bazar:index' %}"
-       class="{% if 'bazar' in request.resolver_match.namespace %}active{% endif %}">
+       class="{% if request.resolver_match.namespace == 'bazar' %}active{% endif %}">
         <span class="material-icons">storefront</span>
         <span>Bazar</span>
     </a>
@@ -1120,8 +1120,8 @@
         <span class="material-icons">trending_up</span>
         <span>Tendances</span>
     </a>
-    <a href="{% url 'account:account' request.user.username %}"
-       class="{% if request.resolver_match.url_name == 'account' and request.resolver_match.kwargs.username == request.user.username %}active{% endif %}">
+    <a href="{% url 'account:view' request.user.username %}"
+       class="{% if request.resolver_match.url_name == 'view' and request.resolver_match.kwargs.user_id == request.user.username %}active{% endif %}">
         <span class="material-icons">person</span>
         <span>Profil</span>
     </a>

@@ -427,6 +427,26 @@
     .bazar-card-price { font-size: .92rem; }
     .bazar-price-range input { width: 88px; }
 }
+
+/* ── Bouton géolocalisation ── */
+.geo-detect-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: .3rem .75rem;
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+    white-space: nowrap;
+}
+.geo-detect-btn:hover { border-color: var(--accent); color: var(--accent); }
+.geo-detect-btn .material-icons { font-size: .9rem; }
+.geo-detect-btn.loading { opacity: .6; pointer-events: none; }
 </style>
 
 <!-- ── Hero ── -->
@@ -531,6 +551,11 @@
             <option value="{{ code }}" {% if sel_region == code %}selected{% endif %}>{{ label }}</option>
             {% endif %}{% endfor %}
         </select>
+        <button type="button" class="geo-detect-btn" id="geo-detect-btn"
+                onclick="detectMyRegion()" title="Détecter ma région automatiquement">
+            <span class="material-icons">my_location</span>
+            <span id="geo-detect-label">Près de moi</span>
+        </button>
 
         <!-- Vendeurs vérifiés -->
         <label class="bazar-filter-verified {% if only_verified %}active{% endif %}">
@@ -674,5 +699,88 @@
     {% endif %}
 </div>
 {% endif %}
+
+<script>
+/* ── Géolocalisation → région Madagascar ─────────── */
+(function() {
+    // Centroids des 22 régions (lat, lon, code)
+    var REGIONS = [
+        [-18.91, 47.54, 'analamanga'],
+        [-19.87, 47.03, 'vakinankaratra'],
+        [-19.00, 46.80, 'itasy'],
+        [-18.77, 46.05, 'bongolava'],
+        [-21.45, 47.09, 'haute_matsiatra'],
+        [-20.53, 47.25, 'amoron_i_mania'],
+        [-21.23, 48.35, 'vatovavy'],
+        [-22.15, 47.98, 'fitovinany'],
+        [-22.41, 46.13, 'ihorombe'],
+        [-22.82, 47.83, 'atsimo_atsinanana'],
+        [-18.15, 49.38, 'atsinanana'],
+        [-17.37, 49.41, 'analanjirofo'],
+        [-17.83, 48.42, 'alaotra_mangoro'],
+        [-15.72, 46.32, 'boeny'],
+        [-14.88, 47.99, 'sofia'],
+        [-16.93, 46.83, 'betsiboka'],
+        [-17.98, 44.02, 'melaky'],
+        [-23.35, 43.67, 'atsimo_andrefana'],
+        [-25.17, 46.08, 'androy'],
+        [-25.03, 47.00, 'anosy'],
+        [-20.28, 44.28, 'menabe'],
+        [-12.35, 49.30, 'diana'],
+        [-14.27, 50.17, 'sava'],
+    ];
+
+    function dist(lat1, lon1, lat2, lon2) {
+        // Distance euclidienne approx (suffit pour la précision régionale)
+        var dlat = lat1 - lat2, dlon = lon1 - lon2;
+        return dlat * dlat + dlon * dlon;
+    }
+
+    function nearestRegion(lat, lon) {
+        // Si hors des limites de Madagascar (~-10 à -27, 43 à 51)
+        if (lat < -27 || lat > -10 || lon < 43 || lon > 51) return 'diaspora';
+        var best = REGIONS[0], bestD = Infinity;
+        for (var i = 0; i < REGIONS.length; i++) {
+            var d = dist(lat, lon, REGIONS[i][0], REGIONS[i][1]);
+            if (d < bestD) { bestD = d; best = REGIONS[i]; }
+        }
+        return best[2];
+    }
+
+    window.detectMyRegion = function() {
+        if (!navigator.geolocation) {
+            alert("La géolocalisation n'est pas disponible sur votre appareil.");
+            return;
+        }
+        var btn   = document.getElementById('geo-detect-btn');
+        var label = document.getElementById('geo-detect-label');
+        if (btn) btn.classList.add('loading');
+        if (label) label.textContent = 'Localisation…';
+
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                var code = nearestRegion(pos.coords.latitude, pos.coords.longitude);
+                // Mettre à jour le select région
+                var sel = document.querySelector('select[name="region"]');
+                if (sel) {
+                    sel.value = code;
+                    // Déclencher un changement visuel
+                    sel.dispatchEvent(new Event('change'));
+                }
+                // Soumettre le formulaire automatiquement
+                var form = document.getElementById('filter-form') || sel.closest('form');
+                if (form) form.submit();
+            },
+            function(err) {
+                if (btn) btn.classList.remove('loading');
+                if (label) label.textContent = 'Près de moi';
+                var msgs = {1:'Permission refusée',2:'Position indisponible',3:'Délai dépassé'};
+                alert(msgs[err.code] || 'Erreur de géolocalisation');
+            },
+            { timeout: 8000, maximumAge: 300000 }
+        );
+    };
+})();
+</script>
 
 {% endblock %}
