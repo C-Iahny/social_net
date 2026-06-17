@@ -1,4 +1,4 @@
-{% load static %}
+{% load static i18n %}
 {# Inclure ce snippet dans le feed (et la page profil avec mode="profile") #}
 
 <!-- ══════════════════════════════════════════════════════
@@ -920,10 +920,10 @@ input#sc-file-input { display: none; }
         <div class="story-add-btn" id="my-story-add-btn">
             <span class="material-icons">add</span>
         </div>
-        <span class="story-add-label" id="my-story-add-label">Ma story</span>
+        <span class="story-add-label" id="my-story-add-label">{% trans "Ma story" %}</span>
         <!-- Overlay bas (visible si story existante) -->
         <div class="story-item-overlay" id="my-story-overlay" style="display:none;">
-            <span class="story-item-label">Ma story</span>
+            <span class="story-item-label">{% trans "Ma story" %}</span>
         </div>
         <!-- Bouton "T" pour créer une story texte seulement -->
         <button class="story-text-btn" id="my-story-text-btn" style="display:none;"
@@ -950,7 +950,7 @@ input#sc-file-input { display: none; }
 <div id="story-creator">
 
     <div class="sc-header">
-        <span class="sc-title">Créer une story</span>
+        <span class="sc-title">{% trans "Créer une story" %}</span>
         <button class="sc-close" onclick="closeStoryCreator()">
             <span class="material-icons">close</span>
         </button>
@@ -966,20 +966,20 @@ input#sc-file-input { display: none; }
                 <video id="sc-preview-video" muted playsinline loop></video>
                 <!-- Texte draggable + éditable -->
                 <div id="sc-text-overlay">
-                    <div id="sc-text-drag-handle">✥ maintenir pour déplacer</div>
+                    <div id="sc-text-drag-handle">{% trans "✥ maintenir pour déplacer" %}</div>
                     <p id="sc-text-card-content"
                        contenteditable="true"
-                       data-placeholder="Tapez votre texte…"
+                       data-placeholder="{% trans 'Tapez votre texte…' %}"
                        spellcheck="false"></p>
                 </div>
                 <!-- Barre légende bas (image/video sans texte) -->
                 <div id="sc-caption-bar">
                     <input type="text" id="sc-caption-bar-input"
-                           maxlength="200" placeholder="Ajouter une légende…">
+                           maxlength="200" placeholder="{% trans 'Ajouter une légende…' %}">
                 </div>
                 <div class="sc-preview-placeholder" id="sc-preview-placeholder">
                     <span class="material-icons">add_photo_alternate</span>
-                    <p>Cliquer pour choisir un fichier</p>
+                    <p>{% trans "Cliquer pour choisir un fichier" %}</p>
                 </div>
             </div>
 
@@ -1088,7 +1088,7 @@ input#sc-file-input { display: none; }
         <div class="sc-audio-section" id="sc-audio-section" style="display:none;">
             <div class="sc-audio-label">
                 <span class="material-icons">music_note</span>
-                Musique (optionnel — clip de 30 s)
+                {% trans "Musique (optionnel — clip de 30 s)" %}
             </div>
 
             <!-- Tabs -->
@@ -1108,7 +1108,7 @@ input#sc-file-input { display: none; }
             <div class="sc-audio-panel active" id="sc-audio-panel-local">
                 <label class="sc-audio-file-btn" for="sc-audio-input">
                     <span class="material-icons">audio_file</span>
-                    Choisir un fichier (MP3, OGG, WAV, AAC…)
+                    {% trans "Choisir un fichier (MP3, OGG, WAV, AAC…)" %}
                 </label>
                 <input type="file" id="sc-audio-input" accept="audio/*" style="display:none"
                        onchange="onAudioFileSelected(this)">
@@ -1124,7 +1124,7 @@ input#sc-file-input { display: none; }
                     </button>
                 </div>
                 <div style="font-size:.68rem;color:var(--text-muted);margin-top:.25rem;">
-                    Lien direct vers un fichier MP3 / OGG / WAV public
+                    {% trans "Lien direct vers un fichier MP3 / OGG / WAV public" %}
                 </div>
             </div>
 
@@ -1140,7 +1140,7 @@ input#sc-file-input { display: none; }
                 </div>
                 <div class="sc-audio-results" id="sc-audio-results"></div>
                 <div style="font-size:.66rem;color:var(--text-muted);margin-top:.25rem;">
-                    Musique libre de droits via <strong>Jamendo</strong>
+                    {% trans "Musique libre de droits via" %} <strong>Jamendo</strong>
                 </div>
             </div>
 
@@ -1157,7 +1157,7 @@ input#sc-file-input { display: none; }
             <div class="sc-trim-section" id="sc-trim-section">
                 <div class="sc-trim-label">
                     <span class="material-icons">content_cut</span>
-                    Choisir le début du clip (30 s)
+                    {% trans "Choisir le début du clip (30 s)" %}
                 </div>
                 <div class="sc-trim-player">
                     <button class="sc-trim-play-btn" id="sc-trim-play-btn" onclick="toggleTrimPreview()">
@@ -1182,7 +1182,7 @@ input#sc-file-input { display: none; }
         <!-- Publier -->
         <button class="sc-publish-btn" id="sc-publish-btn" onclick="publishStory()" style="margin: 0 .75rem; width: calc(100% - 1.5rem);">
             <span class="material-icons">bolt</span>
-            Publier ma story
+            {% trans "Publier ma story" %}
         </button>
     </div>
 

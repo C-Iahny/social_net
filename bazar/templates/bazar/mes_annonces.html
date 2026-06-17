@@ -193,7 +193,7 @@
     <div class="bazar-mes-header">
         <div>
             <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.4rem;">
-                <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">Bazar</a>
+                <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
                 <span> › </span>{% trans "Mes annonces" %}
             </nav>
             <h1 class="bazar-mes-title">🗂️ {% trans "Mes annonces" %}</h1>
@@ -212,11 +212,11 @@
         </div>
         <div class="bazar-stat-pill">
             <span class="num" style="color:#166534;">{{ count_active }}</span>
-            active{{ count_active|pluralize }}
+            {% trans "active" %}{{ count_active|pluralize }}
         </div>
         <div class="bazar-stat-pill">
             <span class="num" style="color:#991b1b;">{{ count_sold }}</span>
-            vendue{{ count_sold|pluralize }}
+            {% trans "vendue" %}{{ count_sold|pluralize }}
         </div>
     </div>
 
@@ -302,17 +302,17 @@
 
         <!-- Actions -->
         <div class="bazar-row-actions">
-            <a href="{% url 'bazar:detail' annonce.pk %}" class="bazar-action-btn" title="Voir">
+            <a href="{% url 'bazar:detail' annonce.pk %}" class="bazar-action-btn" title="{% trans 'Voir' %}">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             </a>
-            <a href="{% url 'bazar:edit' annonce.pk %}" class="bazar-action-btn" title="Modifier">
+            <a href="{% url 'bazar:edit' annonce.pk %}" class="bazar-action-btn" title="{% trans 'Modifier' %}">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </a>
             {% if annonce.status == 'active' %}
             <!-- Bump / Rafraîchir -->
             <button type="button"
                     class="bazar-action-btn"
-                    title="🔝 Remonter en tête (1×/24h)"
+                    title="{% trans '🔝 Remonter en tête (1×/24h)' %}"
                     onclick="bumpAnnonce({{ annonce.pk }}, this)"
                     style="color:var(--accent);border-color:var(--accent);">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
@@ -320,14 +320,14 @@
             <!-- Marquer vendue -->
             <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" onsubmit="return confirm('Marquer comme vendue ?')">
                 {% csrf_token %}
-                <button type="submit" class="bazar-action-btn" title="Marquer vendue" style="color:#166534;border-color:#166534;">
+                <button type="submit" class="bazar-action-btn" title="{% trans 'Marquer vendue' %}" style="color:#166534;border-color:#166534;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                 </button>
             </form>
             {% endif %}
             <form method="post" action="{% url 'bazar:delete' annonce.pk %}" onsubmit="return confirm('Supprimer définitivement ?')">
                 {% csrf_token %}
-                <button type="submit" class="bazar-action-btn bazar-action-del" title="Supprimer">
+                <button type="submit" class="bazar-action-btn bazar-action-del" title="{% trans 'Supprimer' %}">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
                 </button>
             </form>

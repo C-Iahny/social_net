@@ -746,7 +746,7 @@
         <a href="{% url 'post:tendances' %}"
            class="zoot-nav-link {% if request.resolver_match.url_name == 'tendances' %}active{% endif %}">
             <span class="material-icons">trending_up</span>
-            <span>Tendances</span>
+            <span>{% trans "Tendances" %}</span>
         </a>
         <a href="{% url 'group:list' %}"
            class="zoot-nav-link {% if request.resolver_match.namespace == 'group' %}active{% endif %}">
@@ -766,7 +766,7 @@
         <a href="{% url 'bazar:index' %}"
            class="zoot-nav-link {% if request.resolver_match.namespace == 'bazar' %}active{% endif %}">
             <span class="material-icons">storefront</span>
-            <span>Bazar</span>
+            <span>{% trans "Bazar" %}</span>
         </a>
     </div>
 
@@ -918,7 +918,7 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Navigation principale -->
-                <p class="zoot-dropdown-label">A propos de moi</p>
+                <p class="zoot-dropdown-label">{% trans "A propos de moi" %}</p>
                 <a class="dropdown-item" href="{% url 'account:view' user_id=request.user.id %}">
                     <span class="material-icons">person_outline</span> {% trans "My profile" %}
                 </a>
@@ -940,7 +940,7 @@
                     <span class="material-icons">groups</span> {% trans "Groups" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'bazar:index' %}">
-                    <span class="material-icons">storefront</span> Bazar
+                    <span class="material-icons">storefront</span> {% trans "Bazar" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
                     <span class="material-icons">person_add_alt</span> {% trans "Friend requests" %}
@@ -952,7 +952,7 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Créer -->
-                <p class="zoot-dropdown-label">Créer</p>
+                <p class="zoot-dropdown-label">{% trans "Créer" %}</p>
                 <a class="dropdown-item" href="{% url 'post:kabary-create' %}"
                    style="color:var(--accent);">
                     <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
@@ -980,7 +980,7 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Compte -->
-                <p class="zoot-dropdown-label">Compte</p>
+                <p class="zoot-dropdown-label">{% trans "Compte" %}</p>
                 <a class="dropdown-item" href="{% url 'account:edit' user_id=request.user.id %}">
                     <span class="material-icons">manage_accounts</span> {% trans "Settings" %}
                 </a>
@@ -1008,7 +1008,7 @@
                 <button class="dropdown-item" onclick="toggleDataSaver()" type="button"
                         style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
                     <span class="material-icons" id="dd-datasaver-icon" style="color:var(--text-muted);">data_saver_off</span>
-                    <span id="dd-datasaver-label">Mode économie</span>
+                    <span id="dd-datasaver-label">{% trans "Mode économie" %}</span>
                 </button>
                 <!-- Sélecteur de langue compact -->
                 <div style="display:flex;gap:.4rem;padding:.3rem .85rem .65rem;flex-wrap:wrap;">
@@ -1043,11 +1043,11 @@
         {% else %}
         <!-- Not authenticated -->
         <a class="zoot-nav-link" href="{% url 'login' %}" style="text-transform:none;font-size:.9rem;min-width:auto;">
-            Connexion
+            {% trans "Connexion" %}
         </a>
         <a href="{% url 'register' %}"
            style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:22px;padding:.45rem 1.2rem;font-size:.9rem;font-weight:700;text-decoration:none;white-space:nowrap;transition:opacity .2s,box-shadow .2s;font-family:var(--font-primary,'Space Grotesk',sans-serif);">
-            S'inscrire
+            {% trans "S'inscrire" %}
         </a>
         {% endif %}
 
@@ -1084,7 +1084,7 @@
         <span class="material-icons" style="color:#bf5fff;">lock_clock</span> Vintana
     </a>
     <a href="{% url 'bazar:index' %}" class="zoot-mobile-link">
-        <span class="material-icons">storefront</span> Bazar
+        <span class="material-icons">storefront</span> {% trans "Bazar" %}
     </a>
     <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
@@ -1113,17 +1113,17 @@
     <a href="{% url 'bazar:index' %}"
        class="{% if request.resolver_match.namespace == 'bazar' %}active{% endif %}">
         <span class="material-icons">storefront</span>
-        <span>Bazar</span>
+        <span>{% trans "Bazar" %}</span>
     </a>
     <a href="{% url 'post:tendances' %}"
        class="{% if request.resolver_match.url_name == 'tendances' %}active{% endif %}">
         <span class="material-icons">trending_up</span>
-        <span>Tendances</span>
+        <span>{% trans "Tendances" %}</span>
     </a>
     <a href="{% url 'account:view' request.user.username %}"
        class="{% if request.resolver_match.url_name == 'view' and request.resolver_match.kwargs.user_id == request.user.username %}active{% endif %}">
         <span class="material-icons">person</span>
-        <span>Profil</span>
+        <span>{% trans "Profil" %}</span>
     </a>
 </nav>
 {% endif %}
