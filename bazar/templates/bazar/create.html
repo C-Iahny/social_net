@@ -439,7 +439,7 @@ function syncInput() {
    natif enverrait 0 fichier. On intercepte le submit et on construit
    le FormData manuellement avec selectedFiles.                             */
 document.getElementById('bazar-create-form').addEventListener('submit', function(e) {
-    if (_supportsFileSync || selectedFiles.length === 0) return; /* desktop : chemin normal */
+    if (selectedFiles.length === 0) return; /* aucun fichier : soumission native */
     e.preventDefault();
 
     const form = this;

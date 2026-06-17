@@ -335,7 +335,7 @@ function renderPreviews() {
 const _editForm = document.querySelector('form[enctype="multipart/form-data"]');
 if (_editForm) {
     _editForm.addEventListener('submit', function(e) {
-        if (_supportsFileSync || selectedFiles.length === 0) return;
+        if (selectedFiles.length === 0) return; /* aucun nouveau fichier : soumission native */
         e.preventDefault();
         const btn  = this.querySelector('button[type="submit"]');
         const orig = btn ? btn.innerHTML : '';
