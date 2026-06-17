@@ -674,12 +674,14 @@ input#sc-file-input { display: none; }
     display: flex; align-items: center; justify-content: center;
     max-width: 480px;
     margin: 0 auto;
+    overflow: hidden; /* empêche le texte de déborder hors de la zone photo */
 }
 
 /* Média */
 .sv-media {
     width: 100%; height: 100%;
-    object-fit: contain;
+    object-fit: cover;      /* remplit le conteneur, comme dans le créateur */
+    object-position: center;
     display: none;
     position: absolute; inset: 0;
 }
