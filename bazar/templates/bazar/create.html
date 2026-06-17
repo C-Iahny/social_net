@@ -230,11 +230,11 @@
                 Photos ({{ max_images }} max)
             </div>
 
-            <div class="bazar-upload-zone" id="upload-zone" onclick="document.getElementById('id_images').click()">
+            <label class="bazar-upload-zone" id="upload-zone" for="id_images" style="cursor:pointer;">
                 <div class="bazar-upload-icon">🖼️</div>
                 <div class="bazar-upload-text">{% trans "Cliquer pour ajouter des photos" %}</div>
                 <div class="bazar-upload-hint">JPG, PNG, WebP · Max {{ max_images }} photos · La première = photo principale</div>
-            </div>
+            </label>
             <input type="file" name="images" id="id_images" class="bazar-file-input" multiple accept="image/*,.heic,.heif">
             <div class="bazar-preview-grid" id="preview-grid"></div>
         </div>
