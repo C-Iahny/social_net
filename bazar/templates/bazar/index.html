@@ -478,7 +478,7 @@
 <!-- ── Raccourci "Ma région" ── -->
 {% if user_region and not sel_region %}
 <div style="padding:.5rem 1rem .1rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-    <span style="font-size:.82rem;color:var(--text-muted);">Près de chez moi :</span>
+    <span style="font-size:.82rem;color:var(--text-muted);">{% trans "Près de chez moi :" %}</span>
     <a href="?region={{ user_region }}"
        style="display:inline-flex;align-items:center;gap:.3rem;padding:.32rem .8rem;border-radius:99px;
               background:var(--accent,#6366f1);color:#fff;font-size:.82rem;font-weight:600;text-decoration:none;">
@@ -510,15 +510,15 @@
 
         <!-- Région -->
         <select name="region" class="bazar-filter-select" onchange="this.form.submit()">
-            <option value="">🇲🇬 Toute Madagascar</option>
+            <option value="">🇲🇬 {% trans "Toute Madagascar" %}</option>
             {% for code, label in region_choices %}{% if code %}
             <option value="{{ code }}" {% if sel_region == code %}selected{% endif %}>{{ label }}</option>
             {% endif %}{% endfor %}
         </select>
         <button type="button" class="geo-detect-btn" id="geo-detect-btn"
-                onclick="detectMyRegion()" title="Détecter ma région automatiquement">
+                onclick="detectMyRegion()" title="{% trans 'Détecter ma région automatiquement' %}">
             <span class="material-icons">my_location</span>
-            <span id="geo-detect-label">Près de moi</span>
+            <span id="geo-detect-label">{% trans "Près de moi" %}</span>
         </button>
 
         <!-- Vendeurs vérifiés -->
@@ -550,7 +550,7 @@
         {% if sel_cat or sel_cond or sel_region or q or sort != 'recent' or only_verified or sel_pmin or sel_pmax %}
         <a href="{% url 'bazar:index' %}" style="font-size:.82rem;color:var(--text-muted);text-decoration:none;margin-left:.25rem;display:flex;align-items:center;gap:.25rem;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            Réinitialiser
+            {% trans "Réinitialiser" %}
         </a>
         {% endif %}
     </form>
@@ -652,8 +652,8 @@
     <div class="bazar-empty-icon">🔍</div>
     <h4 style="color:var(--text-primary);font-weight:700;">{% trans "Aucune annonce trouvée" %}</h4>
     <p style="font-size:.9rem;">
-        {% if q %}Aucun résultat pour <strong>« {{ q }} »</strong>. Essayez un autre mot-clé.
-        {% elif sel_cat %}Aucune annonce dans cette catégorie pour le moment.
+        {% if q %}{% blocktrans with q=q %}Aucun résultat pour <strong>« {{ q }} »</strong>. Essayez un autre mot-clé.{% endblocktrans %}
+        {% elif sel_cat %}{% trans "Aucune annonce dans cette catégorie pour le moment." %}
         {% else %}{% trans "Le bazar est encore vide. Soyez le premier à publier !" %}{% endif %}
     </p>
     {% if request.user.is_authenticated %}
@@ -664,6 +664,17 @@
 </div>
 {% endif %}
 
+<script>
+var VZB_I18N = {
+    geoUnavailable: "{% trans 'La géolocalisation n\\'est pas disponible sur votre appareil.' %}",
+    locating: "{% trans 'Localisation…' %}",
+    nearMe: "{% trans 'Près de moi' %}",
+    geoPermDenied: "{% trans 'Permission refusée' %}",
+    geoPosUnavail: "{% trans 'Position indisponible' %}",
+    geoTimeout: "{% trans 'Délai dépassé' %}",
+    geoError: "{% trans 'Erreur de géolocalisation' %}"
+};
+</script>
 <script>
 /* ── Géolocalisation → région Madagascar ─────────── */
 (function() {
@@ -713,13 +724,13 @@
 
     window.detectMyRegion = function() {
         if (!navigator.geolocation) {
-            alert("La géolocalisation n'est pas disponible sur votre appareil.");
+            alert(VZB_I18N.geoUnavailable);
             return;
         }
         var btn   = document.getElementById('geo-detect-btn');
         var label = document.getElementById('geo-detect-label');
         if (btn) btn.classList.add('loading');
-        if (label) label.textContent = 'Localisation…';
+        if (label) label.textContent = VZB_I18N.locating;
 
         navigator.geolocation.getCurrentPosition(
             function(pos) {
@@ -737,9 +748,9 @@
             },
             function(err) {
                 if (btn) btn.classList.remove('loading');
-                if (label) label.textContent = 'Près de moi';
-                var msgs = {1:'Permission refusée',2:'Position indisponible',3:'Délai dépassé'};
-                alert(msgs[err.code] || 'Erreur de géolocalisation');
+                if (label) label.textContent = VZB_I18N.nearMe;
+                var msgs = {1: VZB_I18N.geoPermDenied, 2: VZB_I18N.geoPosUnavail, 3: VZB_I18N.geoTimeout};
+                alert(msgs[err.code] || VZB_I18N.geoError);
             },
             { timeout: 8000, maximumAge: 300000 }
         );

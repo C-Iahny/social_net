@@ -110,12 +110,12 @@
 <div class="bazar-form-wrap">
     <div style="margin-bottom:1.8rem;">
         <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.6rem;">
-            <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">Bazar</a>
+            <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
             <span> › </span>
             <a href="{% url 'bazar:detail' annonce.pk %}" style="color:var(--accent);text-decoration:none;">{{ annonce.title|truncatechars:30 }}</a>
             <span> › </span>{% trans "Modifier" %}
         </nav>
-        <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.25rem;">✏️ {% trans "Modifier" %} l'annonce</h1>
+        <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.25rem;">✏️ {% trans "Modifier" %} {% trans "l'annonce" %}</h1>
         <p style="font-size:.88rem;color:var(--text-muted);">{% trans "Les modifications seront visibles immédiatement." %}</p>
     </div>
 
@@ -164,7 +164,7 @@
         <div class="bazar-section">
             <div class="bazar-section-title">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                Article
+                {% trans "Article" %}
             </div>
             <div class="form-group mb-3">
                 <label>{{ form.title.label }} *</label>
@@ -249,6 +249,12 @@
     </form>
 </div>
 
+<script>
+var VZB_I18N = {
+    saving: "{% trans 'Enregistrement…' %}",
+    networkError: "{% trans 'Erreur réseau. Réessayez.' %}"
+};
+</script>
 <script>
 // Supprimer photo existante via AJAX
 function deletePhoto(imgPk, btn) {
@@ -339,7 +345,7 @@ if (_editForm) {
         e.preventDefault();
         const btn  = this.querySelector('button[type="submit"]');
         const orig = btn ? btn.innerHTML : '';
-        if (btn) { btn.disabled = true; btn.innerHTML = 'Enregistrement…'; }
+        if (btn) { btn.disabled = true; btn.innerHTML = VZB_I18N.saving; }
 
         const fd = new FormData(this);
         fd.delete('images');
@@ -354,7 +360,7 @@ if (_editForm) {
             }); }
         }).catch(function() {
             if (btn) { btn.disabled = false; btn.innerHTML = orig; }
-            alert('Erreur réseau. Réessayez.');
+            alert(VZB_I18N.networkError);
         });
     });
 }

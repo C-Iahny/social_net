@@ -1145,7 +1145,7 @@ body { background: var(--bg); }
                     {% if friend_requests %}
                     <a class="btn-p btn-p-primary" href="{% url 'friend:friend-requests' user_id=id %}">
                         <span class="material-icons">notifications</span>
-                        {{ friend_requests|length }} demande
+                        {{ friend_requests|length }} {% trans "demande" %}
                     </a>
                     {% endif %}
 
@@ -1166,7 +1166,7 @@ body { background: var(--bg); }
                     {% if is_friend %}
                     <div class="dropdown">
                         <button class="btn-p btn-p-secondary dropdown-toggle" data-toggle="dropdown" id="friends-drop">
-                            <span class="material-icons">how_to_reg</span> Ami
+                            <span class="material-icons">how_to_reg</span> {% trans "Ami" %}
                         </button>
                         <div class="dropdown-menu" aria-labelledby="friends-drop"
                              style="border-radius:12px;border-color:var(--border);background:var(--bg-card);box-shadow:0 8px 28px rgba(0,0,0,.18);padding:.4rem;">
@@ -1277,17 +1277,17 @@ body { background: var(--bg); }
                             <div class="fihav-progress-bar" style="width:100%;"></div>
                         </div>
                         <p class="fihav-next-level" style="text-align:center;font-weight:700;color:var(--accent);">
-                            🌟 Niveau maximum atteint !
+                            🌟 {% trans "Niveau maximum atteint !" %}
                         </p>
                     {% endif %}
                     {% endwith %}
 
                     <div class="fihav-breakdown">
                         <p style="font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.35rem;">
-                            Comment gagner des points
+                            {% trans "Comment gagner des points" %}
                         </p>
                         <div class="fihav-breakdown-row">
-                            <span>📝 Post standard</span>
+                            <span>📝 {% trans "Post standard" %}</span>
                             <span class="fihav-breakdown-val">+5</span>
                         </div>
                         <div class="fihav-breakdown-row">
@@ -1295,23 +1295,23 @@ body { background: var(--bg); }
                             <span class="fihav-breakdown-val">+10</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>💬 Commentaire</span>
+                            <span>💬 {% trans "Commentaire" %}</span>
                             <span class="fihav-breakdown-val">+2</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>❤️ Réaction reçue</span>
+                            <span>❤️ {% trans "Réaction reçue" %}</span>
                             <span class="fihav-breakdown-val">+3</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>🔁 Repost reçu</span>
+                            <span>🔁 {% trans "Repost reçu" %}</span>
                             <span class="fihav-breakdown-val">+4</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>👤 Ami</span>
+                            <span>👤 {% trans "Ami" %}</span>
                             <span class="fihav-breakdown-val">+3</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>👥 Groupe rejoint</span>
+                            <span>👥 {% trans "Groupe rejoint" %}</span>
                             <span class="fihav-breakdown-val">+2</span>
                         </div>
                     </div>
@@ -1403,7 +1403,7 @@ body { background: var(--bg); }
                         <div style="display:flex;align-items:center;gap:.45rem;">
                             <span class="material-icons" style="color:var(--accent);font-size:1rem;">auto_stories</span>
                             <span style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);">
-                                {% if is_self %}Mes stories{% else %}Stories{% endif %}
+                                {% if is_self %}{% trans "Mes stories" %}{% else %}{% trans "Stories" %}{% endif %}
                             </span>
                         </div>
                         {% if is_self %}

@@ -203,8 +203,8 @@
 
     <!-- Hero -->
     <div class="td-hero">
-        <h1 class="td-hero-title">🔥 Tendances Malgaches</h1>
-        <p class="td-hero-sub">Les hashtags les plus utilisés sur Vazimba — {{ hours_label }}</p>
+        <h1 class="td-hero-title">🔥 {% trans "Tendances Malgaches" %}</h1>
+        <p class="td-hero-sub">{% blocktrans with hours_label=hours_label %}Les hashtags les plus utilisés sur Vazimba — {{ hours_label }}{% endblocktrans %}</p>
     </div>
 
     <!-- Filtres temps -->
@@ -238,7 +238,7 @@
                 <span class="td-tag">{{ ht.tag }}</span>
                 <span class="td-count">
                     <span class="material-icons" style="font-size:.72rem;">post_add</span>
-                    {{ ht.count }} post{{ ht.count|pluralize }}
+                    {{ ht.count }} {% trans "post" %}{{ ht.count|pluralize }}
                 </span>
             </div>
 
@@ -262,17 +262,17 @@
     {% endwith %}
 
     <p class="td-refresh-hint">
-        Mis à jour toutes les 15 minutes •
-        <a href="{% url 'post:tendances' %}?h={{ hours }}" style="color:var(--accent);">Actualiser</a>
+        {% trans "Mis à jour toutes les 15 minutes" %} •
+        <a href="{% url 'post:tendances' %}?h={{ hours }}" style="color:var(--accent);">{% trans "Actualiser" %}</a>
     </p>
 
     {% else %}
 
     <div class="td-empty">
         <div class="td-empty-icon">📭</div>
-        <h3>Aucune tendance sur les {{ hours_label }}</h3>
-        <p>Publiez des posts avec des hashtags pour alimenter les tendances !<br>
-        Essayez sur une période plus longue →
+        <h3>{% blocktrans with hours_label=hours_label %}Aucune tendance sur les {{ hours_label }}{% endblocktrans %}</h3>
+        <p>{% trans "Publiez des posts avec des hashtags pour alimenter les tendances !" %}<br>
+        {% trans "Essayez sur une période plus longue →" %}
         <a href="?h=168" style="color:var(--accent);">7 jours</a></p>
     </div>
 
