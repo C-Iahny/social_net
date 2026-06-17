@@ -36,4 +36,8 @@ urlpatterns = [
 
     # ── Vérification vendeur ───────────────────────────────────────────────────
     path('verification/', views.request_verification, name='request_verification'),
+
+    # ── Favoris ────────────────────────────────────────────────────────────────
+    path('mes-favoris/',     views.mes_favoris,   name='mes_favoris'),
+    path('<int:pk>/favori/', views.toggle_favori, name='toggle_favori'),
 ]

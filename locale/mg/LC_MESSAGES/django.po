@@ -1602,3 +1602,35 @@ msgstr "Mamoaka paositra misy hashtag mba hamelona ny hevitra malaza !"
 
 msgid "Essayez sur une période plus longue →"
 msgstr "Andramo amin'ny fotoana lava kokoa →"
+
+# -- Favoris Bazar
+
+msgid "Sauvegarder"
+msgstr "Tehirizo"
+
+msgid "Sauvegardé"
+msgstr "Voatahiry"
+
+msgid "Chargement…"
+msgstr "Ampidirana…"
+
+msgid "Retirer des favoris"
+msgstr "Esorina amin'ny tiana"
+
+msgid "Mes favoris"
+msgstr "Ny tiana"
+
+msgid "Explorer le Bazar"
+msgstr "Jereo ny Tsena"
+
+msgid "Prix à discuter"
+msgstr "Vidiny hifampiraharahana"
+
+msgid "Aucun favori pour l'instant"
+msgstr "Tsy misy tiana ambin'izao"
+
+msgid "Sauvegardez des annonces qui vous intéressent pour les retrouver facilement ici."
+msgstr "Tehirizo ny filazana mahaliana anao mba hahita azy mora eto."
+
+msgid "Parcourir le Bazar"
+msgstr "Hitety ny Tsena"
