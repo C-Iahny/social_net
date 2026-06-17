@@ -1198,6 +1198,13 @@ body { background: var(--bg); }
                     <span class="material-icons">login</span> {% trans "Login" %}
                 </a>
             {% endif %}
+            {% if request.user.is_authenticated and not is_self %}
+            <button class="btn-p" onclick="openReportModal('account','{{ id }}')"
+                    style="background:none;border:1px solid rgba(239,68,68,.3);color:rgba(239,68,68,.75);padding:.45rem .9rem;border-radius:22px;cursor:pointer;font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:.35rem;">
+                <span class="material-icons" style="font-size:.95rem;">flag</span>
+                Signaler
+            </button>
+            {% endif %}
         </div>
     </div>
 

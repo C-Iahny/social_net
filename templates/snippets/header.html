@@ -777,7 +777,7 @@
 
         <!-- Search bar (desktop) + Live Dropdown -->
         <div class="zoot-search-wrap d-none d-lg-flex" style="position:relative;">
-            <form class="zoot-search-form" method="GET" action="{% url 'search' %}" id="zoot-search-form" autocomplete="off">
+            <form class="zoot-search-form" method="GET" action="{% url 'recherche' %}" id="zoot-search-form" autocomplete="off">
                 <input type="text" name="q" id="zoot-search-input"
                        placeholder="{% trans 'Search...' %}" autocomplete="off"
                        oninput="onSearchInput(this.value)"
@@ -1412,7 +1412,8 @@ document.addEventListener('click', function(e) {
 
         var hasResults = (data.users && data.users.length) ||
                          (data.posts && data.posts.length) ||
-                         (data.hashtags && data.hashtags.length);
+                         (data.hashtags && data.hashtags.length) ||
+                         (data.annonces && data.annonces.length);
 
         if (!hasResults) { dd.style.display = 'none'; return; }
 
@@ -1451,11 +1452,29 @@ document.addEventListener('click', function(e) {
             html += '</div>';
         }
 
+        // Annonces bazar
+        if (data.annonces && data.annonces.length) {
+            html += '<div style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.4rem .9rem .2rem;">Bazar</div>';
+            data.annonces.forEach(function(a) {
+                var thumb = a.img
+                    ? '<img src="' + a.img + '" width="36" height="36" style="border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;" loading="lazy">'
+                    : '<span class="material-icons" style="font-size:1.4rem;color:var(--text-muted);flex-shrink:0;">storefront</span>';
+                html += '<a href="/bazar/' + a.id + '/" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
+                      + ' onmouseover="this.style.background=\'var(--btn-bg)\'"'
+                      + ' onmouseout="this.style.background=\'none\'">'
+                      + thumb
+                      + '<div style="flex:1;min-width:0;">'
+                      + '<div style="font-size:.87rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escH(a.title) + '</div>'
+                      + (a.price ? '<div style="font-size:.75rem;color:var(--accent);font-weight:700;">' + escH(a.price) + '</div>' : '')
+                      + '</div></a>';
+            });
+        }
+
         // Posts
         if (data.posts && data.posts.length) {
             html += '<div style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.4rem .9rem .2rem;">Publications</div>';
             data.posts.forEach(function(p) {
-                html += '<a href="/feed/#post-' + p.id + '" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
+                html += '<a href="/feed/' + p.id + '/" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
                       + ' onmouseover="this.style.background=\'var(--btn-bg)\'"'
                       + ' onmouseout="this.style.background=\'none\'">'
                       + '<span class="material-icons" style="font-size:1.1rem;color:var(--accent2);">article</span>'
@@ -1468,7 +1487,7 @@ document.addEventListener('click', function(e) {
 
         // View all link
         html += '<div style="border-top:1px solid var(--border);padding:.45rem .9rem .35rem;">'
-              + '<a href="/search/?q=' + encodeURIComponent(q) + '" style="font-size:.82rem;font-weight:700;color:var(--accent);text-decoration:none;">'
+              + '<a href="/recherche/?q=' + encodeURIComponent(q) + '" style="font-size:.82rem;font-weight:700;color:var(--accent);text-decoration:none;">'
               + '<span class="material-icons" style="font-size:.9rem;vertical-align:middle;">search</span>'
               + ' Voir tous les résultats</a></div>';
 

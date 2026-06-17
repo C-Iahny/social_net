@@ -21,6 +21,7 @@ from .views import (
     repost_post,
     kabary_create,
     vintana_create,
+    report_content,
 )
 
 app_name = 'post'
@@ -46,4 +47,5 @@ urlpatterns = [
     path('kabary/create/',           kabary_create,       name='kabary-create'),
     path('vintana/create/',          vintana_create,      name='vintana-create'),
     path('tendances/',               tendances_view,      name='tendances'),
+    path('signaler/',                report_content,      name='report-content'),
 ]

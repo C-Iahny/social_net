@@ -1228,3 +1228,106 @@ def vintana_create(request):
     return render(request, 'post/vintana_create.html', {
         'min_reveal': now_plus_1day.strftime('%Y-%m-%dT%H:%M'),
     })
+
+
+# ── Signalement de contenu ────────────────────────────────────────────────────
+@login_required(login_url='login')
+def report_content(request):
+    """AJAX POST — signaler un contenu (post, annonce, profil, ...)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+
+    from django.contrib.contenttypes.models import ContentType
+    from post.models import Report
+
+    ct_name   = request.POST.get('ct')       # ex: 'post', 'annonce', 'account'
+    object_id = request.POST.get('object_id')
+    reason    = request.POST.get('reason', 'other')
+    comment   = request.POST.get('comment', '').strip()
+
+    if not ct_name or not object_id:
+        return JsonResponse({'error': 'Paramètres manquants.'}, status=400)
+
+    # Mapping nom simple → app_label.model
+    CT_MAP = {
+        'post':    ('post',    'post'),
+        'annonce': ('bazar',   'annonce'),
+        'account': ('account', 'account'),
+        'comment': ('post',    'comment'),
+    }
+    mapping = CT_MAP.get(ct_name)
+    if not mapping:
+        return JsonResponse({'error': 'Type de contenu inconnu.'}, status=400)
+
+    try:
+        ct = ContentType.objects.get(app_label=mapping[0], model=mapping[1])
+    except ContentType.DoesNotExist:
+        return JsonResponse({'error': 'Contenu introuvable.'}, status=404)
+
+    try:
+        Report.objects.get_or_create(
+            reporter=request.user,
+            content_type=ct,
+            object_id=int(object_id),
+            defaults={'reason': reason, 'comment': comment},
+        )
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'ok': True})
+
+
+# ── Recherche globale ─────────────────────────────────────────────────────────
+def global_search_view(request):
+    """Page /recherche/ — posts + annonces + utilisateurs."""
+    from django.db.models import Q
+    from post.models import Hashtag
+    from bazar.models import Annonce
+
+    query    = request.GET.get('q', '').strip()
+    context  = {'query': query, 'total': 0}
+
+    if query:
+        from friend.models import FriendList
+
+        # Users
+        accounts_qs = Account.objects.filter(
+            Q(username__icontains=query)
+        )[:20]
+
+        accounts_with_friend = []
+        if request.user.is_authenticated:
+            try:
+                fl = FriendList.objects.get(user=request.user)
+                friend_ids = set(fl.friends.values_list('id', flat=True))
+            except Exception:
+                friend_ids = set()
+            for acc in accounts_qs:
+                accounts_with_friend.append((acc, acc.id in friend_ids))
+        else:
+            accounts_with_friend = [(acc, False) for acc in accounts_qs]
+
+        # Posts
+        posts_qs = Post.objects.filter(
+            Q(title__icontains=query) | Q(body__icontains=query)
+        ).select_related('author')[:20]
+
+        # Hashtags
+        hashtags_qs = Hashtag.objects.filter(tag__icontains=query)[:10]
+
+        # Annonces bazar
+        annonces_qs = Annonce.objects.filter(
+            Q(title__icontains=query) | Q(description__icontains=query),
+            status='active',
+        ).select_related('seller').prefetch_related('images')[:20]
+
+        context['accounts']  = accounts_with_friend
+        context['posts']     = posts_qs
+        context['hashtags']  = hashtags_qs
+        context['annonces']  = annonces_qs
+        context['total']     = (
+            len(accounts_with_friend) + posts_qs.count()
+            + hashtags_qs.count() + annonces_qs.count()
+        )
+
+    return render(request, 'post/recherche.html', context)

@@ -815,10 +815,40 @@ input#sc-file-input { display: none; }
     gap: .4rem;
     color: rgba(255,255,255,.8); font-size: .82rem;
     font-family: var(--font-primary, 'Space Grotesk', sans-serif);
-    z-index: 12; /* au-dessus des zones de nav (z-index:9) */
-    pointer-events: none; /* laisse passer les clics sauf sur les enfants */
+    z-index: 12;
+    cursor: pointer; /* cliquable pour afficher la liste */
 }
 .sv-views .material-icons { font-size: 1rem; }
+.sv-views:hover { color: #fff; }
+
+/* Modal liste viewers */
+#sv-viewers-modal {
+    display: none; position: fixed; inset: 0; z-index: 19000;
+    background: rgba(0,0,0,.65); align-items: flex-end; justify-content: center;
+}
+#sv-viewers-modal.open { display: flex; }
+#sv-viewers-panel {
+    background: var(--bg-card, #181826);
+    border-radius: 20px 20px 0 0;
+    width: min(100vw, 480px);
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 1.2rem 1.4rem 2.5rem;
+    animation: slideUp .22s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+#sv-viewers-panel h3 {
+    font-size: .95rem; font-weight: 800; color: #fff; margin: 0 0 .85rem;
+    display: flex; align-items: center; gap: .45rem;
+}
+#sv-viewers-panel h3 .material-icons { font-size: 1.1rem; color: rgba(255,255,255,.6); }
+.sv-viewer-row {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .45rem 0; border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.sv-viewer-row img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.sv-viewer-row-name { font-size: .9rem; font-weight: 700; color: #fff; }
+.sv-viewer-row-time { font-size: .74rem; color: rgba(255,255,255,.5); }
 
 /* Delete btn (pour ses propres stories) */
 .sv-delete {
@@ -1201,7 +1231,7 @@ input#sc-file-input { display: none; }
 
     <!-- Média -->
     <img   id="sv-img"    class="sv-media" alt="">
-    <video id="sv-video"  class="sv-media" muted playsinline autoplay></video>
+    <video id="sv-video"  class="sv-media" playsinline autoplay></video>
     <!-- Fond gradient (type='text') -->
     <div id="sv-text-bg" style="position:absolute;inset:0;display:none;"></div>
     <!-- Texte positionné librement -->
@@ -1251,9 +1281,22 @@ input#sc-file-input { display: none; }
     <audio id="sv-audio" loop style="display:none;"></audio>
 
     <!-- Vue count + delete (ses propres stories) -->
-    <div class="sv-views" id="sv-views">
+    <div class="sv-views" id="sv-views" onclick="openStoryViewers()">
         <span class="material-icons">visibility</span>
         <span id="sv-view-count">0</span> vue(s)
+    </div>
+
+    <!-- Modal liste viewers -->
+    <div id="sv-viewers-modal" onclick="if(event.target===this)closeStoryViewers()">
+        <div id="sv-viewers-panel">
+            <h3>
+                <span class="material-icons">visibility</span>
+                <span id="sv-viewers-title">Vues</span>
+            </h3>
+            <div id="sv-viewers-list">
+                <p style="color:rgba(255,255,255,.5);font-size:.88rem;">Chargement…</p>
+            </div>
+        </div>
     </div>
     <button class="sv-delete" id="sv-delete" onclick="deleteCurrentStory()">
         <span class="material-icons">delete</span>
@@ -2613,6 +2656,60 @@ window.sendStoryReply = function() {
 document.addEventListener('DOMContentLoaded', function() {
     loadStories();
     initTextDrag();
+});
+
+/* ════════════════════════════════════════════
+   VIEWER LIST MODAL (dans le scope de l'IIFE principale)
+   ════════════════════════════════════════════ */
+var _VIEWERS_URL = '/stories/viewers/';
+
+window.openStoryViewers = function() {
+    var group = _groups[_curGroup];
+    if (!group || group.user_id !== ME_ID) return;
+    var story = group.stories[_curStory];
+    if (!story) return;
+
+    var modal = document.getElementById('sv-viewers-modal');
+    var list  = document.getElementById('sv-viewers-list');
+    var title = document.getElementById('sv-viewers-title');
+    title.textContent = (story.view_count || 0) + ' vue(s)';
+    list.innerHTML = '<p style="color:rgba(255,255,255,.5);font-size:.88rem;">Chargement…</p>';
+    modal.classList.add('open');
+
+    fetch(_VIEWERS_URL + story.id + '/', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+        if (!data.viewers || data.viewers.length === 0) {
+            list.innerHTML = "<p style='color:rgba(255,255,255,.5);font-size:.88rem;text-align:center;margin-top:.5rem;'>Personne n'a encore vu cette story.</p>";
+            return;
+        }
+        list.innerHTML = '';
+        data.viewers.forEach(function(v) {
+            var row = document.createElement('div');
+            row.className = 'sv-viewer-row';
+            row.innerHTML =
+                '<img src="' + v.avatar + '" alt="' + v.username + '" loading="lazy">'
+              + '<div style="flex:1;min-width:0;">'
+              + '<div class="sv-viewer-row-name">@' + v.username + '</div>'
+              + '</div>'
+              + '<div class="sv-viewer-row-time">' + v.viewed_at + '</div>';
+            list.appendChild(row);
+        });
+    })
+    .catch(function(){
+        list.innerHTML = '<p style="color:rgba(255,100,100,.8);font-size:.88rem;">Erreur de chargement.</p>';
+    });
+};
+
+window.closeStoryViewers = function() {
+    var modal = document.getElementById('sv-viewers-modal');
+    if (modal) modal.classList.remove('open');
+};
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeStoryViewers(); }
 });
 
 // Exposer pour la page profil

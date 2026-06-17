@@ -400,50 +400,48 @@ def global_search_api(request):
 	"""API endpoint for the header search bar (returns JSON)."""
 	query = request.GET.get('q', '').strip()
 	if not query or len(query) < 2:
-		return JsonResponse({'results': []})
+		return JsonResponse({'users': [], 'posts': [], 'hashtags': [], 'annonces': []})
 
 	from django.db.models import Q
 	from post.models import Hashtag
-
-	results = []
+	from bazar.models import Annonce
 
 	# Users
-	users = Account.objects.filter(
-		Q(username__icontains=query)
-	)[:5]
-	for u in users:
-		results.append({
-			'type': 'user',
-			'id': u.id,
-			'label': u.username,
-			'url': f'/account/{u.id}/',
-			'avatar': u.profile_image.url,
-		})
+	users_qs = Account.objects.filter(Q(username__icontains=query))[:6]
+	users = []
+	for u in users_qs:
+		try:
+			avatar = u.profile_image.url
+		except Exception:
+			avatar = '/static/images/default_profile_image.png'
+		users.append({'id': u.id, 'username': u.username, 'avatar': avatar})
 
 	# Hashtags
-	hashtags = Hashtag.objects.filter(tag__icontains=query)[:3]
-	for h in hashtags:
-		results.append({
-			'type': 'hashtag',
-			'id': h.id,
-			'label': h.tag,
-			'url': f'/feed/hashtag/{h.tag.lstrip("#")}/',
-		})
+	hashtags_qs = Hashtag.objects.filter(tag__icontains=query)[:4]
+	hashtags = [{'id': h.id, 'tag': h.tag, 'count': h.count} for h in hashtags_qs]
 
 	# Posts
-	posts = Post.objects.filter(
+	posts_qs = Post.objects.filter(
 		Q(title__icontains=query) | Q(body__icontains=query)
 	).select_related('author')[:5]
-	for p in posts:
-		results.append({
-			'type': 'post',
-			'id': p.id,
-			'label': p.title or p.body[:60],
-			'url': p.get_absolute_url(),
-			'author': p.author.username,
-		})
+	posts = [{'id': p.id, 'title': p.title or p.body[:60], 'author': p.author.username} for p in posts_qs]
 
-	return JsonResponse({'results': results})
+	# Annonces bazar
+	annonces_qs = Annonce.objects.filter(
+		Q(title__icontains=query), status='active'
+	).prefetch_related('images')[:4]
+	annonces = []
+	for a in annonces_qs:
+		img_url = None
+		try:
+			first_img = a.images.first()
+			if first_img:
+				img_url = first_img.image.url
+		except Exception:
+			pass
+		annonces.append({'id': a.id, 'title': a.title, 'price': a.formatted_price if a.price else None, 'img': img_url})
+
+	return JsonResponse({'users': users, 'posts': posts, 'hashtags': hashtags, 'annonces': annonces})
 
 
 def profile_posts_more(request, *args, **kwargs):
