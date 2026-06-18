@@ -88,6 +88,19 @@
         color-mix(in srgb, var(--accent) 40%, #1a1a1a),
         color-mix(in srgb, var(--accent2) 25%, #0a0a0a));
 }
+/* Badge "+" pour ajouter une story (sur la carte de l'utilisateur connecté) */
+.story-add-badge {
+    position: absolute;
+    bottom: 7px; left: 7px;
+    z-index: 4;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.55);
+    pointer-events: none;
+}
+.story-add-badge .material-icons { font-size: .75rem; color: #fff; }
 .story-add-btn {
     position: absolute; top: 50%; left: 50%;
     transform: translate(-50%, -60%);
@@ -1408,18 +1421,23 @@ function renderStoryBar() {
     if (!container) return;
     container.innerHTML = '';
 
-    // Mettre à jour le bouton "Ma story"
+    // Chercher le groupe de l'utilisateur connecté
     var myGroup = _groups.find(function(g){ return g.user_id === ME_ID; });
-    updateMyStoryItem(myGroup);
 
     _groups.forEach(function(group, gi) {
-        // Sauter le groupe de l'utilisateur connecté (géré par "Ma story")
-        if (group.user_id === ME_ID) return;
+        var isMine = (group.user_id === ME_ID);
 
         var item = document.createElement('div');
         item.className = 'story-item';
         item.setAttribute('data-group', gi);
-        item.onclick = function(){ openStoryViewer(gi); };
+
+        // Clic : ouvrir le viewer (pour soi ou les amis) ; sur sa propre carte,
+        // le petit badge "+" sert à ajouter une nouvelle story via myStoryClick()
+        if (isMine) {
+            item.onclick = function() { openStoryViewer(gi); };
+        } else {
+            item.onclick = function() { openStoryViewer(gi); };
+        }
 
         if (group.stories && group.stories.length > 0) {
             item.classList.add('has-story');
@@ -1441,16 +1459,32 @@ function renderStoryBar() {
             bgHtml = '<div class="story-item-bg grad_night"></div>';
         }
 
+        // Badge "+" pour ajouter une story (propre compte seulement)
+        var addBadge = isMine
+            ? '<div class="story-add-badge" onclick="event.stopPropagation();myStoryClick();" style="pointer-events:all;cursor:pointer;">' +
+              '<span class="material-icons">add</span></div>'
+            : '';
+
         item.innerHTML =
             bgHtml +
             '<img class="story-item-avatar" src="' + group.avatar + '" alt="' +
                 _esc(group.username || '') + '" loading="lazy">' +
             '<div class="story-item-overlay">' +
                 '<span class="story-item-label">' + _esc((group.username || '').substring(0,12)) + '</span>' +
-            '</div>';
+            '</div>' +
+            addBadge;
 
         container.appendChild(item);
     });
+
+    // Masquer la carte statique "Ma story" si l'utilisateur a déjà des stories
+    // (elles sont rendues dans la boucle ci-dessus).
+    // La laisser visible seulement si l'utilisateur n'a aucune story active
+    // (pour qu'il puisse ajouter sa première story).
+    var mineCard = document.getElementById('my-story-item');
+    if (mineCard) {
+        mineCard.style.display = myGroup ? 'none' : '';
+    }
 }
 
 function updateMyStoryItem(myGroup) {

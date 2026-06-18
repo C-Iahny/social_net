@@ -628,6 +628,35 @@ main { padding: 0 !important; margin-top: 62px; }
     .chat-main { width: 100%; }
     /* Bulles légèrement plus larges sur petit écran */
     .msg-content-wrap { max-width: 85%; }
+
+    /* ── Input bar mobile ──────────────────────────────── */
+    .chat-input-bar {
+        padding-left: .65rem;
+        padding-right: .65rem;
+        /* Respecter la home bar iOS */
+        padding-bottom: max(.6rem, env(safe-area-inset-bottom, .6rem));
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+    }
+    .chat-input-inner {
+        border-radius: 26px;
+        padding: .5rem .5rem .5rem .85rem;
+    }
+    #id_chat_message_input {
+        font-size: 1rem;   /* évite le zoom auto sur iOS (≥16px) */
+        min-height: 28px;
+        max-height: 120px;
+    }
+    .chat-attach-btn {
+        width: 38px; height: 38px;
+    }
+    .chat-send-btn {
+        width: 42px; height: 42px;
+        flex-shrink: 0;
+    }
+    /* Le hint clavier est inutile sur mobile */
+    .input-hint { display: none; }
 }
 </style>
 
@@ -767,7 +796,9 @@ main { padding: 0 !important; margin-top: 62px; }
                     </button>
                     <textarea id="id_chat_message_input"
                               placeholder="Écrire un message…"
-                              rows="1"></textarea>
+                              rows="1"
+                              inputmode="text"
+                              enterkeyhint="send"></textarea>
                     <button type="button" id="id_chat_message_submit" class="chat-send-btn" title="Envoyer (Entrée)">
                         <span class="material-icons">send</span>
                     </button>
