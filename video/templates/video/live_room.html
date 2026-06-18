@@ -572,6 +572,13 @@ var hasPlayed    = false;
 var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+/* Détection du partage d'écran — absent sur iOS, Android, Samsung, etc. */
+var hasDisplayMedia = !!(
+    navigator.mediaDevices &&
+    typeof navigator.mediaDevices.getDisplayMedia === 'function'
+);
+var isMobileUA = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 /* Timer "l'hôte n'a pas démarré" — effacé dès qu'on reçoit le 1er media_chunk */
 var noChunkTimer = null;
 
@@ -649,10 +656,15 @@ function connect() {
    ══════════════════════════════════════════════════ */
 
 window.startSource = function(src) {
+    /* Partage d'écran non disponible sur cet appareil */
+    if (src === 'screen' && !hasDisplayMedia) {
+        appendSystemMsg('⚠️ Le partage d\'écran n\'est pas disponible sur mobile. Utilise la caméra.');
+        return;
+    }
     if (sourceOverlay) sourceOverlay.classList.add('hidden');
     var p = src === 'screen'
         ? navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-        : navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        : navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
 
     p.then(function(stream) {
         localStream = stream;
@@ -1190,6 +1202,50 @@ if (!IS_HOST) {
 
 /* ── Init ── */
 connect();
+
+/* ── Adapter l'UI hôte selon les capacités du navigateur ── */
+(function applyCapabilityUI() {
+    if (!IS_HOST) return;
+
+    var btnScreen    = document.getElementById('btn-screen');
+    var btnCtrlScreen = document.getElementById('btn-toggle-screen');
+    var sourceSubtitle = document.querySelector('#lr-source-overlay .lr-status-sub');
+    var sourceTitle    = document.querySelector('#lr-source-overlay .lr-status-title');
+
+    /* ── Pas de partage d'écran sur mobile ── */
+    if (!hasDisplayMedia) {
+        if (btnScreen) {
+            btnScreen.disabled = true;
+            btnScreen.style.cssText += ';opacity:.38;cursor:not-allowed;pointer-events:none;';
+            btnScreen.title = 'Non disponible sur mobile';
+            /* Petite étiquette sous l'icône */
+            var lbl = btnScreen.querySelector('.material-icons');
+            if (lbl) lbl.insertAdjacentHTML('afterend',
+                '<span style="display:block;font-size:.65rem;margin-top:.2rem;opacity:.7;">Non disponible</span>');
+        }
+        if (btnCtrlScreen) {
+            btnCtrlScreen.disabled = true;
+            btnCtrlScreen.style.cssText += ';opacity:.38;cursor:not-allowed;pointer-events:none;';
+            btnCtrlScreen.title = 'Non disponible sur mobile';
+        }
+        if (sourceSubtitle) {
+            sourceSubtitle.innerHTML =
+                'Le partage d\'écran n\'est pas disponible sur mobile. ' +
+                'Utilise la <b>caméra</b> pour diffuser.';
+        }
+    }
+
+    /* ── MediaRecorder absent (iOS) → avertir l'hôte avant qu'il essaie ── */
+    if (!MIME && isIOS) {
+        if (sourceTitle) sourceTitle.textContent = '⚠️ Diffusion non supportée sur iOS';
+        if (sourceSubtitle) sourceSubtitle.innerHTML =
+            'iPhone et iPad ne supportent pas WebM/MediaRecorder nécessaire pour le live.<br>' +
+            '<span style="font-size:.85em;opacity:.75">Utilise <b>Chrome sur ordinateur</b> (Windows, Mac ou Android) pour héberger un live.</span>';
+        if (btnScreen) btnScreen.style.display = 'none';
+        var btnCam2 = document.getElementById('btn-camera');
+        if (btnCam2) btnCam2.disabled = true;
+    }
+})();
 
 })();
 </script>
