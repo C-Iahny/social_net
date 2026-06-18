@@ -859,12 +859,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 </a>
 
                 <!-- Live -->
-                <a class="cs-item" href="{% url 'video:live-create' %}" onclick="closeCreateSheet()">
+                <button class="cs-item" type="button" onclick="closeCreateSheet();_submitLiveCreate();"
+                        style="background:none;border:none;cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;gap:.35rem;text-decoration:none;color:inherit;">
                     <div class="cs-icon" style="background:linear-gradient(135deg,#ef4444,#f59e0b);">
                         <span style="color:#fff;" class="material-icons">videocam</span>
                     </div>
                     <span class="cs-label">Live</span>
-                </a>
+                </button>
+                <!-- Formulaire caché POST pour créer le live -->
+                <form id="live-create-form" method="POST" action="{% url 'video:live-create' %}" style="display:none;">
+                    {% csrf_token %}
+                </form>
 
             </div>
         </div>
@@ -897,6 +902,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.target !== document.getElementById('create-sheet-overlay')) return;
         }
         _doCloseSheet();
+    }
+    function _submitLiveCreate() {
+        var f = document.getElementById('live-create-form');
+        if (f) f.submit();
     }
     /* Fermer avec swipe vers le bas */
     (function() {
