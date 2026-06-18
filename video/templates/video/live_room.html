@@ -591,11 +591,16 @@ var _joinRetryTimer = null;
 /* ── Format détecté une seule fois ── */
 var MIME = (function() {
     var types = [
+        /* ── WebM (Chrome, Firefox, Android, Edge) ── */
         'video/webm;codecs=vp9,opus',
         'video/webm;codecs=vp8,opus',
         'video/webm;codecs=vp9',
         'video/webm;codecs=vp8',
         'video/webm',
+        /* ── MP4 / H.264 (iOS Safari ≥ 17.2, macOS Safari) ── */
+        'video/mp4;codecs=avc1,mp4a.40.2',
+        'video/mp4;codecs=avc1',
+        'video/mp4',
     ];
     if (typeof MediaRecorder === 'undefined') return '';
     for (var i = 0; i < types.length; i++) {
@@ -705,11 +710,13 @@ function startRecording(stream) {
     }
     isFirstChunk = true;
     try {
-        mediaRecorder = new MediaRecorder(stream, {
-            mimeType: MIME,
-            videoBitsPerSecond: 2500000,  /* 2.5 Mbps pour une bonne qualité match foot */
-            videoKeyFrameIntervalDuration: 2000, /* Keyframe toutes les 2 s (Chrome/Edge) */
-        });
+        /* videoKeyFrameIntervalDuration est une option Chrome/Edge uniquement — on l'omet sur les
+           autres navigateurs pour éviter une exception NotSupportedError */
+        var recOpts = { mimeType: MIME, videoBitsPerSecond: 2500000 };
+        if (MIME.indexOf('webm') !== -1) {
+            recOpts.videoKeyFrameIntervalDuration = 2000;
+        }
+        mediaRecorder = new MediaRecorder(stream, recOpts);
     } catch(e) {
         appendSystemMsg('Erreur recorder : ' + e.message);
         return;
@@ -816,11 +823,11 @@ function initMediaSource(mime) {
             if (sp2)  sp2.style.display = 'none';
             if (txt2) {
                 if (isIOS) {
-                    txt2.innerHTML = '⚠️ iPhone / iPad non supporté.<br>' +
-                        '<span style="font-size:.85em;opacity:.75">Le live utilise WebM/VP9 qui n\'est pas compatible avec iOS.<br>' +
-                        'Utilise <b>Chrome ou Firefox sur ordinateur</b> (Windows / Mac / Android).</span>';
+                    txt2.innerHTML = '⚠️ Lecture non supportée sur cet appareil.<br>' +
+                        '<span style="font-size:.85em;opacity:.75">Le flux vidéo envoyé par l\'hôte (' + (mime || 'webm') + ') n\'est pas lisible ici.<br>' +
+                        'Essaie <b>Chrome sur Android ou sur ordinateur</b>.</span>';
                 } else {
-                    txt2.textContent = 'Navigateur non supporté — essaie Chrome, Firefox ou Edge.';
+                    txt2.textContent = 'Format non supporté par ce navigateur — essaie Chrome, Firefox ou Edge.';
                 }
             }
         }
@@ -1207,43 +1214,41 @@ connect();
 (function applyCapabilityUI() {
     if (!IS_HOST) return;
 
-    var btnScreen    = document.getElementById('btn-screen');
+    var btnScreen     = document.getElementById('btn-screen');
+    var btnCamera     = document.getElementById('btn-camera');
     var btnCtrlScreen = document.getElementById('btn-toggle-screen');
-    var sourceSubtitle = document.querySelector('#lr-source-overlay .lr-status-sub');
-    var sourceTitle    = document.querySelector('#lr-source-overlay .lr-status-title');
+    var sourceOverlayEl = document.getElementById('lr-source-overlay');
+    var sourceSubtitle  = sourceOverlayEl && sourceOverlayEl.querySelector('.lr-status-sub');
+    var sourceTitle     = sourceOverlayEl && sourceOverlayEl.querySelector('.lr-status-title');
 
-    /* ── Pas de partage d'écran sur mobile ── */
-    if (!hasDisplayMedia) {
-        if (btnScreen) {
-            btnScreen.disabled = true;
-            btnScreen.style.cssText += ';opacity:.38;cursor:not-allowed;pointer-events:none;';
-            btnScreen.title = 'Non disponible sur mobile';
-            /* Petite étiquette sous l'icône */
-            var lbl = btnScreen.querySelector('.material-icons');
-            if (lbl) lbl.insertAdjacentHTML('afterend',
-                '<span style="display:block;font-size:.65rem;margin-top:.2rem;opacity:.7;">Non disponible</span>');
-        }
-        if (btnCtrlScreen) {
-            btnCtrlScreen.disabled = true;
-            btnCtrlScreen.style.cssText += ';opacity:.38;cursor:not-allowed;pointer-events:none;';
-            btnCtrlScreen.title = 'Non disponible sur mobile';
-        }
-        if (sourceSubtitle) {
-            sourceSubtitle.innerHTML =
-                'Le partage d\'écran n\'est pas disponible sur mobile. ' +
-                'Utilise la <b>caméra</b> pour diffuser.';
-        }
+    /* ── Cas 1 : Partage d'écran non disponible ET caméra disponible (cas mobile normal) ──
+       → masquer le bouton écran et démarrer la caméra directement */
+    if (!hasDisplayMedia && MIME) {
+        /* Masquer le bouton "Partager l'écran" proprement */
+        if (btnScreen) btnScreen.style.display = 'none';
+        /* Masquer le bouton "Écran" dans les contrôles */
+        if (btnCtrlScreen) btnCtrlScreen.style.display = 'none';
+        /* Démarrer la caméra automatiquement — pas besoin de l'overlay de sélection */
+        startSource('camera');
+        return;
     }
 
-    /* ── MediaRecorder absent (iOS) → avertir l'hôte avant qu'il essaie ── */
-    if (!MIME && isIOS) {
-        if (sourceTitle) sourceTitle.textContent = '⚠️ Diffusion non supportée sur iOS';
+    /* ── Cas 2 : Pas de MediaRecorder du tout (iOS < 14.3 ou navigateur ancien) ── */
+    if (!MIME) {
+        if (sourceTitle) sourceTitle.textContent = '⚠️ Diffusion non supportée';
         if (sourceSubtitle) sourceSubtitle.innerHTML =
-            'iPhone et iPad ne supportent pas WebM/MediaRecorder nécessaire pour le live.<br>' +
-            '<span style="font-size:.85em;opacity:.75">Utilise <b>Chrome sur ordinateur</b> (Windows, Mac ou Android) pour héberger un live.</span>';
+            'Ton navigateur ne supporte pas l\'enregistrement vidéo nécessaire pour le live.<br>' +
+            '<span style="font-size:.85em;opacity:.75">Utilise <b>Chrome sur ordinateur ou Android</b> pour héberger un live.</span>';
         if (btnScreen) btnScreen.style.display = 'none';
-        var btnCam2 = document.getElementById('btn-camera');
-        if (btnCam2) btnCam2.disabled = true;
+        if (btnCamera) { btnCamera.disabled = true; btnCamera.style.opacity = '.38'; }
+        return;
+    }
+
+    /* ── Cas 3 : Desktop sans getDisplayMedia (rare) — juste masquer le bouton écran ── */
+    if (!hasDisplayMedia) {
+        if (btnScreen) btnScreen.style.display = 'none';
+        if (btnCtrlScreen) btnCtrlScreen.style.display = 'none';
+        if (sourceSubtitle) sourceSubtitle.textContent = 'Utilise ta caméra pour diffuser.';
     }
 })();
 
