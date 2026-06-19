@@ -507,10 +507,9 @@ main { padding: 0 !important; margin-top: 62px; }
     display: none;
     align-items: center;
     gap: .45rem;
-    padding: .25rem max(1rem, calc((100% - 600px) / 2)) .1rem;
-    font-size: .78rem;
+    padding: .1rem .25rem .3rem;
+    font-size: .75rem;
     color: var(--text-muted);
-    min-height: 22px;
 }
 #chat-typing-indicator.visible { display: flex; }
 .typing-dots {
@@ -833,16 +832,15 @@ main { padding: 0 !important; margin-top: 62px; }
             </div>
             {% endif %}
 
-            <!-- Typing indicator -->
-            <div id="chat-typing-indicator">
-                <div class="typing-dots">
-                    <span></span><span></span><span></span>
-                </div>
-                <span id="chat-typing-text">est en train d'écrire…</span>
-            </div>
-
             <!-- Input bar -->
             <div class="chat-input-bar">
+                <!-- Typing indicator — à l'intérieur de la barre pour suivre le sticky -->
+                <div id="chat-typing-indicator">
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span id="chat-typing-text">est en train d'écrire…</span>
+                </div>
                 <div class="chat-input-inner">
                     <!-- Hidden file input -->
                     <input type="file" id="chat-file-input" style="display:none;"
