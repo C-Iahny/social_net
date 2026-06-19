@@ -547,7 +547,7 @@ main { padding: 0 !important; margin-top: 62px; }
 /* Pill sombre teinté — même esprit que la hero search, couleurs du thème Vazimba */
 .chat-input-inner {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: .4rem;
     /* Brun sienna très sombre — cohérent avec --accent:#8B4513 (light) / D4AF37 (dark) */
     background: rgba(42,14,3,.86);
@@ -578,10 +578,12 @@ main { padding: 0 !important; margin-top: 62px; }
     max-height: 100px;
     min-height: 22px;
     height: 22px;
-    line-height: 1.5;
+    line-height: 1.45;
     overflow-y: auto;
-    padding: 0;
+    padding: 2px 0;
     font-family: inherit;
+    vertical-align: middle;
+    display: block;
 }
 /* Placeholder : blanc chaud, légèrement teinté de l'accent */
 #id_chat_message_input::placeholder      { color: rgba(235,200,170,.55); opacity: 1; }
