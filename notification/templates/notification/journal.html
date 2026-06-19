@@ -43,7 +43,7 @@
     {% if notifications %}
     <div class="nj-list">
         {% for notif in notifications %}
-        {% with co=notif.content_object %}{% with cname=co.get_cname|default:"" %}
+        {% with cname=notif.content_object.get_cname %}
         <a class="nj-card {% if not notif.read %}unread{% endif %}" href="{{ notif.redirect_url|default:'#' }}">
             <div class="nj-avatar-wrap">
                 {% if notif.from_user %}
@@ -61,7 +61,7 @@
             </div>
             {% if not notif.read %}<div class="nj-unread-dot"></div>{% endif %}
         </a>
-        {% endwith %}{% endwith %}
+        {% endwith %}
         {% endfor %}
     </div>
     {% else %}

@@ -1,7 +1,6 @@
 from django import forms
 
 from .models import Group
-from regions import REGION_CHOICES
 
 
 class GroupForm(forms.ModelForm):
@@ -9,7 +8,7 @@ class GroupForm(forms.ModelForm):
 
     class Meta:
         model = Group
-        fields = ['name', 'category', 'region', 'description', 'cover', 'privacy', 'dina']
+        fields = ['name', 'category', 'description', 'cover', 'privacy', 'dina']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'gp-input',
@@ -24,8 +23,7 @@ class GroupForm(forms.ModelForm):
                 'maxlength': 500,
             }),
             'category': forms.Select(attrs={'class': 'gp-input'}),
-            'region':   forms.Select(attrs={'class': 'gp-input'}, choices=REGION_CHOICES),
-            'privacy':  forms.Select(attrs={'class': 'gp-input'}),
+            'privacy': forms.Select(attrs={'class': 'gp-input'}),
             'dina': forms.Textarea(attrs={
                 'class': 'gp-input',
                 'rows': 6,
@@ -34,13 +32,12 @@ class GroupForm(forms.ModelForm):
             }),
         }
         labels = {
-            'name':     'Nom',
+            'name': 'Nom',
             'category': 'Catégorie',
-            'region':   'Région',
             'description': 'Description',
-            'cover':    'Image de couverture',
-            'privacy':  'Confidentialité',
-            'dina':     'Dina (charte communautaire)',
+            'cover': 'Image de couverture',
+            'privacy': 'Confidentialité',
+            'dina': 'Dina (charte communautaire)',
         }
 
     def clean_name(self):

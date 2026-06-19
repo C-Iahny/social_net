@@ -86,6 +86,34 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 						)
 					except Exception:
 						pass
+			elif command in ("call_offer", "call_answer", "call_ice", "call_reject", "call_end"):
+				# ── WebRTC signaling relay ────────────────────────────────────
+				if self.room_id:
+					try:
+						room = await get_room_or_error(self.room_id, self.scope["user"])
+						_type_map = {
+							"call_offer":  MSG_TYPE_CALL_OFFER,
+							"call_answer": MSG_TYPE_CALL_ANSWER,
+							"call_ice":    MSG_TYPE_CALL_ICE,
+							"call_reject": MSG_TYPE_CALL_REJECT,
+							"call_end":    MSG_TYPE_CALL_END,
+						}
+						payload = {
+							"type":     "chat.call",
+							"msg_type": _type_map[command],
+							"user_id":  self.scope["user"].id,
+							"username": self.scope["user"].username,
+						}
+						if command == "call_offer":
+							payload["sdp"]       = data.get("sdp", {})
+							payload["call_mode"] = data.get("call_mode", "video")  # "audio" | "video"
+						elif command == "call_answer":
+							payload["sdp"] = data.get("sdp", {})
+						elif command == "call_ice":
+							payload["candidate"] = data.get("candidate", {})
+						await self.channel_layer.group_send(room.group_name, payload)
+					except Exception:
+						pass
 			elif command == "send_file":
 				# The file was already saved to DB by the HTTP upload view.
 				# We just need to broadcast it to the room group.
@@ -345,6 +373,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			"natural_timestamp": timestamp,
 			"msg_id":          event.get("msg_id"),
 		})
+
+	async def chat_call(self, event):
+		"""Relay WebRTC signaling — never echo back to the sender."""
+		if event.get("user_id") == self.scope["user"].id:
+			return
+		await self.send_json(event)
 
 	async def chat_typing(self, event):
 		"""Broadcast typing indicator — skip the typer themselves."""
