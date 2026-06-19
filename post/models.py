@@ -1,8 +1,6 @@
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 
 try:
     from ckeditor.fields import RichTextField
@@ -262,60 +260,3 @@ class Repost(models.Model):
 
     def __str__(self):
         return f"{self.user} reposted {self.post}"
-
-
-# ── Signalement de contenu ────────────────────────────────────────────────────
-class Report(models.Model):
-    """Signalement générique (post, annonce, profil, etc.)"""
-
-    REASON_SPAM     = 'spam'
-    REASON_HATE     = 'hate'
-    REASON_VIOLENCE = 'violence'
-    REASON_NUDITY   = 'nudity'
-    REASON_FALSE    = 'false'
-    REASON_OTHER    = 'other'
-    REASON_CHOICES = [
-        (REASON_SPAM,     'Spam / publicité abusive'),
-        (REASON_HATE,     'Discours haineux / harcelement'),
-        (REASON_VIOLENCE, 'Violence / contenu choquant'),
-        (REASON_NUDITY,   'Nudité / contenu adulte'),
-        (REASON_FALSE,    'Fausse information'),
-        (REASON_OTHER,    'Autre'),
-    ]
-
-    STATUS_PENDING   = 'pending'
-    STATUS_REVIEWED  = 'reviewed'
-    STATUS_DISMISSED = 'dismissed'
-    STATUS_CHOICES = [
-        (STATUS_PENDING,   'En attente'),
-        (STATUS_REVIEWED,  'Traité'),
-        (STATUS_DISMISSED, 'Rejeté'),
-    ]
-
-    reporter     = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='reports_sent',
-        verbose_name='Signalé par',
-    )
-    content_type  = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id     = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-
-    reason   = models.CharField(max_length=20, choices=REASON_CHOICES, verbose_name='Raison')
-    comment  = models.TextField(blank=True, verbose_name='Commentaire')
-    status   = models.CharField(
-        max_length=20, choices=STATUS_CHOICES,
-        default=STATUS_PENDING, verbose_name='Statut',
-    )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Signalé le')
-    reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name='Traité le')
-
-    class Meta:
-        ordering = ['-created_at']
-        unique_together = ('reporter', 'content_type', 'object_id')
-        verbose_name = 'Signalement'
-        verbose_name_plural = 'Signalements'
-
-    def __str__(self):
-        return f"{self.reporter} → {self.content_type} #{self.object_id} ({self.reason})"

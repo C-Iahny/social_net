@@ -149,29 +149,9 @@
     cursor: pointer;
     text-decoration: none;
     transition: all .18s;
-    position: relative;
 }
 .bazar-action-btn:hover { border-color: var(--accent); color: var(--accent); }
 .bazar-action-del:hover { border-color: #dc3545; color: #dc3545; }
-/* Tooltip sur les boutons actions */
-.bazar-action-btn[title]:hover::after {
-    content: attr(title);
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,.75);
-    color: #fff;
-    font-size: .7rem;
-    font-weight: 600;
-    padding: .2rem .55rem;
-    border-radius: 6px;
-    white-space: nowrap;
-    pointer-events: none;
-}
-/* Statut badge cliquable */
-.bazar-row-status { cursor: default; }
-.bazar-row-status.toggleable { cursor: pointer; }
-.bazar-row-status.toggleable:hover { opacity: .8; }
 
 /* Empty */
 .bazar-mes-empty {
@@ -193,7 +173,7 @@
     <div class="bazar-mes-header">
         <div>
             <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.4rem;">
-                <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
+                <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">Bazar</a>
                 <span> › </span>{% trans "Mes annonces" %}
             </nav>
             <h1 class="bazar-mes-title">🗂️ {% trans "Mes annonces" %}</h1>
@@ -212,11 +192,11 @@
         </div>
         <div class="bazar-stat-pill">
             <span class="num" style="color:#166534;">{{ count_active }}</span>
-            {% trans "active" %}{{ count_active|pluralize }}
+            active{{ count_active|pluralize }}
         </div>
         <div class="bazar-stat-pill">
             <span class="num" style="color:#991b1b;">{{ count_sold }}</span>
-            {% trans "vendue" %}{{ count_sold|pluralize }}
+            vendue{{ count_sold|pluralize }}
         </div>
     </div>
 
@@ -287,18 +267,12 @@
             <div class="bazar-annonce-price">{{ annonce.formatted_price }}</div>
         </div>
 
-        <!-- Badge statut (cliquable pour toggle active↔pause) -->
-        {% if annonce.status != 'vendue' %}
-        <span class="bazar-row-status status-{{ annonce.status }} toggleable"
-              id="status-badge-{{ annonce.pk }}"
-              onclick="toggleStatus({{ annonce.pk }}, this)"
-              title="{% if annonce.status == 'active' %}Cliquer pour mettre en pause{% else %}Cliquer pour réactiver{% endif %}">
+        <!-- Badge statut -->
+        <span class="bazar-row-status status-{{ annonce.status }}">
             {% if annonce.status == 'active' %}✓ {% trans "Active" %}
+            {% elif annonce.status == 'vendue' %}✕ {% trans "Vendue" %}
             {% else %}⏸ {% trans "En pause" %}{% endif %}
         </span>
-        {% else %}
-        <span class="bazar-row-status status-vendue">✕ {% trans "Vendue" %}</span>
-        {% endif %}
 
         <!-- Actions -->
         <div class="bazar-row-actions">
@@ -309,25 +283,16 @@
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </a>
             {% if annonce.status == 'active' %}
-            <!-- Bump / Rafraîchir -->
-            <button type="button"
-                    class="bazar-action-btn"
-                    title="{% trans '🔝 Remonter en tête (1×/24h)' %}"
-                    onclick="bumpAnnonce({{ annonce.pk }}, this)"
-                    style="color:var(--accent);border-color:var(--accent);">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
-            </button>
-            <!-- Marquer vendue -->
             <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" onsubmit="return confirm('Marquer comme vendue ?')">
                 {% csrf_token %}
-                <button type="submit" class="bazar-action-btn" title="{% trans 'Marquer vendue' %}" style="color:#166534;border-color:#166534;">
+                <button type="submit" class="bazar-action-btn" title="Marquer vendue" style="color:#166534;border-color:#166534;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                 </button>
             </form>
             {% endif %}
             <form method="post" action="{% url 'bazar:delete' annonce.pk %}" onsubmit="return confirm('Supprimer définitivement ?')">
                 {% csrf_token %}
-                <button type="submit" class="bazar-action-btn bazar-action-del" title="{% trans 'Supprimer' %}">
+                <button type="submit" class="bazar-action-btn bazar-action-del" title="Supprimer">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
                 </button>
             </form>
@@ -346,80 +311,4 @@
     </div>
     {% endif %}
 </div>
-
-<script>
-const CSRF_TOKEN = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
-
-// ── Toggle statut active ↔ pause ──────────────────────────────────────────────
-function toggleStatus(pk, badgeEl) {
-    fetch(`/bazar/${pk}/toggle-statut/`, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (!data.success) { alert(data.error || 'Erreur'); return; }
-        badgeEl.className = 'bazar-row-status toggleable ' +
-            (data.new_status === 'active' ? 'status-active' : 'status-pause');
-        badgeEl.innerHTML = data.new_status === 'active' ? '✓ Active' : '⏸ En pause';
-        badgeEl.title = data.new_status === 'active'
-            ? 'Cliquer pour mettre en pause'
-            : 'Cliquer pour réactiver';
-        // Afficher/masquer les boutons Bump et Marquer-vendue
-        _refreshRowActions(pk, data.new_status);
-    })
-    .catch(() => alert('Erreur réseau.'));
-}
-
-function _refreshRowActions(pk, newStatus) {
-    // Recharge la page pour simplifier (les boutons Bump et Vendue dépendent du statut)
-    location.reload();
-}
-
-// ── Bump — remonter en tête ───────────────────────────────────────────────────
-function bumpAnnonce(pk, btn) {
-    btn.disabled = true;
-    btn.style.opacity = '.5';
-    fetch(`/bazar/${pk}/bump/`, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.cooldown) {
-            alert(`Vous pouvez rafraîchir à nouveau dans ${data.remaining_h}h.`);
-            btn.disabled = false;
-            btn.style.opacity = '';
-            return;
-        }
-        if (!data.success) {
-            alert(data.error || 'Erreur');
-            btn.disabled = false;
-            btn.style.opacity = '';
-            return;
-        }
-        // Succès : changer l'apparence du bouton
-        btn.title = '✓ Remontée !';
-        btn.style.color = '#10b981';
-        btn.style.borderColor = '#10b981';
-        btn.style.opacity = '1';
-        btn.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
-        setTimeout(() => {
-            btn.title = '🔝 Remonter en tête (1×/24h)';
-            btn.style.color = 'var(--accent)';
-            btn.style.borderColor = 'var(--accent)';
-            btn.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>';
-            // Désactiver pendant 24h (pas de reload pour l'UX)
-            btn.disabled = true;
-            btn.style.opacity = '.35';
-            btn.title = 'Rafraîchi — disponible dans 24h';
-        }, 1200);
-    })
-    .catch(() => {
-        alert('Erreur réseau.');
-        btn.disabled = false;
-        btn.style.opacity = '';
-    });
-}
-</script>
 {% endblock %}

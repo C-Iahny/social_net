@@ -28,16 +28,6 @@ urlpatterns = [
     # ── Supprimer une image (AJAX) ─────────────────────────────────────────────
     path('image/<int:img_pk>/supprimer/', views.delete_image, name='delete_image'),
 
-    # ── Bump (AJAX POST) ────────────────────────────────────────────────────────
-    path('<int:pk>/bump/',          views.bump_annonce,   name='bump'),
-
-    # ── Toggle statut active ↔ pause (AJAX POST) ────────────────────────────────
-    path('<int:pk>/toggle-statut/', views.toggle_status,  name='toggle_status'),
-
     # ── Vérification vendeur ───────────────────────────────────────────────────
     path('verification/', views.request_verification, name='request_verification'),
-
-    # ── Favoris ────────────────────────────────────────────────────────────────
-    path('mes-favoris/',     views.mes_favoris,   name='mes_favoris'),
-    path('<int:pk>/favori/', views.toggle_favori, name='toggle_favori'),
 ]
