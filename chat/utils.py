@@ -20,24 +20,21 @@ def find_or_create_private_chat(user1, user2):
 
 def calculate_timestamp(timestamp):
     """
-    1. Today or yesterday:
-        - EX: 'today at 10:56 AM'
-        - EX: 'yesterday at 5:19 PM'
-    2. other:
-        - EX: 05/06/2020
-        - EX: 12/28/2020
+    Retourne TOUJOURS "date at HH:MM" pour que le JS puisse séparer date et heure.
+    - aujourd'hui at 14:30
+    - hier at 09:05
+    - 15/06/2026 at 14:30
     """
-    ts = ""
-    # Today or yesterday
-    if (naturalday(timestamp) == "today") or (naturalday(timestamp) == "yesterday"):
-        str_time = datetime.strftime(timestamp, "%I:%M %p")
-        str_time = str_time.strip("0")
-        ts = f"{naturalday(timestamp)} at {str_time}"
-    # other days
+    hm = datetime.strftime(timestamp, "%H:%M")          # ex. "14:30"
+    nd = naturalday(timestamp)                           # "today" / "yesterday" / date locale
+    if nd == "today":
+        return f"aujourd'hui at {hm}"
+    elif nd == "yesterday":
+        return f"hier at {hm}"
     else:
-        str_time = datetime.strftime(timestamp, "%m/%d/%Y")
-        ts = f"{str_time}"
-    return str(ts)
+        # Format JJ/MM/AAAA lisible
+        date_str = datetime.strftime(timestamp, "%d/%m/%Y")
+        return f"{date_str} at {hm}"
 
 
 

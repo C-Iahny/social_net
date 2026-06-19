@@ -252,7 +252,10 @@ main { padding: 0 !important; margin-top: 62px; }
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    /* Fond opaque pour couvrir toute animation de fond de page */
+    background: #f0e8df;
 }
+[data-theme="dark"] #id_chat_log_container { background: var(--bg); }
 #id_chat_log {
     flex: 1;
     overflow-y: auto;
@@ -1001,7 +1004,7 @@ main { padding: 0 !important; margin-top: 62px; }
                     </div>
                     <div class="friend-preview">{{ x.message|truncatechars:30 }}</div>
                 </div>
-                <span class="friend-unread"></span>
+                <span class="friend-unread"{% if x.unread %} style="display:block;"{% endif %}>{% if x.unread %}{{ x.unread }}{% endif %}</span>
             </div>
             {% empty %}
             <div style="padding:1.2rem .8rem;text-align:center;color:var(--text-muted);font-size:.82rem;">
@@ -1578,8 +1581,12 @@ function uploadAndSendFile(f){
             if (data.join)  { getUserInfo(); getRoomChatMessages(); enableChatLogScrollListener(); }
             if (data.leave) { console.log("Leaving room " + data.leave); }
             if (data.user_info) { handleUserInfoPayload(data.user_info) }
-            if (data.msg_type == 0) { appendChatMessage(data, false, true) }
-            if (data.msg_type == 1 || data.msg_type == 2) { appendChatMessage(data, false, true) }
+            if (data.msg_type == 0) {
+                appendChatMessage(data, false, true);
+                // Mettre à jour le sidebar : preview du dernier message
+                updateSidebarPreview(data.user_id, data.message);
+            }
+            if (data.msg_type == 1 || data.msg_type == 2) { /* connexion ignorée */ }
             if (data.msg_type == 3) { appendFileMessage(data, false, true) }  // file
             if (data.msg_type == 4) { showTypingIndicator(data.username) }   // typing
             if (data.msg_type == 5) { handleCallOffer(data); }               // WebRTC offer
@@ -1639,26 +1646,51 @@ function uploadAndSendFile(f){
     /* ── Date separator ─────────────────────────────────────────── */
     var _lastSeenDate = null;
 
+    /* Convertit la partie "date" du timestamp en label lisible en français */
+    function _formatDateLabel(raw){
+        if(!raw) return '';
+        var r = raw.trim().toLowerCase();
+        if(r === "aujourd'hui" || r === 'today')     return "Aujourd'hui";
+        if(r === 'hier'        || r === 'yesterday') return 'Hier';
+        // Format JJ/MM/AAAA → "15 juin 2026"
+        var m = r.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if(m){
+            var MOIS = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+            return m[1] + ' ' + (MOIS[parseInt(m[2],10)-1]||m[2]) + ' ' + m[3];
+        }
+        return raw;
+    }
+
+    /* Extrait la partie DATE (avant " at ") du timestamp naturel */
+    function _extractDate(timestamp){
+        if(!timestamp) return '';
+        var idx = timestamp.indexOf(' at ');
+        return (idx !== -1) ? timestamp.substring(0, idx).trim() : timestamp.trim();
+    }
+
+    /* Extrait la partie HEURE (après " at ") du timestamp naturel */
+    function _extractTime(timestamp){
+        if(!timestamp) return '';
+        var idx = timestamp.indexOf(' at ');
+        return (idx !== -1) ? timestamp.substring(idx + 4).trim() : timestamp.trim();
+    }
+
     function _makeDateSeparator(label){
         var sep = document.createElement("div");
         sep.classList.add("date-separator");
         var inner = document.createElement("span");
         inner.classList.add("date-sep-inner");
-        inner.textContent = label;
+        inner.textContent = _formatDateLabel(label);
         sep.appendChild(inner);
         return sep;
     }
 
     function _insertDateSeparatorIfNeeded(chatLog, timestamp, isNewMessage){
-        var dateLabel = '';
-        if(timestamp){
-            var atIdx = timestamp.indexOf(' at ');
-            dateLabel = (atIdx !== -1) ? timestamp.substring(0, atIdx).trim() : timestamp.trim();
-        }
+        var dateLabel = _extractDate(timestamp);
         if(dateLabel && dateLabel !== _lastSeenDate){
             var sep = _makeDateSeparator(dateLabel);
             if(isNewMessage) chatLog.insertBefore(sep, chatLog.firstChild);
-            else chatLog.appendChild(sep);
+            else             chatLog.appendChild(sep);
             _lastSeenDate = dateLabel;
         }
     }
@@ -1679,7 +1711,7 @@ function uploadAndSendFile(f){
                 break;
             case 1:
             case 2:
-                createConnectedDisconnectedElement(message, msg_id, profile_image, user_id)
+                // Messages connexion/déconnexion masqués (trop de bruit dans le chat)
                 break;
             default:
                 return;
@@ -1687,18 +1719,6 @@ function uploadAndSendFile(f){
 
         var input = document.getElementById('id_chat_message_input');
         if(input) input.focus();
-
-        function createConnectedDisconnectedElement(msg, msd_id, profile_image, user_id){
-            var chatLog = document.getElementById("id_chat_log");
-            var wrap = document.createElement("div");
-            wrap.classList.add("system-message");
-            var usernameSpan = document.createElement("span");
-            usernameSpan.innerHTML = msg;
-            usernameSpan.classList.add("username-span");
-            usernameSpan.addEventListener("click", function(){ selectUser(user_id); });
-            wrap.appendChild(usernameSpan);
-            chatLog.insertBefore(wrap, chatLog.firstChild);
-        }
     }
 
     function createChatMessageElement(msg, msg_id, username, profile_image, user_id, timestamp, maintainPosition, isNewMessage){
@@ -1736,12 +1756,8 @@ function uploadAndSendFile(f){
         catch(e) { bubble.textContent = msg; }
         wrap.appendChild(bubble);
 
-        /* Timestamp intégré DANS la bulle */
-        var timeStr = '';
-        if(timestamp){
-            var atIdx = timestamp.indexOf(' at ');
-            timeStr = (atIdx !== -1) ? timestamp.substring(atIdx + 4).trim() : timestamp.trim();
-        }
+        /* Timestamp intégré DANS la bulle — heure seulement */
+        var timeStr = _extractTime(timestamp);
         var bFooter = document.createElement("div");
         bFooter.classList.add("bubble-footer");
         var bTime = document.createElement("span");
@@ -1931,10 +1947,37 @@ function uploadAndSendFile(f){
         document.getElementById("id_chat_log").removeEventListener("scroll", chatLogScrollListener)
     }
 
+    /* ── Sidebar : badge non-lu + aperçu dernier message ─── */
+
+    /* Met à jour l'aperçu et ajoute (ou incrémente) le badge non-lu
+       pour un ami dont on reçoit un message dans la conv active.
+       user_id : expéditeur du message */
+    function updateSidebarPreview(msgUserId, msgText){
+        // Trouver le conteneur ami dont l'user correspond à l'expéditeur
+        // (le message reçu vient d'une autre personne, donc msgUserId ≠ currentUserId)
+        if(String(msgUserId) === String(currentUserId)) return; // propre message
+        // Dans une 1-à-1, l'expéditeur = l'ami actif
+        var activeEl = document.querySelector('.friend-container.active');
+        if(!activeEl) return;
+        // aperçu
+        var prev = activeEl.querySelector('.friend-preview');
+        if(prev && msgText) prev.textContent = (msgText||'').substring(0,30);
+        // Pas de badge si la conv est active (utilisateur est en train de lire)
+    }
+
+    /* Effacer le badge quand l'utilisateur sélectionne un ami */
+    function clearUnreadBadge(userId){
+        var el = document.getElementById("id_friend_container_" + userId);
+        if(!el) return;
+        var badge = el.querySelector('.friend-unread');
+        if(badge){ badge.textContent = ''; badge.style.display = 'none'; }
+    }
+
     function highlightFriend(userId){
         document.querySelectorAll('.friend-container').forEach(function(c){ c.classList.remove('active'); });
         var el = document.getElementById("id_friend_container_" + userId);
         if(el) el.classList.add('active');
+        clearUnreadBadge(userId);
     }
 
     function clearHighlightedFriend(){
