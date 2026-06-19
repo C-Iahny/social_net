@@ -560,15 +560,18 @@ main { padding: 0 !important; margin-top: 62px; }
     /* Mode nuit : teinte chaude profonde accordée à l'or */
     background: rgba(25,8,2,.88);
 }
+.chat-input-inner:hover,
 .chat-input-inner:focus-within {
-    box-shadow: 0 0 0 2.5px var(--accent);
+    box-shadow: none;
+    outline: none;
 }
 
 #id_chat_message_input {
     flex: 1;
     background: transparent;
-    border: none;
-    outline: none;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
     resize: none;
     font-size: .92rem;
     color: #fff;
