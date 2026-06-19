@@ -30,6 +30,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
 		# the room_id will define what it means to be "connected". If it is not None, then the user is connected.
 		self.room_id = None
+		# ID de l'interlocuteur en cours d'appel (pour router les signaux WebRTC)
+		self.call_peer_id = None
+
+		# Groupe personnel — reçoit les appels entrants même sans room active
+		if self.scope["user"].is_authenticated:
+			await self.channel_layer.group_add(
+				f"user_{self.scope['user'].id}",
+				self.channel_name,
+			)
 
 
 	async def receive_json(self, content):
@@ -71,6 +80,79 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				else:
 					raise ClientError(204, "Something went wrong retrieving the other users account details.")
 				await self.display_progress_bar(False)
+			elif command == "typing":
+				# Broadcast "typing" indicator to everyone else in the room
+				if self.room_id:
+					try:
+						room = await get_room_or_error(self.room_id, self.scope["user"])
+						await self.channel_layer.group_send(
+							room.group_name,
+							{
+								"type": "chat.typing",
+								"username": self.scope["user"].username,
+								"user_id":  self.scope["user"].id,
+							}
+						)
+					except Exception:
+						pass
+			elif command == "call_offer":
+				# ── Offre WebRTC : envoi via le GROUPE PERSONNEL du callee ──
+				# Fonctionne même si le callee a une autre conv ouverte
+				print(f"[CALL] call_offer reçu de user_{self.scope['user'].id}, self.room_id={self.room_id}")
+				if self.room_id:
+					try:
+						room  = await get_room_or_error(self.room_id, self.scope["user"])
+						other = await get_other_user(room, self.scope["user"])
+						self.call_peer_id = other.id
+						print(f"[CALL] envoi vers groupe user_{other.id}")
+						await self.channel_layer.group_send(
+							f"user_{other.id}",
+							{
+								"type":      "chat.call",
+								"msg_type":  MSG_TYPE_CALL_OFFER,
+								"user_id":   self.scope["user"].id,
+								"username":  self.scope["user"].username,
+								"sdp":       content.get("sdp", {}),
+								"call_mode": content.get("call_mode", "video"),
+								"room_id":   str(self.room_id),
+							}
+						)
+						print(f"[CALL] group_send OK → user_{other.id}")
+					except Exception as e:
+						print(f"call_offer error: {e}")
+						import traceback; traceback.print_exc()
+				else:
+					print(f"[CALL] IGNORÉ: self.room_id est None — le caller n'a pas joint de room")
+
+			elif command in ("call_answer", "call_ice", "call_reject", "call_end"):
+				# ── Autres signaux : router vers le groupe personnel du peer ──
+				peer_id = self.call_peer_id
+				if not peer_id and self.room_id:
+					try:
+						room  = await get_room_or_error(self.room_id, self.scope["user"])
+						other = await get_other_user(room, self.scope["user"])
+						peer_id = other.id
+					except Exception:
+						pass
+				if peer_id:
+					_type_map = {
+						"call_answer": MSG_TYPE_CALL_ANSWER,
+						"call_ice":    MSG_TYPE_CALL_ICE,
+						"call_reject": MSG_TYPE_CALL_REJECT,
+						"call_end":    MSG_TYPE_CALL_END,
+					}
+					payload = {
+						"type":     "chat.call",
+						"msg_type": _type_map[command],
+						"user_id":  self.scope["user"].id,
+					}
+					if command == "call_answer":
+						payload["sdp"] = content.get("sdp", {})
+					elif command == "call_ice":
+						payload["candidate"] = content.get("candidate", {})
+					await self.channel_layer.group_send(f"user_{peer_id}", payload)
+					if command in ("call_reject", "call_end"):
+						self.call_peer_id = None
 			elif command == "send_file":
 				# The file was already saved to DB by the HTTP upload view.
 				# We just need to broadcast it to the room group.
@@ -101,6 +183,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		except Exception as e:
 			print("EXCEPTION: " + str(e))
 			pass
+		# Quitter le groupe personnel
+		if self.scope["user"].is_authenticated:
+			try:
+				await self.channel_layer.group_discard(
+					f"user_{self.scope['user'].id}",
+					self.channel_name,
+				)
+			except Exception:
+				pass
 
 
 	async def join_room(self, room_id):
@@ -331,6 +422,32 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			"msg_id":          event.get("msg_id"),
 		})
 
+	async def chat_call(self, event):
+		"""Relay WebRTC signaling — never echo back to the sender."""
+		print(f"[CALL] chat_call: user={self.scope['user'].id}, event_user_id={event.get('user_id')}, msg_type={event.get('msg_type')}")
+		if event.get("user_id") == self.scope["user"].id:
+			print(f"[CALL] chat_call: filtré (echo propre)")
+			return
+		# Mémoriser l'appelant pour router les réponses (answer/ice) dans l'autre sens
+		mt = event.get("msg_type")
+		if mt == MSG_TYPE_CALL_OFFER:
+			self.call_peer_id = event.get("user_id")
+			print(f"[CALL] chat_call: OFFER → envoi au client (callee), call_peer_id={self.call_peer_id}")
+		elif mt in (MSG_TYPE_CALL_END, MSG_TYPE_CALL_REJECT):
+			self.call_peer_id = None
+		await self.send_json(event)
+		print(f"[CALL] chat_call: send_json OK")
+
+	async def chat_typing(self, event):
+		"""Broadcast typing indicator — skip the typer themselves."""
+		if event.get("user_id") == self.scope["user"].id:
+			return
+		await self.send_json({
+			"msg_type": MSG_TYPE_TYPING,
+			"username": event["username"],
+			"user_id":  event["user_id"],
+		})
+
 	async def send_messages_payload(self, messages, new_page_number):
 		"""
 		Send a payload of messages to the ui
@@ -454,6 +571,12 @@ def get_room_chat_messages(room, page_number):
 		print("EXCEPTION: " + str(e))
 	return None
 
+
+
+@database_sync_to_async
+def get_other_user(room, user):
+	"""Retourne l'autre participant d'une room 1-à-1."""
+	return room.user1 if room.user2.id == user.id else room.user2
 
 
 @database_sync_to_async

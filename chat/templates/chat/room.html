@@ -1651,11 +1651,11 @@ window._CT = {
             if (data.msg_type == 1 || data.msg_type == 2) { /* connexion ignorée */ }
             if (data.msg_type == 3) { appendFileMessage(data, false, true) }  // file
             if (data.msg_type == 4) { showTypingIndicator(data.username) }   // typing
-            if (data.msg_type == 5) { handleCallOffer(data); }               // WebRTC offer
-            if (data.msg_type == 6) { handleCallAnswer(data); }              // WebRTC answer
-            if (data.msg_type == 7) { handleCallIce(data); }                 // ICE candidate
-            if (data.msg_type == 8) { handleCallReject(); }                  // call rejected
-            if (data.msg_type == 9) { handleCallEnd(); }                     // call ended
+            if (data.msg_type == 5) { console.log('[CALL] offer reçu', data); handleCallOffer(data); }
+            if (data.msg_type == 6) { console.log('[CALL] answer reçu', data); handleCallAnswer(data); }
+            if (data.msg_type == 7) { handleCallIce(data); }
+            if (data.msg_type == 8) { console.log('[CALL] rejeté'); handleCallReject(); }
+            if (data.msg_type == 9) { console.log('[CALL] terminé'); handleCallEnd(); }
             if (data.messages_payload) { handleMessagesPayload(data.messages, data.new_page_number) }
         };
 
