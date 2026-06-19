@@ -1515,6 +1515,13 @@ window._CT = {
         document.getElementById('id_other_user_profile_image').classList.remove('d-none');
         var sub = document.getElementById('chat-header-sub');
         if(sub) sub.style.display = '';
+        // Afficher les boutons d'appel immédiatement sans attendre handleUserInfoPayload
+        var btnA = document.getElementById('btn-call-audio');
+        var btnV = document.getElementById('btn-call-video');
+        var infoBtn = document.getElementById('chat-header-info-btn');
+        if(btnA) btnA.style.display = '';
+        if(btnV) btnV.style.display = '';
+        if(infoBtn) infoBtn.style.display = '';
         var sidebar = document.getElementById('chat-sidebar');
         if(sidebar && window.innerWidth <= 768){ sidebar.classList.remove('open'); }
     }
