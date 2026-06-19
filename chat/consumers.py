@@ -110,8 +110,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 								"msg_type":  MSG_TYPE_CALL_OFFER,
 								"user_id":   self.scope["user"].id,
 								"username":  self.scope["user"].username,
-								"sdp":       data.get("sdp", {}),
-								"call_mode": data.get("call_mode", "video"),
+								"sdp":       content.get("sdp", {}),
+								"call_mode": content.get("call_mode", "video"),
 								"room_id":   str(self.room_id),
 							}
 						)
@@ -141,9 +141,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 						"user_id":  self.scope["user"].id,
 					}
 					if command == "call_answer":
-						payload["sdp"] = data.get("sdp", {})
+						payload["sdp"] = content.get("sdp", {})
 					elif command == "call_ice":
-						payload["candidate"] = data.get("candidate", {})
+						payload["candidate"] = content.get("candidate", {})
 					await self.channel_layer.group_send(f"user_{peer_id}", payload)
 					if command in ("call_reject", "call_end"):
 						self.call_peer_id = None

@@ -1,6 +1,7 @@
 <!-- PrivateChatRoom — compact redesign + file upload -->
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 
@@ -146,9 +147,16 @@ main { padding: 0 !important; margin-top: 62px; }
     font-size: .68rem;
     font-weight: 700;
     border-radius: 10px;
-    padding: 1px 6px;
+    padding: 2px 7px;
     flex-shrink: 0;
+    min-width: 20px;
+    text-align: center;
     display: none;
+}
+.friend-unread.has-unread {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Mobile sidebar toggle */
@@ -979,10 +987,10 @@ main { padding: 0 !important; margin-top: 62px; }
     <!-- Friends sidebar -->
     <aside class="chat-sidebar" id="chat-sidebar">
         <div class="chat-sidebar-header">
-            <h2>Messages</h2>
+            <h2>{% trans "Messages" %}</h2>
             <div class="sb-search">
                 <span class="material-icons">search</span>
-                <input type="text" placeholder="Rechercher…" id="sb-search-input">
+                <input type="text" placeholder="{% trans 'Rechercher…' %}" id="sb-search-input">
             </div>
         </div>
         <div class="friends-list-container" id="friends-list-container">
@@ -1004,12 +1012,12 @@ main { padding: 0 !important; margin-top: 62px; }
                     </div>
                     <div class="friend-preview">{{ x.message|truncatechars:30 }}</div>
                 </div>
-                <span class="friend-unread"{% if x.unread %} style="display:block;"{% endif %}>{% if x.unread %}{{ x.unread }}{% endif %}</span>
+                <span class="friend-unread{% if x.unread %} has-unread{% endif %}">{% if x.unread %}{{ x.unread }}{% endif %}</span>
             </div>
             {% empty %}
             <div style="padding:1.2rem .8rem;text-align:center;color:var(--text-muted);font-size:.82rem;">
                 <span class="material-icons" style="font-size:1.8rem;display:block;margin-bottom:.4rem;opacity:.35">people_outline</span>
-                Aucun ami pour l'instant
+                {% trans "Aucun ami pour l'instant" %}
             </div>
             {% endfor %}
         </div>
@@ -1027,7 +1035,7 @@ main { padding: 0 !important; margin-top: 62px; }
                 <div>
                     <h3 id="id_other_username" style="margin:0;font-size:.95rem;font-weight:700;color:var(--text);"></h3>
                     <div class="chat-header-status" id="chat-header-sub" style="display:none;">
-                        <span class="status-dot"></span>En ligne
+                        <span class="status-dot"></span>{% trans "En ligne" %}
                     </div>
                 </div>
             </a>
@@ -1035,14 +1043,14 @@ main { padding: 0 !important; margin-top: 62px; }
             <!-- Actions + WS dot -->
             <div class="chat-header-actions">
                 <!-- Appel audio -->
-                <button class="chat-header-btn" id="btn-call-audio" title="Appel audio" onclick="startCall('audio')" style="display:none;">
+                <button class="chat-header-btn" id="btn-call-audio" title="{% trans 'Appel audio' %}" onclick="startCall('audio')" style="display:none;">
                     <span class="material-icons">call</span>
                 </button>
                 <!-- Appel vidéo -->
-                <button class="chat-header-btn" id="btn-call-video" title="Appel vidéo" onclick="startCall('video')" style="display:none;">
+                <button class="chat-header-btn" id="btn-call-video" title="{% trans 'Appel vidéo' %}" onclick="startCall('video')" style="display:none;">
                     <span class="material-icons">videocam</span>
                 </button>
-                <button class="chat-header-btn" title="Infos" id="chat-header-info-btn" style="display:none;" onclick="if(typeof selectUser==='function'){selectUser(currentFriendId);}">
+                <button class="chat-header-btn" title="{% trans 'Infos' %}" id="chat-header-info-btn" style="display:none;" onclick="if(typeof selectUser==='function'){selectUser(currentFriendId);}">
                     <span class="material-icons">info_outline</span>
                 </button>
                 <span id="ws-status-dot"
@@ -1053,7 +1061,7 @@ main { padding: 0 !important; margin-top: 62px; }
             <!-- No conversation selected placeholder -->
             <div id="chat-no-selection" style="color:var(--text-muted);font-size:.87rem;position:absolute;right:1rem;">
                 <span class="material-icons" style="vertical-align:middle;font-size:1.05rem;margin-right:5px;">touch_app</span>
-                Sélectionnez une conversation
+                {% trans "Sélectionnez une conversation" %}
             </div>
         </div>
 
@@ -1064,7 +1072,7 @@ main { padding: 0 !important; margin-top: 62px; }
             <div class="d-flex justify-content-center" id="id_chatroom_loading_spinner_container">
                 <div class="spinner-border" id="id_chatroom_loading_spinner"
                      role="status" style="display:none;">
-                    <span class="sr-only">Chargement…</span>
+                    <span class="sr-only">{% trans "Chargement…" %}</span>
                 </div>
             </div>
 
@@ -1132,20 +1140,20 @@ main { padding: 0 !important; margin-top: 62px; }
                     <input type="file" id="chat-file-input" style="display:none;"
                            accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.7z,.txt,.csv">
                     <!-- Attach button -->
-                    <button type="button" class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="Joindre un fichier">
+                    <button type="button" class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="{% trans 'Joindre un fichier' %}">
                         <span class="material-icons">attach_file</span>
                     </button>
                     <textarea id="id_chat_message_input"
-                              placeholder="Écrire un message…"
+                              placeholder="{% trans 'Écrire un message…' %}"
                               rows="1"
                               inputmode="text"
                               enterkeyhint="send"></textarea>
-                    <button type="button" id="id_chat_message_submit" class="chat-send-btn" title="Envoyer (Entrée)">
+                    <button type="button" id="id_chat_message_submit" class="chat-send-btn" title="{% trans 'Envoyer (Entrée)' %}">
                         <span class="material-icons">send</span>
-                        <span class="send-btn-label">Envoyer</span>
+                        <span class="send-btn-label">{% trans "Envoyer" %}</span>
                     </button>
                 </div>
-                <div class="input-hint">Entrée pour envoyer · Maj+Entrée pour aller à la ligne</div>
+                <div class="input-hint">{% trans "Entrée pour envoyer · Maj+Entrée pour aller à la ligne" %}</div>
             </div>
         </div>
 
@@ -1157,11 +1165,11 @@ main { padding: 0 !important; margin-top: 62px; }
                 </div>
             </div>
             <div class="call-name" id="call-out-name">…</div>
-            <div class="call-status" id="call-out-status">Appel en cours…</div>
+            <div class="call-status" id="call-out-status">{% trans "Appel en cours…" %}</div>
             <!-- Prévisualisation caméra locale (masquée en mode audio) -->
             <video id="call-out-local-vid" autoplay muted playsinline
                    class="call-local-preview" style="display:none;"></video>
-            <button class="call-btn call-btn-red" onclick="hangUp()" title="Annuler">
+            <button class="call-btn call-btn-red" onclick="hangUp()" title="{% trans 'Annuler' %}">
                 <span class="material-icons">call_end</span>
             </button>
         </div>
@@ -1174,19 +1182,19 @@ main { padding: 0 !important; margin-top: 62px; }
                 </div>
             </div>
             <div class="call-name" id="call-inc-name">…</div>
-            <div class="call-status" id="call-inc-type">Appel vidéo entrant</div>
+            <div class="call-status" id="call-inc-type">{% trans "Appel vidéo entrant" %}</div>
             <div class="call-inc-row">
                 <div>
-                    <button class="call-btn call-btn-red" onclick="rejectCall()" title="Refuser">
+                    <button class="call-btn call-btn-red" onclick="rejectCall()" title="{% trans 'Refuser' %}">
                         <span class="material-icons">call_end</span>
                     </button>
-                    <div class="call-inc-label">Refuser</div>
+                    <div class="call-inc-label">{% trans "Refuser" %}</div>
                 </div>
                 <div>
-                    <button class="call-btn call-btn-green" onclick="acceptCall()" title="Accepter">
+                    <button class="call-btn call-btn-green" onclick="acceptCall()" title="{% trans 'Accepter' %}">
                         <span class="material-icons" id="call-inc-accept-icon">videocam</span>
                     </button>
-                    <div class="call-inc-label">Accepter</div>
+                    <div class="call-inc-label">{% trans "Accepter" %}</div>
                 </div>
             </div>
         </div>
@@ -1211,22 +1219,22 @@ main { padding: 0 !important; margin-top: 62px; }
                 <div id="call-timer" class="call-timer">00:00</div>
                 <div class="call-ctrl-row">
                     <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-                        <button class="call-ctrl-btn" id="call-btn-mic" onclick="toggleMic()" title="Micro">
+                        <button class="call-ctrl-btn" id="call-btn-mic" onclick="toggleMic()" title="{% trans 'Micro' %}">
                             <span class="material-icons" id="call-mic-icon">mic</span>
                         </button>
-                        <span class="call-ctrl-lbl">Micro</span>
+                        <span class="call-ctrl-lbl">{% trans "Micro" %}</span>
                     </div>
                     <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-                        <button class="call-ctrl-btn call-ctrl-hangup" onclick="hangUp()" title="Raccrocher">
+                        <button class="call-ctrl-btn call-ctrl-hangup" onclick="hangUp()" title="{% trans 'Raccrocher' %}">
                             <span class="material-icons">call_end</span>
                         </button>
-                        <span class="call-ctrl-lbl">Fin</span>
+                        <span class="call-ctrl-lbl">{% trans "Fin" %}</span>
                     </div>
                     <div id="call-cam-wrap" style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-                        <button class="call-ctrl-btn" id="call-btn-cam" onclick="toggleCam()" title="Caméra">
+                        <button class="call-ctrl-btn" id="call-btn-cam" onclick="toggleCam()" title="{% trans 'Caméra' %}">
                             <span class="material-icons" id="call-cam-icon">videocam</span>
                         </button>
-                        <span class="call-ctrl-lbl">Caméra</span>
+                        <span class="call-ctrl-lbl">{% trans "Caméra" %}</span>
                     </div>
                 </div>
             </div>
@@ -1236,7 +1244,7 @@ main { padding: 0 !important; margin-top: 62px; }
 </div><!-- /chat-page -->
 
 <!-- Mobile sidebar toggle -->
-<button class="chat-sidebar-toggle" id="sidebar-toggle-btn" title="Conversations">
+<button class="chat-sidebar-toggle" id="sidebar-toggle-btn" title="{% trans 'Conversations' %}">
     <span class="material-icons">chat</span>
 </button>
 
@@ -1255,7 +1263,7 @@ main { padding: 0 !important; margin-top: 62px; }
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                        id="id_client_error_modal_close_btn">Fermer</button>
+                        id="id_client_error_modal_close_btn">{% trans "Fermer" %}</button>
             </div>
         </div>
     </div>
@@ -1410,6 +1418,30 @@ function uploadAndSendFile(f){
 }
 </script>
 
+<!-- ── Traductions JS (injectées par Django) ──────────────────── -->
+<script>
+window._CT = {
+  calling_audio:  "{% trans 'Appel audio en cours…' %}",
+  calling_video:  "{% trans 'Appel vidéo en cours…' %}",
+  inc_audio:      "{% trans 'Appel audio entrant' %}",
+  inc_video:      "{% trans 'Appel vidéo entrant' %}",
+  call_rejected:  "{% trans 'Appel refusé.' %}",
+  call_ended:     "{% trans 'Appel terminé —' %}",
+  call_missed:    "{% trans 'Appel manqué.' %}",
+  call_interrupt: "{% trans 'Appel interrompu.' %}",
+  call_busy:      "{% trans 'Un appel est déjà en cours.' %}",
+  call_no_room:   "{% trans 'Ouvrez d\\'abord une conversation.' %}",
+  no_mic:         "{% trans 'Impossible d\\'accéder au micro.' %}",
+  no_mic_cam:     "{% trans 'Impossible d\\'accéder au micro / caméra.' %}",
+  today:          "{% trans 'Aujourd\\'hui' %}",
+  yesterday:      "{% trans 'Hier' %}",
+  typing_sfx:     "{% trans 'est en train d\\'écrire…' %}",
+  typing_who:     "{% trans 'Quelqu\\'un' %}",
+  dl:             "{% trans 'Télécharger' %}",
+  conn_lost:      "{% trans 'Connexion perdue. Rechargement…' %}",
+};
+</script>
+
 <!-- ── Main chat JS ───────────────────────────────────────────── -->
 <script type="text/javascript">
 
@@ -1486,7 +1518,7 @@ function uploadAndSendFile(f){
             if(chatLog){
                 var errDiv = document.createElement('div');
                 errDiv.style.cssText = 'text-align:center;color:#e53935;font-size:.78rem;padding:.3rem;';
-                errDiv.textContent = '⚠ Connexion perdue. Rechargement…';
+                errDiv.textContent = '⚠ ' + (_CT ? _CT.conn_lost : 'Connexion perdue. Rechargement…');
                 chatLog.insertBefore(errDiv, chatLog.firstChild);
             }
             if(roomId && (!chatSocket || chatSocket.readyState === WebSocket.CLOSED)){
@@ -1506,7 +1538,7 @@ function uploadAndSendFile(f){
         var el   = document.getElementById('chat-typing-indicator');
         var txt  = document.getElementById('chat-typing-text');
         if(!el) return;
-        if(txt) txt.textContent = (username || 'Quelqu\'un') + ' est en train d\'écrire…';
+        if(txt) txt.textContent = (username || (_CT ? _CT.typing_who : 'Quelqu\'un')) + ' ' + (_CT ? _CT.typing_sfx : 'est en train d\'écrire…');
         el.classList.add('visible');
         // Auto-masquer après 3 secondes d'inactivité
         clearTimeout(_typingHideTimer);
@@ -1650,8 +1682,8 @@ function uploadAndSendFile(f){
     function _formatDateLabel(raw){
         if(!raw) return '';
         var r = raw.trim().toLowerCase();
-        if(r === "aujourd'hui" || r === 'today')     return "Aujourd'hui";
-        if(r === 'hier'        || r === 'yesterday') return 'Hier';
+        if(r === "aujourd'hui" || r === 'today')     return (_CT ? _CT.today : "Aujourd'hui");
+        if(r === 'hier'        || r === 'yesterday') return (_CT ? _CT.yesterday : 'Hier');
         // Format JJ/MM/AAAA → "15 juin 2026"
         var m = r.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
         if(m){
@@ -1861,7 +1893,7 @@ function uploadAndSendFile(f){
 
             var dlEl = document.createElement("div");
             dlEl.classList.add("file-dl");
-            dlEl.textContent = 'Télécharger';
+            dlEl.textContent = (_CT ? _CT.dl : 'Télécharger');
             info.appendChild(dlEl);
 
             link.appendChild(info);
@@ -1970,7 +2002,7 @@ function uploadAndSendFile(f){
         var el = document.getElementById("id_friend_container_" + userId);
         if(!el) return;
         var badge = el.querySelector('.friend-unread');
-        if(badge){ badge.textContent = ''; badge.style.display = 'none'; }
+        if(badge){ badge.textContent = ''; badge.classList.remove('has-unread'); }
     }
 
     function highlightFriend(userId){
@@ -2086,7 +2118,7 @@ function uploadAndSendFile(f){
         _peerConn.onconnectionstatechange = function(){
             if(_peerConn && (_peerConn.connectionState==='disconnected'||_peerConn.connectionState==='failed')){
                 _callCleanup(false);
-                _appendSysMsg('Appel interrompu.');
+                _appendSysMsg(_CT ? _CT.call_interrupt : 'Appel interrompu.');
             }
         };
     }
@@ -2125,18 +2157,18 @@ function uploadAndSendFile(f){
     /* ── Démarrer un appel (sortant) ─────────────────────────── */
     function startCall(mode){
         if(_callState !== 'idle'){
-            alert('Un appel est déjà en cours.');
+            alert(_CT ? _CT.call_busy : 'Un appel est déjà en cours.');
             return;
         }
         if(!roomId || !chatSocket || chatSocket.readyState !== WebSocket.OPEN){
-            alert('Ouvrez d\'abord une conversation.');
+            alert(_CT ? _CT.call_no_room : 'Ouvrez d\'abord une conversation.');
             return;
         }
         _callMode  = mode || 'video';
         _callState = 'calling';
         _callFillPeer(_callPeerInfo.name, _callPeerInfo.img);
         var statusEl = _callEl('call-out-status');
-        if(statusEl) statusEl.textContent = (_callMode==='audio') ? 'Appel audio en cours…' : 'Appel vidéo en cours…';
+        if(statusEl) statusEl.textContent = (_callMode==='audio') ? (_CT ? _CT.calling_audio : 'Appel audio en cours…') : (_CT ? _CT.calling_video : 'Appel vidéo en cours…');
         _showOverlay('call-out-overlay');
 
         var constraints = (_callMode === 'audio')
@@ -2173,7 +2205,7 @@ function uploadAndSendFile(f){
         .catch(function(err){
             console.error('startCall:', err);
             _callCleanup(false);
-            alert('Impossible d\'accéder au micro' + (_callMode==='video'?' / caméra':'') + '.');
+            alert(_CT ? (_callMode==='video' ? _CT.no_mic_cam : _CT.no_mic) : ('Impossible d\'accéder au micro' + (_callMode==='video'?' / caméra':'') + '.'));
         });
     }
 
@@ -2190,7 +2222,7 @@ function uploadAndSendFile(f){
         _pendOffer = data.sdp;
         _callFillPeer(data.username||_callPeerInfo.name, _callPeerInfo.img);
         var typeEl = _callEl('call-inc-type');
-        if(typeEl) typeEl.textContent = (_callMode==='audio') ? 'Appel audio entrant' : 'Appel vidéo entrant';
+        if(typeEl) typeEl.textContent = (_callMode==='audio') ? (_CT ? _CT.inc_audio : 'Appel audio entrant') : (_CT ? _CT.inc_video : 'Appel vidéo entrant');
         var iconEl = _callEl('call-inc-accept-icon');
         if(iconEl) iconEl.textContent = (_callMode==='audio') ? 'call' : 'videocam';
         _showOverlay('call-inc-overlay');
@@ -2242,7 +2274,7 @@ function uploadAndSendFile(f){
         if(dur > 0){
             var m = String(Math.floor(dur/60)).padStart(2,'0');
             var s = String(dur%60).padStart(2,'0');
-            _appendSysMsg('Appel terminé — ' + m + ':' + s);
+            _appendSysMsg((_CT ? _CT.call_ended : 'Appel terminé —') + ' ' + m + ':' + s);
         }
     }
 
@@ -2263,7 +2295,7 @@ function uploadAndSendFile(f){
     /* ── Appel refusé par l'autre ────────────────────────────── */
     function handleCallReject(){
         _callCleanup(false);
-        _appendSysMsg('Appel refusé.');
+        _appendSysMsg(_CT ? _CT.call_rejected : 'Appel refusé.');
     }
 
     /* ── Appel terminé par l'autre ───────────────────────────── */
@@ -2274,9 +2306,9 @@ function uploadAndSendFile(f){
         if(wasActive && dur > 0){
             var m = String(Math.floor(dur/60)).padStart(2,'0');
             var s = String(dur%60).padStart(2,'0');
-            _appendSysMsg('Appel terminé — ' + m + ':' + s);
+            _appendSysMsg((_CT ? _CT.call_ended : 'Appel terminé —') + ' ' + m + ':' + s);
         } else if(!wasActive){
-            _appendSysMsg('Appel manqué.');
+            _appendSysMsg(_CT ? _CT.call_missed : 'Appel manqué.');
         }
     }
 
