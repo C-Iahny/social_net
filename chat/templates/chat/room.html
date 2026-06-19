@@ -917,35 +917,47 @@
 .call-controls-wrap {
     position: absolute;
     bottom: 28px; left: 0; right: 0;
-    z-index: 10;
+    z-index: 20;
     display: flex; flex-direction: column;
     align-items: center; gap: 14px;
+    /* Dégradé pour lisibilité des boutons sur fond sombre */
+    background: linear-gradient(to top, rgba(0,0,0,.72) 0%, transparent 100%);
+    padding-bottom: 20px;
+    padding-top: 48px;
+}
+@media (max-width: 768px) {
+    .call-controls-wrap {
+        /* safe-area iOS en bas + barre nav (cas edge) */
+        bottom: max(14px, env(safe-area-inset-bottom, 0px));
+        padding-bottom: 14px;
+    }
 }
 .call-timer {
     font-size: .9rem; font-weight: 700;
-    color: rgba(255,255,255,.82);
-    background: rgba(0,0,0,.38);
+    color: rgba(255,255,255,.92);
+    background: rgba(0,0,0,.55);
     padding: 3px 16px; border-radius: 20px;
     letter-spacing: .06em;
 }
-.call-ctrl-row { display: flex; gap: 16px; align-items: center; }
+.call-ctrl-row { display: flex; gap: 20px; align-items: center; }
 .call-ctrl-btn {
-    width: 52px; height: 52px;
+    width: 58px; height: 58px;
     border-radius: 50%; border: none;
-    background: rgba(255,255,255,.16);
+    background: rgba(255,255,255,.28);
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: background .15s;
+    box-shadow: 0 2px 12px rgba(0,0,0,.45);
 }
-.call-ctrl-btn:hover  { background: rgba(255,255,255,.26); }
-.call-ctrl-btn.active { background: rgba(255,255,255,.46); }
-.call-ctrl-btn .material-icons { font-size: 1.35rem; color: #fff; }
+.call-ctrl-btn:hover  { background: rgba(255,255,255,.40); }
+.call-ctrl-btn.active { background: rgba(255,255,255,.55); }
+.call-ctrl-btn .material-icons { font-size: 1.5rem; color: #fff; }
 .call-ctrl-hangup {
-    width: 64px; height: 64px;
+    width: 68px; height: 68px;
     background: #e53935 !important;
 }
 .call-ctrl-hangup:hover { filter: brightness(1.1); }
-.call-ctrl-hangup .material-icons { font-size: 1.6rem; }
+.call-ctrl-hangup .material-icons { font-size: 1.7rem; }
 
 /* Label sous chaque bouton de contrôle */
 .call-ctrl-lbl {
@@ -1228,6 +1240,8 @@
         <div class="call-overlay" id="call-active-overlay">
             <!-- Vidéo distante (plein fond) — masquée en mode audio -->
             <video id="call-remote-video" autoplay playsinline class="call-remote-video"></video>
+            <!-- Audio dédié pour les appels audio (video display:none bloque l'audio sur iOS) -->
+            <audio id="call-remote-audio" autoplay playsinline style="display:none;"></audio>
             <!-- Fond audio : avatar centré (affiché à la place de la vidéo) -->
             <div class="call-audio-bg" id="call-audio-bg">
                 <div class="call-avatar-ring">
@@ -2082,6 +2096,7 @@ window._CT = {
     var _micMuted    = false;
     var _camOff      = false;
     var _callPeerInfo = { name: '', img: '' };  // infos de l'interlocuteur
+    var _iceCandidateQueue = [];  // candidats ICE reçus avant que _peerConn soit prêt
 
     // STUN servers Google (gratuits, marche partout)
     var _ICE = { iceServers: [
@@ -2143,9 +2158,11 @@ window._CT = {
         }
         if(_peerConn){ _peerConn.close(); _peerConn = null; }
         if(_localStream){ _localStream.getTracks().forEach(function(t){ t.stop(); }); _localStream = null; }
-        var rv = _callEl('call-remote-video'); if(rv) rv.srcObject = null;
-        var lv = _callEl('call-local-video');  if(lv) lv.srcObject = null;
-        var lop = _callEl('call-out-local-vid'); if(lop) lop.srcObject = null;
+        var rv  = _callEl('call-remote-video'); if(rv){ rv.srcObject = null; rv.style.display = 'none'; }
+        var ra  = _callEl('call-remote-audio'); if(ra){ ra.srcObject = null; ra.pause(); }
+        var lv  = _callEl('call-local-video');  if(lv){ lv.srcObject = null; lv.style.display = 'none'; }
+        var lop = _callEl('call-out-local-vid'); if(lop){ lop.srcObject = null; lop.style.display = 'none'; }
+        _iceCandidateQueue = [];
         _stopTimer();
         _callState = 'idle';
         _pendOffer  = null;
@@ -2163,9 +2180,15 @@ window._CT = {
             }
         };
         _peerConn.ontrack = function(e){
-            if(e.streams && e.streams[0]) onRemoteStream(e.streams[0]);
+            // Récupérer le stream distant (e.streams[0] si dispo, sinon créer un MediaStream avec la piste)
+            var stream = (e.streams && e.streams[0]) ? e.streams[0] : new MediaStream([e.track]);
+            onRemoteStream(stream);
+        };
+        _peerConn.oniceconnectionstatechange = function(){
+            console.log('[CALL] ICE state:', _peerConn && _peerConn.iceConnectionState);
         };
         _peerConn.onconnectionstatechange = function(){
+            console.log('[CALL] Connection state:', _peerConn && _peerConn.connectionState);
             if(_peerConn && (_peerConn.connectionState==='disconnected'||_peerConn.connectionState==='failed')){
                 _callCleanup(false);
                 _appendSysMsg(_CT ? _CT.call_interrupt : 'Appel interrompu.');
@@ -2177,19 +2200,23 @@ window._CT = {
     function _activateCallUI(){
         _showOverlay('call-active-overlay');
         _startTimer();
-        // Mode audio : masquer vidéos, afficher avatar centré
         var rv  = _callEl('call-remote-video');
         var lv  = _callEl('call-local-video');
+        var ra  = _callEl('call-remote-audio');
         var bg  = _callEl('call-audio-bg');
         var cw  = _callEl('call-cam-wrap');
         if(_callMode === 'audio'){
+            // Mode audio : cacher la vidéo, audio passe par <audio> dédié
             if(rv) rv.style.display = 'none';
             if(lv) lv.style.display = 'none';
             if(bg) bg.style.display = 'flex';
             if(cw) cw.style.display = 'none';
+            // Lancer l'audio si srcObject déjà défini
+            if(ra && ra.srcObject) ra.play().catch(function(){});
         } else {
-            if(rv) rv.style.display = 'block';
-            if(lv) lv.style.display = 'block';
+            // Mode vidéo : afficher les éléments vidéo et forcer la lecture
+            if(rv){ rv.style.display = 'block'; if(rv.srcObject) rv.play().catch(function(){}); }
+            if(lv){ lv.style.display = 'block'; if(lv.srcObject) lv.play().catch(function(){}); }
             if(bg) bg.style.display = 'none';
             if(cw) cw.style.display = 'flex';
         }
@@ -2236,9 +2263,16 @@ window._CT = {
             _buildPeer(function(remoteStream){
                 // La piste distante arrive → on passe en mode actif
                 var rv = _callEl('call-remote-video');
-                if(rv) rv.srcObject = remoteStream;
+                var ra = _callEl('call-remote-audio');
+                if(_callMode === 'audio'){
+                    // Mode audio : router vers l'élément <audio> (evite le bug display:none sur iOS)
+                    if(ra){ ra.srcObject = remoteStream; ra.play().catch(function(){}); }
+                } else {
+                    // Mode vidéo : router vers <video>
+                    if(rv){ rv.srcObject = remoteStream; rv.play().catch(function(){}); }
+                }
                 var lv = _callEl('call-local-video');
-                if(lv) lv.srcObject = _localStream;
+                if(lv){ lv.srcObject = _localStream; lv.play().catch(function(){}); }
                 _callState = 'active';
                 _activateCallUI();
             });
@@ -2291,14 +2325,28 @@ window._CT = {
         navigator.mediaDevices.getUserMedia(constraints)
         .then(function(stream){
             _localStream = stream;
-            var lv = _callEl('call-local-video'); if(lv) lv.srcObject = stream;
+            var lv = _callEl('call-local-video');
+            if(lv){ lv.srcObject = stream; lv.play().catch(function(){}); }
             _buildPeer(function(remoteStream){
-                var rv = _callEl('call-remote-video'); if(rv) rv.srcObject = remoteStream;
+                var rv = _callEl('call-remote-video');
+                var ra = _callEl('call-remote-audio');
+                if(_callMode === 'audio'){
+                    if(ra){ ra.srcObject = remoteStream; ra.play().catch(function(){}); }
+                } else {
+                    if(rv){ rv.srcObject = remoteStream; rv.play().catch(function(){}); }
+                }
             });
             _localStream.getTracks().forEach(function(t){ _peerConn.addTrack(t, _localStream); });
             return _peerConn.setRemoteDescription(new RTCSessionDescription(offerSdp));
         })
-        .then(function(){ return _peerConn.createAnswer(); })
+        .then(function(){
+            // Vider la file des candidats ICE qui sont arrivés pendant le ringing
+            _iceCandidateQueue.forEach(function(c){
+                _peerConn.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+            });
+            _iceCandidateQueue = [];
+            return _peerConn.createAnswer();
+        })
         .then(function(answer){ return _peerConn.setLocalDescription(answer).then(function(){ return answer; }); })
         .then(function(answer){
             chatSocket.send(JSON.stringify({ command:'call_answer', room:roomId, sdp:answer }));
@@ -2338,7 +2386,12 @@ window._CT = {
 
     /* ── Réception candidat ICE ──────────────────────────────── */
     function handleCallIce(data){
-        if(!_peerConn || !data.candidate) return;
+        if(!data.candidate) return;
+        if(!_peerConn){
+            // Callee pas encore accepté : mettre en file pour après acceptCall()
+            _iceCandidateQueue.push(data.candidate);
+            return;
+        }
         _peerConn.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(function(){});
     }
 
