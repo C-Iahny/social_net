@@ -502,6 +502,35 @@ main { padding: 0 !important; margin-top: 62px; }
 }
 .bazar-ref-close:hover { color: var(--text-primary); }
 
+/* ── Typing indicator ──────────────────────────────────────────── */
+#chat-typing-indicator {
+    display: none;
+    align-items: center;
+    gap: .45rem;
+    padding: .25rem max(1rem, calc((100% - 600px) / 2)) .1rem;
+    font-size: .78rem;
+    color: var(--text-muted);
+    min-height: 22px;
+}
+#chat-typing-indicator.visible { display: flex; }
+.typing-dots {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+}
+.typing-dots span {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: typingBounce 1.2s infinite ease-in-out;
+}
+.typing-dots span:nth-child(2) { animation-delay: .2s; }
+.typing-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+    30%            { transform: translateY(-4px); opacity: 1; }
+}
+
 /* ── Input bar ────────────────────────────────────────────────── */
 .chat-input-bar {
     /* Même centrage que le chat log */
@@ -783,6 +812,14 @@ main { padding: 0 !important; margin-top: 62px; }
                 </button>
             </div>
             {% endif %}
+
+            <!-- Typing indicator -->
+            <div id="chat-typing-indicator">
+                <div class="typing-dots">
+                    <span></span><span></span><span></span>
+                </div>
+                <span id="chat-typing-text">est en train d'écrire…</span>
+            </div>
 
             <!-- Input bar -->
             <div class="chat-input-bar">
@@ -1075,6 +1112,21 @@ function uploadAndSendFile(f){
         inputEl.focus();
     }
 
+    /* ── Typing indicator ──────────────────────────────────────── */
+    var _typingHideTimer = null;
+    function showTypingIndicator(username){
+        var el   = document.getElementById('chat-typing-indicator');
+        var txt  = document.getElementById('chat-typing-text');
+        if(!el) return;
+        if(txt) txt.textContent = (username || 'Quelqu\'un') + ' est en train d\'écrire…';
+        el.classList.add('visible');
+        // Auto-masquer après 3 secondes d'inactivité
+        clearTimeout(_typingHideTimer);
+        _typingHideTimer = setTimeout(function(){
+            el.classList.remove('visible');
+        }, 3000);
+    }
+
     /* ── Event listeners ───────────────────────────────────────── */
     document.addEventListener("DOMContentLoaded", function(){
         var submitBtn = document.getElementById('id_chat_message_submit');
@@ -1091,6 +1143,15 @@ function uploadAndSendFile(f){
                     e.preventDefault();
                     sendMessage();
                 }
+            });
+            // Typing indicator — envoi throttlé (max 1 fois / 2s)
+            var _typingThrottle = null;
+            inputEl.addEventListener('input', function(){
+                if(_typingThrottle) return;
+                if(chatSocket && chatSocket.readyState === WebSocket.OPEN && roomId){
+                    chatSocket.send(JSON.stringify({ "command": "typing", "room": roomId }));
+                }
+                _typingThrottle = setTimeout(function(){ _typingThrottle = null; }, 2000);
             });
         }
         // Initialisation : connecter automatiquement si une room est déjà connue
@@ -1135,6 +1196,7 @@ function uploadAndSendFile(f){
             if (data.msg_type == 0) { appendChatMessage(data, false, true) }
             if (data.msg_type == 1 || data.msg_type == 2) { appendChatMessage(data, false, true) }
             if (data.msg_type == 3) { appendFileMessage(data, false, true) }  // file
+            if (data.msg_type == 4) { showTypingIndicator(data.username) }   // typing
             if (data.messages_payload) { handleMessagesPayload(data.messages, data.new_page_number) }
         };
 
