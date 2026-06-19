@@ -533,39 +533,45 @@ main { padding: 0 !important; margin-top: 62px; }
 
 /* ── Input bar ────────────────────────────────────────────────── */
 .chat-input-bar {
-    padding-top: .6rem;
-    padding-bottom: .6rem;
-    padding-left:  max(1rem, calc((100% - 600px) / 2));
-    padding-right: max(1rem, calc((100% - 600px) / 2));
+    padding-top: .55rem;
+    padding-bottom: .55rem;
+    padding-left:  max(.85rem, calc((100% - 600px) / 2));
+    padding-right: max(.85rem, calc((100% - 600px) / 2));
     background: var(--bg-nav);
     backdrop-filter: blur(16px) saturate(160%);
     -webkit-backdrop-filter: blur(16px) saturate(160%);
     border-top: 1px solid var(--border);
     flex-shrink: 0;
 }
+
+/* Pill sombre teinté — même esprit que la hero search, couleurs du thème Vazimba */
 .chat-input-inner {
     display: flex;
     align-items: flex-end;
-    gap: .45rem;
-    background: var(--btn-bg);
-    border: 1.5px solid var(--border);
-    border-radius: 24px;
-    padding: .42rem .42rem .42rem .85rem;
-    transition: border-color .18s, box-shadow .18s;
+    gap: .4rem;
+    /* Brun sienna très sombre — cohérent avec --accent:#8B4513 (light) / D4AF37 (dark) */
+    background: rgba(42,14,3,.86);
+    border: none;
+    border-radius: 50px;
+    padding: .38rem .38rem .38rem 1.05rem;
+    transition: box-shadow .18s;
+}
+[data-theme="dark"] .chat-input-inner {
+    /* Mode nuit : teinte chaude profonde accordée à l'or */
+    background: rgba(25,8,2,.88);
 }
 .chat-input-inner:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow);
-    background: var(--btn-bg);
+    box-shadow: 0 0 0 2.5px var(--accent);
 }
+
 #id_chat_message_input {
     flex: 1;
-    background: none;
+    background: transparent;
     border: none;
     outline: none;
     resize: none;
-    font-size: .9rem;
-    color: var(--text);
+    font-size: .92rem;
+    color: #fff;
     max-height: 100px;
     min-height: 22px;
     height: 22px;
@@ -574,43 +580,50 @@ main { padding: 0 !important; margin-top: 62px; }
     padding: 0;
     font-family: inherit;
 }
-#id_chat_message_input::placeholder { color: var(--text-muted); opacity: .7; }
+/* Placeholder : blanc chaud, légèrement teinté de l'accent */
+#id_chat_message_input::placeholder      { color: rgba(235,200,170,.55); opacity: 1; }
+#id_chat_message_input::-moz-placeholder { color: rgba(235,200,170,.55); opacity: 1; }
 
-/* File attach button */
+/* Attach — icône crème doux sur fond sombre */
 .chat-attach-btn {
-    width: 32px; height: 32px;
+    width: 30px; height: 30px;
     border-radius: 50%;
     background: transparent;
-    color: var(--text-muted);
+    color: rgba(235,200,170,.6);
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    transition: color .15s, background .15s;
+    transition: color .15s;
 }
-.chat-attach-btn:hover  { color: var(--accent); background: var(--accent-glow); }
-.chat-attach-btn:active { transform: scale(.92); }
-.chat-attach-btn .material-icons { font-size: 1.15rem; }
+.chat-attach-btn:hover  { color: rgba(235,200,170,1); }
+.chat-attach-btn:active { transform: scale(.9); }
+.chat-attach-btn .material-icons { font-size: 1.1rem; }
 
+/* Bouton envoyer — pill crème/blanc avec couleur accent (même logique que "Rechercher") */
 .chat-send-btn {
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: .25rem;
+    background: #fff;
+    color: var(--accent);
+    border: none;
+    border-radius: 40px;
+    padding: .42rem .95rem;
+    font-weight: 700;
+    font-size: .82rem;
+    cursor: pointer;
     flex-shrink: 0;
-    transition: transform .15s, opacity .15s, box-shadow .15s;
-    box-shadow: 0 2px 8px var(--accent-glow);
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    white-space: nowrap;
 }
-.chat-send-btn:hover  { opacity: .88; transform: scale(1.06); }
-.chat-send-btn:active { transform: scale(.93); opacity: 1; }
+.chat-send-btn:hover  { transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,.22); }
+.chat-send-btn:active { transform: scale(.96); opacity: .9; }
 .chat-send-btn .material-icons { font-size: 1rem; }
+
 .input-hint {
     font-size: .69rem;
     color: var(--text-muted);
@@ -659,29 +672,18 @@ main { padding: 0 !important; margin-top: 62px; }
 
     /* ── Input bar mobile ──────────────────────────────── */
     .chat-input-bar {
-        padding: .5rem .8rem max(.6rem, env(safe-area-inset-bottom, .6rem));
+        padding: .5rem .75rem max(.6rem, env(safe-area-inset-bottom, .6rem));
         position: sticky;
         bottom: 0;
         z-index: 10;
-        /* Fond assoupli — fond dans la page */
-        background: var(--bg-nav);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-top: 1px solid var(--border);
-        box-shadow: 0 -3px 16px rgba(0,0,0,.06);
     }
     .chat-input-inner {
-        border-radius: 26px;
-        padding: .55rem .45rem .55rem .95rem;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        box-shadow: 0 1px 4px rgba(0,0,0,.06);
+        border-radius: 50px;
+        padding: .5rem .42rem .5rem 1rem;
     }
-    /* Sur mobile, pas de ring coloré sur focus — juste le curseur */
+    /* Sur mobile pas de ring focus — le clavier suffit comme signal */
     .chat-input-inner:focus-within {
-        border-color: var(--border);
-        box-shadow: 0 1px 6px rgba(0,0,0,.1);
-        background: var(--bg-card);
+        box-shadow: none;
     }
     #id_chat_message_input {
         font-size: 1rem;   /* évite le zoom auto sur iOS (≥16px) */
@@ -689,12 +691,14 @@ main { padding: 0 !important; margin-top: 62px; }
         max-height: 120px;
     }
     .chat-attach-btn {
-        width: 34px; height: 34px;
-        color: var(--text-muted);
+        width: 32px; height: 32px;
     }
     .chat-send-btn {
-        width: 36px; height: 36px;
+        padding: .44rem .82rem;
+        font-size: .78rem;
     }
+    /* Cacher le texte "Envoyer" sur mobile — garder juste l'icône */
+    .send-btn-label { display: none; }
     /* Le hint clavier est inutile sur mobile */
     .input-hint { display: none; }
 }
@@ -849,6 +853,7 @@ main { padding: 0 !important; margin-top: 62px; }
                               enterkeyhint="send"></textarea>
                     <button type="button" id="id_chat_message_submit" class="chat-send-btn" title="Envoyer (Entrée)">
                         <span class="material-icons">send</span>
+                        <span class="send-btn-label">Envoyer</span>
                     </button>
                 </div>
                 <div class="input-hint">Entrée pour envoyer · Maj+Entrée pour aller à la ligne</div>
