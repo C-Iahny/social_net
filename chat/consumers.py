@@ -71,6 +71,21 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				else:
 					raise ClientError(204, "Something went wrong retrieving the other users account details.")
 				await self.display_progress_bar(False)
+			elif command == "typing":
+				# Broadcast "typing" indicator to everyone else in the room
+				if self.room_id:
+					try:
+						room = await get_room_or_error(self.room_id, self.scope["user"])
+						await self.channel_layer.group_send(
+							room.group_name,
+							{
+								"type": "chat.typing",
+								"username": self.scope["user"].username,
+								"user_id":  self.scope["user"].id,
+							}
+						)
+					except Exception:
+						pass
 			elif command == "send_file":
 				# The file was already saved to DB by the HTTP upload view.
 				# We just need to broadcast it to the room group.
@@ -329,6 +344,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			"file_type":       event["file_type"],
 			"natural_timestamp": timestamp,
 			"msg_id":          event.get("msg_id"),
+		})
+
+	async def chat_typing(self, event):
+		"""Broadcast typing indicator — skip the typer themselves."""
+		if event.get("user_id") == self.scope["user"].id:
+			return
+		await self.send_json({
+			"msg_type": MSG_TYPE_TYPING,
+			"username": event["username"],
+			"user_id":  event["user_id"],
 		})
 
 	async def send_messages_payload(self, messages, new_page_number):
