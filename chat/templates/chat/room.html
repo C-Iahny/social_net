@@ -7,13 +7,26 @@
 
 <style>
 /* ── Reset & layout full-height ─────────────────────────────── */
-/* Bloquer le scroll de page au niveau du body — seul #id_chat_log doit défiler */
-html, body { overflow: hidden !important; }
-main {
-    padding: 0 !important;
-    margin-top: 62px;
-    overflow: hidden !important;
-    height: calc(100vh - 62px) !important;
+/* Desktop uniquement : bloquer le scroll page — seul #id_chat_log doit défiler */
+@media (min-width: 769px) {
+    html, body { overflow: hidden !important; }
+    main {
+        padding: 0 !important;
+        margin-top: 62px;
+        overflow: hidden !important;
+        height: calc(100vh - 62px) !important;
+    }
+}
+/* Mobile : gérer la bottom nav (58px) et laisser le browser contrôler le scroll */
+@media (max-width: 768px) {
+    html, body { overflow: hidden !important; }
+    main {
+        padding: 0 !important;
+        margin-top: 62px !important;
+        overflow: hidden !important;
+        /* Exclure la top navbar (62px) ET la bottom nav (58px) */
+        height: calc(100vh - 62px - 58px) !important;
+    }
 }
 
 .chat-page {
