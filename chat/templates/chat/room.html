@@ -1420,43 +1420,43 @@ function uploadAndSendFile(f){
 
 <!-- ── Traductions JS (injectées par Django) ──────────────────── -->
 <script>
-{% trans "Appel audio en cours…" as _ct_calling_audio %}
-{% trans "Appel vidéo en cours…" as _ct_calling_video %}
-{% trans "Appel audio entrant" as _ct_inc_audio %}
-{% trans "Appel vidéo entrant" as _ct_inc_video %}
-{% trans "Appel refusé." as _ct_call_rejected %}
-{% trans "Appel terminé —" as _ct_call_ended %}
-{% trans "Appel manqué." as _ct_call_missed %}
-{% trans "Appel interrompu." as _ct_call_interrupt %}
-{% trans "Un appel est déjà en cours." as _ct_call_busy %}
-{% trans "Ouvrez d'abord une conversation." as _ct_call_no_room %}
-{% trans "Impossible d'accéder au micro." as _ct_no_mic %}
-{% trans "Impossible d'accéder au micro / caméra." as _ct_no_mic_cam %}
-{% trans "Aujourd'hui" as _ct_today %}
-{% trans "Hier" as _ct_yesterday %}
-{% trans "est en train d'écrire…" as _ct_typing_sfx %}
-{% trans "Quelqu'un" as _ct_typing_who %}
-{% trans "Télécharger" as _ct_dl %}
-{% trans "Connexion perdue. Rechargement…" as _ct_conn_lost %}
+{% trans "Appel audio en cours…" as ct_calling_audio %}
+{% trans "Appel vidéo en cours…" as ct_calling_video %}
+{% trans "Appel audio entrant" as ct_inc_audio %}
+{% trans "Appel vidéo entrant" as ct_inc_video %}
+{% trans "Appel refusé." as ct_call_rejected %}
+{% trans "Appel terminé —" as ct_call_ended %}
+{% trans "Appel manqué." as ct_call_missed %}
+{% trans "Appel interrompu." as ct_call_interrupt %}
+{% trans "Un appel est déjà en cours." as ct_call_busy %}
+{% trans "Ouvrez d'abord une conversation." as ct_call_no_room %}
+{% trans "Impossible d'accéder au micro." as ct_no_mic %}
+{% trans "Impossible d'accéder au micro / caméra." as ct_no_mic_cam %}
+{% trans "Aujourd'hui" as ct_today %}
+{% trans "Hier" as ct_yesterday %}
+{% trans "est en train d'écrire…" as ct_typing_sfx %}
+{% trans "Quelqu'un" as ct_typing_who %}
+{% trans "Télécharger" as ct_dl %}
+{% trans "Connexion perdue. Rechargement…" as ct_conn_lost %}
 window._CT = {
-  calling_audio:  "{{ _ct_calling_audio|escapejs }}",
-  calling_video:  "{{ _ct_calling_video|escapejs }}",
-  inc_audio:      "{{ _ct_inc_audio|escapejs }}",
-  inc_video:      "{{ _ct_inc_video|escapejs }}",
-  call_rejected:  "{{ _ct_call_rejected|escapejs }}",
-  call_ended:     "{{ _ct_call_ended|escapejs }}",
-  call_missed:    "{{ _ct_call_missed|escapejs }}",
-  call_interrupt: "{{ _ct_call_interrupt|escapejs }}",
-  call_busy:      "{{ _ct_call_busy|escapejs }}",
-  call_no_room:   "{{ _ct_call_no_room|escapejs }}",
-  no_mic:         "{{ _ct_no_mic|escapejs }}",
-  no_mic_cam:     "{{ _ct_no_mic_cam|escapejs }}",
-  today:          "{{ _ct_today|escapejs }}",
-  yesterday:      "{{ _ct_yesterday|escapejs }}",
-  typing_sfx:     "{{ _ct_typing_sfx|escapejs }}",
-  typing_who:     "{{ _ct_typing_who|escapejs }}",
-  dl:             "{{ _ct_dl|escapejs }}",
-  conn_lost:      "{{ _ct_conn_lost|escapejs }}",
+  calling_audio:  "{{ ct_calling_audio|escapejs }}",
+  calling_video:  "{{ ct_calling_video|escapejs }}",
+  inc_audio:      "{{ ct_inc_audio|escapejs }}",
+  inc_video:      "{{ ct_inc_video|escapejs }}",
+  call_rejected:  "{{ ct_call_rejected|escapejs }}",
+  call_ended:     "{{ ct_call_ended|escapejs }}",
+  call_missed:    "{{ ct_call_missed|escapejs }}",
+  call_interrupt: "{{ ct_call_interrupt|escapejs }}",
+  call_busy:      "{{ ct_call_busy|escapejs }}",
+  call_no_room:   "{{ ct_call_no_room|escapejs }}",
+  no_mic:         "{{ ct_no_mic|escapejs }}",
+  no_mic_cam:     "{{ ct_no_mic_cam|escapejs }}",
+  today:          "{{ ct_today|escapejs }}",
+  yesterday:      "{{ ct_yesterday|escapejs }}",
+  typing_sfx:     "{{ ct_typing_sfx|escapejs }}",
+  typing_who:     "{{ ct_typing_who|escapejs }}",
+  dl:             "{{ ct_dl|escapejs }}",
+  conn_lost:      "{{ ct_conn_lost|escapejs }}",
 };
 </script>
 
