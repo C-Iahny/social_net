@@ -17,15 +17,22 @@
         height: calc(100vh - 62px) !important;
     }
 }
-/* Mobile : gérer la bottom nav (58px) et laisser le browser contrôler le scroll */
+/* Mobile : bloquer le scroll iOS (body:fixed empêche le scroll du doc quand le clavier apparaît)
+   dvh = dynamic viewport height = exclut la chrome Safari en bas (← ↑ 📖 ⊓) */
 @media (max-width: 768px) {
-    html, body { overflow: hidden !important; }
+    html, body {
+        overflow: hidden !important;
+        position: fixed !important;   /* Empêche le scroll iOS au focus du textarea */
+        width: 100% !important;
+        height: 100% !important;
+    }
     main {
         padding: 0 !important;
         margin-top: 62px !important;
         overflow: hidden !important;
-        /* Exclure la top navbar (62px) ET la bottom nav (58px) */
-        height: calc(100vh - 62px - 58px) !important;
+        /* dvh (iOS 15.4+) exclut la barre Chrome du navigateur — boutons visibles */
+        height: calc(100vh  - 62px - 58px) !important; /* fallback */
+        height: calc(100dvh - 62px - 58px) !important; /* dynamique, prend en compte la chrome */
     }
 }
 
@@ -986,8 +993,9 @@
     /* ── Input bar mobile ──────────────────────────────── */
     .chat-input-bar {
         padding: .5rem .75rem max(.6rem, env(safe-area-inset-bottom, .6rem));
-        position: sticky;
-        bottom: 0;
+        /* Pas de sticky : body:fixed empêche tout scroll iOS,
+           l'input reste naturellement en bas du flex column */
+        position: relative;
         z-index: 10;
     }
     .chat-input-inner {
@@ -2210,19 +2218,19 @@ window._CT = {
         _startTimer();
         var rv  = _callEl('call-remote-video');
         var lv  = _callEl('call-local-video');
-        var ra  = _callEl('call-remote-audio');
         var bg  = _callEl('call-audio-bg');
         var cw  = _callEl('call-cam-wrap');
         if(_callMode === 'audio'){
-            // Mode audio : cacher la vidéo, audio passe par <audio> dédié
-            if(rv) rv.style.display = 'none';
+            /* Mode audio : rv est display:block (set par le callback ontrack)
+               mais on cache le fond noir — avatar visible via call-audio-bg.
+               rv reste affiché avec display:block pour que l'audio iOS sorte
+               par le haut-parleur (pas l'oreillette comme avec <audio>). */
+            if(rv && !rv.srcObject) rv.style.display = 'none'; /* avant ontrack */
             if(lv) lv.style.display = 'none';
             if(bg) bg.style.display = 'flex';
             if(cw) cw.style.display = 'none';
-            // Lancer l'audio si srcObject déjà défini
-            if(ra && ra.srcObject) ra.play().catch(function(){});
         } else {
-            // Mode vidéo : afficher les éléments vidéo et forcer la lecture
+            /* Mode vidéo : forcer display:block + relancer play() si srcObject prêt */
             if(rv){ rv.style.display = 'block'; if(rv.srcObject) rv.play().catch(function(){}); }
             if(lv){ lv.style.display = 'block'; if(lv.srcObject) lv.play().catch(function(){}); }
             if(bg) bg.style.display = 'none';
@@ -2283,16 +2291,19 @@ window._CT = {
             _buildPeer(function(remoteStream){
                 // La piste distante arrive → on passe en mode actif
                 var rv = _callEl('call-remote-video');
-                var ra = _callEl('call-remote-audio');
-                if(_callMode === 'audio'){
-                    // Mode audio : router vers l'élément <audio> (evite le bug display:none sur iOS)
-                    if(ra){ ra.srcObject = remoteStream; ra.play().catch(function(){}); }
-                } else {
-                    // Mode vidéo : router vers <video>
-                    if(rv){ rv.srcObject = remoteStream; rv.play().catch(function(){}); }
+                /* Toujours router via <video> — audio ET vidéo.
+                   iOS route <video> → haut-parleur, <audio> → oreillette. */
+                if(rv){
+                    rv.srcObject = remoteStream;
+                    rv.style.display = 'block'; /* display:block AVANT play() — requis iOS */
+                    rv.play().catch(function(){});
                 }
                 var lv = _callEl('call-local-video');
-                if(lv){ lv.srcObject = _localStream; lv.play().catch(function(){}); }
+                if(lv){
+                    lv.style.display = 'block';
+                    lv.srcObject = _localStream;
+                    lv.play().catch(function(){});
+                }
                 _callState = 'active';
                 _activateCallUI();
             });
@@ -2351,15 +2362,21 @@ window._CT = {
         navigator.mediaDevices.getUserMedia(constraints)
         .then(function(stream){
             _localStream = stream;
+            /* Vidéo locale — display:block avant play() */
             var lv = _callEl('call-local-video');
-            if(lv){ lv.srcObject = stream; lv.play().catch(function(){}); }
+            if(lv && _callMode === 'video'){
+                lv.style.display = 'block';
+                lv.srcObject = stream;
+                lv.play().catch(function(){});
+            }
             _buildPeer(function(remoteStream){
                 var rv = _callEl('call-remote-video');
-                var ra = _callEl('call-remote-audio');
-                if(_callMode === 'audio'){
-                    if(ra){ ra.srcObject = remoteStream; ra.play().catch(function(){}); }
-                } else {
-                    if(rv){ rv.srcObject = remoteStream; rv.play().catch(function(){}); }
+                /* Toujours router le stream distant vers <video> (même en mode audio).
+                   Sur iOS, <video> → haut-parleur ; <audio> → oreillette par défaut. */
+                if(rv){
+                    rv.srcObject = remoteStream;
+                    rv.style.display = 'block'; /* display:block AVANT play() */
+                    rv.play().catch(function(){});
                 }
             });
             _localStream.getTracks().forEach(function(t){ _peerConn.addTrack(t, _localStream); });
