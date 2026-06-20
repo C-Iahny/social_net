@@ -816,8 +816,9 @@
 .chat-main { position: relative; }
 
 .call-overlay {
-    /* fixed = plein écran total, indépendant du scroll et des nav bars */
-    position: fixed;
+    /* absolute positionné par rapport à .chat-main { position:relative }
+       position:fixed cassait la barre de saisie sur iOS Safari */
+    position: absolute;
     inset: 0;
     z-index: 9999;
     display: none; /* affiché via JS */
@@ -2404,7 +2405,16 @@ window._CT = {
     /* ── Réception réponse SDP ───────────────────────────────── */
     function handleCallAnswer(data){
         if(!_peerConn || _callState !== 'calling') return;
-        _peerConn.setRemoteDescription(new RTCSessionDescription(data.sdp)).catch(function(e){
+        _peerConn.setRemoteDescription(new RTCSessionDescription(data.sdp))
+        .then(function(){
+            /* Vider la file des candidats ICE de l'appelé
+               qui sont arrivés avant la réponse SDP */
+            _iceCandidateQueue.forEach(function(c){
+                _peerConn.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+            });
+            _iceCandidateQueue = [];
+        })
+        .catch(function(e){
             console.error('handleCallAnswer:', e);
         });
     }
@@ -2412,8 +2422,10 @@ window._CT = {
     /* ── Réception candidat ICE ──────────────────────────────── */
     function handleCallIce(data){
         if(!data.candidate) return;
-        if(!_peerConn){
-            // Callee pas encore accepté : mettre en file pour après acceptCall()
+        /* Mettre en file si :
+           - _peerConn n'existe pas encore (callee avant acceptCall)
+           - ou remoteDescription pas encore définie (caller avant handleCallAnswer) */
+        if(!_peerConn || !_peerConn.remoteDescription){
             _iceCandidateQueue.push(data.candidate);
             return;
         }
