@@ -816,9 +816,10 @@
 .chat-main { position: relative; }
 
 .call-overlay {
-    position: absolute;
+    /* fixed = plein écran total, indépendant du scroll et des nav bars */
+    position: fixed;
     inset: 0;
-    z-index: 200;
+    z-index: 9999;
     display: none; /* affiché via JS */
     flex-direction: column;
     align-items: center;
@@ -901,10 +902,12 @@
 .call-audio-bg .call-avatar-ring { width: 120px; height: 120px; }
 .call-audio-bg .call-avatar-circle { width: 100px; height: 100px; font-size: 38px; }
 
-/* Fenêtre locale (coin sup. droit) */
+/* Fenêtre locale (coin sup. droit) — dans overlay fixed */
 .call-local-video {
     position: absolute;
-    top: 14px; right: 14px;
+    /* top = dessous de la barre notch/status bar iOS */
+    top: max(14px, env(safe-area-inset-top, 14px));
+    right: 14px;
     width: 88px; height: 124px;
     border-radius: 12px;
     object-fit: cover;
@@ -913,24 +916,17 @@
     z-index: 10;
     box-shadow: 0 4px 16px rgba(0,0,0,.5);
 }
-/* Contrôles en bas */
+/* Contrôles en bas de l'overlay plein-écran */
 .call-controls-wrap {
     position: absolute;
-    bottom: 28px; left: 0; right: 0;
+    bottom: 0; left: 0; right: 0;
     z-index: 20;
     display: flex; flex-direction: column;
     align-items: center; gap: 14px;
-    /* Dégradé pour lisibilité des boutons sur fond sombre */
-    background: linear-gradient(to top, rgba(0,0,0,.72) 0%, transparent 100%);
-    padding-bottom: 20px;
-    padding-top: 48px;
-}
-@media (max-width: 768px) {
-    .call-controls-wrap {
-        /* safe-area iOS en bas + barre nav (cas edge) */
-        bottom: max(14px, env(safe-area-inset-bottom, 0px));
-        padding-bottom: 14px;
-    }
+    background: linear-gradient(to top, rgba(0,0,0,.85) 0%, transparent 100%);
+    padding-top: 52px;
+    /* Respecter la safe-area iOS (barre home) */
+    padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
 }
 .call-timer {
     font-size: .9rem; font-weight: 700;
@@ -2098,11 +2094,20 @@ window._CT = {
     var _callPeerInfo = { name: '', img: '' };  // infos de l'interlocuteur
     var _iceCandidateQueue = [];  // candidats ICE reçus avant que _peerConn soit prêt
 
-    // STUN servers Google (gratuits, marche partout)
+    // STUN + TURN servers (TURN indispensable sur 5G/CGNAT/NAT symétrique)
     var _ICE = { iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' }
+        // TURN relais public — nécessaire quand STUN seul ne suffit pas
+        {
+            urls: [
+                'turn:openrelay.metered.ca:80',
+                'turn:openrelay.metered.ca:443',
+                'turn:openrelay.metered.ca:443?transport=tcp'
+            ],
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        }
     ]};
 
     function _callEl(id){ return document.getElementById(id); }
