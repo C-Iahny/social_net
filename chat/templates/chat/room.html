@@ -1718,6 +1718,7 @@ window._CT = {
             if (data.msg_type == 7) { handleCallIce(data); }
             if (data.msg_type == 8) { console.log('[CALL] rejeté'); handleCallReject(); }
             if (data.msg_type == 9) { console.log('[CALL] terminé'); handleCallEnd(); }
+            if (data.msg_type == 10){ updateUnreadBadge(data.from_user_id, data.count); }
             if (data.messages_payload) { handleMessagesPayload(data.messages, data.new_page_number) }
         };
 
@@ -2087,6 +2088,24 @@ window._CT = {
         var prev = activeEl.querySelector('.friend-preview');
         if(prev && msgText) prev.textContent = (msgText||'').substring(0,30);
         // Pas de badge si la conv est active (utilisateur est en train de lire)
+    }
+
+    /* Met à jour le badge d'un ami en temps-réel (msg_type 10) */
+    function updateUnreadBadge(fromUserId, count){
+        // Ne pas afficher le badge si c'est la conv active
+        var activeEl = document.querySelector('.friend-container.active');
+        if(activeEl && activeEl.id === 'id_friend_container_' + fromUserId) return;
+        var el = document.getElementById('id_friend_container_' + fromUserId);
+        if(!el) return;
+        var badge = el.querySelector('.friend-unread');
+        if(!badge) return;
+        if(count > 0){
+            badge.textContent = count;
+            badge.classList.add('has-unread');
+        } else {
+            badge.textContent = '';
+            badge.classList.remove('has-unread');
+        }
     }
 
     /* Effacer le badge quand l'utilisateur sélectionne un ami */
