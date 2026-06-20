@@ -920,13 +920,13 @@
 .call-controls-wrap {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    z-index: 20;
+    z-index: 30;
     display: flex; flex-direction: column;
-    align-items: center; gap: 14px;
-    background: linear-gradient(to top, rgba(0,0,0,.85) 0%, transparent 100%);
-    padding-top: 52px;
-    /* Respecter la safe-area iOS (barre home) */
-    padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
+    align-items: center; gap: 16px;
+    background: linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.6) 60%, transparent 100%);
+    padding-top: 60px;
+    padding-bottom: 40px; /* fallback */
+    padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); /* safe area iOS */
 }
 .call-timer {
     font-size: .9rem; font-weight: 700;
@@ -935,25 +935,27 @@
     padding: 3px 16px; border-radius: 20px;
     letter-spacing: .06em;
 }
-.call-ctrl-row { display: flex; gap: 20px; align-items: center; }
+.call-ctrl-row { display: flex; gap: 24px; align-items: center; }
 .call-ctrl-btn {
-    width: 58px; height: 58px;
-    border-radius: 50%; border: none;
-    background: rgba(255,255,255,.28);
+    width: 62px; height: 62px;
+    border-radius: 50%; border: 2px solid rgba(255,255,255,.5);
+    background: rgba(80,80,80,.95);  /* solide, clairement visible */
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: background .15s;
-    box-shadow: 0 2px 12px rgba(0,0,0,.45);
+    box-shadow: 0 4px 20px rgba(0,0,0,.7);
+    -webkit-tap-highlight-color: transparent;
 }
-.call-ctrl-btn:hover  { background: rgba(255,255,255,.40); }
-.call-ctrl-btn.active { background: rgba(255,255,255,.55); }
-.call-ctrl-btn .material-icons { font-size: 1.5rem; color: #fff; }
+.call-ctrl-btn:active { background: rgba(120,120,120,.95); }
+.call-ctrl-btn.active { background: rgba(220,50,50,.9); border-color: rgba(255,100,100,.6); }
+.call-ctrl-btn .material-icons { font-size: 1.6rem; color: #fff; }
 .call-ctrl-hangup {
-    width: 68px; height: 68px;
-    background: #e53935 !important;
+    width: 72px; height: 72px;
+    background: #d32f2f !important;
+    border-color: rgba(255,150,150,.5) !important;
 }
-.call-ctrl-hangup:hover { filter: brightness(1.1); }
-.call-ctrl-hangup .material-icons { font-size: 1.7rem; }
+.call-ctrl-hangup:active { background: #b71c1c !important; }
+.call-ctrl-hangup .material-icons { font-size: 1.8rem; }
 
 /* Label sous chaque bouton de contrôle */
 .call-ctrl-lbl {
@@ -2248,6 +2250,18 @@ window._CT = {
         }
         _callMode  = mode || 'video';
         _callState = 'calling';
+
+        /* ── PRÉ-DÉVERROUILLAGE iOS Safari ───────────────────────────
+           iOS bloque play() si appelé hors contexte user-gesture.
+           On appelle play() ICI (pendant le clic) sur les éléments média
+           AVANT toute opération async — ça "déverrouille" l'autoplay.
+           L'appel échoue (pas de src) mais iOS autorise ensuite tous les
+           play() ultérieurs même depuis des callbacks WebSocket / ontrack.
+        ─────────────────────────────────────────────────────────────── */
+        ['call-remote-video','call-local-video','call-remote-audio'].forEach(function(id){
+            var el = _callEl(id);
+            if(el) el.play().catch(function(){});
+        });
         _callFillPeer(_callPeerInfo.name, _callPeerInfo.img);
         var statusEl = _callEl('call-out-status');
         if(statusEl) statusEl.textContent = (_callMode==='audio') ? (_CT ? _CT.calling_audio : 'Appel audio en cours…') : (_CT ? _CT.calling_video : 'Appel vidéo en cours…');
@@ -2322,6 +2336,12 @@ window._CT = {
         if(_callState !== 'ringing' || !_pendOffer) return;
         _callState = 'active';
         var offerSdp = _pendOffer; _pendOffer = null;
+
+        /* ── PRÉ-DÉVERROUILLAGE iOS Safari (même raison que dans startCall) ── */
+        ['call-remote-video','call-local-video','call-remote-audio'].forEach(function(id){
+            var el = _callEl(id);
+            if(el) el.play().catch(function(){});
+        });
 
         var constraints = (_callMode === 'audio')
             ? { audio: true, video: false }
