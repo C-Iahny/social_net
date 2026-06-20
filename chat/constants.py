@@ -12,3 +12,6 @@ MSG_TYPE_CALL_ANSWER = 6  # Callee → Caller  (SDP answer)
 MSG_TYPE_CALL_ICE    = 7  # Either side       (ICE candidate)
 MSG_TYPE_CALL_REJECT = 8  # Callee refused
 MSG_TYPE_CALL_END    = 9  # Either side hung up
+
+# Badge non-lu temps-réel
+MSG_TYPE_UNREAD_NOTIF = 10  # Notification badge non-lu → sidebar

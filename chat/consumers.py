@@ -315,6 +315,22 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			}
 		)
 
+		# ── Badge non-lu temps-réel ──────────────────────────────────
+		# Si le destinataire n'est pas dans cette room, notifier son groupe
+		# personnel pour mettre à jour le badge dans la sidebar en live.
+		other = room.user1 if room.user2.id == self.scope["user"].id else room.user2
+		if other not in connected_users:
+			unread_count = await get_unread_count(room, other)
+			await self.channel_layer.group_send(
+				f"user_{other.id}",
+				{
+					"type":         "chat.unread_notif",
+					"msg_type":     MSG_TYPE_UNREAD_NOTIF,
+					"from_user_id": self.scope["user"].id,
+					"count":        unread_count,
+				}
+			)
+
 
 	async def send_file_room(self, room_id, msg_id, file_url, file_name, file_type):
 		"""
@@ -347,6 +363,20 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				"file_type":     file_type,
 			}
 		)
+
+		# Badge non-lu temps-réel (même logique que send_room)
+		other = room.user1 if room.user2.id == self.scope["user"].id else room.user2
+		if other not in connected_users:
+			unread_count = await get_unread_count(room, other)
+			await self.channel_layer.group_send(
+				f"user_{other.id}",
+				{
+					"type":         "chat.unread_notif",
+					"msg_type":     MSG_TYPE_UNREAD_NOTIF,
+					"from_user_id": self.scope["user"].id,
+					"count":        unread_count,
+				}
+			)
 
 	# These helper methods are named by the types we send - so chat.join becomes chat_join
 	async def chat_join(self, event):
@@ -437,6 +467,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			self.call_peer_id = None
 		await self.send_json(event)
 		print(f"[CALL] chat_call: send_json OK")
+
+	async def chat_unread_notif(self, event):
+		"""Notification badge non-lu temps-réel via le groupe personnel."""
+		await self.send_json({
+			"msg_type":     MSG_TYPE_UNREAD_NOTIF,
+			"from_user_id": event["from_user_id"],
+			"count":        event["count"],
+		})
 
 	async def chat_typing(self, event):
 		"""Broadcast typing indicator — skip the typer themselves."""
@@ -597,6 +635,15 @@ def disconnect_user(room, user):
 	# remove from connected_users list
 	account = Account.objects.get(pk=user.id)
 	return room.disconnect_user(account)
+
+
+@database_sync_to_async
+def get_unread_count(room, user):
+	"""Retourne le compteur non-lu actuel pour (room, user)."""
+	try:
+		return UnreadChatRoomMessages.objects.get(room=room, user=user).count
+	except UnreadChatRoomMessages.DoesNotExist:
+		return 0
 
 
 # If the user is not connected to the chat, increment "unread messages" count
