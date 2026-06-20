@@ -945,6 +945,13 @@
     padding: 3px 16px; border-radius: 20px;
     letter-spacing: .06em;
 }
+.call-ice-status {
+    font-size: .72rem; font-weight: 600;
+    color: #ff9800;
+    min-height: 1.1em;
+    text-shadow: 0 1px 4px rgba(0,0,0,.8);
+    letter-spacing: .02em;
+}
 .call-ctrl-row { display: flex; gap: 24px; align-items: center; }
 .call-ctrl-btn {
     width: 62px; height: 62px;
@@ -1248,9 +1255,10 @@
         <!-- ── Overlay appel ACTIF ─────────────────────────────── -->
         <div class="call-overlay" id="call-active-overlay">
             <!-- Vidéo distante (plein fond) — masquée en mode audio -->
-            <video id="call-remote-video" autoplay playsinline class="call-remote-video"></video>
+            <!-- call-remote-video : pas d'autoplay attr — on contrôle via JS (muted→play→unmute) -->
+            <video id="call-remote-video" playsinline class="call-remote-video"></video>
             <!-- Audio dédié pour les appels audio (video display:none bloque l'audio sur iOS) -->
-            <audio id="call-remote-audio" autoplay playsinline style="display:none;"></audio>
+            <audio id="call-remote-audio" playsinline style="display:none;"></audio>
             <!-- Fond audio : avatar centré (affiché à la place de la vidéo) -->
             <div class="call-audio-bg" id="call-audio-bg">
                 <div class="call-avatar-ring">
@@ -1265,6 +1273,8 @@
             <!-- Contrôles -->
             <div class="call-controls-wrap">
                 <div id="call-timer" class="call-timer">00:00</div>
+                <!-- Indicateur état ICE (connexion réseau) — utile pour diagnostiquer -->
+                <div id="call-ice-status" class="call-ice-status"></div>
                 <div class="call-ctrl-row">
                     <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
                         <button class="call-ctrl-btn" id="call-btn-mic" onclick="toggleMic()" title="{% trans 'Micro' %}">
@@ -2145,16 +2155,29 @@ window._CT = {
     var _callPeerInfo = { name: '', img: '' };  // infos de l'interlocuteur
     var _iceCandidateQueue = [];  // candidats ICE reçus avant que _peerConn soit prêt
 
-    // STUN + TURN servers (TURN indispensable sur 5G/CGNAT/NAT symétrique)
+    // STUN + TURN servers — plusieurs STUN pour maximiser les chances
+    // TURN indispensable sur 5G / CGNAT / NAT symétrique
     var _ICE = { iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        // TURN relais public — nécessaire quand STUN seul ne suffit pas
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+        { urls: 'stun:stun.cloudflare.com:3478' },
+        // numb.viagenie.ca — TURN public fiable (fallback UDP + TCP)
         {
             urls: [
-                'turn:openrelay.metered.ca:80',
-                'turn:openrelay.metered.ca:443',
-                'turn:openrelay.metered.ca:443?transport=tcp'
+                'turn:numb.viagenie.ca',
+                'turn:numb.viagenie.ca:3478?transport=tcp'
+            ],
+            username: 'webrtc@live.com',
+            credential: 'muazkh'
+        },
+        // openrelay — conservé en dernier recours
+        {
+            urls: [
+                'turn:openrelay.metered.ca:443?transport=tcp',
+                'turn:openrelay.metered.ca:80'
             ],
             username: 'openrelayproject',
             credential: 'openrelayproject'
@@ -2241,38 +2264,72 @@ window._CT = {
             onRemoteStream(stream);
         };
         _peerConn.oniceconnectionstatechange = function(){
-            console.log('[CALL] ICE state:', _peerConn && _peerConn.iceConnectionState);
+            var state = _peerConn && _peerConn.iceConnectionState;
+            console.log('[CALL] ICE state:', state);
+            // Mettre à jour l'indicateur visible dans l'overlay
+            var iceEl = document.getElementById('call-ice-status');
+            if(iceEl){
+                var _iceLabels = {
+                    'new':          '',
+                    'checking':     'Connexion en cours…',
+                    'connected':    '✓ Connecté',
+                    'completed':    '✓ Connecté',
+                    'disconnected': '⟳ Reconnexion…',
+                    'failed':       '✗ Échec réseau',
+                    'closed':       ''
+                };
+                iceEl.textContent = _iceLabels[state] || state;
+                iceEl.style.color = (state==='connected'||state==='completed') ? '#4caf50'
+                                  : (state==='failed')                          ? '#f44336'
+                                  : '#ff9800';
+            }
+            if(state === 'failed'){
+                // Court délai pour ne pas raccrocher sur un échec transitoire
+                var pc = _peerConn;
+                setTimeout(function(){
+                    if(pc && pc.iceConnectionState === 'failed'){
+                        _appendSysMsg('Échec de connexion réseau. Vérifiez votre connexion et réessayez.');
+                        _callCleanup(false);
+                    }
+                }, 3000);
+            }
         };
         _peerConn.onconnectionstatechange = function(){
-            console.log('[CALL] Connection state:', _peerConn && _peerConn.connectionState);
-            if(_peerConn && (_peerConn.connectionState==='disconnected'||_peerConn.connectionState==='failed')){
+            var state = _peerConn && _peerConn.connectionState;
+            console.log('[CALL] Connection state:', state);
+            if(_peerConn && (state==='disconnected'||state==='failed')){
                 _callCleanup(false);
                 _appendSysMsg(_CT ? _CT.call_interrupt : 'Appel interrompu.');
             }
         };
     }
 
-    /* Configurer l'overlay appel actif selon le mode */
+    /* Configurer l'overlay appel actif selon le mode.
+       NOTE : on ne rappelle PAS play() ici — c'est le callback onRemoteStream
+       qui appelle play() avec le pattern muted→play→unmute pour éviter les
+       blocages autoplay iOS. */
     function _activateCallUI(){
         _showOverlay('call-active-overlay');
         _startTimer();
+        // Réinitialiser le statut ICE (sera mis à jour par oniceconnectionstatechange)
+        var iceEl = document.getElementById('call-ice-status');
+        if(iceEl){ iceEl.textContent = 'Connexion en cours…'; iceEl.style.color = '#ff9800'; }
         var rv  = _callEl('call-remote-video');
         var lv  = _callEl('call-local-video');
         var bg  = _callEl('call-audio-bg');
         var cw  = _callEl('call-cam-wrap');
         if(_callMode === 'audio'){
-            /* Mode audio : rv est display:block (set par le callback ontrack)
-               mais on cache le fond noir — avatar visible via call-audio-bg.
-               rv reste affiché avec display:block pour que l'audio iOS sorte
-               par le haut-parleur (pas l'oreillette comme avec <audio>). */
-            if(rv && !rv.srcObject) rv.style.display = 'none'; /* avant ontrack */
+            /* Mode audio : rv caché initialement (affiché par onRemoteStream si srcObject arrivé)
+               Fond audio : avatar centré visible */
+            if(rv && !rv.srcObject) rv.style.display = 'none';
             if(lv) lv.style.display = 'none';
             if(bg) bg.style.display = 'flex';
             if(cw) cw.style.display = 'none';
         } else {
-            /* Mode vidéo : forcer display:block + relancer play() si srcObject prêt */
-            if(rv){ rv.style.display = 'block'; if(rv.srcObject) rv.play().catch(function(){}); }
-            if(lv){ lv.style.display = 'block'; if(lv.srcObject) lv.play().catch(function(){}); }
+            /* Mode vidéo : display:block pour les deux vidéos
+               play() sera appelé par onRemoteStream quand le stream arrive */
+            if(rv) rv.style.display = 'block';
+            if(lv) lv.style.display = 'block';
             if(bg) bg.style.display = 'none';
             if(cw) cw.style.display = 'flex';
         }
@@ -2302,11 +2359,13 @@ window._CT = {
 
         /* ── PRÉ-DÉVERROUILLAGE iOS Safari ───────────────────────────
            iOS bloque play() si appelé hors contexte user-gesture.
-           On appelle play() ICI (pendant le clic) sur les éléments média
-           AVANT toute opération async — ça "déverrouille" l'autoplay.
-           L'appel échoue (pas de src) mais iOS autorise ensuite tous les
-           play() ultérieurs même depuis des callbacks WebSocket / ontrack.
+           IMPORTANT : les éléments vidéo sont à l'intérieur de call-active-overlay
+           qui a display:none. iOS N'autorise PAS play() sur un élément caché.
+           Solution : afficher l'overlay actif UNE FRACTION DE SECONDE pour
+           que les éléments soient visibles lors du play() de déverrouillage,
+           puis revenir à l'overlay sortant.
         ─────────────────────────────────────────────────────────────── */
+        _showOverlay('call-active-overlay');
         ['call-remote-video','call-local-video','call-remote-audio'].forEach(function(id){
             var el = _callEl(id);
             if(el) el.play().catch(function(){});
@@ -2314,7 +2373,7 @@ window._CT = {
         _callFillPeer(_callPeerInfo.name, _callPeerInfo.img);
         var statusEl = _callEl('call-out-status');
         if(statusEl) statusEl.textContent = (_callMode==='audio') ? (_CT ? _CT.calling_audio : 'Appel audio en cours…') : (_CT ? _CT.calling_video : 'Appel vidéo en cours…');
-        _showOverlay('call-out-overlay');
+        _showOverlay('call-out-overlay'); // switch vers l'overlay sortant
 
         var constraints = (_callMode === 'audio')
             ? { audio: true, video: false }
@@ -2332,20 +2391,33 @@ window._CT = {
                 // La piste distante arrive → on passe en mode actif
                 var rv = _callEl('call-remote-video');
                 /* Toujours router via <video> — audio ET vidéo.
-                   iOS route <video> → haut-parleur, <audio> → oreillette. */
-                if(rv){
+                   iOS route <video> → haut-parleur, <audio> → oreillette.
+                   Pattern iOS : muted=true → play() → muted=false
+                   iOS autorise play() sur élément muted sans gesture ;
+                   une fois play() lancé, on unmute et l'audio sort. */
+                if(rv && !rv.srcObject){   /* garder le guard : ontrack peut firer 2× (audio+video) */
                     rv.srcObject = remoteStream;
-                    rv.style.display = 'block'; /* display:block AVANT play() — requis iOS */
-                    rv.play().catch(function(){});
+                    rv.style.display = 'block';
+                    rv.muted = true;       /* déverrouille iOS autoplay */
+                    rv.play()
+                      .then(function(){ rv.muted = false; }) /* unmute dès que playing */
+                      .catch(function(e){
+                          console.warn('[CALL] remote video play error:', e);
+                          /* Fallback Android/Chrome : tenter sans muted */
+                          rv.muted = false;
+                          rv.play().catch(function(e2){ console.error('[CALL] play fallback failed:', e2); });
+                      });
                 }
                 var lv = _callEl('call-local-video');
-                if(lv){
+                if(lv && !lv.srcObject){
                     lv.style.display = 'block';
                     lv.srcObject = _localStream;
-                    lv.play().catch(function(){});
+                    lv.play().catch(function(){});  /* local est muted, pas de blocage iOS */
                 }
-                _callState = 'active';
-                _activateCallUI();
+                if(_callState !== 'active'){
+                    _callState = 'active';
+                    _activateCallUI();
+                }
             });
             _localStream.getTracks().forEach(function(t){ _peerConn.addTrack(t, _localStream); });
             return _peerConn.createOffer();
@@ -2389,11 +2461,16 @@ window._CT = {
         _callState = 'active';
         var offerSdp = _pendOffer; _pendOffer = null;
 
-        /* ── PRÉ-DÉVERROUILLAGE iOS Safari (même raison que dans startCall) ── */
+        /* ── PRÉ-DÉVERROUILLAGE iOS Safari ───────────────────────────
+           Afficher l'overlay actif brièvement pour que les éléments soient
+           dans un parent visible lors du play() de déverrouillage.
+        ─────────────────────────────────────────────────────────────── */
+        _showOverlay('call-active-overlay');
         ['call-remote-video','call-local-video','call-remote-audio'].forEach(function(id){
             var el = _callEl(id);
             if(el) el.play().catch(function(){});
         });
+        _showOverlay('call-inc-overlay'); /* revenir à l'overlay entrant pendant la négociation */
 
         var constraints = (_callMode === 'audio')
             ? { audio: true, video: false }
@@ -2412,11 +2489,19 @@ window._CT = {
             _buildPeer(function(remoteStream){
                 var rv = _callEl('call-remote-video');
                 /* Toujours router le stream distant vers <video> (même en mode audio).
-                   Sur iOS, <video> → haut-parleur ; <audio> → oreillette par défaut. */
-                if(rv){
+                   Sur iOS, <video> → haut-parleur ; <audio> → oreillette par défaut.
+                   Pattern iOS : muted=true → play() → muted=false */
+                if(rv && !rv.srcObject){  /* guard : ontrack peut firer 2× (audio + video) */
                     rv.srcObject = remoteStream;
-                    rv.style.display = 'block'; /* display:block AVANT play() */
-                    rv.play().catch(function(){});
+                    rv.style.display = 'block';
+                    rv.muted = true;      /* déverrouille iOS autoplay */
+                    rv.play()
+                      .then(function(){ rv.muted = false; })
+                      .catch(function(e){
+                          console.warn('[CALL] remote video play error:', e);
+                          rv.muted = false;
+                          rv.play().catch(function(e2){ console.error('[CALL] play fallback failed:', e2); });
+                      });
                 }
             });
             _localStream.getTracks().forEach(function(t){ _peerConn.addTrack(t, _localStream); });
