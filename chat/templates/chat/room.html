@@ -17,22 +17,24 @@
         height: calc(100vh - 62px) !important;
     }
 }
-/* Mobile : bloquer le scroll iOS (body:fixed empêche le scroll du doc quand le clavier apparaît)
-   dvh = dynamic viewport height = exclut la chrome Safari en bas (← ↑ 📖 ⊓) */
+/* Mobile : main position:fixed = zone de contenu ancrée au viewport.
+   - Empêche le scroll iOS (footer ne remonte plus quand le clavier apparaît)
+   - dvh = dynamic viewport height = exclut la chrome Safari (← ↑ ⊓) →
+     les boutons d'appel ne sont plus cachés derrière la barre navigateur */
 @media (max-width: 768px) {
-    html, body {
-        overflow: hidden !important;
-        position: fixed !important;   /* Empêche le scroll iOS au focus du textarea */
-        width: 100% !important;
-        height: 100% !important;
-    }
+    html, body { overflow: hidden !important; }
     main {
         padding: 0 !important;
-        margin-top: 62px !important;
+        margin: 0 !important;            /* margin-top remplacé par top: */
+        /* Position fixed ancre main au viewport indépendamment du scroll doc */
+        position: fixed !important;
+        top: 62px !important;            /* sous la navbar */
+        left: 0 !important;
+        right: 0 !important;
         overflow: hidden !important;
-        /* dvh (iOS 15.4+) exclut la barre Chrome du navigateur — boutons visibles */
-        height: calc(100vh  - 62px - 58px) !important; /* fallback */
-        height: calc(100dvh - 62px - 58px) !important; /* dynamique, prend en compte la chrome */
+        /* dvh (iOS 15.4+) exclut la barre Chrome du navigateur */
+        height: calc(100vh  - 62px - 58px) !important; /* fallback si dvh non supporté */
+        height: calc(100dvh - 62px - 58px) !important; /* dynamique */
     }
 }
 
@@ -1647,6 +1649,25 @@ window._CT = {
         }
         // Initialisation : connecter automatiquement si une room est déjà connue
         onStart();
+
+        /* ── Anti-scroll iOS Safari ─────────────────────────────────────
+           iOS scrolle le document quand un textarea est focalisé, même si
+           overflow:hidden est posé sur html/body. Ce listener remet le scroll
+           à 0 dès qu'il bouge. Main étant position:fixed, ça ne change rien
+           visuellement mais ça empêche le footer de remonter à l'écran.
+        ─────────────────────────────────────────────────────────────── */
+        window.addEventListener('scroll', function(){
+            if(window.scrollY > 0 || window.pageYOffset > 0){
+                window.scrollTo(0, 0);
+            }
+        }, { passive: true });
+        if(window.visualViewport){
+            window.visualViewport.addEventListener('scroll', function(){
+                if(window.scrollY > 0 || window.pageYOffset > 0){
+                    window.scrollTo(0, 0);
+                }
+            });
+        }
 
         // Pré-remplir le message si on vient d'une fiche bazar
         {% if bazar_annonce %}
