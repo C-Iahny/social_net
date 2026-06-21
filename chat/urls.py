@@ -5,6 +5,7 @@ from chat.views import (
 	create_or_return_private_chat,
 	upload_chat_file,
 	send_story_reply,
+	call_reject_push,
 )
 
 app_name = 'chat'
@@ -14,4 +15,5 @@ urlpatterns = [
 	path('create_or_return_private_chat', create_or_return_private_chat, name='create-or-return-private-chat'),
 	path('upload_file/',               upload_chat_file,               name='upload-chat-file'),
 	path('story-reply/',               send_story_reply,               name='story_reply'),
+	path('call-reject-push/',          call_reject_push,               name='call-reject-push'),
 ]
