@@ -2217,6 +2217,40 @@ window._CT = {
     }
     function _stopTimer(){ clearInterval(_callTimerId); _callTimerId = null; }
 
+    /* ── Pré-déverrouillage multiplateforme (à appeler pendant le clic) ──────
+       Problème : Safari et Opera bloquent play() depuis les callbacks async
+       (ontrack, WebSocket) si l'élément n'a pas été "activé" pendant un geste.
+       play(srcObject=null) ne compte PAS comme activation dans Safari — la
+       source doit être valide.
+
+       Fix en 2 étapes :
+       1. AudioContext.resume() — active le sous-système audio Safari/WebKit.
+       2. srcObject = new MediaStream() vide + play(muted) — active l'élément
+          vidéo lui-même avec une source valide (même si vide).
+          Quand ontrack arrive, on remplace srcObject → l'élément reste activé.
+    ──────────────────────────────────────────────────────────────────────── */
+    function _preUnlockMedia(){
+        /* 1. AudioContext — indispensable pour Safari Desktop & iOS */
+        try {
+            var _tmpCtx = new (window.AudioContext || window.webkitAudioContext)();
+            _tmpCtx.resume().catch(function(){});
+            /* fermer après 4s pour ne pas bloquer les ressources */
+            setTimeout(function(){ try{ _tmpCtx.close(); }catch(e){} }, 4000);
+        } catch(e){}
+
+        /* 2. Afficher l'overlay actif le temps du play() (parent visible requis) */
+        _showOverlay('call-active-overlay');
+        var _emptyStream = new MediaStream(); /* source vide mais valide */
+        var rv = _callEl('call-remote-video');
+        if(rv){
+            rv.srcObject = _emptyStream;  /* play(null) ne compte pas pour Safari */
+            rv.muted = true;
+            rv.play().catch(function(){});
+        }
+        var lv = _callEl('call-local-video');
+        if(lv){ lv.play().catch(function(){}); } /* local déjà muted — pas de srcObject */
+    }
+
     /* Afficher / masquer un overlay */
     function _showOverlay(id){
         ['call-out-overlay','call-inc-overlay','call-active-overlay'].forEach(function(oid){
@@ -2357,19 +2391,8 @@ window._CT = {
         _callMode  = mode || 'video';
         _callState = 'calling';
 
-        /* ── PRÉ-DÉVERROUILLAGE iOS Safari ───────────────────────────
-           iOS bloque play() si appelé hors contexte user-gesture.
-           IMPORTANT : les éléments vidéo sont à l'intérieur de call-active-overlay
-           qui a display:none. iOS N'autorise PAS play() sur un élément caché.
-           Solution : afficher l'overlay actif UNE FRACTION DE SECONDE pour
-           que les éléments soient visibles lors du play() de déverrouillage,
-           puis revenir à l'overlay sortant.
-        ─────────────────────────────────────────────────────────────── */
-        _showOverlay('call-active-overlay');
-        ['call-remote-video','call-local-video','call-remote-audio'].forEach(function(id){
-            var el = _callEl(id);
-            if(el) el.play().catch(function(){});
-        });
+        /* Pré-déverrouillage Safari/Opera — voir _preUnlockMedia() */
+        _preUnlockMedia();
         _callFillPeer(_callPeerInfo.name, _callPeerInfo.img);
         var statusEl = _callEl('call-out-status');
         if(statusEl) statusEl.textContent = (_callMode==='audio') ? (_CT ? _CT.calling_audio : 'Appel audio en cours…') : (_CT ? _CT.calling_video : 'Appel vidéo en cours…');
@@ -2388,31 +2411,28 @@ window._CT = {
                 if(lop){ lop.srcObject = stream; lop.style.display = 'block'; }
             }
             _buildPeer(function(remoteStream){
-                /* CALLER : ontrack arrive avant _activateCallUI → parent overlay encore caché.
-                   Activer l'UI AVANT play() pour que call-remote-video ait un parent visible.
-                   iOS bloque play() sur élément dans display:none même avec muted=true. */
+                /* CALLER : ontrack arrive avant _activateCallUI → activer l'UI d'abord */
                 if(_callState !== 'active'){
                     _callState = 'active';
-                    _activateCallUI();  /* affiche call-active-overlay EN PREMIER */
+                    _activateCallUI(); /* affiche call-active-overlay EN PREMIER */
                 }
                 var rv = _callEl('call-remote-video');
-                /* Toujours router via <video> — audio ET vidéo.
-                   iOS route <video> → haut-parleur, <audio> → oreillette.
-                   Pattern iOS : muted=true → play() → muted=false */
-                if(rv && !rv.srcObject){   /* guard : ontrack peut firer 2× (audio+video) */
-                    /* Sécurité supplémentaire : forcer display:flex sur l'overlay si besoin */
+                /* Guard : !srcObject OU srcObject vide (set par _preUnlockMedia).
+                   getTracks().length === 0 → stream vide du pre-unlock → remplacer. */
+                if(rv && (!rv.srcObject || rv.srcObject.getTracks().length === 0)){
+                    /* Sécurité : forcer l'overlay visible si ontrack trop rapide */
                     var _ao = document.getElementById('call-active-overlay');
                     if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
-                    rv.muted = true;
-                    rv.play()
-                      .then(function(){ rv.muted = false; })
-                      .catch(function(e){
-                          console.warn('[CALL] remote video play error:', e);
-                          rv.muted = false;
-                          rv.play().catch(function(e2){ console.error('[CALL] play fallback failed:', e2); });
-                      });
+                    /* L'élément est déjà activé par _preUnlockMedia → essayer unmuted d'abord */
+                    rv.muted = false;
+                    rv.play().catch(function(e){
+                        console.warn('[CALL] unmuted play blocked, fallback muted:', e);
+                        rv.muted = true;
+                        rv.play().then(function(){ rv.muted = false; })
+                                 .catch(function(e2){ console.error('[CALL] play failed:', e2); });
+                    });
                 }
                 var lv = _callEl('call-local-video');
                 if(lv && !lv.srcObject){
@@ -2463,15 +2483,8 @@ window._CT = {
         _callState = 'active';
         var offerSdp = _pendOffer; _pendOffer = null;
 
-        /* ── PRÉ-DÉVERROUILLAGE iOS Safari ───────────────────────────
-           Afficher l'overlay actif brièvement pour que les éléments soient
-           dans un parent visible lors du play() de déverrouillage.
-        ─────────────────────────────────────────────────────────────── */
-        _showOverlay('call-active-overlay');
-        ['call-remote-video','call-local-video','call-remote-audio'].forEach(function(id){
-            var el = _callEl(id);
-            if(el) el.play().catch(function(){});
-        });
+        /* Pré-déverrouillage Safari/Opera — voir _preUnlockMedia() */
+        _preUnlockMedia();
         _showOverlay('call-inc-overlay'); /* revenir à l'overlay entrant pendant la négociation */
 
         var constraints = (_callMode === 'audio')
@@ -2490,24 +2503,22 @@ window._CT = {
             }
             _buildPeer(function(remoteStream){
                 var rv = _callEl('call-remote-video');
-                /* Toujours router le stream distant vers <video> (même en mode audio).
-                   Sur iOS, <video> → haut-parleur ; <audio> → oreillette par défaut.
-                   Pattern iOS : muted=true → play() → muted=false
-                   CALLEE : ontrack peut arriver AVANT _activateCallUI() si ICE est rapide
-                   → forcer display:flex sur l'overlay avant play() */
-                if(rv && !rv.srcObject){  /* guard : ontrack peut firer 2× (audio + video) */
+                /* Toujours router via <video> — audio ET vidéo (iOS → haut-parleur).
+                   Guard : srcObject vide du pre-unlock → remplacer par le vrai stream.
+                   CALLEE : forcer overlay visible si ontrack arrive avant _activateCallUI. */
+                if(rv && (!rv.srcObject || rv.srcObject.getTracks().length === 0)){
                     var _ao = document.getElementById('call-active-overlay');
                     if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
-                    rv.muted = true;
-                    rv.play()
-                      .then(function(){ rv.muted = false; })
-                      .catch(function(e){
-                          console.warn('[CALL] remote video play error:', e);
-                          rv.muted = false;
-                          rv.play().catch(function(e2){ console.error('[CALL] play fallback failed:', e2); });
-                      });
+                    /* Élément activé par _preUnlockMedia → essayer unmuted d'abord */
+                    rv.muted = false;
+                    rv.play().catch(function(e){
+                        console.warn('[CALL] unmuted play blocked, fallback muted:', e);
+                        rv.muted = true;
+                        rv.play().then(function(){ rv.muted = false; })
+                                 .catch(function(e2){ console.error('[CALL] play failed:', e2); });
+                    });
                 }
             });
             _localStream.getTracks().forEach(function(t){ _peerConn.addTrack(t, _localStream); });
