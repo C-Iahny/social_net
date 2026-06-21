@@ -510,7 +510,8 @@
             </a>
             {% endif %}
 
-            <!-- ── Messagerie interne (toujours visible pour les acheteurs connectés) ── -->
+            <!-- ── Messagerie interne (toujours visible sauf pour le vendeur lui-même) ── -->
+            {% if user != annonce.seller %}
             {% if user.is_authenticated %}
             <a href="{% url 'chat:private-chat-room' %}?user_id={{ annonce.seller.pk }}&annonce={{ annonce.pk }}"
                class="bazar-contact-btn bazar-btn-outline"
@@ -518,6 +519,14 @@
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 {% trans "Envoyer un message" %}
             </a>
+            {% else %}
+            <a href="{% url 'login' %}?next={% url 'bazar:detail' annonce.pk %}"
+               class="bazar-contact-btn bazar-btn-outline"
+               style="{% if annonce.contact_phone and annonce.show_phone %}margin-top:.4rem;{% endif %}">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                {% trans "Envoyer un message" %}
+            </a>
+            {% endif %}
             {% endif %}
 
             <!-- ── Bouton Sauvegarder ── -->
@@ -542,7 +551,7 @@
                     class="bazar-contact-btn bazar-btn-outline"
                     style="width:100%;margin-top:.5rem;border-color:rgba(239,68,68,.35);color:rgba(239,68,68,.8);">
                 <span class="material-icons" style="font-size:1rem;">flag</span>
-                Signaler cette annonce
+                {% trans "Signaler cette annonce" %}
             </button>
             {% endif %}
 
