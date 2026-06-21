@@ -108,13 +108,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 						await self.channel_layer.group_send(
 							f"user_{other.id}",
 							{
-								"type":      "chat.call",
-								"msg_type":  MSG_TYPE_CALL_OFFER,
-								"user_id":   self.scope["user"].id,
-								"username":  self.scope["user"].username,
-								"sdp":       content.get("sdp", {}),
-								"call_mode": content.get("call_mode", "video"),
-								"room_id":   str(self.room_id),
+								"type":          "chat.call",
+								"msg_type":      MSG_TYPE_CALL_OFFER,
+								"user_id":       self.scope["user"].id,
+								"username":      self.scope["user"].username,
+								"profile_image": self.scope["user"].profile_image.url,
+								"sdp":           content.get("sdp", {}),
+								"call_mode":     content.get("call_mode", "video"),
+								"room_id":       str(self.room_id),
 							}
 						)
 						print(f"[CALL] group_send OK → user_{other.id}")

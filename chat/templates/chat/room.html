@@ -1720,7 +1720,24 @@ window._CT = {
                 // Mettre à jour le sidebar : preview du dernier message
                 updateSidebarPreview(data.user_id, data.message);
             }
-            if (data.msg_type == 1 || data.msg_type == 2) { /* connexion ignorée */ }
+            if (data.msg_type == 1 || data.msg_type == 2) {
+                // MSG_TYPE_ENTER : si on est caller en attente et que le peer vient de rejoindre
+                // → re-envoyer l'offre (le callee a navigué depuis l'overlay global)
+                if(data.msg_type == 1 && _callState === 'calling' && _peerConn && _peerConn.localDescription){
+                    setTimeout(function(){
+                        if(_callState === 'calling' && _peerConn && _peerConn.localDescription &&
+                           chatSocket && chatSocket.readyState === WebSocket.OPEN){
+                            console.log('[CALL] re-offer → callee vient de rejoindre');
+                            chatSocket.send(JSON.stringify({
+                                command:   'call_offer',
+                                room:      roomId,
+                                sdp:       _peerConn.localDescription,
+                                call_mode: _callMode,
+                            }));
+                        }
+                    }, 600); // légère attente pour que le callee soit bien en place
+                }
+            }
             if (data.msg_type == 3) { appendFileMessage(data, false, true) }  // file
             if (data.msg_type == 4) { showTypingIndicator(data.username) }   // typing
             if (data.msg_type == 5) { console.log('[CALL] offer reçu', data); handleCallOffer(data); }
@@ -2143,7 +2160,13 @@ window._CT = {
     /* ═══════════════════════════════════════════════════════════════
        WebRTC — Appels Audio & Vidéo
        ═══════════════════════════════════════════════════════════════ */
+    // Signale à l'overlay global (header.html) que cette page gère elle-même les appels
+    window._zootIsInChatRoom = true;
+
     var _callState   = 'idle';   // idle | calling | ringing | active
+    // Auto-réponse : si l'URL contient ?auto_answer=1 (navigué depuis l'overlay global)
+    var _autoAnswer  = (new URLSearchParams(window.location.search)).get('auto_answer') === '1';
+    var _autoCallMode = (new URLSearchParams(window.location.search)).get('call_mode') || 'video';
     var _callMode    = 'video';  // 'audio' | 'video'
     var _peerConn    = null;
     var _localStream = null;
@@ -2467,9 +2490,17 @@ window._CT = {
             return;
         }
         _callState = 'ringing';
-        _callMode  = data.call_mode || 'video';
+        _callMode  = data.call_mode || _autoCallMode || 'video';
         _pendOffer = data.sdp;
         _callFillPeer(data.username||_callPeerInfo.name, _callPeerInfo.img);
+
+        // Auto-réponse si on a été redirigé depuis l'overlay global (header.html)
+        if(_autoAnswer){
+            _autoAnswer = false;  // n'accepter qu'une seule fois
+            setTimeout(function(){ acceptCall(); }, 400);
+            return;
+        }
+
         var typeEl = _callEl('call-inc-type');
         if(typeEl) typeEl.textContent = (_callMode==='audio') ? (_CT ? _CT.inc_audio : 'Appel audio entrant') : (_CT ? _CT.inc_video : 'Appel vidéo entrant');
         var iconEl = _callEl('call-inc-accept-icon');
