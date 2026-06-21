@@ -64,16 +64,37 @@
 
         function toggleTheme() {
             var html = document.documentElement;
-            /* ── Désactiver toutes les transitions pendant le changement de thème ── */
-            html.classList.add('vzb-no-transition');
             var next = (html.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
-            html.setAttribute('data-theme', next);
-            try { localStorage.setItem('zoot-theme', next); } catch(e) {}
-            _syncThemeIcons(next);
-            /* Réactiver après 2 frames (évite le freeze de repaint) */
+
+            /* ── Overlay instantané pour masquer le freeze de recalcul CSS ──────
+               Le navigateur met 300-800ms à recalculer tous les styles quand
+               data-theme change. On couvre ça avec un flash de couleur opaque
+               qui disparaît en fondu une fois que tout est calculé.            */
+            var overlay = document.createElement('div');
+            overlay.style.cssText = [
+                'position:fixed', 'inset:0', 'z-index:2147483647',
+                'background:' + (next === 'dark' ? '#0f0f1a' : '#f5f5f5'),
+                'pointer-events:none', 'opacity:1',
+                'transition:opacity .18s ease'
+            ].join(';');
+            document.body.appendChild(overlay);
+
+            /* Appliquer le thème après que l'overlay est rendu (frame suivante) */
             requestAnimationFrame(function() {
+                html.classList.add('vzb-no-transition');
+                html.setAttribute('data-theme', next);
+                try { localStorage.setItem('zoot-theme', next); } catch(e) {}
+                _syncThemeIcons(next);
+
+                /* Attendre que le navigateur ait fini le repaint, puis fondre l'overlay */
                 requestAnimationFrame(function() {
-                    html.classList.remove('vzb-no-transition');
+                    requestAnimationFrame(function() {
+                        html.classList.remove('vzb-no-transition');
+                        overlay.style.opacity = '0';
+                        setTimeout(function() {
+                            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                        }, 200);
+                    });
                 });
             });
         }
