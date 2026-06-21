@@ -1360,7 +1360,7 @@ var _groups      = [];   // [{user_id, username, avatar, stories:[…]}, …]
 var _curGroup    = 0;
 var _curStory    = 0;
 var _svTimer     = null;
-var _svDuration  = 5000; // ms pour photos/textes
+var _svDuration  = 30000; // ms pour photos/textes
 var _svProgress  = null; // requestAnimationFrame ref
 var _svStart     = null;
 var _svElapsed   = 0;
@@ -2437,7 +2437,7 @@ function renderCurrentStory() {
         } else {
             tc2Content.style.textShadow = '0 2px 20px rgba(0,0,0,.6)';
         }
-        duration = 7000;
+        duration = 30000;
     }
 
     // Caption bas (image/vidéo simple uniquement)
