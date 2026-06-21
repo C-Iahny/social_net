@@ -390,6 +390,31 @@
 }
 [data-theme="dark"] .bazar-page-btn.active { color: #1a0a02; }
 
+/* ── Filtre prix ── */
+.bazar-price-range {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-wrap: nowrap;
+}
+.bazar-price-range input {
+    width: 110px;
+    padding: .4rem .6rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-input, var(--bg-card));
+    color: var(--text-primary);
+    font-size: .8rem;
+}
+.bazar-price-range input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+.bazar-price-range span {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
 /* Mobile */
 @media (max-width: 575px) {
     .bazar-hero { padding: 2.2rem 1rem 2rem; }
@@ -400,7 +425,28 @@
     .bazar-card-body { padding: .65rem .75rem; }
     .bazar-card-title { font-size: .82rem; }
     .bazar-card-price { font-size: .92rem; }
+    .bazar-price-range input { width: 88px; }
 }
+
+/* ── Bouton géolocalisation ── */
+.geo-detect-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: .3rem .75rem;
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+    white-space: nowrap;
+}
+.geo-detect-btn:hover { border-color: var(--accent); color: var(--accent); }
+.geo-detect-btn .material-icons { font-size: .9rem; }
+.geo-detect-btn.loading { opacity: .6; pointer-events: none; }
 </style>
 
 <!-- ── Hero ── -->
@@ -432,7 +478,7 @@
 <!-- ── Raccourci "Ma région" ── -->
 {% if user_region and not sel_region %}
 <div style="padding:.5rem 1rem .1rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-    <span style="font-size:.82rem;color:var(--text-muted);">Près de chez moi :</span>
+    <span style="font-size:.82rem;color:var(--text-muted);">{% trans "Près de chez moi :" %}</span>
     <a href="?region={{ user_region }}"
        style="display:inline-flex;align-items:center;gap:.3rem;padding:.32rem .8rem;border-radius:99px;
               background:var(--accent,#6366f1);color:#fff;font-size:.82rem;font-weight:600;text-decoration:none;">
@@ -464,17 +510,33 @@
 
         <!-- Région -->
         <select name="region" class="bazar-filter-select" onchange="this.form.submit()">
-            <option value="">🇲🇬 Toute Madagascar</option>
+            <option value="">🇲🇬 {% trans "Toute Madagascar" %}</option>
             {% for code, label in region_choices %}{% if code %}
             <option value="{{ code }}" {% if sel_region == code %}selected{% endif %}>{{ label }}</option>
             {% endif %}{% endfor %}
         </select>
+        <button type="button" class="geo-detect-btn" id="geo-detect-btn"
+                onclick="detectMyRegion()" title="{% trans 'Détecter ma région automatiquement' %}">
+            <span class="material-icons">my_location</span>
+            <span id="geo-detect-label">{% trans "Près de moi" %}</span>
+        </button>
 
         <!-- Vendeurs vérifiés -->
         <label class="bazar-filter-verified {% if only_verified %}active{% endif %}">
             <input type="checkbox" name="verified" value="1" {% if only_verified %}checked{% endif %} onchange="this.form.submit()">
             ✓ {% trans "Vendeurs vérifiés" %}
         </label>
+
+        <!-- Prix min / max -->
+        <div class="bazar-price-range">
+            <input type="number" name="pmin" min="0" step="100"
+                   value="{{ sel_pmin }}"
+                   placeholder="{% trans 'Prix min (Ar)' %}">
+            <span>—</span>
+            <input type="number" name="pmax" min="0" step="100"
+                   value="{{ sel_pmax }}"
+                   placeholder="{% trans 'Prix max (Ar)' %}">
+        </div>
 
         <!-- Tri -->
         <span class="bazar-sort-label">{% trans "Trier par" %}&nbsp;:</span>
@@ -485,10 +547,10 @@
             <option value="popular"    {% if sort == 'popular' %}selected{% endif %}>{% trans "Plus vues" %}</option>
         </select>
 
-        {% if sel_cat or sel_cond or sel_region or q or sort != 'recent' or only_verified %}
+        {% if sel_cat or sel_cond or sel_region or q or sort != 'recent' or only_verified or sel_pmin or sel_pmax %}
         <a href="{% url 'bazar:index' %}" style="font-size:.82rem;color:var(--text-muted);text-decoration:none;margin-left:.25rem;display:flex;align-items:center;gap:.25rem;">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            Réinitialiser
+            {% trans "Réinitialiser" %}
         </a>
         {% endif %}
     </form>
@@ -516,10 +578,18 @@
 
         <!-- Image -->
         {% with primary=annonce.get_primary_image %}
+        {% with nb_photos=annonce.images.all|length %}
         {% if primary %}
         <div class="bazar-card-img" style="position:relative;">
             <img src="{{ primary.image.url }}" alt="{{ annonce.title }}" loading="lazy">
             <span class="bazar-badge-cond">{{ annonce.get_condition_display }}</span>
+            {% if nb_photos > 1 %}
+            <span style="position:absolute;bottom:7px;right:7px;background:rgba(0,0,0,.55);color:#fff;
+                         font-size:.65rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;
+                         backdrop-filter:blur(4px);display:inline-flex;align-items:center;gap:.2rem;">
+                📷 {{ nb_photos }}
+            </span>
+            {% endif %}
             {% if annonce.status == 'vendue' %}
             <div class="bazar-badge-sold">{% trans "VENDUE" %}</div>
             {% endif %}
@@ -532,6 +602,7 @@
             {% endif %}
         </div>
         {% endif %}
+        {% endwith %}
         {% endwith %}
 
         <!-- Infos -->
@@ -558,19 +629,19 @@
 {% if page_obj.has_other_pages %}
 <div class="bazar-pagination">
     {% if page_obj.has_previous %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}" class="bazar-page-btn">←</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}{% if sel_pmin %}pmin={{ sel_pmin }}&{% endif %}{% if sel_pmax %}pmax={{ sel_pmax }}&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}" class="bazar-page-btn">←</a>
     {% endif %}
 
     {% for num in page_obj.paginator.page_range %}
     {% if page_obj.number == num %}
     <span class="bazar-page-btn active">{{ num }}</span>
     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ num }}" class="bazar-page-btn">{{ num }}</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}{% if sel_pmin %}pmin={{ sel_pmin }}&{% endif %}{% if sel_pmax %}pmax={{ sel_pmax }}&{% endif %}sort={{ sort }}&page={{ num }}" class="bazar-page-btn">{{ num }}</a>
     {% endif %}
     {% endfor %}
 
     {% if page_obj.has_next %}
-    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if only_verified %}verified=1&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}" class="bazar-page-btn">→</a>
+    <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_cond %}cond={{ sel_cond }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}{% if only_verified %}verified=1&{% endif %}{% if sel_pmin %}pmin={{ sel_pmin }}&{% endif %}{% if sel_pmax %}pmax={{ sel_pmax }}&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}" class="bazar-page-btn">→</a>
     {% endif %}
 </div>
 {% endif %}
@@ -581,8 +652,8 @@
     <div class="bazar-empty-icon">🔍</div>
     <h4 style="color:var(--text-primary);font-weight:700;">{% trans "Aucune annonce trouvée" %}</h4>
     <p style="font-size:.9rem;">
-        {% if q %}Aucun résultat pour <strong>« {{ q }} »</strong>. Essayez un autre mot-clé.
-        {% elif sel_cat %}Aucune annonce dans cette catégorie pour le moment.
+        {% if q %}{% blocktrans with q=q %}Aucun résultat pour <strong>« {{ q }} »</strong>. Essayez un autre mot-clé.{% endblocktrans %}
+        {% elif sel_cat %}{% trans "Aucune annonce dans cette catégorie pour le moment." %}
         {% else %}{% trans "Le bazar est encore vide. Soyez le premier à publier !" %}{% endif %}
     </p>
     {% if request.user.is_authenticated %}
@@ -592,5 +663,99 @@
     {% endif %}
 </div>
 {% endif %}
+
+<script>
+var VZB_I18N = {
+    geoUnavailable: "{% trans "La géolocalisation n'est pas disponible sur votre appareil." %}",
+    locating: "{% trans 'Localisation…' %}",
+    nearMe: "{% trans 'Près de moi' %}",
+    geoPermDenied: "{% trans 'Permission refusée' %}",
+    geoPosUnavail: "{% trans 'Position indisponible' %}",
+    geoTimeout: "{% trans 'Délai dépassé' %}",
+    geoError: "{% trans 'Erreur de géolocalisation' %}"
+};
+</script>
+<script>
+/* ── Géolocalisation → région Madagascar ─────────── */
+(function() {
+    // Centroids des 22 régions (lat, lon, code)
+    var REGIONS = [
+        [-18.91, 47.54, 'analamanga'],
+        [-19.87, 47.03, 'vakinankaratra'],
+        [-19.00, 46.80, 'itasy'],
+        [-18.77, 46.05, 'bongolava'],
+        [-21.45, 47.09, 'haute_matsiatra'],
+        [-20.53, 47.25, 'amoron_i_mania'],
+        [-21.23, 48.35, 'vatovavy'],
+        [-22.15, 47.98, 'fitovinany'],
+        [-22.41, 46.13, 'ihorombe'],
+        [-22.82, 47.83, 'atsimo_atsinanana'],
+        [-18.15, 49.38, 'atsinanana'],
+        [-17.37, 49.41, 'analanjirofo'],
+        [-17.83, 48.42, 'alaotra_mangoro'],
+        [-15.72, 46.32, 'boeny'],
+        [-14.88, 47.99, 'sofia'],
+        [-16.93, 46.83, 'betsiboka'],
+        [-17.98, 44.02, 'melaky'],
+        [-23.35, 43.67, 'atsimo_andrefana'],
+        [-25.17, 46.08, 'androy'],
+        [-25.03, 47.00, 'anosy'],
+        [-20.28, 44.28, 'menabe'],
+        [-12.35, 49.30, 'diana'],
+        [-14.27, 50.17, 'sava'],
+    ];
+
+    function dist(lat1, lon1, lat2, lon2) {
+        // Distance euclidienne approx (suffit pour la précision régionale)
+        var dlat = lat1 - lat2, dlon = lon1 - lon2;
+        return dlat * dlat + dlon * dlon;
+    }
+
+    function nearestRegion(lat, lon) {
+        // Si hors des limites de Madagascar (~-10 à -27, 43 à 51)
+        if (lat < -27 || lat > -10 || lon < 43 || lon > 51) return 'diaspora';
+        var best = REGIONS[0], bestD = Infinity;
+        for (var i = 0; i < REGIONS.length; i++) {
+            var d = dist(lat, lon, REGIONS[i][0], REGIONS[i][1]);
+            if (d < bestD) { bestD = d; best = REGIONS[i]; }
+        }
+        return best[2];
+    }
+
+    window.detectMyRegion = function() {
+        if (!navigator.geolocation) {
+            alert(VZB_I18N.geoUnavailable);
+            return;
+        }
+        var btn   = document.getElementById('geo-detect-btn');
+        var label = document.getElementById('geo-detect-label');
+        if (btn) btn.classList.add('loading');
+        if (label) label.textContent = VZB_I18N.locating;
+
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                var code = nearestRegion(pos.coords.latitude, pos.coords.longitude);
+                // Mettre à jour le select région
+                var sel = document.querySelector('select[name="region"]');
+                if (sel) {
+                    sel.value = code;
+                    // Déclencher un changement visuel
+                    sel.dispatchEvent(new Event('change'));
+                }
+                // Soumettre le formulaire automatiquement
+                var form = document.getElementById('filter-form') || sel.closest('form');
+                if (form) form.submit();
+            },
+            function(err) {
+                if (btn) btn.classList.remove('loading');
+                if (label) label.textContent = VZB_I18N.nearMe;
+                var msgs = {1: VZB_I18N.geoPermDenied, 2: VZB_I18N.geoPosUnavail, 3: VZB_I18N.geoTimeout};
+                alert(msgs[err.code] || VZB_I18N.geoError);
+            },
+            { timeout: 8000, maximumAge: 300000 }
+        );
+    };
+})();
+</script>
 
 {% endblock %}

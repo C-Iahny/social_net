@@ -178,11 +178,12 @@
 
     <!-- Action bar -->
     <div class="pc-footer">
-        <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}">
+        <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}"
+             onmouseenter="openPicker({{ post.id }})"
+             onmouseleave="closePicker({{ post.id }})">
             <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
                     id="react-btn-{{ post.id }}"
                     onclick="quickReact({{ post.id }})"
-                    onmouseenter="openPicker({{ post.id }})"
                     title="Réagir">
                 <span id="react-icon-{{ post.id }}" style="font-size:1.05rem;line-height:1;">
                     {% if post.user_reaction == 'like' %}👍
@@ -202,7 +203,7 @@
                     {% else %}{% trans "Like" %}{% endif %}
                 </span>
             </button>
-            <div class="reaction-picker" id="picker-{{ post.id }}" onmouseleave="closePicker({{ post.id }})">
+            <div class="reaction-picker" id="picker-{{ post.id }}">
                 <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
                         onclick="sendReaction({{ post.id }}, 'like')" title="{% trans "J'aime" %}">👍</button>
                 <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"

@@ -348,6 +348,28 @@ VAPID_PUBLIC_KEY   = config('VAPID_PUBLIC_KEY',   default='')
 VAPID_PRIVATE_KEY  = config('VAPID_PRIVATE_KEY',  default='')
 VAPID_CLAIMS_EMAIL = config('VAPID_CLAIMS_EMAIL', default='admin@vazimba.com')
 
+# ── SMS (vérification numéro de téléphone) ────────────────────────────────────
+# Fournisseur : Africa's Talking (meilleur rapport qualité/prix pour Madagascar)
+# En développement : backend console (aucun SMS réel envoyé)
+# En production    : backend Africa's Talking
+# Variables Railway à créer :
+#   AT_USERNAME  → username Africa's Talking (ex: "vazimba")
+#   AT_API_KEY   → clé API Africa's Talking
+#   AT_SENDER    → ID expéditeur (ex: "VAZIMBA", optionnel selon opérateur)
+SMS_BACKEND  = config('SMS_BACKEND', default='console' if DEBUG else 'africastalking')
+AT_USERNAME  = config('AT_USERNAME', default='sandbox')
+AT_API_KEY   = config('AT_API_KEY',  default='atsk_sandbox_key')
+AT_SENDER    = config('AT_SENDER',   default='VAZIMBA')
+# Durée de validité du code OTP (minutes)
+SMS_OTP_VALID_MINUTES = 10
+# Max envois par numéro par heure (anti-abus)
+SMS_OTP_MAX_SENDS_PER_HOUR = 3
+
+# ── Recherche musique (Jamendo — gratuit, libre de droits) ────────────────────
+# Créer un compte gratuit sur https://developer.jamendo.com/ pour obtenir un client_id
+# La valeur par défaut est l'ID de démo Jamendo (fonctionnel, mais limité)
+JAMENDO_CLIENT_ID = config('JAMENDO_CLIENT_ID', default='b6747d04')
+
 # ── Cache (pour les trending hashtags) ───────────────────────────────────────
 CACHES = {
     'default': {

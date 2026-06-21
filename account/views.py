@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 from account.forms import RegistrationForm, AccountAuthenticationForm, AccountUpdateForm
-from account.models import Account
+from account.models import Account, PhoneVerification
 from friend.utils import get_friend_request_or_false
 from friend.friend_request_status import FriendRequestStatus
 from friend.models import FriendList, FriendRequest
@@ -400,50 +400,48 @@ def global_search_api(request):
 	"""API endpoint for the header search bar (returns JSON)."""
 	query = request.GET.get('q', '').strip()
 	if not query or len(query) < 2:
-		return JsonResponse({'results': []})
+		return JsonResponse({'users': [], 'posts': [], 'hashtags': [], 'annonces': []})
 
 	from django.db.models import Q
 	from post.models import Hashtag
-
-	results = []
+	from bazar.models import Annonce
 
 	# Users
-	users = Account.objects.filter(
-		Q(username__icontains=query)
-	)[:5]
-	for u in users:
-		results.append({
-			'type': 'user',
-			'id': u.id,
-			'label': u.username,
-			'url': f'/account/{u.id}/',
-			'avatar': u.profile_image.url,
-		})
+	users_qs = Account.objects.filter(Q(username__icontains=query))[:6]
+	users = []
+	for u in users_qs:
+		try:
+			avatar = u.profile_image.url
+		except Exception:
+			avatar = '/static/images/default_profile_image.png'
+		users.append({'id': u.id, 'username': u.username, 'avatar': avatar})
 
 	# Hashtags
-	hashtags = Hashtag.objects.filter(tag__icontains=query)[:3]
-	for h in hashtags:
-		results.append({
-			'type': 'hashtag',
-			'id': h.id,
-			'label': h.tag,
-			'url': f'/feed/hashtag/{h.tag.lstrip("#")}/',
-		})
+	hashtags_qs = Hashtag.objects.filter(tag__icontains=query)[:4]
+	hashtags = [{'id': h.id, 'tag': h.tag, 'count': h.count} for h in hashtags_qs]
 
 	# Posts
-	posts = Post.objects.filter(
+	posts_qs = Post.objects.filter(
 		Q(title__icontains=query) | Q(body__icontains=query)
 	).select_related('author')[:5]
-	for p in posts:
-		results.append({
-			'type': 'post',
-			'id': p.id,
-			'label': p.title or p.body[:60],
-			'url': p.get_absolute_url(),
-			'author': p.author.username,
-		})
+	posts = [{'id': p.id, 'title': p.title or p.body[:60], 'author': p.author.username} for p in posts_qs]
 
-	return JsonResponse({'results': results})
+	# Annonces bazar
+	annonces_qs = Annonce.objects.filter(
+		Q(title__icontains=query), status='active'
+	).prefetch_related('images')[:4]
+	annonces = []
+	for a in annonces_qs:
+		img_url = None
+		try:
+			first_img = a.images.first()
+			if first_img:
+				img_url = first_img.image.url
+		except Exception:
+			pass
+		annonces.append({'id': a.id, 'title': a.title, 'price': a.formatted_price if a.price else None, 'img': img_url})
+
+	return JsonResponse({'users': users, 'posts': posts, 'hashtags': hashtags, 'annonces': annonces})
 
 
 def profile_posts_more(request, *args, **kwargs):
@@ -563,3 +561,153 @@ def update_cover_image(request):
 	except Exception as e:
 		logger.exception("update_cover_image FAILED: %s", e)
 		return JsonResponse({'error': f'Erreur upload : {e}'}, status=500)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Vérification du numéro de téléphone par SMS / OTP
+# ─────────────────────────────────────────────────────────────────────────────
+
+from django.views.decorators.http import require_POST
+from django.utils import timezone
+from datetime import timedelta
+from account.sms import normalize_madagascar_phone, send_otp_sms, format_phone_display
+
+
+@require_POST
+def phone_send_otp(request):
+	"""
+	Envoie un code OTP par SMS au numéro fourni.
+	POST /account/phone/envoyer-code/
+	Body (JSON ou form) : { "phone": "034 12 345 67" }
+	"""
+	if not request.user.is_authenticated:
+		return JsonResponse({'error': 'Connexion requise.'}, status=401)
+
+	raw = (
+		request.POST.get('phone') or
+		json.loads(request.body or '{}').get('phone', '')
+	)
+
+	# Normaliser le numéro
+	phone_e164 = normalize_madagascar_phone(raw or '')
+	if not phone_e164:
+		return JsonResponse({
+			'error': 'Numéro invalide. Utilisez le format 034 XX XXX XX (Airtel), 032/033 (Orange), ou 038 (Telma).'
+		}, status=400)
+
+	# Rate limiting DB : max 3 envois par numéro par heure
+	one_hour_ago = timezone.now() - timedelta(hours=1)
+	recent_sends = PhoneVerification.objects.filter(
+		phone=phone_e164,
+		created_at__gte=one_hour_ago,
+	).count()
+	if recent_sends >= PhoneVerification.MAX_SENDS_PER_HOUR:
+		return JsonResponse({
+			'error': 'Trop de tentatives. Attendez 1 heure avant de demander un nouveau code.'
+		}, status=429)
+
+	# Invalider les anciens codes non utilisés pour ce user + numéro
+	PhoneVerification.objects.filter(
+		user=request.user,
+		phone=phone_e164,
+		verified=False,
+	).update(attempts=PhoneVerification.MAX_ATTEMPTS)  # invalider par épuisement tentatives
+
+	# Générer et stocker le nouveau code
+	code = PhoneVerification.generate_code()
+	otp = PhoneVerification.objects.create(
+		user=request.user,
+		phone=phone_e164,
+		code=code,
+	)
+
+	# Envoyer par SMS
+	try:
+		send_otp_sms(phone_e164, code)
+	except Exception as exc:
+		logger.error('[OTP] Envoi SMS échoué vers %s : %s', phone_e164, exc)
+		otp.delete()  # ne pas garder un code non envoyé
+		return JsonResponse({
+			'error': "Echec d'envoi SMS. Verifiez le numero et reessayez."
+		}, status=500)
+
+	return JsonResponse({
+		'ok': True,
+		'phone_display': format_phone_display(phone_e164),
+		'valid_minutes': PhoneVerification.OTP_VALID_MINUTES,
+	})
+
+
+@require_POST
+def phone_verify_otp(request):
+	"""
+	Vérifie le code OTP saisi par l'utilisateur.
+	POST /account/phone/verifier/
+	Body (JSON ou form) : { "phone": "034 12 345 67", "code": "123456" }
+	"""
+	if not request.user.is_authenticated:
+		return JsonResponse({'error': 'Connexion requise.'}, status=401)
+
+	data  = request.POST or json.loads(request.body or '{}')
+	raw   = data.get('phone', '')
+	code  = (data.get('code') or '').strip()
+
+	phone_e164 = normalize_madagascar_phone(raw)
+	if not phone_e164:
+		return JsonResponse({'error': 'Numéro invalide.'}, status=400)
+	if not code or not code.isdigit() or len(code) != 6:
+		return JsonResponse({'error': 'Le code doit comporter 6 chiffres.'}, status=400)
+
+	# Chercher le code valide le plus récent pour ce user+numéro
+	try:
+		otp = (
+			PhoneVerification.objects
+			.filter(
+				user=request.user,
+				phone=phone_e164,
+				verified=False,
+				attempts__lt=PhoneVerification.MAX_ATTEMPTS,
+			)
+			.latest('created_at')
+		)
+	except PhoneVerification.DoesNotExist:
+		return JsonResponse({
+			'error': 'Aucun code en cours pour ce numéro. Demandez-en un nouveau.'
+		}, status=400)
+
+	# Vérifier l'expiration
+	if otp.is_expired:
+		return JsonResponse({
+			'error': 'Code expiré. Demandez un nouveau code.'
+		}, status=400)
+
+	# Incrémenter le compteur de tentatives
+	otp.attempts += 1
+	otp.save(update_fields=['attempts'])
+
+	if otp.code != code:
+		remaining = PhoneVerification.MAX_ATTEMPTS - otp.attempts
+		if remaining <= 0:
+			return JsonResponse({'error': 'Trop de tentatives incorrectes. Demandez un nouveau code.'}, status=400)
+		return JsonResponse({
+			'error': f'Code incorrect. {remaining} tentative(s) restante(s).'
+		}, status=400)
+
+	# Succes : marquer comme vérifié
+	otp.verified = True
+	otp.save(update_fields=['verified'])
+
+	# Mettre à jour l'utilisateur
+	Account.objects.filter(pk=request.user.pk).update(
+		phone_number=phone_e164,
+		phone_verified=True,
+	)
+	# Mettre à jour l'instance en mémoire (important pour la réponse de contexte)
+	request.user.phone_number = phone_e164
+	request.user.phone_verified = True
+
+	return JsonResponse({
+		'ok': True,
+		'phone_display': format_phone_display(phone_e164),
+		'message': 'Numéro vérifié avec succès !',
+	})
