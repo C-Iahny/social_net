@@ -7,16 +7,13 @@
 /* ── Version ─────────────────────────────────────────────────────────────────
    Incrémenter SW_VERSION pour forcer la mise à jour chez tous les clients.
    ─────────────────────────────────────────────────────────────────────────── */
-const SW_VERSION  = 'vazimba-v3';
+const SW_VERSION  = 'vazimba-v4';
 const STATIC_CACHE = SW_VERSION + '-static';
 const PAGES_CACHE  = SW_VERSION + '-pages';
 const IMG_CACHE    = SW_VERSION + '-images';
 const OFFLINE_URL  = '/offline/';
 
-/* ── Ressources précachées au démarrage (App Shell) ─────────────────────────
-   Ces URLs sont mises en cache à l'installation pour que l'app démarre
-   même sans réseau.
-   ─────────────────────────────────────────────────────────────────────────── */
+/* ── Ressources précachées au démarrage (App Shell) ─────────────────────────*/
 const PRECACHE_STATIC = [
     '{% static "logo/vazimba_v2_icon.png" %}',
     '{% static "logo/vazimba_icon.png" %}',
@@ -28,8 +25,14 @@ const PRECACHE_PAGES = [
 ];
 
 /* ── Limites des caches dynamiques ──────────────────────────────────────────*/
-const MAX_PAGES  = 50;   // Pages HTML conservées
-const MAX_IMAGES = 100;  // Images conservées
+const MAX_PAGES  = 80;   // Pages HTML conservées (augmenté)
+const MAX_IMAGES = 150;  // Images conservées (augmenté)
+
+/* ── Pages qui ne doivent PAS être servies depuis le cache (données fraîches) */
+const NO_CACHE_PATHS = ['/chat/', '/admin/', '/logout/', '/login/'];
+function _isNoCachePath(url) {
+    return NO_CACHE_PATHS.some(function(p) { return url.pathname.startsWith(p); });
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    INSTALL — précacher le shell
@@ -106,9 +109,17 @@ self.addEventListener('fetch', function(event) {
         return;
     }
 
-    /* ── Pages HTML : Network-First avec fallback offline ───────────────── */
+    /* ── Pages HTML ─────────────────────────────────────────────────────── */
     if (req.headers.get('Accept') && req.headers.get('Accept').includes('text/html')) {
-        event.respondWith(networkFirstHTML(req));
+        /* Chat, admin, login → Network-First (données toujours fraîches) */
+        if (_isNoCachePath(url)) {
+            event.respondWith(networkFirstHTML(req));
+        } else {
+            /* Toutes les autres pages → Stale-While-Revalidate
+               → La page mise en cache s'affiche INSTANTANÉMENT,
+                 le réseau met à jour le cache en arrière-plan             */
+            event.respondWith(staleWhileRevalidateHTML(req));
+        }
         return;
     }
 });
@@ -148,6 +159,26 @@ function networkFirstHTML(request) {
                 if (cached) return cached;
                 return cache.match(OFFLINE_URL);
             });
+        });
+    });
+}
+
+/* ── Stale-While-Revalidate pour les pages HTML ─────────────────────────── */
+function staleWhileRevalidateHTML(request) {
+    return caches.open(PAGES_CACHE).then(function(cache) {
+        return cache.match(request).then(function(cached) {
+            /* Lancer la mise à jour réseau en parallèle (sans attendre) */
+            var fetchPromise = fetch(request).then(function(response) {
+                if (response && response.ok) {
+                    cache.put(request, response.clone());
+                    trimCache(PAGES_CACHE, MAX_PAGES);
+                }
+                return response;
+            }).catch(function() {
+                return caches.match(OFFLINE_URL);
+            });
+            /* Retourner le cache immédiatement si disponible, sinon attendre le réseau */
+            return cached || fetchPromise;
         });
     });
 }

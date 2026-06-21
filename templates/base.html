@@ -64,10 +64,18 @@
 
         function toggleTheme() {
             var html = document.documentElement;
+            /* ── Désactiver toutes les transitions pendant le changement de thème ── */
+            html.classList.add('vzb-no-transition');
             var next = (html.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
             html.setAttribute('data-theme', next);
             try { localStorage.setItem('zoot-theme', next); } catch(e) {}
             _syncThemeIcons(next);
+            /* Réactiver après 2 frames (évite le freeze de repaint) */
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    html.classList.remove('vzb-no-transition');
+                });
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -94,6 +102,78 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+
+<!-- ── Barre de progression navigation (NProgress-style) ── -->
+<div id="vzb-bar"></div>
+<style>
+/* Barre de progression */
+#vzb-bar {
+    position: fixed; top: 0; left: 0; height: 3px;
+    background: var(--accent, #6366f1);
+    width: 0; z-index: 99999;
+    transition: width .25s ease, opacity .3s ease;
+    pointer-events: none; opacity: 0;
+    border-radius: 0 2px 2px 0;
+}
+#vzb-bar.vzb-running { opacity: 1; }
+#vzb-bar.vzb-done    { width: 100% !important; opacity: 0; transition: width .15s ease, opacity .4s .1s ease; }
+/* Désactiver toutes les transitions pendant changement de thème */
+.vzb-no-transition *, .vzb-no-transition *::before, .vzb-no-transition *::after {
+    transition: none !important; animation: none !important;
+}
+</style>
+<script>
+(function() {
+    var bar = null, _raf = null, _w = 0;
+    function _bar() { return bar || (bar = document.getElementById('vzb-bar')); }
+
+    function _start() {
+        var b = _bar(); if (!b) return;
+        _w = 0; b.style.width = '0%'; b.style.transition = 'width .25s ease, opacity .3s ease';
+        b.classList.remove('vzb-done'); b.classList.add('vzb-running');
+        _tick();
+    }
+    function _tick() {
+        /* Avancer rapidement jusqu'à 80%, puis ralentir */
+        _w = _w < 50 ? _w + 8 : _w < 75 ? _w + 2 : _w < 90 ? _w + 0.5 : _w;
+        if (_w > 90) _w = 90;
+        var b = _bar(); if (b) b.style.width = _w + '%';
+        _raf = setTimeout(_tick, 350);
+    }
+    function _done() {
+        clearTimeout(_raf);
+        var b = _bar(); if (!b) return;
+        b.classList.add('vzb-done');
+        setTimeout(function() { b.classList.remove('vzb-running', 'vzb-done'); _w = 0; }, 500);
+    }
+
+    /* Démarrer sur clic de lien */
+    document.addEventListener('click', function(e) {
+        var a = e.target.closest('a[href]');
+        if (!a) return;
+        var href = a.getAttribute('href') || '';
+        if (!href || href.startsWith('#') || href.startsWith('javascript') ||
+            a.target === '_blank' || e.ctrlKey || e.metaKey || e.shiftKey) return;
+        /* Ne pas lancer pour les liens vers la même page */
+        try {
+            var url = new URL(href, location.href);
+            if (url.hostname !== location.hostname) return;
+        } catch(e) { return; }
+        sessionStorage.setItem('vzb-nav', '1');
+        _start();
+    });
+
+    /* Compléter dès que le DOM est prêt */
+    if (sessionStorage.getItem('vzb-nav')) {
+        sessionStorage.removeItem('vzb-nav');
+        document.addEventListener('DOMContentLoaded', function() { _done(); });
+    }
+
+    /* Sécurité : compléter si la page met trop de temps */
+    window.addEventListener('load', function() { _done(); });
+})();
+</script>
+
 <!---------------HEADER ------------------->
         {% include 'snippets/header.html' %}
         {% include 'snippets/base_js.html' %}
