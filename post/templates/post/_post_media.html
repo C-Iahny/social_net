@@ -5,12 +5,25 @@
 <div class="pc-gallery pc-gallery-{{ post.media_list|length }}">
     {% for m in post.media_list %}
     {% if m.is_video %}
-    <div class="pc-gal-item pc-gal-video">
-        <video class="pc-gal-vid" src="{{ m.url }}" controls preload="metadata"></video>
+    <div class="pc-gal-item pc-gal-video ds-vid-wrap">
+        <video class="pc-gal-vid" data-src="{{ m.url }}" controls preload="none"></video>
+        <div class="ds-vid-overlay" onclick="dsPlayVideo(this)">
+            <div class="ds-vid-play-btn">
+                <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="12" fill="rgba(0,0,0,.55)"/>
+                    <polygon points="10,7 18,12 10,17" fill="#fff"/>
+                </svg>
+            </div>
+            <span class="ds-vid-label">{% trans "Toucher pour lire" %}</span>
+        </div>
     </div>
     {% else %}
     <div class="pc-gal-item" onclick="openPostMedia(this)" style="cursor:zoom-in;">
-        <img class="pc-gal-img" src="{{ m.url }}" alt="" loading="lazy" decoding="async">
+        <img class="pc-gal-img"
+             src="{{ m.url }}"
+             alt=""
+             loading="lazy"
+             decoding="async">
     </div>
     {% endif %}
     {% endfor %}
