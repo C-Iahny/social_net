@@ -10,9 +10,13 @@ from itertools import chain
 import json
 import os
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 from account.models import Account
 from chat.models import PrivateChatRoom, RoomChatMessage, UnreadChatRoomMessages
 from chat.utils import find_or_create_private_chat
+from chat.constants import MSG_TYPE_CALL_REJECT
 
 DEBUG = False
 
@@ -254,3 +258,39 @@ def send_story_reply(request):
 
 
 
+
+
+@login_required(login_url="login")
+def call_reject_push(request):
+    """
+    Appelé par le Service Worker quand l'utilisateur clique "Refuser" sur
+    la push notification d'appel entrant (écran éteint ou app en arrière-plan).
+    Envoie MSG_TYPE_CALL_REJECT au caller via le channel layer.
+    """
+    room_id = request.GET.get('room_id') or request.POST.get('room_id')
+    if not room_id:
+        return JsonResponse({'ok': False, 'error': 'room_id manquant'}, status=400)
+
+    try:
+        room = PrivateChatRoom.objects.get(pk=room_id)
+    except PrivateChatRoom.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Room introuvable'}, status=404)
+
+    # Identifier le caller (l'autre participant)
+    caller = room.user1 if room.user2 == request.user else room.user2
+
+    # Envoyer MSG_TYPE_CALL_REJECT au groupe personnel du caller
+    try:
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"user_{caller.id}",
+            {
+                "type":     "chat.call",
+                "msg_type": MSG_TYPE_CALL_REJECT,
+                "user_id":  request.user.id,
+            }
+        )
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
+    return JsonResponse({'ok': True})

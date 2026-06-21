@@ -267,24 +267,51 @@ self.addEventListener('push', function(event) {
     }
 
     var title   = data.title || 'VAZIMBA';
-    var options = {
-        body:    data.body   || '',
-        icon:    data.icon   || '/static/logo/vazimba_v2_icon.png',
-        badge:   '/static/logo/vazimba_icon.png',
-        data:    { url: data.url || '/' },
-        vibrate: [200, 100, 200],
-        /* requireInteraction = true → la notif reste visible jusqu'à ce que
-           l'utilisateur clique dessus (pas d'auto-fermeture).             */
-        requireInteraction: true,
-        actions: [
-            { action: 'open',    title: 'Ouvrir' },
-            { action: 'dismiss', title: 'Ignorer' },
-        ],
-        /* Tag unique par notification = elles s'accumulent au lieu de se
-           remplacer (plus d'écrasement entre like + commentaire + repost). */
-        tag:      'vazimba-' + (data.type || 'notif') + '-' + Date.now(),
-        renotify: false,
-    };
+    var options;
+
+    /* ── Notification d'APPEL ENTRANT ────────────────────────────────────────
+       Pattern spécial : sonnerie vibrante répétée, tag fixe (un seul appel
+       à la fois), boutons Répondre / Refuser, reste à l'écran.              */
+    if (data.type === 'incoming_call') {
+        options = {
+            body:             data.body || 'Appel entrant',
+            icon:             data.icon || '/static/logo/vazimba_v2_icon.png',
+            badge:            '/static/logo/vazimba_icon.png',
+            // Sonnerie : 3 pulses longs puis pause, répétés par le navigateur
+            vibrate:          [500, 300, 500, 300, 500, 1500,
+                               500, 300, 500, 300, 500, 1500,
+                               500, 300, 500],
+            requireInteraction: true,   // reste à l'écran jusqu'à action
+            renotify:         true,     // re-déclenche la sonnerie si déjà visible
+            tag:              'vazimba-incoming-call',  // une seule notif appel à la fois
+            data: {
+                url:       data.url     || '/',
+                room_id:   data.room_id || '',
+                call_mode: data.call_mode || 'video',
+                type:      'incoming_call',
+            },
+            actions: [
+                { action: 'accept',  title: '✅ Répondre' },
+                { action: 'decline', title: '❌ Refuser'  },
+            ],
+        };
+    } else {
+        /* ── Notification standard ───────────────────────────────────────── */
+        options = {
+            body:    data.body   || '',
+            icon:    data.icon   || '/static/logo/vazimba_v2_icon.png',
+            badge:   '/static/logo/vazimba_icon.png',
+            data:    { url: data.url || '/', type: data.type || 'notif' },
+            vibrate: [200, 100, 200],
+            requireInteraction: true,
+            actions: [
+                { action: 'open',    title: 'Ouvrir' },
+                { action: 'dismiss', title: 'Ignorer' },
+            ],
+            tag:      'vazimba-' + (data.type || 'notif') + '-' + Date.now(),
+            renotify: false,
+        };
+    }
 
     event.waitUntil(
         self.registration.showNotification(title, options)
@@ -293,17 +320,33 @@ self.addEventListener('push', function(event) {
 
 self.addEventListener('notificationclick', function(event) {
     event.notification.close();
-    if (event.action === 'dismiss') return;
 
-    var rawUrl = (event.notification.data && event.notification.data.url) || '/';
+    var notifData = event.notification.data || {};
+    var action    = event.action;
+
+    /* ── Action "Refuser" sur appel entrant ───────────────────────────────
+       Appel un endpoint Django qui envoie MSG_TYPE_CALL_REJECT au caller. */
+    if (notifData.type === 'incoming_call' && action === 'decline') {
+        var rejectUrl = self.location.origin + '/chat/call-reject-push/?room_id=' + (notifData.room_id || '');
+        event.waitUntil(fetch(rejectUrl, { method: 'POST', credentials: 'include' }));
+        return;
+    }
+
+    /* ── Action "Ignorer" sur notif standard → fermer sans ouvrir ────── */
+    if (action === 'dismiss') return;
+
+    /* ── Accepter l'appel OU clic principal → ouvrir la room ─────────── */
+    var rawUrl;
+    if (notifData.type === 'incoming_call') {
+        rawUrl = notifData.url || '/';
+    } else {
+        rawUrl = notifData.url || '/';
+    }
 
     // Normalise l'URL : si elle est relative, la rendre absolue avec l'origine du SW.
-    // Si elle est déjà absolue mais pointe sur une origine différente (ex: Railway interne),
-    // on la remplace par l'origine publique du SW.
     var url;
     try {
         var parsed = new URL(rawUrl, self.location.origin);
-        // Forcer l'origine du SW (évite les URLs internes Railway)
         parsed.hostname === self.location.hostname
             ? url = parsed.href
             : url = self.location.origin + parsed.pathname + parsed.search;

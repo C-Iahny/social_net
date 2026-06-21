@@ -101,8 +101,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				print(f"[CALL] call_offer reçu de user_{self.scope['user'].id}, self.room_id={self.room_id}")
 				if self.room_id:
 					try:
-						room  = await get_room_or_error(self.room_id, self.scope["user"])
-						other = await get_other_user(room, self.scope["user"])
+						room      = await get_room_or_error(self.room_id, self.scope["user"])
+						other     = await get_other_user(room, self.scope["user"])
+						call_mode = content.get("call_mode", "video")
 						self.call_peer_id = other.id
 						print(f"[CALL] envoi vers groupe user_{other.id}")
 						await self.channel_layer.group_send(
@@ -114,11 +115,19 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 								"username":      self.scope["user"].username,
 								"profile_image": self.scope["user"].profile_image.url,
 								"sdp":           content.get("sdp", {}),
-								"call_mode":     content.get("call_mode", "video"),
+								"call_mode":     call_mode,
 								"room_id":       str(self.room_id),
 							}
 						)
 						print(f"[CALL] group_send OK → user_{other.id}")
+
+						# ── Push notification : réveille l'écran même si éteint ──
+						# On lance la push en tâche de fond (fire-and-forget) pour
+						# ne pas bloquer la signalisation WebRTC.
+						caller      = self.scope["user"]
+						caller_img  = caller.profile_image.url if caller.profile_image else None
+						await send_call_push(other, caller.username, caller_img, self.room_id, call_mode)
+
 					except Exception as e:
 						print(f"call_offer error: {e}")
 						import traceback; traceback.print_exc()
@@ -636,6 +645,25 @@ def disconnect_user(room, user):
 	# remove from connected_users list
 	account = Account.objects.get(pk=user.id)
 	return room.disconnect_user(account)
+
+
+@database_sync_to_async
+def send_call_push(callee, caller_name, caller_image, room_id, call_mode):
+    """
+    Envoie une Web Push notification d'appel entrant au callee.
+    Fonctionne même écran éteint si le navigateur/PWA est installé.
+    """
+    try:
+        from notification.models import PushSubscription
+        PushSubscription.send_call_notification(
+            callee=callee,
+            caller_name=caller_name,
+            caller_image=caller_image,
+            room_id=room_id,
+            call_mode=call_mode,
+        )
+    except Exception as e:
+        print(f"[CALL] push notification error: {e}")
 
 
 @database_sync_to_async
