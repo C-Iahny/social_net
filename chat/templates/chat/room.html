@@ -2388,22 +2388,28 @@ window._CT = {
                 if(lop){ lop.srcObject = stream; lop.style.display = 'block'; }
             }
             _buildPeer(function(remoteStream){
-                // La piste distante arrive → on passe en mode actif
+                /* CALLER : ontrack arrive avant _activateCallUI → parent overlay encore caché.
+                   Activer l'UI AVANT play() pour que call-remote-video ait un parent visible.
+                   iOS bloque play() sur élément dans display:none même avec muted=true. */
+                if(_callState !== 'active'){
+                    _callState = 'active';
+                    _activateCallUI();  /* affiche call-active-overlay EN PREMIER */
+                }
                 var rv = _callEl('call-remote-video');
                 /* Toujours router via <video> — audio ET vidéo.
                    iOS route <video> → haut-parleur, <audio> → oreillette.
-                   Pattern iOS : muted=true → play() → muted=false
-                   iOS autorise play() sur élément muted sans gesture ;
-                   une fois play() lancé, on unmute et l'audio sort. */
-                if(rv && !rv.srcObject){   /* garder le guard : ontrack peut firer 2× (audio+video) */
+                   Pattern iOS : muted=true → play() → muted=false */
+                if(rv && !rv.srcObject){   /* guard : ontrack peut firer 2× (audio+video) */
+                    /* Sécurité supplémentaire : forcer display:flex sur l'overlay si besoin */
+                    var _ao = document.getElementById('call-active-overlay');
+                    if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
-                    rv.muted = true;       /* déverrouille iOS autoplay */
+                    rv.muted = true;
                     rv.play()
-                      .then(function(){ rv.muted = false; }) /* unmute dès que playing */
+                      .then(function(){ rv.muted = false; })
                       .catch(function(e){
                           console.warn('[CALL] remote video play error:', e);
-                          /* Fallback Android/Chrome : tenter sans muted */
                           rv.muted = false;
                           rv.play().catch(function(e2){ console.error('[CALL] play fallback failed:', e2); });
                       });
@@ -2412,11 +2418,7 @@ window._CT = {
                 if(lv && !lv.srcObject){
                     lv.style.display = 'block';
                     lv.srcObject = _localStream;
-                    lv.play().catch(function(){});  /* local est muted, pas de blocage iOS */
-                }
-                if(_callState !== 'active'){
-                    _callState = 'active';
-                    _activateCallUI();
+                    lv.play().catch(function(){});
                 }
             });
             _localStream.getTracks().forEach(function(t){ _peerConn.addTrack(t, _localStream); });
@@ -2490,11 +2492,15 @@ window._CT = {
                 var rv = _callEl('call-remote-video');
                 /* Toujours router le stream distant vers <video> (même en mode audio).
                    Sur iOS, <video> → haut-parleur ; <audio> → oreillette par défaut.
-                   Pattern iOS : muted=true → play() → muted=false */
+                   Pattern iOS : muted=true → play() → muted=false
+                   CALLEE : ontrack peut arriver AVANT _activateCallUI() si ICE est rapide
+                   → forcer display:flex sur l'overlay avant play() */
                 if(rv && !rv.srcObject){  /* guard : ontrack peut firer 2× (audio + video) */
+                    var _ao = document.getElementById('call-active-overlay');
+                    if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
-                    rv.muted = true;      /* déverrouille iOS autoplay */
+                    rv.muted = true;
                     rv.play()
                       .then(function(){ rv.muted = false; })
                       .catch(function(e){
