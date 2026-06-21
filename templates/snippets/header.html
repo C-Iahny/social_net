@@ -434,6 +434,23 @@
 .scrollable-menu::-webkit-scrollbar { width: 4px; }
 .scrollable-menu::-webkit-scrollbar-track { background: transparent; }
 .scrollable-menu::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+/* ── Desktop : profil dropdown scrollable si trop haut ── */
+@media (min-width: 576px) {
+    .dropdown-menu[aria-labelledby="id_profile_links"] {
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+    }
+    .dropdown-menu[aria-labelledby="id_profile_links"]::-webkit-scrollbar {
+        width: 4px;
+    }
+    .dropdown-menu[aria-labelledby="id_profile_links"]::-webkit-scrollbar-thumb {
+        background: var(--border); border-radius: 4px;
+    }
+}
+
 /* ── Mobile : dropdown en position fixed pour ne jamais déborder ── */
 @media (max-width: 575.98px) {
     /* Sur mobile, l'animation dropIn utilise transform ce qui casse position:fixed sur iOS.
@@ -703,7 +720,7 @@
 <div class="zoot-nav-inner">
 
     <!-- Brand -->
-    <a href="{% url 'post:index' %}" class="zoot-brand">
+    <a href="{% url 'landing' %}" class="zoot-brand">
         <!-- Logo desktop -->
         <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA"
              class="zoot-logo-desktop"
@@ -726,6 +743,11 @@
             <span class="material-icons">explore</span>
             <span>{% trans "Explore" %}</span>
         </a>
+        <a href="{% url 'post:tendances' %}"
+           class="zoot-nav-link {% if request.resolver_match.url_name == 'tendances' %}active{% endif %}">
+            <span class="material-icons">trending_up</span>
+            <span>{% trans "Tendances" %}</span>
+        </a>
         <a href="{% url 'group:list' %}"
            class="zoot-nav-link {% if request.resolver_match.namespace == 'group' %}active{% endif %}">
             <span class="material-icons">groups</span>
@@ -744,7 +766,7 @@
         <a href="{% url 'bazar:index' %}"
            class="zoot-nav-link {% if request.resolver_match.namespace == 'bazar' %}active{% endif %}">
             <span class="material-icons">storefront</span>
-            <span>Bazar</span>
+            <span>{% trans "Bazar" %}</span>
         </a>
     </div>
 
@@ -755,7 +777,7 @@
 
         <!-- Search bar (desktop) + Live Dropdown -->
         <div class="zoot-search-wrap d-none d-lg-flex" style="position:relative;">
-            <form class="zoot-search-form" method="GET" action="{% url 'search' %}" id="zoot-search-form" autocomplete="off">
+            <form class="zoot-search-form" method="GET" action="{% url 'recherche' %}" id="zoot-search-form" autocomplete="off">
                 <input type="text" name="q" id="zoot-search-input"
                        placeholder="{% trans 'Search...' %}" autocomplete="off"
                        oninput="onSearchInput(this.value)"
@@ -896,7 +918,7 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Navigation principale -->
-                <p class="zoot-dropdown-label">A propos de moi</p>
+                <p class="zoot-dropdown-label">{% trans "A propos de moi" %}</p>
                 <a class="dropdown-item" href="{% url 'account:view' user_id=request.user.id %}">
                     <span class="material-icons">person_outline</span> {% trans "My profile" %}
                 </a>
@@ -918,7 +940,10 @@
                     <span class="material-icons">groups</span> {% trans "Groups" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'bazar:index' %}">
-                    <span class="material-icons">storefront</span> Bazar
+                    <span class="material-icons">storefront</span> {% trans "Bazar" %}
+                </a>
+                <a class="dropdown-item" href="{% url 'bazar:mes_favoris' %}">
+                    <span class="material-icons">favorite_border</span> {% trans "Mes favoris" %}
                 </a>
                 <a class="dropdown-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
                     <span class="material-icons">person_add_alt</span> {% trans "Friend requests" %}
@@ -930,7 +955,7 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Créer -->
-                <p class="zoot-dropdown-label">Créer</p>
+                <p class="zoot-dropdown-label">{% trans "Créer" %}</p>
                 <a class="dropdown-item" href="{% url 'post:kabary-create' %}"
                    style="color:var(--accent);">
                     <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
@@ -958,7 +983,7 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Compte -->
-                <p class="zoot-dropdown-label">Compte</p>
+                <p class="zoot-dropdown-label">{% trans "Compte" %}</p>
                 <a class="dropdown-item" href="{% url 'account:edit' user_id=request.user.id %}">
                     <span class="material-icons">manage_accounts</span> {% trans "Settings" %}
                 </a>
@@ -977,10 +1002,16 @@
 
                 <!-- Affichage & Langue (accessibles ici car masqués de la top nav sur mobile) -->
                 <p class="zoot-dropdown-label">{% trans "Display" %} &amp; {% trans "Language" %}</p>
-                <button class="dropdown-item" onclick="toggleTheme()" type="button"
+                <button class="dropdown-item" onclick="toggleTheme();" type="button"
                         style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
                     <span class="material-icons" id="dd-theme-icon">dark_mode</span>
                     <span id="dd-theme-label">{% trans "Dark mode" %}</span>
+                </button>
+                <!-- Mode économie de données -->
+                <button class="dropdown-item" onclick="toggleDataSaver()" type="button"
+                        style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
+                    <span class="material-icons" id="dd-datasaver-icon" style="color:var(--text-muted);">data_saver_off</span>
+                    <span id="dd-datasaver-label">{% trans "Mode économie" %}</span>
                 </button>
                 <!-- Sélecteur de langue compact -->
                 <div style="display:flex;gap:.4rem;padding:.3rem .85rem .65rem;flex-wrap:wrap;">
@@ -1015,11 +1046,11 @@
         {% else %}
         <!-- Not authenticated -->
         <a class="zoot-nav-link" href="{% url 'login' %}" style="text-transform:none;font-size:.9rem;min-width:auto;">
-            Connexion
+            {% trans "Connexion" %}
         </a>
         <a href="{% url 'register' %}"
            style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:22px;padding:.45rem 1.2rem;font-size:.9rem;font-weight:700;text-decoration:none;white-space:nowrap;transition:opacity .2s,box-shadow .2s;font-family:var(--font-primary,'Space Grotesk',sans-serif);">
-            S'inscrire
+            {% trans "S'inscrire" %}
         </a>
         {% endif %}
 
@@ -1039,22 +1070,36 @@
     <a href="{% url 'post:index' %}" class="zoot-mobile-link">
         <span class="material-icons">explore</span> {% trans "Explore" %}
     </a>
+    <a href="{% url 'post:tendances' %}" class="zoot-mobile-link">
+        <span class="material-icons">trending_up</span> {% trans "Tendances" %}
+    </a>
     <a href="{% url 'group:list' %}" class="zoot-mobile-link">
         <span class="material-icons">groups</span> {% trans "Groups" %}
     </a>
-    <a href="{% url 'bazar:index' %}" class="zoot-mobile-link">
-        <span class="material-icons">storefront</span> Bazar
+    <a href="{% url 'video:live-list' %}" class="zoot-mobile-link" style="color:#ff3b3b;">
+        <span class="material-icons" style="color:#ff3b3b;">radio_button_checked</span> Live
     </a>
+    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
+    <a href="{% url 'post:kabary-create' %}" class="zoot-mobile-link" style="color:var(--accent);">
+        <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
+    </a>
+    <a href="{% url 'post:vintana-create' %}" class="zoot-mobile-link" style="color:#bf5fff;">
+        <span class="material-icons" style="color:#bf5fff;">lock_clock</span> Vintana
+    </a>
+    <a href="{% url 'bazar:index' %}" class="zoot-mobile-link">
+        <span class="material-icons">storefront</span> {% trans "Bazar" %}
+    </a>
+    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
         <span class="material-icons">person_outline</span> {% trans "My profile" %}
     </a>
-    <div style="border-top:1px solid var(--border);margin:.5rem 0;"></div>
     <a href="{% url 'logout' %}" class="zoot-mobile-link" style="color:#e0245e;">
         <span class="material-icons" style="color:#e0245e;">logout</span> {% trans "Logout" %}
     </a>
 </div>
 {% endif %}
 </nav>
+
 
 {% include 'snippets/general_notifications.html' %}
 {% include 'snippets/chat_notifications.html' %}
@@ -1089,6 +1134,21 @@
         document.body.style.position = '';
         window.scrollTo(0, _scrollY);
     }
+    /* Exposer globalement pour que les boutons du dropdown puissent fermer proprement */
+    window._vzb_unlockScroll = unlockScroll;
+    window._vzb_closeDropdown = function(btn) {
+        /* Fermer le dropdown via manipulation DOM directe (évite les effets de bord
+           de l'API jQuery Bootstrap qui peut déclencher d'autres dropdowns) */
+        var dropdown = btn.closest('.dropdown');
+        if (dropdown) {
+            var menu   = dropdown.querySelector('.dropdown-menu');
+            var toggle = dropdown.querySelector('[data-toggle="dropdown"]');
+            if (menu)   { menu.classList.remove('show'); }
+            if (toggle) { toggle.classList.remove('show'); toggle.setAttribute('aria-expanded','false'); }
+        }
+        /* Débloquer immédiatement le scroll iOS (ne pas attendre hidden.bs.dropdown) */
+        unlockScroll();
+    };
     // Bootstrap 4 événements jQuery
     if (window.jQuery) {
         $(document).on('show.bs.dropdown',   lockScroll);
@@ -1322,7 +1382,8 @@ document.addEventListener('click', function(e) {
 
         var hasResults = (data.users && data.users.length) ||
                          (data.posts && data.posts.length) ||
-                         (data.hashtags && data.hashtags.length);
+                         (data.hashtags && data.hashtags.length) ||
+                         (data.annonces && data.annonces.length);
 
         if (!hasResults) { dd.style.display = 'none'; return; }
 
@@ -1361,11 +1422,29 @@ document.addEventListener('click', function(e) {
             html += '</div>';
         }
 
+        // Annonces bazar
+        if (data.annonces && data.annonces.length) {
+            html += '<div style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.4rem .9rem .2rem;">Bazar</div>';
+            data.annonces.forEach(function(a) {
+                var thumb = a.img
+                    ? '<img src="' + a.img + '" width="36" height="36" style="border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;" loading="lazy">'
+                    : '<span class="material-icons" style="font-size:1.4rem;color:var(--text-muted);flex-shrink:0;">storefront</span>';
+                html += '<a href="/bazar/' + a.id + '/" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
+                      + ' onmouseover="this.style.background=\'var(--btn-bg)\'"'
+                      + ' onmouseout="this.style.background=\'none\'">'
+                      + thumb
+                      + '<div style="flex:1;min-width:0;">'
+                      + '<div style="font-size:.87rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escH(a.title) + '</div>'
+                      + (a.price ? '<div style="font-size:.75rem;color:var(--accent);font-weight:700;">' + escH(a.price) + '</div>' : '')
+                      + '</div></a>';
+            });
+        }
+
         // Posts
         if (data.posts && data.posts.length) {
             html += '<div style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.4rem .9rem .2rem;">Publications</div>';
             data.posts.forEach(function(p) {
-                html += '<a href="/feed/#post-' + p.id + '" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
+                html += '<a href="/feed/' + p.id + '/" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
                       + ' onmouseover="this.style.background=\'var(--btn-bg)\'"'
                       + ' onmouseout="this.style.background=\'none\'">'
                       + '<span class="material-icons" style="font-size:1.1rem;color:var(--accent2);">article</span>'
@@ -1378,7 +1457,7 @@ document.addEventListener('click', function(e) {
 
         // View all link
         html += '<div style="border-top:1px solid var(--border);padding:.45rem .9rem .35rem;">'
-              + '<a href="/search/?q=' + encodeURIComponent(q) + '" style="font-size:.82rem;font-weight:700;color:var(--accent);text-decoration:none;">'
+              + '<a href="/recherche/?q=' + encodeURIComponent(q) + '" style="font-size:.82rem;font-weight:700;color:var(--accent);text-decoration:none;">'
               + '<span class="material-icons" style="font-size:.9rem;vertical-align:middle;">search</span>'
               + ' Voir tous les résultats</a></div>';
 
