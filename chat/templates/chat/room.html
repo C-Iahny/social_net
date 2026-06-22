@@ -19,20 +19,22 @@
     }
     #pied { display: none !important; }
 }
-/* Mobile : overflow:hidden + dvh pour exclure la chrome Safari (← ↑ ⊓)
-   - min-height:0 neutralise le min-height:100vh de base.html
-   - dvh = dynamic viewport height = la zone VRAIMENT visible → boutons d'appel visibles
-   - Pas de position:fixed sur main (cassait le layout avec base.html) */
+/* Mobile : position:fixed ancre le layout au viewport visuel.
+   - L'ajustement au clavier virtuel se fait via JS (visualViewport.resize)
+   - Plus besoin de dvh / calc : le JS met à jour bottom dynamiquement */
 @media (max-width: 768px) {
     html, body { overflow: hidden !important; }
     main {
+        position: fixed !important;   /* ancré au viewport visuel — clé du fix clavier */
+        top: 62px !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 58px !important;      /* valeur initiale (au-dessus de la bottom nav) */
+        height: auto !important;
         padding: 0 !important;
-        margin-top: 62px !important;
-        margin-bottom: 0 !important;
+        margin: 0 !important;
         overflow: hidden !important;
-        min-height: 0 !important;        /* neutralise base.html min-height:100vh */
-        height: calc(100vh  - 62px - 58px) !important; /* fallback si dvh non supporté */
-        height: calc(100dvh - 62px - 58px) !important; /* dvh: exclut la chrome Safari */
+        min-height: 0 !important;
     }
     /* Cacher le footer sur la page chat — il n'a pas sa place ici */
     #pied { display: none !important; }
@@ -1749,23 +1751,39 @@ window._CT = {
         // Initialisation : connecter automatiquement si une room est déjà connue
         onStart();
 
-        /* ── Anti-scroll iOS Safari ─────────────────────────────────────
-           iOS scrolle le document quand un textarea est focalisé, même si
-           overflow:hidden est posé sur html/body. Ce listener remet le scroll
-           à 0 dès qu'il bouge. Main étant position:fixed, ça ne change rien
-           visuellement mais ça empêche le footer de remonter à l'écran.
+        /* ── Fix clavier virtuel mobile ─────────────────────────────────
+           Quand le clavier s'ouvre, visualViewport.height diminue.
+           On ajuste main.style.bottom pour que l'input reste visible.
+           main est position:fixed → le layout s'adapte sans scroll page.
         ─────────────────────────────────────────────────────────────── */
-        window.addEventListener('scroll', function(){
-            if(window.scrollY > 0 || window.pageYOffset > 0){
-                window.scrollTo(0, 0);
+        if (window.innerWidth <= 768 && window.visualViewport) {
+            var _main      = document.querySelector('main');
+            var _kbTimer   = null;
+            var BOTTOM_NAV = 58; /* hauteur de la bottom nav mobile */
+
+            function _applyKbFix() {
+                if (!_main) return;
+                var vvH = Math.round(window.visualViewport.height);
+                /* Hauteur du clavier = viewport layout − viewport visuel */
+                var kbH = Math.max(0, Math.round(window.innerHeight) - vvH);
+                _main.style.bottom = (kbH + BOTTOM_NAV) + 'px';
+                /* Repositionner sur le dernier message */
+                var log = document.getElementById('id_chat_log');
+                if (log) log.scrollTop = 0;
             }
-        }, { passive: true });
-        if(window.visualViewport){
-            window.visualViewport.addEventListener('scroll', function(){
-                if(window.scrollY > 0 || window.pageYOffset > 0){
-                    window.scrollTo(0, 0);
-                }
-            });
+
+            window.visualViewport.addEventListener('resize', function() {
+                clearTimeout(_kbTimer);
+                _kbTimer = setTimeout(_applyKbFix, 30);
+            }, { passive: true });
+
+            /* Empêcher le scroll de page (iOS) sans forcer scrollTo */
+            window.addEventListener('scroll', function() {
+                window.scrollTo(0, 0);
+            }, { passive: true });
+
+            /* Dimensionnement initial */
+            _applyKbFix();
         }
 
         // Pré-remplir le message si on vient d'une fiche bazar
