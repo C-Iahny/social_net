@@ -533,30 +533,33 @@
 /* own-msg : avant le reply btn (= à gauche du groupe) */
 .message-container.own-msg .msg-react-btn { order: -2; }
 
-/* ── Wrapper bulle — ancre pour les badges de réaction ─────────── */
+/* ── Wrapper bulle — se réduit à la largeur de la bulle ─────────── */
 .msg-bubble-wrap {
-    position: relative;
-    display: inline-block;
-    max-width: 100%;
+    /* align-self:flex-start empêche le stretch horizontal dans le flex-column
+       parent (.msg-content-wrap). Sans ça, le wrap prenait toute la largeur
+       et left/bottom se calculaient par rapport au conteneur, pas à la bulle. */
+    align-self: flex-start;
+    display: block;
+    /* Pas de position:relative — on n'utilise plus l'absolute positioning */
 }
-/* Marge basse seulement quand des badges sont présents */
-.msg-bubble-wrap.has-reactions {
-    margin-bottom: 13px;
+.own-msg .msg-bubble-wrap {
+    align-self: flex-end;
 }
 
-/* ── Badges de réaction — coin inférieur de la bulle ───────────── */
+/* ── Badges de réaction — in-flow avec margin-top négatif ─────── */
+/* Plus fiable que l'absolute : le badge est dans le flux normal mais
+   "remonte" de 9 px pour chevaucher le bord bas de la bulle. */
 .msg-reactions {
-    position: absolute;
-    bottom: -11px;
-    left: 6px;           /* messages reçus : côté gauche */
     display: flex;
     flex-wrap: nowrap;
     gap: 3px;
-    z-index: 3;
+    margin-top: -9px;   /* chevauche le bas de la bulle de 9 px */
+    padding: 0 10px;    /* aligne avec le padding interne de .msg-p */
+    position: relative; /* pour z-index */
+    z-index: 3;         /* passe au-dessus du bord de la bulle */
 }
 .own-msg .msg-reactions {
-    left: auto;
-    right: 6px;          /* messages envoyés : côté droit */
+    justify-content: flex-end;
 }
 .reaction-chip {
     display: inline-flex;
