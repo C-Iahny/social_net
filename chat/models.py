@@ -71,12 +71,36 @@ class RoomChatMessage(models.Model):
 	# 'image' | 'video' | 'document' | '' (text-only)
 	file_type = models.CharField(max_length=20, blank=True, default='')
 
+	# ── Reply (citation) ─────────────────────────────────────────────────────
+	reply_to  = models.ForeignKey(
+		'self', on_delete=models.SET_NULL, null=True, blank=True,
+		related_name='replies'
+	)
+
 	objects = RoomChatMessageManager()
 
 	def __str__(self):
 		if self.file:
 			return f'[{self.file_type or "file"}] {self.file.name}'
 		return self.content[:80]
+
+
+class MessageReaction(models.Model):
+	"""
+	Réaction emoji sur un message de chat.
+	Un seul emoji par utilisateur par message (style WhatsApp).
+	"""
+	message = models.ForeignKey(
+		RoomChatMessage, on_delete=models.CASCADE, related_name='reactions'
+	)
+	user  = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+	emoji = models.CharField(max_length=10)
+
+	class Meta:
+		unique_together = ('message', 'user')
+
+	def __str__(self):
+		return f'{self.emoji} par {self.user.username} sur msg {self.message_id}'
 
 
 

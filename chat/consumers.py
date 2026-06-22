@@ -12,7 +12,7 @@ from friend.models import FriendList
 from account.utils import LazyAccountEncoder
 from chat.utils import calculate_timestamp, LazyRoomChatMessageEncoder
 from chat.exceptions import ClientError
-from chat.constants import *
+from chat.constants import *   # inclut MSG_TYPE_REACTION
 from account.models import Account
 
 
@@ -30,6 +30,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
 		# the room_id will define what it means to be "connected". If it is not None, then the user is connected.
 		self.room_id = None
+		# ID de l'interlocuteur en cours d'appel (pour router les signaux WebRTC)
+		self.call_peer_id = None
+
+		# Groupe personnel — reçoit les appels entrants même sans room active
+		if self.scope["user"].is_authenticated:
+			await self.channel_layer.group_add(
+				f"user_{self.scope['user'].id}",
+				self.channel_name,
+			)
 
 
 	async def receive_json(self, content):
@@ -50,7 +59,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			elif command == "send":
 				if len(content["message"].lstrip()) == 0:
 					raise ClientError(422,"You can't send an empty message.")
-				await self.send_room(content["room"], content["message"])
+				await self.send_room(content["room"], content["message"], content.get("reply_to_id"))
 			elif command == "get_room_chat_messages":
 				await self.display_progress_bar(True)
 				room = await get_room_or_error(content['room_id'], self.scope["user"])
@@ -71,6 +80,89 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				else:
 					raise ClientError(204, "Something went wrong retrieving the other users account details.")
 				await self.display_progress_bar(False)
+			elif command == "typing":
+				# Broadcast "typing" indicator to everyone else in the room
+				if self.room_id:
+					try:
+						room = await get_room_or_error(self.room_id, self.scope["user"])
+						await self.channel_layer.group_send(
+							room.group_name,
+							{
+								"type": "chat.typing",
+								"username": self.scope["user"].username,
+								"user_id":  self.scope["user"].id,
+							}
+						)
+					except Exception:
+						pass
+			elif command == "call_offer":
+				# ── Offre WebRTC : envoi via le GROUPE PERSONNEL du callee ──
+				# Fonctionne même si le callee a une autre conv ouverte
+				print(f"[CALL] call_offer reçu de user_{self.scope['user'].id}, self.room_id={self.room_id}")
+				if self.room_id:
+					try:
+						room      = await get_room_or_error(self.room_id, self.scope["user"])
+						other     = await get_other_user(room, self.scope["user"])
+						call_mode = content.get("call_mode", "video")
+						self.call_peer_id = other.id
+						print(f"[CALL] envoi vers groupe user_{other.id}")
+						await self.channel_layer.group_send(
+							f"user_{other.id}",
+							{
+								"type":          "chat.call",
+								"msg_type":      MSG_TYPE_CALL_OFFER,
+								"user_id":       self.scope["user"].id,
+								"username":      self.scope["user"].username,
+								"profile_image": self.scope["user"].profile_image.url,
+								"sdp":           content.get("sdp", {}),
+								"call_mode":     call_mode,
+								"room_id":       str(self.room_id),
+							}
+						)
+						print(f"[CALL] group_send OK → user_{other.id}")
+
+						# ── Push notification : réveille l'écran même si éteint ──
+						# On lance la push en tâche de fond (fire-and-forget) pour
+						# ne pas bloquer la signalisation WebRTC.
+						caller      = self.scope["user"]
+						caller_img  = caller.profile_image.url if caller.profile_image else None
+						await send_call_push(other, caller.username, caller_img, self.room_id, call_mode)
+
+					except Exception as e:
+						print(f"call_offer error: {e}")
+						import traceback; traceback.print_exc()
+				else:
+					print(f"[CALL] IGNORÉ: self.room_id est None — le caller n'a pas joint de room")
+
+			elif command in ("call_answer", "call_ice", "call_reject", "call_end"):
+				# ── Autres signaux : router vers le groupe personnel du peer ──
+				peer_id = self.call_peer_id
+				if not peer_id and self.room_id:
+					try:
+						room  = await get_room_or_error(self.room_id, self.scope["user"])
+						other = await get_other_user(room, self.scope["user"])
+						peer_id = other.id
+					except Exception:
+						pass
+				if peer_id:
+					_type_map = {
+						"call_answer": MSG_TYPE_CALL_ANSWER,
+						"call_ice":    MSG_TYPE_CALL_ICE,
+						"call_reject": MSG_TYPE_CALL_REJECT,
+						"call_end":    MSG_TYPE_CALL_END,
+					}
+					payload = {
+						"type":     "chat.call",
+						"msg_type": _type_map[command],
+						"user_id":  self.scope["user"].id,
+					}
+					if command == "call_answer":
+						payload["sdp"] = content.get("sdp", {})
+					elif command == "call_ice":
+						payload["candidate"] = content.get("candidate", {})
+					await self.channel_layer.group_send(f"user_{peer_id}", payload)
+					if command in ("call_reject", "call_end"):
+						self.call_peer_id = None
 			elif command == "send_file":
 				# The file was already saved to DB by the HTTP upload view.
 				# We just need to broadcast it to the room group.
@@ -81,6 +173,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 					content["file_name"],
 					content["file_type"],
 				)
+			elif command == "react":
+				await self.react_message(content.get("msg_id"), content.get("emoji"))
 		except ClientError as e:
 			await self.handle_client_error(e)
 		except Exception as e:
@@ -101,6 +195,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		except Exception as e:
 			print("EXCEPTION: " + str(e))
 			pass
+		# Quitter le groupe personnel
+		if self.scope["user"].is_authenticated:
+			try:
+				await self.channel_layer.group_discard(
+					f"user_{self.scope['user'].id}",
+					self.channel_name,
+				)
+			except Exception:
+				pass
 
 
 	async def join_room(self, room_id):
@@ -184,7 +287,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		})
 
 
-	async def send_room(self, room_id, message):
+	async def send_room(self, room_id, message, reply_to_id=None):
 		"""
 		Called by receive_json when someone sends a message to a room.
 		"""
@@ -204,25 +307,47 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		# get list of connected_users — must go through database_sync_to_async
 		connected_users = await get_connected_users(room)
 
+		# Récupérer les données du message cité (si reply)
+		reply_data = await get_reply_data(reply_to_id) if reply_to_id else None
+
 		# Execute these functions asynchronously; capture msg_id for avatar lookup
 		results = await asyncio.gather(
 			append_unread_msg_if_not_connected(room, room.user1, connected_users, message),
 			append_unread_msg_if_not_connected(room, room.user2, connected_users, message),
-			create_room_chat_message(room, self.scope["user"], message),
+			create_room_chat_message(room, self.scope["user"], message, reply_to_id),
 		)
 		msg_obj = results[2]  # RoomChatMessage instance
 
 		await self.channel_layer.group_send(
 			room.group_name,
 			{
-				"type": "chat.message",
-				"profile_image": self.scope["user"].profile_image.url,
-				"username": self.scope["user"].username,
-				"user_id": self.scope["user"].id,
-				"message": message,
-				"msg_id": msg_obj.id,
+				"type":             "chat.message",
+				"profile_image":    self.scope["user"].profile_image.url,
+				"username":         self.scope["user"].username,
+				"user_id":          self.scope["user"].id,
+				"message":          message,
+				"msg_id":           msg_obj.id,
+				"reply_to_id":      reply_data['id']       if reply_data else None,
+				"reply_to_username": reply_data['username'] if reply_data else None,
+				"reply_to_content": reply_data['content']  if reply_data else None,
 			}
 		)
+
+		# ── Badge non-lu temps-réel ──────────────────────────────────
+		# Si le destinataire n'est pas dans cette room, notifier son groupe
+		# personnel pour mettre à jour le badge dans la sidebar en live.
+		other = room.user1 if room.user2.id == self.scope["user"].id else room.user2
+		if other not in connected_users:
+			unread_count = await get_unread_count(room, other)
+			await self.channel_layer.group_send(
+				f"user_{other.id}",
+				{
+					"type":         "chat.unread_notif",
+					"msg_type":     MSG_TYPE_UNREAD_NOTIF,
+					"from_user_id": self.scope["user"].id,
+					"count":        unread_count,
+				}
+			)
 
 
 	async def send_file_room(self, room_id, msg_id, file_url, file_name, file_type):
@@ -256,6 +381,39 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				"file_type":     file_type,
 			}
 		)
+
+		# Badge non-lu temps-réel (même logique que send_room)
+		other = room.user1 if room.user2.id == self.scope["user"].id else room.user2
+		if other not in connected_users:
+			unread_count = await get_unread_count(room, other)
+			await self.channel_layer.group_send(
+				f"user_{other.id}",
+				{
+					"type":         "chat.unread_notif",
+					"msg_type":     MSG_TYPE_UNREAD_NOTIF,
+					"from_user_id": self.scope["user"].id,
+					"count":        unread_count,
+				}
+			)
+
+	async def react_message(self, msg_id, emoji):
+		"""Toggle une réaction emoji sur un message, broadcast le résultat."""
+		if not self.room_id or not msg_id or not emoji:
+			return
+		try:
+			room = await get_room_or_error(self.room_id, self.scope["user"])
+			await toggle_reaction(msg_id, self.scope["user"], emoji)
+			reactions = await get_message_reactions(msg_id)
+			await self.channel_layer.group_send(
+				room.group_name,
+				{
+					"type":      "chat.reaction",
+					"msg_id":    str(msg_id),
+					"reactions": reactions,
+				}
+			)
+		except Exception as e:
+			print(f"react_message error: {e}")
 
 	# These helper methods are named by the types we send - so chat.join becomes chat_join
 	async def chat_join(self, event):
@@ -306,13 +464,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
 		await self.send_json(
 			{
-				"msg_type": MSG_TYPE_MESSAGE,
-				"username": event["username"],
-				"user_id": event["user_id"],
-				"profile_image": event["profile_image"],
-				"message": event["message"],
+				"msg_type":          MSG_TYPE_MESSAGE,
+				"username":          event["username"],
+				"user_id":           event["user_id"],
+				"profile_image":     event["profile_image"],
+				"message":           event["message"],
 				"natural_timestamp": timestamp,
-				"msg_id": event.get("msg_id"),
+				"msg_id":            event.get("msg_id"),
+				"reply_to_id":       event.get("reply_to_id"),
+				"reply_to_username": event.get("reply_to_username"),
+				"reply_to_content":  event.get("reply_to_content"),
 			},
 		)
 
@@ -329,6 +490,48 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			"file_type":       event["file_type"],
 			"natural_timestamp": timestamp,
 			"msg_id":          event.get("msg_id"),
+		})
+
+	async def chat_call(self, event):
+		"""Relay WebRTC signaling — never echo back to the sender."""
+		print(f"[CALL] chat_call: user={self.scope['user'].id}, event_user_id={event.get('user_id')}, msg_type={event.get('msg_type')}")
+		if event.get("user_id") == self.scope["user"].id:
+			print(f"[CALL] chat_call: filtré (echo propre)")
+			return
+		# Mémoriser l'appelant pour router les réponses (answer/ice) dans l'autre sens
+		mt = event.get("msg_type")
+		if mt == MSG_TYPE_CALL_OFFER:
+			self.call_peer_id = event.get("user_id")
+			print(f"[CALL] chat_call: OFFER → envoi au client (callee), call_peer_id={self.call_peer_id}")
+		elif mt in (MSG_TYPE_CALL_END, MSG_TYPE_CALL_REJECT):
+			self.call_peer_id = None
+		await self.send_json(event)
+		print(f"[CALL] chat_call: send_json OK")
+
+	async def chat_unread_notif(self, event):
+		"""Notification badge non-lu temps-réel via le groupe personnel."""
+		await self.send_json({
+			"msg_type":     MSG_TYPE_UNREAD_NOTIF,
+			"from_user_id": event["from_user_id"],
+			"count":        event["count"],
+		})
+
+	async def chat_reaction(self, event):
+		"""Broadcast la mise à jour des réactions d'un message."""
+		await self.send_json({
+			"msg_type":  MSG_TYPE_REACTION,
+			"msg_id":    event["msg_id"],
+			"reactions": event["reactions"],
+		})
+
+	async def chat_typing(self, event):
+		"""Broadcast typing indicator — skip the typer themselves."""
+		if event.get("user_id") == self.scope["user"].id:
+			return
+		await self.send_json({
+			"msg_type": MSG_TYPE_TYPING,
+			"username": event["username"],
+			"user_id":  event["user_id"],
 		})
 
 	async def send_messages_payload(self, messages, new_page_number):
@@ -429,8 +632,57 @@ def get_user_info(room, user):
 
 
 @database_sync_to_async
-def create_room_chat_message(room, user, message):
-	return RoomChatMessage.objects.create(user=user, room=room, content=message)
+def create_room_chat_message(room, user, message, reply_to_id=None):
+	kwargs = {'user': user, 'room': room, 'content': message}
+	if reply_to_id:
+		try:
+			kwargs['reply_to_id'] = int(reply_to_id)
+		except (ValueError, TypeError):
+			pass
+	return RoomChatMessage.objects.create(**kwargs)
+
+
+@database_sync_to_async
+def get_reply_data(reply_to_id):
+	"""Retourne {'id', 'username', 'content'} du message cité, ou None."""
+	try:
+		msg = RoomChatMessage.objects.select_related('user').get(pk=int(reply_to_id))
+		body = msg.content[:100] if msg.content else f'[{msg.file_type or "fichier"}]'
+		return {'id': str(msg.id), 'username': msg.user.username, 'content': body}
+	except Exception:
+		return None
+
+
+@database_sync_to_async
+def toggle_reaction(msg_id, user, emoji):
+	"""
+	Toggle la réaction emoji de cet utilisateur sur ce message.
+	- Même emoji → supprime (toggle off)
+	- Emoji différent → remplace
+	- Pas de réaction → crée
+	"""
+	from chat.models import MessageReaction
+	try:
+		r = MessageReaction.objects.get(message_id=int(msg_id), user=user)
+		if r.emoji == emoji:
+			r.delete()
+		else:
+			r.emoji = emoji
+			r.save()
+	except MessageReaction.DoesNotExist:
+		MessageReaction.objects.create(message_id=int(msg_id), user=user, emoji=emoji)
+
+
+@database_sync_to_async
+def get_message_reactions(msg_id):
+	"""Retourne la liste agrégée des réactions : [{emoji, count, users}, ...]."""
+	from chat.models import MessageReaction
+	from collections import defaultdict
+	qs = MessageReaction.objects.filter(message_id=int(msg_id)).select_related('user')
+	grouped = defaultdict(list)
+	for r in qs:
+		grouped[r.emoji].append(r.user.username)
+	return [{'emoji': k, 'count': len(v), 'users': v} for k, v in grouped.items()]
 
 
 @database_sync_to_async
@@ -457,6 +709,12 @@ def get_room_chat_messages(room, page_number):
 
 
 @database_sync_to_async
+def get_other_user(room, user):
+	"""Retourne l'autre participant d'une room 1-à-1."""
+	return room.user1 if room.user2.id == user.id else room.user2
+
+
+@database_sync_to_async
 def get_connected_users(room):
 	"""Return a QuerySet-evaluated list of users currently connected to the room."""
 	return list(room.connected_users.all())
@@ -474,6 +732,34 @@ def disconnect_user(room, user):
 	# remove from connected_users list
 	account = Account.objects.get(pk=user.id)
 	return room.disconnect_user(account)
+
+
+@database_sync_to_async
+def send_call_push(callee, caller_name, caller_image, room_id, call_mode):
+    """
+    Envoie une Web Push notification d'appel entrant au callee.
+    Fonctionne même écran éteint si le navigateur/PWA est installé.
+    """
+    try:
+        from notification.models import PushSubscription
+        PushSubscription.send_call_notification(
+            callee=callee,
+            caller_name=caller_name,
+            caller_image=caller_image,
+            room_id=room_id,
+            call_mode=call_mode,
+        )
+    except Exception as e:
+        print(f"[CALL] push notification error: {e}")
+
+
+@database_sync_to_async
+def get_unread_count(room, user):
+	"""Retourne le compteur non-lu actuel pour (room, user)."""
+	try:
+		return UnreadChatRoomMessages.objects.get(room=room, user=user).count
+	except UnreadChatRoomMessages.DoesNotExist:
+		return 0
 
 
 # If the user is not connected to the chat, increment "unread messages" count
