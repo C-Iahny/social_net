@@ -463,6 +463,60 @@
 /* Timestamp externe (hover) — gardé pour compatibilité mais caché */
 .timestamp-span { display: none !important; }
 
+/* ── Reply citation dans la bulle ─────────────────────────────── */
+.msg-quote {
+    border-left: 3px solid var(--accent,#6366f1);
+    padding: 3px 8px 3px 7px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    background: rgba(0,0,0,.07);
+    cursor: pointer;
+}
+[data-theme="dark"] .msg-quote { background: rgba(255,255,255,.08); }
+.own-msg .msg-quote { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.6); }
+[data-theme="dark"] .own-msg .msg-quote { background: rgba(0,0,0,.18); }
+.msg-quote-author {
+    font-size: .7rem; font-weight: 700;
+    color: var(--accent,#6366f1); display: block; margin-bottom: 1px;
+}
+.own-msg .msg-quote-author { color: rgba(255,255,255,.9); }
+.msg-quote-body {
+    font-size: .76rem; opacity: .75;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ── Barre de prévisualisation reply (au-dessus du textarea) ───── */
+#reply-preview {
+    display: none; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    border-top: 1px solid var(--border,rgba(0,0,0,.1));
+    border-left: 3px solid var(--accent,#6366f1);
+    background: var(--surface,#fff);
+    font-size: .82rem; min-width: 0;
+}
+#reply-preview.active { display: flex; }
+#reply-preview-inner { flex:1; min-width:0; overflow:hidden; }
+#reply-preview-author { font-weight:700; color:var(--accent,#6366f1); font-size:.73rem; display:block; }
+#reply-preview-body { opacity:.7; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#reply-cancel-btn {
+    flex-shrink:0; background:none; border:none; cursor:pointer;
+    color:var(--text-muted,#888); font-size:1.1rem; padding:0 2px; line-height:1;
+}
+
+/* ── Bouton reply sur chaque bulle ─────────────────────────────── */
+.msg-reply-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted,#888); padding: 3px 5px;
+    opacity: 0; transition: opacity .15s; flex-shrink: 0;
+    align-self: center; border-radius: 50%;
+    display: flex; align-items: center;
+}
+.message-container:hover .msg-reply-btn { opacity: 1; }
+/* Sur mobile, toujours visible */
+@media (hover: none) { .msg-reply-btn { opacity: .55; } }
+.message-container.own-msg .msg-reply-btn { order: -1; }
+
 /* ── File message bubbles ──────────────────────────────────────── */
 .msg-file-bubble {
     border-radius: 16px;
@@ -1188,6 +1242,14 @@
                     </div>
                     <span id="chat-typing-text">est en train d'écrire…</span>
                 </div>
+                <!-- ── Barre reply (citation) ──────────────────────────── -->
+                <div id="reply-preview">
+                    <div id="reply-preview-inner">
+                        <span id="reply-preview-author"></span>
+                        <div id="reply-preview-body"></div>
+                    </div>
+                    <button id="reply-cancel-btn" onclick="cancelReply()" title="Annuler">✕</button>
+                </div>
                 <div class="chat-input-inner">
                     <!-- Hidden file input -->
                     <input type="file" id="chat-file-input" style="display:none;"
@@ -1577,6 +1639,27 @@ window._CT = {
     }
 
     /* ── Send text message ─────────────────────────────────────── */
+    /* ── État reply ───────────────────────────────────────────────── */
+    var _replyToId       = null;
+    var _replyToUsername = null;
+    var _replyToContent  = null;
+
+    function startReply(msgId, username, content) {
+        _replyToId       = msgId;
+        _replyToUsername = username;
+        _replyToContent  = content;
+        document.getElementById('reply-preview-author').textContent = username;
+        document.getElementById('reply-preview-body').textContent   = content.substring(0, 80);
+        document.getElementById('reply-preview').classList.add('active');
+        var ta = document.getElementById('id_chat_message_input');
+        if(ta) ta.focus();
+    }
+
+    function cancelReply() {
+        _replyToId = null; _replyToUsername = null; _replyToContent = null;
+        document.getElementById('reply-preview').classList.remove('active');
+    }
+
     function sendMessage(){
         // If a file is selected, upload it first
         if(_selectedFile){
@@ -1586,9 +1669,12 @@ window._CT = {
             var msg = inputEl ? inputEl.value.trim() : '';
             if(msg){
                 if(chatSocket && chatSocket.readyState === WebSocket.OPEN){
-                    chatSocket.send(JSON.stringify({ "command": "send", "message": msg, "room": roomId }));
+                    var payload = { "command": "send", "message": msg, "room": roomId };
+                    if(_replyToId) payload.reply_to_id = _replyToId;
+                    chatSocket.send(JSON.stringify(payload));
                     inputEl.value = '';
                     inputEl.style.height = 'auto';
+                    cancelReply();
                 }
             }
             return;
@@ -1609,7 +1695,10 @@ window._CT = {
             }
             return;
         }
-        chatSocket.send(JSON.stringify({ "command": "send", "message": msg, "room": roomId }));
+        var payload = { "command": "send", "message": msg, "room": roomId };
+        if(_replyToId) payload.reply_to_id = _replyToId;
+        chatSocket.send(JSON.stringify(payload));
+        cancelReply();
         inputEl.value = '';
         if(inputEl.style) inputEl.style.height = 'auto';
         inputEl.focus();
@@ -1859,7 +1948,7 @@ window._CT = {
 
         switch (messageType) {
             case 0:
-                createChatMessageElement(message + '\n', msg_id, uName + ": ", profile_image, user_id, timestamp, maintainPosition, isNewMessage)
+                createChatMessageElement(message + '\n', msg_id, uName + ": ", profile_image, user_id, timestamp, maintainPosition, isNewMessage, data)
                 break;
             case 1:
             case 2:
@@ -1873,9 +1962,11 @@ window._CT = {
         if(input) input.focus();
     }
 
-    function createChatMessageElement(msg, msg_id, username, profile_image, user_id, timestamp, maintainPosition, isNewMessage){
+    function createChatMessageElement(msg, msg_id, username, profile_image, user_id, timestamp, maintainPosition, isNewMessage, data){
+        data = data || {};
         var chatLog = document.getElementById("id_chat_log");
         var isOwn   = (String(user_id) === String(currentUserId));
+        var cleanName = (username || '').replace(/:\s*$/, '');
 
         var row = document.createElement("div");
         row.classList.add("message-container");
@@ -1896,7 +1987,7 @@ window._CT = {
             meta.classList.add("msg-meta");
             var uSpan = document.createElement("span");
             uSpan.classList.add("username-span");
-            uSpan.textContent = username.replace(/:\s*$/, '');
+            uSpan.textContent = cleanName;
             uSpan.addEventListener("click", function(){ selectUser(user_id); });
             meta.appendChild(uSpan);
             wrap.appendChild(meta);
@@ -1904,8 +1995,24 @@ window._CT = {
 
         var bubble = document.createElement("div");
         bubble.classList.add("msg-p");
-        try { bubble.innerHTML = validateText(msg); }
-        catch(e) { bubble.textContent = msg; }
+
+        /* ── Citation (reply) ─────────────────────────────────── */
+        if (data.reply_to_id) {
+            var quote = document.createElement("div");
+            quote.classList.add("msg-quote");
+            var qAuthor = document.createElement("span");
+            qAuthor.classList.add("msg-quote-author");
+            qAuthor.textContent = data.reply_to_username || '';
+            var qBody = document.createElement("div");
+            qBody.classList.add("msg-quote-body");
+            qBody.textContent = data.reply_to_content || '';
+            quote.appendChild(qAuthor);
+            quote.appendChild(qBody);
+            bubble.appendChild(quote);
+        }
+
+        try { bubble.innerHTML += validateText(msg); }
+        catch(e) { bubble.textContent += msg; }
         wrap.appendChild(bubble);
 
         /* Timestamp intégré DANS la bulle — heure seulement */
@@ -1925,6 +2032,19 @@ window._CT = {
         bubble.appendChild(bFooter);
 
         row.appendChild(wrap);
+
+        /* ── Bouton reply ─────────────────────────────────────── */
+        var replyBtn = document.createElement("button");
+        replyBtn.classList.add("msg-reply-btn");
+        replyBtn.title = "Répondre";
+        replyBtn.innerHTML = '<span class="material-icons" style="font-size:.9rem;">reply</span>';
+        (function(id, name, txt){
+            replyBtn.addEventListener("click", function(e){
+                e.stopPropagation();
+                startReply(id, name, txt);
+            });
+        })(msg_id, cleanName, msg.trim().substring(0, 100));
+        row.appendChild(replyBtn);
 
         _insertDateSeparatorIfNeeded(chatLog, timestamp, isNewMessage);
 
