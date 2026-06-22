@@ -533,38 +533,60 @@
 /* own-msg : avant le reply btn (= à gauche du groupe) */
 .message-container.own-msg .msg-react-btn { order: -2; }
 
-/* ── Chips de réaction sous les bulles ─────────────────────────── */
-.msg-reactions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    margin-top: 4px;
+/* ── Wrapper bulle — ancre pour les badges de réaction ─────────── */
+.msg-bubble-wrap {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
 }
-.own-msg .msg-reactions { justify-content: flex-end; }
+/* Marge basse seulement quand des badges sont présents */
+.msg-bubble-wrap.has-reactions {
+    margin-bottom: 13px;
+}
+
+/* ── Badges de réaction — coin inférieur de la bulle ───────────── */
+.msg-reactions {
+    position: absolute;
+    bottom: -11px;
+    left: 6px;           /* messages reçus : côté gauche */
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 3px;
+    z-index: 3;
+}
+.own-msg .msg-reactions {
+    left: auto;
+    right: 6px;          /* messages envoyés : côté droit */
+}
 .reaction-chip {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    background: var(--btn-bg);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 2px 8px 2px 6px;
+    gap: 2px;
+    background: var(--bg, #fff);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1px 7px 1px 5px;
     font-size: .82rem;
-    line-height: 1.5;
+    line-height: 1.4;
+    height: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.12);
     cursor: pointer;
-    transition: background .12s, transform .1s;
+    transition: transform .1s, box-shadow .1s;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
 }
-.reaction-chip:hover { background: var(--bg-secondary); }
-.reaction-chip:active { transform: scale(.9); }
+.reaction-chip:hover  { box-shadow: 0 2px 6px rgba(0,0,0,.18); }
+.reaction-chip:active { transform: scale(.88); }
 .reaction-chip.mine {
-    background: rgba(139,69,19,.08);
+    background: rgba(139,69,19,.09);
     border-color: var(--accent);
 }
+[data-theme="dark"] .reaction-chip {
+    background: var(--bg-card, #2a2a2a);
+}
 [data-theme="dark"] .reaction-chip.mine {
-    background: rgba(212,175,55,.1);
+    background: rgba(212,175,55,.12);
     border-color: var(--accent);
 }
 .rc-count {
@@ -1981,19 +2003,24 @@ window._CT = {
         }
     }
 
-    /* Appelé depuis le WS (msg_type 11) — met à jour les chips de la bulle */
+    /* Appelé depuis le WS (msg_type 11) — met à jour les badges de la bulle */
     function applyReactions(msgId, reactions){
         var row = document.querySelector('.message-container[data-msg-id="' + msgId + '"]');
         if(!row) return;
-        var wrap = row.querySelector('.msg-content-wrap');
-        if(!wrap) return;
-        var old = wrap.querySelector('.msg-reactions');
+        /* Les badges vivent dans .msg-bubble-wrap, pas dans .msg-content-wrap */
+        var bWrap = row.querySelector('.msg-bubble-wrap');
+        if(!bWrap) return;
+        var old = bWrap.querySelector('.msg-reactions');
         if(old) old.remove();
-        if(reactions && reactions.length) _renderReactionChips(wrap, msgId, reactions);
+        if(reactions && reactions.length){
+            _renderReactionChips(bWrap, msgId, reactions);
+        } else {
+            bWrap.classList.remove('has-reactions');
+        }
     }
 
-    /* Construit les chips et les insère dans wrap */
-    function _renderReactionChips(wrap, msgId, reactions){
+    /* Construit les badges et les insère dans bWrap (coin inférieur de la bulle) */
+    function _renderReactionChips(bWrap, msgId, reactions){
         var div = document.createElement('div');
         div.className = 'msg-reactions';
         reactions.forEach(function(r){
@@ -2012,7 +2039,8 @@ window._CT = {
             (function(em){ chip.addEventListener('click', function(){ sendReaction(msgId, em); }); })(r.emoji);
             div.appendChild(chip);
         });
-        wrap.appendChild(div);
+        bWrap.classList.add('has-reactions');
+        bWrap.appendChild(div);
     }
 
     function setupWebSocket(room_id){
@@ -2250,7 +2278,6 @@ window._CT = {
 
         try { bubble.innerHTML += validateText(msg); }
         catch(e) { bubble.textContent += msg; }
-        wrap.appendChild(bubble);
 
         /* Timestamp intégré DANS la bulle — heure seulement */
         var timeStr = _extractTime(timestamp);
@@ -2268,11 +2295,17 @@ window._CT = {
         }
         bubble.appendChild(bFooter);
 
-        /* ── Réactions existantes ─────────────────────────────── */
+        /* ── Wrapper bulle — ancre pour les badges de réaction ── */
+        var bWrap = document.createElement("div");
+        bWrap.classList.add("msg-bubble-wrap");
+        bWrap.appendChild(bubble);
+
+        /* ── Réactions existantes (badges au coin de la bulle) ── */
         if(data.reactions && data.reactions.length){
-            _renderReactionChips(wrap, msg_id, data.reactions);
+            _renderReactionChips(bWrap, msg_id, data.reactions);
         }
 
+        wrap.appendChild(bWrap);
         row.appendChild(wrap);
 
         /* ── Bouton react ─────────────────────────────────────── */
