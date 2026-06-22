@@ -95,47 +95,4 @@ class PushSubscription(models.Model):
                 # Subscription expirée ou invalide → la supprimer
                 sub.delete()
 
-    @classmethod
-    def send_call_notification(cls, callee, caller_name, caller_image, room_id, call_mode='video'):
-        """
-        Envoie une push notification d'appel entrant.
-        Le SW affichera la notification même écran éteint, avec sonnerie système
-        et boutons Répondre / Refuser.
-        """
-        import json
-        from django.conf import settings as cfg
-
-        if not cfg.VAPID_PUBLIC_KEY or not cfg.VAPID_PRIVATE_KEY:
-            return
-
-        try:
-            from pywebpush import webpush, WebPushException
-        except ImportError:
-            return
-
-        icon = caller_image or '/static/logo/vazimba_v2_icon.png'
-        mode_label = 'audio' if call_mode == 'audio' else 'vidéo'
-        payload = json.dumps({
-            'type':        'incoming_call',
-            'title':       f'📞 {caller_name}',
-            'body':        f'Appel {mode_label} entrant',
-            'icon':        icon,
-            'url':         f'/chat/?room_id={room_id}&auto_answer=1&call_mode={call_mode}',
-            'room_id':     str(room_id),
-            'call_mode':   call_mode,
-            'caller_name': caller_name,
-        })
-        vapid_claims = {'sub': f"mailto:{cfg.VAPID_CLAIMS_EMAIL}"}
-
-        subs = list(cls.objects.filter(user=callee))
-        for sub in subs:
-            try:
-                webpush(
-                    subscription_info=sub.as_subscription_info(),
-                    data=payload,
-                    vapid_private_key=cfg.VAPID_PRIVATE_KEY,
-                    vapid_claims=vapid_claims,
-                )
-            except Exception:
-                sub.delete()
 

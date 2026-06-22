@@ -29,7 +29,7 @@
         top: 62px !important;
         left: 0 !important;
         right: 0 !important;
-        bottom: 58px !important;      /* valeur initiale (au-dessus de la bottom nav) */
+        bottom: 0 !important;         /* 0 car #pied est caché sur la page chat */
         height: auto !important;
         padding: 0 !important;
         margin: 0 !important;
@@ -1752,21 +1752,32 @@ window._CT = {
         onStart();
 
         /* ── Fix clavier virtuel mobile ─────────────────────────────────
-           Quand le clavier s'ouvre, visualViewport.height diminue.
-           On ajuste main.style.bottom pour que l'input reste visible.
-           main est position:fixed → le layout s'adapte sans scroll page.
+           Comportement selon le navigateur :
+           • iOS Safari  : position:fixed est ancré au VISUAL viewport.
+             bottom:0 = dessus du clavier automatiquement — aucun JS nécessaire.
+           • Android Chrome : position:fixed est ancré au LAYOUT viewport.
+             Quand le clavier s'ouvre, il faut pousser main.style.bottom = kbH
+             pour que l'input reste visible.
         ─────────────────────────────────────────────────────────────── */
         if (window.innerWidth <= 768 && window.visualViewport) {
-            var _main      = document.querySelector('main');
-            var _kbTimer   = null;
-            var BOTTOM_NAV = 58; /* hauteur de la bottom nav mobile */
+            var _main    = document.querySelector('main');
+            var _kbTimer = null;
+            /* Détection iOS (iPhone / iPad / iPod + Macs avec touch — iPad en mode desktop) */
+            var _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
             function _applyKbFix() {
                 if (!_main) return;
-                var vvH = Math.round(window.visualViewport.height);
-                /* Hauteur du clavier = viewport layout − viewport visuel */
-                var kbH = Math.max(0, Math.round(window.innerHeight) - vvH);
-                _main.style.bottom = (kbH + BOTTOM_NAV) + 'px';
+                if (_isIOS) {
+                    /* iOS : position:fixed bottom:0 = dessus du clavier,
+                       pas besoin d'ajustement JS */
+                    _main.style.bottom = '0px';
+                } else {
+                    /* Android : ajuster manuellement */
+                    var vvH = Math.round(window.visualViewport.height);
+                    var kbH = Math.max(0, Math.round(window.innerHeight) - vvH);
+                    _main.style.bottom = kbH + 'px';
+                }
                 /* Repositionner sur le dernier message */
                 var log = document.getElementById('id_chat_log');
                 if (log) log.scrollTop = 0;
@@ -1777,7 +1788,7 @@ window._CT = {
                 _kbTimer = setTimeout(_applyKbFix, 30);
             }, { passive: true });
 
-            /* Empêcher le scroll de page (iOS) sans forcer scrollTo */
+            /* Empêcher le scroll de page (iOS) */
             window.addEventListener('scroll', function() {
                 window.scrollTo(0, 0);
             }, { passive: true });

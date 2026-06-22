@@ -188,15 +188,6 @@
     padding: .5rem 1rem;
 }
 .bazar-btn-danger:hover { background: #dc3545; color: #fff; text-decoration: none; }
-.bazar-btn-fav-saved {
-    background: #fff0f3;
-    border: 1.5px solid #e0325a;
-    color: #e0325a;
-    font-size: .85rem;
-    padding: .5rem 1rem;
-}
-[data-theme="dark"] .bazar-btn-fav-saved { background: rgba(224,50,90,.12); }
-.bazar-btn-fav-saved:hover { background: #e0325a; color: #fff; text-decoration: none; }
 
 /* ── Description ── */
 .bazar-desc-section {
@@ -343,7 +334,7 @@
 
 <!-- Fil d'Ariane -->
 <nav class="bazar-breadcrumb">
-    <a href="{% url 'bazar:index' %}">{% trans "Bazar" %}</a>
+    <a href="{% url 'bazar:index' %}">Bazar</a>
     <span>›</span>
     <a href="{% url 'bazar:index' %}?cat={{ annonce.category }}">{{ annonce.get_category_display }}</a>
     <span>›</span>
@@ -430,7 +421,7 @@
             <p class="bazar-price-big">
                 {{ annonce.formatted_price }}
                 {% if annonce.price_negotiable and annonce.price %}
-                <small style="font-size:.85rem;font-weight:500;color:var(--text-muted);"> · {% trans "négociable" %}</small>
+                <small style="font-size:.85rem;font-weight:500;color:var(--text-muted);"> · négociable</small>
                 {% endif %}
             </p>
 
@@ -461,9 +452,6 @@
                         <span style="display:inline-flex;align-items:center;gap:.2rem;background:#10b981;color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;">✓ {% trans "Vérifié" %}</span>
                         {% endif %}
                         {% endwith %}
-                        {% if annonce.seller.phone_verified %}
-                        <span title="Numéro de téléphone vérifié par SMS" style="display:inline-flex;align-items:center;gap:.2rem;background:var(--accent-glow,rgba(139,69,19,.12));color:var(--accent);font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;border:1px solid rgba(139,69,19,.3);">📱 {% trans "Tél. vérifié" %}</span>
-                        {% endif %}
                     </div>
                     <div class="bazar-seller-since">{% trans "Membre depuis" %} {{ annonce.seller.date_joined|date:"M Y" }}</div>
                 </div>
@@ -476,7 +464,7 @@
                 {% trans "Modifier l'annonce" %}
             </a>
             {% if annonce.status == 'active' %}
-            <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" onsubmit="return confirm(VZB_I18N.confirmSold)">
+            <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" onsubmit="return confirm('Marquer cette annonce comme vendue ?')">
                 {% csrf_token %}
                 <button type="submit" class="bazar-contact-btn bazar-btn-outline" style="border-color:#166534;color:#166534;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
@@ -484,11 +472,11 @@
                 </button>
             </form>
             {% endif %}
-            <form method="post" action="{% url 'bazar:delete' annonce.pk %}" onsubmit="return confirm(VZB_I18N.confirmDelete)">
+            <form method="post" action="{% url 'bazar:delete' annonce.pk %}" onsubmit="return confirm('Supprimer définitivement cette annonce ?')">
                 {% csrf_token %}
                 <button type="submit" class="bazar-contact-btn bazar-btn-danger">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                    {% trans "Supprimer" %}
+                    Supprimer
                 </button>
             </form>
 
@@ -496,91 +484,21 @@
             <!-- Actions acheteur -->
             {% if annonce.status == 'active' %}
             {% if annonce.contact_phone and annonce.show_phone %}
-            <!-- WhatsApp -->
-            <a href="https://wa.me/{{ annonce.contact_phone|cut:' '|cut:'+' }}?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20votre%20annonce%20%3A%20{{ annonce.title|urlencode }}"
+            <a href="https://wa.me/{{ annonce.contact_phone|cut:' '|cut:'+' }}?text=Bonjour, je suis intéressé par votre annonce : {{ annonce.title }}"
                target="_blank" rel="noopener" class="bazar-contact-btn bazar-btn-primary">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-                {% trans "WhatsApp" %}
+                {% trans "Contacter sur WhatsApp" %}
             </a>
-            <!-- Appel direct -->
-            <a href="tel:{{ annonce.contact_phone|cut:' ' }}"
-               class="bazar-contact-btn bazar-btn-outline">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.32a2 2 0 0 1 1.99-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.97-.97a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                {% trans "Appeler" %}
-            </a>
-            {% endif %}
-
-            <!-- ── Messagerie interne (toujours visible sauf pour le vendeur lui-même) ── -->
-            {% if user != annonce.seller %}
-            {% if user.is_authenticated %}
-            <a href="{% url 'chat:private-chat-room' %}?user_id={{ annonce.seller.pk }}&annonce={{ annonce.pk }}"
-               class="bazar-contact-btn bazar-btn-outline"
-               style="{% if annonce.contact_phone and annonce.show_phone %}margin-top:.4rem;{% endif %}">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                {% trans "Envoyer un message" %}
-            </a>
-            {% else %}
-            <a href="{% url 'login' %}?next={% url 'bazar:detail' annonce.pk %}"
-               class="bazar-contact-btn bazar-btn-outline"
-               style="{% if annonce.contact_phone and annonce.show_phone %}margin-top:.4rem;{% endif %}">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                {% trans "Envoyer un message" %}
-            </a>
-            {% endif %}
-            {% endif %}
-
-            <!-- ── Bouton Sauvegarder ── -->
-            {% if user.is_authenticated %}
-            <button id="fav-btn"
-                    onclick="toggleFavori({{ annonce.pk }})"
-                    class="bazar-contact-btn {% if is_saved %}bazar-btn-fav-saved{% else %}bazar-btn-outline{% endif %}"
-                    style="width:100%;margin-top:.5rem;">
-                <svg id="fav-icon" width="16" height="16" fill="{% if is_saved %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-                <span id="fav-label">{% if is_saved %}{% trans "Sauvegardé" %}{% else %}{% trans "Sauvegarder" %}{% endif %}</span>
-                <span id="fav-count" style="font-size:.78rem;font-weight:400;opacity:.7;margin-left:.25rem;">
-                    {% if fav_count %}({{ fav_count }}){% endif %}
-                </span>
-            </button>
-            {% endif %}
-
-            <!-- ── Bouton Signaler ── -->
-            {% if user.is_authenticated and user != annonce.seller %}
-            <button onclick="openReportModal('annonce','{{ annonce.pk }}')"
-                    class="bazar-contact-btn bazar-btn-outline"
-                    style="width:100%;margin-top:.5rem;border-color:rgba(239,68,68,.35);color:rgba(239,68,68,.8);">
-                <span class="material-icons" style="font-size:1rem;">flag</span>
-                {% trans "Signaler cette annonce" %}
-            </button>
-            {% endif %}
-
-            <!-- ── Boutons de partage ── -->
-            <div style="border-top:1px solid var(--border);margin-top:.85rem;padding-top:.85rem;">
-                <p style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">{% trans "Partager" %}</p>
-                <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-                    <!-- Partager sur WhatsApp -->
-                    <a href="https://wa.me/?text={{ annonce.title|urlencode }}%20%E2%80%94%20{{ annonce.formatted_price|urlencode }}%0A{{ request.build_absolute_uri }}"
-                       target="_blank" rel="noopener"
-                       style="display:inline-flex;align-items:center;gap:.35rem;background:#25d366;color:#fff;
-                              padding:.42rem .85rem;border-radius:8px;font-size:.8rem;font-weight:700;text-decoration:none;transition:opacity .18s;"
-                       onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
-                        WhatsApp
-                    </a>
-                    <!-- Copier le lien -->
-                    <button onclick="copyLink(this)"
-                            style="display:inline-flex;align-items:center;gap:.35rem;background:var(--bg-card);
-                                   border:1.5px solid var(--border);color:var(--text-secondary);
-                                   padding:.42rem .85rem;border-radius:8px;font-size:.8rem;font-weight:700;
-                                   cursor:pointer;transition:all .18s;"
-                            onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-                            onmouseout="if(!this.dataset.copied){this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'}">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                        <span class="copy-label">{% trans "Copier le lien" %}</span>
-                    </button>
-                </div>
+            <div style="font-size:.82rem;color:var(--text-muted);text-align:center;margin-bottom:.8rem;">
+                📞 {{ annonce.contact_phone }}
             </div>
+            {% else %}
+            <a href="{% url 'chat:private-chat-room' %}?user_id={{ annonce.seller.pk }}"
+               class="bazar-contact-btn bazar-btn-primary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                {% trans "Envoyer un message" %}
+            </a>
+            {% endif %}
             {% else %}
             <div style="background:var(--bg-secondary,#f5ebe0);border-radius:10px;padding:1rem;text-align:center;font-size:.88rem;color:var(--text-muted);">
                 {% trans "Cette annonce n'est plus disponible." %}
@@ -624,7 +542,7 @@
     <img id="lightbox-img" src="" alt="Aperçu">
     <div id="lb-error" style="display:none;color:#fff;flex-direction:column;align-items:center;gap:.75rem;font-size:.95rem;opacity:.7;">
         <span style="font-size:2.5rem;">🖼️</span>
-        <span>{% trans "Image non disponible" %}</span>
+        <span>Image non disponible</span>
     </div>
     {% if images|length > 1 %}
     <button class="lb-nav-btn" id="lightbox-next" onclick="event.stopPropagation(); lightboxNav(1)">&#8250;</button>
@@ -632,14 +550,6 @@
     {% endif %}
 </div>
 
-<script>
-var VZB_I18N = {
-    confirmSold: "{% trans 'Marquer cette annonce comme vendue ?' %}",
-    confirmDelete: "{% trans 'Supprimer définitivement cette annonce ?' %}",
-    copyLink: "{% trans 'Copier le lien' %}",
-    copied: "{% trans '✓ Copié !' %}"
-};
-</script>
 <script>
 // ── Gallery ────────────────────────────────────────────────────────────────────
 const galleryUrls = [{% for img in images %}"{{ img.image.url }}"{% if not forloop.last %},{% endif %}{% endfor %}];
@@ -724,75 +634,5 @@ document.getElementById('lightbox').addEventListener('touchend', e => {
     if (Math.abs(diff) > 40) lightboxNav(diff > 0 ? 1 : -1);
     _tsX = null;
 }, {passive:true});
-
-// ── Favori ─────────────────────────────────────────────────────────────────────
-var VZB_I18N_FAV = {
-    save:    "{% trans 'Sauvegarder' %}",
-    saved:   "{% trans 'Sauvegardé' %}",
-    saving:  "{% trans 'Chargement…' %}",
-};
-function toggleFavori(pk) {
-    const btn   = document.getElementById('fav-btn');
-    const icon  = document.getElementById('fav-icon');
-    const label = document.getElementById('fav-label');
-    const count = document.getElementById('fav-count');
-    if (!btn) return;
-    btn.disabled = true;
-    label.textContent = VZB_I18N_FAV.saving;
-    fetch('/bazar/' + pk + '/favori/', {
-        method: 'POST',
-        headers: { 'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '' },
-        credentials: 'same-origin',
-    })
-    .then(r => r.json())
-    .then(data => {
-        btn.disabled = false;
-        if (data.saved) {
-            btn.classList.remove('bazar-btn-outline');
-            btn.classList.add('bazar-btn-fav-saved');
-            icon.setAttribute('fill', 'currentColor');
-            label.textContent = VZB_I18N_FAV.saved;
-        } else {
-            btn.classList.remove('bazar-btn-fav-saved');
-            btn.classList.add('bazar-btn-outline');
-            icon.setAttribute('fill', 'none');
-            label.textContent = VZB_I18N_FAV.save;
-        }
-        count.textContent = data.count > 0 ? '(' + data.count + ')' : '';
-    })
-    .catch(() => { btn.disabled = false; label.textContent = VZB_I18N_FAV.save; });
-}
-
-// ── Copier le lien ─────────────────────────────────────────────────────────────
-function copyLink(btn) {
-    const url = window.location.href;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url).then(() => _showCopied(btn));
-    } else {
-        // Fallback pour navigateurs anciens
-        const ta = document.createElement('textarea');
-        ta.value = url;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        _showCopied(btn);
-    }
-}
-function _showCopied(btn) {
-    const label = btn.querySelector('.copy-label');
-    btn.dataset.copied = '1';
-    btn.style.borderColor = '#10b981';
-    btn.style.color = '#10b981';
-    if (label) label.textContent = VZB_I18N.copied;
-    setTimeout(() => {
-        delete btn.dataset.copied;
-        btn.style.borderColor = 'var(--border)';
-        btn.style.color = 'var(--text-secondary)';
-        if (label) label.textContent = VZB_I18N.copyLink;
-    }, 2500);
-}
 </script>
 {% endblock %}

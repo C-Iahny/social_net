@@ -20,24 +20,24 @@ def find_or_create_private_chat(user1, user2):
 
 def calculate_timestamp(timestamp):
     """
-    Retourne TOUJOURS "date at HH:MM" pour que le JS puisse séparer date et heure.
-    - aujourd'hui at 14:30
-    - hier at 09:05
-    - 15/06/2026 at 14:30
-
-    Note: naturalday() retourne "today"/"yesterday" en anglais ou
-    "aujourd'hui"/"hier" en français selon LANGUAGE_CODE.
-    On gère les deux pour être robuste.
+    1. Today or yesterday:
+        - EX: 'today at 10:56 AM'
+        - EX: 'yesterday at 5:19 PM'
+    2. other:
+        - EX: 05/06/2020
+        - EX: 12/28/2020
     """
-    hm = datetime.strftime(timestamp, "%H:%M")
-    nd = naturalday(timestamp).lower()          # normalise la casse
-    if nd in ("today", "aujourd'hui"):
-        return f"aujourd'hui at {hm}"
-    elif nd in ("yesterday", "hier"):
-        return f"hier at {hm}"
+    ts = ""
+    # Today or yesterday
+    if (naturalday(timestamp) == "today") or (naturalday(timestamp) == "yesterday"):
+        str_time = datetime.strftime(timestamp, "%I:%M %p")
+        str_time = str_time.strip("0")
+        ts = f"{naturalday(timestamp)} at {str_time}"
+    # other days
     else:
-        date_str = datetime.strftime(timestamp, "%d/%m/%Y")
-        return f"{date_str} at {hm}"
+        str_time = datetime.strftime(timestamp, "%m/%d/%Y")
+        ts = f"{str_time}"
+    return str(ts)
 
 
 
@@ -58,15 +58,5 @@ class LazyRoomChatMessageEncoder(Serializer):
         dump_object['message']           = str(obj.content)
         dump_object['profile_image']     = str(obj.user.profile_image.url)
         dump_object['natural_timestamp'] = calculate_timestamp(obj.timestamp)
-        # ── Citation (reply) ────────────────────────────────────────────────
-        if obj.reply_to_id:
-            try:
-                rt = obj.reply_to
-                body = rt.content[:100] if rt.content else f'[{rt.file_type or "fichier"}]'
-                dump_object['reply_to_id']       = str(rt.id)
-                dump_object['reply_to_username'] = str(rt.user.username)
-                dump_object['reply_to_content']  = body
-            except Exception:
-                pass
         return dump_object
 
