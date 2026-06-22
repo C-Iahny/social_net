@@ -595,6 +595,121 @@
     text-shadow: 0 0 3px rgba(255,255,255,.9); /* lisible sur fond clair ou sombre */
 }
 
+/* ── Messages vocaux — bouton micro ───────────────────────────── */
+.chat-mic-btn {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    transition: background .15s, color .15s;
+}
+.chat-mic-btn:hover { background: rgba(0,0,0,.06); color: var(--accent); }
+.chat-mic-btn.recording {
+    background: #e53935;
+    color: #fff;
+    animation: mic-pulse 1s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 0   rgba(229,57,53,.45); }
+    50%       { box-shadow: 0 0 0 9px rgba(229,57,53,0);   }
+}
+
+/* Indicateur d'enregistrement en cours */
+#rec-indicator {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #e53935;
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+    z-index: 20;
+    pointer-events: none;
+}
+#rec-indicator.visible { display: flex; }
+#rec-indicator::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    animation: rec-blink .8s step-end infinite;
+}
+@keyframes rec-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── Messages vocaux — player dans la bulle ────────────────────── */
+.voice-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 2px;
+    min-width: 190px;
+    max-width: 250px;
+}
+.vp-play-btn {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity .12s;
+    padding: 0;
+}
+.vp-play-btn:active { opacity: .7; }
+.own-msg .vp-play-btn { background: rgba(255,255,255,.3); }
+.vp-progress {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.vp-bar {
+    height: 4px;
+    background: rgba(0,0,0,.18);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+}
+.own-msg .vp-bar { background: rgba(255,255,255,.3); }
+.vp-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    width: 0%;
+    transition: width .1s linear;
+}
+.own-msg .vp-bar-fill { background: rgba(255,255,255,.9); }
+.vp-time {
+    font-size: .68rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .02em;
+}
+.own-msg .vp-time { color: rgba(255,255,255,.75); }
+
 /* ── Emoji picker flottant ─────────────────────────────────────── */
 #emoji-picker {
     display: none;
@@ -1360,7 +1475,9 @@
                     </div>
                     <button id="reply-cancel-btn" onclick="cancelReply()" title="Annuler">✕</button>
                 </div>
-                <div class="chat-input-inner">
+                <div class="chat-input-inner" style="position:relative;">
+                    <!-- Indicateur enregistrement vocal -->
+                    <div id="rec-indicator"><span id="rec-duration">0:00</span></div>
                     <!-- Hidden file input -->
                     <input type="file" id="chat-file-input" style="display:none;"
                            accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.7z,.txt,.csv">
@@ -1373,7 +1490,11 @@
                               rows="1"
                               inputmode="text"
                               enterkeyhint="send"></textarea>
-                    <button type="button" id="id_chat_message_submit" class="chat-send-btn" title="{% trans 'Envoyer (Entrée)' %}">
+                    <!-- Bouton micro (visible quand input vide) -->
+                    <button type="button" id="chat-mic-btn" class="chat-mic-btn" title="{% trans 'Message vocal' %}">
+                        <span class="material-icons">mic</span>
+                    </button>
+                    <button type="button" id="id_chat_message_submit" class="chat-send-btn" title="{% trans 'Envoyer (Entrée)' %}" style="display:none;">
                         <span class="material-icons">send</span>
                         <span class="send-btn-label">{% trans "Envoyer" %}</span>
                     </button>
@@ -1844,7 +1965,17 @@ window._CT = {
     /* ── Event listeners ───────────────────────────────────────── */
     document.addEventListener("DOMContentLoaded", function(){
         var submitBtn = document.getElementById('id_chat_message_submit');
+        var micBtn    = document.getElementById('chat-mic-btn');
         var inputEl   = document.getElementById('id_chat_message_input');
+
+        /* ── Toggle mic ↔ send selon présence de texte ─────────────── */
+        function _syncMicSend(){
+            var hasText = inputEl && inputEl.value.trim().length > 0;
+            if(submitBtn) submitBtn.style.display = hasText ? '' : 'none';
+            if(micBtn)    micBtn.style.display    = hasText ? 'none' : '';
+        }
+        _syncMicSend(); // état initial
+
         if(submitBtn){
             submitBtn.addEventListener('click', function(e){
                 e.preventDefault();
@@ -1861,6 +1992,7 @@ window._CT = {
             // Typing indicator — envoi throttlé (max 1 fois / 2s)
             var _typingThrottle = null;
             inputEl.addEventListener('input', function(){
+                _syncMicSend();
                 if(_typingThrottle) return;
                 if(chatSocket && chatSocket.readyState === WebSocket.OPEN && roomId){
                     chatSocket.send(JSON.stringify({ "command": "typing", "room": roomId }));
@@ -1920,15 +2052,218 @@ window._CT = {
             var ta = document.getElementById('id_chat_message_input');
             if(ta && !ta.value.trim()){
                 ta.value = "Bonjour, je suis intéressé(e) par votre annonce « {{ bazar_annonce.title|escapejs }} » (réf. #{{ bazar_annonce.pk }}). Est-elle toujours disponible ?";
-                // Auto-resize
+                // Auto-resize + déclenche l'event input (sync mic/send)
                 ta.style.height = 'auto';
                 ta.style.height = ta.scrollHeight + 'px';
+                ta.dispatchEvent(new Event('input'));
                 ta.focus();
                 ta.setSelectionRange(ta.value.length, ta.value.length);
             }
         })();
         {% endif %}
     });
+
+    /* ════════════════════════════════════════════════════════════════
+       MESSAGES VOCAUX
+       ════════════════════════════════════════════════════════════════ */
+    /* Helper : formate des secondes en "m:ss" */
+    function fmtAudioTime(sec){
+        if(isNaN(sec) || !isFinite(sec) || sec < 0) return '0:00';
+        sec = Math.round(sec);
+        return Math.floor(sec / 60) + ':' + ('0' + (sec % 60)).slice(-2);
+    }
+
+    /* Crée le player HTML pour un message vocal et l'attache à fileBubble */
+    function buildVoicePlayer(fileBubble, furl){
+        var vp      = document.createElement('div');
+        vp.className = 'voice-player';
+
+        /* Bouton play / pause */
+        var playBtn = document.createElement('button');
+        playBtn.className = 'vp-play-btn';
+        playBtn.type = 'button';
+        playBtn.innerHTML = '<span class="material-icons">play_arrow</span>';
+
+        /* Barre de progression */
+        var prog = document.createElement('div');
+        prog.className = 'vp-progress';
+
+        var bar  = document.createElement('div');
+        bar.className = 'vp-bar';
+        var fill = document.createElement('div');
+        fill.className = 'vp-bar-fill';
+        bar.appendChild(fill);
+
+        var timeEl = document.createElement('span');
+        timeEl.className = 'vp-time';
+        timeEl.textContent = '0:00';
+
+        prog.appendChild(bar);
+        prog.appendChild(timeEl);
+        vp.appendChild(playBtn);
+        vp.appendChild(prog);
+        fileBubble.appendChild(vp);
+
+        /* Élément audio — chargé à la demande */
+        var aud = null;
+        function getAudio(){
+            if(aud) return aud;
+            aud = new Audio(furl);
+            aud.preload = 'metadata';
+            aud.addEventListener('loadedmetadata', function(){
+                timeEl.textContent = fmtAudioTime(aud.duration);
+            });
+            aud.addEventListener('timeupdate', function(){
+                var pct = aud.duration ? (aud.currentTime / aud.duration * 100) : 0;
+                fill.style.width = pct + '%';
+                timeEl.textContent = fmtAudioTime(aud.currentTime);
+            });
+            aud.addEventListener('ended', function(){
+                playBtn.innerHTML = '<span class="material-icons">play_arrow</span>';
+                fill.style.width = '0%';
+                timeEl.textContent = fmtAudioTime(aud.duration || 0);
+            });
+            aud.addEventListener('error', function(){
+                timeEl.textContent = '—';
+            });
+            return aud;
+        }
+
+        /* Clic play/pause */
+        playBtn.addEventListener('click', function(){
+            var a = getAudio();
+            if(a.paused){
+                /* Pauser tous les autres players ouverts */
+                document.querySelectorAll('.vp-play-btn').forEach(function(b){
+                    if(b !== playBtn) b.innerHTML = '<span class="material-icons">play_arrow</span>';
+                });
+                document.querySelectorAll('audio._vp').forEach(function(x){ x.pause(); });
+                a.className = '_vp';
+                a.play().catch(function(){});
+                playBtn.innerHTML = '<span class="material-icons">pause</span>';
+            } else {
+                a.pause();
+                playBtn.innerHTML = '<span class="material-icons">play_arrow</span>';
+            }
+        });
+
+        /* Clic sur la barre pour chercher une position */
+        bar.addEventListener('click', function(e){
+            var a = getAudio();
+            if(!a.duration) return;
+            var rect = bar.getBoundingClientRect();
+            var pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            a.currentTime = pct * a.duration;
+        });
+    }
+
+    /* ── Logique d'enregistrement vocal ─────────────────────────── */
+    (function(){
+        var micBtn      = document.getElementById('chat-mic-btn');
+        var recInd      = document.getElementById('rec-indicator');
+        var recDurEl    = document.getElementById('rec-duration');
+        if(!micBtn || !window.MediaRecorder || !navigator.mediaDevices) return;
+
+        var _rec      = null;   // MediaRecorder actif
+        var _chunks   = [];     // fragments audio
+        var _stream   = null;   // MediaStream (à stopper après)
+        var _start    = 0;      // Date.now() au début de l'enregistrement
+        var _timerID  = null;   // setInterval pour la durée affichée
+        var _roomId   = null;   // défini juste avant l'envoi
+
+        function _startRec(){
+            if(_rec && _rec.state !== 'inactive') return;
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then(function(stream){
+                _stream = stream;
+                _chunks = [];
+
+                /* Choisir le codec : webm/opus sur Android, mp4 sur iOS */
+                var mime = '';
+                if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))
+                    mime = 'audio/webm;codecs=opus';
+                else if(MediaRecorder.isTypeSupported('audio/mp4'))
+                    mime = 'audio/mp4';
+
+                _rec = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
+                _rec.ondataavailable = function(e){
+                    if(e.data && e.data.size > 0) _chunks.push(e.data);
+                };
+                _rec.onstop = _sendVoice;
+                _rec.start();
+
+                _start = Date.now();
+                micBtn.classList.add('recording');
+                if(recInd)    recInd.classList.add('visible');
+                if(recDurEl)  recDurEl.textContent = '0:00';
+                _timerID = setInterval(function(){
+                    if(recDurEl)
+                        recDurEl.textContent = fmtAudioTime((Date.now() - _start) / 1000);
+                }, 500);
+            })
+            .catch(function(err){
+                console.warn('Micro inaccessible :', err);
+                alert('Impossible d\'accéder au microphone. Vérifiez les permissions.');
+            });
+        }
+
+        function _stopRec(){
+            if(!_rec || _rec.state === 'inactive') return;
+            clearInterval(_timerID);
+            micBtn.classList.remove('recording');
+            if(recInd) recInd.classList.remove('visible');
+            _rec.stop();
+            if(_stream){ _stream.getTracks().forEach(function(t){ t.stop(); }); _stream = null; }
+        }
+
+        function _sendVoice(){
+            if(!_chunks.length) return;
+            var mtype = (_rec && _rec.mimeType) || 'audio/webm';
+            var ext   = mtype.indexOf('mp4') >= 0 ? 'm4a' : 'webm';
+            var blob  = new Blob(_chunks, { type: mtype });
+            var fname = 'vocal_' + Date.now() + '.' + ext;
+            _chunks   = [];
+
+            /* Récupérer l'ID de room courant */
+            _roomId = currentRoomId;
+            if(!_roomId){ console.warn('room_id introuvable'); return; }
+
+            var fd = new FormData();
+            fd.append('room_id', _roomId);
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            fd.append('file', blob, fname);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '{% url "chat:upload-chat-file" %}', true);
+            xhr.onload = function(){
+                if(xhr.status !== 200) return;
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if(!data.ok) return;
+                    if(chatSocket && chatSocket.readyState === WebSocket.OPEN){
+                        chatSocket.send(JSON.stringify({
+                            'command':   'send_file',
+                            'room_id':   _roomId,
+                            'msg_id':    data.msg_id,
+                            'file_url':  data.file_url,
+                            'file_name': data.file_name,
+                            'file_type': 'voice',
+                        }));
+                    }
+                } catch(e){ console.error('Voice send error', e); }
+            };
+            xhr.send(fd);
+        }
+
+        /* Clic simple → toggle enregistrement */
+        micBtn.addEventListener('click', function(){
+            if(_rec && _rec.state === 'recording'){
+                _stopRec();
+            } else {
+                _startRec();
+            }
+        });
+    })();
 
     function closeBazarRef(){
         var el = document.getElementById('bazar-annonce-ref');
@@ -2393,6 +2728,9 @@ window._CT = {
             video.controls = true;
             video.preload = "metadata";
             fileBubble.appendChild(video);
+        } else if(ftype === 'voice'){
+            /* Message vocal — player inline */
+            buildVoicePlayer(fileBubble, furl);
         } else {
             var link = document.createElement("a");
             link.classList.add("msg-file-doc");
