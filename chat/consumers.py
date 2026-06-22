@@ -59,7 +59,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			elif command == "send":
 				if len(content["message"].lstrip()) == 0:
 					raise ClientError(422,"You can't send an empty message.")
-				await self.send_room(content["room"], content["message"])
+				await self.send_room(content["room"], content["message"], content.get("reply_to_id"))
 			elif command == "get_room_chat_messages":
 				await self.display_progress_bar(True)
 				room = await get_room_or_error(content['room_id'], self.scope["user"])
@@ -285,7 +285,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		})
 
 
-	async def send_room(self, room_id, message):
+	async def send_room(self, room_id, message, reply_to_id=None):
 		"""
 		Called by receive_json when someone sends a message to a room.
 		"""
@@ -305,23 +305,29 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		# get list of connected_users — must go through database_sync_to_async
 		connected_users = await get_connected_users(room)
 
+		# Récupérer les données du message cité (si reply)
+		reply_data = await get_reply_data(reply_to_id) if reply_to_id else None
+
 		# Execute these functions asynchronously; capture msg_id for avatar lookup
 		results = await asyncio.gather(
 			append_unread_msg_if_not_connected(room, room.user1, connected_users, message),
 			append_unread_msg_if_not_connected(room, room.user2, connected_users, message),
-			create_room_chat_message(room, self.scope["user"], message),
+			create_room_chat_message(room, self.scope["user"], message, reply_to_id),
 		)
 		msg_obj = results[2]  # RoomChatMessage instance
 
 		await self.channel_layer.group_send(
 			room.group_name,
 			{
-				"type": "chat.message",
-				"profile_image": self.scope["user"].profile_image.url,
-				"username": self.scope["user"].username,
-				"user_id": self.scope["user"].id,
-				"message": message,
-				"msg_id": msg_obj.id,
+				"type":             "chat.message",
+				"profile_image":    self.scope["user"].profile_image.url,
+				"username":         self.scope["user"].username,
+				"user_id":          self.scope["user"].id,
+				"message":          message,
+				"msg_id":           msg_obj.id,
+				"reply_to_id":      reply_data['id']       if reply_data else None,
+				"reply_to_username": reply_data['username'] if reply_data else None,
+				"reply_to_content": reply_data['content']  if reply_data else None,
 			}
 		)
 
@@ -437,13 +443,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
 		await self.send_json(
 			{
-				"msg_type": MSG_TYPE_MESSAGE,
-				"username": event["username"],
-				"user_id": event["user_id"],
-				"profile_image": event["profile_image"],
-				"message": event["message"],
+				"msg_type":          MSG_TYPE_MESSAGE,
+				"username":          event["username"],
+				"user_id":           event["user_id"],
+				"profile_image":     event["profile_image"],
+				"message":           event["message"],
 				"natural_timestamp": timestamp,
-				"msg_id": event.get("msg_id"),
+				"msg_id":            event.get("msg_id"),
+				"reply_to_id":       event.get("reply_to_id"),
+				"reply_to_username": event.get("reply_to_username"),
+				"reply_to_content":  event.get("reply_to_content"),
 			},
 		)
 
@@ -594,8 +603,25 @@ def get_user_info(room, user):
 
 
 @database_sync_to_async
-def create_room_chat_message(room, user, message):
-	return RoomChatMessage.objects.create(user=user, room=room, content=message)
+def create_room_chat_message(room, user, message, reply_to_id=None):
+	kwargs = {'user': user, 'room': room, 'content': message}
+	if reply_to_id:
+		try:
+			kwargs['reply_to_id'] = int(reply_to_id)
+		except (ValueError, TypeError):
+			pass
+	return RoomChatMessage.objects.create(**kwargs)
+
+
+@database_sync_to_async
+def get_reply_data(reply_to_id):
+	"""Retourne {'id', 'username', 'content'} du message cité, ou None."""
+	try:
+		msg = RoomChatMessage.objects.select_related('user').get(pk=int(reply_to_id))
+		body = msg.content[:100] if msg.content else f'[{msg.file_type or "fichier"}]'
+		return {'id': str(msg.id), 'username': msg.user.username, 'content': body}
+	except Exception:
+		return None
 
 
 @database_sync_to_async
