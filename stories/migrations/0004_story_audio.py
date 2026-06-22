@@ -1,5 +1,10 @@
 from django.db import migrations, models
-import stories.models
+
+
+def _story_audio_path(instance, filename):
+    """Chemin de stockage des fichiers audio — défini localement pour que la
+    migration reste stable même si la fonction dans models.py est renommée."""
+    return f'stories/audio/{instance.user.id}/{filename}'
 
 
 class Migration(migrations.Migration):
@@ -12,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='story',
             name='audio',
-            field=models.FileField(blank=True, null=True, upload_to=stories.models.story_audio_path),
+            field=models.FileField(blank=True, null=True, upload_to=_story_audio_path),
         ),
         migrations.AddField(
             model_name='story',
