@@ -536,12 +536,16 @@
 
 /* ── Wrapper bulle — ancre de positionnement pour les badges ──────── */
 .msg-bubble-wrap {
-    align-self: flex-start;   /* reçus : ne pas étirer dans le flex-column */
+    align-self: flex-start;   /* reçus : ne pas étirer dans la colonne flex */
     display: block;
     position: relative;       /* ancre pour les badges en position:absolute */
+    width: fit-content;       /* CRITIQUE : se réduit à la largeur de la bulle,
+                                 sinon right:/left: se calcule sur la largeur
+                                 du conteneur parent (toute la zone de message) */
 }
 .own-msg .msg-bubble-wrap {
-    align-self: flex-end;     /* envoyés : aligner à droite */
+    align-self: flex-end;
+    margin-left: auto;        /* pousse le wrapper à droite dans le flex */
 }
 /* Espace sous la bulle quand un badge est présent */
 .msg-bubble-wrap.has-reactions {
@@ -566,38 +570,29 @@
 .reaction-chip {
     display: inline-flex;
     align-items: center;
-    gap: 2px;
-    background: var(--bg, #fff);
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 1px 7px 1px 5px;
-    font-size: .82rem;
-    line-height: 1.4;
-    height: 22px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.12);
+    gap: 1px;
+    font-size: 1.1rem;        /* emoji légèrement plus grand */
+    line-height: 1;
     cursor: pointer;
-    transition: transform .1s, box-shadow .1s;
+    transition: transform .1s;
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+    /* Pas de bordure, pas de fond, pas de contour — juste l'emoji flottant */
 }
-.reaction-chip:hover  { box-shadow: 0 2px 6px rgba(0,0,0,.18); }
-.reaction-chip:active { transform: scale(.88); }
+.reaction-chip:active { transform: scale(.82); }
+/* Réaction choisie par soi-même : légère lueur pour la distinguer */
 .reaction-chip.mine {
-    background: rgba(139,69,19,.09);
-    border-color: var(--accent);
-}
-[data-theme="dark"] .reaction-chip {
-    background: var(--bg-card, #2a2a2a);
+    filter: drop-shadow(0 0 4px rgba(139,69,19,.55));
 }
 [data-theme="dark"] .reaction-chip.mine {
-    background: rgba(212,175,55,.12);
-    border-color: var(--accent);
+    filter: drop-shadow(0 0 4px rgba(212,175,55,.65));
 }
 .rc-count {
-    font-size: .72rem;
+    font-size: .60rem;
     font-weight: 700;
-    color: var(--text-muted);
+    color: #555;
+    text-shadow: 0 0 3px rgba(255,255,255,.9); /* lisible sur fond clair ou sombre */
 }
 
 /* ── Emoji picker flottant ─────────────────────────────────────── */
