@@ -110,12 +110,12 @@
 <div class="bazar-form-wrap">
     <div style="margin-bottom:1.8rem;">
         <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.6rem;">
-            <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
+            <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">Bazar</a>
             <span> › </span>
             <a href="{% url 'bazar:detail' annonce.pk %}" style="color:var(--accent);text-decoration:none;">{{ annonce.title|truncatechars:30 }}</a>
             <span> › </span>{% trans "Modifier" %}
         </nav>
-        <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.25rem;">✏️ {% trans "Modifier" %} {% trans "l'annonce" %}</h1>
+        <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.25rem;">✏️ {% trans "Modifier" %} l'annonce</h1>
         <p style="font-size:.88rem;color:var(--text-muted);">{% trans "Les modifications seront visibles immédiatement." %}</p>
     </div>
 
@@ -150,11 +150,11 @@
 
             <!-- Ajouter nouvelles photos -->
             {% if images|length < max_images %}
-            <label class="bazar-upload-zone" for="id_images" style="padding:1.2rem;cursor:pointer;">
+            <div class="bazar-upload-zone" onclick="document.getElementById('id_images').click()" style="padding:1.2rem;">
                 <div style="font-size:1.5rem;margin-bottom:.3rem;">➕</div>
                 <div style="font-size:.85rem;font-weight:600;">{% trans "Ajouter des photos" %}</div>
                 <div style="font-size:.75rem;color:var(--text-muted);">{{ max_images }} photos max au total ({{ images|length }} déjà ajoutée{{ images|length|pluralize }})</div>
-            </label>
+            </div>
             <input type="file" name="images" id="id_images" class="bazar-file-input" multiple accept="image/*,.heic,.heif">
             <div class="bazar-preview-grid" id="preview-grid"></div>
             {% endif %}
@@ -164,7 +164,7 @@
         <div class="bazar-section">
             <div class="bazar-section-title">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                {% trans "Article" %}
+                Article
             </div>
             <div class="form-group mb-3">
                 <label>{{ form.title.label }} *</label>
@@ -209,37 +209,18 @@
         <!-- Localisation + Contact -->
         <div class="bazar-section">
             <div class="bazar-section-title">📍 {% trans "Localisation & Contact" %}</div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label>{{ form.location.label }} *</label>
-                    {{ form.location }}
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label>{{ form.region.label }}</label>
-                    {{ form.region }}
-                    <small class="form-text">{% trans "Facilite le filtre « Près de chez moi »" %}</small>
-                </div>
+            <div class="form-group mb-3">
+                <label>{{ form.location.label }} *</label>
+                {{ form.location }}
             </div>
             <div class="form-group mb-2">
                 <label>{{ form.contact_phone.label }}</label>
                 {{ form.contact_phone }}
-                <small class="form-text">{% trans "Visible pour les acheteurs (appel ou WhatsApp)." %}</small>
             </div>
             <div class="form-check">
                 {{ form.show_phone }}
                 <label class="form-check-label" style="font-size:.85rem;font-weight:500;color:var(--text-primary);">{{ form.show_phone.label }}</label>
             </div>
-        </div>
-
-        <!-- Statut -->
-        <div class="bazar-section">
-            <div class="bazar-section-title">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                {% trans "Statut de l'annonce" %}
-            </div>
-            <label>{{ form.status.label }}</label>
-            {{ form.status }}
-            <small class="form-text">{% trans "« En pause » masque votre annonce sans la supprimer." %}</small>
         </div>
 
         <div class="bazar-submit">
@@ -249,12 +230,6 @@
     </form>
 </div>
 
-<script>
-var VZB_I18N = {
-    saving: "{% trans 'Enregistrement…' %}",
-    networkError: "{% trans 'Erreur réseau. Réessayez.' %}"
-};
-</script>
 <script>
 // Supprimer photo existante via AJAX
 function deletePhoto(imgPk, btn) {
@@ -275,42 +250,34 @@ function deletePhoto(imgPk, btn) {
 
 // Aperçu nouvelles photos
 let selectedFiles = [];
-const fileInput  = document.getElementById('id_images');
+const fileInput = document.getElementById('id_images');
 const previewGrid = document.getElementById('preview-grid');
-
-/* Détection support DataTransfer (absent sur iOS Safari < 17) */
-const _supportsFileSync = (function() {
-    try {
-        const dt = new DataTransfer();
-        dt.items.add(new File([''], '_chk_', { type: 'text/plain' }));
-        const tmp = document.createElement('input');
-        tmp.type = 'file';
-        tmp.files = dt.files;
-        return tmp.files.length === 1;
-    } catch(e) { return false; }
-})();
 
 if (fileInput) {
     fileInput.addEventListener('change', function() {
         const captured = Array.from(this.files);
-        try { this.value = ''; } catch(e) {}
+        this.value = '';
+        // Conversion WebP + HEIC via ZootMediaConverter (même logique que le feed)
         if (window.ZootMediaConverter) {
             ZootMediaConverter.processFiles(captured).then(converted => {
                 selectedFiles = converted.slice(0, 8);
-                renderPreviews(); syncEditInput();
+                renderPreviews();
+                syncEditInput();
             }).catch(() => {
                 selectedFiles = captured.slice(0, 8);
-                renderPreviews(); syncEditInput();
+                renderPreviews();
+                syncEditInput();
             });
         } else {
             selectedFiles = captured.slice(0, 8);
-            renderPreviews(); syncEditInput();
+            renderPreviews();
+            syncEditInput();
         }
     });
 }
 
 function syncEditInput() {
-    if (!fileInput || !_supportsFileSync) return;
+    if (!fileInput) return;
     const dt = new DataTransfer();
     selectedFiles.forEach(f => dt.items.add(f));
     fileInput.files = dt.files;
@@ -327,41 +294,13 @@ function renderPreviews() {
     previewGrid.innerHTML = '';
     selectedFiles.forEach((file, i) => {
         const reader = new FileReader();
-        reader.onload = ev => {
+        reader.onload = e => {
             const div = document.createElement('div');
             div.className = 'bazar-preview-item';
-            div.innerHTML = `<img src="${ev.target.result}" alt=""><button type="button" class="bazar-preview-remove" onclick="removeFile(${i})">✕</button>`;
+            div.innerHTML = `<img src="${e.target.result}" alt=""><button type="button" class="bazar-preview-remove" onclick="removeFile(${i})">✕</button>`;
             previewGrid.appendChild(div);
         };
         reader.readAsDataURL(file);
-    });
-}
-
-/* Soumission iOS-safe via FormData + fetch */
-const _editForm = document.querySelector('form[enctype="multipart/form-data"]');
-if (_editForm) {
-    _editForm.addEventListener('submit', function(e) {
-        if (selectedFiles.length === 0) return; /* aucun nouveau fichier : soumission native */
-        e.preventDefault();
-        const btn  = this.querySelector('button[type="submit"]');
-        const orig = btn ? btn.innerHTML : '';
-        if (btn) { btn.disabled = true; btn.innerHTML = VZB_I18N.saving; }
-
-        const fd = new FormData(this);
-        fd.delete('images');
-        selectedFiles.forEach(f => fd.append('images', f));
-
-        fetch(this.action || window.location.pathname, {
-            method: 'POST', body: fd, credentials: 'same-origin'
-        }).then(function(r) {
-            if (r.redirected) { window.location.href = r.url; }
-            else { return r.text().then(function(html) {
-                document.open(); document.write(html); document.close();
-            }); }
-        }).catch(function() {
-            if (btn) { btn.disabled = false; btn.innerHTML = orig; }
-            alert(VZB_I18N.networkError);
-        });
     });
 }
 </script>

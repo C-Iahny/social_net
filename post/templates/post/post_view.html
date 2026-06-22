@@ -107,16 +107,10 @@ body { background: var(--bg); }
     }
     /* Cache les labels, garde uniquement l'icône */
     .create-box-action span.btn-label { display: none; }
-    /* Post cards : contenu contraint à la largeur de l'écran.
-       overflow-x: hidden empêche le débordement horizontal,
-       MAIS overflow-y doit rester visible pour laisser le picker d'emojis
-       dépasser au-dessus de la carte. */
-    .post-card { width: 100%; min-width: 0; max-width: 100%; overflow-x: hidden; overflow-y: visible; box-sizing: border-box; }
-    /* La zone de réaction doit laisser le picker s'afficher hors de son conteneur */
-    .reaction-wrap { overflow: visible !important; }
-    .pc-footer     { overflow: visible !important; }
+    /* Post cards : contenu contraint à la largeur de l'écran */
+    .post-card { width: 100%; min-width: 0; max-width: 100%; overflow: hidden; box-sizing: border-box; }
     /* Corps du post : empêcher tout débordement de contenu CKEditor/HTML */
-    .pc-body { overflow-x: hidden; overflow-y: visible; word-break: break-word; overflow-wrap: break-word; }
+    .pc-body { overflow: hidden; word-break: break-word; overflow-wrap: break-word; }
     .pc-body * { max-width: 100% !important; height: auto !important; box-sizing: border-box; }
     .pc-body img, .pc-body video, .pc-body iframe { max-width: 100% !important; width: 100% !important; }
     /* Header média */
@@ -450,8 +444,7 @@ body { background: var(--bg); }
     background: var(--bg-card);
     border-radius: 20px;
     margin-bottom: 1.1rem;
-    overflow-x: hidden; /* horizontal only — reaction-picker must escape vertically */
-    overflow-y: visible;
+    overflow: hidden;
     box-shadow:
         0 1px 3px rgba(0,0,0,.05),
         0 4px 14px rgba(0,0,0,.06),
@@ -1508,12 +1501,6 @@ body { background: var(--bg); }
                             <span class="material-icons">delete_outline</span>
                         </a>
                     </div>
-                    {% elif request.user.is_authenticated %}
-                    <div class="pc-owner-menu">
-                        <button class="pc-menu-btn" onclick="openReportModal('post','{{ post.pk }}')" title="Signaler" style="background:none;border:none;cursor:pointer;padding:0;">
-                            <span class="material-icons" style="font-size:1.1rem;color:var(--text-muted);">flag</span>
-                        </button>
-                    </div>
                     {% endif %}
                 </div>
                 {% else %}
@@ -1543,12 +1530,6 @@ body { background: var(--bg); }
                         <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="{% trans 'Delete' %}">
                             <span class="material-icons">delete_outline</span>
                         </a>
-                    </div>
-                    {% elif request.user.is_authenticated %}
-                    <div class="pc-owner-menu">
-                        <button class="pc-menu-btn" onclick="openReportModal('post','{{ post.pk }}')" title="Signaler" style="background:none;border:none;cursor:pointer;padding:0;">
-                            <span class="material-icons" style="font-size:1.1rem;color:var(--text-muted);">flag</span>
-                        </button>
                     </div>
                     {% endif %}
                 </div>
@@ -1871,14 +1852,8 @@ body { background: var(--bg); }
         <!-- Trending hashtags -->
         {% if trending_hashtags %}
         <div class="rsb-card">
-            <p class="rsb-section-label" style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="display:flex;align-items:center;gap:.3rem;">
-                    <span class="material-icons">trending_up</span> {% trans "Trends" %}
-                </span>
-                <a href="{% url 'post:tendances' %}"
-                   style="font-size:.75rem;font-weight:700;color:var(--accent);text-decoration:none;opacity:.85;">
-                    Voir tout →
-                </a>
+            <p class="rsb-section-label">
+                <span class="material-icons">trending_up</span> {% trans "Trends" %}
             </p>
             {% for ht in trending_hashtags %}
             <a class="rsb-trending-row" href="{% url 'post:hashtag' ht.tag|slice:'1:' %}">
@@ -1887,10 +1862,6 @@ body { background: var(--bg); }
                 <span class="rsb-trending-count">{{ ht.count }}</span>
             </a>
             {% endfor %}
-            <a href="{% url 'post:tendances' %}"
-               style="display:block;text-align:center;padding:.55rem .5rem .4rem;font-size:.79rem;font-weight:700;color:var(--accent);text-decoration:none;border-top:1px solid var(--border);margin-top:.25rem;">
-                🔥 Toutes les tendances
-            </a>
         </div>
         {% endif %}
 
@@ -2117,59 +2088,6 @@ function closeAllPickers() {
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.reaction-wrap')) closeAllPickers();
 });
-
-/* ── Touch / Long-press pour les réactions sur mobile ── */
-(function() {
-    if (!('ontouchstart' in window)) return; // Desktop: hover events suffice.
-
-    var _lpTimers = {}; // postId → setTimeout handle
-
-    function bindTouch(wrap) {
-        var postId = wrap.id.replace('reaction-wrap-', '');
-        if (!postId) return;
-
-        wrap.addEventListener('touchstart', function(e) {
-            // Lance un long-press de 450 ms pour ouvrir le picker
-            _lpTimers[postId] = setTimeout(function() {
-                _lpTimers[postId] = null;
-                clearTimeout(_pickerTimers[postId]);
-                var p = document.getElementById('picker-' + postId);
-                if (p) p.classList.add('open');
-                // Bloquer le tap "quickReact" qui suivrait le touchend
-                wrap._longPressed = true;
-            }, 450);
-        }, { passive: true });
-
-        wrap.addEventListener('touchmove', function() {
-            // Si le doigt bouge, annuler le long-press
-            if (_lpTimers[postId]) { clearTimeout(_lpTimers[postId]); _lpTimers[postId] = null; }
-        }, { passive: true });
-
-        wrap.addEventListener('touchend', function(e) {
-            if (_lpTimers[postId]) {
-                clearTimeout(_lpTimers[postId]);
-                _lpTimers[postId] = null;
-                // Court tap sur le bouton → quickReact (géré par onclick)
-                // Ne pas déclencher deux fois si le bouton a un onclick
-            }
-            if (wrap._longPressed) {
-                // Bloquer le click natif qui suivrait le touchend
-                e.preventDefault();
-                wrap._longPressed = false;
-            }
-        }, { passive: false });
-    }
-
-    // Bind sur toutes les .reaction-wrap existantes + futures (mutation observer)
-    document.querySelectorAll('.reaction-wrap').forEach(bindTouch);
-
-    // Fermer le picker quand on touche ailleurs
-    document.addEventListener('touchstart', function(e) {
-        if (!e.target.closest('.reaction-wrap') && !e.target.closest('.reaction-picker')) {
-            closeAllPickers();
-        }
-    }, { passive: true });
-})();
 function quickReact(postId) {
     var cur = _userReactions[postId] !== undefined ? _userReactions[postId]
             : document.getElementById('react-btn-' + postId).classList.contains('liked') ? 'like' : null;

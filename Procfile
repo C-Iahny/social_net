@@ -1,2 +1,1 @@
 web: mkdir -p media_cdn/temp media_cdn/profile_images media_cdn/post_images media_cdn/header_images media_cdn/files media_cdn/videos && python manage.py collectstatic --noinput && python manage.py migrate --noinput && python manage.py ensure_admin && daphne -b 0.0.0.0 -p $PORT ZOOT.routing:application
-worker: python manage.py run_scheduler

@@ -2,11 +2,6 @@ from django import forms
 from django.core.exceptions import ValidationError
 from .models import Annonce, AnnonceImage
 
-try:
-    from regions import REGION_CHOICES
-except ImportError:
-    REGION_CHOICES = []
-
 
 class AnnonceForm(forms.ModelForm):
     """
@@ -19,10 +14,8 @@ class AnnonceForm(forms.ModelForm):
         fields = [
             'title', 'category', 'condition',
             'price', 'price_negotiable',
-            'description',
-            'location', 'region',
+            'description', 'location',
             'contact_phone', 'show_phone',
-            'status',
         ]
         widgets = {
             'title': forms.TextInput(attrs={
@@ -47,24 +40,11 @@ class AnnonceForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Ex: Antananarivo, Analakely',
             }),
-            'region': forms.Select(
-                attrs={'class': 'form-control'},
-                choices=[('', 'Toute Madagascar')] + list(REGION_CHOICES),
-            ),
             'contact_phone': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Ex: +261 34 00 000 00',
             }),
             'show_phone': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-            'status': forms.Select(
-                attrs={'class': 'form-control'},
-                # Exclure 'expiree' (géré automatiquement par le système)
-                choices=[
-                    ('active', 'Active — visible par tous'),
-                    ('pause',  'En pause — masquée temporairement'),
-                    ('vendue', 'Vendue — archivée'),
-                ],
-            ),
         }
         labels = {
             'title':            'Titre de l\'annonce',
@@ -73,11 +53,9 @@ class AnnonceForm(forms.ModelForm):
             'price':            'Prix (Ariary)',
             'price_negotiable': 'Prix négociable',
             'description':      'Description',
-            'location':         'Ville / quartier',
-            'region':           'Région',
+            'location':         'Localisation',
             'contact_phone':    'Téléphone / WhatsApp',
             'show_phone':       'Afficher le numéro publiquement',
-            'status':           'Statut de l\'annonce',
         }
 
     def clean_price(self):

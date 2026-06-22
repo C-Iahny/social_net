@@ -347,20 +347,18 @@ body { background: var(--bg); }
         padding: .4rem .85rem;
     }
 
-    /* Tabs profil : 4 boutons en largeur égale, pas de scroll */
+    /* Tabs profil : scrollables */
     .profile-tabs {
-        overflow-x: hidden;
+        overflow-x: auto;
         flex-wrap: nowrap;
-        padding: 0;
+        scrollbar-width: none;
+        padding: 0 .3rem;
     }
+    .profile-tabs::-webkit-scrollbar { display: none; }
     .tab-btn {
-        flex: 1;
-        min-width: 0;
-        padding: .65rem .25rem;
-        font-size: .74rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        flex-shrink: 0;
+        padding: .7rem .85rem;
+        font-size: .82rem;
     }
 }
 
@@ -1094,15 +1092,7 @@ body { background: var(--bg); }
             </div>
 
             <div class="profile-name-area">
-                <h1 class="profile-username" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
-                    {{ username }}
-                    {% if profile_user.phone_verified %}
-                    <span title="Numéro de téléphone vérifié par SMS"
-                          style="display:inline-flex;align-items:center;gap:.2rem;background:var(--accent-glow,rgba(139,69,19,.12));color:var(--accent);font-size:.62rem;font-weight:700;padding:.15rem .55rem;border-radius:20px;letter-spacing:.04em;border:1px solid rgba(139,69,19,.3);vertical-align:middle;">
-                        📱 {% trans "Tél. vérifié" %}
-                    </span>
-                    {% endif %}
-                </h1>
+                <h1 class="profile-username">{{ username }}</h1>
                 {% if bio %}<p class="profile-bio-text">{{ bio }}</p>{% endif %}
                 <div class="profile-stats-row">
                     <span class="profile-stat">
@@ -1145,7 +1135,7 @@ body { background: var(--bg); }
                     {% if friend_requests %}
                     <a class="btn-p btn-p-primary" href="{% url 'friend:friend-requests' user_id=id %}">
                         <span class="material-icons">notifications</span>
-                        {{ friend_requests|length }} {% trans "demande" %}
+                        {{ friend_requests|length }} demande
                     </a>
                     {% endif %}
 
@@ -1166,7 +1156,7 @@ body { background: var(--bg); }
                     {% if is_friend %}
                     <div class="dropdown">
                         <button class="btn-p btn-p-secondary dropdown-toggle" data-toggle="dropdown" id="friends-drop">
-                            <span class="material-icons">how_to_reg</span> {% trans "Ami" %}
+                            <span class="material-icons">how_to_reg</span> Ami
                         </button>
                         <div class="dropdown-menu" aria-labelledby="friends-drop"
                              style="border-radius:12px;border-color:var(--border);background:var(--bg-card);box-shadow:0 8px 28px rgba(0,0,0,.18);padding:.4rem;">
@@ -1197,13 +1187,6 @@ body { background: var(--bg); }
                 <a class="btn-p btn-p-primary" href="{% url 'login' %}">
                     <span class="material-icons">login</span> {% trans "Login" %}
                 </a>
-            {% endif %}
-            {% if request.user.is_authenticated and not is_self %}
-            <button class="btn-p" onclick="openReportModal('account','{{ id }}')"
-                    style="background:none;border:1px solid rgba(239,68,68,.3);color:rgba(239,68,68,.75);padding:.45rem .9rem;border-radius:22px;cursor:pointer;font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:.35rem;">
-                <span class="material-icons" style="font-size:.95rem;">flag</span>
-                Signaler
-            </button>
             {% endif %}
         </div>
     </div>
@@ -1284,17 +1267,17 @@ body { background: var(--bg); }
                             <div class="fihav-progress-bar" style="width:100%;"></div>
                         </div>
                         <p class="fihav-next-level" style="text-align:center;font-weight:700;color:var(--accent);">
-                            🌟 {% trans "Niveau maximum atteint !" %}
+                            🌟 Niveau maximum atteint !
                         </p>
                     {% endif %}
                     {% endwith %}
 
                     <div class="fihav-breakdown">
                         <p style="font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.35rem;">
-                            {% trans "Comment gagner des points" %}
+                            Comment gagner des points
                         </p>
                         <div class="fihav-breakdown-row">
-                            <span>📝 {% trans "Post standard" %}</span>
+                            <span>📝 Post standard</span>
                             <span class="fihav-breakdown-val">+5</span>
                         </div>
                         <div class="fihav-breakdown-row">
@@ -1302,23 +1285,23 @@ body { background: var(--bg); }
                             <span class="fihav-breakdown-val">+10</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>💬 {% trans "Commentaire" %}</span>
+                            <span>💬 Commentaire</span>
                             <span class="fihav-breakdown-val">+2</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>❤️ {% trans "Réaction reçue" %}</span>
+                            <span>❤️ Réaction reçue</span>
                             <span class="fihav-breakdown-val">+3</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>🔁 {% trans "Repost reçu" %}</span>
+                            <span>🔁 Repost reçu</span>
                             <span class="fihav-breakdown-val">+4</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>👤 {% trans "Ami" %}</span>
+                            <span>👤 Ami</span>
                             <span class="fihav-breakdown-val">+3</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>👥 {% trans "Groupe rejoint" %}</span>
+                            <span>👥 Groupe rejoint</span>
                             <span class="fihav-breakdown-val">+2</span>
                         </div>
                     </div>
@@ -1410,7 +1393,7 @@ body { background: var(--bg); }
                         <div style="display:flex;align-items:center;gap:.45rem;">
                             <span class="material-icons" style="color:var(--accent);font-size:1rem;">auto_stories</span>
                             <span style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);">
-                                {% if is_self %}{% trans "Mes stories" %}{% else %}{% trans "Stories" %}{% endif %}
+                                {% if is_self %}Mes stories{% else %}Stories{% endif %}
                             </span>
                         </div>
                         {% if is_self %}
@@ -1613,40 +1596,6 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
         var saved = sessionStorage.getItem('profile_tab_{{ id }}');
         if (saved) { var b = document.querySelector('[data-tab="' + saved + '"]'); if (b) b.click(); }
     } catch(e){}
-})();
-
-/* ── Swipe horizontal entre onglets (mobile) ── */
-(function() {
-    var TABS = ['posts', 'photos', 'friends-tab', 'about'];
-    var _swX = null, _swY = 0;
-
-    /* Zones à exclure : éléments avec leur propre scroll horizontal */
-    var EXCLUDE_SEL = '.profile-stats-row, .pc-gallery, .pc-comment-list, .friends-grid, .pf-stories-row';
-
-    document.addEventListener('touchstart', function(e) {
-        /* Ignorer si le toucher commence dans une zone exclue */
-        if (e.target.closest(EXCLUDE_SEL)) { _swX = null; return; }
-        _swX = e.touches[0].clientX;
-        _swY = e.touches[0].clientY;
-    }, { passive: true });
-
-    document.addEventListener('touchend', function(e) {
-        if (_swX === null) return;
-        var dx = e.changedTouches[0].clientX - _swX;
-        var dy = e.changedTouches[0].clientY - _swY;
-        /* Seuil : ≥ 40px horizontal, et plus horizontal que vertical */
-        if (Math.abs(dx) < 40 || Math.abs(dy) >= Math.abs(dx)) return;
-        /* Ignorer si zone exclue */
-        if (e.target.closest(EXCLUDE_SEL)) return;
-
-        var activeBtn = document.querySelector('.tab-btn.active');
-        if (!activeBtn) return;
-        var curIdx = TABS.indexOf(activeBtn.dataset.tab);
-        var nextIdx = dx < 0 ? curIdx + 1 : curIdx - 1;
-        if (nextIdx < 0 || nextIdx >= TABS.length) return;
-        var nextBtn = document.querySelector('[data-tab="' + TABS[nextIdx] + '"]');
-        if (nextBtn) nextBtn.click();
-    }, { passive: true });
 })();
 
 /* ── Friend callbacks ── */
