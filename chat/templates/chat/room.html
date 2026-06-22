@@ -534,34 +534,34 @@
 /* own-msg : bouton react passe à GAUCHE aussi (côté intérieur, près de la bulle) */
 .message-container.own-msg .msg-react-btn { order: 1; }
 
-/* ── Wrapper bulle — se réduit à la largeur de la bulle ─────────── */
+/* ── Wrapper bulle — ancre de positionnement pour les badges ──────── */
 .msg-bubble-wrap {
-    /* align-self:flex-start empêche le stretch horizontal dans le flex-column
-       parent (.msg-content-wrap). Sans ça, le wrap prenait toute la largeur
-       et left/bottom se calculaient par rapport au conteneur, pas à la bulle. */
-    align-self: flex-start;
+    align-self: flex-start;   /* reçus : ne pas étirer dans le flex-column */
     display: block;
-    /* Pas de position:relative — on n'utilise plus l'absolute positioning */
+    position: relative;       /* ancre pour les badges en position:absolute */
 }
 .own-msg .msg-bubble-wrap {
-    align-self: flex-end;
+    align-self: flex-end;     /* envoyés : aligner à droite */
+}
+/* Espace sous la bulle quand un badge est présent */
+.msg-bubble-wrap.has-reactions {
+    margin-bottom: 14px;
 }
 
-/* ── Badges de réaction — in-flow avec margin-top négatif ─────── */
-/* Plus fiable que l'absolute : le badge est dans le flux normal mais
-   "remonte" de 9 px pour chevaucher le bord bas de la bulle. */
+/* ── Badges de réaction — positionnement absolu au coin intérieur-bas ─ */
 .msg-reactions {
+    position: absolute;
+    bottom: -13px;            /* sort de la bulle par le bas */
+    right: 6px;               /* reçus : coin DROIT = côté intérieur (centre écran) */
+    left: auto;
     display: flex;
     flex-wrap: nowrap;
     gap: 3px;
-    margin-top: -9px;   /* chevauche le bas de la bulle de 9 px */
-    padding: 0 10px;    /* aligne avec le padding interne de .msg-p */
-    position: relative; /* pour z-index */
-    z-index: 3;         /* passe au-dessus du bord de la bulle */
-    justify-content: flex-end; /* reçus : badges à DROITE de la bulle */
+    z-index: 3;
 }
 .own-msg .msg-reactions {
-    justify-content: flex-start; /* envoyés : badges à GAUCHE de la bulle */
+    right: auto;
+    left: 6px;                /* envoyés : coin GAUCHE = côté intérieur (centre écran) */
 }
 .reaction-chip {
     display: inline-flex;
@@ -1903,9 +1903,6 @@ window._CT = {
                     var kbH = Math.max(0, Math.round(window.innerHeight) - vvH);
                     _main.style.bottom = kbH + 'px';
                 }
-                /* Repositionner sur le dernier message */
-                var log = document.getElementById('id_chat_log');
-                if (log) log.scrollTop = 0;
             }
 
             window.visualViewport.addEventListener('resize', function() {
