@@ -517,7 +517,8 @@
 .message-container:hover .msg-reply-btn { opacity: 1; }
 /* Sur mobile, toujours visible */
 @media (hover: none) { .msg-reply-btn { opacity: .55; } }
-.message-container.own-msg .msg-reply-btn { order: -1; }
+/* own-msg : bouton reply passe à GAUCHE de la bulle (côté intérieur) */
+.message-container.own-msg .msg-reply-btn { order: 1; }
 
 /* ── Bouton réaction sur chaque bulle ─────────────────────────── */
 .msg-react-btn {
@@ -530,8 +531,8 @@
 }
 .message-container:hover .msg-react-btn { opacity: 1; }
 @media (hover: none) { .msg-react-btn { opacity: .45; } }
-/* own-msg : avant le reply btn (= à gauche du groupe) */
-.message-container.own-msg .msg-react-btn { order: -2; }
+/* own-msg : bouton react passe à GAUCHE aussi (côté intérieur, près de la bulle) */
+.message-container.own-msg .msg-react-btn { order: 1; }
 
 /* ── Wrapper bulle — se réduit à la largeur de la bulle ─────────── */
 .msg-bubble-wrap {
@@ -557,9 +558,10 @@
     padding: 0 10px;    /* aligne avec le padding interne de .msg-p */
     position: relative; /* pour z-index */
     z-index: 3;         /* passe au-dessus du bord de la bulle */
+    justify-content: flex-end; /* reçus : badges à DROITE de la bulle */
 }
 .own-msg .msg-reactions {
-    justify-content: flex-end;
+    justify-content: flex-start; /* envoyés : badges à GAUCHE de la bulle */
 }
 .reaction-chip {
     display: inline-flex;
