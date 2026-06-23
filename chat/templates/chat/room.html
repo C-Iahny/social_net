@@ -2249,7 +2249,8 @@ window._CT = {
             var fname = 'vocal_' + Date.now() + '.' + ext;
             _chunks   = [];
 
-            var rid = currentRoomId;
+            /* roomId est la variable globale définie dans ce template */
+            var rid = roomId;
             if(!rid){ console.warn('room_id introuvable'); return; }
 
             var fd = new FormData();
