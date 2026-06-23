@@ -1490,6 +1490,10 @@
                               rows="1"
                               inputmode="text"
                               enterkeyhint="send"></textarea>
+                    <!-- Bouton annuler enregistrement (caché par défaut) -->
+                    <button type="button" id="rec-cancel-btn" class="chat-mic-btn" title="{% trans 'Annuler' %}" style="display:none;color:#e53935;">
+                        <span class="material-icons">delete</span>
+                    </button>
                     <!-- Bouton micro (visible quand input vide) -->
                     <button type="button" id="chat-mic-btn" class="chat-mic-btn" title="{% trans 'Message vocal' %}">
                         <span class="material-icons">mic</span>
@@ -2159,17 +2163,39 @@ window._CT = {
 
     /* ── Logique d'enregistrement vocal ─────────────────────────── */
     (function(){
-        var micBtn      = document.getElementById('chat-mic-btn');
-        var recInd      = document.getElementById('rec-indicator');
-        var recDurEl    = document.getElementById('rec-duration');
+        var micBtn   = document.getElementById('chat-mic-btn');
+        var sendBtn  = document.getElementById('id_chat_message_submit');
+        var cancelBtn= document.getElementById('rec-cancel-btn');
+        var recInd   = document.getElementById('rec-indicator');
+        var recDurEl = document.getElementById('rec-duration');
         if(!micBtn || !window.MediaRecorder || !navigator.mediaDevices) return;
 
-        var _rec      = null;   // MediaRecorder actif
-        var _chunks   = [];     // fragments audio
-        var _stream   = null;   // MediaStream (à stopper après)
-        var _start    = 0;      // Date.now() au début de l'enregistrement
-        var _timerID  = null;   // setInterval pour la durée affichée
-        var _roomId   = null;   // défini juste avant l'envoi
+        var _rec     = null;
+        var _chunks  = [];
+        var _stream  = null;
+        var _start   = 0;
+        var _timerID = null;
+        var _doSend  = false; // true = envoyer, false = annuler
+
+        /* Passe l'UI en mode "enregistrement" */
+        function _enterRecUI(){
+            micBtn.classList.add('recording');
+            micBtn.querySelector('.material-icons').textContent = 'stop';
+            if(sendBtn)   sendBtn.style.display   = '';   // flèche envoyer visible
+            if(cancelBtn) cancelBtn.style.display = '';   // ✕ annuler visible
+            if(recInd)    recInd.classList.add('visible');
+            if(recDurEl)  recDurEl.textContent = '0:00';
+        }
+
+        /* Restaure l'UI normale */
+        function _exitRecUI(){
+            micBtn.classList.remove('recording');
+            micBtn.querySelector('.material-icons').textContent = 'mic';
+            if(sendBtn)   sendBtn.style.display   = 'none';
+            if(cancelBtn) cancelBtn.style.display = 'none';
+            if(recInd)    recInd.classList.remove('visible');
+            clearInterval(_timerID);
+        }
 
         function _startRec(){
             if(_rec && _rec.state !== 'inactive') return;
@@ -2177,8 +2203,8 @@ window._CT = {
             .then(function(stream){
                 _stream = stream;
                 _chunks = [];
+                _doSend = false;
 
-                /* Choisir le codec : webm/opus sur Android, mp4 sur iOS */
                 var mime = '';
                 if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))
                     mime = 'audio/webm;codecs=opus';
@@ -2189,16 +2215,16 @@ window._CT = {
                 _rec.ondataavailable = function(e){
                     if(e.data && e.data.size > 0) _chunks.push(e.data);
                 };
-                _rec.onstop = _sendVoice;
+                _rec.onstop = function(){
+                    if(_doSend) _sendVoice();
+                    else        _chunks = []; // annulé, on jette
+                };
                 _rec.start();
 
                 _start = Date.now();
-                micBtn.classList.add('recording');
-                if(recInd)    recInd.classList.add('visible');
-                if(recDurEl)  recDurEl.textContent = '0:00';
+                _enterRecUI();
                 _timerID = setInterval(function(){
-                    if(recDurEl)
-                        recDurEl.textContent = fmtAudioTime((Date.now() - _start) / 1000);
+                    if(recDurEl) recDurEl.textContent = fmtAudioTime((Date.now()-_start)/1000);
                 }, 500);
             })
             .catch(function(err){
@@ -2207,11 +2233,10 @@ window._CT = {
             });
         }
 
-        function _stopRec(){
+        function _stopRec(send){
             if(!_rec || _rec.state === 'inactive') return;
-            clearInterval(_timerID);
-            micBtn.classList.remove('recording');
-            if(recInd) recInd.classList.remove('visible');
+            _doSend = !!send;
+            _exitRecUI();
             _rec.stop();
             if(_stream){ _stream.getTracks().forEach(function(t){ t.stop(); }); _stream = null; }
         }
@@ -2224,12 +2249,11 @@ window._CT = {
             var fname = 'vocal_' + Date.now() + '.' + ext;
             _chunks   = [];
 
-            /* Récupérer l'ID de room courant */
-            _roomId = currentRoomId;
-            if(!_roomId){ console.warn('room_id introuvable'); return; }
+            var rid = currentRoomId;
+            if(!rid){ console.warn('room_id introuvable'); return; }
 
             var fd = new FormData();
-            fd.append('room_id', _roomId);
+            fd.append('room_id', rid);
             fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
             fd.append('file', blob, fname);
 
@@ -2243,7 +2267,7 @@ window._CT = {
                     if(chatSocket && chatSocket.readyState === WebSocket.OPEN){
                         chatSocket.send(JSON.stringify({
                             'command':   'send_file',
-                            'room_id':   _roomId,
+                            'room_id':   rid,
                             'msg_id':    data.msg_id,
                             'file_url':  data.file_url,
                             'file_name': data.file_name,
@@ -2255,14 +2279,30 @@ window._CT = {
             xhr.send(fd);
         }
 
-        /* Clic simple → toggle enregistrement */
+        /* Micro : démarrer, ou annuler si déjà en cours */
         micBtn.addEventListener('click', function(){
-            if(_rec && _rec.state === 'recording'){
-                _stopRec();
-            } else {
-                _startRec();
-            }
+            if(_rec && _rec.state === 'recording') _stopRec(false); // tap sur stop = annuler
+            else _startRec();
         });
+
+        /* Bouton envoyer pendant enregistrement → stop + envoi */
+        if(sendBtn){
+            sendBtn.addEventListener('click', function(e){
+                if(_rec && _rec.state === 'recording'){
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    _stopRec(true); // envoyer !
+                }
+                /* sinon → sendMessage() géré par l'écouteur existant */
+            }, true); /* capture : s'exécute avant l'écouteur de bubble */
+        }
+
+        /* Bouton annuler (✕) pendant enregistrement */
+        if(cancelBtn){
+            cancelBtn.addEventListener('click', function(){
+                _stopRec(false); // jeter
+            });
+        }
     })();
 
     function closeBazarRef(){
