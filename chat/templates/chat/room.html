@@ -1761,15 +1761,19 @@ function uploadAndSendFile(f){
         uploadProg.style.display = 'none';
         if(xhr.status === 200){
             var data = JSON.parse(xhr.responseText);
-            if(data.ok && chatSocket && chatSocket.readyState === WebSocket.OPEN){
-                chatSocket.send(JSON.stringify({
-                    "command":   "send_file",
-                    "room":      roomId,
-                    "msg_id":    data.msg_id,
-                    "file_url":  data.file_url,
-                    "file_name": data.file_name,
-                    "file_type": data.file_type,
-                }));
+            if(data.ok){
+                /* Le serveur a broadcasté via channel layer — pas de 2ème aller-retour WS.
+                   Fallback WS uniquement si broadcast a échoué côté serveur. */
+                if(!data.broadcast && chatSocket && chatSocket.readyState === WebSocket.OPEN){
+                    chatSocket.send(JSON.stringify({
+                        "command":   "send_file",
+                        "room":      roomId,
+                        "msg_id":    data.msg_id,
+                        "file_url":  data.file_url,
+                        "file_name": data.file_name,
+                        "file_type": data.file_type,
+                    }));
+                }
                 clearFileSelection();
             } else {
                 alert(data.error || 'Échec de l\'envoi.');
@@ -2271,10 +2275,12 @@ window._CT = {
                 try {
                     var data = JSON.parse(xhr.responseText);
                     if(!data.ok) return;
-                    if(chatSocket && chatSocket.readyState === WebSocket.OPEN){
+                    /* Le serveur a broadcasté via channel layer dès l'upload terminé.
+                       Fallback WS uniquement si broadcast a échoué (data.broadcast = false). */
+                    if(!data.broadcast && chatSocket && chatSocket.readyState === WebSocket.OPEN){
                         chatSocket.send(JSON.stringify({
                             'command':   'send_file',
-                            'room_id':   rid,
+                            'room':      rid,   /* 'room' et non 'room_id' — cf. consumer */
                             'msg_id':    data.msg_id,
                             'file_url':  data.file_url,
                             'file_name': data.file_name,
