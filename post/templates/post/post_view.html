@@ -1632,7 +1632,6 @@ body { background: var(--bg); }
                             onclick="toggleComments({{ post.id }})"
                             style="flex:1;">
                         <span class="material-icons">chat_bubble_outline</span>
-                        {% trans "Comments" %}
                         <span id="comment-count-{{ post.id }}"
                               style="font-size:.76rem;margin-left:.15rem;color:var(--text-muted);{% if not post.total_comments %}display:none{% endif %}">
                             {% if post.total_comments %}({{ post.total_comments }}){% endif %}
@@ -1641,7 +1640,6 @@ body { background: var(--bg); }
 
                     <button class="pc-footer-btn" onclick="sharePost({{ post.id }}, '{{ post.title|escapejs }}')" style="flex:1;">
                         <span class="material-icons">share</span>
-                        {% trans "Share" %}
                     </button>
 
                     <button class="pc-footer-btn {% if post.is_bookmarked %}bookmarked{% endif %}"
@@ -2037,6 +2035,7 @@ body { background: var(--bg); }
    INFINITE SCROLL
    ══════════════════════════════════════ */
 (function() {
+    try {
     var _feedMoreUrl = "{% url 'post:feed-more' %}";
     var _nextPage    = {% if posts_of_the_page.has_next %}{{ posts_of_the_page.next_page_number }}{% else %}null{% endif %};
     var _loading     = false;
@@ -2046,7 +2045,7 @@ body { background: var(--bg); }
     var endMsg    = document.getElementById('feed-end-message');
     var feedMain  = document.querySelector('.feed-main');
 
-    if (!sentinel) return;
+    if (!sentinel || !feedMain) return;
     feedMain.insertBefore(sentinel, indicator);
 
     function loadMore() {
@@ -2093,6 +2092,7 @@ body { background: var(--bg); }
     } else {
         if (endMsg) endMsg.classList.add('visible');
     }
+    } catch(e) { console.warn('Infinite scroll init error:', e); }
 })();
 
 /* ══════════════════════════════════════
@@ -2635,8 +2635,10 @@ document.addEventListener('DOMContentLoaded', processAllPostBodies);
 
 
 (function() {
-    var mo = new MutationObserver(function() { processAllPostBodies(); });
-    mo.observe(document.querySelector('.feed-main') || document.body, { childList: true, subtree: true });
+    try {
+        var mo = new MutationObserver(function() { try { processAllPostBodies(); } catch(e){} });
+        mo.observe(document.querySelector('.feed-main') || document.body, { childList: true, subtree: true });
+    } catch(e) { console.warn('MutationObserver init error:', e); }
 })();
 
 /* ══════════════════════════════════════

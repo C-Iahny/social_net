@@ -178,11 +178,12 @@
 
     <!-- Action bar -->
     <div class="pc-footer">
-        <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}">
+        <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}"
+             onmouseenter="openPicker({{ post.id }})"
+             onmouseleave="closePicker({{ post.id }})">
             <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
                     id="react-btn-{{ post.id }}"
                     onclick="quickReact({{ post.id }})"
-                    onmouseenter="openPicker({{ post.id }})"
                     title="Réagir">
                 <span id="react-icon-{{ post.id }}" style="font-size:1.05rem;line-height:1;">
                     {% if post.user_reaction == 'like' %}👍
@@ -202,7 +203,7 @@
                     {% else %}{% trans "Like" %}{% endif %}
                 </span>
             </button>
-            <div class="reaction-picker" id="picker-{{ post.id }}" onmouseleave="closePicker({{ post.id }})">
+            <div class="reaction-picker" id="picker-{{ post.id }}">
                 <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
                         onclick="sendReaction({{ post.id }}, 'like')" title="{% trans "J'aime" %}">👍</button>
                 <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
@@ -219,7 +220,6 @@
         <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
                 onclick="toggleComments({{ post.id }})" style="flex:1;">
             <span class="material-icons">chat_bubble_outline</span>
-            {% trans "Comments" %}
             <span id="comment-count-{{ post.id }}"
                   style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.total_comments %}display:none{% endif %}">
                 {% if post.total_comments %}({{ post.total_comments }}){% endif %}
@@ -229,7 +229,6 @@
         <button class="pc-footer-btn" onclick="sharePost({{ post.id }}, '{{ post.title|escapejs }}')" style="flex:1;"
                 data-post-id="{{ post.id }}" data-reposted="{{ post.user_reposted|yesno:'true,false' }}">
             <span class="material-icons" style="{% if post.user_reposted %}color:var(--accent){% endif %}">repeat</span>
-            {% trans "Share" %}
             <span id="repost-count-{{ post.id }}"
                   style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.repost_count %}display:none{% endif %}">
                 {% if post.repost_count %}{{ post.repost_count }}{% endif %}
