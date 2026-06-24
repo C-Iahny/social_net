@@ -16,7 +16,7 @@ from channels.layers import get_channel_layer
 from account.models import Account
 from chat.models import PrivateChatRoom, RoomChatMessage, UnreadChatRoomMessages
 from chat.utils import find_or_create_private_chat
-from chat.constants import MSG_TYPE_CALL_REJECT
+from chat.constants import MSG_TYPE_CALL_REJECT, MSG_TYPE_UNREAD_NOTIF
 
 DEBUG = False
 
@@ -163,12 +163,69 @@ def upload_chat_file(request):
         file_type=file_type,
     )
 
+    file_name = os.path.basename(f.name)
+    file_url  = msg.file.url
+
+    # ── Broadcast immédiat via channel layer ──────────────────────────────────
+    # Évite le 2ème aller-retour client → WS consumer : le destinataire voit
+    # le message dès que l'upload est terminé côté serveur, sans délai WS.
+    broadcast_done = False
+    try:
+        channel_layer = get_channel_layer()
+        preview = '[🎤 vocal]' if file_type == 'voice' else f'[📎 {file_name}]'
+
+        # Incrémenter non-lus pour l'autre utilisateur s'il n'est pas dans la room
+        other = room.user2 if request.user == room.user1 else room.user1
+        connected_ids = set(room.connected_users.values_list('id', flat=True))
+        unread_count = None
+        if other.id not in connected_ids:
+            unread_obj, _ = UnreadChatRoomMessages.objects.get_or_create(
+                room=room, user=other
+            )
+            unread_obj.count += 1
+            unread_obj.most_recent_message = preview
+            unread_obj.save(update_fields=['count', 'most_recent_message'])
+            unread_count = unread_obj.count
+
+        # Broadcast du fichier à tous les membres de la room
+        async_to_sync(channel_layer.group_send)(
+            room.group_name,
+            {
+                "type":          "chat.file",
+                "profile_image": request.user.profile_image.url,
+                "username":      request.user.username,
+                "user_id":       request.user.id,
+                "msg_id":        msg.id,
+                "file_url":      file_url,
+                "file_name":     file_name,
+                "file_type":     file_type,
+            }
+        )
+
+        # Notifier le badge non-lu si l'autre user n'est pas connecté
+        if unread_count is not None:
+            async_to_sync(channel_layer.group_send)(
+                f"user_{other.id}",
+                {
+                    "type":         "chat.unread_notif",
+                    "msg_type":     MSG_TYPE_UNREAD_NOTIF,
+                    "from_user_id": request.user.id,
+                    "count":        unread_count,
+                }
+            )
+
+        broadcast_done = True
+    except Exception as e:
+        # Fallback : le client enverra la commande WS manuellement
+        print(f"[upload_chat_file] broadcast error: {e}")
+
     return JsonResponse({
         'ok':        True,
-        'file_url':  msg.file.url,
-        'file_name': os.path.basename(f.name),
+        'file_url':  file_url,
+        'file_name': file_name,
         'file_type': file_type,
         'msg_id':    msg.id,
+        'broadcast': broadcast_done,  # True = client n'a PAS besoin d'envoyer via WS
     })
 
 
