@@ -33,39 +33,99 @@ except ImportError:
 # ──────────────────────────────────────────────────────────────
 # Trending hashtags (cached, recalculé toutes les 30 min)
 # ──────────────────────────────────────────────────────────────
-def get_trending_hashtags(limit=10, days=7):
+def get_trending_hashtags(limit=10, days=7, hours=None, with_preview=False):
     """
     Extrait et classe les hashtags les plus utilisés dans les posts récents.
-    Résultat mis en cache 30 minutes (LocMemCache).
+    - hours  : fenêtre en heures (prioritaire sur days si fourni)
+    - days   : fenêtre en jours (défaut 7)
+    - limit  : nombre de hashtags retournés
+    - with_preview : si True, ajoute 'preview' (texte du post le plus récent)
+    Résultat mis en cache 15 min (LocMemCache).
     """
     import re
     from datetime import timedelta
     from django.utils import timezone
     from django.core.cache import cache
+    import html
 
-    cache_key = f'trending_hashtags_{limit}_{days}'
+    eff_hours = hours if hours is not None else days * 24
+    cache_key = f'trending_hashtags_{limit}_{eff_hours}_{"p" if with_preview else "n"}'
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
 
-    cutoff = timezone.now().date() - timedelta(days=days)
-    posts = Post.objects.filter(post_date__gte=cutoff).values_list('body', 'title')
+    cutoff = timezone.now() - timedelta(hours=eff_hours)
 
-    counts = {}
+    # Récupérer les posts récents avec leur id pour les previews
+    # Post utilise post_date (DateField), pas created_at
+    posts_qs = Post.objects.filter(
+        post_date__gte=cutoff.date()
+    ).values_list('id', 'body', 'title', 'author__username', 'post_date')
+
+    counts  = {}   # tag → count
+    post_by_tag = {}   # tag → (id, preview_text, author, date) du post le plus récent
+
     pattern = re.compile(r'#([a-zA-ZÀ-ÿ0-9_]{2,30})')
-    for body, title in posts:
-        # Nettoyer les balises HTML avant d'extraire
-        text = re.sub(r'<[^>]+>', ' ', (body or '') + ' ' + (title or ''))
+    strip_html = re.compile(r'<[^>]+>')
+
+    for post_id, body, title, author, created_at in posts_qs:
+        raw = (body or '') + ' ' + (title or '')
+        text = html.unescape(strip_html.sub(' ', raw))
+        found = set()
         for tag in pattern.findall(text):
             t = tag.lower()
             counts[t] = counts.get(t, 0) + 1
+            if t not in found:
+                found.add(t)
+                # Garder le post le plus récent pour le preview (post_qs est non-ordonné,
+                # on garde celui dont created_at est le plus grand)
+                prev = post_by_tag.get(t)
+                if prev is None or created_at > prev[3]:
+                    # Extraire un extrait de texte propre (max 90 chars)
+                    snippet = re.sub(r'\s+', ' ', text).strip()
+                    if len(snippet) > 90:
+                        snippet = snippet[:87] + '…'
+                    post_by_tag[t] = (post_id, snippet, author, created_at)
 
-    result = [
-        {'tag': '#' + tag, 'count': cnt}
-        for tag, cnt in sorted(counts.items(), key=lambda x: -x[1])[:limit]
-    ]
-    cache.set(cache_key, result, 1800)  # 30 min
+    top = sorted(counts.items(), key=lambda x: -x[1])[:limit]
+
+    result = []
+    for tag, cnt in top:
+        item = {'tag': '#' + tag, 'slug': tag, 'count': cnt}
+        if with_preview and tag in post_by_tag:
+            pid, snippet, author, date = post_by_tag[tag]
+            item['preview_text']   = snippet
+            item['preview_author'] = author
+            item['preview_post_id'] = pid
+        result.append(item)
+
+    cache.set(cache_key, result, 900)  # 15 min
     return result
+
+
+# ──────────────────────────────────────────────
+# Tendances — page dédiée
+# ──────────────────────────────────────────────
+@login_required(login_url='login')
+def tendances_view(request):
+    """Page /tendances/ — top hashtags sur 24h / 7j / 30j."""
+    valid_hours = {24: '24h', 168: '7 jours', 720: '30 jours'}
+    try:
+        hours = int(request.GET.get('h', 24))
+        if hours not in valid_hours:
+            hours = 24
+    except (TypeError, ValueError):
+        hours = 24
+
+    hashtags = get_trending_hashtags(limit=25, hours=hours, with_preview=True)
+
+    return render(request, 'post/tendances.html', {
+        'hashtags':    hashtags,
+        'hours':       hours,
+        'hours_label': valid_hours[hours],
+        'valid_hours': valid_hours,
+        'trending_hashtags': get_trending_hashtags(limit=10),  # sidebar
+    })
 
 
 # ──────────────────────────────────────────────
@@ -627,6 +687,56 @@ def add_comment(request, post_id):
             except Exception as e:
                 import traceback; traceback.print_exc()
 
+        # Notification à l'auteur du commentaire parent (réponse à un commentaire)
+        if comment.parent and comment.parent.author != request.user and comment.parent.author != post.author:
+            try:
+                from django.urls import reverse
+                from notification.models import Notification, PushSubscription
+                from django.contrib.contenttypes.models import ContentType
+                from post.models import Post as PostModel
+                from channels.layers import get_channel_layer
+                from asgiref.sync import async_to_sync
+                from django.contrib.humanize.templatetags.humanize import naturaltime
+
+                post_ct  = ContentType.objects.get_for_model(PostModel)
+                post_url = request.build_absolute_uri(reverse('post:post-detail', args=[post.id]))
+                reply_target = comment.parent.author
+                notif = Notification.objects.create(
+                    target=reply_target,
+                    from_user=request.user,
+                    redirect_url=post_url,
+                    verb=f"{request.user.username} a répondu à votre commentaire",
+                    content_type=post_ct,
+                    object_id=post.id,
+                    read=False,
+                )
+                PushSubscription.send_notification(
+                    user=reply_target,
+                    title='VAZIMBA — Réponse',
+                    body=f"{request.user.username} a répondu : {comment.body[:70]}",
+                    url=post_url,
+                )
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f"user_{reply_target.id}",
+                        {
+                            "type": "post_action_notification",
+                            "notification": {
+                                "notification_type": "Post",
+                                "notification_id": str(notif.pk),
+                                "verb": notif.verb,
+                                "natural_timestamp": str(naturaltime(notif.timestamp)),
+                                "timestamp": str(notif.timestamp),
+                                "is_read": "False",
+                                "actions": {"redirect_url": post_url},
+                                "from": {"image_url": request.user.profile_image.url},
+                            }
+                        }
+                    )
+            except Exception:
+                pass
+
         # Réponse JSON pour AJAX
         return JsonResponse({
             "ok":         True,
@@ -1118,3 +1228,106 @@ def vintana_create(request):
     return render(request, 'post/vintana_create.html', {
         'min_reveal': now_plus_1day.strftime('%Y-%m-%dT%H:%M'),
     })
+
+
+# ── Signalement de contenu ────────────────────────────────────────────────────
+@login_required(login_url='login')
+def report_content(request):
+    """AJAX POST — signaler un contenu (post, annonce, profil, ...)."""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
+
+    from django.contrib.contenttypes.models import ContentType
+    from post.models import Report
+
+    ct_name   = request.POST.get('ct')       # ex: 'post', 'annonce', 'account'
+    object_id = request.POST.get('object_id')
+    reason    = request.POST.get('reason', 'other')
+    comment   = request.POST.get('comment', '').strip()
+
+    if not ct_name or not object_id:
+        return JsonResponse({'error': 'Paramètres manquants.'}, status=400)
+
+    # Mapping nom simple → app_label.model
+    CT_MAP = {
+        'post':    ('post',    'post'),
+        'annonce': ('bazar',   'annonce'),
+        'account': ('account', 'account'),
+        'comment': ('post',    'comment'),
+    }
+    mapping = CT_MAP.get(ct_name)
+    if not mapping:
+        return JsonResponse({'error': 'Type de contenu inconnu.'}, status=400)
+
+    try:
+        ct = ContentType.objects.get(app_label=mapping[0], model=mapping[1])
+    except ContentType.DoesNotExist:
+        return JsonResponse({'error': 'Contenu introuvable.'}, status=404)
+
+    try:
+        Report.objects.get_or_create(
+            reporter=request.user,
+            content_type=ct,
+            object_id=int(object_id),
+            defaults={'reason': reason, 'comment': comment},
+        )
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+    return JsonResponse({'ok': True})
+
+
+# ── Recherche globale ─────────────────────────────────────────────────────────
+def global_search_view(request):
+    """Page /recherche/ — posts + annonces + utilisateurs."""
+    from django.db.models import Q
+    from post.models import Hashtag
+    from bazar.models import Annonce
+
+    query    = request.GET.get('q', '').strip()
+    context  = {'query': query, 'total': 0}
+
+    if query:
+        from friend.models import FriendList
+
+        # Users
+        accounts_qs = Account.objects.filter(
+            Q(username__icontains=query)
+        )[:20]
+
+        accounts_with_friend = []
+        if request.user.is_authenticated:
+            try:
+                fl = FriendList.objects.get(user=request.user)
+                friend_ids = set(fl.friends.values_list('id', flat=True))
+            except Exception:
+                friend_ids = set()
+            for acc in accounts_qs:
+                accounts_with_friend.append((acc, acc.id in friend_ids))
+        else:
+            accounts_with_friend = [(acc, False) for acc in accounts_qs]
+
+        # Posts
+        posts_qs = Post.objects.filter(
+            Q(title__icontains=query) | Q(body__icontains=query)
+        ).select_related('author')[:20]
+
+        # Hashtags
+        hashtags_qs = Hashtag.objects.filter(tag__icontains=query)[:10]
+
+        # Annonces bazar
+        annonces_qs = Annonce.objects.filter(
+            Q(title__icontains=query) | Q(description__icontains=query),
+            status='active',
+        ).select_related('seller').prefetch_related('images')[:20]
+
+        context['accounts']  = accounts_with_friend
+        context['posts']     = posts_qs
+        context['hashtags']  = hashtags_qs
+        context['annonces']  = annonces_qs
+        context['total']     = (
+            len(accounts_with_friend) + posts_qs.count()
+            + hashtags_qs.count() + annonces_qs.count()
+        )
+
+    return render(request, 'post/recherche.html', context)
