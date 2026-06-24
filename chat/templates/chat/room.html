@@ -1494,10 +1494,15 @@
                     <button type="button" id="rec-cancel-btn" class="chat-mic-btn" title="{% trans 'Annuler' %}" style="display:none;color:#e53935;">
                         <span class="material-icons">delete</span>
                     </button>
-                    <!-- Bouton micro (visible quand input vide) -->
+                    <!-- Bouton micro (visible quand input vide ET pas en train d'enregistrer) -->
                     <button type="button" id="chat-mic-btn" class="chat-mic-btn" title="{% trans 'Message vocal' %}">
                         <span class="material-icons">mic</span>
                     </button>
+                    <!-- Bouton ENVOYER le message vocal (visible UNIQUEMENT pendant l'enregistrement) -->
+                    <button type="button" id="voice-send-btn" class="chat-send-btn" title="{% trans 'Envoyer le message vocal' %}" style="display:none;">
+                        <span class="material-icons">send</span>
+                    </button>
+                    <!-- Bouton envoyer texte (visible quand textarea non vide) -->
                     <button type="button" id="id_chat_message_submit" class="chat-send-btn" title="{% trans 'Envoyer (Entrée)' %}" style="display:none;">
                         <span class="material-icons">send</span>
                         <span class="send-btn-label">{% trans "Envoyer" %}</span>
@@ -2163,11 +2168,11 @@ window._CT = {
 
     /* ── Logique d'enregistrement vocal ─────────────────────────── */
     (function(){
-        var micBtn   = document.getElementById('chat-mic-btn');
-        var sendBtn  = document.getElementById('id_chat_message_submit');
-        var cancelBtn= document.getElementById('rec-cancel-btn');
-        var recInd   = document.getElementById('rec-indicator');
-        var recDurEl = document.getElementById('rec-duration');
+        var micBtn      = document.getElementById('chat-mic-btn');
+        var voiceSndBtn = document.getElementById('voice-send-btn'); /* bouton DÉDIÉ */
+        var cancelBtn   = document.getElementById('rec-cancel-btn');
+        var recInd      = document.getElementById('rec-indicator');
+        var recDurEl    = document.getElementById('rec-duration');
         if(!micBtn || !window.MediaRecorder || !navigator.mediaDevices) return;
 
         var _rec     = null;
@@ -2175,25 +2180,26 @@ window._CT = {
         var _stream  = null;
         var _start   = 0;
         var _timerID = null;
-        var _doSend  = false; // true = envoyer, false = annuler
+        var _doSend  = false;
 
         /* Passe l'UI en mode "enregistrement" */
         function _enterRecUI(){
             micBtn.classList.add('recording');
             micBtn.querySelector('.material-icons').textContent = 'stop';
-            if(sendBtn)   sendBtn.style.display   = '';   // flèche envoyer visible
-            if(cancelBtn) cancelBtn.style.display = '';   // ✕ annuler visible
-            if(recInd)    recInd.classList.add('visible');
-            if(recDurEl)  recDurEl.textContent = '0:00';
+            /* Bouton d'envoi VOCAL dédié — aucun conflit avec le bouton texte */
+            if(voiceSndBtn) voiceSndBtn.style.display = '';
+            if(cancelBtn)   cancelBtn.style.display   = '';
+            if(recInd)      recInd.classList.add('visible');
+            if(recDurEl)    recDurEl.textContent = '0:00';
         }
 
         /* Restaure l'UI normale */
         function _exitRecUI(){
             micBtn.classList.remove('recording');
             micBtn.querySelector('.material-icons').textContent = 'mic';
-            if(sendBtn)   sendBtn.style.display   = 'none';
-            if(cancelBtn) cancelBtn.style.display = 'none';
-            if(recInd)    recInd.classList.remove('visible');
+            if(voiceSndBtn) voiceSndBtn.style.display = 'none';
+            if(cancelBtn)   cancelBtn.style.display   = 'none';
+            if(recInd)      recInd.classList.remove('visible');
             clearInterval(_timerID);
         }
 
@@ -2280,28 +2286,23 @@ window._CT = {
             xhr.send(fd);
         }
 
-        /* Micro : démarrer, ou annuler si déjà en cours */
+        /* Micro : démarrer l'enregistrement (ou annuler si rouge = re-tap) */
         micBtn.addEventListener('click', function(){
-            if(_rec && _rec.state === 'recording') _stopRec(false); // tap sur stop = annuler
+            if(_rec && _rec.state === 'recording') _stopRec(false);
             else _startRec();
         });
 
-        /* Bouton envoyer pendant enregistrement → stop + envoi */
-        if(sendBtn){
-            sendBtn.addEventListener('click', function(e){
-                if(_rec && _rec.state === 'recording'){
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    _stopRec(true); // envoyer !
-                }
-                /* sinon → sendMessage() géré par l'écouteur existant */
-            }, true); /* capture : s'exécute avant l'écouteur de bubble */
+        /* Bouton envoi VOCAL dédié → stop + envoi (aucun conflit possible) */
+        if(voiceSndBtn){
+            voiceSndBtn.addEventListener('click', function(){
+                _stopRec(true);
+            });
         }
 
-        /* Bouton annuler (✕) pendant enregistrement */
+        /* Bouton annuler (🗑) → stop + jeter */
         if(cancelBtn){
             cancelBtn.addEventListener('click', function(){
-                _stopRec(false); // jeter
+                _stopRec(false);
             });
         }
     })();
