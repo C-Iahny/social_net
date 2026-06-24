@@ -113,3 +113,29 @@ class StoryView(models.Model):
 
     def __str__(self):
         return f'{self.viewer.username} → story#{self.story.id}'
+
+
+# ── StoryReaction ────────────────────────────────────────────────────────────
+class StoryReaction(models.Model):
+    EMOJI_CHOICES = [
+        ('❤️', 'Cœur'),
+        ('😂', 'Haha'),
+        ('😮', 'Wow'),
+        ('😢', 'Triste'),
+        ('🔥', 'Feu'),
+    ]
+    story    = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='reactions')
+    user     = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='story_reactions',
+    )
+    emoji    = models.CharField(max_length=10, choices=EMOJI_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('story', 'user')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.username} {self.emoji} → story#{self.story.id}'
