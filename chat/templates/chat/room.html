@@ -2117,56 +2117,80 @@ window._CT = {
         vp.appendChild(prog);
         fileBubble.appendChild(vp);
 
-        /* Élément audio — chargé à la demande */
-        var aud = null;
-        function getAudio(){
-            if(aud) return aud;
-            aud = new Audio(furl);
-            aud.preload = 'metadata';
-            aud.addEventListener('loadedmetadata', function(){
+        /* ── Élément audio — chargé immédiatement pour récupérer les métadonnées ── */
+        var aud = new Audio(furl);
+        aud.preload = 'metadata';
+        var _fixingSeeked = false; /* true pendant le workaround WebM Infinity */
+
+        aud.addEventListener('loadedmetadata', function(){
+            if(isFinite(aud.duration) && aud.duration > 0){
+                /* Durée valide (ex. m4a/Safari) → on l'affiche directement */
                 timeEl.textContent = fmtAudioTime(aud.duration);
-            });
-            aud.addEventListener('timeupdate', function(){
-                var pct = aud.duration ? (aud.currentTime / aud.duration * 100) : 0;
-                fill.style.width = pct + '%';
-                timeEl.textContent = fmtAudioTime(aud.currentTime);
-            });
-            aud.addEventListener('ended', function(){
-                playBtn.innerHTML = '<span class="material-icons">play_arrow</span>';
-                fill.style.width = '0%';
-                timeEl.textContent = fmtAudioTime(aud.duration || 0);
-            });
-            aud.addEventListener('error', function(){
-                timeEl.textContent = '—';
-            });
-            return aud;
-        }
+            } else {
+                /* WebM produit par MediaRecorder : durée = Infinity.
+                   Workaround : on cherche à la fin, le navigateur calcule
+                   alors la vraie durée et déclenche durationchange. */
+                _fixingSeeked = true;
+                aud.currentTime = 1e10;
+            }
+        });
+
+        aud.addEventListener('durationchange', function(){
+            if(_fixingSeeked && isFinite(aud.duration) && aud.duration > 0){
+                timeEl.textContent = fmtAudioTime(aud.duration);
+            }
+        });
+
+        aud.addEventListener('seeked', function(){
+            if(_fixingSeeked){
+                _fixingSeeked = false;
+                aud.currentTime = 0; /* revenir au début */
+            }
+        });
+
+        aud.addEventListener('timeupdate', function(){
+            if(_fixingSeeked || aud.paused) return; /* ignorer seek trick + état pausé */
+            var pct = (aud.duration && isFinite(aud.duration))
+                      ? (aud.currentTime / aud.duration * 100) : 0;
+            fill.style.width = pct + '%';
+            timeEl.textContent = fmtAudioTime(aud.currentTime);
+        });
+
+        aud.addEventListener('ended', function(){
+            playBtn.innerHTML = '<span class="material-icons">play_arrow</span>';
+            fill.style.width = '0%';
+            timeEl.textContent = fmtAudioTime(
+                isFinite(aud.duration) ? aud.duration : 0
+            );
+        });
+
+        aud.addEventListener('error', function(){
+            timeEl.textContent = '—';
+        });
 
         /* Clic play/pause */
         playBtn.addEventListener('click', function(){
-            var a = getAudio();
-            if(a.paused){
+            if(aud.paused){
                 /* Pauser tous les autres players ouverts */
                 document.querySelectorAll('.vp-play-btn').forEach(function(b){
                     if(b !== playBtn) b.innerHTML = '<span class="material-icons">play_arrow</span>';
                 });
                 document.querySelectorAll('audio._vp').forEach(function(x){ x.pause(); });
-                a.className = '_vp';
-                a.play().catch(function(){});
+                aud.className = '_vp';
+                aud.play().catch(function(){});
                 playBtn.innerHTML = '<span class="material-icons">pause</span>';
             } else {
-                a.pause();
+                aud.pause();
                 playBtn.innerHTML = '<span class="material-icons">play_arrow</span>';
             }
         });
 
         /* Clic sur la barre pour chercher une position */
         bar.addEventListener('click', function(e){
-            var a = getAudio();
-            if(!a.duration) return;
+            if(!aud.duration || !isFinite(aud.duration)) return;
             var rect = bar.getBoundingClientRect();
             var pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-            a.currentTime = pct * a.duration;
+            aud.currentTime = pct * aud.duration;
         });
     }
 
