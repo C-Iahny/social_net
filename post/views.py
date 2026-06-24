@@ -2,6 +2,7 @@ import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.views.generic import DeleteView, UpdateView, CreateView
 from django.contrib.auth import get_user_model
