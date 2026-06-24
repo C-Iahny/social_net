@@ -240,7 +240,9 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             # Signaler au viewer que le ring buffer est épuisé → il peut syncer au live edge
             await self.send_json({'type': 'ring_buffer_done'})
 
-        # Notifier l'hôte de l'arrivée du viewer
+        # Notifier l'hôte de l'arrivée du viewer + demander un keyframe VP9 fresh.
+        # Le host redémarre son MediaRecorder → premier chunk = init + keyframe garanti.
+        # _recRestartPending côté client protège contre les redémarrages multiples rapides.
         if host_ch:
             try:
                 avatar = await self._get_avatar_url()
@@ -251,6 +253,10 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                         'username': self.user.username,
                         'avatar':   avatar,
                     },
+                })
+                await self.channel_layer.send(host_ch, {
+                    'type': 'direct_event',
+                    'payload': {'type': 'request_keyframe'},
                 })
             except Exception as e:
                 print(f"LiveConsumer notify host error: {e}")
