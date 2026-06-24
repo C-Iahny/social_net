@@ -66,37 +66,41 @@
             var html = document.documentElement;
             var next = (html.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
 
-            /* ── Overlay opaque pour masquer le freeze de recalcul CSS ──────────
-               Séquence correcte sur Android WebView :
-               Frame 0 : on ajoute l'overlay dans le DOM
-               Frame 1 (RAF1) : navigateur va peindre l'overlay
-               Frame 2 (RAF2) : overlay EST visible à l'écran → on change le thème
-               Frame 3 (RAF3) : repaint thème terminé → on fond l'overlay          */
+            /* ── Overlay opaque pour masquer le recalcul CSS ──────────────────
+               Sur Android/iOS, requestAnimationFrame fire au DÉBUT d'un frame
+               (avant le paint). setTimeout(0) à l'intérieur d'un RAF fire
+               dans la task queue APRÈS que le frame soit peint à l'écran.
+               C'est la seule garantie fiable que l'overlay est visible
+               avant qu'on change data-theme et déclenche le recalcul CSS.  */
             var overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;'
-                + 'background:' + (next === 'dark' ? '#0d0d1a' : '#f0f0f0') + ';'
-                + 'pointer-events:none;opacity:1;';
+                + 'background:' + (next === 'dark' ? '#0d0603' : '#f8f4ef') + ';'
+                + 'pointer-events:none;transition:none;';
             document.body.appendChild(overlay);
 
-            /* RAF1 — navigateur peint l'overlay */
+            /* Forcer le style flush pour s'assurer que l'overlay entre
+               dans le pipeline de rendu de ce frame */
+            overlay.getBoundingClientRect();
+
+            /* RAF → paint → setTimeout(0) s'exécute après ce paint */
             requestAnimationFrame(function() {
-                /* RAF2 — overlay est maintenant visible : on applique le thème */
-                requestAnimationFrame(function() {
+                setTimeout(function() {
+                    /* Ici l'overlay EST visible à l'écran */
                     html.classList.add('vzb-no-transition');
                     html.setAttribute('data-theme', next);
                     try { localStorage.setItem('zoot-theme', next); } catch(e) {}
                     _syncThemeIcons(next);
 
-                    /* RAF3 — repaint terminé : on fond et retire l'overlay */
+                    /* RAF suivant : recalcul CSS terminé → on retire l'overlay */
                     requestAnimationFrame(function() {
                         html.classList.remove('vzb-no-transition');
-                        overlay.style.transition = 'opacity .15s ease';
+                        overlay.style.transition = 'opacity .18s ease';
                         overlay.style.opacity = '0';
                         setTimeout(function() {
                             if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-                        }, 180);
+                        }, 200);
                     });
-                });
+                }, 0);
             });
         }
 
