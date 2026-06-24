@@ -226,17 +226,21 @@ def post_feed_view(request):
     tab = request.GET.get('tab', 'feed')
     user_region = getattr(user, 'region', '')
 
+    from django.utils import timezone as _tz
+    from django.db.models import Q as _Q
+    _now = _tz.now()
+    _visible = _Q(status='published') | _Q(status='scheduled', scheduled_at__lte=_now)
+
     if tab == 'region' and user_region:
         # Posts de la région de l'utilisateur (tous auteurs, tous publics)
         feed_posts = Post.objects.filter(
             region=user_region
-        ).select_related('author', 'group').order_by("-id")
+        ).filter(_visible).select_related('author', 'group').order_by("-id")
     else:
-        # Posts : les siens + ceux de ses amis
-        # select_related évite le N+1 (1 JOIN au lieu de 1 requête par post)
+        # Posts : les siens (publiés) + ceux de ses amis
         feed_posts = Post.objects.filter(
             author__in=list(friends) + [user]
-        ).select_related('author', 'group').order_by("-id")
+        ).filter(_visible).select_related('author', 'group').order_by("-id")
         tab = 'feed'  # normalise si region vide
 
     # Pagination (5 posts par page)
@@ -285,6 +289,13 @@ def post_feed_view(request):
     ).values_list('post_id', 'reaction_type')
     user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
+    # Bookmarks de l'utilisateur courant
+    from .models import PostBookmark
+    bookmarked_ids = set(
+        PostBookmark.objects.filter(user=user, post_id__in=post_ids)
+        .values_list('post_id', flat=True)
+    )
+
     # Attacher les données directement à chaque post
     for post in posts_of_the_page:
         top = top_by_post.get(post.id, [])
@@ -296,6 +307,7 @@ def post_feed_view(request):
         post.reaction_counts = reactions_by_post.get(post.id, {})
         post.user_reaction   = user_reaction_by_post.get(post.id)
         post.total_reactions = sum(post.reaction_counts.values())
+        post.is_bookmarked   = post.id in bookmarked_ids
     _attach_media(posts_of_the_page, post_ids)
 
     # Groupes de l'utilisateur (raccourci sidebar droite)
@@ -419,8 +431,33 @@ class AddPostView(CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
-        # Auto-remplir la région depuis le profil de l'auteur
         form.instance.region = getattr(self.request.user, 'region', '') or ''
+
+        # ── Statut : brouillon / programmé / publié ───────────────────────
+        action = self.request.POST.get('action', 'publish')
+        if action == 'draft':
+            form.instance.status = Post.STATUS_DRAFT
+        elif action == 'schedule':
+            scheduled_str = self.request.POST.get('scheduled_at', '').strip()
+            if scheduled_str:
+                try:
+                    from django.utils.dateparse import parse_datetime
+                    from django.utils import timezone as _tz
+                    dt = parse_datetime(scheduled_str)
+                    if dt:
+                        if _tz.is_naive(dt):
+                            dt = _tz.make_aware(dt)
+                        form.instance.status       = Post.STATUS_SCHEDULED
+                        form.instance.scheduled_at = dt
+                    else:
+                        form.instance.status = Post.STATUS_DRAFT
+                except Exception:
+                    form.instance.status = Post.STATUS_DRAFT
+            else:
+                form.instance.status = Post.STATUS_DRAFT
+        else:
+            form.instance.status = Post.STATUS_PUBLISHED
+
         response = super().form_valid(form)
         post = self.object
 
@@ -443,37 +480,36 @@ class AddPostView(CreateView):
         elif files:
             messages.warning(self.request, "Aucun fichier sauvegardé — voir les logs.")
 
-        # Notify each friend via WebSocket channel layer
-        author = self.request.user
-        try:
-            friend_list = FriendList.objects.get(user=author)
-            friends = friend_list.friends.all()
-        except FriendList.DoesNotExist:
-            friends = []
-
-        # Notifier via WebSocket — enveloppé dans try/except :
-        # si Redis est indisponible ou channel_layer=None, le post est quand même
-        # sauvegardé et l'utilisateur est redirigé normalement (pas de 500).
-        try:
-            channel_layer = get_channel_layer()
-            if channel_layer:
-                for friend in friends:
-                    async_to_sync(channel_layer.group_send)(
-                        f"user_{friend.id}",
-                        {
-                            "type": "new_post_notification",
-                            "from_username": author.username,
-                            "from_image":    author.profile_image.url,
-                            "post_title":    post.title,
-                            "post_id":       post.id,
-                        }
-                    )
-        except Exception:
-            pass  # échec WebSocket non bloquant : le post existe déjà en base
+        # Notifier les amis seulement si le post est publié immédiatement
+        if post.status == Post.STATUS_PUBLISHED:
+            author = self.request.user
+            try:
+                friend_list = FriendList.objects.get(user=author)
+                friends = friend_list.friends.all()
+            except FriendList.DoesNotExist:
+                friends = []
+            try:
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    for friend in friends:
+                        async_to_sync(channel_layer.group_send)(
+                            f"user_{friend.id}",
+                            {
+                                "type": "new_post_notification",
+                                "from_username": author.username,
+                                "from_image":    author.profile_image.url,
+                                "post_title":    post.title,
+                                "post_id":       post.id,
+                            }
+                        )
+            except Exception:
+                pass
 
         return response
 
     def get_success_url(self):
+        if self.object and self.object.status in (Post.STATUS_DRAFT, Post.STATUS_SCHEDULED):
+            return reverse_lazy("post:mes-brouillons")
         return reverse_lazy("post:post-view")
 
 
@@ -734,6 +770,55 @@ def add_comment(request, post_id):
                             }
                         }
                     )
+            except Exception:
+                pass
+
+        # ── Notifications aux utilisateurs mentionnés dans le commentaire ─
+        import re as _re
+        mentioned = set(_re.findall(r'@([a-zA-Z0-9_]{2,30})', comment.body))
+        already_notified = {request.user.username.lower(), post.author.username.lower()}
+        if comment.parent:
+            already_notified.add(comment.parent.author.username.lower())
+        for uname in mentioned:
+            if uname.lower() in already_notified:
+                continue
+            try:
+                from account.models import Account as _Acc
+                from django.urls import reverse as _rev
+                from notification.models import Notification as _Notif, PushSubscription as _Push
+                from django.contrib.contenttypes.models import ContentType as _CT
+                from channels.layers import get_channel_layer as _gcl
+                from asgiref.sync import async_to_sync as _a2s
+                from django.contrib.humanize.templatetags.humanize import naturaltime as _nt
+                mentioned_user = _Acc.objects.get(username__iexact=uname)
+                _post_ct  = _CT.objects.get_for_model(Post)
+                _post_url = request.build_absolute_uri(_rev('post:post-detail', args=[post.id]))
+                _notif = _Notif.objects.create(
+                    target=mentioned_user, from_user=request.user,
+                    redirect_url=_post_url,
+                    verb=f"{request.user.username} vous a mentionné dans un commentaire",
+                    content_type=_post_ct, object_id=post.id, read=False,
+                )
+                _Push.send_notification(
+                    user=mentioned_user, title='VAZIMBA — Mention',
+                    body=f"{request.user.username} vous a mentionné : {comment.body[:70]}",
+                    url=_post_url,
+                )
+                _cl = _gcl()
+                if _cl:
+                    _a2s(_cl.group_send)(f"user_{mentioned_user.id}", {
+                        "type": "post_action_notification",
+                        "notification": {
+                            "notification_type": "Post",
+                            "notification_id":   str(_notif.pk),
+                            "verb":              _notif.verb,
+                            "natural_timestamp": str(_nt(_notif.timestamp)),
+                            "timestamp":         str(_notif.timestamp),
+                            "is_read":           "False",
+                            "actions":           {"redirect_url": _post_url},
+                            "from":              {"image_url": request.user.profile_image.url},
+                        }
+                    })
             except Exception:
                 pass
 
@@ -1331,3 +1416,50 @@ def global_search_view(request):
         )
 
     return render(request, 'post/recherche.html', context)
+
+
+# ──────────────────────────────────────────────
+# Bookmark (sauvegarder un post)
+# ──────────────────────────────────────────────
+@login_required(login_url="login")
+@require_POST
+def bookmark_post(request):
+    """Toggle bookmark AJAX. POST {post_id}. Returns {ok, saved: bool, count: int}."""
+    from .models import PostBookmark
+    post_id = request.POST.get('post_id')
+    post = get_object_or_404(Post, id=post_id)
+    bk, created = PostBookmark.objects.get_or_create(user=request.user, post=post)
+    if not created:
+        bk.delete()
+    count = post.bookmarks.count()
+    return JsonResponse({'ok': True, 'saved': created, 'count': count})
+
+
+# ──────────────────────────────────────────────
+# Mes brouillons & posts programmés
+# ──────────────────────────────────────────────
+@login_required(login_url="login")
+def mes_brouillons(request):
+    """Page listant les brouillons et posts programmés de l'utilisateur."""
+    from django.utils import timezone as _tz
+    from django.db.models import Q
+    now = _tz.now()
+    posts = Post.objects.filter(
+        author=request.user,
+    ).filter(
+        Q(status='draft') | Q(status='scheduled')
+    ).order_by('-id')
+    return render(request, 'post/mes_brouillons.html', {'posts': posts, 'now': now})
+
+
+# ──────────────────────────────────────────────
+# Mes posts sauvegardés (bookmarks)
+# ──────────────────────────────────────────────
+@login_required(login_url="login")
+def mes_favoris_posts(request):
+    """Page listant les posts que l'utilisateur a sauvegardés."""
+    from .models import PostBookmark
+    bookmarks = PostBookmark.objects.filter(
+        user=request.user
+    ).select_related('post', 'post__author').order_by('-created_at')
+    return render(request, 'post/mes_favoris_posts.html', {'bookmarks': bookmarks})
