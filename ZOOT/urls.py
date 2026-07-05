@@ -30,6 +30,7 @@ from account.views import (
     account_view,
     account_search_view,
 )
+from post.views import global_search_view
 from personal.views import landing_view
 
 urlpatterns = [
@@ -55,6 +56,7 @@ urlpatterns = [
     path('login/', login_view, name="login"),
     path('logout/', logout_view, name="logout"),
     path('search/', account_search_view, name="search"),
+    path('recherche/', global_search_view, name="recherche"),
 
 
 
