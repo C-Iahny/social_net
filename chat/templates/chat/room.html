@@ -3000,12 +3000,11 @@ window._CT = {
     var _ICE = {
         iceCandidatePoolSize: 5,   // pré-récolte les candidats avant l'appel → ICE plus rapide
         iceServers: [
-            // Fallback statique (remplacé par le fetch au chargement)
+            // Fallback statique (remplacé par le fetch /chat/ice-servers/ au chargement)
             { urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
-            {
-                urls: ['turn:openrelay.metered.ca:443', 'turns:openrelay.metered.ca:443?transport=tcp'],
-                username: 'openrelayproject', credential: 'openrelayproject'
-            }
+            // freestun.net = serveur européen, plus accessible depuis Madagascar
+            { urls: ['turn:freestun.net:3479', 'turns:freestun.net:5350'], username: 'free', credential: 'free' },
+            { urls: ['turn:openrelay.metered.ca:443', 'turns:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }
         ]
     };
 

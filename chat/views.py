@@ -363,17 +363,25 @@ def get_ice_servers(request):
         except Exception:
             pass  # fall through to open relay
 
-    # Fallback : open relay communautaire (gratuit, moins fiable sur mobile CGNAT)
-    servers.append({
-        "urls": [
-            "turn:openrelay.metered.ca:80",
-            "turn:openrelay.metered.ca:443",
-            "turns:openrelay.metered.ca:443?transport=tcp"
-        ],
-        "username": "openrelayproject",
-        "credential": "openrelayproject"
-    })
-    return JsonResponse({"iceServers": servers, "source": "openrelay"})
+    # Fallback : plusieurs TURN publics communautaires (ordre de fiabilité décroissant)
+    # freestun.net = serveur européen, souvent plus accessible depuis Madagascar
+    # openrelay.metered.ca = communauté US, souvent surchargé/bloqué
+    servers.extend([
+        {
+            "urls": ["turn:freestun.net:3479", "turns:freestun.net:5350"],
+            "username": "free",
+            "credential": "free"
+        },
+        {
+            "urls": [
+                "turn:openrelay.metered.ca:443",
+                "turns:openrelay.metered.ca:443?transport=tcp"
+            ],
+            "username": "openrelayproject",
+            "credential": "openrelayproject"
+        }
+    ])
+    return JsonResponse({"iceServers": servers, "source": "community-fallback"})
 
 
 @login_required(login_url="login")
