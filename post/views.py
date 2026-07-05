@@ -672,8 +672,9 @@ def add_comment(request, post_id):
                 pass
         comment.save()
 
-        # Notification au propriétaire du post
-        if post.author != request.user:
+        # Notification au propriétaire du post — uniquement pour les commentaires racine
+        # (les réponses à des commentaires ont leur propre notification ci-dessous)
+        if post.author != request.user and not comment.parent:
             try:
                 from django.urls import reverse
                 from notification.models import Notification
@@ -725,7 +726,9 @@ def add_comment(request, post_id):
                 import traceback; traceback.print_exc()
 
         # Notification à l'auteur du commentaire parent (réponse à un commentaire)
-        if comment.parent and comment.parent.author != request.user and comment.parent.author != post.author:
+        # On notifie même si c'est le propriétaire du post — la réponse à son commentaire
+        # est plus spécifique que "quelqu'un a commenté votre post".
+        if comment.parent and comment.parent.author != request.user:
             try:
                 from django.urls import reverse
                 from notification.models import Notification, PushSubscription
