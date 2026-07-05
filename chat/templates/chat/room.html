@@ -1579,6 +1579,8 @@
                 <div id="call-timer" class="call-timer">00:00</div>
                 <!-- Indicateur état ICE (connexion réseau) — utile pour diagnostiquer -->
                 <div id="call-ice-status" class="call-ice-status"></div>
+                <!-- Indicateur candidats ICE — affiché pendant la connexion pour diagnostic -->
+                <div id="call-ice-debug" style="font-size:10px;color:#aaa;letter-spacing:1px;min-height:14px;text-align:center;"></div>
                 <div class="call-ctrl-row">
                     <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
                         <button class="call-ctrl-btn" id="call-btn-mic" onclick="toggleMic()" title="{% trans 'Micro' %}">
@@ -3108,6 +3110,7 @@ window._CT = {
         var ra  = _callEl('call-remote-audio'); if(ra){ ra.srcObject = null; ra.pause(); }
         var lv  = _callEl('call-local-video');  if(lv){ lv.srcObject = null; lv.style.display = 'none'; }
         var lop = _callEl('call-out-local-vid'); if(lop){ lop.srcObject = null; lop.style.display = 'none'; }
+        var _dbgEl = document.getElementById('call-ice-debug'); if(_dbgEl) _dbgEl.textContent = '';
         _iceCandidateQueue = [];
         _stopTimer();
         _callState = 'idle';
@@ -3120,9 +3123,24 @@ window._CT = {
     /* Créer RTCPeerConnection + handlers communs */
     function _buildPeer(onRemoteStream){
         _peerConn = new RTCPeerConnection(_ICE);
+        var _hasRelayCandidate = false;
         _peerConn.onicecandidate = function(e){
-            if(e.candidate && chatSocket && chatSocket.readyState===WebSocket.OPEN){
-                chatSocket.send(JSON.stringify({ command:'call_ice', room:roomId, candidate:e.candidate }));
+            if(e.candidate){
+                if(chatSocket && chatSocket.readyState===WebSocket.OPEN){
+                    chatSocket.send(JSON.stringify({ command:'call_ice', room:roomId, candidate:e.candidate }));
+                }
+                /* Diagnostic visuel : afficher type de candidat (H=local, S=STUN, R=TURN relay) */
+                var _dbg = document.getElementById('call-ice-debug');
+                if(_dbg){
+                    var t = e.candidate.type;
+                    if(t === 'relay'){ _hasRelayCandidate = true; _dbg.textContent += 'R'; }
+                    else if(t === 'srflx'){ _dbg.textContent += 'S'; }
+                    else { _dbg.textContent += 'H'; }
+                }
+            } else {
+                /* Fin du gathering — si pas de candidat TURN (R), signaler */
+                var _dbg2 = document.getElementById('call-ice-debug');
+                if(_dbg2) _dbg2.textContent += _hasRelayCandidate ? ' ✓TURN' : ' ⚠no-TURN';
             }
         };
         /* ── ontrack : accumuler les pistes dans UN seul MediaStream ──────────────
