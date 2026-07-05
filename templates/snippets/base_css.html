@@ -184,15 +184,6 @@ code, pre {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* Scrollbar sombre en mode dark (Firefox + Chromium) */
-[data-theme="dark"] {
-    color-scheme: dark;
-    scrollbar-color: var(--border) var(--bg);
-}
-[data-theme="dark"] ::-webkit-scrollbar-track { background: var(--bg); }
-[data-theme="dark"] ::-webkit-scrollbar-thumb { background: var(--border); }
-[data-theme="dark"] ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
 /* ============================================================
    GLASSMORPHISM UTILITY
    ============================================================ */
@@ -552,8 +543,12 @@ textarea:focus, select:focus {
    qui auraient un fond blanc codé en dur.
    ============================================================ */
 
-/* Corps de page — les variables suffisent, body/html héritent déjà */
-/* [data-theme="dark"] body et html sont couverts par les variables :root */
+/* Corps de page */
+[data-theme="dark"] body,
+[data-theme="dark"] html {
+    background-color: var(--bg) !important;
+    color: var(--text) !important;
+}
 
 /* Tous les conteneurs Bootstrap */
 [data-theme="dark"] .container,
@@ -676,9 +671,14 @@ textarea:focus, select:focus {
     color: var(--text-muted) !important;
 }
 
-/* color:inherit est le comportement par défaut — règle supprimée
-   (elle forçait un rematch de TOUS les <p><span><li><h*> à chaque
-   changement de thème, causant un freeze de 200-400ms sur mobile) */
+/* Links globaux sans classe */
+[data-theme="dark"] p, [data-theme="dark"] span,
+[data-theme="dark"] li, [data-theme="dark"] label,
+[data-theme="dark"] h1, [data-theme="dark"] h2,
+[data-theme="dark"] h3, [data-theme="dark"] h4,
+[data-theme="dark"] h5, [data-theme="dark"] h6 {
+    color: inherit;
+}
 
 /* Highlight des textes de sélection */
 [data-theme="dark"] ::selection {
@@ -690,204 +690,6 @@ textarea:focus, select:focus {
 ::selection {
     background: rgba(139,69,19,.18);
     color: #2d1a0e;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   MODE ÉCONOMIE DE DONNÉES — data-saver
-   ═══════════════════════════════════════════════════════════════════════ */
-
-/* Overlay vidéo lazy — visible par défaut, masqué quand la vidéo joue */
-.ds-vid-wrap {
-    position: relative;
-}
-.ds-vid-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: .5rem;
-    background: rgba(0, 0, 0, .38);
-    cursor: pointer;
-    z-index: 2;
-    border-radius: inherit;
-    transition: opacity .2s;
-}
-.ds-vid-overlay:hover { background: rgba(0,0,0,.52); }
-.ds-vid-play-btn {
-    width: 56px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform .2s;
-}
-.ds-vid-overlay:hover .ds-vid-play-btn { transform: scale(1.12); }
-.ds-vid-label {
-    font-size: .75rem;
-    font-weight: 700;
-    color: rgba(255,255,255,.9);
-    letter-spacing: .03em;
-    text-shadow: 0 1px 3px rgba(0,0,0,.5);
-}
-/* Masquer l'overlay quand la vidéo est lancée */
-.ds-vid-wrap.ds-playing .ds-vid-overlay { display: none; }
-
-/* Images : placeholders en mode économie */
-html.data-saver .ds-img.ds-pending {
-    background: linear-gradient(135deg, var(--bg-secondary, #f0ece6) 0%, var(--border) 100%);
-    min-height: 120px;
-    display: block;
-    cursor: pointer;
-    position: relative;
-}
-html.data-saver .ds-img-wrap::after {
-    content: '📷 ' attr(data-hint);
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: .8rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    pointer-events: none;
-}
-html.data-saver .ds-img-wrap { position: relative; }
-
-/* Bannière connexion lente */
-#ds-slow-banner {
-    position: fixed;
-    bottom: calc(60px + env(safe-area-inset-bottom, 0px));
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 9000;
-    background: var(--bg-card);
-    border: 1.5px solid var(--accent);
-    border-radius: 14px;
-    box-shadow: 0 8px 32px rgba(0,0,0,.22);
-    padding: .85rem 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: .85rem;
-    max-width: min(92vw, 420px);
-    font-size: .85rem;
-    animation: dsBannerSlide .38s cubic-bezier(.34,1.56,.64,1);
-}
-@keyframes dsBannerSlide {
-    from { transform: translateX(-50%) translateY(80px); opacity: 0; }
-    to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
-}
-#ds-slow-banner.ds-hiding {
-    animation: dsBannerSlide .25s reverse forwards;
-}
-.ds-banner-icon { font-size: 1.5rem; flex-shrink: 0; }
-.ds-banner-text { flex: 1; min-width: 0; }
-.ds-banner-title { font-weight: 800; color: var(--text-primary); margin-bottom: .15rem; }
-.ds-banner-sub { font-size: .78rem; color: var(--text-muted); }
-.ds-banner-actions { display: flex; flex-direction: column; gap: .35rem; align-items: stretch; flex-shrink: 0; }
-.ds-banner-accept {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: .35rem .85rem;
-    font-weight: 700;
-    font-size: .8rem;
-    cursor: pointer;
-    white-space: nowrap;
-}
-[data-theme="dark"] .ds-banner-accept { color: #1a0a02; }
-.ds-banner-dismiss {
-    background: none;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: .3rem .7rem;
-    font-size: .75rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    cursor: pointer;
-    white-space: nowrap;
-}
-.ds-banner-dismiss:hover { border-color: var(--text-muted); color: var(--text-primary); }
-
-/* Icône mode économie dans le dropdown (couleur quand actif) */
-#dd-datasaver-icon.active { color: #10b981 !important; }
-#dd-datasaver-label.active { color: #10b981 !important; font-weight: 800 !important; }
-
-/* ═══════════════════════════════════════════════════
-   BOTTOM TAB BAR — mobile uniquement
-   ═══════════════════════════════════════════════════ */
-.zoot-bottom-nav {
-    display: none; /* masqué sur desktop */
-}
-
-@media (max-width: 767px) {
-    .zoot-bottom-nav {
-        display: flex;
-        position: fixed;
-        bottom: 0; left: 0; right: 0;
-        height: calc(58px + env(safe-area-inset-bottom, 0px));
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-        background: var(--card-bg);
-        border-top: 1px solid var(--border);
-        z-index: 9000;
-        align-items: stretch;
-        -webkit-backdrop-filter: blur(12px);
-        backdrop-filter: blur(12px);
-    }
-    .zoot-bottom-nav a {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 2px;
-        color: var(--text-muted);
-        text-decoration: none;
-        font-size: .6rem;
-        font-weight: 600;
-        letter-spacing: .02em;
-        transition: color .18s;
-        position: relative;
-        padding-bottom: 2px;
-    }
-    .zoot-bottom-nav a .material-icons {
-        font-size: 1.45rem;
-        transition: transform .18s;
-    }
-    .zoot-bottom-nav a.active,
-    .zoot-bottom-nav a:hover {
-        color: var(--accent);
-    }
-    .zoot-bottom-nav a.active .material-icons {
-        transform: scale(1.12);
-    }
-    /* Badge de notification */
-    .zoot-bottom-nav a .bn-badge {
-        position: absolute;
-        top: 4px; right: calc(50% - 14px);
-        background: var(--accent);
-        color: #fff;
-        font-size: .5rem; font-weight: 700;
-        border-radius: 10px;
-        min-width: 14px; height: 14px;
-        padding: 0 3px;
-        display: flex; align-items: center; justify-content: center;
-        display: none; /* montré via JS si count > 0 */
-    }
-    /* Décaler le contenu principal pour éviter la barre */
-    body {
-        padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px));
-    }
-    /* Onglet central (Stories) légèrement surélevé */
-    .zoot-bottom-nav a.bn-stories {
-        position: relative;
-    }
-    .zoot-bottom-nav a.bn-stories .material-icons {
-        font-size: 1.65rem;
-    }
 }
 
 </style>

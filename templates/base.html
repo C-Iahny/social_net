@@ -26,19 +26,6 @@
         })();
     </script>
 
-    <!-- ① bis — Anti-FOUC mode économie (uniquement si activé manuellement) -->
-    <script>
-    (function() {
-        /* Mode économie : uniquement si l'utilisateur l'a explicitement activé (jamais auto) */
-        var ds = localStorage.getItem('vzb-data-saver');
-        if (ds === '1') {
-            document.documentElement.classList.add('data-saver');
-        }
-        window.__VZB_DATA_SAVER = (ds === '1');
-        window.__VZB_AUTO_SLOW  = false;
-    })();
-    </script>
-
     <!-- ② Bootstrap chargé EN PREMIER pour que nos overrides CSS le surchargent -->
     <link rel="stylesheet" type="text/css" href="{% static 'perso/bootstrap/css/bootstrap.min.css' %}">
 
@@ -65,43 +52,9 @@
         function toggleTheme() {
             var html = document.documentElement;
             var next = (html.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
-
-            /* ── Overlay opaque pour masquer le recalcul CSS ──────────────────
-               Sur Android/iOS, requestAnimationFrame fire au DÉBUT d'un frame
-               (avant le paint). setTimeout(0) à l'intérieur d'un RAF fire
-               dans la task queue APRÈS que le frame soit peint à l'écran.
-               C'est la seule garantie fiable que l'overlay est visible
-               avant qu'on change data-theme et déclenche le recalcul CSS.  */
-            var overlay = document.createElement('div');
-            overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;'
-                + 'background:' + (next === 'dark' ? '#0d0603' : '#f8f4ef') + ';'
-                + 'pointer-events:none;transition:none;';
-            document.body.appendChild(overlay);
-
-            /* Forcer le style flush pour s'assurer que l'overlay entre
-               dans le pipeline de rendu de ce frame */
-            overlay.getBoundingClientRect();
-
-            /* RAF → paint → setTimeout(0) s'exécute après ce paint */
-            requestAnimationFrame(function() {
-                setTimeout(function() {
-                    /* Ici l'overlay EST visible à l'écran */
-                    html.classList.add('vzb-no-transition');
-                    html.setAttribute('data-theme', next);
-                    try { localStorage.setItem('zoot-theme', next); } catch(e) {}
-                    _syncThemeIcons(next);
-
-                    /* RAF suivant : recalcul CSS terminé → on retire l'overlay */
-                    requestAnimationFrame(function() {
-                        html.classList.remove('vzb-no-transition');
-                        overlay.style.transition = 'opacity .18s ease';
-                        overlay.style.opacity = '0';
-                        setTimeout(function() {
-                            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-                        }, 200);
-                    });
-                }, 0);
-            });
+            html.setAttribute('data-theme', next);
+            try { localStorage.setItem('zoot-theme', next); } catch(e) {}
+            _syncThemeIcons(next);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -128,78 +81,6 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-
-<!-- ── Barre de progression navigation (NProgress-style) ── -->
-<div id="vzb-bar"></div>
-<style>
-/* Barre de progression */
-#vzb-bar {
-    position: fixed; top: 0; left: 0; height: 3px;
-    background: var(--accent, #6366f1);
-    width: 0; z-index: 99999;
-    transition: width .25s ease, opacity .3s ease;
-    pointer-events: none; opacity: 0;
-    border-radius: 0 2px 2px 0;
-}
-#vzb-bar.vzb-running { opacity: 1; }
-#vzb-bar.vzb-done    { width: 100% !important; opacity: 0; transition: width .15s ease, opacity .4s .1s ease; }
-/* Désactiver toutes les transitions pendant changement de thème */
-.vzb-no-transition *, .vzb-no-transition *::before, .vzb-no-transition *::after {
-    transition: none !important; animation: none !important;
-}
-</style>
-<script>
-(function() {
-    var bar = null, _raf = null, _w = 0;
-    function _bar() { return bar || (bar = document.getElementById('vzb-bar')); }
-
-    function _start() {
-        var b = _bar(); if (!b) return;
-        _w = 0; b.style.width = '0%'; b.style.transition = 'width .25s ease, opacity .3s ease';
-        b.classList.remove('vzb-done'); b.classList.add('vzb-running');
-        _tick();
-    }
-    function _tick() {
-        /* Avancer rapidement jusqu'à 80%, puis ralentir */
-        _w = _w < 50 ? _w + 8 : _w < 75 ? _w + 2 : _w < 90 ? _w + 0.5 : _w;
-        if (_w > 90) _w = 90;
-        var b = _bar(); if (b) b.style.width = _w + '%';
-        _raf = setTimeout(_tick, 350);
-    }
-    function _done() {
-        clearTimeout(_raf);
-        var b = _bar(); if (!b) return;
-        b.classList.add('vzb-done');
-        setTimeout(function() { b.classList.remove('vzb-running', 'vzb-done'); _w = 0; }, 500);
-    }
-
-    /* Démarrer sur clic de lien */
-    document.addEventListener('click', function(e) {
-        var a = e.target.closest('a[href]');
-        if (!a) return;
-        var href = a.getAttribute('href') || '';
-        if (!href || href.startsWith('#') || href.startsWith('javascript') ||
-            a.target === '_blank' || e.ctrlKey || e.metaKey || e.shiftKey) return;
-        /* Ne pas lancer pour les liens vers la même page */
-        try {
-            var url = new URL(href, location.href);
-            if (url.hostname !== location.hostname) return;
-        } catch(e) { return; }
-        sessionStorage.setItem('vzb-nav', '1');
-        _start();
-    });
-
-    /* Compléter dès que le DOM est prêt */
-    if (sessionStorage.getItem('vzb-nav')) {
-        sessionStorage.removeItem('vzb-nav');
-        document.addEventListener('DOMContentLoaded', function() { _done(); });
-    }
-
-    /* Sécurité : compléter si la page met trop de temps */
-    window.addEventListener('load', function() { _done(); });
-})();
-</script>
-
 <!---------------HEADER ------------------->
         {% include 'snippets/header.html' %}
         {% include 'snippets/base_js.html' %}
@@ -224,89 +105,6 @@
 			height: 100%;
 			margin-top: 62px; /* hauteur de la navbar fixe */
 		}
-
-        /* ── Create menu bottom sheet (toutes tailles d'écran) ── */
-        .create-sheet-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,.45);
-            z-index: 1100;
-            opacity: 0;
-            transition: opacity .22s;
-        }
-        .create-sheet-overlay.open {
-            display: block;
-            opacity: 1;
-        }
-        .create-sheet {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: var(--bg-card);
-            border-radius: 20px 20px 0 0;
-            padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
-            z-index: 1101;
-            transform: translateY(100%);
-            transition: transform .28s cubic-bezier(.32,1,.23,1);
-            box-shadow: 0 -4px 32px rgba(0,0,0,.18);
-        }
-        .create-sheet-overlay.open .create-sheet {
-            transform: translateY(0);
-        }
-        .create-sheet-handle {
-            width: 36px; height: 4px;
-            border-radius: 2px;
-            background: var(--border);
-            margin: 0 auto .9rem;
-        }
-        .create-sheet-title {
-            font-size: .78rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            text-align: center;
-            margin-bottom: .85rem;
-        }
-        .create-sheet-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: .6rem .4rem;
-            max-width: 480px;
-            margin: 0 auto;
-        }
-        .cs-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: .3rem;
-            text-decoration: none;
-            padding: .6rem .2rem .5rem;
-            border-radius: 14px;
-            transition: background .15s, transform .15s;
-            -webkit-tap-highlight-color: transparent;
-            color: var(--text);
-        }
-        .cs-item:hover { background: var(--btn-bg); text-decoration: none; }
-        .cs-item:active { transform: scale(.93); background: var(--btn-bg); text-decoration: none; }
-        .cs-icon {
-            width: 52px; height: 52px;
-            border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.5rem;
-            line-height: 1;
-            flex-shrink: 0;
-        }
-        .cs-label {
-            font-size: .67rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-align: center;
-            line-height: 1.2;
-        }
-        @media (max-width: 400px) {
-            .create-sheet-grid { grid-template-columns: repeat(3, 1fr); }
-        }
 
         /* ── Mobile bottom navigation ── */
         .zoot-bottom-nav {
@@ -384,18 +182,13 @@
             .zbn-item.zbn-new .zbn-new-icon .material-icons {
                 font-size: 1.25rem;
                 color: #fff;
-                transition: transform .25s cubic-bezier(.34,1.56,.64,1) !important;
-            }
-            .zbn-item.zbn-new.menu-open .zbn-new-icon .material-icons {
-                transform: rotate(45deg) !important;
+                transform: none !important;
             }
             [data-theme="dark"] .zbn-item.zbn-new .zbn-new-icon .material-icons { color: #000; }
             .zbn-item.zbn-new:active .zbn-new-icon {
                 transform: scale(.93);
             }
             .zbn-item.zbn-new span.zbn-label { color: var(--text-muted); }
-
-            /* (create-sheet styles moved outside media query — see below) */
 
             /* Notification badge */
             .zbn-badge {
@@ -575,138 +368,6 @@
 	{% include 'snippets/footer.html' %}
 
 <!-- ══════════════════════════════════════════════════════════
-     MODE ÉCONOMIE DE DONNÉES — bannière + moteur JS
-     ══════════════════════════════════════════════════════════ -->
-
-<!-- Bannière : proposée automatiquement sur connexion lente -->
-<div id="ds-slow-banner" style="display:none;" role="alert" aria-live="polite">
-    <span class="ds-banner-icon">📶</span>
-    <div class="ds-banner-text">
-        <div class="ds-banner-title">Connexion lente détectée</div>
-        <div class="ds-banner-sub">Activer le mode économie pour réduire la consommation de données&nbsp;?</div>
-    </div>
-    <div class="ds-banner-actions">
-        <button class="ds-banner-accept" onclick="dsEnable(true, true)">Activer</button>
-        <button class="ds-banner-dismiss" onclick="dsDismissBanner()">Ignorer</button>
-    </div>
-</div>
-
-<script>
-/* ═══════════════════════════════════════════════════════════════════════
-   MODE ÉCONOMIE DE DONNÉES — Vazimba Data Saver
-   Stockage : localStorage 'vzb-data-saver' = '1' | '0' | null (auto)
-   ═══════════════════════════════════════════════════════════════════════ */
-(function() {
-'use strict';
-
-/* ── Activer / désactiver ── */
-window.dsEnable = function(on, fromBanner) {
-    var html = document.documentElement;
-    if (on) {
-        html.classList.add('data-saver');
-        window.__VZB_DATA_SAVER = true;
-        try { localStorage.setItem('vzb-data-saver', '1'); } catch(e) {}
-        _applyDataSaver();
-    } else {
-        html.classList.remove('data-saver');
-        window.__VZB_DATA_SAVER = false;
-        try { localStorage.setItem('vzb-data-saver', '0'); } catch(e) {}
-        _removeDataSaverImages();
-    }
-    _syncDsButton(on);
-    if (fromBanner) dsDismissBanner();
-};
-
-/* ── Sync du bouton dans le dropdown ── */
-function _syncDsButton(on) {
-    var icon  = document.getElementById('dd-datasaver-icon');
-    var label = document.getElementById('dd-datasaver-label');
-    if (icon)  { icon.textContent = on ? 'data_saver_on' : 'data_saver_off'; icon.classList.toggle('active', on); }
-    if (label) { label.textContent = on ? 'Mode économie actif' : 'Mode économie'; label.classList.toggle('active', on); }
-}
-
-/* ── Toggle depuis le bouton ── */
-window.toggleDataSaver = function() {
-    dsEnable(!window.__VZB_DATA_SAVER);
-};
-
-/* ── Appliquer le mode économie (photos toujours chargées, vidéos lazy) ── */
-function _applyDataSaver() {
-    /* Les images se chargent toujours normalement (loading="lazy" natif suffit).
-       Le mode économie n'affecte que les vidéos, déjà lazy par défaut via ds-vid-overlay. */
-}
-
-/* ── Retirer le mode économie (no-op pour images, vidéos non affectées) ── */
-function _removeDataSaverImages() {
-    /* Les images ne sont plus gérées par le data-saver : rien à faire */
-}
-
-/* ── Clic sur une image en mode économie → charger la vraie ── */
-document.addEventListener('click', function(e) {
-    var img = e.target.closest('.ds-img-wrap .ds-img.ds-pending');
-    if (!img) return;
-    if (img.dataset.fullSrc) {
-        e.stopPropagation(); /* Ne pas ouvrir la lightbox globale tout de suite */
-        img.src = img.dataset.fullSrc;
-        img.onload = function() {
-            img.classList.remove('ds-pending');
-            img.classList.add('ds-loaded');
-            img.style.minHeight = '';
-            var wrap = img.closest('.ds-img-wrap');
-            if (wrap) { wrap.removeAttribute('data-hint'); wrap.click(); } /* ouvrir lightbox */
-        };
-    }
-}, true);
-
-/* ── Lecture d'une vidéo lazy (overlay play button) ── */
-window.dsPlayVideo = function(overlay) {
-    var wrap = overlay.closest('.ds-vid-wrap');
-    var vid  = wrap ? wrap.querySelector('video[data-src]') : null;
-    if (!vid) return;
-    vid.src = vid.dataset.src;
-    vid.load();
-    vid.play().catch(function() { /* autoplay bloqué → l'utilisateur a le contrôle */ });
-    wrap.classList.add('ds-playing');
-};
-
-/* MutationObserver supprimé : les images se chargent toujours normalement */
-
-/* ── Bannière connexion lente ── */
-window.dsDismissBanner = function() {
-    var b = document.getElementById('ds-slow-banner');
-    if (!b) return;
-    b.classList.add('ds-hiding');
-    setTimeout(function() { b.style.display = 'none'; b.classList.remove('ds-hiding'); }, 300);
-    try { sessionStorage.setItem('vzb-ds-banner-dismissed', '1'); } catch(e) {}
-};
-
-/* ── Init au chargement ── */
-document.addEventListener('DOMContentLoaded', function() {
-    /* Sync bouton dropdown */
-    _syncDsButton(!!window.__VZB_DATA_SAVER);
-
-    /* Appliquer data-saver aux images existantes si actif */
-    if (window.__VZB_DATA_SAVER) {
-        _applyDataSaver();
-    }
-
-    /* Bannière connexion lente (auto-détecté, user n'a pas encore choisi) */
-    if (window.__VZB_AUTO_SLOW) {
-        var dismissed = false;
-        try { dismissed = !!sessionStorage.getItem('vzb-ds-banner-dismissed'); } catch(e) {}
-        if (!dismissed) {
-            setTimeout(function() {
-                var b = document.getElementById('ds-slow-banner');
-                if (b) b.style.display = 'flex';
-            }, 1500); /* attendre 1.5s que la page soit stable */
-        }
-    }
-});
-
-})(); /* /IIFE data-saver */
-</script>
-
-<!-- ══════════════════════════════════════════════════════════
      LIGHTBOX GLOBAL — ouvert par openGalleryLightbox(srcs, idx)
      ou openLightbox(src, title, idx) depuis la page profil.
      ══════════════════════════════════════════════════════════ -->
@@ -738,9 +399,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <img id="g-lb-img" src="" alt=""
          style="max-width:92vw;max-height:88vh;border-radius:14px;
                 object-fit:contain;box-shadow:0 8px 48px rgba(0,0,0,.7);
-                transition:opacity .18s;
-                touch-action:none;user-select:none;-webkit-user-select:none;
-                transform-origin:center center;cursor:grab;will-change:transform;">
+                transition:opacity .18s;">
     <!-- Next -->
     <button id="g-lb-next" onclick="gLbNav(1)"
             style="position:fixed;right:1rem;top:50%;transform:translateY(-50%);
@@ -760,113 +419,9 @@ document.addEventListener('DOMContentLoaded', function() {
 (function(){
     var _srcs = [], _idx = 0;
 
-    /* ── Zoom state ──────────────────────────────────────────────────────── */
-    var _scale    = 1,   _minScale = 1, _maxScale = 4;
-    var _posX     = 0,   _posY = 0;
-    var _lastTap  = 0;
-    var _pinching = false, _initDist = 0, _initScale = 1;
-    var _panning  = false, _panSX = 0, _panSY = 0, _panOX = 0, _panOY = 0;
-
-    function _applyXform(img) {
-        img.style.transform = 'translate('+_posX+'px,'+_posY+'px) scale('+_scale+')';
-        img.style.cursor = _scale > 1 ? 'move' : 'grab';
-    }
-    function _resetZoom() {
-        var img = document.getElementById('g-lb-img');
-        _scale = 1; _posX = 0; _posY = 0;
-        if (img) { img.style.transform = ''; img.style.cursor = 'grab'; }
-    }
-
-    /* ── Swipe navigation (quand pas zoomé) ─────────────────────────────── */
-    var _swipeStartX = 0, _swipeStartY = 0, _swipeActive = false;
-
-    /* ── Setup des touch events sur l'image ─────────────────────────────── */
-    function _setupTouch() {
-        var img = document.getElementById('g-lb-img');
-        if (!img || img._lbTouchReady) return;
-        img._lbTouchReady = true;
-
-        img.addEventListener('touchstart', function(e) {
-            if (e.touches.length === 2) {
-                /* Pinch start */
-                _pinching = true;
-                _panning  = false;
-                _swipeActive = false;
-                _initDist  = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                _initScale = _scale;
-                e.preventDefault();
-            } else if (e.touches.length === 1) {
-                var now = Date.now();
-                var dx  = e.touches[0].clientX;
-                var dy  = e.touches[0].clientY;
-                /* Double-tap : zoom 2.5× / reset */
-                if (now - _lastTap < 280) {
-                    if (_scale > 1) { _resetZoom(); }
-                    else { _scale = 2.5; _posX = 0; _posY = 0; _applyXform(img); }
-                    _lastTap = 0;
-                    e.preventDefault();
-                    return;
-                }
-                _lastTap = now;
-                if (_scale > 1) {
-                    /* Pan */
-                    _panning = true; _swipeActive = false;
-                    _panSX = dx; _panSY = dy;
-                    _panOX = _posX; _panOY = _posY;
-                    e.preventDefault();
-                } else {
-                    /* Swipe potentiel pour navigation */
-                    _swipeActive = true;
-                    _swipeStartX = dx; _swipeStartY = dy;
-                }
-            }
-        }, {passive: false});
-
-        img.addEventListener('touchmove', function(e) {
-            if (e.touches.length === 2 && _pinching) {
-                var dist = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                _scale = Math.min(_maxScale, Math.max(_minScale, _initScale * (dist / _initDist)));
-                _applyXform(img);
-                e.preventDefault();
-            } else if (e.touches.length === 1 && _panning && _scale > 1) {
-                _posX = _panOX + (e.touches[0].clientX - _panSX);
-                _posY = _panOY + (e.touches[0].clientY - _panSY);
-                _applyXform(img);
-                e.preventDefault();
-            }
-            /* Si swipe, laisser le scroll naturel (pas de e.preventDefault) */
-        }, {passive: false});
-
-        img.addEventListener('touchend', function(e) {
-            if (e.touches.length < 2) _pinching = false;
-            if (e.touches.length === 0) {
-                if (_panning) _panning = false;
-                /* Swipe navigation (uniquement si scale = 1) */
-                if (_swipeActive && _scale <= 1 && _srcs.length > 1) {
-                    var dx = (e.changedTouches[0] || {clientX:_swipeStartX}).clientX - _swipeStartX;
-                    var dy = (e.changedTouches[0] || {clientY:_swipeStartY}).clientY - _swipeStartY;
-                    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-                        window.gLbNav(dx < 0 ? 1 : -1);
-                    }
-                }
-                _swipeActive = false;
-                /* Si dézoomé accidentellement sous 1 → reset */
-                if (_scale < 1.05) { _scale = 1; _posX = 0; _posY = 0; if (_scale!==1) _applyXform(img); }
-            }
-        }, {passive: true});
-    }
-
-    /* ── API publique ────────────────────────────────────────────────────── */
     window.openGalleryLightbox = function(srcs, idx) {
         _srcs = Array.isArray(srcs) ? srcs : [srcs];
         _idx  = (idx >= 0 && idx < _srcs.length) ? idx : 0;
-        _setupTouch();
         _show();
     };
 
@@ -885,13 +440,10 @@ document.addEventListener('DOMContentLoaded', function() {
         var lb = document.getElementById('g-lightbox');
         if (lb) lb.style.display = 'none';
         document.body.style.overflow = '';
-        _resetZoom();
     };
 
     window.gLbNav = function(dir) {
         if (_srcs.length < 2) return;
-        /* Si zoomé → reset le zoom avant de naviguer */
-        _resetZoom();
         _idx = (_idx + dir + _srcs.length) % _srcs.length;
         _show();
     };
@@ -910,20 +462,15 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function _show() {
-        var lb   = document.getElementById('g-lightbox');
-        var img  = document.getElementById('g-lb-img');
-        var cnt  = document.getElementById('g-lb-counter');
+        var lb  = document.getElementById('g-lightbox');
+        var img = document.getElementById('g-lb-img');
+        var cnt = document.getElementById('g-lb-counter');
         var prev = document.getElementById('g-lb-prev');
         var next = document.getElementById('g-lb-next');
         if (!lb) return;
-        _resetZoom();
         lb.style.display = 'flex';
         document.body.style.overflow = 'hidden';
-        if (img) {
-            img.style.opacity = '0';
-            img.src = _srcs[_idx] || '';
-            img.onload = function(){ img.style.opacity = '1'; };
-        }
+        if (img) { img.style.opacity = '0'; img.src = _srcs[_idx] || ''; img.onload = function(){ img.style.opacity='1'; }; }
         if (cnt) cnt.textContent = _srcs.length > 1 ? (_idx+1)+' / '+_srcs.length : '';
         var multi = _srcs.length > 1;
         if (prev) prev.style.display = multi ? 'flex' : 'none';
@@ -933,9 +480,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(e) {
         var lb = document.getElementById('g-lightbox');
         if (!lb || lb.style.display === 'none') return;
-        if (e.key === 'Escape')     { window.gLbClose(); }
-        if (e.key === 'ArrowLeft')  { window.gLbNav(-1); }
-        if (e.key === 'ArrowRight') { window.gLbNav(1); }
+        if (e.key === 'Escape')      window.gLbClose();
+        if (e.key === 'ArrowLeft')   window.gLbNav(-1);
+        if (e.key === 'ArrowRight')  window.gLbNav(1);
     });
 })();
 </script>
@@ -1001,151 +548,27 @@ document.addEventListener('DOMContentLoaded', function() {
     <nav class="zoot-bottom-nav" id="zoot-bottom-nav">
         <a class="zbn-item" href="{% url 'post:post-view' %}" data-page="feed">
             <span class="material-icons">home</span>
-            <span class="zbn-label">{% trans "Feed" %}</span>
+            <span class="zbn-label">Feed</span>
         </a>
-        <a class="zbn-item" href="{% url 'post:tendances' %}" data-page="tendances">
-            <span class="material-icons">trending_up</span>
-            <span class="zbn-label">{% trans "Tendances" %}</span>
+        <a class="zbn-item" href="{% url 'post:index' %}" data-page="explore">
+            <span class="material-icons">explore</span>
+            <span class="zbn-label">{% trans "Explore" %}</span>
         </a>
-        <button class="zbn-item zbn-new" id="zbn-create-btn" onclick="openCreateSheet()" data-page="new" aria-label="{% trans 'Créer' %}">
+        <a class="zbn-item zbn-new" href="{% url 'post:addPost' %}" data-page="new">
             <div class="zbn-new-icon">
                 <span class="material-icons">add</span>
             </div>
-            <span class="zbn-label">{% trans "Créer" %}</span>
-        </button>
+            <span class="zbn-label">Créer</span>
+        </a>
         <a class="zbn-item" href="{% url 'bazar:index' %}" data-page="bazar">
             <span class="material-icons">storefront</span>
             <span class="zbn-label">Bazar</span>
         </a>
         <a class="zbn-item" href="{% url 'account:view' user_id=request.user.id %}" data-page="profile">
             <span class="material-icons">person</span>
-            <span class="zbn-label">{% trans "Profil" %}</span>
+            <span class="zbn-label">Profil</span>
         </a>
     </nav>
-
-    <!-- ── Create menu bottom sheet ── -->
-    <div class="create-sheet-overlay" id="create-sheet-overlay" onclick="closeCreateSheet(event)">
-        <div class="create-sheet" id="create-sheet">
-            <div class="create-sheet-handle"></div>
-            <p class="create-sheet-title">{% trans "Que voulez-vous créer ?" %}</p>
-            <div class="create-sheet-grid">
-
-                <!-- Post -->
-                <a class="cs-item" href="{% url 'post:addPost' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
-                        <span style="color:#fff;" class="material-icons">edit_note</span>
-                    </div>
-                    <span class="cs-label">Post</span>
-                </a>
-
-                <!-- Kabary -->
-                <a class="cs-item" href="{% url 'post:kabary-create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">
-                        <span style="color:#fff;" class="material-icons">campaign</span>
-                    </div>
-                    <span class="cs-label">Kabary</span>
-                </a>
-
-                <!-- Vintana -->
-                <a class="cs-item" href="{% url 'post:vintana-create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#0ea5e9,#6366f1);">
-                        <span style="color:#fff;" class="material-icons">auto_awesome</span>
-                    </div>
-                    <span class="cs-label">Vintana</span>
-                </a>
-
-                <!-- Story -->
-                <a class="cs-item" href="{% url 'stories:page' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#ec4899,#f59e0b);">
-                        <span style="color:#fff;" class="material-icons">add_circle</span>
-                    </div>
-                    <span class="cs-label">Story</span>
-                </a>
-
-                <!-- Bazar -->
-                <a class="cs-item" href="{% url 'bazar:create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#10b981,#0ea5e9);">
-                        <span style="color:#fff;" class="material-icons">sell</span>
-                    </div>
-                    <span class="cs-label">Bazar</span>
-                </a>
-
-                <!-- Groupe -->
-                <a class="cs-item" href="{% url 'group:create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#6366f1,#10b981);">
-                        <span style="color:#fff;" class="material-icons">group_add</span>
-                    </div>
-                    <span class="cs-label">Groupe</span>
-                </a>
-
-                <!-- Live -->
-                <button class="cs-item" type="button" onclick="closeCreateSheet();_submitLiveCreate();"
-                        style="background:none;border:none;cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;gap:.35rem;text-decoration:none;color:inherit;">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#ef4444,#f59e0b);">
-                        <span style="color:#fff;" class="material-icons">videocam</span>
-                    </div>
-                    <span class="cs-label">Live</span>
-                </button>
-                <!-- Formulaire caché POST pour créer le live -->
-                <form id="live-create-form" method="POST" action="{% url 'video:live-create' %}" style="display:none;">
-                    {% csrf_token %}
-                </form>
-
-            </div>
-        </div>
-    </div>
-
-    <script>
-    function openCreateSheet() {
-        var overlay = document.getElementById('create-sheet-overlay');
-        var btn     = document.getElementById('zbn-create-btn');
-        overlay.style.display = 'block';
-        /* Force reflow pour que la transition CSS opacity se déclenche
-           (plus fiable que requestAnimationFrame sur mobile Safari) */
-        overlay.getBoundingClientRect();
-        overlay.classList.add('open');
-        if (btn) btn.classList.add('menu-open');
-        document.body.style.overflow = 'hidden';
-    }
-    function _doCloseSheet() {
-        var overlay = document.getElementById('create-sheet-overlay');
-        var btn     = document.getElementById('zbn-create-btn');
-        overlay.classList.remove('open');
-        if (btn) btn.classList.remove('menu-open');
-        document.body.style.overflow = '';
-        setTimeout(function() {
-            if (!overlay.classList.contains('open')) overlay.style.display = 'none';
-        }, 300);
-    }
-    function closeCreateSheet(e) {
-        /* Si appelé depuis l'overlay : fermer seulement si le clic est sur le fond, pas la sheet */
-        if (e && e.type === 'click') {
-            if (e.target !== document.getElementById('create-sheet-overlay')) return;
-        }
-        _doCloseSheet();
-    }
-    function _submitLiveCreate() {
-        var f = document.getElementById('live-create-form');
-        if (f) f.submit();
-    }
-    /* Fermer avec swipe vers le bas */
-    (function() {
-        var sheet = document.getElementById('create-sheet');
-        if (!sheet) return;
-        var startY = 0;
-        sheet.addEventListener('touchstart', function(e) {
-            startY = e.touches[0].clientY;
-        }, { passive: true });
-        sheet.addEventListener('touchend', function(e) {
-            if (e.changedTouches[0].clientY - startY > 60) _doCloseSheet();
-        }, { passive: true });
-    })();
-    /* Fermer avec la touche Escape */
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') _doCloseSheet();
-    });
-    </script>
-
     <script>
     (function() {
         // Highlight the active tab based on current URL
@@ -1606,139 +1029,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
 })();
 </script>
-
-<!-- ══ Modal Signalement de contenu ══════════════════════════════════════ -->
-{% if user.is_authenticated %}
-<div id="report-modal-overlay" style="
-    display:none; position:fixed; inset:0; z-index:9900;
-    background:rgba(0,0,0,.55); align-items:center; justify-content:center;
-" onclick="if(event.target===this)closeReportModal()">
-    <div style="
-        background:var(--bg-card); border:1px solid var(--border);
-        border-radius:20px; width:min(92vw,420px); padding:1.6rem 1.8rem;
-        box-shadow:0 24px 64px rgba(0,0,0,.35);
-        animation:dropIn .18s ease;
-    ">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;">
-            <div style="display:flex;align-items:center;gap:.55rem;font-weight:900;font-size:1.05rem;color:var(--text);">
-                <span class="material-icons" style="color:#ef4444;font-size:1.2rem;">flag</span>
-                Signaler un contenu
-            </div>
-            <button onclick="closeReportModal()" style="
-                background:none;border:none;cursor:pointer;
-                color:var(--text-muted);padding:.25rem;border-radius:50%;
-                display:flex;align-items:center;
-            "><span class="material-icons">close</span></button>
-        </div>
-        <p style="font-size:.85rem;color:var(--text-muted);margin:0 0 1rem;">
-            Sélectionnez la raison du signalement. Notre équipe examinera ce contenu.
-        </p>
-        <input type="hidden" id="report-ct" value="">
-        <input type="hidden" id="report-oid" value="">
-        <div id="report-reasons-wrap" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;">
-            <!-- Rempli par JS (tableau hardcodé) -->
-        </div>
-        <textarea id="report-comment" placeholder="Précision optionnelle…" rows="2"
-            style="width:100%;box-sizing:border-box;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:.6rem .85rem;color:var(--text);font-family:inherit;font-size:.88rem;resize:none;outline:none;margin-bottom:.9rem;transition:border-color .2s;"
-            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
-        <div id="report-feedback" style="font-size:.83rem;color:var(--accent);min-height:1.2rem;margin-bottom:.5rem;"></div>
-        <div style="display:flex;gap:.6rem;justify-content:flex-end;">
-            <button onclick="closeReportModal()" style="
-                background:var(--btn-bg);border:1px solid var(--border);border-radius:10px;
-                padding:.5rem 1.1rem;cursor:pointer;font-size:.88rem;color:var(--text);font-weight:600;
-            ">Annuler</button>
-            <button onclick="submitReport()" style="
-                background:linear-gradient(135deg,#ef4444,#dc2626);
-                color:#fff;border:none;border-radius:10px;
-                padding:.5rem 1.3rem;cursor:pointer;font-size:.88rem;font-weight:700;
-            ">Envoyer</button>
-        </div>
-    </div>
-</div>
-
-<script>
-(function(){
-    var _REPORT_URL = "{% url 'post:report-content' %}";
-    var _CSRF_COOKIE = 'csrftoken';
-    var _REPORT_REASONS = [
-        ['spam',     'Spam / publicité abusive'],
-        ['hate',     'Discours haineux / harcèlement'],
-        ['violence', 'Violence / contenu choquant'],
-        ['nudity',   'Nudité / contenu adulte'],
-        ['false',    'Fausse information'],
-        ['other',    'Autre'],
-    ];
-
-    function buildReasonsList() {
-        var wrap = document.getElementById('report-reasons-wrap');
-        if (!wrap) return;
-        wrap.innerHTML = '';
-        _REPORT_REASONS.forEach(function(pair, i) {
-            var lbl = document.createElement('label');
-            lbl.style.cssText = 'display:flex;align-items:center;gap:.65rem;cursor:pointer;padding:.5rem .6rem;border-radius:10px;transition:background .15s;';
-            lbl.onmouseover = function(){ this.style.background = 'var(--btn-bg)'; };
-            lbl.onmouseout  = function(){ this.style.background = 'none'; };
-            var inp = document.createElement('input');
-            inp.type = 'radio'; inp.name = 'report-reason'; inp.value = pair[0];
-            inp.style.cssText = 'accent-color:var(--accent);width:17px;height:17px;';
-            if (i === 0) inp.checked = true;
-            var span = document.createElement('span');
-            span.style.cssText = 'font-size:.9rem;color:var(--text);';
-            span.textContent = pair[1];
-            lbl.appendChild(inp); lbl.appendChild(span);
-            wrap.appendChild(lbl);
-        });
-    }
-
-    window.openReportModal = function(ct, objectId) {
-        buildReasonsList();
-        document.getElementById('report-ct').value  = ct;
-        document.getElementById('report-oid').value = objectId;
-        document.getElementById('report-comment').value = '';
-        document.getElementById('report-feedback').textContent = '';
-        document.getElementById('report-modal-overlay').style.display = 'flex';
-    };
-
-    window.closeReportModal = function() {
-        document.getElementById('report-modal-overlay').style.display = 'none';
-    };
-
-    window.submitReport = function() {
-        var ct      = document.getElementById('report-ct').value;
-        var oid     = document.getElementById('report-oid').value;
-        var comment = document.getElementById('report-comment').value.trim();
-        var radios  = document.querySelectorAll('input[name="report-reason"]');
-        var reason  = '';
-        radios.forEach(function(r){ if(r.checked) reason = r.value; });
-        var fb = document.getElementById('report-feedback');
-
-        if (!reason) { fb.style.color = '#ef4444'; fb.textContent = 'Veuillez choisir une raison.'; return; }
-
-        var csrf = (document.cookie.match('(^|;)\\s*' + _CSRF_COOKIE + '\\s*=\\s*([^;]+)') || [])[2] || '';
-        var fd = new FormData();
-        fd.append('ct', ct); fd.append('object_id', oid);
-        fd.append('reason', reason); fd.append('comment', comment);
-
-        fetch(_REPORT_URL, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': csrf, 'X-Requested-With': 'XMLHttpRequest' },
-            body: fd,
-        })
-        .then(function(r){ return r.json(); })
-        .then(function(data){
-            if (data.ok) {
-                fb.style.color = 'var(--accent)';
-                fb.textContent = 'Signalement envoyé. Merci !';
-                setTimeout(closeReportModal, 1400);
-            } else {
-                fb.style.color = '#ef4444';
-                fb.textContent = data.error || 'Erreur lors de l\'envoi.';
-            }
-        })
-        .catch(function(){ fb.style.color='#ef4444'; fb.textContent='Erreur réseau.'; });
-    };
-})();
-</script>
-{% endif %}
 </body>
 </html>

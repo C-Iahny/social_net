@@ -133,26 +133,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 				except Exception as e:
 					print("UNREAD CHAT MESSAGE COUNT EXCEPTION: " + str(e))
 					pass
-
-				# ── Rejet d'appel depuis n'importe quelle page ─────────────────────
-			elif command == "call_reject_global":
-				# Le callee (sur n'importe quelle page) rejette l'appel entrant.
-				# On forward le signal CALL_REJECT vers le groupe personnel du caller.
-				caller_id = content.get("caller_id")
-				if caller_id:
-					from chat.constants import MSG_TYPE_CALL_REJECT
-					try:
-						await self.channel_layer.group_send(
-							f"user_{caller_id}",
-							{
-								"type":     "chat.call",
-								"msg_type": MSG_TYPE_CALL_REJECT,
-								"user_id":  self.scope["user"].id,
-							}
-						)
-					except Exception as e:
-						print(f"call_reject_global error: {e}")
-
+					
 		except ClientError as e:
 			print("EXCEPTION: receive_json ClientError: " + str(e))
 			pass
@@ -303,25 +284,6 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 				"post_id":       event["post_id"],
 			}
 		)
-
-	async def chat_call(self, event):
-		"""
-		Reçoit un signal WebRTC (offer/answer/ice/reject/end) depuis le channel layer
-		et le forward au client via le notificationSocket (présent sur TOUTES les pages).
-		Filtre l'écho : ne renvoie pas si l'expéditeur == nous-même.
-		"""
-		if event.get("user_id") == self.scope["user"].id:
-			return   # ne pas s'envoyer à soi-même
-		await self.send_json(event)
-
-	async def chat_unread_notif(self, event):
-		"""Badge non-lu temps-réel (aussi reçu par le NotificationConsumer)."""
-		from chat.constants import MSG_TYPE_UNREAD_NOTIF
-		await self.send_json({
-			"msg_type":     MSG_TYPE_UNREAD_NOTIF,
-			"from_user_id": event["from_user_id"],
-			"count":        event["count"],
-		})
 
 	async def post_action_notification(self, event):
 		"""Called when someone likes/comments/reposts on this user's post."""
