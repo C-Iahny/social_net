@@ -3068,15 +3068,27 @@ window._CT = {
           Quand ontrack arrive, on remplace srcObject → l'élément reste activé.
     ──────────────────────────────────────────────────────────────────────── */
     function _preUnlockMedia(){
-        /* AudioContext.resume() — active le sous-système audio Safari/iOS/WebKit.
-           C'est le seul geste nécessaire pendant le clic utilisateur.
-           On NE lance plus play() ici sur un stream vide : cela créait un play()
-           pending qui entrait en conflit (AbortError) avec le vrai play() dans
-           onRemoteStream sur Opera et certains WebView Android. */
+        /* 1. AudioContext.resume() — active le sous-système audio Safari/iOS/WebKit. */
         try {
             var _tmpCtx = new (window.AudioContext || window.webkitAudioContext)();
             _tmpCtx.resume().catch(function(){});
             setTimeout(function(){ try{ _tmpCtx.close(); }catch(e){} }, 4000);
+        } catch(e){}
+        /* 2. Pré-activation de l'élément <video> distant pendant le geste utilisateur.
+              Safari/iOS et Android WebView bloquent play() depuis les callbacks
+              asynchrones (ontrack). En appelant play() ici — pendant le clic —
+              on "active" l'élément. L'activation persiste même si srcObject change
+              ensuite. Dans onRemoteStream, on fait rv.pause() AVANT de remplacer
+              srcObject : cela résout la promesse pending et évite l'AbortError
+              sur Opera / WebView sans retirer l'activation Safari.               */
+        try {
+            var _rv = document.getElementById('call-remote-video');
+            if(_rv){
+                _rv.srcObject = new MediaStream();  /* source valide (vide) — requis Safari */
+                _rv.muted     = true;
+                var _pp = _rv.play();
+                if(_pp && _pp.catch) _pp.catch(function(){/* blocked OK – activation peut quand même avoir eu lieu */});
+            }
         } catch(e){}
     }
 
@@ -3286,6 +3298,10 @@ window._CT = {
                 if(rv){
                     var _ao = document.getElementById('call-active-overlay');
                     if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
+                    /* pause() avant de changer srcObject — annule le play() pending du
+                       MediaStream vide créé dans _preUnlockMedia (évite AbortError Opera).
+                       L'activation Safari persiste malgré le pause/srcObject-change.   */
+                    rv.pause();
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
                     rv.muted = false;
@@ -3378,6 +3394,10 @@ window._CT = {
                 if(rv){
                     var _ao = document.getElementById('call-active-overlay');
                     if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
+                    /* pause() avant de changer srcObject — annule le play() pending du
+                       MediaStream vide créé dans _preUnlockMedia (évite AbortError Opera).
+                       L'activation Safari persiste malgré le pause/srcObject-change.   */
+                    rv.pause();
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
                     /* Tenter unmuted. Si l'autoplay est bloqué → muted→play→unmute */
