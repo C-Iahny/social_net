@@ -1557,8 +1557,10 @@
         <!-- ── Overlay appel ACTIF ─────────────────────────────── -->
         <div class="call-overlay" id="call-active-overlay">
             <!-- Vidéo distante (plein fond) — masquée en mode audio -->
-            <!-- call-remote-video : pas d'autoplay attr — on contrôle via JS (muted→play→unmute) -->
-            <video id="call-remote-video" playsinline class="call-remote-video"></video>
+            <!-- autoplay muted : le navigateur démarre dès que srcObject est assigné (muted autoplay
+                 est toujours autorisé, même sans geste, sur Chrome/WebView/Safari). Le JS unmute
+                 après via rv.muted=false. Cela évite le blocage de play() en contexte async.   -->
+            <video id="call-remote-video" playsinline autoplay muted class="call-remote-video"></video>
             <!-- Audio dédié pour les appels audio (video display:none bloque l'audio sur iOS) -->
             <audio id="call-remote-audio" playsinline style="display:none;"></audio>
             <!-- Fond audio : avatar centré (affiché à la place de la vidéo) -->
@@ -2993,32 +2995,26 @@ window._CT = {
     // STUN + TURN servers — plusieurs STUN pour maximiser les chances
     // TURN indispensable sur 5G / CGNAT / NAT symétrique
     // NOTE : numb.viagenie.ca est FERMÉ depuis 2021 — retiré.
-    var _ICE = { iceServers: [
+    var _ICE = {
+        iceCandidatePoolSize: 5,   // pré-récolte les candidats avant l'appel → ICE plus rapide
+        iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
         { urls: 'stun:stun3.l.google.com:19302' },
         { urls: 'stun:stun4.l.google.com:19302' },
         { urls: 'stun:stun.cloudflare.com:3478' },
-        // openrelay — TURN public gratuit (UDP + TCP + TLS)
+        { urls: 'stun:stun.relay.metered.ca:80' },
+        // openrelay — TURN public gratuit (UDP 80 + UDP 443 + TLS/TCP 443)
+        // NOTE : turn:...:443?transport=tcp (cleartext TCP) retiré — inutile si turns: présent
         {
             urls: [
                 'turn:openrelay.metered.ca:80',
                 'turn:openrelay.metered.ca:443',
-                'turn:openrelay.metered.ca:443?transport=tcp',
                 'turns:openrelay.metered.ca:443?transport=tcp'
             ],
             username: 'openrelayproject',
             credential: 'openrelayproject'
-        },
-        // freestun — deuxième TURN de secours
-        {
-            urls: [
-                'turn:freestun.net:3479',
-                'turns:freestun.net:5350'
-            ],
-            username: 'free',
-            credential: 'free'
         }
     ]};
 
@@ -3068,27 +3064,16 @@ window._CT = {
           Quand ontrack arrive, on remplace srcObject → l'élément reste activé.
     ──────────────────────────────────────────────────────────────────────── */
     function _preUnlockMedia(){
-        /* 1. AudioContext.resume() — active le sous-système audio Safari/iOS/WebKit. */
+        /* AudioContext.resume() — déverrouille le sous-système audio Safari/iOS/WebKit.
+           On NE fait plus de play() sur l'élément <video> ici car l'élément est dans
+           call-active-overlay qui a display:none — Android WebView/Chrome bloque play()
+           sur un élément non-rendu même pendant un geste utilisateur → bouton play parasite.
+           La lecture est gérée par l'attribut autoplay muted (HTML) + rv.play() dans
+           onRemoteStream une fois le stream WebRTC réel disponible.                         */
         try {
             var _tmpCtx = new (window.AudioContext || window.webkitAudioContext)();
             _tmpCtx.resume().catch(function(){});
             setTimeout(function(){ try{ _tmpCtx.close(); }catch(e){} }, 4000);
-        } catch(e){}
-        /* 2. Pré-activation de l'élément <video> distant pendant le geste utilisateur.
-              Safari/iOS et Android WebView bloquent play() depuis les callbacks
-              asynchrones (ontrack). En appelant play() ici — pendant le clic —
-              on "active" l'élément. L'activation persiste même si srcObject change
-              ensuite. Dans onRemoteStream, on fait rv.pause() AVANT de remplacer
-              srcObject : cela résout la promesse pending et évite l'AbortError
-              sur Opera / WebView sans retirer l'activation Safari.               */
-        try {
-            var _rv = document.getElementById('call-remote-video');
-            if(_rv){
-                _rv.srcObject = new MediaStream();  /* source valide (vide) — requis Safari */
-                _rv.muted     = true;
-                var _pp = _rv.play();
-                if(_pp && _pp.catch) _pp.catch(function(){/* blocked OK – activation peut quand même avoir eu lieu */});
-            }
         } catch(e){}
     }
 
@@ -3112,7 +3097,7 @@ window._CT = {
         }
         if(_peerConn){ _peerConn.close(); _peerConn = null; }
         if(_localStream){ _localStream.getTracks().forEach(function(t){ t.stop(); }); _localStream = null; }
-        var rv  = _callEl('call-remote-video'); if(rv){ rv.srcObject = null; rv.style.display = 'none'; }
+        var rv  = _callEl('call-remote-video'); if(rv){ rv.pause(); rv.srcObject = null; rv.muted = true; rv.style.display = 'none'; }
         var ra  = _callEl('call-remote-audio'); if(ra){ ra.srcObject = null; ra.pause(); }
         var lv  = _callEl('call-local-video');  if(lv){ lv.srcObject = null; lv.style.display = 'none'; }
         var lop = _callEl('call-out-local-vid'); if(lop){ lop.srcObject = null; lop.style.display = 'none'; }
@@ -3151,10 +3136,16 @@ window._CT = {
             if(!_remoteStreamStarted){
                 _remoteStreamStarted = true;
                 onRemoteStream(_pcRemoteStream);
+            } else {
+                /* Piste supplémentaire (ex : vidéo arrivée après audio).
+                   _pcRemoteStream est déjà le srcObject → le navigateur devrait
+                   mettre à jour automatiquement. Si l'élément est quand même
+                   en pause (autoplay pas encore déclenché), forcer play(). */
+                var _rv2 = document.getElementById('call-remote-video');
+                if(_rv2 && _rv2.paused && _rv2.srcObject){
+                    _rv2.play().catch(function(){ _rv2.muted = true; _rv2.play().catch(function(){}); });
+                }
             }
-            /* Les pistes suivantes (ex : vidéo après audio) sont ajoutées à
-               _pcRemoteStream qui est DÉJÀ le srcObject → le <video> se met
-               à jour tout seul, pas besoin d'appeler onRemoteStream de nouveau. */
         };
         _peerConn.oniceconnectionstatechange = function(){
             var state = _peerConn && _peerConn.iceConnectionState;
@@ -3204,9 +3195,16 @@ window._CT = {
     function _activateCallUI(){
         _showOverlay('call-active-overlay');
         _startTimer();
-        // Réinitialiser le statut ICE (sera mis à jour par oniceconnectionstatechange)
+        // Initialiser le statut ICE — sauf si déjà connecté (évite de réinitialiser après ontrack)
         var iceEl = document.getElementById('call-ice-status');
-        if(iceEl){ iceEl.textContent = 'Connexion en cours…'; iceEl.style.color = '#ff9800'; }
+        if(iceEl){
+            var _curState = _peerConn && _peerConn.iceConnectionState;
+            if(_curState === 'connected' || _curState === 'completed'){
+                iceEl.textContent = '✓ Connecté'; iceEl.style.color = '#4caf50';
+            } else {
+                iceEl.textContent = 'Connexion en cours…'; iceEl.style.color = '#ff9800';
+            }
+        }
         var rv  = _callEl('call-remote-video');
         var lv  = _callEl('call-local-video');
         var bg  = _callEl('call-audio-bg');
@@ -3298,19 +3296,20 @@ window._CT = {
                 if(rv){
                     var _ao = document.getElementById('call-active-overlay');
                     if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
-                    /* pause() avant de changer srcObject — annule le play() pending du
-                       MediaStream vide créé dans _preUnlockMedia (évite AbortError Opera).
-                       L'activation Safari persiste malgré le pause/srcObject-change.   */
-                    rv.pause();
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
+                    /* L'attribut autoplay muted déclenche la lecture dès que srcObject est assigné.
+                       On unmute via JS — Chrome/WebView autorise rv.muted=false après interaction. */
                     rv.muted = false;
-                    rv.play().catch(function(e){
-                        console.warn('[CALL] caller play (unmuted) blocked:', e);
-                        rv.muted = true;
-                        rv.play().then(function(){ rv.muted = false; })
-                                 .catch(function(e2){ console.error('[CALL] caller play failed:', e2); });
-                    });
+                    /* Fallback : si autoplay n'a pas encore démarré (timing), forcer play(). */
+                    if(rv.paused){
+                        rv.play().catch(function(e){
+                            console.warn('[CALL] caller play blocked, fallback muted:', e);
+                            rv.muted = true;
+                            rv.play().then(function(){ rv.muted = false; })
+                                     .catch(function(e2){ console.error('[CALL] caller play failed:', e2); });
+                        });
+                    }
                 }
                 var lv = _callEl('call-local-video');
                 if(lv && !lv.srcObject){
@@ -3394,20 +3393,20 @@ window._CT = {
                 if(rv){
                     var _ao = document.getElementById('call-active-overlay');
                     if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
-                    /* pause() avant de changer srcObject — annule le play() pending du
-                       MediaStream vide créé dans _preUnlockMedia (évite AbortError Opera).
-                       L'activation Safari persiste malgré le pause/srcObject-change.   */
-                    rv.pause();
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
-                    /* Tenter unmuted. Si l'autoplay est bloqué → muted→play→unmute */
+                    /* autoplay muted (HTML) déclenche la lecture dès que srcObject est assigné.
+                       On unmute ici — autorisé par Chrome/WebView après interaction utilisateur. */
                     rv.muted = false;
-                    rv.play().catch(function(e){
-                        console.warn('[CALL] unmuted play blocked, fallback muted:', e);
-                        rv.muted = true;
-                        rv.play().then(function(){ rv.muted = false; })
-                                 .catch(function(e2){ console.error('[CALL] play failed:', e2); });
-                    });
+                    /* Fallback si autoplay n'a pas encore démarré */
+                    if(rv.paused){
+                        rv.play().catch(function(e){
+                            console.warn('[CALL] callee play blocked, fallback muted:', e);
+                            rv.muted = true;
+                            rv.play().then(function(){ rv.muted = false; })
+                                     .catch(function(e2){ console.error('[CALL] callee play failed:', e2); });
+                        });
+                    }
                 }
             });
             /* ── Safari / WebKit / WebView : setRemoteDescription AVANT addTrack ──
