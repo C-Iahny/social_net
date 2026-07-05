@@ -136,7 +136,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
 			elif command in ("call_answer", "call_ice", "call_reject", "call_end"):
 				# ── Autres signaux : router vers le groupe personnel du peer ──
-				peer_id = self.call_peer_id
+				# Le client peut cibler explicitement un peer (ex: refus "occupé"
+				# envoyé à un 2e appelant sans perturber l'appel en cours).
+				peer_id = None
+				explicit_peer = content.get("peer_id")
+				if explicit_peer is not None:
+					try:
+						peer_id = int(explicit_peer)
+					except (TypeError, ValueError):
+						peer_id = None
+				if not peer_id:
+					peer_id = self.call_peer_id
 				if not peer_id and self.room_id:
 					try:
 						room  = await get_room_or_error(self.room_id, self.scope["user"])
@@ -161,7 +171,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 					elif command == "call_ice":
 						payload["candidate"] = content.get("candidate", {})
 					await self.channel_layer.group_send(f"user_{peer_id}", payload)
-					if command in ("call_reject", "call_end"):
+					# Ne réinitialiser le peer courant QUE si le signal le visait
+					# (un refus "occupé" ciblant un 2e appelant ne doit pas
+					#  casser le routage de l'appel en cours).
+					if command in ("call_reject", "call_end") and peer_id == self.call_peer_id:
 						self.call_peer_id = None
 			elif command == "send_file":
 				# The file was already saved to DB by the HTTP upload view.
@@ -501,10 +514,16 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		# Mémoriser l'appelant pour router les réponses (answer/ice) dans l'autre sens
 		mt = event.get("msg_type")
 		if mt == MSG_TYPE_CALL_OFFER:
-			self.call_peer_id = event.get("user_id")
+			# Ne PAS écraser le peer courant si on est déjà en appel avec
+			# quelqu'un d'autre (sinon les signaux ICE/end de l'appel en cours
+			# seraient routés vers le nouvel appelant).
+			if self.call_peer_id is None or self.call_peer_id == event.get("user_id"):
+				self.call_peer_id = event.get("user_id")
 			print(f"[CALL] chat_call: OFFER → envoi au client (callee), call_peer_id={self.call_peer_id}")
 		elif mt in (MSG_TYPE_CALL_END, MSG_TYPE_CALL_REJECT):
-			self.call_peer_id = None
+			# Ne réinitialiser que si le signal vient du peer courant
+			if self.call_peer_id is None or self.call_peer_id == event.get("user_id"):
+				self.call_peer_id = None
 		await self.send_json(event)
 		print(f"[CALL] chat_call: send_json OK")
 
@@ -776,7 +795,7 @@ def append_unread_msg_if_not_connected(room, user, connected_users, message):
 			pass
 	return
 
-# When a user connects, reset their unread message count
+# When a user connects, reset their unread message count.
 @database_sync_to_async
 def on_user_connected(room, user):
 	# confirm they are in the connected users list

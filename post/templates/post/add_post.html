@@ -223,7 +223,7 @@
                     </label>
                     <label for="id_media_files" class="upload-zone" id="media-upload-zone">
                         <input type="file" name="media_files" id="id_media_files"
-                               accept="*/*"
+                               accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,.mov,.mkv,.avi,.m4v,.3gp"
                                multiple
                                style="display:none;"
                                onchange="addToSelection(this.files); this.value=null;">
@@ -252,49 +252,13 @@
 
             </div><!-- /post-form-body -->
 
-            <!-- ── Brouillon / Programmer / Publier ──────────────────────────── -->
-            <input type="hidden" name="action" id="post-action" value="publish">
-            <input type="hidden" name="scheduled_at" id="post-scheduled-at" value="">
-
-            <div class="post-form-actions" style="flex-wrap:wrap;gap:.5rem;">
+            <div class="post-form-actions">
                 <a class="btn-cancel" href="{% url 'post:post-view' %}">
                     <span class="material-icons" style="font-size:1rem;">arrow_back</span> {% trans "Cancel" %}
                 </a>
-
-                <!-- Brouillon -->
-                <button class="btn-cancel" type="button" onclick="submitAs('draft')"
-                        style="color:var(--text-muted);border:1.5px solid var(--border);">
-                    <span class="material-icons" style="font-size:1rem;">drafts</span> {% trans "Brouillon" %}
-                </button>
-
-                <!-- Programmer -->
-                <button class="btn-cancel" type="button" onclick="toggleSchedulePicker()"
-                        id="schedule-toggle-btn"
-                        style="color:var(--accent2);border:1.5px solid var(--accent2);">
-                    <span class="material-icons" style="font-size:1rem;">schedule</span> {% trans "Programmer" %}
-                </button>
-
-                <!-- Publier -->
                 <button class="btn-submit" type="submit">
                     <span class="material-icons" style="font-size:1rem;">send</span> {% trans "Publish" %}
                 </button>
-            </div>
-
-            <!-- Picker date/heure pour publication programmée (caché par défaut) -->
-            <div id="schedule-picker" style="display:none;padding:.75rem 0 0;border-top:1px solid var(--border);margin-top:.5rem;">
-                <label style="font-size:.88rem;color:var(--text-muted);display:block;margin-bottom:.4rem;">
-                    {% trans "Date et heure de publication" %}
-                </label>
-                <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-                    <input type="datetime-local" id="sched-dt-input"
-                           style="flex:1;min-width:200px;padding:.4rem .6rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:.9rem;">
-                    <button type="button" class="btn-submit"
-                            onclick="submitAs('schedule')"
-                            style="white-space:nowrap;">
-                        <span class="material-icons" style="font-size:1rem;">schedule_send</span>
-                        {% trans "Programmer" %}
-                    </button>
-                </div>
             </div>
         </form>
 
@@ -310,21 +274,10 @@ function isVideo(file) {
     return file.type.startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
 }
 
-/* Ajoute les nouveaux fichiers au panier (avec conversion WebP si possible) */
+/* Ajoute les nouveaux fichiers au panier */
 function addToSelection(newFiles) {
-    var raw = Array.from(newFiles);
-    if (window.ZootMediaConverter) {
-        ZootMediaConverter.processFiles(raw).then(function(converted) {
-            converted.forEach(function(f) { _pending.push(f); });
-            _renderPreview();
-        }).catch(function() {
-            raw.forEach(function(f) { _pending.push(f); });
-            _renderPreview();
-        });
-    } else {
-        raw.forEach(function(f) { _pending.push(f); });
-        _renderPreview();
-    }
+    Array.from(newFiles).forEach(function(f) { _pending.push(f); });
+    _renderPreview();
 }
 
 /* Retire le fichier à l'index idx du panier */
@@ -430,21 +383,6 @@ function _renderPreview() {
         });
     });
 })();
-
-// ── Brouillon / Programmer ────────────────────────────────────────────────────
-function submitAs(action) {
-    document.getElementById('post-action').value = action;
-    if (action === 'schedule') {
-        var dt = document.getElementById('sched-dt-input').value;
-        if (!dt) { alert('{% trans "Veuillez choisir une date et heure." %}'); return; }
-        document.getElementById('post-scheduled-at').value = dt;
-    }
-    document.getElementById('add-post-form').submit();
-}
-function toggleSchedulePicker() {
-    var p = document.getElementById('schedule-picker');
-    if (p) p.style.display = (p.style.display === 'none') ? 'block' : 'none';
-}
 </script>
 
 {% endblock content %}

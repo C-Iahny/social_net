@@ -572,6 +572,21 @@ var hasPlayed    = false;
 var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+/* ── MediaSource standard OU ManagedMediaSource ─────────────────────────
+   iOS Safari n'expose PAS window.MediaSource, mais depuis iOS 17.1 il
+   expose window.ManagedMediaSource (même API + gestion d'énergie).
+   On résout ici l'implémentation disponible pour que les viewers iPhone/
+   iPad puissent enfin lire le live.                                      */
+var MS     = window.MediaSource || window.ManagedMediaSource || null;
+var IS_MMS = !window.MediaSource && !!window.ManagedMediaSource;
+
+/* Détection du partage d'écran — absent sur iOS, Android, Samsung, etc. */
+var hasDisplayMedia = !!(
+    navigator.mediaDevices &&
+    typeof navigator.mediaDevices.getDisplayMedia === 'function'
+);
+var isMobileUA = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 /* Timer "l'hôte n'a pas démarré" — effacé dès qu'on reçoit le 1er media_chunk */
 var noChunkTimer = null;
 
@@ -584,11 +599,22 @@ var _joinRetryTimer = null;
 /* ── Format détecté une seule fois ── */
 var MIME = (function() {
     var types = [
+        /* ── fMP4 H.264 + AAC EN PREMIER : c'est le seul format lisible par
+             TOUS les viewers via MSE — Chrome, Edge, Opera, Firefox ET
+             iOS/macOS Safari (ManagedMediaSource). Chrome ≥ 126 et Safari
+             savent l'enregistrer ; sinon on retombe sur WebM (Firefox,
+             anciens Chrome/Android) sans changement de comportement.     ── */
+        'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+        'video/mp4;codecs=avc1,mp4a.40.2',
+        /* ── WebM (Firefox, anciens Chrome, Android) ── */
         'video/webm;codecs=vp9,opus',
         'video/webm;codecs=vp8,opus',
         'video/webm;codecs=vp9',
         'video/webm;codecs=vp8',
         'video/webm',
+        /* ── Derniers recours mp4 sans audio spécifié ── */
+        'video/mp4;codecs=avc1',
+        'video/mp4',
     ];
     if (typeof MediaRecorder === 'undefined') return '';
     for (var i = 0; i < types.length; i++) {
@@ -649,10 +675,15 @@ function connect() {
    ══════════════════════════════════════════════════ */
 
 window.startSource = function(src) {
+    /* Partage d'écran non disponible sur cet appareil */
+    if (src === 'screen' && !hasDisplayMedia) {
+        appendSystemMsg('⚠️ Le partage d\'écran n\'est pas disponible sur mobile. Utilise la caméra.');
+        return;
+    }
     if (sourceOverlay) sourceOverlay.classList.add('hidden');
     var p = src === 'screen'
         ? navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-        : navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        : navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
 
     p.then(function(stream) {
         localStream = stream;
@@ -693,11 +724,16 @@ function startRecording(stream) {
     }
     isFirstChunk = true;
     try {
-        mediaRecorder = new MediaRecorder(stream, {
-            mimeType: MIME,
-            videoBitsPerSecond: 2500000,  /* 2.5 Mbps pour une bonne qualité match foot */
-            videoKeyFrameIntervalDuration: 2000, /* Keyframe toutes les 2 s (Chrome/Edge) */
-        });
+        /* videoKeyFrameIntervalDuration (keyframe toutes les 2 s) = option
+           Chromium — si le navigateur la refuse, on retente sans elle. */
+        var recOpts = { mimeType: MIME, videoBitsPerSecond: 2500000,
+                        videoKeyFrameIntervalDuration: 2000 };
+        try {
+            mediaRecorder = new MediaRecorder(stream, recOpts);
+        } catch(eOpt) {
+            delete recOpts.videoKeyFrameIntervalDuration;
+            mediaRecorder = new MediaRecorder(stream, recOpts);
+        }
     } catch(e) {
         appendSystemMsg('Erreur recorder : ' + e.message);
         return;
@@ -797,18 +833,18 @@ function initMediaSource(mime) {
     var _existingPlayBtn = document.getElementById('lr-play-btn');
     if (_existingPlayBtn) _existingPlayBtn.remove();
 
-    if (!window.MediaSource || !MediaSource.isTypeSupported(mime)) {
+    if (!MS || !MS.isTypeSupported(mime)) {
         if (waitingOverlay) {
             var sp2  = waitingOverlay.querySelector('.lr-waiting-spinner');
             var txt2 = waitingOverlay.querySelector('.lr-waiting-text');
             if (sp2)  sp2.style.display = 'none';
             if (txt2) {
                 if (isIOS) {
-                    txt2.innerHTML = '⚠️ iPhone / iPad non supporté.<br>' +
-                        '<span style="font-size:.85em;opacity:.75">Le live utilise WebM/VP9 qui n\'est pas compatible avec iOS.<br>' +
-                        'Utilise <b>Chrome ou Firefox sur ordinateur</b> (Windows / Mac / Android).</span>';
+                    txt2.innerHTML = '⚠️ Lecture non supportée sur cet appareil.<br>' +
+                        '<span style="font-size:.85em;opacity:.75">Le flux vidéo envoyé par l\'hôte (' + (mime || 'webm') + ') n\'est pas lisible ici.<br>' +
+                        'Mets à jour vers <b>iOS 17.1+</b> ou essaie <b>Chrome sur Android / ordinateur</b>.</span>';
                 } else {
-                    txt2.textContent = 'Navigateur non supporté — essaie Chrome, Firefox ou Edge.';
+                    txt2.textContent = 'Format non supporté par ce navigateur — essaie Chrome, Firefox ou Edge.';
                 }
             }
         }
@@ -821,7 +857,14 @@ function initMediaSource(mime) {
     if (mediaSource && mediaSource.readyState === 'open') {
         try { mediaSource.endOfStream(); } catch(e) {}
     }
-    mediaSource = new MediaSource();
+    mediaSource = new MS();
+    if (IS_MMS) {
+        /* ManagedMediaSource exige disableRemotePlayback, et suspend/reprend
+           le streaming pour économiser la batterie → relancer la queue quand
+           il redevient actif. */
+        try { videoEl.disableRemotePlayback = true; } catch(eDrp) {}
+        mediaSource.addEventListener('startstreaming', function(){ processQueue(); });
+    }
     videoEl.src = URL.createObjectURL(mediaSource);
 
     mediaSource.addEventListener('sourceopen', function() {
@@ -897,6 +940,9 @@ function onUpdateEnd() {
 function processQueue() {
     if (!sourceBuffer || sourceBuffer.updating) return;
     if (!mediaSource || mediaSource.readyState !== 'open') return;
+    /* ManagedMediaSource : ne pas appendre pendant les pauses de streaming
+       (iOS suspend pour économiser la batterie) — startstreaming relancera. */
+    if (IS_MMS && mediaSource.streaming === false) return;
     if (appendQueue.length === 0) return;
 
     var chunk = appendQueue.shift();
@@ -1064,7 +1110,12 @@ window.toggleFullscreen = function() {
     var isFs = !!document.fullscreenElement;
     if (!isFs) {
         var fn = area.requestFullscreen || area.webkitRequestFullscreen || area.mozRequestFullScreen;
-        if (fn) fn.call(area);
+        if (fn) { fn.call(area); }
+        else if (videoEl && videoEl.webkitEnterFullscreen) {
+            /* iPhone : seul le <video> lui-même peut passer en plein écran */
+            try { videoEl.webkitEnterFullscreen(); } catch(eFs) {}
+            return;
+        }
     } else {
         var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
         if (ex) ex.call(document);
@@ -1190,6 +1241,48 @@ if (!IS_HOST) {
 
 /* ── Init ── */
 connect();
+
+/* ── Adapter l'UI hôte selon les capacités du navigateur ── */
+(function applyCapabilityUI() {
+    if (!IS_HOST) return;
+
+    var btnScreen     = document.getElementById('btn-screen');
+    var btnCamera     = document.getElementById('btn-camera');
+    var btnCtrlScreen = document.getElementById('btn-toggle-screen');
+    var sourceOverlayEl = document.getElementById('lr-source-overlay');
+    var sourceSubtitle  = sourceOverlayEl && sourceOverlayEl.querySelector('.lr-status-sub');
+    var sourceTitle     = sourceOverlayEl && sourceOverlayEl.querySelector('.lr-status-title');
+
+    /* ── Cas 1 : Partage d'écran non disponible ET caméra disponible (cas mobile normal) ──
+       → masquer le bouton écran et démarrer la caméra directement */
+    if (!hasDisplayMedia && MIME) {
+        /* Masquer le bouton "Partager l'écran" proprement */
+        if (btnScreen) btnScreen.style.display = 'none';
+        /* Masquer le bouton "Écran" dans les contrôles */
+        if (btnCtrlScreen) btnCtrlScreen.style.display = 'none';
+        /* Démarrer la caméra automatiquement — pas besoin de l'overlay de sélection */
+        startSource('camera');
+        return;
+    }
+
+    /* ── Cas 2 : Pas de MediaRecorder du tout (iOS < 14.3 ou navigateur ancien) ── */
+    if (!MIME) {
+        if (sourceTitle) sourceTitle.textContent = '⚠️ Diffusion non supportée';
+        if (sourceSubtitle) sourceSubtitle.innerHTML =
+            'Ton navigateur ne supporte pas l\'enregistrement vidéo nécessaire pour le live.<br>' +
+            '<span style="font-size:.85em;opacity:.75">Utilise <b>Chrome sur ordinateur ou Android</b> pour héberger un live.</span>';
+        if (btnScreen) btnScreen.style.display = 'none';
+        if (btnCamera) { btnCamera.disabled = true; btnCamera.style.opacity = '.38'; }
+        return;
+    }
+
+    /* ── Cas 3 : Desktop sans getDisplayMedia (rare) — juste masquer le bouton écran ── */
+    if (!hasDisplayMedia) {
+        if (btnScreen) btnScreen.style.display = 'none';
+        if (btnCtrlScreen) btnCtrlScreen.style.display = 'none';
+        if (sourceSubtitle) sourceSubtitle.textContent = 'Utilise ta caméra pour diffuser.';
+    }
+})();
 
 })();
 </script>

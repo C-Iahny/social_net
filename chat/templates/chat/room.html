@@ -1839,6 +1839,9 @@ window._CT = {
 };
 </script>
 
+<!-- ── webrtc-adapter : normalise l'API WebRTC (Safari, Opera, anciens navigateurs) ── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/8.2.3/adapter.min.js" crossorigin="anonymous"></script>
+
 <!-- ── Main chat JS ───────────────────────────────────────────── -->
 <script type="text/javascript">
 
@@ -2992,6 +2995,7 @@ window._CT = {
     var _micMuted    = false;
     var _camOff      = false;
     var _callPeerInfo = { name: '', img: '' };  // infos de l'interlocuteur
+    var _ringPeerId  = null;     // user_id de l'appelant en cours (ringing/actif)
     var _iceCandidateQueue = [];  // candidats ICE reçus avant que _peerConn soit prêt
 
     // Serveurs ICE — chargés dynamiquement depuis le serveur Django (/chat/ice-servers/)
@@ -3098,6 +3102,18 @@ window._CT = {
         });
     }
 
+    /* Réinitialise les styles inline appliqués par le mode audio (astuce 1px).
+       Sans ça, un appel VIDÉO qui suit un appel AUDIO garde la vidéo distante
+       en 1px/transparente → écran noir. */
+    function _resetRemoteVideoStyle(rv){
+        if(!rv) return;
+        rv.style.position      = '';
+        rv.style.width         = '';
+        rv.style.height        = '';
+        rv.style.opacity       = '';
+        rv.style.pointerEvents = '';
+    }
+
     /* Libérer toutes les ressources */
     function _callCleanup(sendEnd){
         if(sendEnd && chatSocket && chatSocket.readyState===WebSocket.OPEN && roomId){
@@ -3105,7 +3121,7 @@ window._CT = {
         }
         if(_peerConn){ _peerConn.close(); _peerConn = null; }
         if(_localStream){ _localStream.getTracks().forEach(function(t){ t.stop(); }); _localStream = null; }
-        var rv  = _callEl('call-remote-video'); if(rv){ rv.pause(); rv.srcObject = null; rv.muted = true; rv.style.display = 'none'; }
+        var rv  = _callEl('call-remote-video'); if(rv){ rv.pause(); rv.srcObject = null; rv.muted = true; _resetRemoteVideoStyle(rv); rv.style.display = 'none'; }
         var ra  = _callEl('call-remote-audio'); if(ra){ ra.srcObject = null; ra.pause(); }
         var lv  = _callEl('call-local-video');  if(lv){ lv.srcObject = null; lv.style.display = 'none'; }
         var lop = _callEl('call-out-local-vid'); if(lop){ lop.srcObject = null; lop.style.display = 'none'; }
@@ -3113,6 +3129,7 @@ window._CT = {
         _iceCandidateQueue = [];
         _stopTimer();
         _callState = 'idle';
+        _ringPeerId = null;
         _pendOffer  = null;
         _micMuted   = false;
         _camOff     = false;
@@ -3248,14 +3265,21 @@ window._CT = {
             /* Mode audio : rv rendu invisible (mais PAS display:none) —
                Sur Safari iOS, un <video> display:none ne joue pas l'audio WebRTC.
                On le garde dans le flux de rendu, minuscule et transparent.        */
-            if(rv){ rv.style.cssText = rv.style.cssText + ';position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;'; }
+            if(rv){
+                rv.style.position      = 'absolute';
+                rv.style.width         = '1px';
+                rv.style.height       = '1px';
+                rv.style.opacity       = '0';
+                rv.style.pointerEvents = 'none';
+            }
             if(lv) lv.style.display = 'none';
             if(bg) bg.style.display = 'flex';
             if(cw) cw.style.display = 'none';
         } else {
             /* Mode vidéo : display:block pour les deux vidéos
-               play() sera appelé par onRemoteStream quand le stream arrive */
-            if(rv) rv.style.display = 'block';
+               play() sera appelé par onRemoteStream quand le stream arrive.
+               IMPORTANT : purger d'abord l'astuce 1px d'un éventuel appel audio précédent. */
+            if(rv){ _resetRemoteVideoStyle(rv); rv.style.display = 'block'; }
             if(lv) lv.style.display = 'block';
             if(bg) bg.style.display = 'none';
             if(cw) cw.style.display = 'flex';
@@ -3271,17 +3295,64 @@ window._CT = {
         chatLog.insertBefore(wrap, chatLog.firstChild);
     }
 
-    /* ── getUserMedia avec fallback pour Safari / WebView Android ────────────
-       Si les contraintes vidéo détaillées (ideal:1280…) sont refusées par le
-       navigateur (OverconstrainedError, NotReadableError, etc.), on retente
-       avec des contraintes simples {audio, video:true} avant d'abandonner.   */
+    /* ── Support WebRTC : détection + message d'erreur clair ─────────────────
+       Safari/Opera/Chrome exposent navigator.mediaDevices UNIQUEMENT en
+       contexte sécurisé (https ou localhost). Sur http://, l'API est absente
+       → l'ancien code plantait avec un TypeError silencieux.                 */
+    function _webrtcSupported(){
+        return !!(window.RTCPeerConnection && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    }
+    function _webrtcUnsupportedMsg(){
+        if(window.isSecureContext === false)
+            return 'Les appels nécessitent une connexion sécurisée (https). Rechargez le site en https.';
+        return 'Ce navigateur ne prend pas en charge les appels audio/vidéo. Essayez de le mettre à jour ou utilisez Chrome, Firefox, Safari ou Opera récents.';
+    }
+
+    /* Message d'erreur précis selon la cause du refus getUserMedia */
+    function _gumErrorMsg(err, wantVideo){
+        var n = (err && err.name) || '';
+        var dev = wantVideo ? 'micro / caméra' : 'micro';
+        if(n === 'NotAllowedError' || n === 'PermissionDeniedError' || n === 'SecurityError')
+            return 'Accès au ' + dev + ' refusé. Autorisez-le dans les réglages du navigateur (icône 🔒 dans la barre d\'adresse), puis réessayez.';
+        if(n === 'NotFoundError' || n === 'DevicesNotFoundError')
+            return 'Aucun micro détecté sur cet appareil.';
+        if(n === 'NotReadableError' || n === 'TrackStartError' || n === 'AbortError')
+            return 'Le ' + dev + ' est déjà utilisé par une autre application. Fermez-la puis réessayez.';
+        if(n === 'InsecureContextError' || n === 'NotSupportedError')
+            return _webrtcUnsupportedMsg();
+        return 'Impossible d\'accéder au ' + dev + '.' + (n ? ' (' + n + ')' : '');
+    }
+
+    /* ── getUserMedia avec fallbacks multiplateforme ─────────────────────────
+       1. Contraintes détaillées (ideal:1280…) refusées → retente {audio, video:true}.
+       2. Pas de caméra du tout (PC de bureau, Opera/Safari sans webcam) →
+          retente en AUDIO SEUL au lieu d'échouer : l'appel continue sans vidéo.
+          Le stream est alors marqué _zootAudioOnly pour que l'appelant bascule
+          l'appel en mode audio.                                               */
     function _getUserMedia(constraints){
+        if(!_webrtcSupported()){
+            var e = new Error('WebRTC unsupported');
+            e.name = (window.isSecureContext === false) ? 'InsecureContextError' : 'NotSupportedError';
+            return Promise.reject(e);
+        }
         return navigator.mediaDevices.getUserMedia(constraints).catch(function(err){
             if(constraints.video && constraints.video !== true &&
                (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError' ||
-                err.name === 'NotReadableError')){
+                err.name === 'NotReadableError' || err.name === 'AbortError')){
                 console.warn('[CALL] getUserMedia contraintes détaillées refusées, fallback simple:', err.name);
                 return navigator.mediaDevices.getUserMedia({ audio: constraints.audio, video: true });
+            }
+            throw err;
+        })
+        .catch(function(err){
+            /* Caméra absente / occupée → continuer l'appel en audio seul */
+            if(constraints.video &&
+               (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError' ||
+                err.name === 'NotReadableError' || err.name === 'TrackStartError' ||
+                err.name === 'OverconstrainedError' || err.name === 'AbortError')){
+                console.warn('[CALL] caméra indisponible, fallback audio seul:', err.name);
+                return navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                    .then(function(stream){ stream._zootAudioOnly = true; return stream; });
             }
             throw err;
         });
@@ -3295,6 +3366,10 @@ window._CT = {
         }
         if(!roomId || !chatSocket || chatSocket.readyState !== WebSocket.OPEN){
             alert(_CT ? _CT.call_no_room : 'Ouvrez d\'abord une conversation.');
+            return;
+        }
+        if(!_webrtcSupported()){
+            alert(_webrtcUnsupportedMsg());
             return;
         }
         _callMode  = mode || 'video';
@@ -3314,6 +3389,14 @@ window._CT = {
         _getUserMedia(constraints)
         .then(function(stream){
             _localStream = stream;
+            /* Caméra indisponible → l'appel bascule en AUDIO avant l'envoi de
+               l'offre (l'offre SDP ne contiendra qu'une ligne audio, donc le
+               mode doit être cohérent des deux côtés). */
+            if(_callMode === 'video' && (stream._zootAudioOnly || stream.getVideoTracks().length === 0)){
+                _callMode = 'audio';
+                _appendSysMsg('Caméra indisponible — appel converti en audio.');
+                if(statusEl) statusEl.textContent = (_CT ? _CT.calling_audio : 'Appel audio en cours…');
+            }
             // Mode vidéo : afficher préview locale
             if(_callMode === 'video'){
                 var lop = _callEl('call-out-local-vid');
@@ -3365,20 +3448,37 @@ window._CT = {
         })
         .catch(function(err){
             console.error('startCall:', err);
+            var wantVideo = (_callMode === 'video');
             _callCleanup(false);
-            alert(_CT ? (_callMode==='video' ? _CT.no_mic_cam : _CT.no_mic) : ('Impossible d\'accéder au micro' + (_callMode==='video'?' / caméra':'') + '.'));
+            alert(_gumErrorMsg(err, wantVideo));
         });
     }
 
     /* ── Recevoir une offre (appel entrant) ──────────────────── */
     function handleCallOffer(data){
+        var fromId = (data.user_id != null) ? String(data.user_id) : null;
         if(_callState !== 'idle'){
-            // Occupé → refus automatique
-            if(chatSocket && chatSocket.readyState===WebSocket.OPEN && roomId)
-                chatSocket.send(JSON.stringify({ command:'call_reject', room:roomId }));
+            /* Re-offer du MÊME appelant (mécanisme re-offer sur join, reconnexion
+               WS mobile, double onglet…) : ne JAMAIS rejeter — l'ancien code
+               envoyait call_reject, ce qui tuait l'appel en cours des deux côtés. */
+            if(fromId && _ringPeerId && fromId === String(_ringPeerId)){
+                if(_callState === 'ringing'){
+                    /* Rafraîchir l'offre : la ré-offre contient plus de candidats ICE */
+                    _pendOffer = data.sdp;
+                    _callMode  = data.call_mode || _callMode;
+                }
+                return; // déjà en ringing/actif avec ce peer → ignorer
+            }
+            // Occupé avec quelqu'un d'autre → refus explicite vers CE peer
+            if(chatSocket && chatSocket.readyState===WebSocket.OPEN && roomId){
+                var rej = { command:'call_reject', room:roomId };
+                if(fromId) rej.peer_id = fromId;   // cibler l'appelant, pas le peer actuel
+                chatSocket.send(JSON.stringify(rej));
+            }
             return;
         }
         _callState = 'ringing';
+        _ringPeerId = fromId;
         _callMode  = data.call_mode || _autoCallMode || 'video';
         _pendOffer = data.sdp;
         _callFillPeer(data.username||_callPeerInfo.name, _callPeerInfo.img);
@@ -3414,9 +3514,14 @@ window._CT = {
         _getUserMedia(constraints)
         .then(function(stream){
             _localStream = stream;
-            /* Vidéo locale — display:block avant play() */
+            /* Caméra indisponible côté appelé : on répond en audio seul,
+               mais on garde le mode vidéo pour AFFICHER la vidéo de l'appelant. */
+            if(_callMode === 'video' && (stream._zootAudioOnly || stream.getVideoTracks().length === 0)){
+                _appendSysMsg('Caméra indisponible — votre vidéo ne sera pas envoyée.');
+            }
+            /* Vidéo locale — display:block avant play() (seulement si on a une piste vidéo) */
             var lv = _callEl('call-local-video');
-            if(lv && _callMode === 'video'){
+            if(lv && _callMode === 'video' && stream.getVideoTracks().length > 0){
                 lv.style.display = 'block';
                 lv.srcObject = stream;
                 lv.play().catch(function(){});
@@ -3470,7 +3575,9 @@ window._CT = {
         })
         .catch(function(err){
             console.error('acceptCall:', err);
+            var wantVideo = (_callMode === 'video');
             _callCleanup(true);
+            alert(_gumErrorMsg(err, wantVideo));
         });
     }
 

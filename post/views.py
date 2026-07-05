@@ -2,7 +2,6 @@ import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.views.generic import DeleteView, UpdateView, CreateView
 from django.contrib.auth import get_user_model
@@ -34,99 +33,39 @@ except ImportError:
 # ──────────────────────────────────────────────────────────────
 # Trending hashtags (cached, recalculé toutes les 30 min)
 # ──────────────────────────────────────────────────────────────
-def get_trending_hashtags(limit=10, days=7, hours=None, with_preview=False):
+def get_trending_hashtags(limit=10, days=7):
     """
     Extrait et classe les hashtags les plus utilisés dans les posts récents.
-    - hours  : fenêtre en heures (prioritaire sur days si fourni)
-    - days   : fenêtre en jours (défaut 7)
-    - limit  : nombre de hashtags retournés
-    - with_preview : si True, ajoute 'preview' (texte du post le plus récent)
-    Résultat mis en cache 15 min (LocMemCache).
+    Résultat mis en cache 30 minutes (LocMemCache).
     """
     import re
     from datetime import timedelta
     from django.utils import timezone
     from django.core.cache import cache
-    import html
 
-    eff_hours = hours if hours is not None else days * 24
-    cache_key = f'trending_hashtags_{limit}_{eff_hours}_{"p" if with_preview else "n"}'
+    cache_key = f'trending_hashtags_{limit}_{days}'
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
 
-    cutoff = timezone.now() - timedelta(hours=eff_hours)
+    cutoff = timezone.now().date() - timedelta(days=days)
+    posts = Post.objects.filter(post_date__gte=cutoff).values_list('body', 'title')
 
-    # Récupérer les posts récents avec leur id pour les previews
-    # Post utilise post_date (DateField), pas created_at
-    posts_qs = Post.objects.filter(
-        post_date__gte=cutoff.date()
-    ).values_list('id', 'body', 'title', 'author__username', 'post_date')
-
-    counts  = {}   # tag → count
-    post_by_tag = {}   # tag → (id, preview_text, author, date) du post le plus récent
-
+    counts = {}
     pattern = re.compile(r'#([a-zA-ZÀ-ÿ0-9_]{2,30})')
-    strip_html = re.compile(r'<[^>]+>')
-
-    for post_id, body, title, author, created_at in posts_qs:
-        raw = (body or '') + ' ' + (title or '')
-        text = html.unescape(strip_html.sub(' ', raw))
-        found = set()
+    for body, title in posts:
+        # Nettoyer les balises HTML avant d'extraire
+        text = re.sub(r'<[^>]+>', ' ', (body or '') + ' ' + (title or ''))
         for tag in pattern.findall(text):
             t = tag.lower()
             counts[t] = counts.get(t, 0) + 1
-            if t not in found:
-                found.add(t)
-                # Garder le post le plus récent pour le preview (post_qs est non-ordonné,
-                # on garde celui dont created_at est le plus grand)
-                prev = post_by_tag.get(t)
-                if prev is None or created_at > prev[3]:
-                    # Extraire un extrait de texte propre (max 90 chars)
-                    snippet = re.sub(r'\s+', ' ', text).strip()
-                    if len(snippet) > 90:
-                        snippet = snippet[:87] + '…'
-                    post_by_tag[t] = (post_id, snippet, author, created_at)
 
-    top = sorted(counts.items(), key=lambda x: -x[1])[:limit]
-
-    result = []
-    for tag, cnt in top:
-        item = {'tag': '#' + tag, 'slug': tag, 'count': cnt}
-        if with_preview and tag in post_by_tag:
-            pid, snippet, author, date = post_by_tag[tag]
-            item['preview_text']   = snippet
-            item['preview_author'] = author
-            item['preview_post_id'] = pid
-        result.append(item)
-
-    cache.set(cache_key, result, 900)  # 15 min
+    result = [
+        {'tag': '#' + tag, 'count': cnt}
+        for tag, cnt in sorted(counts.items(), key=lambda x: -x[1])[:limit]
+    ]
+    cache.set(cache_key, result, 1800)  # 30 min
     return result
-
-
-# ──────────────────────────────────────────────
-# Tendances — page dédiée
-# ──────────────────────────────────────────────
-@login_required(login_url='login')
-def tendances_view(request):
-    """Page /tendances/ — top hashtags sur 24h / 7j / 30j."""
-    valid_hours = {24: '24h', 168: '7 jours', 720: '30 jours'}
-    try:
-        hours = int(request.GET.get('h', 24))
-        if hours not in valid_hours:
-            hours = 24
-    except (TypeError, ValueError):
-        hours = 24
-
-    hashtags = get_trending_hashtags(limit=25, hours=hours, with_preview=True)
-
-    return render(request, 'post/tendances.html', {
-        'hashtags':    hashtags,
-        'hours':       hours,
-        'hours_label': valid_hours[hours],
-        'valid_hours': valid_hours,
-        'trending_hashtags': get_trending_hashtags(limit=10),  # sidebar
-    })
 
 
 # ──────────────────────────────────────────────
@@ -227,21 +166,17 @@ def post_feed_view(request):
     tab = request.GET.get('tab', 'feed')
     user_region = getattr(user, 'region', '')
 
-    from django.utils import timezone as _tz
-    from django.db.models import Q as _Q
-    _now = _tz.now()
-    _visible = _Q(status='published') | _Q(status='scheduled', scheduled_at__lte=_now)
-
     if tab == 'region' and user_region:
         # Posts de la région de l'utilisateur (tous auteurs, tous publics)
         feed_posts = Post.objects.filter(
             region=user_region
-        ).filter(_visible).select_related('author', 'group').order_by("-id")
+        ).select_related('author', 'group').order_by("-id")
     else:
-        # Posts : les siens (publiés) + ceux de ses amis
+        # Posts : les siens + ceux de ses amis
+        # select_related évite le N+1 (1 JOIN au lieu de 1 requête par post)
         feed_posts = Post.objects.filter(
             author__in=list(friends) + [user]
-        ).filter(_visible).select_related('author', 'group').order_by("-id")
+        ).select_related('author', 'group').order_by("-id")
         tab = 'feed'  # normalise si region vide
 
     # Pagination (5 posts par page)
@@ -290,13 +225,6 @@ def post_feed_view(request):
     ).values_list('post_id', 'reaction_type')
     user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
-    # Bookmarks de l'utilisateur courant
-    from .models import PostBookmark
-    bookmarked_ids = set(
-        PostBookmark.objects.filter(user=user, post_id__in=post_ids)
-        .values_list('post_id', flat=True)
-    )
-
     # Attacher les données directement à chaque post
     for post in posts_of_the_page:
         top = top_by_post.get(post.id, [])
@@ -308,7 +236,6 @@ def post_feed_view(request):
         post.reaction_counts = reactions_by_post.get(post.id, {})
         post.user_reaction   = user_reaction_by_post.get(post.id)
         post.total_reactions = sum(post.reaction_counts.values())
-        post.is_bookmarked   = post.id in bookmarked_ids
     _attach_media(posts_of_the_page, post_ids)
 
     # Groupes de l'utilisateur (raccourci sidebar droite)
@@ -432,33 +359,8 @@ class AddPostView(CreateView):
 
     def form_valid(self, form):
         form.instance.author = self.request.user
+        # Auto-remplir la région depuis le profil de l'auteur
         form.instance.region = getattr(self.request.user, 'region', '') or ''
-
-        # ── Statut : brouillon / programmé / publié ───────────────────────
-        action = self.request.POST.get('action', 'publish')
-        if action == 'draft':
-            form.instance.status = Post.STATUS_DRAFT
-        elif action == 'schedule':
-            scheduled_str = self.request.POST.get('scheduled_at', '').strip()
-            if scheduled_str:
-                try:
-                    from django.utils.dateparse import parse_datetime
-                    from django.utils import timezone as _tz
-                    dt = parse_datetime(scheduled_str)
-                    if dt:
-                        if _tz.is_naive(dt):
-                            dt = _tz.make_aware(dt)
-                        form.instance.status       = Post.STATUS_SCHEDULED
-                        form.instance.scheduled_at = dt
-                    else:
-                        form.instance.status = Post.STATUS_DRAFT
-                except Exception:
-                    form.instance.status = Post.STATUS_DRAFT
-            else:
-                form.instance.status = Post.STATUS_DRAFT
-        else:
-            form.instance.status = Post.STATUS_PUBLISHED
-
         response = super().form_valid(form)
         post = self.object
 
@@ -481,36 +383,37 @@ class AddPostView(CreateView):
         elif files:
             messages.warning(self.request, "Aucun fichier sauvegardé — voir les logs.")
 
-        # Notifier les amis seulement si le post est publié immédiatement
-        if post.status == Post.STATUS_PUBLISHED:
-            author = self.request.user
-            try:
-                friend_list = FriendList.objects.get(user=author)
-                friends = friend_list.friends.all()
-            except FriendList.DoesNotExist:
-                friends = []
-            try:
-                channel_layer = get_channel_layer()
-                if channel_layer:
-                    for friend in friends:
-                        async_to_sync(channel_layer.group_send)(
-                            f"user_{friend.id}",
-                            {
-                                "type": "new_post_notification",
-                                "from_username": author.username,
-                                "from_image":    author.profile_image.url,
-                                "post_title":    post.title,
-                                "post_id":       post.id,
-                            }
-                        )
-            except Exception:
-                pass
+        # Notify each friend via WebSocket channel layer
+        author = self.request.user
+        try:
+            friend_list = FriendList.objects.get(user=author)
+            friends = friend_list.friends.all()
+        except FriendList.DoesNotExist:
+            friends = []
+
+        # Notifier via WebSocket — enveloppé dans try/except :
+        # si Redis est indisponible ou channel_layer=None, le post est quand même
+        # sauvegardé et l'utilisateur est redirigé normalement (pas de 500).
+        try:
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                for friend in friends:
+                    async_to_sync(channel_layer.group_send)(
+                        f"user_{friend.id}",
+                        {
+                            "type": "new_post_notification",
+                            "from_username": author.username,
+                            "from_image":    author.profile_image.url,
+                            "post_title":    post.title,
+                            "post_id":       post.id,
+                        }
+                    )
+        except Exception:
+            pass  # échec WebSocket non bloquant : le post existe déjà en base
 
         return response
 
     def get_success_url(self):
-        if self.object and self.object.status in (Post.STATUS_DRAFT, Post.STATUS_SCHEDULED):
-            return reverse_lazy("post:mes-brouillons")
         return reverse_lazy("post:post-view")
 
 
@@ -672,9 +575,8 @@ def add_comment(request, post_id):
                 pass
         comment.save()
 
-        # Notification au propriétaire du post — uniquement pour les commentaires racine
-        # (les réponses à des commentaires ont leur propre notification ci-dessous)
-        if post.author != request.user and not comment.parent:
+        # Notification au propriétaire du post
+        if post.author != request.user:
             try:
                 from django.urls import reverse
                 from notification.models import Notification
@@ -724,107 +626,6 @@ def add_comment(request, post_id):
                     )
             except Exception as e:
                 import traceback; traceback.print_exc()
-
-        # Notification à l'auteur du commentaire parent (réponse à un commentaire)
-        # On notifie même si c'est le propriétaire du post — la réponse à son commentaire
-        # est plus spécifique que "quelqu'un a commenté votre post".
-        if comment.parent and comment.parent.author != request.user:
-            try:
-                from django.urls import reverse
-                from notification.models import Notification, PushSubscription
-                from django.contrib.contenttypes.models import ContentType
-                from post.models import Post as PostModel
-                from channels.layers import get_channel_layer
-                from asgiref.sync import async_to_sync
-                from django.contrib.humanize.templatetags.humanize import naturaltime
-
-                post_ct  = ContentType.objects.get_for_model(PostModel)
-                post_url = request.build_absolute_uri(reverse('post:post-detail', args=[post.id]))
-                reply_target = comment.parent.author
-                notif = Notification.objects.create(
-                    target=reply_target,
-                    from_user=request.user,
-                    redirect_url=post_url,
-                    verb=f"{request.user.username} a répondu à votre commentaire",
-                    content_type=post_ct,
-                    object_id=post.id,
-                    read=False,
-                )
-                PushSubscription.send_notification(
-                    user=reply_target,
-                    title='VAZIMBA — Réponse',
-                    body=f"{request.user.username} a répondu : {comment.body[:70]}",
-                    url=post_url,
-                )
-                channel_layer = get_channel_layer()
-                if channel_layer:
-                    async_to_sync(channel_layer.group_send)(
-                        f"user_{reply_target.id}",
-                        {
-                            "type": "post_action_notification",
-                            "notification": {
-                                "notification_type": "Post",
-                                "notification_id": str(notif.pk),
-                                "verb": notif.verb,
-                                "natural_timestamp": str(naturaltime(notif.timestamp)),
-                                "timestamp": str(notif.timestamp),
-                                "is_read": "False",
-                                "actions": {"redirect_url": post_url},
-                                "from": {"image_url": request.user.profile_image.url},
-                            }
-                        }
-                    )
-            except Exception:
-                pass
-
-        # ── Notifications aux utilisateurs mentionnés dans le commentaire ─
-        import re as _re
-        mentioned = set(_re.findall(r'@([a-zA-Z0-9_]{2,30})', comment.body))
-        already_notified = {request.user.username.lower(), post.author.username.lower()}
-        if comment.parent:
-            already_notified.add(comment.parent.author.username.lower())
-        for uname in mentioned:
-            if uname.lower() in already_notified:
-                continue
-            try:
-                from account.models import Account as _Acc
-                from django.urls import reverse as _rev
-                from notification.models import Notification as _Notif, PushSubscription as _Push
-                from django.contrib.contenttypes.models import ContentType as _CT
-                from channels.layers import get_channel_layer as _gcl
-                from asgiref.sync import async_to_sync as _a2s
-                from django.contrib.humanize.templatetags.humanize import naturaltime as _nt
-                mentioned_user = _Acc.objects.get(username__iexact=uname)
-                _post_ct  = _CT.objects.get_for_model(Post)
-                _post_url = request.build_absolute_uri(_rev('post:post-detail', args=[post.id]))
-                _notif = _Notif.objects.create(
-                    target=mentioned_user, from_user=request.user,
-                    redirect_url=_post_url,
-                    verb=f"{request.user.username} vous a mentionné dans un commentaire",
-                    content_type=_post_ct, object_id=post.id, read=False,
-                )
-                _Push.send_notification(
-                    user=mentioned_user, title='VAZIMBA — Mention',
-                    body=f"{request.user.username} vous a mentionné : {comment.body[:70]}",
-                    url=_post_url,
-                )
-                _cl = _gcl()
-                if _cl:
-                    _a2s(_cl.group_send)(f"user_{mentioned_user.id}", {
-                        "type": "post_action_notification",
-                        "notification": {
-                            "notification_type": "Post",
-                            "notification_id":   str(_notif.pk),
-                            "verb":              _notif.verb,
-                            "natural_timestamp": str(_nt(_notif.timestamp)),
-                            "timestamp":         str(_notif.timestamp),
-                            "is_read":           "False",
-                            "actions":           {"redirect_url": _post_url},
-                            "from":              {"image_url": request.user.profile_image.url},
-                        }
-                    })
-            except Exception:
-                pass
 
         # Réponse JSON pour AJAX
         return JsonResponse({
@@ -1317,153 +1118,3 @@ def vintana_create(request):
     return render(request, 'post/vintana_create.html', {
         'min_reveal': now_plus_1day.strftime('%Y-%m-%dT%H:%M'),
     })
-
-
-# ── Signalement de contenu ────────────────────────────────────────────────────
-@login_required(login_url='login')
-def report_content(request):
-    """AJAX POST — signaler un contenu (post, annonce, profil, ...)."""
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Méthode non autorisée.'}, status=405)
-
-    from django.contrib.contenttypes.models import ContentType
-    from post.models import Report
-
-    ct_name   = request.POST.get('ct')       # ex: 'post', 'annonce', 'account'
-    object_id = request.POST.get('object_id')
-    reason    = request.POST.get('reason', 'other')
-    comment   = request.POST.get('comment', '').strip()
-
-    if not ct_name or not object_id:
-        return JsonResponse({'error': 'Paramètres manquants.'}, status=400)
-
-    # Mapping nom simple → app_label.model
-    CT_MAP = {
-        'post':    ('post',    'post'),
-        'annonce': ('bazar',   'annonce'),
-        'account': ('account', 'account'),
-        'comment': ('post',    'comment'),
-    }
-    mapping = CT_MAP.get(ct_name)
-    if not mapping:
-        return JsonResponse({'error': 'Type de contenu inconnu.'}, status=400)
-
-    try:
-        ct = ContentType.objects.get(app_label=mapping[0], model=mapping[1])
-    except ContentType.DoesNotExist:
-        return JsonResponse({'error': 'Contenu introuvable.'}, status=404)
-
-    try:
-        Report.objects.get_or_create(
-            reporter=request.user,
-            content_type=ct,
-            object_id=int(object_id),
-            defaults={'reason': reason, 'comment': comment},
-        )
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
-
-    return JsonResponse({'ok': True})
-
-
-# ── Recherche globale ─────────────────────────────────────────────────────────
-def global_search_view(request):
-    """Page /recherche/ — posts + annonces + utilisateurs."""
-    from django.db.models import Q
-    from post.models import Hashtag
-    from bazar.models import Annonce
-
-    query    = request.GET.get('q', '').strip()
-    context  = {'query': query, 'total': 0}
-
-    if query:
-        from friend.models import FriendList
-
-        # Users
-        accounts_qs = Account.objects.filter(
-            Q(username__icontains=query)
-        )[:20]
-
-        accounts_with_friend = []
-        if request.user.is_authenticated:
-            try:
-                fl = FriendList.objects.get(user=request.user)
-                friend_ids = set(fl.friends.values_list('id', flat=True))
-            except Exception:
-                friend_ids = set()
-            for acc in accounts_qs:
-                accounts_with_friend.append((acc, acc.id in friend_ids))
-        else:
-            accounts_with_friend = [(acc, False) for acc in accounts_qs]
-
-        # Posts
-        posts_qs = Post.objects.filter(
-            Q(title__icontains=query) | Q(body__icontains=query)
-        ).select_related('author')[:20]
-
-        # Hashtags
-        hashtags_qs = Hashtag.objects.filter(tag__icontains=query)[:10]
-
-        # Annonces bazar
-        annonces_qs = Annonce.objects.filter(
-            Q(title__icontains=query) | Q(description__icontains=query),
-            status='active',
-        ).select_related('seller').prefetch_related('images')[:20]
-
-        context['accounts']  = accounts_with_friend
-        context['posts']     = posts_qs
-        context['hashtags']  = hashtags_qs
-        context['annonces']  = annonces_qs
-        context['total']     = (
-            len(accounts_with_friend) + posts_qs.count()
-            + hashtags_qs.count() + annonces_qs.count()
-        )
-
-    return render(request, 'post/recherche.html', context)
-
-
-# ──────────────────────────────────────────────
-# Bookmark (sauvegarder un post)
-# ──────────────────────────────────────────────
-@login_required(login_url="login")
-@require_POST
-def bookmark_post(request):
-    """Toggle bookmark AJAX. POST {post_id}. Returns {ok, saved: bool, count: int}."""
-    from .models import PostBookmark
-    post_id = request.POST.get('post_id')
-    post = get_object_or_404(Post, id=post_id)
-    bk, created = PostBookmark.objects.get_or_create(user=request.user, post=post)
-    if not created:
-        bk.delete()
-    count = post.bookmarks.count()
-    return JsonResponse({'ok': True, 'saved': created, 'count': count})
-
-
-# ──────────────────────────────────────────────
-# Mes brouillons & posts programmés
-# ──────────────────────────────────────────────
-@login_required(login_url="login")
-def mes_brouillons(request):
-    """Page listant les brouillons et posts programmés de l'utilisateur."""
-    from django.utils import timezone as _tz
-    from django.db.models import Q
-    now = _tz.now()
-    posts = Post.objects.filter(
-        author=request.user,
-    ).filter(
-        Q(status='draft') | Q(status='scheduled')
-    ).order_by('-id')
-    return render(request, 'post/mes_brouillons.html', {'posts': posts, 'now': now})
-
-
-# ──────────────────────────────────────────────
-# Mes posts sauvegardés (bookmarks)
-# ──────────────────────────────────────────────
-@login_required(login_url="login")
-def mes_favoris_posts(request):
-    """Page listant les posts que l'utilisateur a sauvegardés."""
-    from .models import PostBookmark
-    bookmarks = PostBookmark.objects.filter(
-        user=request.user
-    ).select_related('post', 'post__author').order_by('-created_at')
-    return render(request, 'post/mes_favoris_posts.html', {'bookmarks': bookmarks})
