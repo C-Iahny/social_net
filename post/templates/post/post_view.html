@@ -1645,6 +1645,7 @@ body { background: var(--bg); }
                     <button class="pc-footer-btn {% if post.is_bookmarked %}bookmarked{% endif %}"
                             id="bk-btn-{{ post.id }}"
                             onclick="toggleBookmark({{ post.id }}, this)"
+                            style="flex:1;"
                             title="{% if post.is_bookmarked %}{% trans 'Retirer des sauvegardes' %}{% else %}{% trans 'Sauvegarder' %}{% endif %}">
                         <span class="material-icons">{% if post.is_bookmarked %}bookmark{% else %}bookmark_border{% endif %}</span>
                     </button>
