@@ -2992,31 +2992,38 @@ window._CT = {
     var _callPeerInfo = { name: '', img: '' };  // infos de l'interlocuteur
     var _iceCandidateQueue = [];  // candidats ICE reçus avant que _peerConn soit prêt
 
-    // STUN + TURN servers — plusieurs STUN pour maximiser les chances
-    // TURN indispensable sur 5G / CGNAT / NAT symétrique
-    // NOTE : numb.viagenie.ca est FERMÉ depuis 2021 — retiré.
+    // Serveurs ICE — chargés dynamiquement depuis le serveur Django (/chat/ice-servers/)
+    // → permet d'activer des TURN fiables (Metered.ca) via variable d'env METERED_API_KEY
+    // sans redeployer le code. Fallback statique si le fetch échoue.
     var _ICE = {
         iceCandidatePoolSize: 5,   // pré-récolte les candidats avant l'appel → ICE plus rapide
         iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
-        { urls: 'stun:stun.cloudflare.com:3478' },
-        { urls: 'stun:stun.relay.metered.ca:80' },
-        // openrelay — TURN public gratuit (UDP 80 + UDP 443 + TLS/TCP 443)
-        // NOTE : turn:...:443?transport=tcp (cleartext TCP) retiré — inutile si turns: présent
-        {
-            urls: [
-                'turn:openrelay.metered.ca:80',
-                'turn:openrelay.metered.ca:443',
-                'turns:openrelay.metered.ca:443?transport=tcp'
-            ],
-            username: 'openrelayproject',
-            credential: 'openrelayproject'
-        }
-    ]};
+            // Fallback statique (remplacé par le fetch au chargement)
+            { urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
+            {
+                urls: ['turn:openrelay.metered.ca:443', 'turns:openrelay.metered.ca:443?transport=tcp'],
+                username: 'openrelayproject', credential: 'openrelayproject'
+            }
+        ]
+    };
+
+    /* Fetch des serveurs ICE depuis Django au chargement — async, non bloquant.
+       Si Metered.ca est configuré (METERED_API_KEY en env), on obtient des TURN
+       fiables avec credentials temporaires. Sinon, le fallback statique ci-dessus
+       reste en place. L'appel démarre avec les bons servers si le fetch finit avant. */
+    (function(){
+        try {
+            fetch('{% url "chat:ice-servers" %}', { credentials: 'same-origin' })
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(data){
+                if(data && Array.isArray(data.iceServers) && data.iceServers.length){
+                    _ICE.iceServers = data.iceServers;
+                    console.log('[ICE] Servers chargés depuis Django (' + (data.source||'?') + ') :', data.iceServers.length, 'serveurs');
+                }
+            })
+            .catch(function(){ /* conserver le fallback statique */ });
+        } catch(e){}
+    })();
 
     function _callEl(id){ return document.getElementById(id); }
 
@@ -3181,9 +3188,20 @@ window._CT = {
         _peerConn.onconnectionstatechange = function(){
             var state = _peerConn && _peerConn.connectionState;
             console.log('[CALL] Connection state:', state);
-            if(_peerConn && (state==='disconnected'||state==='failed')){
-                _callCleanup(false);
-                _appendSysMsg(_CT ? _CT.call_interrupt : 'Appel interrompu.');
+            /* IMPORTANT : 'disconnected' est un état TEMPORAIRE (perte de paquets sur mobile 4G).
+               Le navigateur tente de se reconnecter automatiquement — NE PAS couper l'appel ici.
+               On ne coupe que sur 'failed' (défaillance permanente), avec un délai de sécurité. */
+            if(state === 'disconnected'){
+                var iceEl = document.getElementById('call-ice-status');
+                if(iceEl){ iceEl.textContent = '⟳ Reconnexion…'; iceEl.style.color = '#ff9800'; }
+            } else if(_peerConn && state === 'failed'){
+                var _pc = _peerConn;
+                setTimeout(function(){
+                    if(_pc && _pc.connectionState === 'failed'){
+                        _callCleanup(false);
+                        _appendSysMsg(_CT ? _CT.call_interrupt : 'Appel interrompu.');
+                    }
+                }, 3000);
             }
         };
     }
