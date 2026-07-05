@@ -1285,3 +1285,372 @@ msgstr "Post your daily announcement"
 
 msgid "Photo / Vidéo"
 msgstr "Photo / Video"
+
+# ── Navigation (Feature 7 + bottom nav) ──────────────────────────────────────
+
+msgid "Tendances"
+msgstr "Trends"
+
+msgid "Créer"
+msgstr "Create"
+
+msgid "Profil"
+msgstr "Profile"
+
+# ── Vérification téléphone (Feature 6) ───────────────────────────────────────
+
+msgid "Tél. vérifié"
+msgstr "Tel. verified"
+
+msgid "Numéro de téléphone vérifié par SMS"
+msgstr "Phone number verified by SMS"
+
+# ── Nouvelles traductions — audit complet 2026-06 ────────────────────────────
+
+# bazar/create.html
+msgid "Publication…"
+msgstr "Publishing…"
+
+msgid "Erreur réseau. Vérifiez votre connexion et réessayez."
+msgstr "Network error. Check your connection and try again."
+
+# bazar/edit.html
+msgid "l'annonce"
+msgstr "the ad"
+
+msgid "Enregistrement…"
+msgstr "Saving…"
+
+msgid "Erreur réseau. Réessayez."
+msgstr "Network error. Try again."
+
+# bazar/detail.html
+msgid "Image non disponible"
+msgstr "Image not available"
+
+msgid "Marquer cette annonce comme vendue ?"
+msgstr "Mark this ad as sold?"
+
+msgid "Supprimer définitivement cette annonce ?"
+msgstr "Permanently delete this ad?"
+
+msgid "Copier le lien"
+msgstr "Copy link"
+
+msgid "✓ Copié !"
+msgstr "✓ Copied!"
+
+# bazar/index.html
+msgid "Près de chez moi :"
+msgstr "Near me:"
+
+msgid "Toute Madagascar"
+msgstr "All of Madagascar"
+
+msgid "Détecter ma région automatiquement"
+msgstr "Auto-detect my region"
+
+msgid "Près de moi"
+msgstr "Near me"
+
+msgid "Aucun résultat pour <strong>« %(q)s »</strong>. Essayez un autre mot-clé."
+msgstr "No results for <strong>« %(q)s »</strong>. Try another keyword."
+
+msgid "Aucune annonce dans cette catégorie pour le moment."
+msgstr "No ads in this category yet."
+
+msgid "La géolocalisation n'est pas disponible sur votre appareil."
+msgstr "Geolocation is not available on your device."
+
+msgid "Localisation…"
+msgstr "Locating…"
+
+msgid "Permission refusée"
+msgstr "Permission denied"
+
+msgid "Position indisponible"
+msgstr "Position unavailable"
+
+msgid "Délai dépassé"
+msgstr "Timeout"
+
+msgid "Erreur de géolocalisation"
+msgstr "Geolocation error"
+
+# bazar/mes_annonces.html
+msgid "active"
+msgstr "active"
+
+msgid "vendue"
+msgstr "sold"
+
+msgid "🔝 Remonter en tête (1×/24h)"
+msgstr "🔝 Bump to top (1×/24h)"
+
+msgid "Marquer vendue"
+msgstr "Mark sold"
+
+# stories/story_bar.html
+msgid "Ma story"
+msgstr "My story"
+
+msgid "✥ maintenir pour déplacer"
+msgstr "✥ hold to move"
+
+msgid "Tapez votre texte…"
+msgstr "Type your text…"
+
+msgid "Ajouter une légende…"
+msgstr "Add a caption…"
+
+msgid "Cliquer pour choisir un fichier"
+msgstr "Click to choose a file"
+
+msgid "Musique (optionnel — clip de 30 s)"
+msgstr "Music (optional — 30 s clip)"
+
+msgid "Choisir un fichier (MP3, OGG, WAV, AAC…)"
+msgstr "Choose a file (MP3, OGG, WAV, AAC…)"
+
+msgid "Lien direct vers un fichier MP3 / OGG / WAV public"
+msgstr "Direct link to a public MP3 / OGG / WAV file"
+
+msgid "Musique libre de droits via"
+msgstr "Royalty-free music via"
+
+msgid "Choisir le début du clip (30 s)"
+msgstr "Choose clip start (30 s)"
+
+msgid "Publier ma story"
+msgstr "Publish my story"
+
+# templates/snippets/header.html
+msgid "A propos de moi"
+msgstr "About me"
+
+msgid "Compte"
+msgstr "Account"
+
+msgid "Mode économie"
+msgstr "Data saver"
+
+msgid "Connexion"
+msgstr "Sign in"
+
+msgid "S'inscrire"
+msgstr "Sign up"
+
+# account/account.html
+msgid "demande"
+msgstr "request"
+
+msgid "Niveau maximum atteint !"
+msgstr "Maximum level reached!"
+
+msgid "Comment gagner des points"
+msgstr "How to earn points"
+
+msgid "Post standard"
+msgstr "Standard post"
+
+msgid "Commentaire"
+msgstr "Comment"
+
+msgid "Réaction reçue"
+msgstr "Reaction received"
+
+msgid "Repost reçu"
+msgstr "Repost received"
+
+msgid "Groupe rejoint"
+msgstr "Group joined"
+
+msgid "Mes stories"
+msgstr "My stories"
+
+msgid "Stories"
+msgstr "Stories"
+
+# post/tendances.html
+msgid "Tendances Malgaches"
+msgstr "Malagasy Trends"
+
+msgid "Les hashtags les plus utilisés sur Vazimba — %(hours_label)s"
+msgstr "The most used hashtags on Vazimba — %(hours_label)s"
+
+msgid "post"
+msgstr "post"
+
+msgid "Mis à jour toutes les 15 minutes"
+msgstr "Updated every 15 minutes"
+
+msgid "Actualiser"
+msgstr "Refresh"
+
+msgid "Aucune tendance sur les %(hours_label)s"
+msgstr "No trends in the past %(hours_label)s"
+
+msgid "Publiez des posts avec des hashtags pour alimenter les tendances !"
+msgstr "Post with hashtags to feed the trends!"
+
+msgid "Essayez sur une période plus longue →"
+msgstr "Try a longer time period →"
+
+
+# -- Favoris Bazar
+
+msgid "Sauvegarder"
+msgstr "Save"
+
+msgid "Sauvegardé"
+msgstr "Saved"
+
+msgid "Chargement…"
+msgstr "Loading…"
+
+msgid "Retirer des favoris"
+msgstr "Remove from favorites"
+
+msgid "Mes favoris"
+msgstr "My favorites"
+
+msgid "Explorer le Bazar"
+msgstr "Browse the Marketplace"
+
+msgid "Prix à discuter"
+msgstr "Price on request"
+
+msgid "Aucun favori pour l'instant"
+msgstr "No favorites yet"
+
+msgid "Sauvegardez des annonces qui vous intéressent pour les retrouver facilement ici."
+msgstr "Save listings you're interested in to find them easily here."
+
+msgid "Parcourir le Bazar"
+msgstr "Browse the Marketplace"
+
+msgid "Appel audio"
+msgstr "Audio call"
+
+msgid "Appel vidéo"
+msgstr "Video call"
+
+msgid "Appel en cours…"
+msgstr "Calling…"
+
+msgid "Appel audio en cours…"
+msgstr "Audio call in progress…"
+
+msgid "Appel vidéo en cours…"
+msgstr "Video call in progress…"
+
+msgid "Appel audio entrant"
+msgstr "Incoming audio call"
+
+msgid "Appel vidéo entrant"
+msgstr "Incoming video call"
+
+msgid "Annuler"
+msgstr "Cancel"
+
+msgid "Refuser"
+msgstr "Decline"
+
+msgid "Accepter"
+msgstr "Accept"
+
+msgid "Micro"
+msgstr "Microphone"
+
+msgid "Fin"
+msgstr "End"
+
+msgid "Raccrocher"
+msgstr "Hang up"
+
+msgid "Caméra"
+msgstr "Camera"
+
+msgid "Appel refusé."
+msgstr "Call declined."
+
+msgid "Appel terminé —"
+msgstr "Call ended —"
+
+msgid "Appel interrompu."
+msgstr "Call interrupted."
+
+msgid "Appel manqué."
+msgstr "Missed call."
+
+msgid "Un appel est déjà en cours."
+msgstr "A call is already in progress."
+
+msgid "Ouvrez d'abord une conversation."
+msgstr "Open a conversation first."
+
+msgid "Impossible d'accéder au micro."
+msgstr "Cannot access microphone."
+
+msgid "Impossible d'accéder au micro / caméra."
+msgstr "Cannot access microphone / camera."
+
+msgid "Aujourd'hui"
+msgstr "Today"
+
+msgid "Hier"
+msgstr "Yesterday"
+
+msgid "est en train d'écrire…"
+msgstr "is typing…"
+
+msgid "Quelqu'un"
+msgstr "Someone"
+
+msgid "Messages"
+msgstr "Messages"
+
+msgid "Rechercher…"
+msgstr "Search…"
+
+msgid "Sélectionnez une conversation"
+msgstr "Select a conversation"
+
+msgid "Aucun ami pour l'instant"
+msgstr "No friends yet"
+
+msgid "Chargement…"
+msgstr "Loading…"
+
+msgid "Écrire un message…"
+msgstr "Write a message…"
+
+msgid "Joindre un fichier"
+msgstr "Attach a file"
+
+msgid "Envoyer (Entrée)"
+msgstr "Send (Enter)"
+
+msgid "Envoyer"
+msgstr "Send"
+
+msgid "Entrée pour envoyer · Maj+Entrée pour aller à la ligne"
+msgstr "Enter to send · Shift+Enter for new line"
+
+msgid "Conversations"
+msgstr "Conversations"
+
+msgid "Fermer"
+msgstr "Close"
+
+msgid "Télécharger"
+msgstr "Download"
+
+msgid "En ligne"
+msgstr "Online"
+
+msgid "Connexion perdue. Rechargement…"
+msgstr "Connection lost. Reloading…"
+
+msgid "Infos"
+msgstr "Info"

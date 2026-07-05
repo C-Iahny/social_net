@@ -1,0 +1,17 @@
+{
+  "name": "vazimba-android",
+  "version": "1.0.0",
+  "description": "Vazimba / Zoot — application Android",
+  "private": true,
+  "scripts": {
+    "sync": "npx cap sync android",
+    "open": "npx cap open android",
+    "build": "npx cap sync android && npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/splash-screen": "^8.0.1"
+  }
+}

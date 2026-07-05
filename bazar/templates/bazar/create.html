@@ -207,10 +207,10 @@
 <div class="bazar-form-wrap">
     <div class="bazar-form-header">
         <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.6rem;">
-            <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">Bazar</a>
-            <span> › </span>Publier une annonce
+            <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
+            <span> › </span>{% trans "Publier une annonce" %}
         </nav>
-        <h1>📦 Publier une annonce</h1>
+        <h1>📦 {% trans "Publier une annonce" %}</h1>
         <p>{% trans "Votre annonce sera visible par tous les membres Vazimba." %}</p>
     </div>
 
@@ -222,19 +222,21 @@
 
     <form method="post" enctype="multipart/form-data" id="bazar-create-form">
         {% csrf_token %}
+        {# status par défaut 'active' — le champ est requis dans AnnonceForm mais non affiché à la création #}
+        <input type="hidden" name="status" value="active">
 
         <!-- Photos -->
         <div class="bazar-section">
             <div class="bazar-section-title">
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                Photos ({{ max_images }} max)
+                {% trans "Photos" %} ({{ max_images }} max)
             </div>
 
-            <div class="bazar-upload-zone" id="upload-zone" onclick="document.getElementById('id_images').click()">
+            <label class="bazar-upload-zone" id="upload-zone" for="id_images" style="cursor:pointer;">
                 <div class="bazar-upload-icon">🖼️</div>
                 <div class="bazar-upload-text">{% trans "Cliquer pour ajouter des photos" %}</div>
-                <div class="bazar-upload-hint">JPG, PNG, WebP · Max {{ max_images }} photos · La première = photo principale</div>
-            </div>
+                <div class="bazar-upload-hint">{% trans "JPG, PNG, WebP · Max 8 photos · La première = photo principale" %}</div>
+            </label>
             <input type="file" name="images" id="id_images" class="bazar-file-input" multiple accept="image/*,.heic,.heif">
             <div class="bazar-preview-grid" id="preview-grid"></div>
         </div>
@@ -302,14 +304,25 @@
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 {% trans "Localisation & Contact" %}
             </div>
-            <div class="form-group mb-3">
-                <label for="{{ form.location.id_for_label }}">{{ form.location.label }} <span style="color:#dc3545;">*</span></label>
-                {{ form.location }}
-                {% if form.location.errors %}<ul class="errorlist">{% for e in form.location.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.location.id_for_label }}">{{ form.location.label }} <span style="color:#dc3545;">*</span></label>
+                    {{ form.location }}
+                    {% if form.location.errors %}<ul class="errorlist">{% for e in form.location.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.region.id_for_label }}">{{ form.region.label }}</label>
+                    {{ form.region }}
+                    <small class="form-text">{% trans "Facilite le filtre « Près de chez moi »" %}</small>
+                </div>
             </div>
             <div class="form-group mb-2">
-                <label for="{{ form.contact_phone.id_for_label }}">{{ form.contact_phone.label }}</label>
+                <label for="{{ form.contact_phone.id_for_label }}">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:.25rem;vertical-align:middle;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.32a2 2 0 0 1 1.99-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.97-.97a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    {{ form.contact_phone.label }}
+                </label>
                 {{ form.contact_phone }}
+                <small class="form-text">{% trans "Visible sur votre annonce pour que les acheteurs vous contactent directement par appel ou WhatsApp." %}</small>
             </div>
             <div class="form-check">
                 {{ form.show_phone }}
@@ -330,21 +343,42 @@
 </div>
 
 <script>
+var VZB_I18N = {
+    publishing: "{% trans 'Publication…' %}",
+    networkError: "{% trans 'Erreur réseau. Vérifiez votre connexion et réessayez.' %}"
+};
+</script>
+<script>
 // ── Gestion upload photos ──────────────────────────────────────────────────────
 const MAX_PHOTOS = {{ max_images }};
 let selectedFiles = [];
 
-const fileInput = document.getElementById('id_images');
+const fileInput  = document.getElementById('id_images');
 const previewGrid = document.getElementById('preview-grid');
-const uploadZone = document.getElementById('upload-zone');
+const uploadZone  = document.getElementById('upload-zone');
+
+/* ── Détection support DataTransfer (absent / bogué sur iOS Safari < 17) ──
+   On teste réellement l'assignation de fileInput.files car certains iOS
+   acceptent new DataTransfer() mais rejettent silencieusement l'assignation. */
+const _supportsFileSync = (function() {
+    try {
+        const dt = new DataTransfer();
+        dt.items.add(new File([''], '_chk_', { type: 'text/plain' }));
+        const tmp = document.createElement('input');
+        tmp.type = 'file';
+        tmp.files = dt.files;
+        return tmp.files.length === 1;
+    } catch(e) { return false; }
+})();
 
 fileInput.addEventListener('change', function() {
     const captured = Array.from(this.files);
-    this.value = '';
+    /* Vider l'input pour permettre de resélectionner les mêmes fichiers */
+    try { this.value = ''; } catch(e) {}
     _processAndAdd(captured);
 });
 
-// Drag & drop
+// Drag & drop (desktop uniquement)
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
 uploadZone.addEventListener('drop', e => {
@@ -356,7 +390,7 @@ uploadZone.addEventListener('drop', e => {
     _processAndAdd(files);
 });
 
-// Conversion WebP + HEIC via ZootMediaConverter (même logique que le feed)
+// Conversion WebP + HEIC via ZootMediaConverter
 function _processAndAdd(files) {
     if (window.ZootMediaConverter) {
         ZootMediaConverter.processFiles(files)
@@ -386,11 +420,11 @@ function renderPreviews() {
     previewGrid.innerHTML = '';
     selectedFiles.forEach((file, i) => {
         const reader = new FileReader();
-        reader.onload = e => {
+        reader.onload = ev => {
             const div = document.createElement('div');
             div.className = 'bazar-preview-item';
             div.innerHTML = `
-                <img src="${e.target.result}" alt="">
+                <img src="${ev.target.result}" alt="">
                 ${i === 0 ? '<span class="bazar-preview-badge">PRINCIPALE</span>' : ''}
                 <button type="button" class="bazar-preview-remove" onclick="removeFile(${i})">✕</button>
             `;
@@ -402,10 +436,49 @@ function renderPreviews() {
 }
 
 function syncInput() {
-    // Recréer un DataTransfer pour mettre les fichiers sélectionnés dans l'input
+    if (!_supportsFileSync) return; /* iOS : les fichiers seront envoyés via FormData */
     const dt = new DataTransfer();
     selectedFiles.forEach(f => dt.items.add(f));
     fileInput.files = dt.files;
 }
+
+/* ── Soumission iOS-safe via FormData + fetch ───────────────────────────────
+   Sur iOS Safari, fileInput.files est en lecture seule → le formulaire
+   natif enverrait 0 fichier. On intercepte le submit et on construit
+   le FormData manuellement avec selectedFiles.                             */
+document.getElementById('bazar-create-form').addEventListener('submit', function(e) {
+    if (selectedFiles.length === 0) return; /* aucun fichier : soumission native */
+    e.preventDefault();
+
+    const form = this;
+    const btn  = form.querySelector('button[type="submit"]');
+    const orig = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = VZB_I18N.publishing; }
+
+    const fd = new FormData(form);
+    fd.delete('images');                          /* vider le champ vide */
+    selectedFiles.forEach(f => fd.append('images', f)); /* ajouter les vrais fichiers */
+
+    fetch(form.action || window.location.pathname, {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin'
+    })
+    .then(function(r) {
+        if (r.redirected) {
+            /* Succès → le serveur a redirigé vers la page de détail */
+            window.location.href = r.url;
+        } else {
+            /* Erreurs de validation → remplacer la page par la réponse */
+            return r.text().then(function(html) {
+                document.open(); document.write(html); document.close();
+            });
+        }
+    })
+    .catch(function() {
+        if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+        alert(VZB_I18N.networkError);
+    });
+});
 </script>
 {% endblock %}

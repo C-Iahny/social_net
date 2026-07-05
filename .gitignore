@@ -22,3 +22,12 @@ db.sqlite3
 *.log
 *.tmp
 .DS_Store
+lock.bak
+SyntaxError
+
+# Application Android (Capacitor) — dépendances et builds
+node_modules/
+vazimba-android/android/app/build/
+vazimba-android/android/build/
+vazimba-android/android/.gradle/
+vazimba-android/**/build/

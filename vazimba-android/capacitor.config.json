@@ -1,0 +1,24 @@
+{
+  "appId": "mg.vazimba.app",
+  "appName": "Vazimba",
+  "webDir": "www",
+  "server": {
+    "url": "https://socialnet-production-06b9.up.railway.app",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#1a1a2e",
+      "showSpinner": false,
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP"
+    }
+  }
+}

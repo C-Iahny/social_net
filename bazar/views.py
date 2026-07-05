@@ -1,18 +1,20 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import BooleanField, Case, Q, When
+from django.db.models import BooleanField, Case, F, Q, When
 from django.core.paginator import Paginator
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import Annonce, AnnonceImage, SellerVerification
+from .models import Annonce, AnnonceImage, SellerVerification, BazarFavori
 from .forms import AnnonceForm
 
 # ── Constantes ─────────────────────────────────────────────────────────────────
-PAGE_SIZE  = 12
-MAX_IMAGES = 8           # vendeur standard
-MAX_IMAGES_VERIFIED = 12  # vendeur vérifié
+PAGE_SIZE       = 12
+MAX_IMAGES      = 8           # vendeur standard
+MAX_IMAGES_VERIFIED = 12      # vendeur vérifié
+BUMP_COOLDOWN_H = 24          # heures entre deux bumps
 
 
 # ── Liste / Explore ─────────────────────────────────────────────────────────────
@@ -83,15 +85,17 @@ def bazar_index(request):
     if only_verified:
         qs = qs.filter(seller_verified=True)
 
-    # Tri — les vendeurs vérifiés sont toujours boostés en tête
+    # Tri — les vendeurs vérifiés sont toujours boostés en tête.
+    # Pour 'recent', les annonces bumpées remontent (bumped_at > created_at).
     if sort == 'price_asc':
-        qs = qs.order_by('-seller_verified', 'price', '-created_at')
+        qs = qs.order_by('-seller_verified', 'price', F('bumped_at').desc(nulls_last=True), '-created_at')
     elif sort == 'price_desc':
-        qs = qs.order_by('-seller_verified', '-price', '-created_at')
+        qs = qs.order_by('-seller_verified', '-price', F('bumped_at').desc(nulls_last=True), '-created_at')
     elif sort == 'popular':
-        qs = qs.order_by('-seller_verified', '-views_count', '-created_at')
+        qs = qs.order_by('-seller_verified', '-views_count', F('bumped_at').desc(nulls_last=True), '-created_at')
     else:
-        qs = qs.order_by('-seller_verified', '-created_at')
+        # Par défaut : bumped_at desc (null en dernier), puis created_at desc
+        qs = qs.order_by('-seller_verified', F('bumped_at').desc(nulls_last=True), '-created_at')
 
     # ── Pagination ────────────────────────────────────────────────────────────
     paginator = Paginator(qs, PAGE_SIZE)
@@ -151,11 +155,25 @@ def annonce_detail(request, pk):
         [:6]
     )
 
+    # Favori : est-ce que l'utilisateur a déjà sauvegardé cette annonce ?
+    try:
+        is_saved = (
+            request.user.is_authenticated
+            and BazarFavori.objects.filter(user=request.user, annonce=annonce).exists()
+        )
+        fav_count = annonce.favoris.count()
+    except Exception:
+        # Sécurité si la migration 0006 n'a pas encore été appliquée
+        is_saved  = False
+        fav_count = 0
+
     context = {
         'annonce':    annonce,
         'images':     annonce.images.all(),
         'similaires': similaires,
         'is_owner':   request.user.is_authenticated and request.user == annonce.seller,
+        'is_saved':   is_saved,
+        'fav_count':  fav_count,
     }
     return render(request, 'bazar/detail.html', context)
 
@@ -315,6 +333,67 @@ def annonce_delete(request, pk):
     return redirect('bazar:mes_annonces')
 
 
+# ── Bump — remonter une annonce en tête ────────────────────────────────────────
+
+@login_required
+@require_POST
+def bump_annonce(request, pk):
+    """
+    Rafraîchit une annonce (la fait remonter en tête des résultats).
+    Cooldown : 1 bump toutes les 24 h.
+    URL: /bazar/<pk>/bump/
+    """
+    annonce = get_object_or_404(Annonce, pk=pk)
+
+    if annonce.seller != request.user:
+        return JsonResponse({'error': 'Non autorisé'}, status=403)
+
+    if annonce.status != 'active':
+        return JsonResponse({'error': 'Seules les annonces actives peuvent être rafraîchies.'}, status=400)
+
+    now = timezone.now()
+    # Vérifier le cooldown
+    if annonce.bumped_at:
+        elapsed_h = (now - annonce.bumped_at).total_seconds() / 3600
+        if elapsed_h < BUMP_COOLDOWN_H:
+            remaining = int(BUMP_COOLDOWN_H - elapsed_h)
+            return JsonResponse({
+                'error': f'Vous pouvez rafraîchir à nouveau dans {remaining}h.',
+                'cooldown': True,
+                'remaining_h': remaining,
+            }, status=429)
+
+    Annonce.objects.filter(pk=pk).update(bumped_at=now)
+    return JsonResponse({'success': True, 'bumped_at': now.isoformat()})
+
+
+# ── Toggle statut — active ↔ pause ─────────────────────────────────────────────
+
+@login_required
+@require_POST
+def toggle_status(request, pk):
+    """
+    Bascule le statut d'une annonce entre 'active' et 'pause'.
+    AJAX POST. Répond JSON.
+    URL: /bazar/<pk>/toggle-statut/
+    """
+    annonce = get_object_or_404(Annonce, pk=pk)
+
+    if annonce.seller != request.user:
+        return JsonResponse({'error': 'Non autorisé'}, status=403)
+
+    if annonce.status == 'vendue':
+        return JsonResponse({'error': 'Une annonce vendue ne peut pas être réactivée ici.'}, status=400)
+
+    new_status = 'pause' if annonce.status == 'active' else 'active'
+    Annonce.objects.filter(pk=pk).update(status=new_status)
+    return JsonResponse({
+        'success': True,
+        'new_status': new_status,
+        'label': 'Active' if new_status == 'active' else 'En pause',
+    })
+
+
 # ── Mes annonces ────────────────────────────────────────────────────────────────
 
 # ── Helper vérification ────────────────────────────────────────────────────────
@@ -403,3 +482,49 @@ def request_verification(request):
         'verification': verification,
     }
     return render(request, 'bazar/verification.html', context)
+
+
+# ── Favoris ────────────────────────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def toggle_favori(request, pk):
+    """
+    AJAX : ajoute ou retire une annonce des favoris de l'utilisateur connecté.
+    Retourne JSON { saved: bool, count: int }
+    """
+    annonce = get_object_or_404(Annonce, pk=pk)
+    fav, created = BazarFavori.objects.get_or_create(user=request.user, annonce=annonce)
+    if not created:
+        fav.delete()
+        saved = False
+    else:
+        saved = True
+    count = annonce.favoris.count()
+    return JsonResponse({'saved': saved, 'count': count})
+
+
+@login_required
+def mes_favoris(request):
+    """
+    Page listant les annonces sauvegardées par l'utilisateur connecté.
+    """
+    try:
+        favoris_qs = (
+            BazarFavori.objects
+            .filter(user=request.user)
+            .select_related('annonce__seller')
+            .prefetch_related('annonce__images')
+        )
+        # Exclure les annonces supprimées ou expirées
+        favoris_qs = [f for f in favoris_qs if f.annonce.status != 'expiree']
+    except Exception:
+        favoris_qs = []
+
+    paginator = Paginator(favoris_qs, PAGE_SIZE)
+    page      = paginator.get_page(request.GET.get('page'))
+
+    return render(request, 'bazar/favoris.html', {
+        'page_obj': page,
+        'total':    paginator.count,
+    })
