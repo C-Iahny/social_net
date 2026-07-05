@@ -2992,6 +2992,7 @@ window._CT = {
 
     // STUN + TURN servers — plusieurs STUN pour maximiser les chances
     // TURN indispensable sur 5G / CGNAT / NAT symétrique
+    // NOTE : numb.viagenie.ca est FERMÉ depuis 2021 — retiré.
     var _ICE = { iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
@@ -2999,23 +3000,25 @@ window._CT = {
         { urls: 'stun:stun3.l.google.com:19302' },
         { urls: 'stun:stun4.l.google.com:19302' },
         { urls: 'stun:stun.cloudflare.com:3478' },
-        // numb.viagenie.ca — TURN public fiable (fallback UDP + TCP)
+        // openrelay — TURN public gratuit (UDP + TCP + TLS)
         {
             urls: [
-                'turn:numb.viagenie.ca',
-                'turn:numb.viagenie.ca:3478?transport=tcp'
-            ],
-            username: 'webrtc@live.com',
-            credential: 'muazkh'
-        },
-        // openrelay — conservé en dernier recours
-        {
-            urls: [
+                'turn:openrelay.metered.ca:80',
+                'turn:openrelay.metered.ca:443',
                 'turn:openrelay.metered.ca:443?transport=tcp',
-                'turn:openrelay.metered.ca:80'
+                'turns:openrelay.metered.ca:443?transport=tcp'
             ],
             username: 'openrelayproject',
             credential: 'openrelayproject'
+        },
+        // freestun — deuxième TURN de secours
+        {
+            urls: [
+                'turn:freestun.net:3479',
+                'turns:freestun.net:5350'
+            ],
+            username: 'free',
+            credential: 'free'
         }
     ]};
 
@@ -3065,25 +3068,16 @@ window._CT = {
           Quand ontrack arrive, on remplace srcObject → l'élément reste activé.
     ──────────────────────────────────────────────────────────────────────── */
     function _preUnlockMedia(){
-        /* 1. AudioContext — indispensable pour Safari Desktop & iOS */
+        /* AudioContext.resume() — active le sous-système audio Safari/iOS/WebKit.
+           C'est le seul geste nécessaire pendant le clic utilisateur.
+           On NE lance plus play() ici sur un stream vide : cela créait un play()
+           pending qui entrait en conflit (AbortError) avec le vrai play() dans
+           onRemoteStream sur Opera et certains WebView Android. */
         try {
             var _tmpCtx = new (window.AudioContext || window.webkitAudioContext)();
             _tmpCtx.resume().catch(function(){});
-            /* fermer après 4s pour ne pas bloquer les ressources */
             setTimeout(function(){ try{ _tmpCtx.close(); }catch(e){} }, 4000);
         } catch(e){}
-
-        /* 2. Afficher l'overlay actif le temps du play() (parent visible requis) */
-        _showOverlay('call-active-overlay');
-        var _emptyStream = new MediaStream(); /* source vide mais valide */
-        var rv = _callEl('call-remote-video');
-        if(rv){
-            rv.srcObject = _emptyStream;  /* play(null) ne compte pas pour Safari */
-            rv.muted = true;
-            rv.play().catch(function(){});
-        }
-        var lv = _callEl('call-local-video');
-        if(lv){ lv.play().catch(function(){}); } /* local déjà muted — pas de srcObject */
     }
 
     /* Afficher / masquer un overlay */
@@ -3188,9 +3182,10 @@ window._CT = {
         var bg  = _callEl('call-audio-bg');
         var cw  = _callEl('call-cam-wrap');
         if(_callMode === 'audio'){
-            /* Mode audio : rv caché initialement (affiché par onRemoteStream si srcObject arrivé)
-               Fond audio : avatar centré visible */
-            if(rv && !rv.srcObject) rv.style.display = 'none';
+            /* Mode audio : rv rendu invisible (mais PAS display:none) —
+               Sur Safari iOS, un <video> display:none ne joue pas l'audio WebRTC.
+               On le garde dans le flux de rendu, minuscule et transparent.        */
+            if(rv){ rv.style.cssText = rv.style.cssText + ';position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;'; }
             if(lv) lv.style.display = 'none';
             if(bg) bg.style.display = 'flex';
             if(cw) cw.style.display = 'none';
@@ -3211,6 +3206,22 @@ window._CT = {
         var sp = document.createElement('span'); sp.classList.add('username-span');
         sp.textContent = text; wrap.appendChild(sp);
         chatLog.insertBefore(wrap, chatLog.firstChild);
+    }
+
+    /* ── getUserMedia avec fallback pour Safari / WebView Android ────────────
+       Si les contraintes vidéo détaillées (ideal:1280…) sont refusées par le
+       navigateur (OverconstrainedError, NotReadableError, etc.), on retente
+       avec des contraintes simples {audio, video:true} avant d'abandonner.   */
+    function _getUserMedia(constraints){
+        return navigator.mediaDevices.getUserMedia(constraints).catch(function(err){
+            if(constraints.video && constraints.video !== true &&
+               (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError' ||
+                err.name === 'NotReadableError')){
+                console.warn('[CALL] getUserMedia contraintes détaillées refusées, fallback simple:', err.name);
+                return navigator.mediaDevices.getUserMedia({ audio: constraints.audio, video: true });
+            }
+            throw err;
+        });
     }
 
     /* ── Démarrer un appel (sortant) ─────────────────────────── */
@@ -3237,7 +3248,7 @@ window._CT = {
             ? { audio: true, video: false }
             : { audio: true, video: { width:{ideal:1280}, height:{ideal:720}, facingMode:'user' } };
 
-        navigator.mediaDevices.getUserMedia(constraints)
+        _getUserMedia(constraints)
         .then(function(stream){
             _localStream = stream;
             // Mode vidéo : afficher préview locale
@@ -3334,7 +3345,7 @@ window._CT = {
             ? { audio: true, video: false }
             : { audio: true, video: { width:{ideal:1280}, height:{ideal:720}, facingMode:'user' } };
 
-        navigator.mediaDevices.getUserMedia(constraints)
+        _getUserMedia(constraints)
         .then(function(stream){
             _localStream = stream;
             /* Vidéo locale — display:block avant play() */
@@ -3347,14 +3358,13 @@ window._CT = {
             _buildPeer(function(remoteStream){
                 var rv = _callEl('call-remote-video');
                 /* Toujours router via <video> — audio ET vidéo (iOS → haut-parleur).
-                   Guard : srcObject vide du pre-unlock → remplacer par le vrai stream.
                    CALLEE : forcer overlay visible si ontrack arrive avant _activateCallUI. */
-                if(rv && (!rv.srcObject || rv.srcObject.getTracks().length === 0)){
+                if(rv){
                     var _ao = document.getElementById('call-active-overlay');
                     if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
-                    /* Élément activé par _preUnlockMedia → essayer unmuted d'abord */
+                    /* Tenter unmuted. Si l'autoplay est bloqué → muted→play→unmute */
                     rv.muted = false;
                     rv.play().catch(function(e){
                         console.warn('[CALL] unmuted play blocked, fallback muted:', e);
@@ -3364,10 +3374,18 @@ window._CT = {
                     });
                 }
             });
-            _localStream.getTracks().forEach(function(t){ _peerConn.addTrack(t, _localStream); });
-            return _peerConn.setRemoteDescription(new RTCSessionDescription(offerSdp));
+            /* ── Safari / WebKit / WebView : setRemoteDescription AVANT addTrack ──
+               Ajouter des pistes AVANT setRemoteDescription confond la négociation SDP
+               sur Safari et Android WebView → ICE connecte mais aucun média ne passe.
+               L'ordre correct pour le callee est :
+                 1. setRemoteDescription(offer)
+                 2. addTrack(...)
+                 3. createAnswer()                                                    */
+            return _peerConn.setRemoteDescription({ type: offerSdp.type, sdp: offerSdp.sdp });
         })
         .then(function(){
+            /* addTrack ICI — après setRemoteDescription (fix Safari/Opera/WebView) */
+            _localStream.getTracks().forEach(function(t){ _peerConn.addTrack(t, _localStream); });
             // Vider la file des candidats ICE qui sont arrivés pendant le ringing
             _iceCandidateQueue.forEach(function(c){
                 _peerConn.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
@@ -3407,7 +3425,8 @@ window._CT = {
     /* ── Réception réponse SDP ───────────────────────────────── */
     function handleCallAnswer(data){
         if(!_peerConn || _callState !== 'calling') return;
-        _peerConn.setRemoteDescription(new RTCSessionDescription(data.sdp))
+        /* Plain object — évite la dépréciation de RTCSessionDescription() sur Safari */
+        _peerConn.setRemoteDescription({ type: data.sdp.type, sdp: data.sdp.sdp })
         .then(function(){
             /* Vider la file des candidats ICE de l'appelé
                qui sont arrivés avant la réponse SDP */
