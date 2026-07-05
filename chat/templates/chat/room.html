@@ -3126,6 +3126,7 @@ window._CT = {
         var lv  = _callEl('call-local-video');  if(lv){ lv.srcObject = null; lv.style.display = 'none'; }
         var lop = _callEl('call-out-local-vid'); if(lop){ lop.srcObject = null; lop.style.display = 'none'; }
         var _dbgEl = document.getElementById('call-ice-debug'); if(_dbgEl) _dbgEl.textContent = '';
+        _removeCallUnmuteBtn();
         _iceCandidateQueue = [];
         _stopTimer();
         _callState = 'idle';
@@ -3240,6 +3241,79 @@ window._CT = {
         };
     }
 
+    /* ── Lecture du flux distant garantie (Opera/Safari/WebView) ─────────────
+       Chrome autorise l'autoplay sonore quand le micro est capturé, mais
+       Opera (et parfois Safari) bloquent le play() non-muet déclenché depuis
+       un callback async → l'appel semble "connecté mais silencieux".
+       Stratégie : tenter non-muet ; si bloqué, lire en muet ET afficher un
+       bouton "Activer le son" (un vrai clic = geste utilisateur = autorisé). */
+    function _showCallUnmuteBtn(rv){
+        if(document.getElementById('call-unmute-btn')) return;
+        var overlay = _callEl('call-active-overlay');
+        if(!overlay) return;
+        var btn = document.createElement('button');
+        btn.id = 'call-unmute-btn';
+        btn.innerHTML = '<span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">volume_off</span>&nbsp;' +
+                        'Son coupé — appuyez pour activer';
+        btn.style.cssText = 'position:absolute;top:18%;left:50%;transform:translateX(-50%);' +
+            'padding:.6rem 1.2rem;background:rgba(229,57,53,.92);color:#fff;border:none;' +
+            'border-radius:22px;font-size:.85rem;font-weight:700;cursor:pointer;z-index:60;' +
+            'display:flex;align-items:center;white-space:nowrap;font-family:inherit;';
+        btn.onclick = function(){
+            btn.remove();
+            rv.muted = false;
+            rv.play().catch(function(){});
+        };
+        overlay.appendChild(btn);
+    }
+    function _removeCallUnmuteBtn(){
+        var b = document.getElementById('call-unmute-btn');
+        if(b) b.remove();
+    }
+    function _ensureRemotePlayback(rv){
+        rv.muted = false;
+        var p = rv.play();
+        if(p && p.catch){
+            p.catch(function(e){
+                console.warn('[CALL] play() non-muet bloqué (' + (e && e.name) + ') — fallback muet + bouton son');
+                rv.muted = true;
+                rv.play().catch(function(e2){ console.error('[CALL] play() muet aussi bloqué:', e2); });
+                _showCallUnmuteBtn(rv);
+            });
+        }
+        /* Filet de sécurité : certains navigateurs re-mutent ou re-pausent
+           silencieusement après coup — revérifier peu après. */
+        setTimeout(function(){
+            if(!rv.srcObject) return;
+            if(rv.paused){ rv.muted = true; rv.play().catch(function(){}); }
+            if(rv.muted) _showCallUnmuteBtn(rv);
+        }, 800);
+    }
+
+    /* ── Diagnostic : vérifier que le média circule vraiment ─────────────────
+       ICE peut être "connecté" alors qu'aucun octet audio/vidéo n'arrive
+       (pare-feu, VPN, TURN saturé). On vérifie via getStats après 6 s et on
+       l'affiche clairement au lieu de laisser un appel silencieux mystère.  */
+    function _checkMediaFlow(){
+        if(!_peerConn || _callState !== 'active') return;
+        try {
+            _peerConn.getStats(null).then(function(stats){
+                var rx = 0;
+                stats.forEach(function(r){
+                    if(r.type === 'inbound-rtp') rx += (r.bytesReceived || 0);
+                });
+                console.log('[CALL] diagnostic flux — bytesReceived:', rx);
+                if(rx === 0){
+                    var iceEl = document.getElementById('call-ice-status');
+                    if(iceEl){
+                        iceEl.textContent = '⚠ Aucun média reçu — réseau/VPN/pare-feu bloque le flux';
+                        iceEl.style.color = '#f44336';
+                    }
+                }
+            }).catch(function(){});
+        } catch(e){}
+    }
+
     /* Configurer l'overlay appel actif selon le mode.
        NOTE : on ne rappelle PAS play() ici — c'est le callback onRemoteStream
        qui appelle play() avec le pattern muted→play→unmute pour éviter les
@@ -3247,6 +3321,8 @@ window._CT = {
     function _activateCallUI(){
         _showOverlay('call-active-overlay');
         _startTimer();
+        /* Diagnostic après 6 s : le média circule-t-il vraiment ? */
+        setTimeout(_checkMediaFlow, 6000);
         // Initialiser le statut ICE — sauf si déjà connecté (évite de réinitialiser après ontrack)
         var iceEl = document.getElementById('call-ice-status');
         if(iceEl){
@@ -3416,18 +3492,9 @@ window._CT = {
                     if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
-                    /* L'attribut autoplay muted déclenche la lecture dès que srcObject est assigné.
-                       On unmute via JS — Chrome/WebView autorise rv.muted=false après interaction. */
-                    rv.muted = false;
-                    /* Fallback : si autoplay n'a pas encore démarré (timing), forcer play(). */
-                    if(rv.paused){
-                        rv.play().catch(function(e){
-                            console.warn('[CALL] caller play blocked, fallback muted:', e);
-                            rv.muted = true;
-                            rv.play().then(function(){ rv.muted = false; })
-                                     .catch(function(e2){ console.error('[CALL] caller play failed:', e2); });
-                        });
-                    }
+                    /* Lecture garantie : non-muet si possible, sinon muet +
+                       bouton "Activer le son" (Opera bloque l'unmute async). */
+                    _ensureRemotePlayback(rv);
                 }
                 var lv = _callEl('call-local-video');
                 if(lv && !lv.srcObject){
@@ -3535,18 +3602,9 @@ window._CT = {
                     if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
-                    /* autoplay muted (HTML) déclenche la lecture dès que srcObject est assigné.
-                       On unmute ici — autorisé par Chrome/WebView après interaction utilisateur. */
-                    rv.muted = false;
-                    /* Fallback si autoplay n'a pas encore démarré */
-                    if(rv.paused){
-                        rv.play().catch(function(e){
-                            console.warn('[CALL] callee play blocked, fallback muted:', e);
-                            rv.muted = true;
-                            rv.play().then(function(){ rv.muted = false; })
-                                     .catch(function(e2){ console.error('[CALL] callee play failed:', e2); });
-                        });
-                    }
+                    /* Lecture garantie : non-muet si possible, sinon muet +
+                       bouton "Activer le son" (Opera bloque l'unmute async). */
+                    _ensureRemotePlayback(rv);
                 }
             });
             /* ── Safari / WebKit / WebView : setRemoteDescription AVANT addTrack ──
