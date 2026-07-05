@@ -3121,10 +3121,28 @@ window._CT = {
                 chatSocket.send(JSON.stringify({ command:'call_ice', room:roomId, candidate:e.candidate }));
             }
         };
+        /* ── ontrack : accumuler les pistes dans UN seul MediaStream ──────────────
+           Problème : ontrack peut tirer UNE FOIS PAR PISTE (audio d'abord, vidéo
+           ensuite). Si on appelait onRemoteStream à chaque event :
+             • 1er event (audio) → rv.srcObject = stream1 (1 piste), play() OK
+             • 2e event (vidéo)  → guard "getTracks().length === 0" → FAUX → bloqué
+                                   → la piste vidéo n'est jamais affichée.
+           Solution : on crée UN MediaStream partagé, on y ajoute chaque piste au
+           fur et à mesure, et on appelle onRemoteStream UNE SEULE FOIS.
+           Les pistes suivantes sont ajoutées à l'objet MediaStream déjà associé
+           au srcObject → le <video> se met à jour automatiquement.              */
+        var _pcRemoteStream = new MediaStream();
+        var _remoteStreamStarted = false;
         _peerConn.ontrack = function(e){
-            // Récupérer le stream distant (e.streams[0] si dispo, sinon créer un MediaStream avec la piste)
-            var stream = (e.streams && e.streams[0]) ? e.streams[0] : new MediaStream([e.track]);
-            onRemoteStream(stream);
+            _pcRemoteStream.addTrack(e.track);
+            console.log('[CALL] ontrack:', e.track.kind, '— total:', _pcRemoteStream.getTracks().length);
+            if(!_remoteStreamStarted){
+                _remoteStreamStarted = true;
+                onRemoteStream(_pcRemoteStream);
+            }
+            /* Les pistes suivantes (ex : vidéo après audio) sont ajoutées à
+               _pcRemoteStream qui est DÉJÀ le srcObject → le <video> se met
+               à jour tout seul, pas besoin d'appeler onRemoteStream de nouveau. */
         };
         _peerConn.oniceconnectionstatechange = function(){
             var state = _peerConn && _peerConn.iceConnectionState;
@@ -3257,27 +3275,25 @@ window._CT = {
                 if(lop){ lop.srcObject = stream; lop.style.display = 'block'; }
             }
             _buildPeer(function(remoteStream){
-                /* CALLER : ontrack arrive avant _activateCallUI → activer l'UI d'abord */
+                /* CALLER : ontrack arrive AVANT _activateCallUI → activer l'UI d'abord */
                 if(_callState !== 'active'){
                     _callState = 'active';
-                    _activateCallUI(); /* affiche call-active-overlay EN PREMIER */
+                    _activateCallUI();
                 }
+                /* onRemoteStream n'est appelé qu'UNE SEULE FOIS (1ère piste).
+                   Les pistes suivantes sont ajoutées à remoteStream automatiquement. */
                 var rv = _callEl('call-remote-video');
-                /* Guard : !srcObject OU srcObject vide (set par _preUnlockMedia).
-                   getTracks().length === 0 → stream vide du pre-unlock → remplacer. */
-                if(rv && (!rv.srcObject || rv.srcObject.getTracks().length === 0)){
-                    /* Sécurité : forcer l'overlay visible si ontrack trop rapide */
+                if(rv){
                     var _ao = document.getElementById('call-active-overlay');
                     if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
                     rv.srcObject = remoteStream;
                     rv.style.display = 'block';
-                    /* L'élément est déjà activé par _preUnlockMedia → essayer unmuted d'abord */
                     rv.muted = false;
                     rv.play().catch(function(e){
-                        console.warn('[CALL] unmuted play blocked, fallback muted:', e);
+                        console.warn('[CALL] caller play (unmuted) blocked:', e);
                         rv.muted = true;
                         rv.play().then(function(){ rv.muted = false; })
-                                 .catch(function(e2){ console.error('[CALL] play failed:', e2); });
+                                 .catch(function(e2){ console.error('[CALL] caller play failed:', e2); });
                     });
                 }
                 var lv = _callEl('call-local-video');
