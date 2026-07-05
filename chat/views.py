@@ -323,6 +323,60 @@ def send_story_reply(request):
 
 
 @login_required(login_url="login")
+def get_ice_servers(request):
+    """
+    Retourne les serveurs ICE (STUN + TURN) pour WebRTC.
+    Si METERED_API_KEY + METERED_APP_ID sont définis en variable d'env,
+    retourne des credentials temporaires Metered.ca (TURN mondial fiable, 50 GB/mois gratuit).
+    Sinon, fallback vers l'open relay communautaire (moins fiable sur mobile 4G/CGNAT).
+
+    Pour activer Metered.ca gratuit :
+    1. Créer un compte sur https://app.metered.ca
+    2. Créer une app, récupérer l'App ID et l'API Key
+    3. Sur Railway : ajouter METERED_API_KEY=<clé> et METERED_APP_ID=<id_app>
+    """
+    import requests as _r
+
+    stun_urls = [
+        "stun:stun.l.google.com:19302",
+        "stun:stun1.l.google.com:19302",
+        "stun:stun.cloudflare.com:3478",
+        "stun:stun.relay.metered.ca:80",
+    ]
+    servers = [{"urls": stun_urls}]
+
+    api_key = os.environ.get('METERED_API_KEY', '')
+    app_id  = os.environ.get('METERED_APP_ID', '')
+
+    if api_key and app_id:
+        try:
+            resp = _r.get(
+                f"https://{app_id}.metered.ca/api/v1/turn/credentials",
+                params={"apiKey": api_key},
+                timeout=3
+            )
+            if resp.ok:
+                turn_list = resp.json()
+                if isinstance(turn_list, list) and turn_list:
+                    servers.extend(turn_list)
+                    return JsonResponse({"iceServers": servers, "source": "metered"})
+        except Exception:
+            pass  # fall through to open relay
+
+    # Fallback : open relay communautaire (gratuit, moins fiable sur mobile CGNAT)
+    servers.append({
+        "urls": [
+            "turn:openrelay.metered.ca:80",
+            "turn:openrelay.metered.ca:443",
+            "turns:openrelay.metered.ca:443?transport=tcp"
+        ],
+        "username": "openrelayproject",
+        "credential": "openrelayproject"
+    })
+    return JsonResponse({"iceServers": servers, "source": "openrelay"})
+
+
+@login_required(login_url="login")
 def call_reject_push(request):
     """
     Appelé par le Service Worker quand l'utilisateur clique "Refuser" sur

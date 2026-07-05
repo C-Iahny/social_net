@@ -7,7 +7,7 @@
 /* ── Version ─────────────────────────────────────────────────────────────────
    Incrémenter SW_VERSION pour forcer la mise à jour chez tous les clients.
    ─────────────────────────────────────────────────────────────────────────── */
-const SW_VERSION  = 'vazimba-v11';
+const SW_VERSION  = 'vazimba-v12';
 const STATIC_CACHE = SW_VERSION + '-static';
 const PAGES_CACHE  = SW_VERSION + '-pages';
 const IMG_CACHE    = SW_VERSION + '-images';
