@@ -1,0 +1,20 @@
+node_modules/
+www/
+
+# Fichiers de signing — NE JAMAIS committer (contiennent des secrets)
+android/keystore.properties
+android/*.jks
+android/*.keystore
+*.jks
+*.keystore
+
+# Build outputs
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+
+# iOS (généré par npx cap add ios)
+ios/App/Pods/
+ios/App/App.xcworkspace/xcuserdata/
+ios/.xcode.env.local

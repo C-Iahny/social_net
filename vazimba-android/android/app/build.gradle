@@ -1,5 +1,15 @@
 apply plugin: 'com.android.application'
 
+// ── Signing (Play Store release) ──────────────────────────────────────────────
+// Créer android/keystore.properties (voir keystore.properties.template)
+// et générer le keystore avec : keytool -genkey -v -keystore vazimba-release.jks
+//   -alias vazimba -keyalg RSA -keysize 2048 -validity 10000
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "mg.vazimba.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,19 +17,35 @@ android {
         applicationId "mg.vazimba.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 2        // ← incrémenter à chaque upload Play Store
+        versionName "1.1"    // ← version affichée aux utilisateurs
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
-             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
-             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
-    buildTypes {
+
+    // ── Clé de signature release ───────────────────────────────────────────
+    signingConfigs {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (keystorePropertiesFile.exists()) {
+                keyAlias     keystoreProperties['keyAlias']
+                keyPassword  keystoreProperties['keyPassword']
+                storeFile    file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            // Débogage activé seulement en dev
+        }
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled true          // active R8 (code shrinking)
+            shrinkResources true        // supprime les ressources inutilisées
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }
