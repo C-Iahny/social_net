@@ -14,7 +14,7 @@ android {
     namespace = "mg.vazimba.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "mg.vazimba.app"
+        applicationId "com.vazimba.io"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 2        // ← incrémenter à chaque upload Play Store
