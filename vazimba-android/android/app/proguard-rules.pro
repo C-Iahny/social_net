@@ -1,21 +1,43 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# ══════════════════════════════════════════════════════════════════════════════
+#  ProGuard / R8 rules — Vazimba (Capacitor WebView app)
+# ══════════════════════════════════════════════════════════════════════════════
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# ── Capacitor Bridge ─────────────────────────────────────────────────────────
+-keep class com.getcapacitor.** { *; }
+-keepclassmembers class com.getcapacitor.** { *; }
+-keep @com.getcapacitor.annotation.CapacitorPlugin class * { *; }
+-keepclassmembers class * extends com.getcapacitor.Plugin { *; }
+-keep class com.getcapacitor.plugin.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# ── MainActivity ─────────────────────────────────────────────────────────────
+-keep class mg.vazimba.app.** { *; }
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# ── Interface JavaScript ↔ WebView ───────────────────────────────────────────
+-keepattributes JavascriptInterface
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# ── Cordova / Capacitor plugins ──────────────────────────────────────────────
+-keep class org.apache.cordova.** { *; }
+-keepclassmembers class org.apache.cordova.** { *; }
+
+# ── Annotations & signatures ─────────────────────────────────────────────────
+-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes EnclosingMethod
+-keepattributes SourceFile,LineNumberTable
+
+# ── Kotlin ───────────────────────────────────────────────────────────────────
+-dontwarn kotlin.**
+-keep class kotlin.** { *; }
+-keep class kotlin.Metadata { *; }
+
+# ── AndroidX ─────────────────────────────────────────────────────────────────
+-keep class androidx.** { *; }
+-keep interface androidx.** { *; }
+-dontwarn androidx.**
+
+# ── Warnings inutiles ────────────────────────────────────────────────────────
+-dontwarn com.google.android.gms.**
+-dontwarn com.google.firebase.**
