@@ -5,16 +5,28 @@
   "server": {
     "url": "https://socialnet-production-06b9.up.railway.app",
     "cleartext": false,
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "iosScheme": "https",
+    "allowNavigation": [
+      "socialnet-production-06b9.up.railway.app"
+    ]
   },
   "android": {
     "allowMixedContent": false,
     "captureInput": true,
-    "webContentsDebuggingEnabled": true
+    "webContentsDebuggingEnabled": false,
+    "backgroundColor": "#1a1a2e",
+    "overrideUserAgent": "VazimbaApp/1.1 Android"
+  },
+  "ios": {
+    "contentInset": "automatic",
+    "backgroundColor": "#1a1a2e",
+    "overrideUserAgent": "VazimbaApp/1.1 iOS"
   },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 1500,
+      "launchAutoHide": true,
       "backgroundColor": "#1a1a2e",
       "showSpinner": false,
       "androidSplashResourceName": "splash",
