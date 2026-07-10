@@ -1662,6 +1662,23 @@
             this.style.height = Math.min(this.scrollHeight, 100) + 'px';
         });
     }
+    // ── Pré-remplissage depuis une fiche Bazar ────────────────────
+    {% if bazar_annonce %}
+    if(ta && ta.value.trim() === ''){
+        ta.value = "{% trans 'Bonjour, je suis intéressé(e) par votre annonce : ' %}{{ bazar_annonce.title }}";
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
+        /* Afficher le bouton Envoyer */
+        var sbtn = document.getElementById('id_chat_message_submit');
+        if(sbtn) sbtn.style.display = 'flex';
+        /* Focus + curseur à la fin */
+        setTimeout(function(){
+            ta.focus();
+            ta.selectionStart = ta.selectionEnd = ta.value.length;
+        }, 400);
+    }
+    {% endif %}
+
     // Mobile sidebar toggle
     var toggleBtn = document.getElementById('sidebar-toggle-btn');
     var sidebar   = document.getElementById('chat-sidebar');

@@ -4,7 +4,7 @@ builder = "nixpacks"
 
 [deploy]
 # Collectstatic + migrations + démarrage du serveur ASGI (WebSockets supportés)
-startCommand = "python compile_messages.py && mkdir -p media_cdn/temp media_cdn/profile_images media_cdn/post_images media_cdn/header_images media_cdn/files media_cdn/videos && python manage.py collectstatic --noinput && python manage.py migrate --noinput && python manage.py ensure_admin && daphne -b 0.0.0.0 -p $PORT ZOOT.routing:application"
+startCommand = "python compile_messages.py && mkdir -p media_cdn/temp media_cdn/profile_images media_cdn/post_images media_cdn/header_images media_cdn/files media_cdn/videos && python manage.py collectstatic --noinput && python manage.py migrate --noinput && python manage.py ensure_admin && python manage.py run_scheduler & daphne -b 0.0.0.0 -p $PORT ZOOT.routing:application"
 healthcheckPath = "/"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
