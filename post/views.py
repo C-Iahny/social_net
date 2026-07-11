@@ -459,10 +459,12 @@ class AddPostView(CreateView):
         else:
             form.instance.status = Post.STATUS_PUBLISHED
 
-        response = super().form_valid(form)
+        # Sauvegarder le post (sans passer par super().form_valid pour éviter
+        # les problèmes de redirect via reverse_lazy)
+        self.object = form.save()
         post = self.object
 
-        # ── Enregistrer les fichiers média sur R2 ────────────────────────
+        # ── Enregistrer les fichiers média ───────────────────────────────
         _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
         files = self.request.FILES.getlist('media_files')
         _logger.info("AddPostView: %d fichier(s) reçu(s) post #%s", len(files), post.pk)
@@ -483,35 +485,41 @@ class AddPostView(CreateView):
 
         # Notifier les amis seulement si le post est publié immédiatement
         if post.status == Post.STATUS_PUBLISHED:
-            author = self.request.user
             try:
-                friend_list = FriendList.objects.get(user=author)
-                friends = friend_list.friends.all()
-            except FriendList.DoesNotExist:
-                friends = []
-            try:
+                author = self.request.user
+                try:
+                    friend_list = FriendList.objects.get(user=author)
+                    friends = list(friend_list.friends.all())
+                except Exception:
+                    friends = []
                 channel_layer = get_channel_layer()
-                if channel_layer:
+                if channel_layer and friends:
                     for friend in friends:
-                        async_to_sync(channel_layer.group_send)(
-                            f"user_{friend.id}",
-                            {
-                                "type": "new_post_notification",
-                                "from_username": author.username,
-                                "from_image":    author.profile_image.url,
-                                "post_title":    post.title,
-                                "post_id":       post.id,
-                            }
-                        )
+                        try:
+                            async_to_sync(channel_layer.group_send)(
+                                f"user_{friend.id}",
+                                {
+                                    "type": "new_post_notification",
+                                    "from_username": author.username,
+                                    "from_image":    author.profile_image.url,
+                                    "post_title":    post.title,
+                                    "post_id":       post.id,
+                                }
+                            )
+                        except Exception:
+                            pass
             except Exception:
                 pass
 
-        return response
+        # Redirection explicite — évite tout problème de résolution d'URL lazy
+        if post.status in (Post.STATUS_DRAFT, Post.STATUS_SCHEDULED):
+            return redirect('post:mes-brouillons')
+        return redirect('post:post-view')
 
-    def get_success_url(self):
-        if self.object and self.object.status in (Post.STATUS_DRAFT, Post.STATUS_SCHEDULED):
-            return reverse_lazy("post:mes-brouillons")
-        return reverse_lazy("post:post-view")
+    def form_invalid(self, form):
+        """Affiche les erreurs de formulaire de façon lisible."""
+        _logger.warning("AddPostView form_invalid: %s", form.errors)
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 # ──────────────────────────────────────────────

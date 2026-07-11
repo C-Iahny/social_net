@@ -190,7 +190,7 @@
         </div>
 
         <!-- Form -->
-        <form id="add-post-form" method="POST" enctype="multipart/form-data">
+        <form id="add-post-form" method="POST" action="{% url 'post:addPost' %}" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="post-form-body">
@@ -415,15 +415,29 @@ function _renderPreview() {
         if (bodyEl) fd.append('body', bodyEl.value);
         var fileEl = form.querySelector('[name=file]');
         if (fileEl && fileEl.files && fileEl.files[0]) fd.append('file', fileEl.files[0]);
+        /* Inclure les champs cachés action + scheduled_at */
+        var actionEl = form.querySelector('[name=action]');
+        if (actionEl) fd.append('action', actionEl.value);
+        var schedEl = form.querySelector('[name=scheduled_at]');
+        if (schedEl && schedEl.value) fd.append('scheduled_at', schedEl.value);
         _pending.forEach(function(f) { fd.append('media_files', f); });
 
         var btn = form.querySelector('.btn-submit');
         if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
 
-        fetch(form.action || window.location.pathname, {
+        fetch(form.action, {
             method: 'POST', body: fd, credentials: 'same-origin'
         }).then(function(r) {
-            window.location.href = r.url;
+            /* r.url = URL finale après suivi des redirections */
+            if (r.url && r.url !== window.location.href) {
+                window.location.href = r.url;
+            } else if (r.ok) {
+                window.location.href = '{% url "post:post-view" %}';
+            } else {
+                /* Erreur serveur — rétablir le bouton et soumettre en natif */
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                form.submit();
+            }
         }).catch(function() {
             if (btn) { btn.disabled = false; btn.style.opacity = ''; }
             form.submit();
