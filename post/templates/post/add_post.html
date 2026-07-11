@@ -426,19 +426,33 @@ function _renderPreview() {
         if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
 
         fetch(form.action, {
-            method: 'POST', body: fd, credentials: 'same-origin'
+            method: 'POST',
+            body: fd,
+            credentials: 'same-origin',
+            /* X-Requested-With permet au view Django de retourner du JSON
+               plutôt qu'un redirect HTTP — plus fiable que suivre les redirects */
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
         }).then(function(r) {
-            /* r.url = URL finale après suivi des redirections */
-            if (r.url && r.url !== window.location.href) {
-                window.location.href = r.url;
-            } else if (r.ok) {
-                window.location.href = '{% url "post:post-view" %}';
+            if (r.ok) {
+                /* Le view retourne {"ok": true, "redirect": "/feed/"} */
+                return r.json().catch(function() { return null; }).then(function(data) {
+                    if (data && data.ok && data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        /* 200 HTML = form_invalid (erreurs de validation) */
+                        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                        form.submit(); /* soumettre en natif pour afficher les erreurs */
+                    }
+                });
             } else {
-                /* Erreur serveur — rétablir le bouton et soumettre en natif */
+                /* 4xx / 5xx — soumettre en natif pour afficher l'erreur Django */
+                console.error('[Vazimba] addPost HTTP', r.status, r.url);
                 if (btn) { btn.disabled = false; btn.style.opacity = ''; }
                 form.submit();
             }
-        }).catch(function() {
+        }).catch(function(err) {
+            /* Erreur réseau (offline, etc.) */
+            console.warn('[Vazimba] addPost network error', err);
             if (btn) { btn.disabled = false; btn.style.opacity = ''; }
             form.submit();
         });

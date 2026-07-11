@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.views.generic import DeleteView, UpdateView, CreateView
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.utils.decorators import method_decorator
 from django.template.loader import render_to_string
 from channels.layers import get_channel_layer
@@ -513,8 +513,16 @@ class AddPostView(CreateView):
 
         # Redirection explicite — évite tout problème de résolution d'URL lazy
         if post.status in (Post.STATUS_DRAFT, Post.STATUS_SCHEDULED):
-            return redirect('post:mes-brouillons')
-        return redirect('post:post-view')
+            redirect_url = reverse('post:mes-brouillons')
+        else:
+            redirect_url = reverse('post:post-view')
+
+        # Pour les requêtes fetch/AJAX (X-Requested-With: XMLHttpRequest),
+        # retourner du JSON plutôt qu'un redirect HTTP — élimine tout problème
+        # de suivi de redirection dans le JS (l'URL est donnée explicitement)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'ok': True, 'redirect': redirect_url})
+        return redirect(redirect_url)
 
     def form_invalid(self, form):
         """Affiche les erreurs de formulaire de façon lisible."""
