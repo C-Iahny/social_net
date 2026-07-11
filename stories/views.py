@@ -521,4 +521,49 @@ def story_react(request, story_id):
         StoryReaction.objects.create(story=story, user=request.user, emoji=emoji)
 
     count = StoryReaction.objects.filter(story=story).count()
+
+    # Notifier l'auteur de la story (sauf si c'est lui qui réagit)
+    if emoji and story.user != request.user:
+        try:
+            from notification.models import PushSubscription, Notification
+            from channels.layers import get_channel_layer
+            from asgiref.sync import async_to_sync
+            from django.contrib.humanize.templatetags.humanize import naturaltime
+            from django.urls import reverse
+
+            stories_url = request.build_absolute_uri(reverse('stories:list'))
+            PushSubscription.send_notification(
+                user=story.user,
+                title='VAZIMBA — Story',
+                body=f"{request.user.username} a réagi {emoji} à votre story",
+                url=stories_url,
+            )
+            notif = Notification.objects.create(
+                target=story.user,
+                from_user=request.user,
+                redirect_url=stories_url,
+                verb=f"{request.user.username} a réagi {emoji} à votre story",
+                read=False,
+            )
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{story.user.id}",
+                    {
+                        "type": "post_action_notification",
+                        "notification": {
+                            "notification_type": "Post",
+                            "notification_id": str(notif.pk),
+                            "verb": notif.verb,
+                            "natural_timestamp": str(naturaltime(notif.timestamp)),
+                            "timestamp": str(notif.timestamp),
+                            "is_read": "False",
+                            "actions": {"redirect_url": stories_url},
+                            "from": {"image_url": request.user.profile_image.url},
+                        }
+                    }
+                )
+        except Exception:
+            pass
+
     return JsonResponse({'ok': True, 'emoji': emoji, 'count': count})

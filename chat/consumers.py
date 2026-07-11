@@ -8,7 +8,7 @@ import json
 import asyncio
 
 from chat.models import RoomChatMessage, PrivateChatRoom, UnreadChatRoomMessages
-from friend.models import FriendList
+# from friend.models import FriendList  # plus nécessaire — messagerie ouverte à tous
 from account.utils import LazyAccountEncoder
 from chat.utils import calculate_timestamp, LazyRoomChatMessageEncoder
 from chat.exceptions import ClientError
@@ -620,11 +620,7 @@ def get_room_or_error(room_id, user):
 	if user != room.user1 and user != room.user2:
 		raise ClientError("ROOM_ACCESS_DENIED", "You do not have permission to join this room.")
 
-	# Are the users in this room friends?
-	friend_list = FriendList.objects.get(user=user).friends.all()
-	if not room.user1 in friend_list:
-		if not room.user2 in friend_list:
-			raise ClientError("ROOM_ACCESS_DENIED", "You must be friends to chat.")
+	# La messagerie est ouverte à tous les utilisateurs connectés (pas besoin d'être amis)
 	return room
 
 

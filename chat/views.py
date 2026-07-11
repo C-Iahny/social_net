@@ -290,8 +290,11 @@ def send_story_reply(request):
         room = PrivateChatRoom.objects.create(
             user1=request.user,
             user2=author,
-            is_active=False,
+            is_active=True,   # visible dans la sidebar des deux côtés
         )
+    elif not room.is_active:
+        room.is_active = True
+        room.save(update_fields=['is_active'])
 
     # Créer le message
     msg = RoomChatMessage.objects.create(
@@ -311,6 +314,53 @@ def send_story_reply(request):
         unread.save(update_fields=['count', 'most_recent_message', 'reset_timestamp'])
     except Exception:
         pass  # non-bloquant
+
+    # Notification push + WebSocket au destinataire
+    try:
+        from notification.models import PushSubscription, Notification
+        from django.contrib.contenttypes.models import ContentType
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        from django.contrib.humanize.templatetags.humanize import naturaltime
+        from django.urls import reverse
+
+        chat_url = request.build_absolute_uri(
+            reverse('chat:private-chat-room') + f'?room_id={room.id}'
+        )
+        PushSubscription.send_notification(
+            user=author,
+            title='VAZIMBA — Story',
+            body=f"{request.user.username} a répondu à votre story : {message[:60]}",
+            url=chat_url,
+        )
+        notif = Notification.objects.create(
+            target=author,
+            from_user=request.user,
+            redirect_url=chat_url,
+            verb=f"{request.user.username} a répondu à votre story",
+            read=False,
+        )
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            from django.contrib.humanize.templatetags.humanize import naturaltime
+            async_to_sync(channel_layer.group_send)(
+                f"user_{author.id}",
+                {
+                    "type": "post_action_notification",
+                    "notification": {
+                        "notification_type": "Post",
+                        "notification_id": str(notif.pk),
+                        "verb": notif.verb,
+                        "natural_timestamp": str(naturaltime(notif.timestamp)),
+                        "timestamp": str(notif.timestamp),
+                        "is_read": "False",
+                        "actions": {"redirect_url": chat_url},
+                        "from": {"image_url": request.user.profile_image.url},
+                    }
+                }
+            )
+    except Exception:
+        pass
 
     return JsonResponse({'ok': True, 'chatroom_id': room.id, 'msg_id': msg.id})
 
