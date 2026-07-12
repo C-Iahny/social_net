@@ -7,16 +7,18 @@
 /* ── Version ─────────────────────────────────────────────────────────────────
    Incrémenter SW_VERSION pour forcer la mise à jour chez tous les clients.
    ─────────────────────────────────────────────────────────────────────────── */
-const SW_VERSION  = 'vazimba-v12';
+const SW_VERSION  = 'vazimba-v13';
 const STATIC_CACHE = SW_VERSION + '-static';
 const PAGES_CACHE  = SW_VERSION + '-pages';
 const IMG_CACHE    = SW_VERSION + '-images';
 const OFFLINE_URL  = '/offline/';
 
-/* ── Ressources précachées au démarrage (App Shell) ─────────────────────────*/
+/* ── Ressources précachées au démarrage (App Shell) ─────────────────────────
+   Note: les logos sont exclus du precache — ils sont servis à la demande via
+   cacheFirst, ce qui évite tout échec d'installation du SW si les URLs hashées
+   changent entre deux déploiements Railway.
+   ─────────────────────────────────────────────────────────────────────────── */
 const PRECACHE_STATIC = [
-    '{% static "logo/vazimba_v2_icon.png" %}',
-    '{% static "logo/vazimba_icon.png" %}',
     '{% static "perso/bootstrap/css/bootstrap.min.css" %}',
 ];
 
