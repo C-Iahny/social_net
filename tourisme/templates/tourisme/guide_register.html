@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block extra_head %}
+<style>
+/* ============================================================
+   TOURISME — INSCRIPTION / MODIFICATION GUIDE
+   ============================================================ */
+.guide-reg-wrap {
+    max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem 4rem;
+}
+
+/* ── Hero ── */
+.guide-reg-hero {
+    background: linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%);
+    border-radius: 18px; color: #fff;
+    padding: 2rem 1.5rem 1.8rem; margin-bottom: 1.8rem;
+    text-align: center;
+}
+[data-theme="dark"] .guide-reg-hero {
+    background: linear-gradient(135deg, #061525 0%, #0d2d4a 100%);
+}
+.guide-reg-hero h1 {
+    font-size: 1.6rem; font-weight: 800;
+    letter-spacing: -.03em; margin: 0 0 .35rem;
+}
+.guide-reg-hero p { font-size: .9rem; opacity: .8; margin: 0; }
+
+/* ── Messages ── */
+.alert-success {
+    background: #e8f5e9; border-left: 4px solid #2e7d32;
+    border-radius: 0 10px 10px 0; padding: .9rem 1.1rem;
+    font-size: .9rem; color: #1b5e20; margin-bottom: 1.2rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+[data-theme="dark"] .alert-success {
+    background: #0a2e0f; color: #81c784; border-left-color: #388e3c;
+}
+
+/* ── Sections de formulaire ── */
+.form-section {
+    background: var(--bg-card); border-radius: 14px;
+    border: 1px solid var(--border); padding: 1.4rem 1.5rem;
+    margin-bottom: 1.2rem; box-shadow: var(--shadow);
+}
+.form-section-title {
+    font-size: .95rem; font-weight: 800; color: var(--text);
+    margin: 0 0 1.1rem; display: flex; align-items: center; gap: .4rem;
+    letter-spacing: -.01em; padding-bottom: .7rem;
+    border-bottom: 1px solid var(--border);
+}
+.form-section-title .material-icons { color: var(--accent); font-size: 1.1rem; }
+
+/* ── Champs ── */
+.form-group { margin-bottom: 1rem; }
+.form-group:last-child { margin-bottom: 0; }
+.form-label {
+    display: block; font-size: .8rem; font-weight: 700;
+    color: var(--text-muted); margin-bottom: .35rem;
+    text-transform: uppercase; letter-spacing: .05em;
+}
+.form-label .req { color: var(--accent); }
+.form-label .hint {
+    font-size: .72rem; font-weight: 400; color: var(--text-subtle);
+    text-transform: none; letter-spacing: 0; display: block; margin-top: .1rem;
+}
+.form-control {
+    width: 100%; background: var(--input-bg); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: .6rem .9rem; font-size: .92rem;
+    color: var(--text); outline: none; transition: border-color .15s;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+.form-control:focus { border-color: var(--accent); }
+.form-control::placeholder { color: var(--text-subtle); }
+textarea.form-control { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+.form-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: .9rem;
+}
+
+/* ── Photo upload ── */
+.photo-upload-wrap {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+.photo-preview {
+    width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; border: 2px solid var(--border);
+}
+.photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.photo-preview .material-icons { font-size: 2rem; color: rgba(255,255,255,.5); }
+.photo-input-btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 50px; padding: .5rem 1.2rem;
+    font-size: .85rem; font-weight: 600; color: var(--text);
+    cursor: pointer; transition: all .15s;
+}
+.photo-input-btn:hover { border-color: var(--accent); color: var(--accent); }
+.photo-input-btn .material-icons { font-size: 1rem; }
+#id_photo { display: none; }
+
+/* ── Submit ── */
+.guide-reg-submit {
+    display: flex; align-items: center; justify-content: center; gap: .6rem;
+    width: 100%; padding: .9rem 2rem; font-size: 1rem; font-weight: 800;
+    border: none; border-radius: 50px; cursor: pointer;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; letter-spacing: -.01em;
+    transition: opacity .18s, transform .18s; margin-top: .4rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,.2);
+}
+.guide-reg-submit:hover { opacity: .9; transform: translateY(-2px); }
+.guide-reg-submit .material-icons { font-size: 1.2rem; }
+
+@media (max-width: 575px) {
+    .form-row { grid-template-columns: 1fr; }
+    .guide-reg-hero { border-radius: 12px; padding: 1.5rem 1rem; }
+    .guide-reg-hero h1 { font-size: 1.3rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+<div class="guide-reg-wrap">
+
+    <!-- Hero -->
+    <div class="guide-reg-hero">
+        <span class="material-icons" style="font-size:2.5rem;margin-bottom:.5rem;display:block;">explore</span>
+        <h1>{% if guide %}Modifier mon profil guide{% else %}Devenir guide touristique{% endif %}</h1>
+        <p>
+            {% if guide %}
+                Mettez à jour vos informations pour être trouvé par davantage de voyageurs.
+            {% else %}
+                Partagez votre expertise de Madagascar avec des voyageurs du monde entier.
+            {% endif %}
+        </p>
+    </div>
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert-success">
+        <span class="material-icons">check_circle</span>
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- ── 1. Photo de profil ── -->
+        <div class="form-section">
+            <div class="form-section-title">
+                <span class="material-icons">photo_camera</span>
+                Photo de profil
+            </div>
+            <div class="photo-upload-wrap">
+                <div class="photo-preview" id="photoPreview">
+                    {% if guide and guide.photo %}
+                        <img src="{{ guide.photo.url }}" alt="Photo actuelle" id="photoImg">
+                    {% else %}
+                        <span class="material-icons" id="photoIcon">person</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_photo" class="photo-input-btn">
+                        <span class="material-icons">upload</span>
+                        Choisir une photo
+                    </label>
+                    <input type="file" name="photo" id="id_photo" accept="image/*">
+                    <div style="font-size:.75rem;color:var(--text-subtle);margin-top:.3rem;">
+                        JPG, PNG ou WebP — max 10 Mo
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 2. Présentation ── -->
+        <div class="form-section">
+            <div class="form-section-title">
+                <span class="material-icons">person</span>
+                Présentation
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    Bio / Présentation <span class="req">*</span>
+                    <span class="hint">Décrivez votre expérience, vos points forts, pourquoi vous choisir.</span>
+                </label>
+                <textarea name="bio" class="form-control" rows="5"
+                          placeholder="Ex: Guide professionnel depuis 10 ans, spécialisé dans les treks dans le Parc National de l'Isalo et les circuits côtiers du sud…" required>{{ guide.bio|default:'' }}</textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">
+                        Années d'expérience
+                        <span class="hint">Nombre d'années en tant que guide</span>
+                    </label>
+                    <input type="number" name="years_experience" class="form-control"
+                           min="0" max="60" value="{{ guide.years_experience|default:0 }}" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">
+                        Taille max du groupe
+                        <span class="hint">Nombre max de voyageurs</span>
+                    </label>
+                    <input type="number" name="max_group_size" class="form-control"
+                           min="1" max="100" value="{{ guide.max_group_size|default:10 }}" placeholder="10">
+                </div>
+            </div>
+        </div>
+
+        <!-- ── 3. Langues & Contact ── -->
+        <div class="form-section">
+            <div class="form-section-title">
+                <span class="material-icons">translate</span>
+                Langues &amp; Contact
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    Langues parlées
+                    <span class="hint">Séparez par des virgules. Ex: Malagasy, Français, Anglais</span>
+                </label>
+                <input type="text" name="languages" class="form-control"
+                       placeholder="Malagasy, Français, Anglais"
+                       value="{{ guide.languages|default:'' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    Téléphone / WhatsApp
+                    <span class="hint">Format international recommandé. Ex: +261 32 00 000 00</span>
+                </label>
+                <input type="tel" name="phone" class="form-control"
+                       placeholder="+261 32 00 000 00"
+                       value="{{ guide.phone|default:'' }}">
+            </div>
+        </div>
+
+        <!-- ── 4. Régions ── -->
+        <div class="form-section">
+            <div class="form-section-title">
+                <span class="material-icons">map</span>
+                Régions couvertes
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    Régions où vous guidez
+                    <span class="hint">Listez les régions, noms de parcs, zones géographiques que vous couvrez.</span>
+                </label>
+                <textarea name="regions_covered" class="form-control" rows="3"
+                          placeholder="Ex: Parc National de l'Isalo (région Ihorombe), Tuléar et côte sud-ouest, Diego-Suarez (Diana)…">{{ guide.regions_covered|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <!-- ── 5. Transport ── -->
+        <div class="form-section">
+            <div class="form-section-title">
+                <span class="material-icons">directions_car</span>
+                Moyens de déplacement
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    Transports disponibles
+                    <span class="hint">Séparez par des virgules. Ex: Voiture, 4×4, Pirogue</span>
+                </label>
+                <input type="text" name="transport_modes" class="form-control"
+                       placeholder="Voiture, 4×4, Pirogue, À pied"
+                       value="{{ guide.transport_modes|default:'' }}">
+            </div>
+        </div>
+
+        <!-- ── 6. Spécialités ── -->
+        <div class="form-section">
+            <div class="form-section-title">
+                <span class="material-icons">star</span>
+                Spécialités
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    Types de circuits &amp; spécialités
+                    <span class="hint">Ex: Observation des lémuriens, Randonnée, Circuit culturel, Plongée</span>
+                </label>
+                <input type="text" name="specialities" class="form-control"
+                       placeholder="Faune endémique, Randonnée, Culturel, Plage"
+                       value="{{ guide.specialities|default:'' }}">
+            </div>
+        </div>
+
+        <!-- ── 7. Conditions & Tarifs ── -->
+        <div class="form-section">
+            <div class="form-section-title">
+                <span class="material-icons">receipt_long</span>
+                Conditions &amp; Tarifs
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    Prix indicatif / jour (Ariary)
+                    <span class="hint">Tarif journalier approximatif. Laissez vide si variable.</span>
+                </label>
+                <input type="number" name="prix_jour" class="form-control"
+                       min="0" placeholder="100000"
+                       value="{{ guide.prix_jour|default:'' }}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    Conditions détaillées
+                    <span class="hint">Inclusions, exclusions, forfaits, conditions d'annulation…</span>
+                </label>
+                <textarea name="conditions" class="form-control" rows="4"
+                          placeholder="Ex: Prix incluant le carburant et le chauffeur. Hébergement non inclus. Demi-tarif pour les enfants de moins de 12 ans…">{{ guide.conditions|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <!-- ── Submit ── -->
+        <button type="submit" class="guide-reg-submit">
+            <span class="material-icons">save</span>
+            {% if guide %}Enregistrer les modifications{% else %}Soumettre mon profil{% endif %}
+        </button>
+
+        <p style="text-align:center;font-size:.8rem;color:var(--text-subtle);margin-top:.9rem;">
+            <span class="material-icons" style="font-size:.9rem;vertical-align:middle;">info</span>
+            Votre profil sera examiné par un administrateur avant d'être publié.
+        </p>
+    </form>
+
+</div>
+</main>
+
+<script>
+/* Prévisualisation photo */
+document.getElementById('id_photo').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+        var preview = document.getElementById('photoPreview');
+        preview.innerHTML = '<img src="' + ev.target.result + '" alt="Preview" style="width:100%;height:100%;object-fit:cover;">';
+    };
+    reader.readAsDataURL(file);
+});
+</script>
+{% endblock %}

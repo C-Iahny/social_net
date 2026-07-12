@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'group',
     'video',
     'bazar',
+    'tourisme',
     'pwa',
     'ckeditor',
     'crispy_forms',

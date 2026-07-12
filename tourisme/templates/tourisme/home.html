@@ -1,0 +1,600 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block extra_head %}
+<style>
+/* ============================================================
+   TOURISME MADAGASCAR — PAGE D'ACCUEIL
+   ============================================================ */
+
+/* ── Hero ── */
+.tour-hero {
+    background: linear-gradient(135deg, #0a4a2e 0%, #1a7a4a 50%, #0d6633 100%);
+    color: #fff;
+    padding: 4rem 1.5rem 3.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-top: -62px;
+    padding-top: calc(4rem + 62px);
+}
+[data-theme="dark"] .tour-hero {
+    background: linear-gradient(135deg, #041a0f 0%, #0a3d1f 50%, #072b16 100%);
+}
+.tour-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h2l-2 2V0zm0 4l4-4h2l-6 6V4zm0 4l8-8h2L40 10V8zm0 4L52 0h2L40 14v-2zm0 4L56 0h2L40 18v-2zm0 4L60 0h2L40 22v-2zm0 4L64 0h2L40 26v-2zm0 4L68 0h2L40 30v-2zm0 4L72 0h2L40 34v-2zm0 4L76 0h2L40 38v-2zm0 4L80 0v2L42 40h-2zm4 0L80 4v2L46 40h-2zm4 0L80 8v2L50 40h-2zm4 0L80 12v2L54 40h-2zm4 0L80 16v2L58 40h-2zm4 0L80 20v2L62 40h-2zm4 0L80 24v2L66 40h-2zm4 0L80 28v2L70 40h-2zm4 0L80 32v2L74 40h-2zm4 0L80 36v2L78 40h-2zm4 0L80 40v-2h-2v2h-2v-2h-2v2h-2v-2h-2v2h-2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+}
+.tour-hero-badge {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 50px;
+    padding: .3rem 1rem;
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+    position: relative;
+}
+.tour-hero-title {
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -.04em;
+    line-height: 1.1;
+    margin-bottom: .6rem;
+    position: relative;
+}
+.tour-hero-title span {
+    color: #a8e6c0;
+}
+.tour-hero-sub {
+    font-size: 1.05rem;
+    opacity: .85;
+    margin-bottom: 2rem;
+    position: relative;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.tour-hero-actions {
+    display: flex;
+    gap: .8rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+}
+.tour-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    background: #fff;
+    color: #0a4a2e;
+    font-weight: 700;
+    font-size: .95rem;
+    padding: .7rem 1.8rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
+    box-shadow: 0 4px 16px rgba(0,0,0,.25);
+}
+.tour-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0,0,0,.35);
+    text-decoration: none;
+    color: #0a4a2e;
+}
+.tour-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    background: rgba(255,255,255,.12);
+    border: 1.5px solid rgba(255,255,255,.5);
+    color: #fff;
+    font-weight: 600;
+    font-size: .95rem;
+    padding: .7rem 1.8rem;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: background .2s, transform .2s;
+}
+.tour-btn-outline:hover {
+    background: rgba(255,255,255,.22);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: #fff;
+}
+.tour-hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    margin-top: 2.5rem;
+    position: relative;
+}
+.tour-stat {
+    text-align: center;
+}
+.tour-stat-num {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #a8e6c0;
+    line-height: 1;
+}
+.tour-stat-label {
+    font-size: .72rem;
+    opacity: .7;
+    margin-top: .2rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* ── Section ── */
+.tour-section {
+    padding: 3rem 0 2rem;
+}
+.tour-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.tour-section-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -.02em;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.tour-section-title .material-icons {
+    color: var(--accent);
+    font-size: 1.5rem;
+}
+.tour-see-all {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: .88rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    transition: gap .15s;
+}
+.tour-see-all:hover {
+    gap: .4rem;
+    text-decoration: none;
+    color: var(--accent-dark);
+}
+
+/* ── Lieu Card ── */
+.lieu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.2rem;
+}
+.lieu-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: transform .22s, box-shadow .22s;
+    text-decoration: none;
+    display: block;
+    color: var(--text);
+}
+.lieu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    color: var(--text);
+}
+.lieu-card-img {
+    height: 180px;
+    background: linear-gradient(135deg, #1a7a4a, #0d6633);
+    position: relative;
+    overflow: hidden;
+}
+.lieu-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.lieu-card-img-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    opacity: .7;
+}
+.lieu-card-img-placeholder .material-icons {
+    font-size: 3rem;
+    color: rgba(255,255,255,.6);
+}
+.lieu-cat-badge {
+    position: absolute;
+    top: .7rem;
+    left: .7rem;
+    background: rgba(0,0,0,.55);
+    color: #fff;
+    border-radius: 50px;
+    padding: .25rem .75rem;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    backdrop-filter: blur(6px);
+}
+.lieu-card-body {
+    padding: 1rem 1.1rem .9rem;
+}
+.lieu-card-name {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 .3rem;
+    line-height: 1.3;
+    color: var(--text);
+}
+.lieu-card-region {
+    font-size: .78rem;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+}
+.lieu-card-region .material-icons {
+    font-size: .95rem;
+    color: var(--accent);
+}
+.lieu-card-desc {
+    font-size: .82rem;
+    color: var(--text-muted);
+    margin-top: .5rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* ── Guide Card ── */
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.2rem;
+}
+.guide-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 1.3rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform .22s, box-shadow .22s;
+    align-items: flex-start;
+}
+.guide-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    color: var(--text);
+}
+.guide-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.guide-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.guide-avatar-letter {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #fff;
+}
+.guide-info {
+    flex: 1;
+    min-width: 0;
+}
+.guide-name-row {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-wrap: wrap;
+    margin-bottom: .2rem;
+}
+.guide-name {
+    font-weight: 700;
+    font-size: .95rem;
+    color: var(--text);
+}
+.guide-verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-radius: 50px;
+    padding: .1rem .5rem;
+    font-size: .65rem;
+    font-weight: 700;
+}
+[data-theme="dark"] .guide-verified-badge {
+    background: #0a2e0f;
+    color: #81c784;
+}
+.guide-verified-badge .material-icons { font-size: .75rem; }
+.guide-spec {
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-bottom: .3rem;
+}
+.guide-langs {
+    font-size: .72rem;
+    color: var(--text-subtle);
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+}
+.guide-langs .material-icons { font-size: .85rem; }
+
+/* ── Categories strip ── */
+.cat-strip {
+    display: flex;
+    gap: .7rem;
+    overflow-x: auto;
+    padding: .3rem 0 1rem;
+    scrollbar-width: none;
+}
+.cat-strip::-webkit-scrollbar { display: none; }
+.cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: .5rem 1.2rem;
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all .18s;
+    flex-shrink: 0;
+}
+.cat-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+    text-decoration: none;
+}
+
+/* ── Responsive ── */
+@media (max-width: 575px) {
+    .tour-hero { padding: calc(3rem + 62px) 1rem 2.5rem; }
+    .tour-hero-stats { gap: 1.5rem; }
+    .tour-hero-title { font-size: 1.9rem; }
+    .lieu-grid { grid-template-columns: 1fr 1fr; }
+    .guide-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 380px) {
+    .lieu-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+
+<!-- ── Hero ── -->
+<section class="tour-hero">
+    <div class="tour-hero-badge">
+        <span class="material-icons" style="font-size:.8rem;vertical-align:middle">place</span>
+        Madagascar
+    </div>
+    <h1 class="tour-hero-title">
+        Découvrez<br><span>Madagascar</span>
+    </h1>
+    <p class="tour-hero-sub">
+        L'île rouge vous attend — baobabs, plages de corail, lémuriens et paysages à couper le souffle.
+    </p>
+    <div class="tour-hero-actions">
+        <a href="{% url 'tourisme:lieux_list' %}" class="tour-btn-primary">
+            <span class="material-icons" style="font-size:1.1rem">explore</span>
+            Lieux touristiques
+        </a>
+        <a href="{% url 'tourisme:guides_list' %}" class="tour-btn-outline">
+            <span class="material-icons" style="font-size:1.1rem">person</span>
+            Trouver un guide
+        </a>
+    </div>
+    <div class="tour-hero-stats">
+        <div class="tour-stat">
+            <div class="tour-stat-num">22</div>
+            <div class="tour-stat-label">Régions</div>
+        </div>
+        <div class="tour-stat">
+            <div class="tour-stat-num">5000+</div>
+            <div class="tour-stat-label">Espèces endémiques</div>
+        </div>
+        <div class="tour-stat">
+            <div class="tour-stat-num">5000 km</div>
+            <div class="tour-stat-label">De côtes</div>
+        </div>
+    </div>
+</section>
+
+<div class="container" style="max-width:1100px;padding:0 1rem;">
+
+    <!-- ── Catégories ── -->
+    <section class="tour-section" style="padding-bottom:0">
+        <h2 class="tour-section-title">
+            <span class="material-icons">category</span>
+            Explorer par catégorie
+        </h2>
+        <div class="cat-strip">
+            {% for cat_key, cat_label in categories %}
+            <a href="{% url 'tourisme:lieux_list' %}?cat={{ cat_key }}" class="cat-chip">
+                {% if cat_key == 'nature' %}<span class="material-icons" style="font-size:.9rem;color:#2e7d32">forest</span>
+                {% elif cat_key == 'plage' %}<span class="material-icons" style="font-size:.9rem;color:#0277bd">waves</span>
+                {% elif cat_key == 'histoire' %}<span class="material-icons" style="font-size:.9rem;color:#5d4037">museum</span>
+                {% elif cat_key == 'faune' %}<span class="material-icons" style="font-size:.9rem;color:#ef6c00">pets</span>
+                {% elif cat_key == 'montagne' %}<span class="material-icons" style="font-size:.9rem;color:#546e7a">landscape</span>
+                {% elif cat_key == 'circuit' %}<span class="material-icons" style="font-size:.9rem;color:#7b1fa2">route</span>
+                {% elif cat_key == 'ville' %}<span class="material-icons" style="font-size:.9rem;color:#c62828">location_city</span>
+                {% else %}<span class="material-icons" style="font-size:.9rem;color:#00838f">sports</span>
+                {% endif %}
+                {{ cat_label }}
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- ── Lieux en vedette ── -->
+    <section class="tour-section">
+        <div class="tour-section-header">
+            <h2 class="tour-section-title">
+                <span class="material-icons">star</span>
+                Lieux populaires
+            </h2>
+            <a href="{% url 'tourisme:lieux_list' %}" class="tour-see-all">
+                Voir tout <span class="material-icons" style="font-size:1rem">arrow_forward</span>
+            </a>
+        </div>
+
+        {% if lieux_vedette %}
+        <div class="lieu-grid">
+            {% for lieu in lieux_vedette %}
+            <a href="{% url 'tourisme:lieu_detail' lieu.slug %}" class="lieu-card">
+                <div class="lieu-card-img">
+                    {% with img=lieu.get_primary_image %}
+                    {% if img %}
+                        <img src="{{ img.image.url }}" alt="{{ lieu.name }}" loading="lazy">
+                    {% else %}
+                        <div class="lieu-card-img-placeholder">
+                            <span class="material-icons">landscape</span>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                    <span class="lieu-cat-badge">{{ lieu.get_category_display }}</span>
+                </div>
+                <div class="lieu-card-body">
+                    <div class="lieu-card-name">{{ lieu.name }}</div>
+                    {% if lieu.region %}
+                    <div class="lieu-card-region">
+                        <span class="material-icons">place</span>
+                        {{ lieu.get_region_display }}
+                    </div>
+                    {% endif %}
+                    <div class="lieu-card-desc">{{ lieu.description|truncatechars:100 }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:3rem 1rem;color:var(--text-muted);">
+            <span class="material-icons" style="font-size:3rem;opacity:.3;display:block;margin-bottom:.5rem">landscape</span>
+            Aucun lieu approuvé pour l'instant.
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- ── Guides vérifiés ── -->
+    <section class="tour-section">
+        <div class="tour-section-header">
+            <h2 class="tour-section-title">
+                <span class="material-icons">verified_user</span>
+                Guides vérifiés
+            </h2>
+            <a href="{% url 'tourisme:guides_list' %}?verified=1" class="tour-see-all">
+                Tous les guides <span class="material-icons" style="font-size:1rem">arrow_forward</span>
+            </a>
+        </div>
+
+        {% if guides %}
+        <div class="guide-grid">
+            {% for guide in guides %}
+            <a href="{% url 'tourisme:guide_profile' guide.pk %}" class="guide-card">
+                <div class="guide-avatar">
+                    {% if guide.photo %}
+                        <img src="{{ guide.photo.url }}" alt="{{ guide.display_name }}">
+                    {% elif guide.user.profile_image %}
+                        <img src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}">
+                    {% else %}
+                        <span class="guide-avatar-letter">{{ guide.display_name|first|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="guide-info">
+                    <div class="guide-name-row">
+                        <span class="guide-name">{{ guide.display_name }}</span>
+                        {% if guide.is_verified %}
+                        <span class="guide-verified-badge">
+                            <span class="material-icons">verified</span>
+                            Vérifié
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% if guide.specialities %}
+                    <div class="guide-spec">{{ guide.specialities|truncatechars:60 }}</div>
+                    {% endif %}
+                    {% if guide.languages %}
+                    <div class="guide-langs">
+                        <span class="material-icons">translate</span>
+                        {{ guide.languages|truncatechars:40 }}
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center;padding:3rem 1rem;color:var(--text-muted);">
+            <span class="material-icons" style="font-size:3rem;opacity:.3;display:block;margin-bottom:.5rem">person_search</span>
+            Aucun guide disponible pour l'instant.
+        </div>
+        {% endif %}
+
+        <!-- CTA Devenir guide -->
+        <div style="text-align:center;margin-top:2rem;padding:2rem;background:var(--bg-card);border-radius:16px;border:1px solid var(--border);">
+            <span class="material-icons" style="font-size:2.5rem;color:var(--accent);display:block;margin-bottom:.5rem">explore</span>
+            <div style="font-weight:700;font-size:1.05rem;color:var(--text);margin-bottom:.4rem">Vous connaissez Madagascar ?</div>
+            <div style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.2rem">Rejoignez notre réseau de guides touristiques et aidez les voyageurs à découvrir l'île.</div>
+            {% if user.is_authenticated %}
+            <a href="{% url 'tourisme:guide_register' %}" style="display:inline-flex;align-items:center;gap:.4rem;background:var(--accent);color:#fff;border-radius:50px;padding:.65rem 1.6rem;font-weight:700;font-size:.9rem;text-decoration:none;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                <span class="material-icons" style="font-size:1.1rem">add</span>
+                Devenir guide
+            </a>
+            {% else %}
+            <a href="{% url 'login' %}?next={% url 'tourisme:guide_register' %}" style="display:inline-flex;align-items:center;gap:.4rem;background:var(--accent);color:#fff;border-radius:50px;padding:.65rem 1.6rem;font-weight:700;font-size:.9rem;text-decoration:none;">
+                <span class="material-icons" style="font-size:1.1rem">login</span>
+                Se connecter pour s'inscrire
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+</div><!-- /container -->
+</main>
+{% endblock %}

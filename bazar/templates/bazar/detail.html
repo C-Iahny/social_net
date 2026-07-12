@@ -339,6 +339,21 @@
     #lightbox-prev { left: 6px; }
     #lightbox-next { right: 6px; }
 }
+
+/* ── Badge location ── */
+.bazar-location-badge {
+  display:inline-block; background: #2980b9; color:#fff;
+  font-size:.7rem; font-weight:700; padding:.15rem .5rem; border-radius:99px;
+  margin-left:.3rem;
+}
+
+/* ── Conditions de location ── */
+.location-details-card { background:var(--bg-secondary,#f8f4ef); border-radius:12px; padding:1.2rem 1.5rem; margin: 1rem 0; }
+.location-details-card h4 { font-size:1rem; font-weight:700; margin:0 0 .8rem; }
+.loc-grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap:.6rem; }
+.loc-item { background:var(--bg-card,#fff); border-radius:8px; padding:.5rem .75rem; }
+.loc-label { display:block; font-size:.7rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.loc-val { display:block; font-size:.9rem; font-weight:700; color:var(--text); }
 </style>
 
 <!-- Fil d'Ariane -->
@@ -426,13 +441,62 @@
             {% endif %}
 
             <!-- Titre + Prix -->
-            <h1 class="bazar-title">{{ annonce.title }}</h1>
+            <h1 class="bazar-title">{{ annonce.title }}{% if annonce.is_location %}<span class="bazar-location-badge" style="font-size:.85rem;padding:.3rem .8rem;">🔑 Location</span>{% endif %}</h1>
             <p class="bazar-price-big">
+                {% if annonce.is_location %}
+                {{ annonce.formatted_prix_location }}
+                {% else %}
                 {{ annonce.formatted_price }}
                 {% if annonce.price_negotiable and annonce.price %}
                 <small style="font-size:.85rem;font-weight:500;color:var(--text-muted);"> · {% trans "négociable" %}</small>
                 {% endif %}
+                {% endif %}
             </p>
+
+            {% if annonce.is_location %}
+            <div class="location-details-card">
+              <h4>📋 Conditions de location</h4>
+              <div class="loc-grid">
+                <div class="loc-item">
+                  <span class="loc-label">Prix</span>
+                  <span class="loc-val">{{ annonce.formatted_prix_location }}</span>
+                </div>
+                {% if annonce.caution %}
+                <div class="loc-item">
+                  <span class="loc-label">Caution</span>
+                  <span class="loc-val">{{ annonce.caution|floatformat:0 }} Ar</span>
+                </div>
+                {% endif %}
+                {% if annonce.duree_min %}
+                <div class="loc-item">
+                  <span class="loc-label">Durée min.</span>
+                  <span class="loc-val">{{ annonce.duree_min }} jour{{ annonce.duree_min|pluralize }}</span>
+                </div>
+                {% endif %}
+                {% if annonce.nb_pieces %}
+                <div class="loc-item">
+                  <span class="loc-label">Pièces</span>
+                  <span class="loc-val">{{ annonce.nb_pieces }} pièce{{ annonce.nb_pieces|pluralize }}</span>
+                </div>
+                {% endif %}
+                {% if annonce.surface_m2 %}
+                <div class="loc-item">
+                  <span class="loc-label">Surface</span>
+                  <span class="loc-val">{{ annonce.surface_m2|floatformat:0 }} m²</span>
+                </div>
+                {% endif %}
+                {% if annonce.meuble %}
+                <div class="loc-item"><span class="loc-label">Meublé</span><span class="loc-val">✅ Oui</span></div>
+                {% endif %}
+                {% if annonce.charges_incluses %}
+                <div class="loc-item"><span class="loc-label">Charges</span><span class="loc-val">✅ Incluses</span></div>
+                {% endif %}
+                {% if annonce.avec_chauffeur %}
+                <div class="loc-item"><span class="loc-label">Chauffeur</span><span class="loc-val">✅ Inclus</span></div>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
 
             <!-- Meta -->
             <div class="bazar-meta-row">

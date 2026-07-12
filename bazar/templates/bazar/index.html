@@ -447,6 +447,26 @@
 .geo-detect-btn:hover { border-color: var(--accent); color: var(--accent); }
 .geo-detect-btn .material-icons { font-size: .9rem; }
 .geo-detect-btn.loading { opacity: .6; pointer-events: none; }
+
+/* ── Onglets Vente / Location ── */
+.bazar-type-tabs {
+  display: flex; gap: 0; border-bottom: 2px solid var(--border,#e0d8d0);
+  margin-bottom: 1.5rem; padding: 0 1rem;
+}
+.bazar-tab {
+  padding: .75rem 1.5rem; font-weight: 700; font-size: .95rem;
+  color: var(--text-muted); text-decoration: none; border-bottom: 3px solid transparent;
+  margin-bottom: -2px; transition: all .18s;
+}
+.bazar-tab.active { color: var(--accent,#8b5e3c); border-bottom-color: var(--accent,#8b5e3c); }
+.bazar-tab:hover { color: var(--accent,#8b5e3c); }
+
+/* ── Badge location sur carte ── */
+.bazar-location-badge {
+  display:inline-block; background: #2980b9; color:#fff;
+  font-size:.7rem; font-weight:700; padding:.15rem .5rem; border-radius:99px;
+  margin-left:.3rem;
+}
 </style>
 
 <!-- ── Hero ── -->
@@ -482,6 +502,18 @@
     </a>
     {% endif %}
 </section>
+
+<!-- ── Tabs Vente / Location ── -->
+<div class="bazar-type-tabs">
+  <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}type=vente"
+     class="bazar-tab {% if listing_type == 'vente' or not listing_type %}active{% endif %}">
+    🏷️ À vendre
+  </a>
+  <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}type=location"
+     class="bazar-tab {% if listing_type == 'location' %}active{% endif %}">
+    🔑 À louer
+  </a>
+</div>
 
 <!-- ── Raccourci "Ma région" ── -->
 {% if user_region and not sel_region %}
@@ -615,7 +647,7 @@
 
         <!-- Infos -->
         <div class="bazar-card-body">
-            <span class="bazar-card-cat">{{ annonce.get_category_display }}</span>
+            <span class="bazar-card-cat">{{ annonce.get_category_display }}{% if annonce.listing_type == 'location' %}<span class="bazar-location-badge">🔑 Location</span>{% endif %}</span>
             <span class="bazar-card-title">{{ annonce.title }}</span>
             <span class="bazar-card-location">
                 <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -627,8 +659,11 @@
                 {% endif %}
             </span>
             <span class="bazar-card-price">
-                {{ annonce.formatted_price }}
-                {% if annonce.price_negotiable and annonce.price %}<small style="font-size:.72rem;font-weight:500;opacity:.7;"> · {% trans "négociable" %}</small>{% endif %}
+                {% if annonce.listing_type == 'location' %}
+                  {{ annonce.formatted_prix_location }}
+                {% else %}
+                  {{ annonce.formatted_price }}{% if annonce.price_negotiable and annonce.price %}<small style="font-size:.72rem;font-weight:500;opacity:.7;"> · {% trans "négociable" %}</small>{% endif %}
+                {% endif %}
             </span>
         </div>
     </a>
