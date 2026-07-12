@@ -1,8 +1,11 @@
+import io
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import BooleanField, Case, F, Q, When
 from django.core.paginator import Paginator
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import Http404, JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
@@ -16,6 +19,33 @@ MAX_IMAGES           = 8     # vendeur standard
 MAX_IMAGES_VERIFIED  = 12    # vendeur vérifié (particulier)
 MAX_IMAGES_PRO       = 20    # concessionnaire / boutique pro
 BUMP_COOLDOWN_H      = 24    # heures entre deux bumps
+
+
+# ── Conversion HEIC → JPEG ─────────────────────────────────────────────────────
+
+def _heic_to_jpeg(upload_file):
+    """
+    Si le fichier est au format HEIC/HEIF (photo iPhone), le convertit en JPEG
+    pour la compatibilité navigateur.  Les autres formats passent sans modification.
+    Nécessite pillow-heif (installé via requirements.txt + enregistré dans apps.py).
+    """
+    name = getattr(upload_file, 'name', '') or ''
+    if not name.lower().endswith(('.heic', '.heif')):
+        return upload_file
+    try:
+        from PIL import Image
+        img = Image.open(upload_file)
+        buf = io.BytesIO()
+        img.convert('RGB').save(buf, format='JPEG', quality=88, optimize=True)
+        buf.seek(0)
+        jpeg_name = name.rsplit('.', 1)[0] + '.jpg'
+        return InMemoryUploadedFile(
+            buf, 'image', jpeg_name, 'image/jpeg', buf.getbuffer().nbytes, None,
+        )
+    except Exception:
+        # En cas d'erreur inattendue, on laisse passer le fichier original
+        upload_file.seek(0)
+        return upload_file
 
 
 # ── Liste / Explore ─────────────────────────────────────────────────────────────
@@ -207,12 +237,13 @@ def annonce_create(request):
             annonce.save()
 
             # Gérer les images uploadées (multiple files)
+            # _heic_to_jpeg convertit silencieusement les photos iPhone si besoin
             images = request.FILES.getlist('images')
             limit  = _get_max_images(request.user)
             for i, img_file in enumerate(images[:limit]):
                 AnnonceImage.objects.create(
                     annonce=annonce,
-                    image=img_file,
+                    image=_heic_to_jpeg(img_file),
                     is_primary=(i == 0),
                     order=i,
                 )
@@ -258,7 +289,7 @@ def annonce_edit(request, pk):
                     break
                 AnnonceImage.objects.create(
                     annonce=annonce,
-                    image=img_file,
+                    image=_heic_to_jpeg(img_file),
                     is_primary=False,
                     order=current_count + i,
                 )
@@ -506,7 +537,8 @@ def request_verification(request):
             boutique_phone       = request.POST.get('boutique_phone', '').strip()[:30]
             boutique_address     = request.POST.get('boutique_address', '').strip()[:250]
             boutique_hours       = request.POST.get('boutique_hours', '').strip()[:250]
-            boutique_banner_file = request.FILES.get('boutique_banner')
+            boutique_banner_raw  = request.FILES.get('boutique_banner')
+            boutique_banner_file = _heic_to_jpeg(boutique_banner_raw) if boutique_banner_raw else None
 
             if not boutique_name:
                 messages.error(request, 'Le nom de la boutique est obligatoire pour une demande Pro.')
