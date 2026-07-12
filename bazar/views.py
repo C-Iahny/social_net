@@ -594,19 +594,19 @@ def boutique_page(request, username):
 
     # Catégories disponibles dans cette boutique (pour le filtre)
     all_annonces = Annonce.objects.filter(seller=seller, status='active')
-    categories_used = (
-        all_annonces.values_list('category', flat=True)
-        .distinct()
-    )
+    cat_dict = dict(Annonce.CATEGORY_CHOICES)
+    categories_with_labels = [
+        (c, cat_dict.get(c, c))
+        for c in all_annonces.values_list('category', flat=True).distinct()
+    ]
 
     return render(request, 'bazar/boutique.html', {
-        'boutique_seller': seller,
-        'verif':           verif,
-        'page_obj':        page,
-        'total':           paginator.count,
-        'cat_filter':      cat_filter,
-        'categories_used': list(categories_used),
-        'category_choices': dict(Annonce.CATEGORY_CHOICES),
+        'boutique_seller':      seller,
+        'verif':                verif,
+        'page_obj':             page,
+        'total':                paginator.count,
+        'cat_filter':           cat_filter,
+        'categories_with_labels': categories_with_labels,
     })
 
 
