@@ -333,7 +333,12 @@ def annonce_delete(request, pk):
     Supprimer définitivement une annonce.
     URL: /bazar/<pk>/supprimer/
     """
-    annonce = get_object_or_404(Annonce, pk=pk)
+    try:
+        annonce = Annonce.objects.get(pk=pk)
+    except Annonce.DoesNotExist:
+        messages.error(request, "Cette annonce n'existe pas ou a déjà été supprimée.")
+        return redirect('bazar:mes_annonces')
+
     if annonce.seller != request.user:
         messages.error(request, 'Non autorisé.')
         return redirect('bazar:index')

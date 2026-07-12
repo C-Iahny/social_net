@@ -7,7 +7,7 @@
 /* ── Version ─────────────────────────────────────────────────────────────────
    Incrémenter SW_VERSION pour forcer la mise à jour chez tous les clients.
    ─────────────────────────────────────────────────────────────────────────── */
-const SW_VERSION  = 'vazimba-v14';
+const SW_VERSION  = 'vazimba-v15';
 const STATIC_CACHE = SW_VERSION + '-static';
 const PAGES_CACHE  = SW_VERSION + '-pages';
 const IMG_CACHE    = SW_VERSION + '-images';
@@ -31,7 +31,12 @@ const MAX_PAGES  = 80;   // Pages HTML conservées (augmenté)
 const MAX_IMAGES = 150;  // Images conservées (augmenté)
 
 /* ── Pages qui ne doivent PAS être servies depuis le cache (données fraîches) */
-const NO_CACHE_PATHS = ['/chat/', '/admin/', '/logout/', '/login/', '/feed/', '/stories/'];
+const NO_CACHE_PATHS = [
+    '/chat/', '/admin/', '/logout/', '/login/', '/feed/', '/stories/',
+    // Bazar — pages personnalisées qui doivent toujours être fraîches
+    '/bazar/mes-annonces/', '/bazar/vendre/', '/bazar/mes-favoris/',
+    '/bazar/verification/',
+];
 function _isNoCachePath(url) {
     return NO_CACHE_PATHS.some(function(p) { return url.pathname.startsWith(p); });
 }
