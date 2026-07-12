@@ -612,7 +612,9 @@
             <span class="bazar-card-location">
                 <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 {{ annonce.location }}
-                {% if annonce.seller_verified %}
+                {% if annonce.seller_is_pro %}
+                <span style="margin-left:.3rem;font-size:.62rem;font-weight:700;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;padding:.1rem .4rem;border-radius:10px;white-space:nowrap;">⭐ {% trans "Pro" %}</span>
+                {% elif annonce.seller_verified %}
                 <span class="bazar-badge-verified" style="margin-left:.3rem;">✓ {% trans "Vérifié" %}</span>
                 {% endif %}
             </span>

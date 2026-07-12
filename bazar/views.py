@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import BooleanField, Case, F, Q, When
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
@@ -11,10 +11,11 @@ from .models import Annonce, AnnonceImage, SellerVerification, BazarFavori
 from .forms import AnnonceForm
 
 # ── Constantes ─────────────────────────────────────────────────────────────────
-PAGE_SIZE       = 12
-MAX_IMAGES      = 8           # vendeur standard
-MAX_IMAGES_VERIFIED = 12      # vendeur vérifié
-BUMP_COOLDOWN_H = 24          # heures entre deux bumps
+PAGE_SIZE            = 12
+MAX_IMAGES           = 8     # vendeur standard
+MAX_IMAGES_VERIFIED  = 12    # vendeur vérifié (particulier)
+MAX_IMAGES_PRO       = 20    # concessionnaire / boutique pro
+BUMP_COOLDOWN_H      = 24    # heures entre deux bumps
 
 
 # ── Liste / Explore ─────────────────────────────────────────────────────────────
@@ -29,13 +30,22 @@ def bazar_index(request):
         .filter(status='active')
         .select_related('seller', 'seller__seller_verification')
         .prefetch_related('images')
-        # Annotation booléenne : le vendeur est-il vérifié ?
+        # Annotations : vendeur approuvé (any type) + vendeur pro (boutique)
         .annotate(
             seller_verified=Case(
                 When(seller__seller_verification__status='approved', then=True),
                 default=False,
                 output_field=BooleanField(),
-            )
+            ),
+            seller_is_pro=Case(
+                When(
+                    seller__seller_verification__status='approved',
+                    seller__seller_verification__seller_type='pro',
+                    then=True,
+                ),
+                default=False,
+                output_field=BooleanField(),
+            ),
         )
     )
 
@@ -401,7 +411,10 @@ def toggle_status(request, pk):
 def _get_max_images(user):
     """Retourne le quota photos selon le statut de vérification du vendeur."""
     try:
-        if user.seller_verification.is_approved:
+        sv = user.seller_verification
+        if sv.is_approved:
+            if sv.seller_type == SellerVerification.SELLER_TYPE_PRO:
+                return MAX_IMAGES_PRO
             return MAX_IMAGES_VERIFIED
     except SellerVerification.DoesNotExist:
         pass
@@ -441,7 +454,8 @@ def mes_annonces(request):
 def request_verification(request):
     """
     Permet à un vendeur de soumettre une demande de vérification.
-    Si une demande existe déjà, affiche son statut.
+    Deux types : 'verified' (particulier) et 'pro' (concessionnaire/boutique).
+    Si une demande existe déjà et est approuvée/en attente, affiche son statut.
     URL: /bazar/verification/
     """
     try:
@@ -458,22 +472,69 @@ def request_verification(request):
             messages.info(request, 'Vous avez déjà une demande en cours ou votre compte est déjà vérifié.')
             return redirect('bazar:mes_annonces')
 
+        # ── Données communes ──────────────────────────────────────────────────
+        seller_type  = request.POST.get('seller_type', 'verified').strip()
+        if seller_type not in (SellerVerification.SELLER_TYPE_VERIFIED, SellerVerification.SELLER_TYPE_PRO):
+            seller_type = SellerVerification.SELLER_TYPE_VERIFIED
         message_text = request.POST.get('message', '').strip()[:2000]
 
+        # ── Données boutique (uniquement pour type='pro') ─────────────────────
+        boutique_name        = ''
+        boutique_description = ''
+        boutique_category    = ''
+        boutique_phone       = ''
+        boutique_address     = ''
+        boutique_hours       = ''
+        boutique_banner_file = None
+
+        if seller_type == SellerVerification.SELLER_TYPE_PRO:
+            boutique_name        = request.POST.get('boutique_name', '').strip()[:120]
+            boutique_description = request.POST.get('boutique_description', '').strip()[:2000]
+            boutique_category    = request.POST.get('boutique_category', '').strip()
+            boutique_phone       = request.POST.get('boutique_phone', '').strip()[:30]
+            boutique_address     = request.POST.get('boutique_address', '').strip()[:250]
+            boutique_hours       = request.POST.get('boutique_hours', '').strip()[:250]
+            boutique_banner_file = request.FILES.get('boutique_banner')
+
+            if not boutique_name:
+                messages.error(request, 'Le nom de la boutique est obligatoire pour une demande Pro.')
+                context = {'verification': verification}
+                return render(request, 'bazar/verification.html', context)
+
         if verification:
-            # Résoumission après refus
-            verification.status      = SellerVerification.STATUS_PENDING
-            verification.message     = message_text
-            verification.admin_notes = ''
-            verification.reviewed_at = None
-            verification.reviewed_by = None
+            # Résoumission après refus — mettre à jour les champs
+            verification.seller_type        = seller_type
+            verification.status             = SellerVerification.STATUS_PENDING
+            verification.message            = message_text
+            verification.admin_notes        = ''
+            verification.reviewed_at        = None
+            verification.reviewed_by        = None
+            verification.boutique_name      = boutique_name
+            verification.boutique_description = boutique_description
+            verification.boutique_category  = boutique_category
+            verification.boutique_phone     = boutique_phone
+            verification.boutique_address   = boutique_address
+            verification.boutique_hours     = boutique_hours
+            if boutique_banner_file:
+                verification.boutique_banner = boutique_banner_file
             verification.save()
             messages.success(request, 'Votre nouvelle demande a été envoyée. L\'admin l\'examinera prochainement.')
         else:
-            SellerVerification.objects.create(
+            kw = dict(
                 seller=request.user,
+                seller_type=seller_type,
                 message=message_text,
+                boutique_name=boutique_name,
+                boutique_description=boutique_description,
+                boutique_category=boutique_category,
+                boutique_phone=boutique_phone,
+                boutique_address=boutique_address,
+                boutique_hours=boutique_hours,
             )
+            sv = SellerVerification(**kw)
+            if boutique_banner_file:
+                sv.boutique_banner = boutique_banner_file
+            sv.save()
             messages.success(request, 'Demande de vérification envoyée ! L\'admin l\'examinera prochainement.')
 
         return redirect('bazar:mes_annonces')
@@ -482,6 +543,59 @@ def request_verification(request):
         'verification': verification,
     }
     return render(request, 'bazar/verification.html', context)
+
+
+# ── Page publique boutique concessionnaire ──────────────────────────────────────
+
+def boutique_page(request, username):
+    """
+    Page publique d'un concessionnaire / vendeur pro.
+    Affiche la bannière, les infos boutique et toutes ses annonces actives.
+    URL: /bazar/boutique/<username>/
+    """
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    seller = get_object_or_404(User, username=username)
+
+    try:
+        verif = seller.seller_verification
+    except SellerVerification.DoesNotExist:
+        raise Http404
+
+    if not verif.is_pro:
+        raise Http404
+
+    annonces_qs = (
+        Annonce.objects
+        .filter(seller=seller, status='active')
+        .prefetch_related('images')
+        .order_by(F('bumped_at').desc(nulls_last=True), '-created_at')
+    )
+
+    cat_filter = request.GET.get('cat', '').strip()
+    if cat_filter:
+        annonces_qs = annonces_qs.filter(category=cat_filter)
+
+    paginator = Paginator(annonces_qs, PAGE_SIZE)
+    page      = paginator.get_page(request.GET.get('page'))
+
+    # Catégories disponibles dans cette boutique (pour le filtre)
+    all_annonces = Annonce.objects.filter(seller=seller, status='active')
+    categories_used = (
+        all_annonces.values_list('category', flat=True)
+        .distinct()
+    )
+
+    return render(request, 'bazar/boutique.html', {
+        'boutique_seller': seller,
+        'verif':           verif,
+        'page_obj':        page,
+        'total':           paginator.count,
+        'cat_filter':      cat_filter,
+        'categories_used': list(categories_used),
+        'category_choices': dict(Annonce.CATEGORY_CHOICES),
+    })
 
 
 # ── Favoris ────────────────────────────────────────────────────────────────────

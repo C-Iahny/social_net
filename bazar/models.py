@@ -177,12 +177,39 @@ class SellerVerification(models.Model):
     Demande de vérification d'un vendeur — niveau compte (OneToOne).
     L'admin approuve ou rejette manuellement depuis l'interface d'administration.
 
-    Avantages vendeur vérifié (status='approved') :
-    - Badge ✓ sur ses annonces et son profil
-    - Priorité dans les résultats de recherche (annonces boostées)
+    Deux types de vendeurs :
+    - 'verified' → Vendeur Vérifié (particulier) : badge vert, 12 photos/annonce
+    - 'pro'      → Concessionnaire / Boutique Pro : badge doré, 20 photos/annonce,
+                   page boutique publique, priorité de recherche renforcée
+
+    Avantages communs (status='approved') :
+    - Badge sur ses annonces et son profil
+    - Priorité dans les résultats de recherche
     - Filtre "Vendeurs vérifiés" dans le bazar
-    - Quota photos étendu : MAX_IMAGES passe de 8 à 12
     """
+
+    # ── Types de vendeurs ──────────────────────────────────────────────────────
+    SELLER_TYPE_VERIFIED = 'verified'
+    SELLER_TYPE_PRO      = 'pro'
+
+    SELLER_TYPE_CHOICES = [
+        (SELLER_TYPE_VERIFIED, _('Vendeur Vérifié')),
+        (SELLER_TYPE_PRO,      _('Concessionnaire / Boutique Pro')),
+    ]
+
+    # ── Catégories de boutique (pour type='pro') ───────────────────────────────
+    BOUTIQUE_CAT_CHOICES = [
+        ('auto',         _('Automobile & Moto')),
+        ('electronique', _('Électronique & Informatique')),
+        ('mode',         _('Mode & Vêtements')),
+        ('maison',       _('Maison & Mobilier')),
+        ('alimentation', _('Alimentation & Boissons')),
+        ('materiaux',    _('Matériaux & BTP')),
+        ('agriculture',  _('Agriculture & Élevage')),
+        ('immobilier',   _('Immobilier')),
+        ('services',     _('Services & Prestations')),
+        ('autre',        _('Autre')),
+    ]
 
     # ── Statuts possibles ──────────────────────────────────────────────────────
     STATUS_PENDING  = 'pending'
@@ -195,12 +222,19 @@ class SellerVerification(models.Model):
         (STATUS_REJECTED, _('Refusé')),
     ]
 
-    # ── Champs ─────────────────────────────────────────────────────────────────
+    # ── Champs principaux ──────────────────────────────────────────────────────
     seller = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='seller_verification',
         verbose_name=_('Vendeur'),
+    )
+    seller_type = models.CharField(
+        max_length=10,
+        choices=SELLER_TYPE_CHOICES,
+        default=SELLER_TYPE_VERIFIED,
+        verbose_name=_('Type de vendeur'),
+        db_index=True,
     )
     status = models.CharField(
         max_length=10,
@@ -220,7 +254,40 @@ class SellerVerification(models.Model):
         blank=True, default='',
         verbose_name=_('Notes admin'),
     )
-    # Timestamps
+
+    # ── Champs boutique (uniquement pour seller_type='pro') ────────────────────
+    boutique_name = models.CharField(
+        max_length=120, blank=True, default='',
+        verbose_name=_('Nom de la boutique'),
+    )
+    boutique_description = models.TextField(
+        blank=True, default='',
+        verbose_name=_('Description de la boutique'),
+    )
+    boutique_category = models.CharField(
+        max_length=20, choices=BOUTIQUE_CAT_CHOICES, blank=True, default='',
+        verbose_name=_('Catégorie principale'),
+    )
+    boutique_phone = models.CharField(
+        max_length=30, blank=True, default='',
+        verbose_name=_('Téléphone boutique (WhatsApp)'),
+    )
+    boutique_address = models.CharField(
+        max_length=250, blank=True, default='',
+        verbose_name=_('Adresse / Localisation'),
+    )
+    boutique_hours = models.CharField(
+        max_length=250, blank=True, default='',
+        verbose_name=_('Horaires'),
+        help_text=_('Ex : Lun–Sam 8h–18h'),
+    )
+    boutique_banner = models.ImageField(
+        upload_to='bazar/boutiques/%Y/%m/',
+        null=True, blank=True,
+        verbose_name=_('Bannière boutique'),
+    )
+
+    # ── Timestamps ─────────────────────────────────────────────────────────────
     created_at  = models.DateTimeField(auto_now_add=True, verbose_name=_('Demande le'))
     reviewed_at = models.DateTimeField(null=True, blank=True, verbose_name=_('Examinée le'))
     reviewed_by = models.ForeignKey(
@@ -230,6 +297,16 @@ class SellerVerification(models.Model):
         related_name='verifications_reviewed',
         verbose_name=_('Examinée par'),
     )
+    # Suivi abonnement (pour futur payant)
+    approved_at = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name=_('Approuvé le'),
+    )
+    free_until = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name=_('Gratuit jusqu\'au'),
+        help_text=_('Date de fin de la période gratuite (1 an après approbation).'),
+    )
 
     class Meta:
         verbose_name        = _('Vérification vendeur')
@@ -237,7 +314,8 @@ class SellerVerification(models.Model):
         ordering            = ['-created_at']
 
     def __str__(self):
-        return f'{self.seller} — {self.get_status_display()}'
+        label = self.get_seller_type_display()
+        return f'{self.seller} — {label} — {self.get_status_display()}'
 
     # ── Propriétés utilitaires ─────────────────────────────────────────────────
 
@@ -253,15 +331,33 @@ class SellerVerification(models.Model):
     def is_rejected(self):
         return self.status == self.STATUS_REJECTED
 
+    @property
+    def is_pro(self):
+        """True si concessionnaire / boutique pro approuvé."""
+        return self.seller_type == self.SELLER_TYPE_PRO and self.status == self.STATUS_APPROVED
+
+    @property
+    def boutique_display_name(self):
+        """Nom d'affichage de la boutique (nom boutique ou username)."""
+        return self.boutique_name or self.seller.get_full_name() or self.seller.username
+
     # ── Helpers admin ──────────────────────────────────────────────────────────
 
     def approve(self, reviewed_by=None, notes=''):
+        from datetime import timedelta
         self.status      = self.STATUS_APPROVED
         self.reviewed_at = timezone.now()
         self.reviewed_by = reviewed_by
         if notes:
             self.admin_notes = notes
-        self.save(update_fields=['status', 'reviewed_at', 'reviewed_by', 'admin_notes'])
+        # Fixer la date d'approbation et fin de gratuité (1 an) — seulement au 1er accord
+        if not self.approved_at:
+            self.approved_at = timezone.now()
+            self.free_until  = self.approved_at + timedelta(days=365)
+        self.save(update_fields=[
+            'status', 'reviewed_at', 'reviewed_by', 'admin_notes',
+            'approved_at', 'free_until',
+        ])
 
     def reject(self, reviewed_by=None, notes=''):
         self.status      = self.STATUS_REJECTED

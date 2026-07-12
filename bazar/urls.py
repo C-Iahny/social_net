@@ -40,4 +40,7 @@ urlpatterns = [
     # ── Favoris ────────────────────────────────────────────────────────────────
     path('mes-favoris/',     views.mes_favoris,   name='mes_favoris'),
     path('<int:pk>/favori/', views.toggle_favori, name='toggle_favori'),
+
+    # ── Page publique boutique pro ─────────────────────────────────────────────
+    path('boutique/<str:username>/', views.boutique_page, name='boutique'),
 ]
