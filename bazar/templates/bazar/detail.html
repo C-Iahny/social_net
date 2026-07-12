@@ -458,7 +458,11 @@
                         </a>
                         {% with sv=annonce.seller.seller_verification %}
                         {% if sv.status == 'approved' %}
-                        <span style="display:inline-flex;align-items:center;gap:.2rem;background:#10b981;color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;">✓ {% trans "Vérifié" %}</span>
+                            {% if sv.seller_type == 'pro' %}
+                            <span style="display:inline-flex;align-items:center;gap:.2rem;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .5rem;border-radius:20px;letter-spacing:.04em;">⭐ {% trans "Boutique Pro" %}</span>
+                            {% else %}
+                            <span style="display:inline-flex;align-items:center;gap:.2rem;background:#10b981;color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;">✓ {% trans "Vérifié" %}</span>
+                            {% endif %}
                         {% endif %}
                         {% endwith %}
                         {% if annonce.seller.phone_verified %}
@@ -466,6 +470,16 @@
                         {% endif %}
                     </div>
                     <div class="bazar-seller-since">{% trans "Membre depuis" %} {{ annonce.seller.date_joined|date:"M Y" }}</div>
+                    {% with sv=annonce.seller.seller_verification %}
+                    {% if sv.is_pro %}
+                    <div style="margin-top:.5rem;">
+                        <a href="{% url 'bazar:boutique' username=annonce.seller.username %}"
+                           style="display:inline-flex;align-items:center;gap:.35rem;font-size:.78rem;font-weight:700;color:#d97706;text-decoration:none;background:rgba(217,119,6,.1);padding:.3rem .75rem;border-radius:50px;border:1px solid rgba(217,119,6,.3);">
+                            🏪 {% trans "Voir la boutique" %} →
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
                 </div>
             </div>
 

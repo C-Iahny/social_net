@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
@@ -97,26 +99,56 @@ _action_reset.short_description = '🔄 Remettre en attente'
 @admin.register(SellerVerification)
 class SellerVerificationAdmin(admin.ModelAdmin):
     list_display  = (
-        'seller', '_status_badge', 'created_at',
-        'reviewed_at', 'reviewed_by',
+        'seller', '_type_badge', '_status_badge',
+        'boutique_name', 'created_at', 'reviewed_at', 'reviewed_by',
     )
-    list_filter   = ('status',)
-    search_fields = ('seller__username', 'seller__email', 'message', 'admin_notes')
-    readonly_fields = ('seller', 'message', 'created_at', 'reviewed_at', 'reviewed_by', '_status_badge')
+    list_filter   = ('status', 'seller_type')
+    search_fields = (
+        'seller__username', 'seller__email',
+        'message', 'admin_notes',
+        'boutique_name', 'boutique_address',
+    )
+    readonly_fields = (
+        'seller', 'message', 'created_at', 'reviewed_at', 'reviewed_by',
+        '_status_badge', '_type_badge', '_banner_preview',
+    )
     ordering      = ['-created_at']
     actions       = [_action_approve, _action_reject, _action_reset]
 
     fieldsets = (
         ('Vendeur', {
-            'fields': ('seller', '_status_badge', 'status'),
+            'fields': ('seller', 'seller_type', '_type_badge', '_status_badge', 'status'),
         }),
         ('Demande du vendeur', {
             'fields': ('message', 'created_at'),
         }),
+        ('Boutique (Concessionnaire / Pro)', {
+            'classes': ('collapse',),
+            'fields': (
+                'boutique_name', 'boutique_category',
+                'boutique_description',
+                'boutique_phone', 'boutique_address', 'boutique_hours',
+                '_banner_preview', 'boutique_banner',
+            ),
+        }),
         ('Décision admin', {
             'fields': ('admin_notes', 'reviewed_at', 'reviewed_by'),
         }),
+        ('Abonnement', {
+            'classes': ('collapse',),
+            'fields': ('approved_at', 'free_until'),
+        }),
     )
+
+    def _type_badge(self, obj):
+        if obj.seller_type == SellerVerification.SELLER_TYPE_PRO:
+            return format_html(
+                '<span style="color:#d97706;font-weight:700;">⭐ Boutique Pro</span>'
+            )
+        return format_html(
+            '<span style="color:#6b7280;font-weight:600;">👤 Vendeur Vérifié</span>'
+        )
+    _type_badge.short_description = 'Type'
 
     def _status_badge(self, obj):
         colors = {
@@ -131,10 +163,22 @@ class SellerVerificationAdmin(admin.ModelAdmin):
         )
     _status_badge.short_description = 'Statut'
 
+    def _banner_preview(self, obj):
+        if obj.boutique_banner:
+            return format_html(
+                '<img src="{}" style="max-width:320px;max-height:80px;border-radius:8px;object-fit:cover;">',
+                obj.boutique_banner.url,
+            )
+        return '— pas de bannière —'
+    _banner_preview.short_description = 'Aperçu bannière'
+
     def save_model(self, request, obj, form, change):
-        """Met à jour reviewed_at / reviewed_by quand le statut change via le formulaire."""
+        """Met à jour reviewed_at / reviewed_by + approved_at quand le statut change."""
         if change and 'status' in form.changed_data:
             if obj.status in (SellerVerification.STATUS_APPROVED, SellerVerification.STATUS_REJECTED):
                 obj.reviewed_at = timezone.now()
                 obj.reviewed_by = request.user
+            if obj.status == SellerVerification.STATUS_APPROVED and not obj.approved_at:
+                obj.approved_at = timezone.now()
+                obj.free_until  = obj.approved_at + timedelta(days=365)
         super().save_model(request, obj, form, change)
