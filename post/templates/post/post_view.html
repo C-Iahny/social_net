@@ -2032,6 +2032,9 @@ body { background: var(--bg); }
 </div>
 
 <script>
+/* ── Token CSRF injecté par Django — ne dépend pas du cookie (fiable en PWA/Safari) */
+var _ZF_CSRF = '{{ csrf_token }}';
+
 /* ══════════════════════════════════════
    INFINITE SCROLL
    ══════════════════════════════════════ */
@@ -2190,7 +2193,7 @@ function sendReaction(postId, reactionType) {
     var fd = new FormData();
     fd.append('post_id', postId);
     fd.append('reaction', reactionType);
-    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fd.append('csrfmiddlewaretoken', _ZF_CSRF);
 
     fetch(_REACT_URL, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
     .then(function(r) { return r.json(); })
@@ -2268,17 +2271,23 @@ function submitComment(postId, url) {
     if (!ta) return;
     var body = ta.value.trim();
     if (!body) return;
-    btn.disabled = true;
+    if (btn) btn.disabled = true;
 
     var fd = new FormData();
     fd.append('body', body);
-    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fd.append('csrfmiddlewaretoken', _ZF_CSRF);
 
     fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
-    .then(function(r){ return r.json(); })
+    .then(function(r){
+        if (!r.ok) { throw new Error('HTTP ' + r.status); }
+        return r.json();
+    })
     .then(function(data) {
-        btn.disabled = false;
-        if (!data.ok) return;
+        if (btn) btn.disabled = false;
+        if (!data.ok) {
+            console.error('Commentaire rejeté:', data.error);
+            return;
+        }
         ta.value = ''; ta.style.height = 'auto';
 
         var delBtn = data.can_delete
@@ -2315,7 +2324,15 @@ function submitComment(postId, url) {
         if (list) { list.insertAdjacentHTML('beforeend', html); list.scrollTop = list.scrollHeight; }
         updateCommentCount(postId, 1);
     })
-    .catch(function(){ btn.disabled = false; });
+    .catch(function(err){
+        console.error('Erreur commentaire:', err);
+        if (btn) btn.disabled = false;
+        /* Retour visuel léger : faire clignoter le textarea en rouge */
+        if (ta) {
+            ta.style.borderColor = '#e74c3c';
+            setTimeout(function(){ ta.style.borderColor = ''; }, 2000);
+        }
+    });
 }
 
 /* ══════════════════════════════════════
@@ -2348,12 +2365,15 @@ function submitReply(parentCommentId, postId, url) {
     var fd = new FormData();
     fd.append('body', body);
     fd.append('parent_id', parentCommentId);
-    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fd.append('csrfmiddlewaretoken', _ZF_CSRF);
 
     fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
-    .then(function(r){ return r.json(); })
+    .then(function(r){
+        if (!r.ok) { throw new Error('HTTP ' + r.status); }
+        return r.json();
+    })
     .then(function(data) {
-        if (!data.ok) return;
+        if (!data.ok) { console.error('Réponse rejetée:', data.error); return; }
         ta.value = ''; ta.style.height = 'auto';
 
         // Close reply form
@@ -2397,7 +2417,7 @@ function commentDeleteUrl(id) { return _delUrlTpl.replace('999999', id); }
 function deleteComment(commentId, url) {
     if (!confirm('Supprimer ce commentaire ?')) return;
     var fd = new FormData();
-    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fd.append('csrfmiddlewaretoken', _ZF_CSRF);
     fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
     .then(function(r){ return r.json(); })
     .then(function(data) {
@@ -2539,12 +2559,9 @@ sharePost = function(postId, postTitle) {
 
 function doRepost() {
     if (!_sharePostId) return;
-    var csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ?
-        document.querySelector('[name=csrfmiddlewaretoken]').value :
-        '{{ csrf_token }}';
     var formData = new FormData();
     formData.append('post_id', _sharePostId);
-    formData.append('csrfmiddlewaretoken', csrfToken);
+    formData.append('csrfmiddlewaretoken', _ZF_CSRF);
     fetch('{% url "post:repost" %}', { method: 'POST', body: formData })
     .then(function(r){ return r.json(); })
     .then(function(data){
@@ -2708,7 +2725,7 @@ var _BK_URL = "{% url 'post:bookmark' %}";
 function toggleBookmark(postId, btn) {
     var fd = new FormData();
     fd.append('post_id', postId);
-    fd.append('csrfmiddlewaretoken', getCsrfToken());
+    fd.append('csrfmiddlewaretoken', _ZF_CSRF);
     fetch(_BK_URL, { method: 'POST', body: fd })
     .then(function(r) { return r.json(); })
     .then(function(d) {
