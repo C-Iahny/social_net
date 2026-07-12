@@ -1262,19 +1262,48 @@
 }
 
 /* ── Responsive ───────────────────────────────────────────────── */
+
+/* ── Bouton retour (mobile) — caché sur desktop ────────────── */
+.chat-back-btn { display: none; }
+
 @media (max-width: 768px) {
-    .chat-sidebar {
-        position: fixed;
-        top: 62px; left: 0; bottom: 0;
-        z-index: 400;
-        transform: translateX(-100%);
-        transition: transform .25s ease;
-        box-shadow: 4px 0 24px rgba(0,0,0,.4);
-        width: 280px;
+    /* Slider à deux panneaux style Messenger :
+       - panneau 1 (sidebar) : visible par défaut, plein écran
+       - panneau 2 (chat)    : caché à droite, glisse quand chat-in-convo */
+    .chat-page {
+        position: relative;   /* ancre les deux panneaux absolus */
+        overflow: hidden;
     }
-    .chat-sidebar.open { transform: translateX(0); }
-    .chat-sidebar-toggle { display: flex; }
-    .chat-main { width: 100%; }
+    .chat-sidebar {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        transform: translateX(0);
+        transition: transform .28s cubic-bezier(.4,0,.2,1);
+        box-shadow: none;
+        z-index: 2;
+    }
+    .chat-main {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        transform: translateX(100%);
+        transition: transform .28s cubic-bezier(.4,0,.2,1);
+        z-index: 1;
+    }
+    /* Quand une convo est sélectionnée : sidebar part à gauche, chat arrive */
+    .chat-page.chat-in-convo .chat-sidebar {
+        transform: translateX(-100%);
+        z-index: 1;
+    }
+    .chat-page.chat-in-convo .chat-main {
+        transform: translateX(0);
+        z-index: 2;
+    }
+    /* FAB toggle plus nécessaire */
+    .chat-sidebar-toggle { display: none !important; }
+    /* Bouton retour visible */
+    .chat-back-btn { display: flex !important; }
     /* Bulles légèrement plus larges sur petit écran */
     .msg-content-wrap { max-width: 85%; }
 
@@ -1360,6 +1389,10 @@
 
         <!-- Header -->
         <div id="id_room_title">
+            <!-- Bouton retour vers la liste (mobile uniquement) -->
+            <button class="chat-header-btn chat-back-btn" id="chat-back-btn" title="{% trans 'Conversations' %}">
+                <span class="material-icons">arrow_back</span>
+            </button>
             <a class="d-flex align-items-center" style="gap:.65rem;" id="id_user_info_container" target="_blank">
                 <img class="d-none" id="id_other_user_profile_image"
                      src="{% static 'images/profile_pic.png' %}"
@@ -1868,18 +1901,40 @@ window._CT = {
     var currentUsername = "{{ request.user.username|escapejs }}";
 
     function onStart(){
+        var isMobile = window.innerWidth <= 768;
+
         {% if room %}
+            /* URL contient room_id ou user_id (ex: vient d'une notification) */
             if("{{ room.user1 }}" == "{{ request.user }}"){
-                onSelectFriend("{{ room.user2.id }}")
+                if(isMobile){
+                    /* Mobile : surligner dans la liste mais ne pas glisser vers le chat */
+                    clearHighlightedFriend(); highlightFriend("{{ room.user2.id }}");
+                    _scrollToFriendInList("{{ room.user2.id }}");
+                } else {
+                    onSelectFriend("{{ room.user2.id }}")
+                }
             } else {
-                onSelectFriend("{{ room.user1.id }}")
+                if(isMobile){
+                    clearHighlightedFriend(); highlightFriend("{{ room.user1.id }}");
+                    _scrollToFriendInList("{{ room.user1.id }}");
+                } else {
+                    onSelectFriend("{{ room.user1.id }}")
+                }
             }
         {% elif m_and_f %}
-            onSelectFriend("{{ m_and_f.0.friend.id }}")
+            /* Aucune room spécifiée : desktop → ouvrir la première conv ; mobile → liste seule */
+            if(!isMobile){ onSelectFriend("{{ m_and_f.0.friend.id }}"); }
         {% endif %}
+
         {% for x in m_and_f %}
             preloadImage("{{ x.friend.profile_image.url|safe }}", "id_friend_img_{{ x.friend.id }}")
         {% endfor %}
+    }
+
+    /* Scroller la liste pour rendre visible l'ami mis en surbrillance */
+    function _scrollToFriendInList(userId){
+        var el = document.getElementById('id_friend_container_' + userId);
+        if(el){ el.scrollIntoView({block:'nearest', behavior:'smooth'}); }
     }
 
     function onSelectFriend(userId){
@@ -1897,9 +1952,21 @@ window._CT = {
         if(btnA) btnA.style.display = '';
         if(btnV) btnV.style.display = '';
         if(infoBtn) infoBtn.style.display = '';
-        var sidebar = document.getElementById('chat-sidebar');
-        if(sidebar && window.innerWidth <= 768){ sidebar.classList.remove('open'); }
+        // Mobile : glisser vers le panneau chat (style Messenger)
+        if(window.innerWidth <= 768){
+            document.querySelector('.chat-page').classList.add('chat-in-convo');
+        }
     }
+
+    // Bouton retour (mobile) — revenir à la liste de conversations
+    (function(){
+        var backBtn = document.getElementById('chat-back-btn');
+        if(backBtn){
+            backBtn.addEventListener('click', function(){
+                document.querySelector('.chat-page').classList.remove('chat-in-convo');
+            });
+        }
+    })();
 
     function setWsIndicator(connected){
         var dot = document.getElementById('ws-status-dot');
