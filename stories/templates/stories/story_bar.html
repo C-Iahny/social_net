@@ -52,6 +52,9 @@
     width: 100%; height: 100%;
     object-fit: cover; display: block;
 }
+/* Fallback visuel quand l'image de fond d'une story échoue à charger */
+.story-bg-failed { background: linear-gradient(160deg, #3a1a05, #1a0a02) !important; }
+[data-theme="dark"] .story-bg-failed { background: linear-gradient(160deg, #2a1005, #0a0500) !important; }
 .story-item-bg-text {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
@@ -979,7 +982,8 @@ input#sc-file-input { display: none; }
     <div class="story-item story-item-mine" id="my-story-item" onclick="myStoryClick()" title="Ajouter une photo ou vidéo">
         <!-- Avatar (visible si l'utilisateur a des stories) -->
         <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}"
-             class="story-item-avatar" id="my-story-avatar-img">
+             class="story-item-avatar" id="my-story-avatar-img"
+             onerror="this.onerror=null;this.style.display='none'">
         <!-- Thumbnail (si story existante — rempli par JS) -->
         <img id="my-story-thumb" class="story-item-bg" alt="" style="display:none;">
         <!-- Bouton + par défaut (masqué si story existante) -->
@@ -1477,7 +1481,8 @@ function renderStoryBar() {
         var bgHtml = '';
         if (firstStory.media_url) {
             bgHtml = '<img class="story-item-bg" src="' + firstStory.media_url +
-                     '" alt="" loading="lazy">';
+                     '" alt="" loading="lazy"' +
+                     ' onerror="this.onerror=null;this.parentNode.classList.add(\'story-bg-failed\')">';
         } else if (firstStory.bg_gradient) {
             bgHtml = '<div class="story-item-bg ' + (firstStory.bg_gradient || 'grad_cyan') + '">' +
                      '<div class="story-item-bg-text">' +
@@ -1490,7 +1495,8 @@ function renderStoryBar() {
         item.innerHTML =
             bgHtml +
             '<img class="story-item-avatar" src="' + group.avatar + '" alt="' +
-                _esc(group.username || '') + '" loading="lazy">' +
+                _esc(group.username || '') + '" loading="lazy"' +
+                ' onerror="this.onerror=null;this.style.display=\'none\'">' +
             '<div class="story-item-overlay">' +
                 '<span class="story-item-label">' + _esc((group.username || '').substring(0,12)) + '</span>' +
             '</div>';

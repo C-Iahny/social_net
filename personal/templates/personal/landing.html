@@ -320,12 +320,15 @@
   <!-- ===== NAV ===== -->
   <nav>
     <a href="{% url 'landing' %}" class="nav-logo">
-      <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA" class="logo-desktop"
-           onerror="this.style.display='none';document.getElementById('nav-logo-txt').style.display='block'">
-      <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="VAZIMBA" class="logo-mobile"
-           onerror="this.style.display='none';document.getElementById('nav-logo-txt').style.display='block'">
-      <!-- Fallback texte si les deux images ratent -->
-      <span id="nav-logo-txt" style="display:none;font-weight:900;font-size:1.1rem;
+      <!-- Images masquées par défaut — affichées SEULEMENT si elles se chargent (jamais de placeholder cassé) -->
+      <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="" class="logo-desktop"
+           style="display:none;"
+           onload="this.style.display='';document.getElementById('nav-logo-txt').style.display='none'">
+      <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="" class="logo-mobile"
+           style="display:none;"
+           onload="this.style.display='';document.getElementById('nav-logo-txt').style.display='none'">
+      <!-- Texte visible par défaut (fallback permanent si les images ne chargent pas) -->
+      <span id="nav-logo-txt" style="font-weight:900;font-size:1.1rem;
             letter-spacing:1px;color:#fff;">VAZIMBA</span>
     </a>
     <div class="nav-links">
