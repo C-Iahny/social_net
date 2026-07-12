@@ -1742,7 +1742,8 @@ body { background: var(--bg); }
                                       placeholder="Écrire un commentaire…"
                                       rows="1" maxlength="1000"
                                       onkeydown="handleCommentKey(event, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
-                                      oninput="autoResize(this)"></textarea>
+                                      oninput="autoResize(this)"
+                                      onclick="this.focus()"></textarea>
                         </div>
                         <button class="pc-comment-send" id="comment-send-{{ post.id }}"
                                 onclick="submitComment({{ post.id }}, '{% url 'post:add-comment' post.id %}')"
@@ -2251,7 +2252,21 @@ function toggleComments(postId) {
     if (btn) btn.classList.toggle('active', !isOpen);
     if (!isOpen) {
         var ta = document.getElementById('comment-input-' + postId);
-        if (ta) setTimeout(function(){ ta.focus(); }, 50);
+        if (!ta) return;
+        /* ── Focus synchrone (iOS Safari PWA bloque tout focus() dans un setTimeout)
+           panel.offsetHeight force le reflow → le panel est display:block avant focus() ── */
+        void panel.offsetHeight;
+        ta.focus();
+        /* ── Correction scroll mobile : si le textarea tombe derrière la bottom nav
+           (58 px fixe en bas) ou hors de vue, on le ramène au centre ── */
+        requestAnimationFrame(function() {
+            var rect  = ta.getBoundingClientRect();
+            var viewH = window.innerHeight;
+            var navH  = 76; /* bottom nav 58px + marge 18px */
+            if (rect.bottom > viewH - navH || rect.top < 64) {
+                ta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
     }
 }
 
