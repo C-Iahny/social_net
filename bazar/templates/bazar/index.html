@@ -467,6 +467,14 @@
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         {% trans "Publier une annonce" %}
     </a>
+    <div style="margin-top:.85rem;">
+        <a href="{% url 'bazar:request_verification' %}"
+           style="display:inline-flex;align-items:center;gap:.4rem;color:rgba(255,255,255,.82);font-size:.8rem;font-weight:600;text-decoration:none;border:1.5px solid rgba(255,255,255,.35);border-radius:50px;padding:.32rem .9rem;transition:background .18s;"
+           onmouseover="this.style.background='rgba(255,255,255,.12)'"
+           onmouseout="this.style.background='transparent'">
+            🛡️ {% trans "Vérification vendeur / Boutique Pro" %}
+        </a>
+    </div>
     {% else %}
     <a href="{% url 'login' %}?next={% url 'bazar:create' %}" class="bazar-hero-btn">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
