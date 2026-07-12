@@ -897,17 +897,18 @@ input#sc-file-input { display: none; }
 }
 .sv-reply-input {
     flex: 1;
-    background: rgba(255,255,255,.15);
-    border: 1.5px solid rgba(255,255,255,.35);
+    /* Fond sombre opaque → texte blanc toujours visible quelle que soit la photo */
+    background: rgba(20,8,2,.82);
+    border: 1.5px solid rgba(255,255,255,.22);
     border-radius: 22px;
     padding: .45rem 1rem;
     color: #fff;
     font-size: .9rem;
     outline: none;
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
+    caret-color: #fff;
 }
-.sv-reply-input::placeholder { color: rgba(255,255,255,.6); }
+.sv-reply-input::placeholder { color: rgba(255,255,255,.5); }
+.sv-reply-input:focus { border-color: rgba(255,255,255,.5); }
 .sv-reply-send {
     background: var(--accent);
     border: none;
@@ -1371,8 +1372,8 @@ input#sc-file-input { display: none; }
     <div class="sv-reply-bar" id="sv-reply-bar">
         <input type="text" class="sv-reply-input" id="sv-reply-input"
                placeholder="Envoyer un message…" maxlength="500"
-               onkeydown="if(event.key==='Enter'){sendStoryReply();}"
-               oninput="document.getElementById('sv-reply-send').disabled=!this.value.trim();">
+               onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();sendStoryReply();}"
+               oninput="_svReplyCheck(this)" onkeyup="_svReplyCheck(this)">
         <button class="sv-reply-send" id="sv-reply-send" disabled onclick="sendStoryReply()">
             <span class="material-icons">send</span>
         </button>
@@ -2362,6 +2363,12 @@ window.openStoryViewer = function(groupIndex) {
     renderCurrentStory();
 };
 
+/* Helper partagé oninput/onkeyup pour activer le bouton send */
+window._svReplyCheck = function(inp) {
+    var btn = document.getElementById('sv-reply-send');
+    if (btn) btn.disabled = !inp.value.trim();
+};
+
 window.closeStoryViewer = function() {
     if (typeof closeStoryReply === 'function') closeStoryReply();
     var replyBar = document.getElementById('sv-reply-bar');
@@ -2743,12 +2750,14 @@ window.sendStoryReply = function() {
                 closeStoryReply();
             }, 1500);
         } else {
-            alert(data.error || 'Erreur lors de l\'envoi');
+            inp.placeholder = '⚠ ' + (data.error || 'Erreur');
+            setTimeout(function(){ inp.placeholder = 'Envoyer un message…'; }, 2500);
             if (sendBtn) sendBtn.disabled = false;
         }
     })
     .catch(function() {
-        alert('Erreur réseau');
+        inp.placeholder = '⚠ Erreur réseau — réessaie';
+        setTimeout(function(){ inp.placeholder = 'Envoyer un message…'; }, 2500);
         if (sendBtn) sendBtn.disabled = false;
     });
 };
@@ -2889,6 +2898,9 @@ window.zootStories = {
         _swTouchY = e.touches[0].clientY;
     }, { passive: true });
     el.addEventListener('touchend', function(e) {
+        // Ne pas naviguer si la barre de réponse est ouverte (utilisateur en train de taper)
+        var replyBar = document.getElementById('sv-reply-bar');
+        if (replyBar && replyBar.classList.contains('open')) return;
         var dx = e.changedTouches[0].clientX - _swTouchX;
         var dy = e.changedTouches[0].clientY - _swTouchY;
         // Swipe horizontal seulement si plus horizontal que vertical et > 50px
