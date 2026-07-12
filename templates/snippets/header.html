@@ -183,6 +183,76 @@
     box-shadow: 0 0 8px var(--accent), 0 0 16px rgba(212,175,55,.28);
 }
 
+/* ── Centre nav "Plus" dropdown ── */
+.zoot-nav-more { position: relative; }
+.zoot-nav-more-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    width: auto;
+}
+.zoot-nav-more-menu {
+    position: absolute !important;
+    top: calc(100% + 14px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    min-width: 265px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.16), 0 2px 8px rgba(0,0,0,.08);
+    padding: .35rem 0 .5rem;
+    z-index: 2000;
+    margin-top: 0 !important;
+    animation: dropIn .22s cubic-bezier(.34,1.3,.64,1);
+    transform-origin: top center;
+}
+[data-theme="dark"] .zoot-nav-more-menu {
+    box-shadow: 0 12px 40px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.4);
+}
+.zoot-nav-more-menu .dropdown-item {
+    color: var(--text);
+    font-size: .88rem;
+    font-weight: 500;
+    padding: .52rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    border-radius: 10px;
+    margin: 1px 6px;
+    width: calc(100% - 12px);
+    transition: background .15s, color .15s;
+}
+.zoot-nav-more-menu .dropdown-item:hover,
+.zoot-nav-more-menu .dropdown-item:focus {
+    background: var(--btn-bg);
+    color: var(--accent);
+    outline: none;
+    text-decoration: none;
+}
+.zoot-nav-more-menu .dropdown-item .material-icons {
+    font-size: 1.1rem;
+    width: 22px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    transition: color .15s;
+}
+.zoot-nav-more-menu .dropdown-item:hover .material-icons { color: var(--accent); }
+.zoot-nav-more-menu .dropdown-divider {
+    border-color: var(--border);
+    margin: .35rem .6rem;
+}
+.zoot-nav-more-menu .zoot-dropdown-label {
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: .55rem 1rem .2rem;
+    margin: 0;
+}
+
 /* ── Right section ── */
 .zoot-nav-right {
     display: flex;
@@ -735,41 +805,73 @@
 
     <!-- Center nav links (desktop) -->
     <div class="zoot-nav-center d-none d-lg-flex">
+
+        <!-- Feed -->
         <a href="{% url 'post:post-view' %}"
            class="zoot-nav-link {% if request.resolver_match.url_name == 'post-view' %}active{% endif %}">
             <span class="material-icons">home</span>
             <span>{% trans "Feed" %}</span>
         </a>
-        <a href="{% url 'post:index' %}"
-           class="zoot-nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-            <span class="material-icons">explore</span>
-            <span>{% trans "Explore" %}</span>
-        </a>
-        <a href="{% url 'post:tendances' %}"
-           class="zoot-nav-link {% if request.resolver_match.url_name == 'tendances' %}active{% endif %}">
-            <span class="material-icons">trending_up</span>
-            <span>{% trans "Tendances" %}</span>
-        </a>
-        <a href="{% url 'group:list' %}"
-           class="zoot-nav-link {% if request.resolver_match.namespace == 'group' %}active{% endif %}">
-            <span class="material-icons">groups</span>
-            <span>{% trans "Groups" %}</span>
-        </a>
-        <a href="{% url 'post:kabary-create' %}"
-           class="zoot-nav-link {% if request.resolver_match.url_name == 'kabary-create' %}active{% endif %}">
-            <span class="material-icons">record_voice_over</span>
-            <span>Kabary</span>
-        </a>
-        <a href="{% url 'post:vintana-create' %}"
-           class="zoot-nav-link {% if request.resolver_match.url_name == 'vintana-create' %}active{% endif %}">
-            <span class="material-icons">lock_clock</span>
-            <span>Vintana</span>
-        </a>
+
+        <!-- Bazar (lien direct) -->
         <a href="{% url 'bazar:index' %}"
            class="zoot-nav-link {% if request.resolver_match.namespace == 'bazar' %}active{% endif %}">
             <span class="material-icons">storefront</span>
             <span>{% trans "Bazar" %}</span>
         </a>
+
+        <!-- Plus — dropdown toutes les autres sections -->
+        <div class="zoot-nav-more dropdown">
+            <button class="zoot-nav-link zoot-nav-more-btn
+                {% if request.resolver_match.namespace == 'tourisme' or request.resolver_match.namespace == 'group' or request.resolver_match.namespace == 'video' or request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'tendances' or request.resolver_match.url_name == 'kabary-create' or request.resolver_match.url_name == 'vintana-create' or request.resolver_match.url_name == 'live-list' %}active{% endif %}"
+                id="zoot-nav-more-toggle"
+                data-toggle="dropdown" data-display="static"
+                aria-haspopup="true" aria-expanded="false"
+                type="button">
+                <span class="material-icons">grid_view</span>
+                <span>{% trans "Plus" %}</span>
+            </button>
+            <div class="dropdown-menu zoot-nav-more-menu" aria-labelledby="zoot-nav-more-toggle">
+
+                <!-- Découvrir -->
+                <p class="zoot-dropdown-label">{% trans "Découvrir" %}</p>
+                <a class="dropdown-item" href="{% url 'post:index' %}">
+                    <span class="material-icons">explore</span> {% trans "Explore" %}
+                </a>
+                <a class="dropdown-item" href="{% url 'post:tendances' %}">
+                    <span class="material-icons">trending_up</span> {% trans "Tendances" %}
+                </a>
+                <a class="dropdown-item" href="{% url 'tourisme:home' %}">
+                    <span class="material-icons">map</span> {% trans "Tourisme" %}
+                </a>
+
+                <div class="dropdown-divider"></div>
+
+                <!-- Communauté -->
+                <p class="zoot-dropdown-label">{% trans "Communauté" %}</p>
+                <a class="dropdown-item" href="{% url 'group:list' %}">
+                    <span class="material-icons">groups</span> {% trans "Groupes" %}
+                </a>
+                <a class="dropdown-item" href="{% url 'video:live-list' %}" style="color:#ff3b3b;">
+                    <span class="material-icons" style="color:#ff3b3b;">radio_button_checked</span>
+                    Live
+                    <span id="nav-live-count" style="background:#ff3b3b;color:#fff;font-size:.65rem;font-weight:800;padding:0 5px;border-radius:8px;min-width:16px;text-align:center;margin-left:auto;display:none;"></span>
+                </a>
+
+                <div class="dropdown-divider"></div>
+
+                <!-- Créer -->
+                <p class="zoot-dropdown-label">{% trans "Créer" %}</p>
+                <a class="dropdown-item" href="{% url 'post:kabary-create' %}" style="color:var(--accent);">
+                    <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
+                </a>
+                <a class="dropdown-item" href="{% url 'post:vintana-create' %}" style="color:#bf5fff;">
+                    <span class="material-icons" style="color:#bf5fff;">lock_clock</span> Vintana
+                </a>
+
+            </div>
+        </div>
+
     </div>
 
     <!-- Right section -->
@@ -947,6 +1049,9 @@
                 <a class="dropdown-item" href="{% url 'bazar:mes_favoris' %}">
                     <span class="material-icons">favorite_border</span> {% trans "Mes favoris" %}
                 </a>
+                <a class="dropdown-item" href="{% url 'tourisme:home' %}">
+                    <span class="material-icons">map</span> {% trans "Tourisme" %}
+                </a>
                 <a class="dropdown-item" href="{% url 'friend:friend-requests' user_id=request.user.id %}">
                     <span class="material-icons">person_add_alt</span> {% trans "Friend requests" %}
                 </a>
@@ -972,14 +1077,6 @@
                    style="color:#ff3b3b;">
                     <span class="material-icons" style="color:#ff3b3b;">radio_button_checked</span>
                     Live
-                    <span id="nav-live-count" style="
-                        background:#ff3b3b;color:#fff;
-                        font-size:.65rem;font-weight:800;
-                        padding:0 5px;border-radius:8px;
-                        min-width:16px;text-align:center;
-                        margin-left:auto;
-                        display:none;
-                    "></span>
                 </a>
 
                 <div class="dropdown-divider"></div>
@@ -1066,31 +1163,45 @@
         <input type="text" name="q" placeholder="{% trans 'Search...' %}" autocomplete="off">
         <button type="submit"><span class="material-icons" style="font-size:1.1rem;color:var(--text-muted)">search</span></button>
     </form>
+
+    <!-- Accueil & Bazar -->
     <a href="{% url 'post:post-view' %}" class="zoot-mobile-link">
         <span class="material-icons">home</span> {% trans "Feed" %}
     </a>
+    <a href="{% url 'bazar:index' %}" class="zoot-mobile-link">
+        <span class="material-icons">storefront</span> Bazar
+    </a>
+
+    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
+    <p style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.2rem .8rem 0;margin:0;">{% trans "Découvrir" %}</p>
     <a href="{% url 'post:index' %}" class="zoot-mobile-link">
         <span class="material-icons">explore</span> {% trans "Explore" %}
     </a>
     <a href="{% url 'post:tendances' %}" class="zoot-mobile-link">
         <span class="material-icons">trending_up</span> {% trans "Tendances" %}
     </a>
+    <a href="{% url 'tourisme:home' %}" class="zoot-mobile-link">
+        <span class="material-icons">map</span> {% trans "Tourisme" %}
+    </a>
+
+    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
+    <p style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.2rem .8rem 0;margin:0;">{% trans "Communauté" %}</p>
     <a href="{% url 'group:list' %}" class="zoot-mobile-link">
-        <span class="material-icons">groups</span> {% trans "Groups" %}
+        <span class="material-icons">groups</span> {% trans "Groupes" %}
     </a>
     <a href="{% url 'video:live-list' %}" class="zoot-mobile-link" style="color:#ff3b3b;">
         <span class="material-icons" style="color:#ff3b3b;">radio_button_checked</span> Live
     </a>
+
     <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
+    <p style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.2rem .8rem 0;margin:0;">{% trans "Créer" %}</p>
     <a href="{% url 'post:kabary-create' %}" class="zoot-mobile-link" style="color:var(--accent);">
         <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
     </a>
     <a href="{% url 'post:vintana-create' %}" class="zoot-mobile-link" style="color:#bf5fff;">
         <span class="material-icons" style="color:#bf5fff;">lock_clock</span> Vintana
     </a>
-    <a href="{% url 'bazar:index' %}" class="zoot-mobile-link">
-        <span class="material-icons">storefront</span> {% trans "Bazar" %}
-    </a>
+
     <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
         <span class="material-icons">person_outline</span> {% trans "My profile" %}
