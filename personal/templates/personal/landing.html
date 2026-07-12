@@ -321,9 +321,12 @@
   <nav>
     <a href="{% url 'landing' %}" class="nav-logo">
       <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA" class="logo-desktop"
-           onerror="this.style.display='none'">
+           onerror="this.style.display='none';document.getElementById('nav-logo-txt').style.display='block'">
       <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="VAZIMBA" class="logo-mobile"
-           onerror="this.style.display='none'">
+           onerror="this.style.display='none';document.getElementById('nav-logo-txt').style.display='block'">
+      <!-- Fallback texte si les deux images ratent -->
+      <span id="nav-logo-txt" style="display:none;font-weight:900;font-size:1.1rem;
+            letter-spacing:1px;color:#fff;">VAZIMBA</span>
     </a>
     <div class="nav-links">
       <a href="#features" class="hide-mobile">Fonctionnalités</a>

@@ -143,12 +143,18 @@
         <!-- Brand -->
         <a href="/" class="footer-brand" style="gap:.8rem; flex-direction:column; align-items:center;">
             <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA"
+                 id="footer-logo-img"
                  style="height:120px;width:auto;object-fit:contain;flex-shrink:0;
                         transition:opacity .2s;"
-                 onerror="this.style.display='none'">
+                 onerror="this.style.display='none';document.getElementById('footer-logo-txt').style.display='block'">
+            <!-- Fallback texte si l'image ne charge pas -->
+            <span id="footer-logo-txt"
+                  style="display:none;font-size:1.8rem;font-weight:900;letter-spacing:3px;
+                         color:#8B4513;font-family:inherit;">VAZIMBA</span>
         </a>
         <style>
         [data-theme="dark"] .footer-brand img { filter: brightness(0) invert(1); }
+        [data-theme="dark"] #footer-logo-txt { color: #D4AF37; }
         </style>
 
         <!-- Tagline -->

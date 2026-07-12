@@ -1304,6 +1304,31 @@
     .chat-sidebar-toggle { display: none !important; }
     /* Bouton retour visible */
     .chat-back-btn { display: flex !important; }
+
+    /* ── Sidebar mobile : fond clair pour meilleure lisibilité ── */
+    .chat-sidebar {
+        background: var(--bg-card);
+    }
+    [data-theme="dark"] .chat-sidebar {
+        background: #1a0a02;
+    }
+    /* Header de la sidebar : garde la couleur de la marque (brun) */
+    .chat-sidebar-header {
+        background: #2a0e03;
+    }
+    /* Noms et aperçus : couleur du texte adapte au thème */
+    .chat-sidebar .friend-name    { color: var(--text); }
+    .chat-sidebar .friend-preview { color: var(--text-muted); }
+    .chat-sidebar .friend-time    { color: var(--text-muted); }
+    .chat-sidebar .friend-container:hover  { background: var(--btn-bg, rgba(0,0,0,.05)); }
+    .chat-sidebar .friend-container.active { background: rgba(139,69,19,.1); }
+    .chat-sidebar .friend-container.active .friend-name    { color: #8B4513; }
+    .chat-sidebar .friend-container.active .friend-preview { color: rgba(139,69,19,.65); }
+    .chat-sidebar .friend-container.active .friend-time    { color: rgba(139,69,19,.5); }
+    [data-theme="dark"] .chat-sidebar .friend-container.active .friend-name { color: #D4AF37; }
+    /* Séparateur entre items */
+    .chat-sidebar .friend-container { border-bottom: 1px solid var(--border, rgba(0,0,0,.06)); }
+
     /* Bulles légèrement plus larges sur petit écran */
     .msg-content-wrap { max-width: 85%; }
 
