@@ -371,17 +371,16 @@
 {% endif %}
 
 <!-- ── Filtres catégories ────────────────────────────────────────────────── -->
-{% if categories_used|length > 1 %}
+{% if categories_with_labels|length > 1 %}
 <div class="boutique-cats">
     <a href="{% url 'bazar:boutique' username=boutique_seller.username %}"
        class="boutique-cat-btn {% if not cat_filter %}active{% endif %}">
         {% trans "Tout" %}
     </a>
-    {% for cat_key in categories_used %}
+    {% for cat_key, cat_label in categories_with_labels %}
     <a href="{% url 'bazar:boutique' username=boutique_seller.username %}?cat={{ cat_key }}"
        class="boutique-cat-btn {% if cat_filter == cat_key %}active{% endif %}">
-        {{ category_choices|default_if_none:cat_key }}
-        {# fallback : récupère le label depuis le dict #}
+        {{ cat_label }}
     </a>
     {% endfor %}
 </div>
