@@ -243,17 +243,52 @@ hr.verif-sep { border: none; border-top: 1px solid var(--border); margin: 1.5rem
                 </div>
             </div>
 
-            {% elif verification.status == 'approved' %}
+            {% elif verification.status == 'approved' and verification.seller_type == 'verified' %}
             <div class="verif-status-box verif-status-approved">
                 <span class="verif-status-icon">✅</span>
                 <div>
                     <div class="verif-status-label">{% trans "Compte vérifié" %}</div>
                     <div class="verif-status-detail">
                         {% blocktrans with date=verification.reviewed_at|date:"d/m/Y" %}Approuvé le {{ date }}.{% endblocktrans %}
-                        {% trans "Tous les avantages sont actifs sur votre compte." %}
+                        {% trans "Badge ✓ actif, 12 photos par annonce." %}
                     </div>
                 </div>
             </div>
+
+            <!-- Upgrade vers Pro -->
+            <hr class="verif-sep">
+            <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fcd34d;border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1.5rem;">
+                <div style="font-size:1.1rem;font-weight:800;color:#78350f;margin-bottom:.35rem;">⭐ {% trans "Évoluer vers Boutique Pro" %}</div>
+                <div style="font-size:.83rem;color:#92400e;margin-bottom:1rem;line-height:1.55;">
+                    {% trans "Votre activité a grandi ? Passez au niveau supérieur : page boutique dédiée, badge doré, 20 photos par annonce, priorité maximale dans les résultats." %}
+                </div>
+                <button type="button" onclick="showUpgradeForm()"
+                        style="display:inline-flex;align-items:center;gap:.45rem;background:#d97706;color:#fff;border:none;border-radius:10px;padding:.6rem 1.3rem;font-weight:700;font-size:.88rem;cursor:pointer;">
+                    ⭐ {% trans "Demander le statut Boutique Pro" %}
+                </button>
+            </div>
+
+            <!-- Formulaire upgrade (caché par défaut) -->
+            <div id="upgrade-form-wrap" style="display:none;">
+                <form method="post" enctype="multipart/form-data" id="verif-form">
+                    {% csrf_token %}
+                    {# On force le type pro directement #}
+                    {% include "bazar/_verification_form.html" with initial_type="pro" %}
+                </form>
+            </div>
+            <script>
+            function showUpgradeForm() {
+                document.getElementById('upgrade-form-wrap').style.display = 'block';
+                document.getElementById('upgrade-form-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Forcer le type à 'pro' et masquer les cartes de choix
+                var grid = document.getElementById('verif-type-grid');
+                if (grid) grid.style.display = 'none';
+                var inp = document.getElementById('seller-type-input');
+                if (inp) inp.value = 'pro';
+                var bf = document.getElementById('verif-boutique-fields');
+                if (bf) bf.classList.add('visible');
+            }
+            </script>
 
             {% elif verification.status == 'rejected' %}
             <div class="verif-status-box verif-status-rejected">

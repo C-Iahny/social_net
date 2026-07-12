@@ -464,13 +464,20 @@ def request_verification(request):
         verification = None
 
     if request.method == 'POST':
-        # Empêcher une double soumission si déjà approuvé ou en attente
-        if verification and verification.status in (
-            SellerVerification.STATUS_PENDING,
-            SellerVerification.STATUS_APPROVED,
-        ):
-            messages.info(request, 'Vous avez déjà une demande en cours ou votre compte est déjà vérifié.')
+        new_type = request.POST.get('seller_type', 'verified').strip()
+        # Bloquer si en attente — pas de double soumission
+        if verification and verification.status == SellerVerification.STATUS_PENDING:
+            messages.info(request, 'Vous avez déjà une demande en cours.')
             return redirect('bazar:mes_annonces')
+        # Bloquer si déjà approuvé au même niveau (ou déjà Pro)
+        if verification and verification.status == SellerVerification.STATUS_APPROVED:
+            if verification.seller_type == SellerVerification.SELLER_TYPE_PRO:
+                messages.info(request, 'Votre boutique Pro est déjà active.')
+                return redirect('bazar:mes_annonces')
+            if new_type != SellerVerification.SELLER_TYPE_PRO:
+                messages.info(request, 'Votre compte est déjà vérifié.')
+                return redirect('bazar:mes_annonces')
+            # Sinon : upgrade verified → pro — on continue
 
         # ── Données communes ──────────────────────────────────────────────────
         seller_type  = request.POST.get('seller_type', 'verified').strip()
