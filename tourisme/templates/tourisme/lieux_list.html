@@ -1,0 +1,379 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block extra_head %}
+<style>
+/* ============================================================
+   TOURISME — LISTE DES LIEUX
+   ============================================================ */
+.lieux-hero {
+    background: linear-gradient(120deg, #0a4a2e 0%, #1a7a4a 100%);
+    color: #fff;
+    padding: 2.5rem 1.5rem 2rem;
+    text-align: center;
+}
+[data-theme="dark"] .lieux-hero {
+    background: linear-gradient(120deg, #041a0f 0%, #0a3d1f 100%);
+}
+.lieux-hero h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -.03em;
+    margin: 0 0 .3rem;
+}
+.lieux-hero p {
+    font-size: .9rem;
+    opacity: .8;
+    margin: 0;
+}
+
+/* ── Barre de recherche ── */
+.lieux-search-bar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.2rem;
+    position: sticky;
+    top: 62px;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+.lieux-search-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    gap: .6rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.lieux-search-field {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: .45rem 1rem .45rem .8rem;
+    gap: .4rem;
+    transition: border-color .15s;
+}
+.lieux-search-field:focus-within {
+    border-color: var(--accent);
+}
+.lieux-search-field .material-icons {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+.lieux-search-field input {
+    border: none;
+    background: transparent;
+    font-size: .9rem;
+    color: var(--text);
+    outline: none;
+    width: 100%;
+}
+.lieux-search-field input::placeholder { color: var(--text-subtle); }
+
+.lieux-select {
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: .45rem 1rem;
+    font-size: .88rem;
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    transition: border-color .15s;
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 2rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%23888' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right .7rem center;
+}
+.lieux-select:focus { border-color: var(--accent); }
+
+.lieux-search-submit {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: .5rem 1.4rem;
+    font-size: .88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .18s;
+    flex-shrink: 0;
+}
+.lieux-search-submit:hover { opacity: .88; }
+
+/* ── Chips catégories ── */
+.cat-chips {
+    display: flex;
+    gap: .5rem;
+    overflow-x: auto;
+    padding: .2rem 0 .4rem;
+    scrollbar-width: none;
+    max-width: 900px;
+    margin: .5rem auto 0;
+}
+.cat-chips::-webkit-scrollbar { display: none; }
+.cat-chip-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    border-radius: 50px;
+    padding: .3rem .9rem;
+    font-size: .78rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .15s;
+    flex-shrink: 0;
+}
+.cat-chip-btn:hover,
+.cat-chip-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+    text-decoration: none;
+}
+
+/* ── Résultats info ── */
+.lieux-results-info {
+    font-size: .82rem;
+    color: var(--text-muted);
+    margin-bottom: 1.2rem;
+}
+
+/* ── Grille ── */
+.lieu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.2rem;
+}
+.lieu-card {
+    background: var(--bg-card);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: transform .2s, box-shadow .2s;
+    text-decoration: none;
+    display: block;
+    color: var(--text);
+}
+.lieu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+    color: var(--text);
+}
+.lieu-card-img {
+    height: 170px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a7a4a, #0d6633);
+}
+.lieu-card-img img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+}
+.lieu-card-img-ph {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+}
+.lieu-card-img-ph .material-icons {
+    font-size: 2.5rem; color: rgba(255,255,255,.4);
+}
+.cat-badge {
+    position: absolute; top: .6rem; left: .6rem;
+    background: rgba(0,0,0,.55);
+    color: #fff; border-radius: 50px;
+    padding: .2rem .65rem; font-size: .67rem; font-weight: 700;
+    backdrop-filter: blur(6px); letter-spacing: .03em;
+}
+.lieu-card-body { padding: .9rem 1rem .8rem; }
+.lieu-card-name {
+    font-size: .95rem; font-weight: 700;
+    margin: 0 0 .25rem; line-height: 1.3;
+}
+.lieu-card-meta {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .75rem; color: var(--text-muted); margin-bottom: .4rem;
+}
+.lieu-card-meta .material-icons { font-size: .9rem; color: var(--accent); }
+.lieu-card-desc {
+    font-size: .8rem; color: var(--text-muted); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ── Pagination ── */
+.tour-pagination {
+    display: flex; justify-content: center; gap: .5rem; flex-wrap: wrap; margin-top: 2rem;
+}
+.tour-page-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 36px; height: 36px; padding: 0 .7rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px; font-size: .85rem; font-weight: 600;
+    color: var(--text-muted); text-decoration: none; background: var(--bg-card);
+    transition: all .15s;
+}
+.tour-page-btn:hover, .tour-page-btn.active {
+    border-color: var(--accent); color: var(--accent);
+    background: var(--accent-glow); text-decoration: none;
+}
+.tour-page-btn.active { font-weight: 800; }
+
+/* ── Empty ── */
+.lieux-empty {
+    text-align: center; padding: 4rem 1rem; color: var(--text-muted);
+}
+.lieux-empty .material-icons { font-size: 4rem; opacity: .25; display: block; margin-bottom: .8rem; }
+
+@media (max-width: 575px) {
+    .lieux-hero { padding: 2rem 1rem 1.5rem; }
+    .lieux-hero h1 { font-size: 1.4rem; }
+    .lieux-search-inner { flex-wrap: wrap; }
+    .lieux-search-field { min-width: 0; }
+    .lieu-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 380px) {
+    .lieu-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+
+<!-- ── Hero ── -->
+<div class="lieux-hero">
+    <h1>Lieux touristiques</h1>
+    <p>{{ total }} destination{{ total|pluralize }} à découvrir à Madagascar</p>
+</div>
+
+<!-- ── Barre de recherche + filtres ── -->
+<div class="lieux-search-bar">
+    <form method="get" action="{% url 'tourisme:lieux_list' %}">
+        <div class="lieux-search-inner">
+            <div class="lieux-search-field">
+                <span class="material-icons">search</span>
+                <input type="text" name="q" value="{{ q }}" placeholder="Rechercher un lieu…">
+            </div>
+            <select name="region" class="lieux-select">
+                <option value="">Toutes les régions</option>
+                {% for r_key, r_label in regions %}
+                <option value="{{ r_key }}" {% if sel_region == r_key %}selected{% endif %}>{{ r_label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="lieux-search-submit">
+                <span class="material-icons" style="font-size:1rem;vertical-align:middle">search</span>
+            </button>
+        </div>
+        <!-- Chips catégorie -->
+        <div class="cat-chips">
+            <a href="{% url 'tourisme:lieux_list' %}{% if q %}?q={{ q }}{% endif %}{% if sel_region %}&region={{ sel_region }}{% endif %}"
+               class="cat-chip-btn {% if not sel_cat %}active{% endif %}">
+                Tous
+            </a>
+            {% for cat_key, cat_label in categories %}
+            <a href="?cat={{ cat_key }}{% if q %}&q={{ q }}{% endif %}{% if sel_region %}&region={{ sel_region }}{% endif %}"
+               class="cat-chip-btn {% if sel_cat == cat_key %}active{% endif %}">
+                {{ cat_label }}
+            </a>
+            {% endfor %}
+        </div>
+        {% if sel_cat %}<input type="hidden" name="cat" value="{{ sel_cat }}">{% endif %}
+    </form>
+</div>
+
+<div class="container" style="max-width:1100px;padding:1.5rem 1rem 3rem;">
+
+    {% if q or sel_cat or sel_region %}
+    <div class="lieux-results-info">
+        {{ total }} résultat{{ total|pluralize }}
+        {% if q %} pour &laquo; {{ q }} &raquo;{% endif %}
+        {% if sel_cat %} &middot; {{ sel_cat }}{% endif %}
+        {% if sel_region %} &middot; {{ sel_region }}{% endif %}
+        &mdash; <a href="{% url 'tourisme:lieux_list' %}" style="color:var(--accent)">Effacer les filtres</a>
+    </div>
+    {% endif %}
+
+    {% if page_obj.object_list %}
+    <div class="lieu-grid">
+        {% for lieu in page_obj %}
+        <a href="{% url 'tourisme:lieu_detail' lieu.slug %}" class="lieu-card">
+            <div class="lieu-card-img">
+                {% with img=lieu.get_primary_image %}
+                {% if img %}
+                    <img src="{{ img.image.url }}" alt="{{ lieu.name }}" loading="lazy">
+                {% else %}
+                    <div class="lieu-card-img-ph">
+                        <span class="material-icons">landscape</span>
+                    </div>
+                {% endif %}
+                {% endwith %}
+                <span class="cat-badge">{{ lieu.get_category_display }}</span>
+            </div>
+            <div class="lieu-card-body">
+                <div class="lieu-card-name">{{ lieu.name }}</div>
+                {% if lieu.region %}
+                <div class="lieu-card-meta">
+                    <span class="material-icons">place</span>
+                    {{ lieu.get_region_display }}
+                </div>
+                {% endif %}
+                <div class="lieu-card-desc">{{ lieu.description|truncatechars:110 }}</div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="tour-pagination" aria-label="Pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if sel_cat %}&cat={{ sel_cat }}{% endif %}{% if sel_region %}&region={{ sel_region }}{% endif %}"
+           class="tour-page-btn">
+            <span class="material-icons" style="font-size:1rem">chevron_left</span>
+        </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="tour-page-btn active">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if sel_cat %}&cat={{ sel_cat }}{% endif %}{% if sel_region %}&region={{ sel_region }}{% endif %}"
+           class="tour-page-btn">{{ num }}</a>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if sel_cat %}&cat={{ sel_cat }}{% endif %}{% if sel_region %}&region={{ sel_region }}{% endif %}"
+           class="tour-page-btn">
+            <span class="material-icons" style="font-size:1rem">chevron_right</span>
+        </a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="lieux-empty">
+        <span class="material-icons">travel_explore</span>
+        <div style="font-size:1.05rem;font-weight:700;margin-bottom:.4rem">Aucun lieu trouvé</div>
+        <div style="font-size:.88rem;">Essayez d'autres termes ou
+            <a href="{% url 'tourisme:lieux_list' %}" style="color:var(--accent)">réinitialisez les filtres</a>.
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+</main>
+{% endblock %}

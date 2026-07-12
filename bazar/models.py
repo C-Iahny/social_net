@@ -36,10 +36,17 @@ class Annonce(models.Model):
         ('pieces',      _('Pour pièces')),
     ]
 
+    # ── Type d'annonce ─────────────────────────────────────────────────────────
+    LISTING_TYPE_CHOICES = [
+        ('vente',    _('Vente')),
+        ('location', _('Location')),
+    ]
+
     # ── Statut de l'annonce ────────────────────────────────────────────────────
     STATUS_CHOICES = [
         ('active',  _('Active')),
         ('vendue',  _('Vendue')),
+        ('louee',   _('Louée')),
         ('pause',   _('En pause')),
         ('expiree', _('Expirée')),
     ]
@@ -70,6 +77,60 @@ class Annonce(models.Model):
         help_text=_('Laisser vide pour "Prix à discuter"'),
     )
     price_negotiable = models.BooleanField(default=False, verbose_name=_('Prix négociable'))
+
+    # ── Type d'annonce ─────────────────────────────────────────────────────────
+    listing_type = models.CharField(
+        max_length=10, choices=LISTING_TYPE_CHOICES,
+        default='vente', verbose_name=_('Type d\'annonce'),
+        db_index=True,
+    )
+
+    # ── Location-specific ─────────────────────────────────────────────────────
+    PERIODE_CHOICES = [
+        ('jour',    _('/ jour')),
+        ('semaine', _('/ semaine')),
+        ('mois',    _('/ mois')),
+    ]
+
+    prix_location = models.DecimalField(
+        max_digits=12, decimal_places=0,
+        null=True, blank=True,
+        verbose_name=_('Prix de location'),
+    )
+    periode_location = models.CharField(
+        max_length=10, choices=PERIODE_CHOICES,
+        default='jour', blank=True,
+        verbose_name=_('Période'),
+    )
+    caution = models.DecimalField(
+        max_digits=12, decimal_places=0,
+        null=True, blank=True,
+        verbose_name=_('Caution (Ar)'),
+    )
+    duree_min = models.PositiveIntegerField(
+        null=True, blank=True,
+        verbose_name=_('Durée min (jours)'),
+        help_text=_('Durée minimale de location en jours'),
+    )
+
+    # ── Appartement ───────────────────────────────────────────────────────────
+    nb_pieces = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        verbose_name=_('Nb de pièces'),
+    )
+    surface_m2 = models.FloatField(
+        null=True, blank=True,
+        verbose_name=_('Surface (m²)'),
+    )
+    meuble = models.BooleanField(default=False, verbose_name=_('Meublé'))
+    charges_incluses = models.BooleanField(
+        default=False, verbose_name=_('Charges incluses'),
+    )
+
+    # ── Voiture en location ───────────────────────────────────────────────────
+    avec_chauffeur = models.BooleanField(
+        default=False, verbose_name=_('Avec chauffeur'),
+    )
 
     # ── Localisation ──────────────────────────────────────────────────────────
     location    = models.CharField(
@@ -143,8 +204,19 @@ class Annonce(models.Model):
         return f'{int(self.price):,} Ar'.replace(',', ' ')
 
     @property
+    def formatted_prix_location(self):
+        if self.prix_location is None:
+            return 'Prix à discuter'
+        period = dict(self.PERIODE_CHOICES).get(self.periode_location, '')
+        return f'{int(self.prix_location):,} Ar {period}'.replace(',', ' ')
+
+    @property
     def is_active(self):
         return self.status == 'active'
+
+    @property
+    def is_location(self):
+        return self.listing_type == 'location'
 
 
 class AnnonceImage(models.Model):

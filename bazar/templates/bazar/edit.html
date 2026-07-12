@@ -105,6 +105,16 @@
     .bazar-submit { flex-direction:column-reverse; }
     .bazar-btn-submit,.bazar-btn-cancel { width:100%;text-align:center;justify-content:center; }
 }
+
+/* ── Sélecteur type d'annonce ── */
+.type-radio-group { display:flex; gap:1rem; flex-wrap:wrap; margin-top:.5rem; }
+.type-radio-btn { flex:1; min-width:160px; border:2px solid var(--border); border-radius:12px;
+  padding:1rem; cursor:pointer; transition:all .18s; }
+.type-radio-btn input[type=radio] { display:none; }
+.type-radio-btn.selected { border-color:var(--accent); background:rgba(139,94,60,.07); }
+.type-radio-btn:hover { border-color:var(--accent); }
+.location-fields { background:var(--bg-secondary); border-radius:12px; padding:1.2rem; margin-bottom:1.5rem; }
+.loc-fields-header { font-weight:700; font-size:.95rem; margin-bottom:1rem; color:var(--accent); }
 </style>
 
 <div class="bazar-form-wrap">
@@ -127,6 +137,69 @@
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
+
+        <!-- Type d'annonce -->
+        <div class="bazar-section">
+          <div class="bazar-section-title">🏷️ {% trans "Type d'annonce" %}</div>
+          <div class="type-radio-group">
+            <label class="type-radio-btn {% if annonce.listing_type != 'location' %}selected{% endif %}" id="lbl-vente">
+              <input type="radio" name="listing_type" value="vente"
+                     {% if annonce.listing_type != 'location' %}checked{% endif %}>
+              🏷️ <strong>À vendre</strong><br>
+              <small>Vente d'un objet ou service</small>
+            </label>
+            <label class="type-radio-btn {% if annonce.listing_type == 'location' %}selected{% endif %}" id="lbl-location">
+              <input type="radio" name="listing_type" value="location"
+                     {% if annonce.listing_type == 'location' %}checked{% endif %}>
+              🔑 <strong>À louer</strong><br>
+              <small>Location de voiture ou appartement</small>
+            </label>
+          </div>
+        </div>
+
+        <!-- Section location (cachée si vente) -->
+        <div class="location-fields" id="location-fields" style="{% if annonce.listing_type != 'location' %}display:none{% endif %}">
+          <div class="loc-fields-header">📋 Conditions de location</div>
+          <div class="row">
+            <div class="col-md-4 form-group">
+              <label>Prix de location (Ar)</label>
+              {{ form.prix_location }}
+            </div>
+            <div class="col-md-4 form-group">
+              <label>Période</label>
+              {{ form.periode_location }}
+            </div>
+            <div class="col-md-4 form-group">
+              <label>Caution (Ar) <small class="text-muted">facultatif</small></label>
+              {{ form.caution }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4 form-group">
+              <label>Durée minimale (jours)</label>
+              {{ form.duree_min }}
+            </div>
+            <div class="col-md-4 form-group">
+              <label>Nb de pièces <small class="text-muted">appartement</small></label>
+              {{ form.nb_pieces }}
+            </div>
+            <div class="col-md-4 form-group">
+              <label>Surface (m²)</label>
+              {{ form.surface_m2 }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4 form-group form-check mt-3 ml-3">
+              {{ form.meuble }} <label class="form-check-label">Meublé</label>
+            </div>
+            <div class="col-md-4 form-group form-check mt-3">
+              {{ form.charges_incluses }} <label class="form-check-label">Charges incluses</label>
+            </div>
+            <div class="col-md-4 form-group form-check mt-3">
+              {{ form.avec_chauffeur }} <label class="form-check-label">Avec chauffeur</label>
+            </div>
+          </div>
+        </div>
 
         <!-- Photos existantes -->
         <div class="bazar-section">
@@ -364,5 +437,22 @@ if (_editForm) {
         });
     });
 }
+
+// ── Toggle champs location ────────────────────────────────────────────────────
+(function() {
+  var radios = document.querySelectorAll('input[name="listing_type"]');
+  var panel  = document.getElementById('location-fields');
+  function update() {
+    var checked = document.querySelector('input[name="listing_type"]:checked');
+    var isLoc = checked && checked.value === 'location';
+    if (panel) panel.style.display = isLoc ? 'block' : 'none';
+    document.querySelectorAll('.type-radio-btn').forEach(function(lbl) {
+      var radio = lbl.querySelector('input[type=radio]');
+      lbl.classList.toggle('selected', radio && radio.checked);
+    });
+  }
+  radios.forEach(function(r) { r.addEventListener('change', update); });
+  update();
+})();
 </script>
 {% endblock %}

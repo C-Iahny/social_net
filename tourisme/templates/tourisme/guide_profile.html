@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block extra_head %}
+<style>
+/* ============================================================
+   TOURISME — PROFIL GUIDE
+   ============================================================ */
+.guide-profile-wrap {
+    max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 4rem;
+}
+
+/* ── Breadcrumb ── */
+.tour-breadcrumb {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .8rem; color: var(--text-muted); margin-bottom: 1.2rem; flex-wrap: wrap;
+}
+.tour-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.tour-breadcrumb a:hover { text-decoration: underline; }
+.tour-breadcrumb .material-icons { font-size: .9rem; }
+
+/* ── Header ── */
+.guide-profile-header {
+    background: var(--bg-card); border-radius: 18px;
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    padding: 2rem 1.5rem 1.5rem; margin-bottom: 1.4rem;
+    display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap;
+}
+.guide-profile-avatar {
+    width: 90px; height: 90px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; font-weight: 800; color: #fff;
+    overflow: hidden; position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,.18);
+}
+.guide-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.guide-profile-main { flex: 1; min-width: 0; }
+.guide-profile-name {
+    font-size: 1.7rem; font-weight: 800; letter-spacing: -.03em;
+    color: var(--text); margin: 0 0 .4rem;
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+}
+.badge-verifie {
+    display: inline-flex; align-items: center; gap: .2rem;
+    background: #e8f5e9; color: #2e7d32; border-radius: 50px;
+    padding: .2rem .75rem; font-size: .72rem; font-weight: 700;
+}
+[data-theme="dark"] .badge-verifie { background: #0a2e0f; color: #81c784; }
+.badge-verifie .material-icons { font-size: .85rem; }
+.badge-unavailable {
+    display: inline-flex; align-items: center; gap: .2rem;
+    background: #fff3e0; color: #e65100; border-radius: 50px;
+    padding: .2rem .75rem; font-size: .72rem; font-weight: 700;
+}
+[data-theme="dark"] .badge-unavailable { background: #2d1200; color: #ff9800; }
+
+.guide-profile-stats {
+    display: flex; gap: 1.5rem; margin: .8rem 0; flex-wrap: wrap;
+}
+.gp-stat { text-align: center; }
+.gp-stat-num { font-size: 1.3rem; font-weight: 800; color: var(--accent); line-height: 1; }
+.gp-stat-label { font-size: .7rem; color: var(--text-muted); margin-top: .15rem; }
+
+.guide-profile-actions {
+    display: flex; gap: .7rem; flex-wrap: wrap; margin-top: .6rem;
+}
+.btn-contact {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: #25d366; color: #fff; border-radius: 50px;
+    padding: .6rem 1.5rem; font-weight: 700; font-size: .9rem;
+    text-decoration: none; transition: opacity .18s;
+}
+.btn-contact:hover { opacity: .88; color: #fff; text-decoration: none; }
+.btn-edit {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--btn-bg); color: var(--text); border-radius: 50px;
+    padding: .6rem 1.5rem; font-weight: 600; font-size: .9rem;
+    text-decoration: none; border: 1.5px solid var(--border); transition: all .18s;
+}
+.btn-edit:hover {
+    border-color: var(--accent); color: var(--accent);
+    background: var(--accent-glow); text-decoration: none;
+}
+
+/* ── Sections ── */
+.gp-section {
+    background: var(--bg-card); border-radius: 14px;
+    border: 1px solid var(--border); padding: 1.3rem 1.4rem;
+    margin-bottom: 1.2rem; box-shadow: var(--shadow);
+}
+.gp-section-title {
+    font-size: 1rem; font-weight: 800; color: var(--text);
+    margin: 0 0 .9rem; display: flex; align-items: center; gap: .4rem;
+    letter-spacing: -.01em;
+}
+.gp-section-title .material-icons { color: var(--accent); font-size: 1.2rem; }
+.gp-bio {
+    font-size: .93rem; line-height: 1.75; color: var(--text);
+}
+
+/* ── Info grid ── */
+.gp-info-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: .8rem;
+}
+.gp-info-row {
+    display: flex; flex-direction: column; gap: .15rem;
+}
+.gp-info-label {
+    font-size: .7rem; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .07em;
+    display: flex; align-items: center; gap: .25rem;
+}
+.gp-info-label .material-icons { font-size: .85rem; color: var(--accent); }
+.gp-info-value {
+    font-size: .9rem; font-weight: 600; color: var(--text); line-height: 1.4;
+}
+
+/* ── Tags ── */
+.gp-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+.gp-tag {
+    background: var(--bg-hover); border-radius: 50px;
+    padding: .3rem .9rem; font-size: .78rem; font-weight: 600;
+    color: var(--text-muted); display: inline-flex; align-items: center; gap: .25rem;
+}
+.gp-tag .material-icons { font-size: .9rem; color: var(--accent); }
+
+/* ── Conditions ── */
+.gp-conditions {
+    font-size: .9rem; line-height: 1.7; color: var(--text);
+    background: linear-gradient(135deg, var(--accent-glow), transparent);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 10px 10px 0; padding: .9rem 1.1rem;
+}
+
+/* ── Lieux couverts ── */
+.gp-lieux-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .8rem;
+}
+.gp-lieu-card {
+    background: var(--bg); border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border); text-decoration: none; color: var(--text);
+    transition: transform .18s, box-shadow .18s; display: block;
+}
+.gp-lieu-card:hover {
+    transform: translateY(-2px); box-shadow: var(--shadow);
+    text-decoration: none; color: var(--text);
+}
+.gp-lieu-img {
+    height: 90px; background: linear-gradient(135deg, #1a7a4a, #0a4a2e);
+    overflow: hidden;
+}
+.gp-lieu-img img { width: 100%; height: 100%; object-fit: cover; }
+.gp-lieu-img-ph {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+}
+.gp-lieu-img-ph .material-icons { font-size: 1.8rem; color: rgba(255,255,255,.4); }
+.gp-lieu-body { padding: .5rem .65rem; }
+.gp-lieu-name { font-size: .8rem; font-weight: 700; }
+.gp-lieu-cat { font-size: .68rem; color: var(--text-muted); }
+
+@media (max-width: 575px) {
+    .guide-profile-header { flex-direction: column; align-items: center; text-align: center; }
+    .guide-profile-stats { justify-content: center; }
+    .guide-profile-actions { justify-content: center; }
+    .gp-info-grid { grid-template-columns: 1fr; }
+    .gp-lieux-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+<div class="guide-profile-wrap">
+
+    <!-- Breadcrumb -->
+    <nav class="tour-breadcrumb">
+        <a href="{% url 'tourisme:home' %}">Tourisme</a>
+        <span class="material-icons">chevron_right</span>
+        <a href="{% url 'tourisme:guides_list' %}">Guides</a>
+        <span class="material-icons">chevron_right</span>
+        <span>{{ guide.display_name }}</span>
+    </nav>
+
+    <!-- ── Header ── -->
+    <div class="guide-profile-header">
+        <div class="guide-profile-avatar">
+            {% if guide.photo %}
+                <img src="{{ guide.photo.url }}" alt="{{ guide.display_name }}">
+            {% elif guide.user.profile_image %}
+                <img src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}">
+            {% else %}
+                {{ guide.display_name|first|upper }}
+            {% endif %}
+        </div>
+        <div class="guide-profile-main">
+            <h1 class="guide-profile-name">
+                {{ guide.display_name }}
+                {% if guide.is_verified %}
+                <span class="badge-verifie">
+                    <span class="material-icons">verified</span>
+                    Guide vérifié
+                </span>
+                {% endif %}
+                {% if not guide.is_active %}
+                <span class="badge-unavailable">
+                    <span class="material-icons">pause_circle</span>
+                    Indisponible
+                </span>
+                {% endif %}
+            </h1>
+
+            <div class="guide-profile-stats">
+                {% if guide.years_experience %}
+                <div class="gp-stat">
+                    <div class="gp-stat-num">{{ guide.years_experience }}</div>
+                    <div class="gp-stat-label">An{{ guide.years_experience|pluralize }} d'expérience</div>
+                </div>
+                {% endif %}
+                {% if guide.prix_jour %}
+                <div class="gp-stat">
+                    <div class="gp-stat-num">{{ guide.prix_jour|floatformat:0 }}</div>
+                    <div class="gp-stat-label">Ar / jour</div>
+                </div>
+                {% endif %}
+                {% if guide.max_group_size %}
+                <div class="gp-stat">
+                    <div class="gp-stat-num">{{ guide.max_group_size }}</div>
+                    <div class="gp-stat-label">Pers. max.</div>
+                </div>
+                {% endif %}
+                {% with nb=guide.lieux_favoris.count %}
+                {% if nb %}
+                <div class="gp-stat">
+                    <div class="gp-stat-num">{{ nb }}</div>
+                    <div class="gp-stat-label">Lieu{{ nb|pluralize }} couvert{{ nb|pluralize }}</div>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <div class="guide-profile-actions">
+                {% if guide.phone %}
+                <a href="https://wa.me/{{ guide.phone|cut:' '|cut:'+'|cut:'-' }}"
+                   target="_blank" rel="noopener" class="btn-contact">
+                    <span class="material-icons" style="font-size:1.1rem">chat</span>
+                    Contacter sur WhatsApp
+                </a>
+                <a href="tel:{{ guide.phone }}" style="display:inline-flex;align-items:center;gap:.3rem;background:var(--btn-bg);border:1.5px solid var(--border);color:var(--text);border-radius:50px;padding:.6rem 1.2rem;font-weight:600;font-size:.88rem;text-decoration:none;">
+                    <span class="material-icons" style="font-size:1rem">call</span>
+                    {{ guide.phone }}
+                </a>
+                {% endif %}
+                {% if is_owner %}
+                <a href="{% url 'tourisme:guide_register' %}" class="btn-edit">
+                    <span class="material-icons" style="font-size:1rem">edit</span>
+                    Modifier mon profil
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Bio ── -->
+    {% if guide.bio %}
+    <div class="gp-section">
+        <div class="gp-section-title">
+            <span class="material-icons">person</span>
+            Présentation
+        </div>
+        <div class="gp-bio">{{ guide.bio|linebreaksbr }}</div>
+    </div>
+    {% endif %}
+
+    <!-- ── Informations ── -->
+    <div class="gp-section">
+        <div class="gp-section-title">
+            <span class="material-icons">info</span>
+            Informations pratiques
+        </div>
+        <div class="gp-info-grid">
+            {% if guide.languages %}
+            <div class="gp-info-row">
+                <div class="gp-info-label">
+                    <span class="material-icons">translate</span>
+                    Langues parlées
+                </div>
+                <div class="gp-tags">
+                    {% for lang in guide.language_list %}
+                    <span class="gp-tag">{{ lang }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if guide.transport_modes %}
+            <div class="gp-info-row">
+                <div class="gp-info-label">
+                    <span class="material-icons">directions_car</span>
+                    Transports
+                </div>
+                <div class="gp-tags">
+                    {% for t in guide.transport_list %}
+                    <span class="gp-tag">
+                        <span class="material-icons">check_circle</span>
+                        {{ t }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% if guide.specialities %}
+            <div class="gp-info-row">
+                <div class="gp-info-label">
+                    <span class="material-icons">star</span>
+                    Spécialités
+                </div>
+                <div class="gp-info-value">{{ guide.specialities }}</div>
+            </div>
+            {% endif %}
+            {% if guide.max_group_size %}
+            <div class="gp-info-row">
+                <div class="gp-info-label">
+                    <span class="material-icons">group</span>
+                    Taille du groupe
+                </div>
+                <div class="gp-info-value">Jusqu'à {{ guide.max_group_size }} personnes</div>
+            </div>
+            {% endif %}
+            {% if guide.regions_covered %}
+            <div class="gp-info-row" style="grid-column: 1 / -1;">
+                <div class="gp-info-label">
+                    <span class="material-icons">map</span>
+                    Régions couvertes
+                </div>
+                <div class="gp-info-value">{{ guide.regions_covered }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── Conditions & Tarifs ── -->
+    {% if guide.conditions %}
+    <div class="gp-section">
+        <div class="gp-section-title">
+            <span class="material-icons">receipt_long</span>
+            Conditions &amp; Tarifs
+        </div>
+        <div class="gp-conditions">{{ guide.conditions|linebreaksbr }}</div>
+    </div>
+    {% endif %}
+
+    <!-- ── Lieux couverts ── -->
+    {% with lieux=guide.lieux_favoris.all %}
+    {% if lieux %}
+    <div class="gp-section">
+        <div class="gp-section-title">
+            <span class="material-icons">place</span>
+            Lieux couverts ({{ lieux.count }})
+        </div>
+        <div class="gp-lieux-grid">
+            {% for lieu in lieux %}
+            <a href="{% url 'tourisme:lieu_detail' lieu.slug %}" class="gp-lieu-card">
+                <div class="gp-lieu-img">
+                    {% with img=lieu.get_primary_image %}
+                    {% if img %}
+                        <img src="{{ img.image.url }}" alt="{{ lieu.name }}" loading="lazy">
+                    {% else %}
+                        <div class="gp-lieu-img-ph">
+                            <span class="material-icons">landscape</span>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="gp-lieu-body">
+                    <div class="gp-lieu-name">{{ lieu.name }}</div>
+                    <div class="gp-lieu-cat">{{ lieu.get_category_display }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <!-- ── CTA contact si pas de téléphone ── -->
+    {% if not guide.phone %}
+    <div style="text-align:center;padding:1.5rem;background:var(--bg-card);border-radius:14px;border:1px solid var(--border);">
+        <span class="material-icons" style="font-size:2rem;color:var(--text-muted);display:block;margin-bottom:.4rem">phone_disabled</span>
+        <div style="font-size:.88rem;color:var(--text-muted);">Ce guide n'a pas renseigné de numéro de contact.</div>
+    </div>
+    {% endif %}
+
+</div>
+</main>
+{% endblock %}

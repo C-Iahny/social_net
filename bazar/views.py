@@ -125,6 +125,11 @@ def bazar_index(request):
     if only_verified:
         qs = qs.filter(seller_verified=True)
 
+    # Filtre type d'annonce (vente / location)
+    listing_type = request.GET.get('type', '').strip()
+    if listing_type in ('vente', 'location'):
+        qs = qs.filter(listing_type=listing_type)
+
     # Tri — les vendeurs vérifiés sont toujours boostés en tête.
     # Pour 'recent', les annonces bumpées remontent (bumped_at > created_at).
     if sort == 'price_asc':
@@ -160,6 +165,7 @@ def bazar_index(request):
         'sel_pmax':        price_max,
         'sort':            sort,
         'only_verified':   only_verified,
+        'listing_type':    listing_type,
         'total':           paginator.count,
         'region_choices':  REGION_CHOICES,
         'user_region':     user_region,
@@ -186,9 +192,9 @@ def annonce_detail(request, pk):
     if request.user != annonce.seller:
         annonce.increment_views()
 
-    # Annonces similaires (même catégorie, actives, pas la même)
+    # Annonces similaires (même catégorie, même type, actives, pas la même)
     similaires = (
-        Annonce.objects.filter(category=annonce.category, status='active')
+        Annonce.objects.filter(category=annonce.category, status='active', listing_type=annonce.listing_type)
         .exclude(pk=annonce.pk)
         .select_related('seller')
         .prefetch_related('images')
