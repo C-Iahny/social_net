@@ -55,6 +55,15 @@
 /* Fallback visuel quand l'image de fond d'une story échoue à charger */
 .story-bg-failed { background: linear-gradient(160deg, #3a1a05, #1a0a02) !important; }
 [data-theme="dark"] .story-bg-failed { background: linear-gradient(160deg, #2a1005, #0a0500) !important; }
+/* Cartes story de type vidéo (pas d'<img> pour une URL mp4) */
+.story-bg-video { background: linear-gradient(160deg, #1a0805, #050100); }
+.story-video-icon {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -60%);
+    font-size: 2.2rem; color: rgba(255,255,255,.8);
+    pointer-events: none;
+    text-shadow: 0 2px 10px rgba(0,0,0,.6);
+}
 .story-item-bg-text {
     position: absolute; inset: 0;
     display: flex; align-items: center; justify-content: center;
@@ -1271,7 +1280,7 @@ input#sc-file-input { display: none; }
 
     <!-- Média -->
     <img   id="sv-img"    class="sv-media" alt="">
-    <video id="sv-video"  class="sv-media" playsinline autoplay></video>
+    <video id="sv-video"  class="sv-media" playsinline muted></video>
     <!-- Fond gradient (type='text') -->
     <div id="sv-text-bg" style="position:absolute;inset:0;display:none;"></div>
     <!-- Texte positionné librement -->
@@ -1480,9 +1489,15 @@ function renderStoryBar() {
         var firstStory = group.stories[0] || {};
         var bgHtml = '';
         if (firstStory.media_url) {
-            bgHtml = '<img class="story-item-bg" src="' + firstStory.media_url +
-                     '" alt="" loading="lazy"' +
-                     ' onerror="this.onerror=null;this.parentNode.classList.add(\'story-bg-failed\')">';
+            if (firstStory.media_type === 'video') {
+                // Impossible d'afficher une vidéo dans <img> → fond sombre + icône play
+                bgHtml = '<div class="story-item-bg story-bg-video"></div>' +
+                         '<span class="material-icons story-video-icon">play_circle_filled</span>';
+            } else {
+                bgHtml = '<img class="story-item-bg" src="' + firstStory.media_url +
+                         '" alt="" loading="lazy"' +
+                         ' onerror="this.onerror=null;this.parentNode.classList.add(\'story-bg-failed\')">';
+            }
         } else if (firstStory.bg_gradient) {
             bgHtml = '<div class="story-item-bg ' + (firstStory.bg_gradient || 'grad_cyan') + '">' +
                      '<div class="story-item-bg-text">' +
@@ -2030,15 +2045,24 @@ window.removeAudio = function() {
 /* ── Audio viewer helpers ──────────────────────────── */
 window.toggleStoryAudio = function() {
     var audio = document.getElementById('sv-audio');
+    var vid   = document.getElementById('sv-video');
     var icon  = document.getElementById('sv-audio-icon');
     if (_svAudioMuted) {
-        audio.muted = false;
+        if (audio) audio.muted = false;
+        // Activer le son de la vidéo story (et relancer si nécessaire)
+        if (vid && vid.src && !vid.paused) {
+            vid.muted = false;
+        } else if (vid && vid.src) {
+            vid.muted = false;
+            vid.play().catch(function(){ vid.muted = true; });
+        }
         _svAudioMuted = false;
-        icon.textContent = 'volume_up';
+        if (icon) icon.textContent = 'volume_up';
     } else {
-        audio.muted = true;
+        if (audio) audio.muted = true;
+        if (vid && vid.src) vid.muted = true;
         _svAudioMuted = true;
-        icon.textContent = 'volume_off';
+        if (icon) icon.textContent = 'volume_off';
     }
 };
 
@@ -2441,9 +2465,24 @@ function renderCurrentStory() {
     if (story.story_type === 'video' && story.media_url) {
         var vid = document.getElementById('sv-video');
         vid.src = story.media_url;
+        vid.muted = _svAudioMuted; // respecter l'état muet global
         vid.style.display = 'block';
-        vid.play();
         vid.onloadedmetadata = function() { duration = vid.duration * 1000; };
+        var playPromise = vid.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(function() {
+                // Autoplay bloqué (pas de geste utilisateur) → forcer muet et réessayer
+                vid.muted = true;
+                vid.play().catch(function(){});
+            });
+        }
+        // Afficher l'indicateur son même sans audio overlay
+        var _vidAudioInd  = document.getElementById('sv-audio-indicator');
+        var _vidAudioIcon = document.getElementById('sv-audio-icon');
+        if (_vidAudioInd) {
+            _vidAudioInd.style.display = 'flex';
+            if (_vidAudioIcon) _vidAudioIcon.textContent = _svAudioMuted ? 'volume_off' : 'volume_up';
+        }
 
     } else if (story.story_type === 'image' && story.media_url) {
         var img = document.getElementById('sv-img');
