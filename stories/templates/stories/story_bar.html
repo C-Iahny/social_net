@@ -957,7 +957,9 @@ input#sc-file-input { display: none; }
     transition: transform .15s;
     line-height: 1;
 }
-.sv-emoji-btn:hover  { transform: scale(1.35); }
+.sv-emoji-btn:hover       { transform: scale(1.35); }
+.sv-emoji-btn:focus,
+.sv-emoji-btn:focus-visible { outline: none; }   /* supprime la bague focus (boîte noire) */
 .sv-emoji-btn.active { transform: scale(1.25);
     filter: drop-shadow(0 0 5px rgba(255,255,255,.7)); }
 
@@ -2712,6 +2714,9 @@ window.sendStoryReaction = function(emoji) {
     var story = group.stories[_curStory];
     if (!story) return;
 
+    // Retirer le focus immédiatement (évite la boîte noire sur le bouton)
+    if (document.activeElement) document.activeElement.blur();
+
     fetch(URLS.react + story.id + '/', {
         method: 'POST',
         headers: {
@@ -2724,16 +2729,21 @@ window.sendStoryReaction = function(emoji) {
     .then(function(r) { return r.json(); })
     .then(function(data) {
         if (!data.ok) return;
-        // Mettre à jour l'état actif des boutons
         var bar = document.getElementById('sv-emoji-bar');
         if (bar) {
+            // Mettre en surbrillance le bouton cliqué brièvement
             bar.querySelectorAll('.sv-emoji-btn').forEach(function(btn) {
                 btn.classList.remove('active');
-                if (data.emoji && btn.getAttribute('title') &&
-                    btn.textContent.trim() === data.emoji) {
+                if (data.emoji && btn.textContent.trim() === data.emoji) {
                     btn.classList.add('active');
                 }
             });
+            // Auto-effacer l'état actif après 1,5 s (réaction = feedback temporaire)
+            setTimeout(function() {
+                bar.querySelectorAll('.sv-emoji-btn').forEach(function(b){
+                    b.classList.remove('active');
+                });
+            }, 1500);
         }
         // Feedback flottant
         if (data.emoji) {
