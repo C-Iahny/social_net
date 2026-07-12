@@ -235,7 +235,8 @@
 
         <!-- Brand -->
         <a href="{% url 'landing' %}" class="auth-brand">
-            <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="VAZIMBA" class="auth-brand-logo">
+            <img src="{% static 'logo/Vazi_logo003.jpeg' %}" alt="VAZIMBA" class="auth-brand-logo"
+                 onerror="this.style.display='none'">
         </a>
 
         <h1 class="auth-heading">{% trans "Create account" %}</h1>

@@ -320,8 +320,10 @@
   <!-- ===== NAV ===== -->
   <nav>
     <a href="{% url 'landing' %}" class="nav-logo">
-      <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA" class="logo-desktop">
-      <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="VAZIMBA" class="logo-mobile">
+      <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA" class="logo-desktop"
+           onerror="this.style.display='none'">
+      <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="VAZIMBA" class="logo-mobile"
+           onerror="this.style.display='none'">
     </a>
     <div class="nav-links">
       <a href="#features" class="hide-mobile">Fonctionnalités</a>

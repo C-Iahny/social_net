@@ -144,7 +144,8 @@
         <a href="/" class="footer-brand" style="gap:.8rem; flex-direction:column; align-items:center;">
             <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA"
                  style="height:120px;width:auto;object-fit:contain;flex-shrink:0;
-                        transition:opacity .2s;">
+                        transition:opacity .2s;"
+                 onerror="this.style.display='none'">
         </a>
         <style>
         [data-theme="dark"] .footer-brand img { filter: brightness(0) invert(1); }

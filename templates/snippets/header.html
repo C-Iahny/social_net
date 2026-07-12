@@ -725,10 +725,12 @@
         <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA"
              class="zoot-logo-desktop"
              onmouseover="this.style.transform='scale(1.05)';this.style.opacity='.88'"
-             onmouseout="this.style.transform='';this.style.opacity='1'">
+             onmouseout="this.style.transform='';this.style.opacity='1'"
+             onerror="this.style.display='none'">
         <!-- Logo mobile (compact) -->
         <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="VAZIMBA"
-             class="zoot-logo-mobile">
+             class="zoot-logo-mobile"
+             onerror="this.style.display='none'">
     </a>
 
     <!-- Center nav links (desktop) -->
