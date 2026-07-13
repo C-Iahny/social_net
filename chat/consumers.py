@@ -612,12 +612,16 @@ def get_room_or_error(room_id, user):
 	Tries to fetch a room for the user, checking permissions along the way.
 	"""
 	try:
-		room = PrivateChatRoom.objects.get(pk=room_id)
+		# select_related pré-charge user1 et user2 en un seul JOIN
+		# → évite SynchronousOnlyOperation quand on y accède dans le contexte async (send_room)
+		room = PrivateChatRoom.objects.select_related('user1', 'user2').get(pk=room_id)
 	except PrivateChatRoom.DoesNotExist:
 		raise ClientError("ROOM_INVALID", "Invalid room.")
 
 	# Is this user allowed in the room? (must be user1 or user2)
-	if user != room.user1 and user != room.user2:
+	# NOTE: on accède explicitement aux deux pour s'assurer qu'ils sont bien mis en cache
+	user1, user2 = room.user1, room.user2
+	if user != user1 and user != user2:
 		raise ClientError("ROOM_ACCESS_DENIED", "You do not have permission to join this room.")
 
 	# La messagerie est ouverte à tous les utilisateurs connectés (pas besoin d'être amis)
