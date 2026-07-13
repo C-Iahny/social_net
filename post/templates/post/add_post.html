@@ -132,6 +132,52 @@
     text-transform: uppercase;
 }
 
+/* ── Mobile media picker — 2 gros boutons Galerie / Appareil photo ── */
+.media-picker-mobile {
+    display: none;   /* Caché par défaut — visible seulement sur mobile */
+    gap: .75rem;
+    margin-bottom: .6rem;
+}
+.mp-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    padding: 1.1rem .5rem;
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    background: var(--btn-bg);
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    min-height: 90px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: .82rem;
+    font-weight: 600;
+    user-select: none;
+}
+.mp-btn:active { border-color: var(--accent); background: var(--bg-card); }
+.mp-btn .material-icons { font-size: 1.8rem; }
+.mp-btn.mp-gallery .material-icons { color: var(--accent2); }
+.mp-btn.mp-camera .material-icons  { color: var(--accent3,var(--accent)); }
+.mp-btn-count {
+    display: none;
+    font-size: .75rem;
+    color: var(--accent);
+    font-weight: 700;
+    background: rgba(0,207,255,.08);
+    padding: .15rem .5rem;
+    border-radius: 8px;
+}
+
+/* Sur téléphone / tablette → montrer les boutons, cacher la zone desktop */
+@media (hover: none) and (pointer: coarse) {
+    .media-picker-mobile { display: flex; }
+    #media-upload-zone-desktop { display: none !important; }
+}
+
 /* CKEditor override */
 .django-ckeditor-widget { width: 100% !important; }
 .ck-editor__editable { min-height: 120px; background: var(--input-bg, #fff) !important; color: var(--text) !important; }
@@ -221,16 +267,39 @@
                         <span class="material-icons" style="font-size:1rem;vertical-align:middle;">perm_media</span>
                         {% trans "Photos & Videos" %}
                     </label>
-                    <label for="id_media_files" class="upload-zone" id="media-upload-zone">
-                        <input type="file" name="media_files" id="id_media_files"
-                               accept="*/*"
-                               multiple
-                               style="display:none;"
-                               onchange="addToSelection(this.files); this.value=null;">
+
+                    <!-- Inputs masqués partagés (desktop + mobile) -->
+                    <input type="file" name="media_files" id="id_media_files"
+                           accept="image/*,video/*"
+                           multiple
+                           style="display:none;"
+                           onchange="addToSelection(this.files); this.value=null;">
+                    <input type="file" name="media_files" id="id_media_camera"
+                           accept="image/*"
+                           capture="environment"
+                           style="display:none;"
+                           onchange="addToSelection(this.files); this.value=null;">
+
+                    <!-- ── Mobile : 2 gros boutons ────────────────────────────── -->
+                    <div class="media-picker-mobile" id="media-picker-mobile">
+                        <label for="id_media_files" class="mp-btn mp-gallery">
+                            <span class="material-icons">photo_library</span>
+                            <span>{% trans "Galerie" %}</span>
+                            <span class="mp-btn-count" id="mp-gallery-count"></span>
+                        </label>
+                        <label for="id_media_camera" class="mp-btn mp-camera">
+                            <span class="material-icons">camera_alt</span>
+                            <span>{% trans "Appareil photo" %}</span>
+                        </label>
+                    </div>
+
+                    <!-- ── Desktop : zone drag-and-drop ──────────────────────── -->
+                    <label for="id_media_files" class="upload-zone" id="media-upload-zone-desktop">
                         <span class="material-icons">add_photo_alternate</span>
                         <p id="media-zone-label"><span class="upload-label">{% trans "Click to add" %}</span> {% trans "or drag and drop" %}</p>
                         <p style="font-size:.78rem;margin-top:.2rem;">{% trans "Images & Videos — multiple selections" %}</p>
                     </label>
+
                     <div class="media-preview-grid" id="media-preview-grid"></div>
                 </div>
 
@@ -340,9 +409,23 @@ function _renderPreview() {
     grid.innerHTML = '';
     var count = _pending.length;
 
-    label.innerHTML = count > 0
-        ? '<span class="upload-label">' + count + ' fichier(s)</span> — cliquer pour en ajouter'
-        : '<span class="upload-label">Cliquer pour ajouter</span> ou glisser-déposer';
+    /* Mise à jour label desktop */
+    if (label) {
+        label.innerHTML = count > 0
+            ? '<span class="upload-label">' + count + ' fichier(s)</span> — cliquer pour en ajouter'
+            : '<span class="upload-label">Cliquer pour ajouter</span> ou glisser-déposer';
+    }
+
+    /* Mise à jour badge compteur mobile galerie */
+    var mobileCount = document.getElementById('mp-gallery-count');
+    if (mobileCount) {
+        if (count > 0) {
+            mobileCount.textContent = count + ' sélectionné(s)';
+            mobileCount.style.display = 'inline-block';
+        } else {
+            mobileCount.style.display = 'none';
+        }
+    }
 
     _pending.forEach(function(file, idx) {
         var item = document.createElement('div');
@@ -379,7 +462,7 @@ function _renderPreview() {
 
 /* Drag & drop : AJOUTE au panier (ne remplace pas) */
 (function() {
-    var zone = document.getElementById('media-upload-zone');
+    var zone = document.getElementById('media-upload-zone-desktop');
     if (!zone) return;
     zone.addEventListener('dragover',  function(e){ e.preventDefault(); zone.classList.add('dragover'); });
     zone.addEventListener('dragleave', function(){ zone.classList.remove('dragover'); });
