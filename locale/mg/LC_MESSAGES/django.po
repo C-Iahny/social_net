@@ -1760,3 +1760,71 @@ msgstr "Very ny fifandraisana. Mampiditra..."
 
 msgid "Infos"
 msgstr "Fampahalalana"
+
+# ── Password reset / change ──────────────────────────────────────────────
+msgid "Enter your email to receive a reset link"
+msgstr "Ampidiro ny mailakao handray rohy fanarenana"
+
+msgid "We'll send you an email with a link to reset your password."
+msgstr "Handefasanay email anao misy rohy hanarenana ny tenimiafina."
+
+msgid "Send reset email"
+msgstr "Alefaso ny rohy fanarenana"
+
+msgid "Back to login"
+msgstr "Hiverina amin'ny fidirana"
+
+msgid "Email sent!"
+msgstr "Email nalefa!"
+
+msgid "We've sent you instructions for resetting your password. Check your inbox shortly."
+msgstr "Nalefanay ny toromarika fanarenana tenimiafina. Jereo ny boaty mailakao."
+
+msgid "If you don't receive an email, check that the address you entered is the one you registered with, and check your spam folder."
+msgstr "Raha tsy mandray email ianao, jereo raha ny adiresy nampidirinao no nampiasainao tamin'ny fanoratana, ary jereo ny folder spam."
+
+msgid "Return to home"
+msgstr "Hiverina any an-trano"
+
+msgid "Reset your password"
+msgstr "Avereno ny tenimiafina"
+
+msgid "Create your new password"
+msgstr "Mamorona tenimiafina vaovao"
+
+msgid "New password"
+msgstr "Tenimiafina vaovao"
+
+msgid "Confirm new password"
+msgstr "Avereno ny tenimiafina vaovao"
+
+msgid "Update password"
+msgstr "Avaozio ny tenimiafina"
+
+msgid "Link expired"
+msgstr "Efa tsy manan-kery ny rohy"
+
+msgid "This password reset link has expired or is invalid. Please request a new one."
+msgstr "Efa tsy manan-kery na tsy mety ity rohy fanarenana ity. Mangataha vaovao."
+
+msgid "Request a new link"
+msgstr "Hangataha rohy vaovao"
+
+msgid "Password updated!"
+msgstr "Tenimiafina noavaozy!"
+
+msgid "Your password has been successfully reset. You can now sign in with your new password."
+msgstr "Voavaozy ny tenimiafina. Azonao idirana amin'ny tenimiafina vaovao ankehitriny."
+
+msgid "Your password has been changed successfully."
+msgstr "Voavaozy ny tenimiafina."
+
+msgid "Back to feed"
+msgstr "Hiverina amin'ny feed"
+
+msgid "Enter your current password and choose a new one"
+msgstr "Ampidiro ny tenimiafina ankehitriny ary safidio vaovao"
+
+msgid "Old password"
+msgstr "Tenimiafina taloha"
+

@@ -481,10 +481,10 @@ function checkEmpty() {
     if (cards.length === 0) {
         grid.innerHTML = '<div class="fr-empty">' +
             '<div class="fr-empty-icon-wrap"><span class="material-icons">inbox</span></div>' +
-            '<h3>No requests</h3>' +
-            '<p>When someone sends you a friend request, it will appear here.</p>' +
+            '<h3>{% trans "No requests" %}</h3>' +
+            '<p>{% trans "When someone sends you a friend request, it will appear here." %}</p>' +
             '<a class="fr-empty-cta" href="/search/?q=">' +
-            '<span class="material-icons" style="font-size:.95rem;">person_search</span>Find people</a>' +
+            '<span class="material-icons" style="font-size:.95rem;">person_search</span>{% trans "Find people" %}</a>' +
             '</div>';
     }
 }

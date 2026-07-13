@@ -1065,3 +1065,71 @@ msgstr "Connexion perdue. Rechargement…"
 
 msgid "Infos"
 msgstr "Infos"
+
+# ── Password reset / change (nouvelles clés) ──────────────────────────────
+msgid "Enter your email to receive a reset link"
+msgstr "Entrez votre e-mail pour recevoir un lien de réinitialisation"
+
+msgid "We'll send you an email with a link to reset your password."
+msgstr "Nous vous enverrons un e-mail avec un lien pour réinitialiser votre mot de passe."
+
+msgid "Send reset email"
+msgstr "Envoyer le lien de réinitialisation"
+
+msgid "Back to login"
+msgstr "Retour à la connexion"
+
+msgid "Email sent!"
+msgstr "E-mail envoyé !"
+
+msgid "We've sent you instructions for resetting your password. Check your inbox shortly."
+msgstr "Nous vous avons envoyé les instructions pour réinitialiser votre mot de passe. Vérifiez votre boîte mail."
+
+msgid "If you don't receive an email, check that the address you entered is the one you registered with, and check your spam folder."
+msgstr "Si vous ne recevez pas d'e-mail, vérifiez que l'adresse saisie est bien celle utilisée lors de l'inscription, et consultez votre dossier spam."
+
+msgid "Return to home"
+msgstr "Retour à l'accueil"
+
+msgid "Reset your password"
+msgstr "Réinitialiser votre mot de passe"
+
+msgid "Create your new password"
+msgstr "Créez votre nouveau mot de passe"
+
+msgid "New password"
+msgstr "Nouveau mot de passe"
+
+msgid "Confirm new password"
+msgstr "Confirmer le nouveau mot de passe"
+
+msgid "Update password"
+msgstr "Mettre à jour le mot de passe"
+
+msgid "Link expired"
+msgstr "Lien expiré"
+
+msgid "This password reset link has expired or is invalid. Please request a new one."
+msgstr "Ce lien de réinitialisation a expiré ou est invalide. Veuillez en demander un nouveau."
+
+msgid "Request a new link"
+msgstr "Demander un nouveau lien"
+
+msgid "Password updated!"
+msgstr "Mot de passe mis à jour !"
+
+msgid "Your password has been successfully reset. You can now sign in with your new password."
+msgstr "Votre mot de passe a bien été réinitialisé. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe."
+
+msgid "Your password has been changed successfully."
+msgstr "Votre mot de passe a bien été modifié."
+
+msgid "Back to feed"
+msgstr "Retour au fil"
+
+msgid "Enter your current password and choose a new one"
+msgstr "Saisissez votre mot de passe actuel et choisissez-en un nouveau"
+
+msgid "Old password"
+msgstr "Ancien mot de passe"
+
