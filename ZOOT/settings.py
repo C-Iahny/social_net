@@ -125,6 +125,10 @@ MIDDLEWARE = [
     # LocaleMiddleware DOIT être après SessionMiddleware et avant CommonMiddleware
     # Il lit la langue depuis : cookie → session → Accept-Language header
     'django.middleware.locale.LocaleMiddleware',
+    # DefaultFrenchMiddleware : force 'fr' pour tout visiteur sans cookie de langue.
+    # Placé APRÈS LocaleMiddleware → écrase la détection Accept-Language (ex: browser anglais).
+    # Pose aussi le cookie zoot_language=fr dès la 1ère visite.
+    'ZOOT.middleware.DefaultFrenchMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
