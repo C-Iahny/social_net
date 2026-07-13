@@ -1993,11 +1993,12 @@ window._CT = {
         }
     })();
 
-    function setWsIndicator(connected){
+    function setWsIndicator(state){ // 'connected' | 'connecting' | 'disconnected'
         var dot = document.getElementById('ws-status-dot');
         if(!dot) return;
-        dot.style.background = connected ? '#4caf7d' : '#e53935';
-        dot.title = connected ? 'Chat connecté' : 'Chat déconnecté';
+        if(state === true  || state === 'connected')    { dot.style.background='#4caf7d'; dot.title='Chat connecté'; }
+        else if(state === 'connecting')                  { dot.style.background='#ff9800'; dot.title='Connexion…'; }
+        else                                             { dot.style.background='#e53935'; dot.title='Chat déconnecté'; }
     }
 
     function closeWebSocket(){
@@ -2055,15 +2056,9 @@ window._CT = {
         var msg = inputEl ? inputEl.value.trim() : '';
         if(!msg) return;
         if(!chatSocket || chatSocket.readyState !== WebSocket.OPEN){
-            var chatLog = document.getElementById('id_chat_log');
-            if(chatLog){
-                var errDiv = document.createElement('div');
-                errDiv.style.cssText = 'text-align:center;color:#e53935;font-size:.78rem;padding:.3rem;';
-                errDiv.textContent = '⚠ ' + (_CT ? _CT.conn_lost : 'Connexion perdue. Rechargement…');
-                chatLog.insertBefore(errDiv, chatLog.firstChild);
-            }
-            if(roomId && (!chatSocket || chatSocket.readyState === WebSocket.CLOSED)){
-                setTimeout(function(){ setupWebSocket(roomId); }, 500);
+            _showChatError(_CT ? _CT.conn_lost : 'Connexion perdue. Reconnexion…');
+            if(roomId && (!chatSocket || chatSocket.readyState !== WebSocket.CONNECTING)){
+                setTimeout(function(){ setupWebSocket(roomId); }, 800);
             }
             return;
         }
@@ -2074,6 +2069,23 @@ window._CT = {
         inputEl.value = '';
         if(inputEl.style) inputEl.style.height = 'auto';
         inputEl.focus();
+    }
+
+    /* ── Toast / erreur visible ────────────────────────────────── */
+    function _showChatError(msg){
+        // Affiche un message d'erreur en bas du chat (là où l'utilisateur regarde)
+        var chatLog = document.getElementById('id_chat_log');
+        if(chatLog){
+            var old = chatLog.querySelector('.chat-err-toast');
+            if(old) old.remove();
+            var errDiv = document.createElement('div');
+            errDiv.className = 'chat-err-toast';
+            errDiv.style.cssText = 'text-align:center;color:#e53935;font-size:.78rem;padding:.4rem .6rem;margin:.3rem 0;background:rgba(229,57,53,.08);border-radius:8px;';
+            errDiv.textContent = '⚠ ' + msg;
+            chatLog.appendChild(errDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+            setTimeout(function(){ if(errDiv.parentNode) errDiv.remove(); }, 4000);
+        }
     }
 
     /* ── Typing indicator ──────────────────────────────────────── */
@@ -2131,6 +2143,20 @@ window._CT = {
         }
         // Initialisation : connecter automatiquement si une room est déjà connue
         onStart();
+
+        /* ── Reconnexion automatique ────────────────────────────────────
+           Si la connexion WebSocket se ferme (réseau instable, onglet en veille…),
+           on tente de se reconnecter automatiquement.                         */
+        document.addEventListener('visibilitychange', function(){
+            if(!document.hidden && roomId && (!chatSocket || chatSocket.readyState === WebSocket.CLOSED)){
+                setupWebSocket(roomId);
+            }
+        });
+        setInterval(function(){
+            if(roomId && (!chatSocket || chatSocket.readyState === WebSocket.CLOSED)){
+                setupWebSocket(roomId);
+            }
+        }, 8000); // vérification toutes les 8 secondes
 
         /* ── Fix clavier virtuel mobile ─────────────────────────────────
            Comportement selon le navigateur :
@@ -2567,6 +2593,7 @@ window._CT = {
         roomId = room_id
         closeWebSocket()
 
+        setWsIndicator('connecting');
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
         var ws_path = ws_scheme + '://' + window.location.host + "/chat/" + roomId + "/";
         chatSocket = new WebSocket(ws_path);
@@ -2574,7 +2601,18 @@ window._CT = {
         chatSocket.onmessage = function(message) {
             var data = JSON.parse(message.data);
             displayChatroomLoadingSpinner(data.display_progress_bar)
-            if (data.error) { console.error("WS error:", data.error, data.message); return; }
+            if (data.error) {
+                console.error("WS error:", data.error, data.message);
+                // Afficher l'erreur serveur visiblement pour l'utilisateur
+                var errMsg = data.message || data.error || 'Erreur de connexion';
+                if(data.error === 'ROOM_ACCESS_DENIED'){
+                    errMsg = 'Accès refusé à cette conversation.';
+                } else if(data.error === 'ROOM_INVALID'){
+                    errMsg = 'Conversation introuvable.';
+                }
+                _showChatError(errMsg);
+                return;
+            }
             if (data.join)  { getUserInfo(); getRoomChatMessages(); enableChatLogScrollListener(); }
             if (data.leave) { console.log("Leaving room " + data.leave); }
             if (data.user_info) { handleUserInfoPayload(data.user_info) }
