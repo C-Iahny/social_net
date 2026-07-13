@@ -1654,3 +1654,71 @@ msgstr "Connection lost. Reloading…"
 
 msgid "Infos"
 msgstr "Info"
+
+# ── Password reset / change ──────────────────────────────────────────────
+msgid "Enter your email to receive a reset link"
+msgstr "Enter your email to receive a reset link"
+
+msgid "We'll send you an email with a link to reset your password."
+msgstr "We'll send you an email with a link to reset your password."
+
+msgid "Send reset email"
+msgstr "Send reset email"
+
+msgid "Back to login"
+msgstr "Back to login"
+
+msgid "Email sent!"
+msgstr "Email sent!"
+
+msgid "We've sent you instructions for resetting your password. Check your inbox shortly."
+msgstr "We've sent you instructions for resetting your password. Check your inbox shortly."
+
+msgid "If you don't receive an email, check that the address you entered is the one you registered with, and check your spam folder."
+msgstr "If you don't receive an email, check that the address you entered is the one you registered with, and check your spam folder."
+
+msgid "Return to home"
+msgstr "Return to home"
+
+msgid "Reset your password"
+msgstr "Reset your password"
+
+msgid "Create your new password"
+msgstr "Create your new password"
+
+msgid "New password"
+msgstr "New password"
+
+msgid "Confirm new password"
+msgstr "Confirm new password"
+
+msgid "Update password"
+msgstr "Update password"
+
+msgid "Link expired"
+msgstr "Link expired"
+
+msgid "This password reset link has expired or is invalid. Please request a new one."
+msgstr "This password reset link has expired or is invalid. Please request a new one."
+
+msgid "Request a new link"
+msgstr "Request a new link"
+
+msgid "Password updated!"
+msgstr "Password updated!"
+
+msgid "Your password has been successfully reset. You can now sign in with your new password."
+msgstr "Your password has been successfully reset. You can now sign in with your new password."
+
+msgid "Your password has been changed successfully."
+msgstr "Your password has been changed successfully."
+
+msgid "Back to feed"
+msgstr "Back to feed"
+
+msgid "Enter your current password and choose a new one"
+msgstr "Enter your current password and choose a new one"
+
+msgid "Old password"
+msgstr "Old password"
+
