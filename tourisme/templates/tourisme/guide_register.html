@@ -99,7 +99,15 @@ textarea.form-control { resize: vertical; min-height: 100px; line-height: 1.6; }
 }
 .photo-input-btn:hover { border-color: var(--accent); color: var(--accent); }
 .photo-input-btn .material-icons { font-size: 1rem; }
-#id_photo { display: none; }
+/* Caché visuellement mais accessible via <label> sur mobile/Capacitor WebView.
+   display:none empêche le déclenchement par label sur certains Android WebView. */
+#id_photo {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
 
 /* ── Submit ── */
 .guide-reg-submit {
