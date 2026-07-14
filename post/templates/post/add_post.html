@@ -283,12 +283,12 @@
                     <!-- opacity:0 au lieu de display:none : les labels déclenchent
                          correctement l'input sur Capacitor / WebView Android -->
                     <input type="file" name="media_files" id="id_media_files"
-                           accept="image/*,video/*"
+                           accept="image/*,video/*,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.heif,.avif,.svg,.mp4,.mov,.avi,.mkv,.webm"
                            multiple
                            class="input-file-hidden"
                            onchange="addToSelection(this.files); this.value=null;">
                     <input type="file" name="media_files" id="id_media_camera"
-                           accept="image/*"
+                           accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.heif,.avif"
                            capture="environment"
                            class="input-file-hidden"
                            onchange="addToSelection(this.files); this.value=null;">
