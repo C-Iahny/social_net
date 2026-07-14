@@ -276,13 +276,17 @@
         {% for guide in page_obj %}
         <a href="{% url 'tourisme:guide_profile' guide.pk %}" class="guide-card">
             <div class="guide-card-top">
-                <div class="guide-avatar">
+                <div class="guide-avatar" style="position:relative;">
+                    {# Lettre initiale de secours — masquée si une photo se charge #}
+                    <span class="guide-avatar-initial" style="display:{% if guide.photo or guide.user.profile_image %}none{% else %}flex{% endif %};width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;">{{ guide.display_name|first|upper }}</span>
                     {% if guide.photo %}
-                        <img src="{{ guide.photo.url }}" alt="{{ guide.display_name }}">
+                        <img src="{{ guide.photo.url }}" alt="{{ guide.display_name }}"
+                             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;"
+                             onerror="this.remove(); this.parentElement.querySelector('.guide-avatar-initial').style.display='flex';">
                     {% elif guide.user.profile_image %}
-                        <img src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}">
-                    {% else %}
-                        {{ guide.display_name|first|upper }}
+                        <img src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}"
+                             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;"
+                             onerror="this.remove(); this.parentElement.querySelector('.guide-avatar-initial').style.display='flex';">
                     {% endif %}
                     {% if guide.is_verified %}
                     <div class="guide-verified-dot">
