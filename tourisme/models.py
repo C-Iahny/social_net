@@ -152,11 +152,13 @@ class GuideTouristique(models.Model):
         verbose_name_plural = _('Guides touristiques')
 
     def __str__(self):
-        return f'Guide: {self.user.get_full_name() or self.user.username}'
+        # Account étend AbstractBaseUser (pas AbstractUser) → pas de get_full_name()
+        return f'Guide: {self.user.username}'
 
     @property
     def display_name(self):
-        return self.user.get_full_name() or self.user.username
+        # Account n'a pas first_name/last_name — on utilise uniquement username
+        return self.user.username
 
     @property
     def transport_list(self):
