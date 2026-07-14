@@ -178,6 +178,17 @@
     #media-upload-zone-desktop { display: none !important; }
 }
 
+/* Inputs fichier invisible — position:absolute + opacity:0 permet au <label>
+   de les déclencher sur Capacitor/WebView Android (display:none bloque cette
+   interaction sur certaines versions). */
+.input-file-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
 /* CKEditor override */
 .django-ckeditor-widget { width: 100% !important; }
 .ck-editor__editable { min-height: 120px; background: var(--input-bg, #fff) !important; color: var(--text) !important; }
@@ -269,15 +280,17 @@
                     </label>
 
                     <!-- Inputs masqués partagés (desktop + mobile) -->
+                    <!-- opacity:0 au lieu de display:none : les labels déclenchent
+                         correctement l'input sur Capacitor / WebView Android -->
                     <input type="file" name="media_files" id="id_media_files"
                            accept="image/*,video/*"
                            multiple
-                           style="display:none;"
+                           class="input-file-hidden"
                            onchange="addToSelection(this.files); this.value=null;">
                     <input type="file" name="media_files" id="id_media_camera"
                            accept="image/*"
                            capture="environment"
-                           style="display:none;"
+                           class="input-file-hidden"
                            onchange="addToSelection(this.files); this.value=null;">
 
                     <!-- ── Mobile : 2 gros boutons ────────────────────────────── -->
@@ -430,20 +443,29 @@ function _renderPreview() {
     _pending.forEach(function(file, idx) {
         var item = document.createElement('div');
         item.className = 'media-preview-item';
-        var url = URL.createObjectURL(file);
 
         if (isVideo(file)) {
+            /* Vidéo : createObjectURL est plus adapté (les vidéos ne se prêtent
+               pas bien à readAsDataURL qui charge tout en mémoire base64) */
+            var url = URL.createObjectURL(file);
             var vid = document.createElement('video');
             vid.src = url; vid.muted = true; vid.preload = 'metadata';
-            vid.onloadedmetadata = function() { URL.revokeObjectURL(url); };
+            /* Ne PAS révoquer immédiatement : certains WebView Android ont besoin
+               que l'URL reste valide pendant l'affichage de la miniature. */
             item.appendChild(vid);
             var badge = document.createElement('span');
             badge.className = 'mp-type-badge'; badge.textContent = 'vidéo';
             item.appendChild(badge);
         } else {
+            /* Image : FileReader.readAsDataURL() — plus fiable que createObjectURL
+               sur Capacitor / WebView Android car il produit une data-URL stable
+               qui n'expire jamais (pas de révocation à gérer). */
             var img = document.createElement('img');
-            img.src = url;
-            img.onload = function() { URL.revokeObjectURL(url); };
+            var reader = new FileReader();
+            reader.onload = (function(imgEl) {
+                return function(e) { imgEl.src = e.target.result; };
+            })(img);
+            reader.readAsDataURL(file);
             item.appendChild(img);
         }
 
