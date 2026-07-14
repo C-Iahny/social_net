@@ -180,9 +180,10 @@ textarea.form-control { resize: vertical; min-height: 100px; line-height: 1.6; }
                         <span class="material-icons">upload</span>
                         Choisir une photo
                     </label>
-                    <input type="file" name="photo" id="id_photo" accept="image/*">
+                    <input type="file" name="photo" id="id_photo"
+                           accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.heif,.avif,.svg">
                     <div style="font-size:.75rem;color:var(--text-subtle);margin-top:.3rem;">
-                        JPG, PNG ou WebP — max 10 Mo
+                        Tous formats image (JPG, PNG, HEIC, GIF…) — max 10 Mo
                     </div>
                 </div>
             </div>
