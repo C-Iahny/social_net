@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -5,6 +7,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 
 from .models import LieuTouristique, GuideTouristique, LieuImage, LIEU_CATEGORY_CHOICES, REGION_CHOICES
+
+logger = logging.getLogger(__name__)
 
 
 def tourisme_home(request):
@@ -115,15 +119,24 @@ def guides_list(request):
 
 def guide_profile(request, pk):
     """Page profil d'un guide touristique"""
-    guide = get_object_or_404(
-        GuideTouristique.objects.select_related('user').prefetch_related('lieux_favoris__images'),
-        pk=pk
-    )
-    is_owner = request.user.is_authenticated and request.user == guide.user
-    return render(request, 'tourisme/guide_profile.html', {
-        'guide':    guide,
-        'is_owner': is_owner,
-    })
+    try:
+        guide = get_object_or_404(
+            GuideTouristique.objects.select_related('user').prefetch_related('lieux_favoris__images'),
+            pk=pk
+        )
+    except Exception as exc:
+        logger.exception('guide_profile: erreur DB pk=%s — %s', pk, exc)
+        raise
+
+    try:
+        is_owner = request.user.is_authenticated and request.user == guide.user
+        return render(request, 'tourisme/guide_profile.html', {
+            'guide':    guide,
+            'is_owner': is_owner,
+        })
+    except Exception as exc:
+        logger.exception('guide_profile: erreur rendu template pk=%s — %s', pk, exc)
+        raise
 
 
 @login_required
