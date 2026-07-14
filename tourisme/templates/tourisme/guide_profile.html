@@ -185,14 +185,21 @@
 
     <!-- ── Header ── -->
     <div class="guide-profile-header">
-        <div class="guide-profile-avatar">
+        <div class="guide-profile-avatar" id="guide-avatar-wrap">
             {% if guide.photo %}
-                <img src="{{ guide.photo.url }}" alt="{{ guide.display_name }}">
+                <img src="{{ guide.photo.url }}" alt="{{ guide.display_name }}"
+                     onerror="this.remove(); document.getElementById('guide-avatar-fallback').style.display='flex';">
             {% elif guide.user.profile_image %}
-                <img src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}">
-            {% else %}
-                {{ guide.display_name|first|upper }}
+                <img src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}"
+                     onerror="this.remove(); document.getElementById('guide-avatar-fallback').style.display='flex';">
             {% endif %}
+            {# Fallback lettre initiale — visible si aucune photo ou photo cassée #}
+            <span id="guide-avatar-fallback"
+                  style="display:{% if guide.photo or guide.user.profile_image %}none{% else %}flex{% endif %};
+                         width:100%;height:100%;align-items:center;justify-content:center;
+                         font-size:2.2rem;font-weight:800;color:#fff;">
+                {{ guide.display_name|first|upper }}
+            </span>
         </div>
         <div class="guide-profile-main">
             <h1 class="guide-profile-name">
@@ -364,7 +371,11 @@
                 <div class="gp-lieu-img">
                     {% with img=lieu.get_primary_image %}
                     {% if img %}
-                        <img src="{{ img.image.url }}" alt="{{ lieu.name }}" loading="lazy">
+                        <img src="{{ img.image.url }}" alt="{{ lieu.name }}" loading="lazy"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="gp-lieu-img-ph" style="display:none;">
+                            <span class="material-icons">landscape</span>
+                        </div>
                     {% else %}
                         <div class="gp-lieu-img-ph">
                             <span class="material-icons">landscape</span>

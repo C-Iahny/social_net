@@ -168,7 +168,9 @@ textarea.form-control { resize: vertical; min-height: 100px; line-height: 1.6; }
             <div class="photo-upload-wrap">
                 <div class="photo-preview" id="photoPreview">
                     {% if guide and guide.photo %}
-                        <img src="{{ guide.photo.url }}" alt="Photo actuelle" id="photoImg">
+                        <img src="{{ guide.photo.url }}" alt="Photo actuelle" id="photoImg"
+                             onerror="this.style.display='none'; document.getElementById('photoIcon').style.display='block';">
+                        <span class="material-icons" id="photoIcon" style="display:none;">person</span>
                     {% else %}
                         <span class="material-icons" id="photoIcon">person</span>
                     {% endif %}
