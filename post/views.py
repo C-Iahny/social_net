@@ -520,11 +520,17 @@ class AddPostView(CreateView):
         else:
             redirect_url = reverse('post:post-view')
 
-        # Pour les requêtes fetch/AJAX (X-Requested-With: XMLHttpRequest),
-        # retourner du JSON plutôt qu'un redirect HTTP — élimine tout problème
-        # de suivi de redirection dans le JS (l'URL est donnée explicitement)
-        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({'ok': True, 'redirect': redirect_url})
+        # Détection AJAX via le champ 'ajax=1' dans le corps (plus fiable que
+        # X-Requested-With qui peut être bloqué par Capacitor / Android WebView)
+        is_ajax = (
+            self.request.POST.get('ajax') == '1'
+            or self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        )
+        _logger.info("AddPostView: ajax=%s files_received=%d files_saved=%d post=#%s",
+                     is_ajax, len(files), saved, post.pk)
+        if is_ajax:
+            return JsonResponse({'ok': True, 'redirect': redirect_url,
+                                 'received': len(files), 'saved': saved})
         return redirect(redirect_url)
 
     def form_invalid(self, form):

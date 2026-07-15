@@ -539,20 +539,25 @@ function _renderPreview() {
         if (schedEl && schedEl.value) fd.append('scheduled_at', schedEl.value);
         _pending.forEach(function(f) { fd.append('media_files', f); });
 
+        /* 'ajax=1' dans le CORPS du FormData — plus fiable que X-Requested-With
+           qui peut être bloqué par Capacitor / Android WebView (réseau sécurisé) */
+        fd.append('ajax', '1');
+
         var btn = form.querySelector('.btn-submit');
         if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
+
+        console.log('[Vazimba] submit AJAX — fichiers:', _pending.length);
 
         fetch(form.action, {
             method: 'POST',
             body: fd,
-            credentials: 'same-origin',
-            /* X-Requested-With permet au view Django de retourner du JSON
-               plutôt qu'un redirect HTTP — plus fiable que suivre les redirects */
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            credentials: 'same-origin'
         }).then(function(r) {
+            console.log('[Vazimba] réponse HTTP', r.status, r.url);
             if (r.ok) {
                 /* Le view retourne {"ok": true, "redirect": "/feed/"} */
                 return r.json().catch(function() { return null; }).then(function(data) {
+                    console.log('[Vazimba] réponse JSON', JSON.stringify(data));
                     if (data && data.ok && data.redirect) {
                         window.location.href = data.redirect;
                     } else {
