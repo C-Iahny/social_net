@@ -175,7 +175,7 @@ def Index(request):
 
 # ──────────────────────────────────────────────
 def _attach_media(posts, post_ids):
-    """Attache post.media_list à chaque post (liste de PostMedia). Silencieux si table absente."""
+    """Attache post.media_list à chaque post (liste de PostMedia)."""
     try:
         media_qs = PostMedia.objects.filter(post_id__in=post_ids).order_by('order')
         media_map = {}
@@ -183,7 +183,10 @@ def _attach_media(posts, post_ids):
             media_map.setdefault(m.post_id, []).append(m)
         for post in posts:
             post.media_list = media_map.get(post.id, [])
-    except Exception:
+        _logger.debug("_attach_media: %d PostMedia pour %d posts",
+                      sum(len(v) for v in media_map.values()), len(post_ids))
+    except Exception as e:
+        _logger.exception("_attach_media ERREUR (post_ids=%s): %s", post_ids, e)
         for post in posts:
             post.media_list = []
 

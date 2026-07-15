@@ -392,20 +392,32 @@ function isVideo(file) {
     return file.type.startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
 }
 
-/* Ajoute les nouveaux fichiers au panier (avec conversion WebP si possible) */
+/* Ajoute les nouveaux fichiers au panier.
+   IMPORTANT : les fichiers bruts sont ajoutés à _pending IMMÉDIATEMENT
+   (garantit qu'un submit rapide envoie quand même les fichiers), puis la
+   conversion WebP tourne en arrière-plan et remplace les bruts quand elle
+   est terminée — empêche la race condition "submit avant fin de conversion". */
 function addToSelection(newFiles) {
     var raw = Array.from(newFiles);
+
+    // 1. Ajouter immédiatement les fichiers originaux
+    var startIdx = _pending.length;
+    raw.forEach(function(f) { _pending.push(f); });
+    _renderPreview();
+
+    // 2. Conversion asynchrone : remplace les bruts si toujours présents
     if (window.ZootMediaConverter) {
         ZootMediaConverter.processFiles(raw).then(function(converted) {
-            converted.forEach(function(f) { _pending.push(f); });
-            _renderPreview();
-        }).catch(function() {
-            raw.forEach(function(f) { _pending.push(f); });
-            _renderPreview();
-        });
-    } else {
-        raw.forEach(function(f) { _pending.push(f); });
-        _renderPreview();
+            var changed = false;
+            converted.forEach(function(f, i) {
+                // Vérifier que l'entrée n'a pas été supprimée entre-temps
+                if (_pending[startIdx + i] === raw[i]) {
+                    _pending[startIdx + i] = f;
+                    changed = true;
+                }
+            });
+            if (changed) _renderPreview();
+        }).catch(function() { /* bruts déjà en place, rien à faire */ });
     }
 }
 

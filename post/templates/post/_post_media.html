@@ -5,6 +5,7 @@
 <div class="pc-gallery pc-gallery-{{ post.media_list|length }}">
     {% for m in post.media_list %}
     {% if m.is_video %}
+    {% if m.url %}
     <div class="pc-gal-item pc-gal-video ds-vid-wrap">
         <video class="pc-gal-vid" data-src="{{ m.url }}" controls preload="none"></video>
         <div class="ds-vid-overlay" onclick="dsPlayVideo(this)">
@@ -17,14 +18,18 @@
             <span class="ds-vid-label">{% trans "Toucher pour lire" %}</span>
         </div>
     </div>
+    {% endif %}
     {% else %}
+    {% if m.url %}
     <div class="pc-gal-item" onclick="openPostMedia(this)" style="cursor:zoom-in;">
         <img class="pc-gal-img"
              src="{{ m.url }}"
              alt=""
              loading="lazy"
-             decoding="async">
+             decoding="async"
+             onerror="this.closest('.pc-gal-item').style.display='none'">
     </div>
+    {% endif %}
     {% endif %}
     {% endfor %}
 </div>
