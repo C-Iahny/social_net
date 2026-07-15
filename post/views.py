@@ -1492,3 +1492,23 @@ def mes_favoris_posts(request):
         user=request.user
     ).select_related('post', 'post__author').order_by('-created_at')
     return render(request, 'post/mes_favoris_posts.html', {'bookmarks': bookmarks})
+
+
+# ──────────────────────────────────────────────
+# Page de diagnostic média (temporaire)
+# ──────────────────────────────────────────────
+@login_required(login_url="login")
+def diag_media(request):
+    """Diagnostic : montre les derniers posts de l'utilisateur avec leurs PostMedia."""
+    posts = list(
+        Post.objects.filter(author=request.user)
+        .order_by('-id')[:10]
+    )
+    post_ids = [p.id for p in posts]
+    media_qs = PostMedia.objects.filter(post_id__in=post_ids).order_by('post_id', 'order')
+    media_map = {}
+    for m in media_qs:
+        media_map.setdefault(m.post_id, []).append(m)
+    for p in posts:
+        p.diag_media = media_map.get(p.id, [])
+    return render(request, 'post/diag_media.html', {'posts': posts})

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<style>
+.diag-wrap { max-width: 800px; margin: 80px auto 3rem; padding: 0 1rem; font-family: monospace; }
+.diag-post { background: var(--bg-card); border: 2px solid var(--border);
+             border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
+.diag-post-head { background: var(--accent); color: #fff; padding: .7rem 1rem;
+                  font-size: .9rem; font-weight: 700; }
+.diag-post-body { padding: 1rem; font-size: .82rem; }
+.diag-media-item { border: 1px solid var(--border); border-radius: 8px;
+                   margin-bottom: .8rem; padding: .7rem; background: var(--bg); }
+.diag-url { word-break: break-all; color: #0077cc; font-size: .78rem; }
+.diag-img { max-width: 200px; max-height: 150px; margin-top: .5rem;
+            border: 2px solid #ccc; display: block; }
+.ok { color: green; font-weight: 700; }
+.err { color: red; font-weight: 700; }
+.warn { color: orange; font-weight: 700; }
+</style>
+<div class="diag-wrap">
+    <h2 style="margin-bottom:1rem;">🔍 Diagnostic Médias — {{ user.username }}</h2>
+    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1.5rem;">
+        Derniers 10 posts. Visitez cette page après avoir publié un post avec des photos/vidéos.
+        <a href="{% url 'post:post-view' %}" style="margin-left:1rem;">← Retour au feed</a>
+    </p>
+
+    {% for post in posts %}
+    <div class="diag-post">
+        <div class="diag-post-head">
+            Post #{{ post.id }} — {{ post.title|truncatechars:50 }}
+            &nbsp;|&nbsp; {{ post.post_date|date:"d/m/Y H:i" }}
+            &nbsp;|&nbsp; statut: {{ post.status }}
+        </div>
+        <div class="diag-post-body">
+
+            {% if post.diag_media %}
+                <p class="ok">✅ {{ post.diag_media|length }} PostMedia en base</p>
+                {% for m in post.diag_media %}
+                <div class="diag-media-item">
+                    <p><strong>Media #{{ m.pk }}</strong> — type: <em>{{ m.media_type }}</em> — order: {{ m.order }}</p>
+                    <p>file.name: <code>{{ m.file.name|default:"(vide)" }}</code></p>
+                    {% if m.url %}
+                        <p class="ok">✅ url générée :</p>
+                        <p class="diag-url">{{ m.url }}</p>
+                        {% if m.is_video %}
+                            <video src="{{ m.url }}" controls style="max-width:300px;max-height:200px;margin-top:.5rem;"
+                                   onerror="this.nextElementSibling.className='err';this.nextElementSibling.textContent='❌ Vidéo inaccessible (URL 404 ou CORS)'">
+                            </video>
+                            <p></p>
+                        {% else %}
+                            <img src="{{ m.url }}" class="diag-img" alt=""
+                                 onload="this.nextElementSibling.className='ok';this.nextElementSibling.textContent='✅ Image accessible'"
+                                 onerror="this.nextElementSibling.className='err';this.nextElementSibling.textContent='❌ Image inaccessible (URL 404 ou CORS)'">
+                            <p class="warn">⏳ Chargement image...</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="err">❌ url = None — fichier absent ou storage défaillant</p>
+                        <p>file.storage: <code>{{ m.file.storage }}</code></p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="err">❌ 0 PostMedia en base pour ce post</p>
+                <p class="warn">→ Les fichiers n'ont pas été sauvegardés côté serveur.
+                   Vérifier les logs Railway (chercher "AddPostView" et "PostMedia FAILED").</p>
+            {% endif %}
+
+        </div>
+    </div>
+    {% empty %}
+    <p>Aucun post trouvé pour cet utilisateur.</p>
+    {% endfor %}
+</div>
+{% endblock %}
