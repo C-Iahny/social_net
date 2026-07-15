@@ -262,19 +262,21 @@ window.ZootMediaConverter = (function() {
     }
 
     // ── Canvas → WebP (+ fallback JPEG si WebP non supporté) ───────────────
+    // FIX : Promise.resolve(val, extra) ignore le 2e argument — on retourne
+    // un objet {blob, mime} pour transmettre le type MIME correctement.
     function canvasToSmallest(canvas, origSize) {
         // Qualité adaptive : 0.72 pour les très gros fichiers, 0.82 sinon
         var q = origSize > 3 * 1024 * 1024 ? 0.72 : 0.82;
         return new Promise(function(resolve) {
             canvas.toBlob(function(webpBlob) {
                 if (webpBlob && webpBlob.size < origSize) {
-                    resolve(webpBlob, 'image/webp');
+                    resolve({ blob: webpBlob, mime: 'image/webp' });
                     return;
                 }
                 // WebP non supporté ou plus grand → essayer JPEG
                 canvas.toBlob(function(jpegBlob) {
                     if (jpegBlob && jpegBlob.size < origSize) {
-                        resolve(jpegBlob, 'image/jpeg');
+                        resolve({ blob: jpegBlob, mime: 'image/jpeg' });
                     } else {
                         resolve(null); // conserver l'original
                     }
@@ -308,15 +310,16 @@ window.ZootMediaConverter = (function() {
                 var url = URL.createObjectURL(sourceBlob);
                 var img = new Image();
                 img.onload = function() {
-                    resizeAndConvert(img, reportOrig || file.size).then(function(outBlob, mime) {
+                    resizeAndConvert(img, reportOrig || file.size).then(function(result) {
                         URL.revokeObjectURL(url);
-                        if (!outBlob) { resolve(file); return; }
+                        // result = { blob, mime } ou null
+                        if (!result || !result.blob) { resolve(file); return; }
+                        var mime = result.mime || 'image/webp';
                         var ext  = (mime === 'image/jpeg') ? '.jpg' : '.webp';
-                        var type = mime || 'image/webp';
                         var compressed = new File(
-                            [outBlob],
+                            [result.blob],
                             baseName + ext,
-                            { type: type, lastModified: Date.now() }
+                            { type: mime, lastModified: Date.now() }
                         );
                         // Feedback toast
                         var saved = file.size - compressed.size;

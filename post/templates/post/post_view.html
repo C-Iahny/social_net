@@ -1435,6 +1435,73 @@ body { background: var(--bg); }
             <span id="new-posts-banner-text">{% trans "New Post — Click to refresh" %}</span>
         </div>
 
+        <!-- ── Bandeau diagnostic post-création ─────────────────────────────── -->
+        {% if request.GET.post_ok %}
+        <div id="post-diag-banner" style="
+            margin:.4rem .5rem .6rem;
+            border-radius:14px;
+            padding:.75rem 1rem;
+            display:flex;align-items:center;justify-content:space-between;gap:.7rem;
+            font-size:.85rem;font-weight:600;
+            background:{% if request.GET.saved == '0' and request.GET.recv != '0' %}#7a3300{% elif request.GET.saved == '0' %}#1a3a7a{% else %}#1a5c1a{% endif %};
+            color:#fff;
+            box-shadow:0 3px 12px rgba(0,0,0,.3);
+        ">
+            <span style="flex:1">
+                {% if request.GET.recv == '0' and request.GET.saved == '0' %}
+                    📝 Post créé sans fichier média ({{ request.GET.recv }} fichier reçu)
+                {% elif request.GET.saved == '0' %}
+                    ⚠️ {{ request.GET.recv }} fichier(s) reçu(s) mais 0 sauvegardé — voir diagnostic
+                {% else %}
+                    ✅ Post publié — {{ request.GET.saved }} média(s) sauvegardé(s) →
+                    <span id="diag-img-status" style="font-style:italic">Vérification chargement…</span>
+                {% endif %}
+            </span>
+            <a href="{% url 'post:diag-media' %}" style="
+                color:#fff;white-space:nowrap;text-decoration:underline;
+                font-weight:700;font-size:.82rem;
+            ">🔍 Diagnostic</a>
+            <button onclick="document.getElementById('post-diag-banner').remove()" style="
+                background:none;border:none;color:#fff;cursor:pointer;font-size:1rem;padding:0;line-height:1;
+            ">✕</button>
+        </div>
+        {% if request.GET.saved != '0' %}
+        <script>
+        (function() {
+            /* Vérifier si une image du post récemment créé charge correctement */
+            var pid = '{{ request.GET.pid }}';
+            var statusEl = document.getElementById('diag-img-status');
+            if (!pid || !statusEl) return;
+            /* Chercher la 1ère image du post dans le DOM */
+            setTimeout(function() {
+                var postEl = document.getElementById('post-' + pid);
+                if (!postEl) {
+                    if (statusEl) statusEl.textContent = '(post absent du feed — voir diagnostic →)';
+                    return;
+                }
+                var img = postEl.querySelector('img.pc-gal-img');
+                if (!img) {
+                    if (statusEl) statusEl.textContent = '⚠️ Aucune image visible — vérifier le diagnostic';
+                    return;
+                }
+                if (img.complete && img.naturalWidth > 0) {
+                    statusEl.textContent = '✅ Image visible';
+                } else if (img.complete) {
+                    statusEl.textContent = '❌ Image présente mais inaccessible — vérifier R2 (diagnostic →)';
+                    document.getElementById('post-diag-banner').style.background = '#7a3300';
+                } else {
+                    img.addEventListener('load',  function() { statusEl.textContent = '✅ Image visible'; });
+                    img.addEventListener('error', function() {
+                        statusEl.textContent = '❌ Image inaccessible (R2 non public ?) — voir diagnostic →';
+                        document.getElementById('post-diag-banner').style.background = '#7a3300';
+                    });
+                }
+            }, 1200);
+        })();
+        </script>
+        {% endif %}
+        {% endif %}
+
         <!-- Create post box -->
         <div class="create-box">
             <div class="create-box-top">
