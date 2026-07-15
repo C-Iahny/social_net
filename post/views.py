@@ -520,7 +520,7 @@ class AddPostView(CreateView):
         # Pour les requêtes fetch/AJAX (X-Requested-With: XMLHttpRequest),
         # retourner du JSON plutôt qu'un redirect HTTP — élimine tout problème
         # de suivi de redirection dans le JS (l'URL est donnée explicitement)
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'ok': True, 'redirect': redirect_url})
         return redirect(redirect_url)
 
