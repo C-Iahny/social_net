@@ -281,17 +281,20 @@
 
                     <!-- Inputs masqués partagés (desktop + mobile) -->
                     <!-- opacity:0 au lieu de display:none : les labels déclenchent
-                         correctement l'input sur Capacitor / WebView Android -->
+                         correctement l'input sur Capacitor / WebView Android.
+                         IMPORTANT : this.value=null est RETIRÉ intentionnellement.
+                         L'input conserve ses fichiers comme fallback si _pending
+                         est vide au moment du submit (bug Capacitor WebView). -->
                     <input type="file" name="media_files" id="id_media_files"
                            accept="image/*,video/*,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.heif,.avif,.svg,.mp4,.mov,.avi,.mkv,.webm"
                            multiple
                            class="input-file-hidden"
-                           onchange="addToSelection(this.files); this.value=null;">
+                           onchange="addToSelection(this.files);">
                     <input type="file" name="media_files" id="id_media_camera"
                            accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.heif,.avif"
                            capture="environment"
                            class="input-file-hidden"
-                           onchange="addToSelection(this.files); this.value=null;">
+                           onchange="addToSelection(this.files);">
 
                     <!-- ── Mobile : 2 gros boutons ────────────────────────────── -->
                     <div class="media-picker-mobile" id="media-picker-mobile">
@@ -506,7 +509,14 @@ function _renderPreview() {
     });
 })();
 
-/* Intercept submit — injecte les fichiers via FormData */
+/* Intercept submit — injecte les fichiers via FormData AJAX
+   ─────────────────────────────────────────────────────────
+   STRATÉGIE DOUBLE SOURCE (robustesse Capacitor/Android) :
+   1. Source principale : _pending (fichiers convertis WebP ou bruts)
+   2. Fallback si _pending vide : lire directement les <input type="file">
+      qui gardent leurs fichiers (this.value=null a été retiré des onchange)
+   Cela garantit que même si le WebView recharge la page ou que _pending
+   se vide entre la sélection et le submit, les fichiers arrivent quand même. */
 (function() {
     var form = document.getElementById('add-post-form');
     if (!form) return;
@@ -519,7 +529,32 @@ function _renderPreview() {
             }
         }
 
-        if (_pending.length === 0) return; /* aucun fichier → submit natif */
+        /* ── Collecter les fichiers depuis TOUTES les sources ── */
+        var filesToSend = [];
+
+        /* Source 1 : _pending (WebP convertis ou bruts, accumulés) */
+        _pending.forEach(function(f) { filesToSend.push(f); });
+
+        /* Source 2 (FALLBACK) : inputs réels — si _pending est vide
+           (cas Capacitor où le WebView a reinitialisé la page entre temps) */
+        if (filesToSend.length === 0) {
+            Array.from(
+                form.querySelectorAll('input[type="file"][name="media_files"]')
+            ).forEach(function(inp) {
+                Array.from(inp.files || []).forEach(function(f) {
+                    filesToSend.push(f);
+                });
+            });
+        }
+
+        console.log('[Vazimba] submit — _pending:', _pending.length,
+                    '| filesToSend total:', filesToSend.length);
+
+        if (filesToSend.length === 0) {
+            /* Vraiment aucun fichier → submit natif (post texte seul) */
+            console.log('[Vazimba] submit natif (0 fichiers détectés)');
+            return;
+        }
 
         e.preventDefault();
 
@@ -537,7 +572,9 @@ function _renderPreview() {
         if (actionEl) fd.append('action', actionEl.value);
         var schedEl = form.querySelector('[name=scheduled_at]');
         if (schedEl && schedEl.value) fd.append('scheduled_at', schedEl.value);
-        _pending.forEach(function(f) { fd.append('media_files', f); });
+
+        /* Injecter les fichiers */
+        filesToSend.forEach(function(f) { fd.append('media_files', f); });
 
         /* 'ajax=1' dans le CORPS du FormData — plus fiable que X-Requested-With
            qui peut être bloqué par Capacitor / Android WebView (réseau sécurisé) */
@@ -546,7 +583,7 @@ function _renderPreview() {
         var btn = form.querySelector('.btn-submit');
         if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
 
-        console.log('[Vazimba] submit AJAX — fichiers dans _pending:', _pending.length);
+        console.log('[Vazimba] submit AJAX — envoi de', filesToSend.length, 'fichier(s)');
 
         fetch(form.action, {
             method: 'POST',
@@ -555,35 +592,30 @@ function _renderPreview() {
         }).then(function(r) {
             console.log('[Vazimba] réponse HTTP', r.status, r.url);
             if (r.ok) {
-                /* Le view retourne {"ok": true, "redirect": "/feed/"} */
                 return r.json().catch(function() { return null; }).then(function(data) {
                     console.log('[Vazimba] réponse JSON', JSON.stringify(data));
                     if (data && data.ok && data.redirect) {
-                        /* Afficher un résumé diagnostic visible avant la redirection */
                         if (data.received !== undefined) {
-                            var msg = '📤 ' + _pending.length + ' fichier(s) envoyé(s) → '
+                            var msg = '📤 ' + filesToSend.length + ' fichier(s) envoyé(s) → '
                                 + data.received + ' reçu(s) → '
                                 + data.saved + ' sauvegardé(s)';
                             _diagToast(msg, data.saved > 0 ? 'green' : 'orange');
-                            /* Laisser le toast visible 2.5s avant de rediriger */
                             setTimeout(function() { window.location.href = data.redirect; }, 2500);
                         } else {
                             window.location.href = data.redirect;
                         }
                     } else {
-                        /* 200 HTML = form_invalid (erreurs de validation) */
+                        /* 200 HTML = form_invalid */
                         if (btn) { btn.disabled = false; btn.style.opacity = ''; }
                         form.submit();
                     }
                 });
             } else {
-                /* 4xx / 5xx — soumettre en natif pour afficher l'erreur Django */
-                console.error('[Vazimba] addPost HTTP', r.status, r.url);
+                console.error('[Vazimba] addPost HTTP', r.status);
                 if (btn) { btn.disabled = false; btn.style.opacity = ''; }
                 form.submit();
             }
         }).catch(function(err) {
-            /* Erreur réseau (offline, etc.) */
             console.warn('[Vazimba] addPost network error', err);
             if (btn) { btn.disabled = false; btn.style.opacity = ''; }
             form.submit();
