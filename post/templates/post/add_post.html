@@ -546,7 +546,7 @@ function _renderPreview() {
         var btn = form.querySelector('.btn-submit');
         if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
 
-        console.log('[Vazimba] submit AJAX — fichiers:', _pending.length);
+        console.log('[Vazimba] submit AJAX — fichiers dans _pending:', _pending.length);
 
         fetch(form.action, {
             method: 'POST',
@@ -559,11 +559,21 @@ function _renderPreview() {
                 return r.json().catch(function() { return null; }).then(function(data) {
                     console.log('[Vazimba] réponse JSON', JSON.stringify(data));
                     if (data && data.ok && data.redirect) {
-                        window.location.href = data.redirect;
+                        /* Afficher un résumé diagnostic visible avant la redirection */
+                        if (data.received !== undefined) {
+                            var msg = '📤 ' + _pending.length + ' fichier(s) envoyé(s) → '
+                                + data.received + ' reçu(s) → '
+                                + data.saved + ' sauvegardé(s)';
+                            _diagToast(msg, data.saved > 0 ? 'green' : 'orange');
+                            /* Laisser le toast visible 2.5s avant de rediriger */
+                            setTimeout(function() { window.location.href = data.redirect; }, 2500);
+                        } else {
+                            window.location.href = data.redirect;
+                        }
                     } else {
                         /* 200 HTML = form_invalid (erreurs de validation) */
                         if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-                        form.submit(); /* soumettre en natif pour afficher les erreurs */
+                        form.submit();
                     }
                 });
             } else {
@@ -580,6 +590,18 @@ function _renderPreview() {
         });
     });
 })();
+
+// ── Toast diagnostic ─────────────────────────────────────────────────────────
+function _diagToast(msg, color) {
+    var t = document.createElement('div');
+    t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);' +
+        'background:' + (color === 'green' ? '#1a7a1a' : '#b45000') + ';color:#fff;' +
+        'font-size:.9rem;font-weight:700;padding:.8rem 1.4rem;border-radius:12px;' +
+        'z-index:99999;max-width:90vw;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,.4);';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(function() { if (t.parentNode) t.parentNode.removeChild(t); }, 5000);
+}
 
 // ── Brouillon / Programmer ────────────────────────────────────────────────────
 function submitAs(action) {

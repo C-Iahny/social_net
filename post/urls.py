@@ -25,6 +25,7 @@ from .views import (
     bookmark_post,
     mes_brouillons,
     mes_favoris_posts,
+    diag_media,
 )
 
 app_name = 'post'
@@ -53,5 +54,6 @@ urlpatterns = [
     path('vintana/create/',    vintana_create,        name='vintana-create'),
     path('tendances/',         tendances_view,        name='tendances'),
     path('signaler/',          report_content,        name='report-content'),
+    path('diag/',              diag_media,            name='diag-media'),
     path('<int:post_id>/',     post_detail,           name='post-detail'),
 ]
