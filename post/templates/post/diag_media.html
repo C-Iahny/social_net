@@ -2,7 +2,14 @@
 {% load static %}
 {% block content %}
 <style>
-.diag-wrap { max-width: 800px; margin: 80px auto 3rem; padding: 0 1rem; font-family: monospace; }
+.diag-wrap { max-width: 840px; margin: 80px auto 3rem; padding: 0 1rem; font-family: monospace; }
+.diag-section { background: var(--bg-card); border: 2px solid var(--border);
+                border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
+.diag-section-head { padding: .7rem 1rem; font-size: .9rem; font-weight: 700; }
+.diag-section-head.green { background: #1a5c1a; color: #fff; }
+.diag-section-head.red   { background: #7a1a1a; color: #fff; }
+.diag-section-head.blue  { background: var(--accent); color: #fff; }
+.diag-section-body { padding: 1rem; font-size: .82rem; }
 .diag-post { background: var(--bg-card); border: 2px solid var(--border);
              border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
 .diag-post-head { background: var(--accent); color: #fff; padding: .7rem 1rem;
@@ -13,16 +20,67 @@
 .diag-url { word-break: break-all; color: #0077cc; font-size: .78rem; }
 .diag-img { max-width: 200px; max-height: 150px; margin-top: .5rem;
             border: 2px solid #ccc; display: block; }
-.ok { color: green; font-weight: 700; }
-.err { color: red; font-weight: 700; }
-.warn { color: orange; font-weight: 700; }
+.ok   { color: #2e8b2e; font-weight: 700; }
+.err  { color: #b00020; font-weight: 700; }
+.warn { color: #cc6600; font-weight: 700; }
+.diag-tip { background: #1a3a7a; color: #e8f0ff; border-radius: 8px;
+            padding: .7rem 1rem; font-size: .83rem; margin-top: .6rem; }
 </style>
+
 <div class="diag-wrap">
     <h2 style="margin-bottom:1rem;">🔍 Diagnostic Médias — {{ user.username }}</h2>
     <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1.5rem;">
-        Derniers 10 posts. Visitez cette page après avoir publié un post avec des photos/vidéos.
-        <a href="{% url 'post:post-view' %}" style="margin-left:1rem;">← Retour au feed</a>
+        <a href="{% url 'post:post-view' %}" style="margin-right:1rem;">← Retour au feed</a>
+        Publiez un post avec photos/vidéos, puis revenez ici pour diagnostiquer.
     </p>
+
+    <!-- ══ SECTION 1 : Configuration R2 ══ -->
+    {% if r2_info.is_local %}
+    <div class="diag-section">
+        <div class="diag-section-head warn" style="background:#7a5a00;">⚠️ Stockage LOCAL (développement)</div>
+        <div class="diag-section-body">
+            <p>Backend : <code>{{ r2_info.storage_backend }}</code></p>
+            <p>MEDIA_URL : <code>{{ r2_info.media_url }}</code></p>
+            <p class="warn">→ Les fichiers sont stockés localement. Pas de R2 configuré.</p>
+        </div>
+    </div>
+    {% elif r2_info.is_r2 %}
+    <div class="diag-section">
+        <div class="diag-section-head {% if r2_info.r2_public_url %}green{% else %}red{% endif %}">
+            {% if r2_info.r2_public_url %}✅{% else %}❌{% endif %}
+            Configuration Cloudflare R2
+        </div>
+        <div class="diag-section-body">
+            <p>Backend : <code>{{ r2_info.storage_backend }}</code></p>
+            <p>MEDIA_URL : <code>{{ r2_info.media_url }}</code></p>
+            <p>R2 credentials : {% if r2_info.r2_access_key_set %}<span class="ok">✅ configurés</span>{% else %}<span class="err">❌ manquants</span>{% endif %}</p>
+            <p>R2 bucket : <code>{{ r2_info.r2_bucket|default:"(non configuré)" }}</code></p>
+            <p>AWS_QUERYSTRING_AUTH : <code>{{ r2_info.querystring_auth }}</code> {% if not r2_info.querystring_auth %}<span class="warn">(URLs publiques sans signature)</span>{% endif %}</p>
+            <p>AWS_DEFAULT_ACL : <code>{{ r2_info.default_acl|default:"non défini" }}</code></p>
+
+            {% if r2_info.r2_public_url %}
+            <p class="ok">✅ R2_PUBLIC_URL configuré : <code>{{ r2_info.r2_public_url }}</code></p>
+            <p>URL type : <code>{{ r2_info.sample_url }}</code></p>
+            <p class="warn">→ Vérifier que <strong>Allow Public Access</strong> est activé sur le bucket R2 dans Cloudflare.</p>
+            {% else %}
+            <p class="err">❌ R2_PUBLIC_URL NON configuré</p>
+            <p>URL type actuelle : <code>{{ r2_info.sample_url|default:"(indéterminable)" }}</code></p>
+            <div class="diag-tip">
+                <strong>⚠️ Cause probable du problème d'images !</strong><br><br>
+                Sans <code>R2_PUBLIC_URL</code>, les images utilisent l'URL interne R2 qui n'est pas accessible publiquement.<br><br>
+                <strong>Correction :</strong><br>
+                1. Dans <a href="https://dash.cloudflare.com" target="_blank" style="color:#8be0ff;">Cloudflare Dashboard</a> → R2 → votre bucket → <em>Settings</em> → activer <strong>Allow Public Access</strong><br>
+                2. Cloudflare vous donne une URL publique type : <code>pub-xxxxxxxxxxxx.r2.dev</code><br>
+                3. Dans Railway → Variables → ajouter : <code>R2_PUBLIC_URL = pub-xxxxxxxxxxxx.r2.dev</code> (sans https://)<br>
+                4. Redéployer Railway<br>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ══ SECTION 2 : Posts et PostMedia ══ -->
+    <h3 style="margin-bottom:.8rem;">📋 Derniers 10 posts</h3>
 
     {% for post in posts %}
     <div class="diag-post">
@@ -38,31 +96,42 @@
                 {% for m in post.diag_media %}
                 <div class="diag-media-item">
                     <p><strong>Media #{{ m.pk }}</strong> — type: <em>{{ m.media_type }}</em> — order: {{ m.order }}</p>
-                    <p>file.name: <code>{{ m.file.name|default:"(vide)" }}</code></p>
+                    <p>file.name : <code>{{ m.file.name|default:"(vide)" }}</code></p>
+                    <p>file.storage : <code>{{ m.file.storage.__class__.__name__ }}</code></p>
                     {% if m.url %}
-                        <p class="ok">✅ url générée :</p>
+                        <p class="ok">✅ URL générée :</p>
                         <p class="diag-url">{{ m.url }}</p>
                         {% if m.is_video %}
                             <video src="{{ m.url }}" controls style="max-width:300px;max-height:200px;margin-top:.5rem;"
                                    onerror="this.nextElementSibling.className='err';this.nextElementSibling.textContent='❌ Vidéo inaccessible (URL 404 ou CORS)'">
                             </video>
-                            <p></p>
+                            <p class="warn">⏳ Chargement vidéo…</p>
                         {% else %}
                             <img src="{{ m.url }}" class="diag-img" alt=""
-                                 onload="this.nextElementSibling.className='ok';this.nextElementSibling.textContent='✅ Image accessible'"
-                                 onerror="this.nextElementSibling.className='err';this.nextElementSibling.textContent='❌ Image inaccessible (URL 404 ou CORS)'">
-                            <p class="warn">⏳ Chargement image...</p>
+                                 onload="this.nextElementSibling.className='ok';this.nextElementSibling.textContent='✅ Image chargée avec succès !'"
+                                 onerror="this.nextElementSibling.className='err';this.nextElementSibling.textContent='❌ Image inaccessible — URL 403/404 ou bucket non public'">
+                            <p class="warn">⏳ Chargement image…</p>
                         {% endif %}
                     {% else %}
-                        <p class="err">❌ url = None — fichier absent ou storage défaillant</p>
-                        <p>file.storage: <code>{{ m.file.storage }}</code></p>
+                        <p class="err">❌ URL = None</p>
+                        <p class="warn">→ Fichier absent du stockage ou storage mal configuré.</p>
+                        {% if r2_info.is_local %}
+                        <p class="warn">→ En développement local : le fichier doit exister dans <code>media_cdn/</code>.</p>
+                        {% endif %}
                     {% endif %}
                 </div>
                 {% endfor %}
             {% else %}
                 <p class="err">❌ 0 PostMedia en base pour ce post</p>
-                <p class="warn">→ Les fichiers n'ont pas été sauvegardés côté serveur.
-                   Vérifier les logs Railway (chercher "AddPostView" et "PostMedia FAILED").</p>
+                <div class="diag-tip">
+                    → Les fichiers n'ont pas été sauvegardés côté serveur.<br>
+                    Chercher dans les logs Railway : <code>AddPostView: files_received=</code> et <code>PostMedia FAILED</code>.<br>
+                    <br>
+                    <strong>Causes possibles :</strong><br>
+                    • Aucun fichier sélectionné / soumis (vérifier le toast "X envoyé(s)" après publication)<br>
+                    • Erreur R2 lors de l'upload (permissions, credentials)<br>
+                    • Formulaire soumis en natif (sans AJAX) — les fichiers ne sont pas transmis<br>
+                </div>
             {% endif %}
 
         </div>
