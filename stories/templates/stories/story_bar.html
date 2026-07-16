@@ -284,6 +284,15 @@
   font-size: .82rem; color: var(--text-muted); margin-top: .15rem;
   white-space: pre-wrap; word-break: break-word;
 }
+/* Ligne avec réponse → cliquable, ouvre le chat */
+.zsv-vrow-reply { cursor: pointer; border-radius: 10px; transition: background .15s; }
+.zsv-vrow-reply:hover { background: rgba(255,255,255,.07); }
+.zsv-vrow-reply:active { background: rgba(255,255,255,.13); }
+.zsv-vrow-reply-icon {
+  margin-left: auto; flex-shrink: 0;
+  font-size: .95rem; opacity: .45;
+  display: flex; align-items: center;
+}
 
 /* ═══════════════════════════════════════════════════
    CRÉATEUR PLEIN ÉCRAN
@@ -1369,14 +1378,18 @@ window.zvOpenViewers = function(){
         html = '<p style="color:var(--text-muted)">Aucune vue pour l\'instant.</p>';
       } else {
         html = rows.map(function(r){
-          return '<div class="zsv-vrow">' +
+          var hasReply = !!r.reply_msg;
+          return '<div class="zsv-vrow' + (hasReply ? ' zsv-vrow-reply' : '') + '"' +
+            (hasReply ? ' onclick="zvOpenReplyChat('+r.id+')" title="Répondre dans le chat"' : '') +
+            '>' +
             '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
-            '<div>' +
+            '<div style="flex:1;min-width:0;">' +
               '<div class="zsv-vrow-name">'+_esc(r.username)+'</div>' +
-              (r.reply_msg ? '<div class="zsv-vrow-msg">'+_esc(r.reply_msg)+'</div>' : '') +
+              (hasReply ? '<div class="zsv-vrow-msg">'+_esc(r.reply_msg)+'</div>' : '') +
               '<div class="zsv-vrow-time">'+(r.reply_at||r.viewed_at||'')+'</div>' +
             '</div>' +
             (r.emoji ? '<span class="zsv-vrow-emoji">'+_esc(r.emoji)+'</span>' : '') +
+            (hasReply ? '<span class="zsv-vrow-reply-icon"><span class="material-icons" style="font-size:1rem;">reply</span></span>' : '') +
           '</div>';
         }).join('');
       }
@@ -1387,6 +1400,11 @@ window.zvOpenViewers = function(){
 };
 window.zvCloseViewers = function(){
   document.getElementById('zsv-vmodal').classList.remove('open'); _zvResume();
+};
+
+/* Clic sur une réponse → ouvrir le chat privé avec cet utilisateur */
+window.zvOpenReplyChat = function(userId){
+  window.location.href = '/chat/?user_id=' + userId;
 };
 
 window.zvDeleteCurrent = function(){
