@@ -68,7 +68,12 @@ def private_chat_room_view(request, *args, **kwargs):
 		except Exception:
 			pass
 
-	# 1. Find all the rooms this user is a part of 
+	# Pré-remplissage depuis une réponse de story
+	story_reply_msg = request.GET.get('story_reply', '').strip()[:500]
+	if story_reply_msg:
+		context['story_reply_msg'] = story_reply_msg
+
+	# 1. Find all the rooms this user is a part of
 	rooms1 = PrivateChatRoom.objects.filter(user1=user, is_active=True)
 	rooms2 = PrivateChatRoom.objects.filter(user2=user, is_active=True)
 
@@ -80,7 +85,7 @@ def private_chat_room_view(request, *args, **kwargs):
 		[{"message": "hey", "friend": "Mitch"}, {"message": "You there?", "friend": "Blake"},]
 	Where message = The most recent message
 	"""
-	m_and_f = []
+	m_and_f_raw = []
 	for room in rooms:
 		# Figure out which user is the "other user" (aka friend)
 		if room.user1 == user:
@@ -88,24 +93,32 @@ def private_chat_room_view(request, *args, **kwargs):
 		else:
 			friend = room.user1
 
-		# Dernier message + compteur non-lu
+		# Dernier message + timestamp pour tri
 		try:
 			last_msg_obj = RoomChatMessage.objects.filter(room=room).latest('timestamp')
-			last_msg = (last_msg_obj.content or '')[:30]
+			last_msg  = (last_msg_obj.content or '')[:30]
+			last_time = last_msg_obj.timestamp
 		except RoomChatMessage.DoesNotExist:
-			last_msg = ""
+			last_msg  = ""
+			last_time = room.id   # rooms sans message triées en dernier (id croissant)
+
 		try:
 			unread_obj = UnreadChatRoomMessages.objects.get(room=room, user=user)
 			unread_count = unread_obj.count
 		except UnreadChatRoomMessages.DoesNotExist:
 			unread_count = 0
 
-		m_and_f.append({
+		m_and_f_raw.append({
 			'message': last_msg,
 			'friend':  friend,
 			'unread':  unread_count,
+			'_ts':     last_time,
 		})
-	context['m_and_f'] = m_and_f
+
+	# Tri : conversation la plus récente en premier
+	m_and_f_raw.sort(key=lambda x: x['_ts'], reverse=True)
+	context['m_and_f'] = [{'message': e['message'], 'friend': e['friend'], 'unread': e['unread']}
+	                       for e in m_and_f_raw]
 
 	context['debug'] = DEBUG
 	context['debug_mode'] = settings.DEBUG
