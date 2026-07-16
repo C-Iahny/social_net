@@ -1404,13 +1404,13 @@ window.zvCloseViewers = function(){
 
 /* Clic sur une réponse → ouvrir le chat privé + pré-remplir avec le message reçu.
    Utilise data-uid / data-reply pour éviter les problèmes de guillemets dans onclick. */
+/* Clic sur une réponse (story owner → ouvrir le chat avec l'auteur de la réponse).
+   On n'envoie PAS le texte de la réponse en pré-remplissage :
+   c'est le message reçu, pas ce que l'utilisateur veut écrire. */
 window.zvOpenReplyChat = function(el){
-  var uid      = el.getAttribute('data-uid');
-  var replyMsg = el.getAttribute('data-reply') || '';
+  var uid = el.getAttribute('data-uid');
   if(!uid) return;
-  var url = '/chat/?user_id=' + uid;
-  if(replyMsg) url += '&story_reply=' + encodeURIComponent(replyMsg);
-  window.location.href = url;
+  window.location.href = '/chat/?user_id=' + uid;
 };
 
 window.zvDeleteCurrent = function(){

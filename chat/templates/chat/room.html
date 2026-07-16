@@ -1933,22 +1933,12 @@ window._CT = {
         var isMobile = window.innerWidth <= 768;
 
         {% if room %}
-            /* URL contient room_id ou user_id (ex: vient d'une notification) */
+            /* URL contient room_id ou user_id (ex: vient d'une notification ou d'un story reply)
+               → ouvrir directement la conversation, même sur mobile */
             if("{{ room.user1 }}" == "{{ request.user }}"){
-                if(isMobile){
-                    /* Mobile : surligner dans la liste mais ne pas glisser vers le chat */
-                    clearHighlightedFriend(); highlightFriend("{{ room.user2.id }}");
-                    _scrollToFriendInList("{{ room.user2.id }}");
-                } else {
-                    onSelectFriend("{{ room.user2.id }}")
-                }
+                onSelectFriend("{{ room.user2.id }}")
             } else {
-                if(isMobile){
-                    clearHighlightedFriend(); highlightFriend("{{ room.user1.id }}");
-                    _scrollToFriendInList("{{ room.user1.id }}");
-                } else {
-                    onSelectFriend("{{ room.user1.id }}")
-                }
+                onSelectFriend("{{ room.user1.id }}")
             }
         {% elif m_and_f %}
             /* Aucune room spécifiée : desktop → ouvrir la première conv ; mobile → liste seule */
