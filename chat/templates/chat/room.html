@@ -1924,6 +1924,7 @@ window._CT = {
     var roomId = null;
     var currentUserId   = "{{ request.user.id }}";
     var currentUsername = "{{ request.user.username|escapejs }}";
+    var currentFriendId = null;   /* user_id de l'ami actuellement ouvert dans le chat */
 
     function onStart(){
         var isMobile = window.innerWidth <= 768;
@@ -1963,13 +1964,15 @@ window._CT = {
     }
 
     function onSelectFriend(userId){
+        currentFriendId = String(userId);
         createOrReturnPrivateChat(userId)
         clearHighlightedFriend()
         highlightFriend(userId)
         document.getElementById('chat-no-selection').style.display = 'none';
         document.getElementById('id_other_user_profile_image').classList.remove('d-none');
+        /* Ne pas afficher "En ligne" par défaut — seulement quand l'ami rejoint la room via WS */
         var sub = document.getElementById('chat-header-sub');
-        if(sub) sub.style.display = '';
+        if(sub) sub.style.display = 'none';
         // Afficher les boutons d'appel immédiatement sans attendre handleUserInfoPayload
         var btnA = document.getElementById('btn-call-audio');
         var btnV = document.getElementById('btn-call-video');
@@ -2637,6 +2640,22 @@ window._CT = {
                             }));
                         }
                     }, 600); // légère attente pour que le callee soit bien en place
+                }
+                // ── Présence (point vert + "En ligne") ──────────────────────────
+                // Ne traiter que les événements de l'autre utilisateur (pas le nôtre)
+                var evtUserId = String(data.user_id);
+                if(evtUserId && evtUserId !== String(currentUserId)){
+                    var fc = document.getElementById('id_friend_container_' + evtUserId);
+                    var sub = document.getElementById('chat-header-sub');
+                    if(data.msg_type == 1){
+                        // Ami vient de rejoindre la room → marquer en ligne
+                        if(fc) fc.classList.add('online');
+                        if(sub && String(currentFriendId) === evtUserId) sub.style.display = '';
+                    } else {
+                        // Ami a quitté la room → marquer hors ligne
+                        if(fc) fc.classList.remove('online');
+                        if(sub && String(currentFriendId) === evtUserId) sub.style.display = 'none';
+                    }
                 }
             }
             if (data.msg_type == 3) { appendFileMessage(data, false, true) }  // file
