@@ -562,6 +562,7 @@
   gap: .85rem; width: 100%; padding: 0 2.5rem;
 }
 .zsc-pick-btn {
+  position: relative; /* contient l'input enfant en position:absolute */
   width: 100%; max-width: 280px;
   display: flex; align-items: center; justify-content: center; gap: .7rem;
   padding: .9rem 1.2rem; border-radius: 18px;
@@ -571,6 +572,14 @@
   font-family: var(--font-primary,sans-serif);
   transition: background .18s, transform .13s;
   -webkit-tap-highlight-color: transparent; user-select: none;
+}
+/* Input caché ENFANT du label — technique la plus fiable sur Capacitor Android.
+   Contrairement à <label for="id-externe">, l'input enfant est co-localisé
+   avec son label dans le même sous-arbre DOM et n'est pas "couvert" par
+   un autre overlay du point de vue du WebView. */
+.input-file-hidden {
+  position: absolute; width: 1px; height: 1px;
+  opacity: 0; overflow: hidden; top: 0; left: 0;
 }
 .zsc-pick-btn:active { transform: scale(.96); background: rgba(255,255,255,.18); }
 .zsc-pick-btn .material-icons { font-size: 1.55rem; flex-shrink: 0; }
@@ -715,16 +724,25 @@
   <video id="zsc-vid" class="zsc-media" playsinline muted loop></video>
   <div id="zsc-txtbg" class="grad_cyan"></div>
 
-  <!-- Placeholder — 3 boutons <label> APK-safe (pas de .click() programmatique,
-       comme les posts). opacity:0 sur les inputs réels. -->
+  <!-- Placeholder — 3 boutons APK-safe.
+       TECHNIQUE : l'input est ENFANT DIRECT du label (pas de "for" cross-DOM).
+       Le WebView Android déclenche le picker qd le label reçoit le tap, et
+       l'input enfant est colocalisé → aucun problème de cross-boundary.
+       Input : width:1px;height:1px (PAS 0) + opacity:0 → invisible mais actif. -->
   <div id="zsc-placeholder" class="zsc-picker-wrap">
-    <label for="zsc-file-in" class="zsc-pick-btn zsc-pick-gallery">
+    <label class="zsc-pick-btn zsc-pick-gallery">
       <span class="material-icons">photo_library</span>
-      {% trans "Galerie / Vidéo" %}
+      <span>{% trans "Galerie / Vidéo" %}</span>
+      <input type="file" id="zsc-file-in" class="input-file-hidden"
+             accept="image/*,video/*,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.mp4,.mov,.webm"
+             onchange="zscOnFile(this)">
     </label>
-    <label for="zsc-cam-in" class="zsc-pick-btn zsc-pick-camera">
+    <label class="zsc-pick-btn zsc-pick-camera">
       <span class="material-icons">camera_alt</span>
-      {% trans "Appareil photo" %}
+      <span>{% trans "Appareil photo" %}</span>
+      <input type="file" id="zsc-cam-in" class="input-file-hidden"
+             accept="image/*" capture="environment"
+             onchange="zscOnFile(this)">
     </label>
     <button class="zsc-pick-btn zsc-pick-text" onclick="zscToggleTextMode()">
       <span class="material-icons">text_fields</span>
@@ -892,16 +910,8 @@
 </div>
 </div>
 
-<!-- opacity:0 au lieu de display:none : les <label for> déclenchent correctement
-     l'input sur Capacitor / WebView Android (même technique que add_post.html).
-     IMPORTANT : ne pas remettre display:none, ça casse le picker sur APK. -->
-<input type="file" id="zsc-file-in"
-       accept="image/*,video/*,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.mp4,.mov,.webm"
-       style="position:absolute;width:0;height:0;opacity:0;overflow:hidden;"
-       onchange="zscOnFile(this)">
-<input type="file" id="zsc-cam-in"  accept="image/*" capture="environment"
-       style="position:absolute;width:0;height:0;opacity:0;overflow:hidden;"
-       onchange="zscOnFile(this)">
+<!-- Les inputs zsc-file-in et zsc-cam-in sont maintenant ENFANTS DIRECTS
+     de leurs labels dans #zsc-placeholder. Ne pas les redéclarer ici. -->
 
 <!-- Audio trim caché -->
 <audio id="zsc-trim-audio" style="display:none;" onended="zscTrimStop()"></audio>
@@ -1679,13 +1689,11 @@ function _portal(){
     var el=document.getElementById(id);
     if(el&&el.parentElement!==document.body) document.body.appendChild(el);
   });
-  /* File inputs → body aussi (les <label for> fonctionnent par id global).
-     IMPORTANT pour APK : l'input doit être dans le body pour que le picker
-     Android se déclenche correctement via <label>. */
-  ['zsc-file-in','zsc-cam-in','zsc-trim-audio'].forEach(function(id){
-    var el=document.getElementById(id);
-    if(el&&el.parentElement!==document.body) document.body.appendChild(el);
-  });
+  /* zsc-trim-audio → body (trim audio input reste hors du formulaire).
+     zsc-file-in et zsc-cam-in ne sont PAS déplacés : ils sont enfants directs
+     de leurs labels dans #zsc → ils se déplacent avec #zsc. */
+  var trimEl=document.getElementById('zsc-trim-audio');
+  if(trimEl&&trimEl.parentElement!==document.body) document.body.appendChild(trimEl);
 }
 
 if(document.readyState==='loading'){
