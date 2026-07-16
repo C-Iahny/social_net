@@ -581,7 +581,7 @@ def story_reply(request, story_id):
         from django.contrib.humanize.templatetags.humanize import naturaltime
         from django.urls import reverse
 
-        stories_url = request.build_absolute_uri(reverse('stories:list'))
+        stories_url = request.build_absolute_uri(reverse('stories:page'))
         PushSubscription.send_notification(
             user=story.user,
             title='VAZIMBA — Story',
@@ -664,7 +664,7 @@ def story_react(request, story_id):
             from django.contrib.humanize.templatetags.humanize import naturaltime
             from django.urls import reverse
 
-            stories_url = request.build_absolute_uri(reverse('stories:list'))
+            stories_url = request.build_absolute_uri(reverse('stories:page'))
             PushSubscription.send_notification(
                 user=story.user,
                 title='VAZIMBA — Story',
