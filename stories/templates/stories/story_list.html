@@ -4,246 +4,256 @@
 
 {% block content %}
 <style>
-/* ── Wrapper ─────────────────────────────────────────────── */
+/* ── Page fond sombre ─────────────────────────────────── */
+body { background: #0a0a0a !important; }
+[data-theme="dark"] body { background: #000 !important; }
+
+/* ── Wrapper ──────────────────────────────────────────── */
 .sl-wrapper {
-    max-width: 960px; margin: 82px auto 3rem;
-    padding: 0 1rem; box-sizing: border-box;
+    max-width: 640px; margin: 0 auto;
+    padding: 70px 0 80px; box-sizing: border-box;
 }
-@media (max-width: 767px) { .sl-wrapper { margin-top: 70px; padding: 0 .75rem; } }
+@media (max-width: 767px) { .sl-wrapper { padding-top: 58px; } }
 
-/* ── En-tête ─────────────────────────────────────────────── */
-.sl-head {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;
-}
-.sl-head h1 { font-size: 1.5rem; font-weight: 800; color: var(--text); margin: 0; }
-.sl-head-sub { font-size: .85rem; color: var(--text-muted); margin-top: .2rem; }
-
-.sl-add-btn {
-    display: inline-flex; align-items: center; gap: .4rem;
-    padding: .55rem 1.2rem; border-radius: 14px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; font-weight: 700; font-size: .9rem;
-    border: none; cursor: pointer; text-decoration: none;
-    transition: opacity .15s, transform .1s;
-}
-.sl-add-btn:hover { opacity: .88; transform: translateY(-1px); color: #fff; text-decoration: none; }
-.sl-add-btn .material-icons { font-size: 1.1rem; }
-
-/* ── Section vendeur ─────────────────────────────────────── */
-.sl-seller-section { margin-bottom: 2.2rem; }
-.sl-seller-header {
-    display: flex; align-items: center; gap: .75rem;
-    margin-bottom: 1rem;
-}
-.sl-seller-avatar {
-    width: 48px; height: 48px; border-radius: 50%; object-fit: cover;
-    border: 2.5px solid var(--accent);
-}
-.sl-seller-name {
-    font-weight: 700; color: var(--text); font-size: 1rem;
-}
-.sl-seller-badge {
-    display: inline-flex; align-items: center; gap: .25rem;
-    font-size: .72rem; font-weight: 700;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; padding: .12rem .55rem; border-radius: 10px;
-}
-.sl-seller-badge .material-icons { font-size: .8rem; }
-
-/* ── Grille de stories ───────────────────────────────────── */
-.sl-stories-row {
-    display: flex; gap: .85rem; overflow-x: auto;
-    padding-bottom: .5rem; scrollbar-width: none;
-}
-.sl-stories-row::-webkit-scrollbar { display: none; }
-
-/* ── Carte story ─────────────────────────────────────────── */
-.sl-story-card {
-    flex-shrink: 0; width: 160px; height: 280px;
-    border-radius: 16px; overflow: hidden; position: relative;
-    cursor: pointer; background: #111;
-    box-shadow: 0 4px 18px rgba(0,0,0,.15);
-    transition: transform .18s, box-shadow .18s;
-}
-.sl-story-card:hover { transform: scale(1.03); box-shadow: 0 8px 30px rgba(0,0,0,.22); }
-
-/* Media */
-.sl-story-card img,
-.sl-story-card video {
-    width: 100%; height: 100%; object-fit: cover; display: block;
-}
-/* Fonds gradients pour les stories texte */
-.sl-story-card.grad_cyan    { background: linear-gradient(135deg, #00bcd4, #2196f3); }
-.sl-story-card.grad_purple  { background: linear-gradient(135deg, #9c27b0, #e91e63); }
-.sl-story-card.grad_sunset  { background: linear-gradient(135deg, #ff9800, #f44336); }
-.sl-story-card.grad_forest  { background: linear-gradient(135deg, #4caf50, #00bcd4); }
-.sl-story-card.grad_night   { background: linear-gradient(135deg, #1a237e, #7b1fa2); }
-.sl-story-card.grad_gold    { background: linear-gradient(135deg, #ffc107, #ff9800); }
-
-/* Overlay bas */
-.sl-story-overlay {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    padding: .6rem .7rem;
-    background: linear-gradient(transparent, rgba(0,0,0,.65));
-    color: #fff;
-}
-.sl-story-caption {
-    font-size: .78rem; font-weight: 600; line-height: 1.35;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.sl-story-link-btn {
-    display: inline-flex; align-items: center; gap: .25rem; margin-top: .4rem;
-    padding: .25rem .65rem; border-radius: 20px;
-    background: rgba(255,255,255,.2); backdrop-filter: blur(6px);
-    color: #fff; font-size: .72rem; font-weight: 700; text-decoration: none;
-    border: 1px solid rgba(255,255,255,.35); transition: background .15s;
-}
-.sl-story-link-btn:hover { background: rgba(255,255,255,.35); color: #fff; text-decoration: none; }
-.sl-story-link-btn .material-icons { font-size: .85rem; }
-
-/* Story texte centré */
-.sl-story-text-content {
-    position: absolute; inset: 0; display: flex;
-    align-items: center; justify-content: center;
-    padding: 1rem; color: #fff;
-    font-size: 1.1rem; font-weight: 700; line-height: 1.45;
-    text-align: center; text-shadow: 0 2px 8px rgba(0,0,0,.3);
+/* ── Titre ────────────────────────────────────────────── */
+.sl-title {
+    color: #fff; font-size: 1.6rem; font-weight: 800;
+    padding: .9rem 1rem .6rem; margin: 0;
+    letter-spacing: -.01em;
 }
 
-/* Badge "vu" */
-.sl-seen-badge {
-    position: absolute; top: .55rem; right: .55rem;
-    width: 20px; height: 20px; border-radius: 50%;
-    background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+/* ── Grille 2 colonnes plein-écran ───────────────────── */
+.sl-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+    padding: 0 3px;
+}
+
+/* ── Carte générique ──────────────────────────────────── */
+.sl-card {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #1c1c1e;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .15s;
+}
+.sl-card:active { transform: scale(.97); }
+
+/* Fond image/vidéo plein-bleed */
+.sl-card > img,
+.sl-card > video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+}
+
+/* Fond gradient (story texte) */
+.sl-card.grad_cyan    { background: linear-gradient(160deg,#00bcd4,#2196f3); }
+.sl-card.grad_purple  { background: linear-gradient(160deg,#9c27b0,#e91e63); }
+.sl-card.grad_sunset  { background: linear-gradient(160deg,#ff9800,#f44336); }
+.sl-card.grad_forest  { background: linear-gradient(160deg,#4caf50,#00bcd4); }
+.sl-card.grad_night   { background: linear-gradient(160deg,#1a237e,#7b1fa2); }
+.sl-card.grad_gold    { background: linear-gradient(160deg,#ffc107,#ff9800); }
+
+/* Vignette bas */
+.sl-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+    background: linear-gradient(transparent, rgba(0,0,0,.72));
+    pointer-events: none;
+}
+
+/* Avatar en haut à gauche */
+.sl-card-avatar {
+    position: absolute; top: .55rem; left: .55rem;
+    width: 36px; height: 36px; border-radius: 50%;
+    object-fit: cover; z-index: 2;
+    box-shadow: 0 0 0 2.5px #4f8ef7, 0 0 0 4px rgba(0,0,0,.5);
+}
+.sl-card-avatar.seen {
+    box-shadow: 0 0 0 2.5px #555, 0 0 0 4px rgba(0,0,0,.5);
+}
+
+/* Texte story texte centré */
+.sl-card-textbody {
+    position: absolute; inset: 0; z-index: 1;
     display: flex; align-items: center; justify-content: center;
+    padding: 1.2rem .7rem; text-align: center;
+    color: #fff; font-size: .95rem; font-weight: 700; line-height: 1.4;
+    text-shadow: 0 2px 8px rgba(0,0,0,.3);
 }
-.sl-seen-badge .material-icons { font-size: .75rem; color: rgba(255,255,255,.7); }
 
-/* ── Vide ────────────────────────────────────────────────── */
+/* Nom en bas */
+.sl-card-name {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: .45rem .6rem .55rem;
+    color: #fff; font-size: .78rem; font-weight: 700;
+    z-index: 2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-shadow: 0 1px 4px rgba(0,0,0,.5);
+}
+
+/* Bouton lien promo sur la carte */
+.sl-card-link {
+    position: absolute; bottom: 2rem; left: .6rem; right: .6rem;
+    z-index: 3;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: .25rem; padding: .28rem .6rem; border-radius: 20px;
+    background: rgba(255,255,255,.22); backdrop-filter: blur(6px);
+    color: #fff; font-size: .68rem; font-weight: 700; text-decoration: none;
+    border: 1px solid rgba(255,255,255,.35);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sl-card-link .material-icons { font-size: .8rem; flex-shrink: 0; }
+
+/* ── Carte CRÉER (première position) ─────────────────── */
+.sl-create-card {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #1c1c1e;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .15s;
+}
+.sl-create-card:active { transform: scale(.97); }
+.sl-create-card > img,
+.sl-create-card > video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    filter: brightness(.45);
+}
+.sl-create-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 45%;
+    background: linear-gradient(transparent, rgba(0,0,0,.8));
+    pointer-events: none;
+}
+/* Bouton "+" centré */
+.sl-create-plus {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+    padding-bottom: 2.5rem; /* compenser le nom en bas */
+}
+.sl-create-plus-circle {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.sl-create-plus-circle .material-icons {
+    font-size: 2rem; color: #111; font-weight: 900;
+}
+/* Nom "Ma story" en bas */
+.sl-create-name {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: .45rem .6rem .55rem;
+    color: #fff; font-size: .78rem; font-weight: 700;
+    z-index: 2; text-shadow: 0 1px 4px rgba(0,0,0,.5);
+}
+
+/* ── Vide ─────────────────────────────────────────────── */
 .sl-empty {
-    text-align: center; padding: 4rem 1.5rem;
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 20px; color: var(--text-muted);
+    text-align: center; padding: 4rem 1.5rem; color: rgba(255,255,255,.45);
+    grid-column: span 2;
 }
-.sl-empty .material-icons { font-size: 3rem; color: var(--border); display: block; margin-bottom: .8rem; }
-
-/* ── Bannière créer story ────────────────────────────────── */
-.sl-create-banner {
-    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
-    background: linear-gradient(135deg,
-        color-mix(in srgb, var(--accent) 10%, var(--bg-card)),
-        color-mix(in srgb, var(--accent2) 6%, var(--bg-card)));
-    border: 1.5px solid var(--accent); border-radius: 16px;
-    padding: 1rem 1.2rem; margin-bottom: 1.5rem;
-}
-.sl-create-banner-text h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 0 0 .2rem; }
-.sl-create-banner-text p { font-size: .84rem; color: var(--text-muted); margin: 0; }
+.sl-empty .material-icons { font-size: 3.5rem; color: rgba(255,255,255,.15); display: block; margin-bottom: .8rem; }
 </style>
 
-<!-- Inclure le viewer/creator de stories -->
+<!-- Viewer/créateur de stories (invisible jusqu'au tap) -->
 {% include 'stories/story_bar.html' %}
 
 <div class="sl-wrapper">
+    <h1 class="sl-title">{% trans "Stories" %}</h1>
 
-    <!-- En-tête -->
-    <div class="sl-head">
-        <div>
-            <h1>📣 Stories</h1>
-            <p class="sl-head-sub">{% trans "Image, vidéo, texte ou lien promo — visible par toute la communauté pendant 24 heures." %}</p>
-        </div>
-        {% if can_post_story %}
-        <button class="sl-add-btn" onclick="window.zootStories && window.zootStories.openCreator()">
-            <span class="material-icons">add_circle</span> {% trans "Créer une story" %}
-        </button>
-        {% endif %}
-    </div>
+    <div class="sl-grid">
 
-    <!-- Bannière invitation à créer -->
-    {% if can_post_story %}
-    <div class="sl-create-banner">
-        <span class="material-icons" style="font-size:2rem;color:var(--accent);">campaign</span>
-        <div class="sl-create-banner-text">
-            <h3>{% trans "Publiez votre annonce du jour" %}</h3>
-            <p>{% trans "Image, vidéo, texte ou lien promo — visible par toute la communauté pendant 24 heures." %}</p>
-        </div>
-    </div>
-    {% endif %}
+        <!-- ① Carte "Ma story" / créer ───────────────── -->
+        {% if request.user.is_authenticated %}
+        <div class="sl-create-card"
+             onclick="window.zootStories && window.zootStories.openCreator()">
 
-    <!-- Stories groupées par utilisateur -->
-    {% if seller_groups %}
-    {% for group in seller_groups %}
-    <div class="sl-seller-section">
-        <div class="sl-seller-header">
-            <img class="sl-seller-avatar"
-                 src="{{ group.avatar }}" alt="{{ group.user.username }}">
-            <div>
-                <div class="sl-seller-name">{{ group.user.username }}</div>
+            {% if my_group %}
+                {# Fond = ma dernière story #}
+                {% with s=my_group.stories.0 %}
+                {% if s.story_type == 'text' %}
+                    {# Gradient seul, pas d'image #}
+                    <div style="position:absolute;inset:0;background:
+                        {% if s.bg_gradient == 'grad_cyan' %}linear-gradient(160deg,#00bcd4,#2196f3)
+                        {% elif s.bg_gradient == 'grad_purple' %}linear-gradient(160deg,#9c27b0,#e91e63)
+                        {% elif s.bg_gradient == 'grad_sunset' %}linear-gradient(160deg,#ff9800,#f44336)
+                        {% elif s.bg_gradient == 'grad_forest' %}linear-gradient(160deg,#4caf50,#00bcd4)
+                        {% elif s.bg_gradient == 'grad_night' %}linear-gradient(160deg,#1a237e,#7b1fa2)
+                        {% elif s.bg_gradient == 'grad_gold' %}linear-gradient(160deg,#ffc107,#ff9800)
+                        {% else %}#222{% endif %};filter:brightness(.5);">
+                    </div>
+                {% elif s.media %}
+                    {% if s.media_type == 'video' %}
+                    <video src="{{ s.media.url }}" muted playsinline preload="none"></video>
+                    {% else %}
+                    <img src="{{ s.media.url }}" alt="">
+                    {% endif %}
+                {% endif %}
+                {% endwith %}
+            {% endif %}
+
+            <div class="sl-create-plus">
+                <div class="sl-create-plus-circle">
+                    <span class="material-icons">add</span>
+                </div>
+            </div>
+            <div class="sl-create-name">
+                {% if my_group %}{% trans "Ma story" %}{% else %}{% trans "Créer une story" %}{% endif %}
             </div>
         </div>
-        <div class="sl-stories-row">
-            {% for story in group.stories %}
-            <div class="sl-story-card {% if story.story_type == 'text' %}{{ story.bg_gradient }}{% endif %}"
-                 onclick="window.zootStories && window.zootStories.openViewer({{ story.id }}, {{ story.user.id }})"
-                 title="{{ story.caption }}">
-
-                {% if story.story_type == 'text' %}
-                <div class="sl-story-text-content" style="text-align:{{ story.text_align }};">
-                    {{ story.caption }}
-                </div>
-
-                {% elif story.media_type == 'video' %}
-                <video src="{% if story.media %}{{ story.media.url }}{% endif %}"
-                       muted playsinline preload="metadata"></video>
-
-                {% elif story.media %}
-                <img src="{{ story.media.url }}" alt="{{ story.caption }}" loading="lazy">
-                {% endif %}
-
-                {% if story.caption or story.link %}
-                <div class="sl-story-overlay">
-                    {% if story.caption and story.story_type != 'text' %}
-                    <div class="sl-story-caption">{{ story.caption }}</div>
-                    {% endif %}
-                    {% if story.link %}
-                    <a class="sl-story-link-btn" href="{{ story.link }}" target="_blank" rel="noopener"
-                       onclick="event.stopPropagation()">
-                        <span class="material-icons">open_in_new</span>
-                        {{ story.link_label|default:"Voir l'offre" }}
-                    </a>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endfor %}
-    {% else %}
-    <div class="sl-empty">
-        <span class="material-icons">campaign</span>
-        <p>{% trans "Aucune story active pour l'instant." %}</p>
-        {% if can_post_story %}
-        <p style="font-size:.83rem;margin-top:.5rem;">
-            {% trans "Publiez votre annonce du jour" %} ↑
-        </p>
         {% endif %}
-    </div>
-    {% endif %}
 
+        <!-- ② Cartes des autres utilisateurs ────────── -->
+        {% for group in seller_groups %}
+        {% with s=group.stories.0 %}
+        <div class="sl-card {% if s.story_type == 'text' %}{{ s.bg_gradient }}{% endif %}"
+             onclick="window.zootStories && window.zootStories.openViewer({{ s.id }}, {{ group.user.id }})">
+
+            {% if s.story_type != 'text' and s.media %}
+                {% if s.media_type == 'video' %}
+                <video src="{{ s.media.url }}" muted playsinline preload="none"></video>
+                {% else %}
+                <img src="{{ s.media.url }}" alt="{{ group.user.username }}" loading="lazy">
+                {% endif %}
+            {% elif s.story_type == 'text' %}
+            <div class="sl-card-textbody">{{ s.caption }}</div>
+            {% endif %}
+
+            <img class="sl-card-avatar" src="{{ group.avatar }}" alt="{{ group.user.username }}">
+
+            {% if s.link %}
+            <a class="sl-card-link" href="{{ s.link }}" target="_blank" rel="noopener"
+               onclick="event.stopPropagation()">
+                <span class="material-icons">open_in_new</span>
+                {{ s.link_label|default:"Voir l'offre" }}
+            </a>
+            {% endif %}
+
+            <div class="sl-card-name">{{ group.user.username }}</div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+
+        <!-- ③ Vide ───────────────────────────────────── -->
+        {% if not seller_groups and not my_group and not request.user.is_authenticated %}
+        <div class="sl-empty">
+            <span class="material-icons">campaign</span>
+            <p>{% trans "Aucune story active pour l'instant." %}</p>
+        </div>
+        {% endif %}
+
+    </div>
 </div>
 
-<script>
-// Ouvrir le viewer via zootStories si disponible
-document.querySelectorAll('.sl-story-card[data-story-id]').forEach(function(card) {
-    card.addEventListener('click', function() {
-        var sid = parseInt(this.dataset.storyId);
-        var uid = parseInt(this.dataset.userId);
-        if (window.zootStories) {
-            window.zootStories.openViewer(sid, uid);
-        }
-    });
-});
-</script>
 {% endblock %}
