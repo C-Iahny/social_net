@@ -983,11 +983,46 @@ window.zsMyTap = function(){
   if(!ME_ID){ window.location.href='/login/'; return; }
   var myGroup = _sv.groups.find(function(g){ return g.user_id===ME_ID; });
   if(myGroup && myGroup.stories && myGroup.stories.length>0){
-    zvOpen(_sv.groups.indexOf(myGroup), 0);
+    /* A des stories : proposer Voir ou Créer */
+    _zsMySheet(_sv.groups.indexOf(myGroup));
   } else {
-    document.getElementById('zsc-file-in').value='';
-    document.getElementById('zsc-file-in').click();
+    /* Pas de stories : ouvrir le créateur directement */
+    zscOpen();
   }
+};
+
+/* Feuille de choix "Ma story" */
+function _zsMySheet(gi){
+  var sh = document.getElementById('_zs-mysheet');
+  if(sh){ sh.remove(); return; }
+  sh = document.createElement('div');
+  sh.id = '_zs-mysheet';
+  sh.style.cssText = [
+    'position:fixed;inset:0;z-index:30000',
+    'background:rgba(0,0,0,.55)',
+    'display:flex;align-items:flex-end;justify-content:center',
+  ].join(';');
+  var btnS = 'width:100%;padding:.8rem;border:none;border-radius:14px;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.55rem;font-family:var(--font-primary,sans-serif);';
+  sh.innerHTML =
+    '<div style="background:var(--bg-card);border-radius:22px 22px 0 0;width:min(100vw,480px);padding:1.2rem 1.4rem calc(1.8rem + env(safe-area-inset-bottom,0px));animation:zsSlideUp .22s ease;">' +
+      '<button style="'+btnS+'background:var(--accent);color:#fff;margin-bottom:.65rem;" onclick="_zsMySheetCreate()">' +
+        '<span class="material-icons">add_circle</span> Créer une story' +
+      '</button>' +
+      '<button style="'+btnS+'background:var(--btn-bg);color:var(--text);" onclick="_zsMySheetView('+gi+')">' +
+        '<span class="material-icons">play_circle</span> Voir mes stories' +
+      '</button>' +
+      '<button style="width:100%;padding:.55rem;background:none;color:var(--text-muted);border:none;font-size:.88rem;cursor:pointer;margin-top:.4rem;font-family:var(--font-primary,sans-serif);" onclick="document.getElementById(\'_zs-mysheet\').remove()">Annuler</button>' +
+    '</div>';
+  sh.onclick = function(e){ if(e.target===sh) sh.remove(); };
+  document.body.appendChild(sh);
+}
+window._zsMySheetCreate = function(){
+  var sh=document.getElementById('_zs-mysheet'); if(sh) sh.remove();
+  zscOpen();
+};
+window._zsMySheetView = function(gi){
+  var sh=document.getElementById('_zs-mysheet'); if(sh) sh.remove();
+  zvOpen(gi, 0);
 };
 
 /* ═══════════════════════════════════════════════════
@@ -1349,10 +1384,11 @@ window.zscPreviewTap = function(e){
 
 window.zscOnFile = function(inp){
   var file = inp.files && inp.files[0]; if(!file) return;
+  /* IMPORTANT : appeler zscOpen() AVANT de stocker _sc.file,
+     car zscOpen() fait _sc.file=null (reset complet). */
+  if(!document.getElementById('zsc').classList.contains('open')) zscOpen();
   _sc.file = file;
   _sc.type = file.type.startsWith('video/') ? 'video' : 'image';
-
-  if(!document.getElementById('zsc').classList.contains('open')) zscOpen();
 
   document.getElementById('zsc-placeholder').style.display='none';
   document.getElementById('zsc-tools').style.display='flex';
