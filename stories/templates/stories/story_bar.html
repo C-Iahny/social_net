@@ -695,7 +695,9 @@
       <input type="text" class="zsv-reply-input" id="zsv-reply-in"
              placeholder="Envoyer un message…" maxlength="500"
              oninput="_zvReplyCheck(this)"
-             onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();zvSendReply();}">
+             onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();zvSendReply();}"
+             onfocus="_sv.replyFocus=true; _zvPause();"
+             onblur="_sv.replyFocus=false; if(!_sv.holding) _zvResume();">
       <button class="zsv-reply-send" id="zsv-reply-send" disabled onclick="zvSendReply()">
         <span class="material-icons">send</span>
       </button>
@@ -942,6 +944,7 @@ var CSRF  = '{{ csrf_token }}';
 var _sv = {
   groups: [], curG: 0, curS: 0,
   raf: null, startTime: 0, elapsed: 0, paused: false, holding: false, muted: false,
+  replyFocus: false,   /* true quand l'input reply est actif → bloque l'avance auto */
   duration: 5000,
 };
 var _sc = {
@@ -1216,7 +1219,12 @@ function _zvStartProgress(){
 }
 
 function _zvPause(){ _sv.paused = true; }
-function _zvResume(){ _sv.startTime = performance.now()-_sv.elapsed; _sv.paused=false; }
+function _zvResume(){
+  /* Ne reprend pas si le clavier de réponse est encore ouvert */
+  if(_sv.replyFocus) return;
+  _sv.startTime = performance.now()-_sv.elapsed;
+  _sv.paused = false;
+}
 
 function _zvAdvance(){
   cancelAnimationFrame(_sv.raf);
