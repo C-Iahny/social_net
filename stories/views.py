@@ -479,40 +479,53 @@ def get_story_viewers(request, story_id):
         .order_by('-viewed_at')
     )
 
-    viewers = []
+    # Construire un dict par user_id pour fusionner vues + réactions
+    rows = {}
     for sv in viewers_qs:
+        uid = sv.viewer.id
         try:
             avatar = sv.viewer.profile_image.url
         except Exception:
             avatar = '/static/images/default_profile_image.png'
-        viewers.append({
-            'id':        sv.viewer.id,
+        rows[uid] = {
+            'id':        uid,
             'username':  sv.viewer.username,
             'avatar':    avatar,
             'viewed_at': sv.viewed_at.strftime('%H:%M'),
-        })
+            'emoji':     '',
+        }
 
-    # Réactions sur cette story
+    # Ajouter les réactions au même dict (ou créer la ligne si pas encore vue)
     reactions_qs = (
         StoryReaction.objects
         .filter(story=story)
         .select_related('user')
         .order_by('-created_at')
     )
-    reactions = []
     for sr in reactions_qs:
-        try:
-            avatar = sr.user.profile_image.url
-        except Exception:
-            avatar = '/static/images/default_profile_image.png'
-        reactions.append({
-            'id':       sr.user.id,
-            'username': sr.user.username,
-            'avatar':   avatar,
-            'emoji':    sr.emoji,
-        })
+        uid = sr.user.id
+        if uid in rows:
+            rows[uid]['emoji'] = sr.emoji
+        else:
+            try:
+                avatar = sr.user.profile_image.url
+            except Exception:
+                avatar = '/static/images/default_profile_image.png'
+            rows[uid] = {
+                'id':        uid,
+                'username':  sr.user.username,
+                'avatar':    avatar,
+                'viewed_at': '',
+                'emoji':     sr.emoji,
+            }
 
-    return JsonResponse({'viewers': viewers, 'count': len(viewers), 'reactions': reactions})
+    # Réactions en premier, puis vues sans réaction (ordre d'insertion = -viewed_at)
+    merged = (
+        [r for r in rows.values() if r['emoji']] +
+        [r for r in rows.values() if not r['emoji']]
+    )
+
+    return JsonResponse({'viewers': merged, 'count': len(merged)})
 
 
 # ── Story Reaction (toggle emoji) ─────────────────────────────────────────────
