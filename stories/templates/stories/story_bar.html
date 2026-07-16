@@ -280,11 +280,6 @@
 .zsv-vrow-name { font-size: .9rem; font-weight: 700; color: var(--text); }
 .zsv-vrow-time { font-size: .74rem; color: var(--text-muted); }
 .zsv-vrow-emoji { font-size: 1.3rem; margin-left: auto; flex-shrink: 0; }
-.zsv-reply-section { margin-top: .8rem; border-top: 1px solid rgba(255,255,255,.08); padding-top: .6rem; }
-.zsv-reply-section-title {
-  font-size: .7rem; font-weight: 800; text-transform: uppercase;
-  letter-spacing: .07em; color: var(--text-muted); padding-bottom: .4rem;
-}
 .zsv-vrow-msg {
   font-size: .82rem; color: var(--text-muted); margin-top: .15rem;
   white-space: pre-wrap; word-break: break-word;
@@ -1366,41 +1361,24 @@ window.zvOpenViewers = function(){
   fetch(URLS.viewers+story.id+'/')
     .then(function(r){ return r.json(); })
     .then(function(d){
-      var rows    = d.viewers || [];
-      var replies = d.replies || [];
+      var rows = d.viewers || [];
       document.getElementById('zsv-vmodal-title').textContent = 'Vues (' + d.count + ')';
 
       var html = '';
-
-      if(!rows.length && !replies.length){
+      if(!rows.length){
         html = '<p style="color:var(--text-muted)">Aucune vue pour l\'instant.</p>';
       } else {
-        html += rows.map(function(r){
+        html = rows.map(function(r){
           return '<div class="zsv-vrow">' +
             '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
             '<div>' +
               '<div class="zsv-vrow-name">'+_esc(r.username)+'</div>' +
-              (r.viewed_at ? '<div class="zsv-vrow-time">'+_esc(r.viewed_at)+'</div>' : '') +
+              (r.reply_msg ? '<div class="zsv-vrow-msg">'+_esc(r.reply_msg)+'</div>' : '') +
+              '<div class="zsv-vrow-time">'+(r.reply_at||r.viewed_at||'')+'</div>' +
             '</div>' +
             (r.emoji ? '<span class="zsv-vrow-emoji">'+_esc(r.emoji)+'</span>' : '') +
           '</div>';
         }).join('');
-
-        if(replies.length){
-          html += '<div class="zsv-reply-section">' +
-            '<div class="zsv-reply-section-title">Réponses ('+replies.length+')</div>' +
-            replies.map(function(r){
-              return '<div class="zsv-vrow">' +
-                '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
-                '<div>' +
-                  '<div class="zsv-vrow-name">'+_esc(r.username)+'</div>' +
-                  '<div class="zsv-vrow-msg">'+_esc(r.message)+'</div>' +
-                  '<div class="zsv-vrow-time">'+_esc(r.created_at)+'</div>' +
-                '</div>' +
-              '</div>';
-            }).join('') +
-          '</div>';
-        }
       }
 
       list.innerHTML = html;
