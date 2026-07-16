@@ -280,11 +280,6 @@
 .zsv-vrow-name { font-size: .9rem; font-weight: 700; color: var(--text); }
 .zsv-vrow-time { font-size: .74rem; color: var(--text-muted); }
 .zsv-vrow-emoji { font-size: 1.3rem; margin-left: auto; flex-shrink: 0; }
-.zsv-vsection-title {
-  font-size: .7rem; font-weight: 800; text-transform: uppercase;
-  letter-spacing: .07em; color: var(--text-muted);
-  padding: .6rem 0 .3rem; margin-top: .3rem;
-}
 
 /* ═══════════════════════════════════════════════════
    CRÉATEUR PLEIN ÉCRAN
@@ -1343,38 +1338,27 @@ window.zvOpenViewers = function(){
   document.getElementById('zsv-vmodal').classList.add('open');
   var list = document.getElementById('zsv-vlist');
   list.innerHTML='<p style="color:var(--text-muted)">Chargement…</p>';
-  document.getElementById('zsv-vmodal-title').textContent='Vues ('+story.view_count+')';
   fetch(URLS.viewers+story.id+'/')
-    .then(function(r){ return r.json(); }).then(function(d){
-      var html = '';
-
-      /* ── Réactions ─────────────────────────────────── */
-      if(d.reactions && d.reactions.length){
-        html += '<div class="zsv-vsection-title">Réactions</div>';
-        html += d.reactions.map(function(r){
-          return '<div class="zsv-vrow">' +
-            '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
-            '<div><div class="zsv-vrow-name">'+_esc(r.username)+'</div></div>' +
-            '<span class="zsv-vrow-emoji">'+_esc(r.emoji)+'</span>' +
-            '</div>';
-        }).join('');
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var rows = d.viewers || [];
+      document.getElementById('zsv-vmodal-title').textContent = 'Vues (' + d.count + ')';
+      if(!rows.length){
+        list.innerHTML='<p style="color:var(--text-muted)">Aucune vue pour l\'instant.</p>';
+        return;
       }
-
-      /* ── Vues ──────────────────────────────────────── */
-      if(d.viewers && d.viewers.length){
-        html += '<div class="zsv-vsection-title">Vues</div>';
-        html += d.viewers.map(function(v){
-          return '<div class="zsv-vrow">' +
-            '<img src="'+_esc(v.avatar)+'" onerror="this.style.display=\'none\'">' +
-            '<div><div class="zsv-vrow-name">'+_esc(v.username)+'</div>' +
-            '<div class="zsv-vrow-time">'+_esc(v.viewed_at)+'</div></div>' +
-            '</div>';
-        }).join('');
-      }
-
-      if(!html) html = '<p style="color:var(--text-muted)">Aucune vue pour l\'instant.</p>';
-      list.innerHTML = html;
-    }).catch(function(){ list.innerHTML='<p style="color:var(--text-muted)">Erreur chargement.</p>'; });
+      list.innerHTML = rows.map(function(r){
+        return '<div class="zsv-vrow">' +
+          '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
+          '<div>' +
+            '<div class="zsv-vrow-name">'+_esc(r.username)+'</div>' +
+            (r.viewed_at ? '<div class="zsv-vrow-time">'+_esc(r.viewed_at)+'</div>' : '') +
+          '</div>' +
+          (r.emoji ? '<span class="zsv-vrow-emoji">'+_esc(r.emoji)+'</span>' : '') +
+        '</div>';
+      }).join('');
+    })
+    .catch(function(){ list.innerHTML='<p style="color:var(--text-muted)">Erreur chargement.</p>'; });
 };
 window.zvCloseViewers = function(){
   document.getElementById('zsv-vmodal').classList.remove('open'); _zvResume();
