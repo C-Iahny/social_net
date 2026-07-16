@@ -11,7 +11,7 @@ from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
-from stories.models import Story, StoryView
+from stories.models import Story, StoryView, StoryReaction
 
 _logger = logging.getLogger(__name__)
 
@@ -174,7 +174,7 @@ def stories_page(request):
         Story.objects
         .filter(expires_at__gt=now)
         .select_related('user')
-        .order_by('user', '-created_at')
+        .order_by('user', 'created_at')   # chronologique : premier story = plus ancien
     )
 
     # Grouper par utilisateur
@@ -341,7 +341,7 @@ def get_feed_stories(request):
     # Stories actives de tous les utilisateurs
     stories_qs = Story.objects.filter(
         expires_at__gt=now,
-    ).select_related('user').order_by('user', '-created_at')
+    ).select_related('user').order_by('user', 'created_at')   # chronologique
 
     # Grouper par utilisateur
     grouped = {}
@@ -486,13 +486,33 @@ def get_story_viewers(request, story_id):
         except Exception:
             avatar = '/static/images/default_profile_image.png'
         viewers.append({
-            'id':       sv.viewer.id,
-            'username': sv.viewer.username,
-            'avatar':   avatar,
+            'id':        sv.viewer.id,
+            'username':  sv.viewer.username,
+            'avatar':    avatar,
             'viewed_at': sv.viewed_at.strftime('%H:%M'),
         })
 
-    return JsonResponse({'viewers': viewers, 'count': len(viewers)})
+    # Réactions sur cette story
+    reactions_qs = (
+        StoryReaction.objects
+        .filter(story=story)
+        .select_related('user')
+        .order_by('-created_at')
+    )
+    reactions = []
+    for sr in reactions_qs:
+        try:
+            avatar = sr.user.profile_image.url
+        except Exception:
+            avatar = '/static/images/default_profile_image.png'
+        reactions.append({
+            'id':       sr.user.id,
+            'username': sr.user.username,
+            'avatar':   avatar,
+            'emoji':    sr.emoji,
+        })
+
+    return JsonResponse({'viewers': viewers, 'count': len(viewers), 'reactions': reactions})
 
 
 # ── Story Reaction (toggle emoji) ─────────────────────────────────────────────
@@ -505,7 +525,6 @@ def story_react(request, story_id):
     """
     if request.method != 'POST':
         return JsonResponse({'ok': False}, status=405)
-    from .models import StoryReaction
     import json as _json
     story = get_object_or_404(Story, id=story_id)
     try:

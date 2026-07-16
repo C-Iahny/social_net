@@ -84,6 +84,8 @@
   -webkit-user-drag: none; pointer-events: none;
 }
 .zsv-media.active { display: block; }
+/* Les images s'affichent en entier (contain) — les vidéos restent en cover */
+#zsv-img { object-fit: contain; background: #000; }
 
 #zsv-txtbg {
   position: absolute; inset: 0;
@@ -277,6 +279,12 @@
 .zsv-vrow img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
 .zsv-vrow-name { font-size: .9rem; font-weight: 700; color: var(--text); }
 .zsv-vrow-time { font-size: .74rem; color: var(--text-muted); }
+.zsv-vrow-emoji { font-size: 1.3rem; margin-left: auto; flex-shrink: 0; }
+.zsv-vsection-title {
+  font-size: .7rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--text-muted);
+  padding: .6rem 0 .3rem; margin-top: .3rem;
+}
 
 /* ═══════════════════════════════════════════════════
    CRÉATEUR PLEIN ÉCRAN
@@ -695,9 +703,7 @@
       <input type="text" class="zsv-reply-input" id="zsv-reply-in"
              placeholder="Envoyer un message…" maxlength="500"
              oninput="_zvReplyCheck(this)"
-             onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();zvSendReply();}"
-             onfocus="_sv.replyFocus=true; _zvPause();"
-             onblur="_sv.replyFocus=false; if(!_sv.holding) _zvResume();">
+             onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();zvSendReply();}">
       <button class="zsv-reply-send" id="zsv-reply-send" disabled onclick="zvSendReply()">
         <span class="material-icons">send</span>
       </button>
@@ -1307,12 +1313,34 @@ window.zvOpenViewers = function(){
   document.getElementById('zsv-vmodal-title').textContent='Vues ('+story.view_count+')';
   fetch(URLS.viewers+story.id+'/')
     .then(function(r){ return r.json(); }).then(function(d){
-      if(!d.viewers||!d.viewers.length){ list.innerHTML='<p style="color:var(--text-muted)">Aucune vue pour l\'instant.</p>'; return; }
-      list.innerHTML = d.viewers.map(function(v){
-        return '<div class="zsv-vrow"><img src="'+_esc(v.avatar)+'" onerror="this.style.display=\'none\'">' +
-          '<div><div class="zsv-vrow-name">'+_esc(v.username)+'</div>' +
-          '<div class="zsv-vrow-time">'+_esc(v.viewed_at)+'</div></div></div>';
-      }).join('');
+      var html = '';
+
+      /* ── Réactions ─────────────────────────────────── */
+      if(d.reactions && d.reactions.length){
+        html += '<div class="zsv-vsection-title">Réactions</div>';
+        html += d.reactions.map(function(r){
+          return '<div class="zsv-vrow">' +
+            '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
+            '<div><div class="zsv-vrow-name">'+_esc(r.username)+'</div></div>' +
+            '<span class="zsv-vrow-emoji">'+_esc(r.emoji)+'</span>' +
+            '</div>';
+        }).join('');
+      }
+
+      /* ── Vues ──────────────────────────────────────── */
+      if(d.viewers && d.viewers.length){
+        html += '<div class="zsv-vsection-title">Vues</div>';
+        html += d.viewers.map(function(v){
+          return '<div class="zsv-vrow">' +
+            '<img src="'+_esc(v.avatar)+'" onerror="this.style.display=\'none\'">' +
+            '<div><div class="zsv-vrow-name">'+_esc(v.username)+'</div>' +
+            '<div class="zsv-vrow-time">'+_esc(v.viewed_at)+'</div></div>' +
+            '</div>';
+        }).join('');
+      }
+
+      if(!html) html = '<p style="color:var(--text-muted)">Aucune vue pour l\'instant.</p>';
+      list.innerHTML = html;
     }).catch(function(){ list.innerHTML='<p style="color:var(--text-muted)">Erreur chargement.</p>'; });
 };
 window.zvCloseViewers = function(){
@@ -1704,9 +1732,26 @@ function _portal(){
   if(trimEl&&trimEl.parentElement!==document.body) document.body.appendChild(trimEl);
 }
 
+/* Listeners focus/blur sur l'input reply — depuis l'IIFE pour accéder à _sv/_zvPause.
+   Les handlers inline onfocus/onblur ne fonctionnent PAS car _sv et _zvPause
+   sont des variables locales à cet IIFE et non exposées globalement. */
+function _initReplyPause(){
+  var inp = document.getElementById('zsv-reply-in');
+  if(!inp) return;
+  inp.addEventListener('focus', function(){
+    _sv.replyFocus = true;
+    _zvPause();
+  });
+  inp.addEventListener('blur', function(){
+    _sv.replyFocus = false;
+    /* Ne reprend que si on n'est pas en train de maintenir (hold) */
+    if(!_sv.holding) _zvResume();
+  });
+}
+
 if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded', function(){ _portal(); loadStories(); });
-} else { _portal(); loadStories(); }
+  document.addEventListener('DOMContentLoaded', function(){ _portal(); loadStories(); _initReplyPause(); });
+} else { _portal(); loadStories(); _initReplyPause(); }
 
 /* ── Shim window.zootStories ─────────────────────────────────────────────────
    story_list.html (page /stories/) appelle window.zootStories.openCreator()
