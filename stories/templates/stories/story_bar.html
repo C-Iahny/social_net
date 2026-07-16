@@ -1227,18 +1227,22 @@ function _zvResume(){
   _sv.paused = false;
 }
 
+var _zvAdvancing = false;   /* verrou : un seul _zvAdvance actif à la fois */
+
 function _zvAdvance(){
+  if(_zvAdvancing) return;            /* ignore les appels concurrents (double-tap, timer+tap) */
   cancelAnimationFrame(_sv.raf);
   var group = _sv.groups[_sv.curG];
-  /* Avancer dans le même groupe — immédiat */
+  /* Avancer dans le même groupe — immédiat, pas de fetch */
   if(_sv.curS < group.stories.length-1){
     _sv.curS++;
     _zvLoad();
     return;
   }
-  /* Dernière story du groupe : rafraîchir avant de changer de groupe
+  /* Dernière story connue du groupe : rafraîchir avant de changer de groupe
      (évite de rater une story postée après l'ouverture du viewer) */
-  var _savedUID = group.user_id;
+  _zvAdvancing = true;
+  var _savedUID  = group.user_id;
   var _savedCurG = _sv.curG;
   fetch(URLS.feed,{headers:{'X-Requested-With':'XMLHttpRequest'}})
     .then(function(r){ return r.json(); })
@@ -1258,11 +1262,13 @@ function _zvAdvance(){
         /* Pas de nouvelle story → groupe suivant */
         _sv.curG = freshGi+1; _sv.curS=0;
       } else {
-        zvClose(); return;
+        _zvAdvancing = false; zvClose(); return;
       }
+      _zvAdvancing = false;
       _zvLoad();
     })
     .catch(function(){
+      _zvAdvancing = false;
       /* Erreur réseau — avancer avec les données actuelles */
       if(_savedCurG < _sv.groups.length-1){ _sv.curG=_savedCurG+1; _sv.curS=0; _zvLoad(); }
       else { zvClose(); }
