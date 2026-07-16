@@ -556,6 +556,28 @@
 }
 .zsc-acancel:hover { background: var(--border); }
 
+/* ── Picker mosaïque (3 gros boutons, style post) ─── */
+.zsc-picker-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  gap: .85rem; width: 100%; padding: 0 2.5rem;
+}
+.zsc-pick-btn {
+  width: 100%; max-width: 280px;
+  display: flex; align-items: center; justify-content: center; gap: .7rem;
+  padding: .9rem 1.2rem; border-radius: 18px;
+  background: rgba(255,255,255,.1); backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,.22); color: #fff;
+  font-size: .98rem; font-weight: 700; cursor: pointer; text-decoration: none;
+  font-family: var(--font-primary,sans-serif);
+  transition: background .18s, transform .13s;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.zsc-pick-btn:active { transform: scale(.96); background: rgba(255,255,255,.18); }
+.zsc-pick-btn .material-icons { font-size: 1.55rem; flex-shrink: 0; }
+.zsc-pick-gallery .material-icons { color: var(--accent2,#bf5fff); }
+.zsc-pick-camera  .material-icons { color: #00cfff; }
+.zsc-pick-text    .material-icons { color: #ffd700; }
+
 /* ── Animations ───────────────────────────────────── */
 @keyframes zsSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes zsFadeIn  { from { opacity: 0; } to { opacity: 1; } }
@@ -686,17 +708,28 @@
      CRÉATEUR PLEIN ÉCRAN
      ═══════════════════════════════════════ -->
 <div id="zsc">
-<div id="zsc-preview" onclick="zscPreviewTap(event)">
+<div id="zsc-preview">
 
   <!-- Médias preview -->
   <img  id="zsc-img" class="zsc-media" alt="">
   <video id="zsc-vid" class="zsc-media" playsinline muted loop></video>
   <div id="zsc-txtbg" class="grad_cyan"></div>
 
-  <!-- Placeholder -->
-  <div id="zsc-placeholder">
-    <span class="material-icons">add_photo_alternate</span>
-    <p>{% trans "Appuyer pour choisir" %}</p>
+  <!-- Placeholder — 3 boutons <label> APK-safe (pas de .click() programmatique,
+       comme les posts). opacity:0 sur les inputs réels. -->
+  <div id="zsc-placeholder" class="zsc-picker-wrap">
+    <label for="zsc-file-in" class="zsc-pick-btn zsc-pick-gallery">
+      <span class="material-icons">photo_library</span>
+      {% trans "Galerie / Vidéo" %}
+    </label>
+    <label for="zsc-cam-in" class="zsc-pick-btn zsc-pick-camera">
+      <span class="material-icons">camera_alt</span>
+      {% trans "Appareil photo" %}
+    </label>
+    <button class="zsc-pick-btn zsc-pick-text" onclick="zscToggleTextMode()">
+      <span class="material-icons">text_fields</span>
+      {% trans "Story texte" %}
+    </button>
   </div>
 
   <!-- Texte glissable -->
@@ -859,10 +892,15 @@
 </div>
 </div>
 
-<!-- Inputs fichiers -->
-<input type="file" id="zsc-file-in" accept="image/*,video/*" style="display:none"
+<!-- opacity:0 au lieu de display:none : les <label for> déclenchent correctement
+     l'input sur Capacitor / WebView Android (même technique que add_post.html).
+     IMPORTANT : ne pas remettre display:none, ça casse le picker sur APK. -->
+<input type="file" id="zsc-file-in"
+       accept="image/*,video/*,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.mp4,.mov,.webm"
+       style="position:absolute;width:0;height:0;opacity:0;overflow:hidden;"
        onchange="zscOnFile(this)">
-<input type="file" id="zsc-cam-in"  accept="image/*" capture="environment" style="display:none"
+<input type="file" id="zsc-cam-in"  accept="image/*" capture="environment"
+       style="position:absolute;width:0;height:0;opacity:0;overflow:hidden;"
        onchange="zscOnFile(this)">
 
 <!-- Audio trim caché -->
@@ -986,7 +1024,8 @@ window.zsMyTap = function(){
     /* A des stories : proposer Voir ou Créer */
     _zsMySheet(_sv.groups.indexOf(myGroup));
   } else {
-    /* Pas de stories : ouvrir le créateur directement */
+    /* Pas de stories : ouvrir le créateur (3 boutons mosaïque à l'intérieur)
+       Pas de .click() programmatique — l'APK l'ignore dans un handler indirect. */
     zscOpen();
   }
 };
@@ -1376,11 +1415,8 @@ window.zscClose = function(){
   document.getElementById('zsc-trim-audio').pause();
 };
 
-window.zscPreviewTap = function(e){
-  if(e.target.closest('#zsc-placeholder')){
-    document.getElementById('zsc-file-in').click();
-  }
-};
+/* zscPreviewTap supprimé — les boutons <label for> déclenchent directement
+   l'input sans JS sur Android/APK. */
 
 window.zscOnFile = function(inp){
   var file = inp.files && inp.files[0]; if(!file) return;
@@ -1638,7 +1674,15 @@ window.zscPickTrack = function(url, name){
 /* Portail : déplacer les overlays dans <body> pour éviter
    les conflits de z-index / overflow */
 function _portal(){
+  /* Overlays plein-écran → body (z-index, overflow) */
   ['zsv','zsc','zsc-audio-modal','zsv-vmodal'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&el.parentElement!==document.body) document.body.appendChild(el);
+  });
+  /* File inputs → body aussi (les <label for> fonctionnent par id global).
+     IMPORTANT pour APK : l'input doit être dans le body pour que le picker
+     Android se déclenche correctement via <label>. */
+  ['zsc-file-in','zsc-cam-in','zsc-trim-audio'].forEach(function(id){
     var el=document.getElementById(id);
     if(el&&el.parentElement!==document.body) document.body.appendChild(el);
   });
