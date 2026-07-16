@@ -193,11 +193,21 @@ def stories_page(request):
             }
         grouped[uid]['stories'].append(story)
 
-    seller_groups = list(grouped.values())
+    all_groups = list(grouped.values())
+
+    # Séparer le groupe de l'utilisateur courant des autres
+    my_group    = None
+    other_groups = []
+    for g in all_groups:
+        if request.user.is_authenticated and g['user'].id == request.user.id:
+            my_group = g
+        else:
+            other_groups.append(g)
 
     ctx = {
-        'seller_groups':   seller_groups,
-        'now':             now,
+        'seller_groups':  other_groups,   # autres utilisateurs
+        'my_group':       my_group,        # groupe de l'utilisateur connecté
+        'now':            now,
     }
     ctx.update(_seller_context(request.user))
     return render(request, 'stories/story_list.html', ctx)
