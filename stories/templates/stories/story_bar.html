@@ -1380,7 +1380,7 @@ window.zvOpenViewers = function(){
         html = rows.map(function(r){
           var hasReply = !!r.reply_msg;
           return '<div class="zsv-vrow' + (hasReply ? ' zsv-vrow-reply' : '') + '"' +
-            (hasReply ? ' onclick="zvOpenReplyChat('+r.id+','+JSON.stringify(r.reply_msg)+')" title="Répondre dans le chat"' : '') +
+            (hasReply ? ' data-uid="'+r.id+'" data-reply="'+_esc(r.reply_msg || '')+'" onclick="zvOpenReplyChat(this)" title="Répondre dans le chat"' : '') +
             '>' +
             '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
             '<div style="flex:1;min-width:0;">' +
@@ -1402,9 +1402,13 @@ window.zvCloseViewers = function(){
   document.getElementById('zsv-vmodal').classList.remove('open'); _zvResume();
 };
 
-/* Clic sur une réponse → ouvrir le chat privé + pré-remplir avec le message reçu */
-window.zvOpenReplyChat = function(userId, replyMsg){
-  var url = '/chat/?user_id=' + userId;
+/* Clic sur une réponse → ouvrir le chat privé + pré-remplir avec le message reçu.
+   Utilise data-uid / data-reply pour éviter les problèmes de guillemets dans onclick. */
+window.zvOpenReplyChat = function(el){
+  var uid      = el.getAttribute('data-uid');
+  var replyMsg = el.getAttribute('data-reply') || '';
+  if(!uid) return;
+  var url = '/chat/?user_id=' + uid;
   if(replyMsg) url += '&story_reply=' + encodeURIComponent(replyMsg);
   window.location.href = url;
 };

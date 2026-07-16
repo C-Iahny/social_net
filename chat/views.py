@@ -9,6 +9,7 @@ from itertools import chain
 
 import json
 import os
+import datetime
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -100,7 +101,8 @@ def private_chat_room_view(request, *args, **kwargs):
 			last_time = last_msg_obj.timestamp
 		except RoomChatMessage.DoesNotExist:
 			last_msg  = ""
-			last_time = room.id   # rooms sans message triées en dernier (id croissant)
+			# Rooms sans message → en dernier, mais type cohérent (datetime) pour le tri
+			last_time = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
 
 		try:
 			unread_obj = UnreadChatRoomMessages.objects.get(room=room, user=user)
