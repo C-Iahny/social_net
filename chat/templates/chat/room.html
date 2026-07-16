@@ -29,15 +29,18 @@
         top: 62px !important;
         left: 0 !important;
         right: 0 !important;
-        bottom: 0 !important;         /* 0 car #pied est caché sur la page chat */
+        /* Laisser 58px pour la bottom nav (hauteur sans safe-area) */
+        bottom: 58px !important;
         height: auto !important;
         padding: 0 !important;
         margin: 0 !important;
         overflow: hidden !important;
         min-height: 0 !important;
     }
-    /* Cacher le footer et la bottom nav sur la page chat */
-    #pied, #zoot-bottom-nav { display: none !important; }
+    /* Cacher seulement le footer — la bottom nav reste visible */
+    #pied { display: none !important; }
+    /* Icône chat sidebar toggle remonte au-dessus de la bottom nav */
+    .chat-sidebar-toggle { bottom: 70px !important; }
 }
 
 .chat-page {
@@ -2175,18 +2178,23 @@ window._CT = {
             /* Détection iOS (iPhone / iPad / iPod + Macs avec touch — iPad en mode desktop) */
             var _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
                          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            /* Hauteur de la bottom nav (58px base + safe-area) */
+            var _navEl = document.getElementById('zoot-bottom-nav');
+            var _navH  = _navEl ? (_navEl.offsetHeight || 58) : 58;
 
             function _applyKbFix() {
                 if (!_main) return;
                 if (_isIOS) {
-                    /* iOS : position:fixed bottom:0 = dessus du clavier,
-                       pas besoin d'ajustement JS */
-                    _main.style.bottom = '0px';
+                    /* iOS : position:fixed = dessus du clavier automatiquement.
+                       On laisse juste la place pour la bottom nav. */
+                    _main.style.bottom = _navH + 'px';
                 } else {
-                    /* Android : ajuster manuellement */
+                    /* Android : ajuster manuellement selon hauteur du clavier.
+                       Quand clavier fermé (kbH=0) → garder place pour la nav.
+                       Quand clavier ouvert (kbH>0) → pousser main au-dessus du clavier. */
                     var vvH = Math.round(window.visualViewport.height);
                     var kbH = Math.max(0, Math.round(window.innerHeight) - vvH);
-                    _main.style.bottom = kbH + 'px';
+                    _main.style.bottom = Math.max(kbH, _navH) + 'px';
                 }
             }
 
@@ -2204,6 +2212,19 @@ window._CT = {
             _applyKbFix();
         }
 
+        // Pré-remplir le message si on vient d'une réponse de story
+        {% if story_reply_msg %}
+        (function(){
+            var ta = document.getElementById('id_chat_message_input');
+            if(ta && !ta.value.trim()){
+                ta.value = "{{ story_reply_msg|escapejs }}";
+                ta.style.height = 'auto';
+                ta.style.height = ta.scrollHeight + 'px';
+                ta.dispatchEvent(new Event('input'));
+                ta.focus();
+            }
+        })();
+        {% endif %}
         // Pré-remplir le message si on vient d'une fiche bazar
         {% if bazar_annonce %}
         (function(){
