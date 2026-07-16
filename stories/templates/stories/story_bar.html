@@ -280,6 +280,15 @@
 .zsv-vrow-name { font-size: .9rem; font-weight: 700; color: var(--text); }
 .zsv-vrow-time { font-size: .74rem; color: var(--text-muted); }
 .zsv-vrow-emoji { font-size: 1.3rem; margin-left: auto; flex-shrink: 0; }
+.zsv-reply-section { margin-top: .8rem; border-top: 1px solid rgba(255,255,255,.08); padding-top: .6rem; }
+.zsv-reply-section-title {
+  font-size: .7rem; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--text-muted); padding-bottom: .4rem;
+}
+.zsv-vrow-msg {
+  font-size: .82rem; color: var(--text-muted); margin-top: .15rem;
+  white-space: pre-wrap; word-break: break-word;
+}
 
 /* ═══════════════════════════════════════════════════
    CRÉATEUR PLEIN ÉCRAN
@@ -933,6 +942,7 @@ var URLS = {
   delete:  '/stories/delete/',
   viewed:  '/stories/viewed/',
   react:   '/stories/react/',
+  reply:   '/stories/reply/',
   viewers: '/stories/viewers/',
   music:   '{% url "stories:music-search" %}',
 };
@@ -1332,8 +1342,17 @@ window.zvSendReply = function(){
   var msg = inp.value.trim(); if(!msg) return;
   var story = (_sv.groups[_sv.curG]||{stories:[]}).stories[_sv.curS];
   if(!story) return;
-  _post('/chat/', {message:msg, story_id:story.id, to_user:story.user_id})
-    .then(function(){ _toast('✅ Message envoyé'); inp.value=''; document.getElementById('zsv-reply-send').disabled=true; })
+  _post(URLS.reply + story.id + '/', {message: msg})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.ok){
+        _toast('✅ Message envoyé');
+        inp.value='';
+        document.getElementById('zsv-reply-send').disabled=true;
+      } else {
+        _toast('❌ ' + (d.error||'Erreur envoi'));
+      }
+    })
     .catch(function(){ _toast('❌ Erreur envoi'); });
 };
 
@@ -1347,22 +1366,44 @@ window.zvOpenViewers = function(){
   fetch(URLS.viewers+story.id+'/')
     .then(function(r){ return r.json(); })
     .then(function(d){
-      var rows = d.viewers || [];
+      var rows    = d.viewers || [];
+      var replies = d.replies || [];
       document.getElementById('zsv-vmodal-title').textContent = 'Vues (' + d.count + ')';
-      if(!rows.length){
-        list.innerHTML='<p style="color:var(--text-muted)">Aucune vue pour l\'instant.</p>';
-        return;
+
+      var html = '';
+
+      if(!rows.length && !replies.length){
+        html = '<p style="color:var(--text-muted)">Aucune vue pour l\'instant.</p>';
+      } else {
+        html += rows.map(function(r){
+          return '<div class="zsv-vrow">' +
+            '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
+            '<div>' +
+              '<div class="zsv-vrow-name">'+_esc(r.username)+'</div>' +
+              (r.viewed_at ? '<div class="zsv-vrow-time">'+_esc(r.viewed_at)+'</div>' : '') +
+            '</div>' +
+            (r.emoji ? '<span class="zsv-vrow-emoji">'+_esc(r.emoji)+'</span>' : '') +
+          '</div>';
+        }).join('');
+
+        if(replies.length){
+          html += '<div class="zsv-reply-section">' +
+            '<div class="zsv-reply-section-title">Réponses ('+replies.length+')</div>' +
+            replies.map(function(r){
+              return '<div class="zsv-vrow">' +
+                '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
+                '<div>' +
+                  '<div class="zsv-vrow-name">'+_esc(r.username)+'</div>' +
+                  '<div class="zsv-vrow-msg">'+_esc(r.message)+'</div>' +
+                  '<div class="zsv-vrow-time">'+_esc(r.created_at)+'</div>' +
+                '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>';
+        }
       }
-      list.innerHTML = rows.map(function(r){
-        return '<div class="zsv-vrow">' +
-          '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
-          '<div>' +
-            '<div class="zsv-vrow-name">'+_esc(r.username)+'</div>' +
-            (r.viewed_at ? '<div class="zsv-vrow-time">'+_esc(r.viewed_at)+'</div>' : '') +
-          '</div>' +
-          (r.emoji ? '<span class="zsv-vrow-emoji">'+_esc(r.emoji)+'</span>' : '') +
-        '</div>';
-      }).join('');
+
+      list.innerHTML = html;
     })
     .catch(function(){ list.innerHTML='<p style="color:var(--text-muted)">Erreur chargement.</p>'; });
 };

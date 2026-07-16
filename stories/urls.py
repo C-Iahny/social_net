@@ -14,4 +14,5 @@ urlpatterns = [
     path('music-search/',               views.music_search,         name='music-search'),
     path('viewers/<int:story_id>/',     views.get_story_viewers,    name='viewers'),
     path('react/<int:story_id>/',       views.story_react,          name='react'),
+    path('reply/<int:story_id>/',       views.story_reply,          name='reply'),
 ]

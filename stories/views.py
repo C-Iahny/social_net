@@ -11,7 +11,7 @@ from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 
-from stories.models import Story, StoryView, StoryReaction
+from stories.models import Story, StoryView, StoryReaction, StoryReply
 
 _logger = logging.getLogger(__name__)
 
@@ -525,7 +525,98 @@ def get_story_viewers(request, story_id):
         [r for r in rows.values() if not r['emoji']]
     )
 
-    return JsonResponse({'viewers': merged, 'count': len(merged)})
+    # Réponses texte à cette story
+    replies_qs = (
+        StoryReply.objects
+        .filter(story=story)
+        .select_related('user')
+        .order_by('-created_at')
+    )
+    replies = []
+    for sr in replies_qs:
+        try:
+            avatar = sr.user.profile_image.url
+        except Exception:
+            avatar = '/static/images/default_profile_image.png'
+        replies.append({
+            'id':         sr.user.id,
+            'username':   sr.user.username,
+            'avatar':     avatar,
+            'message':    sr.message,
+            'created_at': sr.created_at.strftime('%H:%M'),
+        })
+
+    return JsonResponse({'viewers': merged, 'count': len(merged), 'replies': replies})
+
+
+# ── Story Reply ───────────────────────────────────────────────────────────────
+@login_required
+@require_POST
+def story_reply(request, story_id):
+    """
+    POST /stories/<id>/reply/
+    Enregistre une réponse texte à une story + envoie une notification à l'auteur.
+    """
+    story = get_object_or_404(Story, pk=story_id)
+    if story.user == request.user:
+        return JsonResponse({'ok': False, 'error': 'Cannot reply to own story'}, status=400)
+
+    import json as _json
+    try:
+        data    = _json.loads(request.body)
+        message = data.get('message', '').strip()[:500]
+    except Exception:
+        message = request.POST.get('message', '').strip()[:500]
+
+    if not message:
+        return JsonResponse({'ok': False, 'error': 'Empty message'}, status=400)
+
+    reply = StoryReply.objects.create(story=story, user=request.user, message=message)
+
+    # Notification push + WebSocket à l'auteur
+    try:
+        from notification.models import PushSubscription, Notification
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        from django.contrib.humanize.templatetags.humanize import naturaltime
+        from django.urls import reverse
+
+        stories_url = request.build_absolute_uri(reverse('stories:list'))
+        PushSubscription.send_notification(
+            user=story.user,
+            title='VAZIMBA — Story',
+            body=f"{request.user.username} a répondu à votre story : {message[:60]}",
+            url=stories_url,
+        )
+        notif = Notification.objects.create(
+            target=story.user,
+            from_user=request.user,
+            redirect_url=stories_url,
+            verb=f"{request.user.username} a répondu à votre story",
+            read=False,
+        )
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            async_to_sync(channel_layer.group_send)(
+                f"user_{story.user.id}",
+                {
+                    "type": "post_action_notification",
+                    "notification": {
+                        "notification_type": "Post",
+                        "notification_id": str(notif.pk),
+                        "verb": notif.verb,
+                        "natural_timestamp": str(naturaltime(notif.timestamp)),
+                        "timestamp": str(notif.timestamp),
+                        "is_read": "False",
+                        "actions": {"redirect_url": stories_url},
+                        "from": {"image_url": request.user.profile_image.url},
+                    }
+                }
+            )
+    except Exception:
+        pass
+
+    return JsonResponse({'ok': True, 'reply_id': reply.id})
 
 
 # ── Story Reaction (toggle emoji) ─────────────────────────────────────────────
