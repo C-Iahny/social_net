@@ -139,3 +139,21 @@ class StoryReaction(models.Model):
 
     def __str__(self):
         return f'{self.user.username} {self.emoji} → story#{self.story.id}'
+
+
+# ── StoryReply ────────────────────────────────────────────────────────────────
+class StoryReply(models.Model):
+    story      = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='replies')
+    user       = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='story_replies',
+    )
+    message    = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.username} → story#{self.story.id}: {self.message[:40]}'
