@@ -519,34 +519,46 @@ def get_story_viewers(request, story_id):
                 'emoji':     sr.emoji,
             }
 
-    # Réactions en premier, puis vues sans réaction (ordre d'insertion = -viewed_at)
-    merged = (
-        [r for r in rows.values() if r['emoji']] +
-        [r for r in rows.values() if not r['emoji']]
-    )
-
-    # Réponses texte à cette story
+    # Fusionner les réponses texte dans le même dict rows (1 ligne par personne)
     replies_qs = (
         StoryReply.objects
         .filter(story=story)
         .select_related('user')
-        .order_by('-created_at')
+        .order_by('-created_at')   # plus récent d'abord → on garde le premier par user
     )
-    replies = []
+    seen_reply_uids = set()
     for sr in replies_qs:
-        try:
-            avatar = sr.user.profile_image.url
-        except Exception:
-            avatar = '/static/images/default_profile_image.png'
-        replies.append({
-            'id':         sr.user.id,
-            'username':   sr.user.username,
-            'avatar':     avatar,
-            'message':    sr.message,
-            'created_at': sr.created_at.strftime('%H:%M'),
-        })
+        uid = sr.user.id
+        if uid in seen_reply_uids:
+            continue   # plusieurs réponses du même user → ne garder que la plus récente
+        seen_reply_uids.add(uid)
+        if uid in rows:
+            rows[uid]['reply_msg'] = sr.message
+            rows[uid]['reply_at']  = sr.created_at.strftime('%H:%M')
+        else:
+            # A répondu sans avoir vu (cas rare)
+            try:
+                avatar = sr.user.profile_image.url
+            except Exception:
+                avatar = '/static/images/default_profile_image.png'
+            rows[uid] = {
+                'id':        uid,
+                'username':  sr.user.username,
+                'avatar':    avatar,
+                'viewed_at': '',
+                'emoji':     '',
+                'reply_msg': sr.message,
+                'reply_at':  sr.created_at.strftime('%H:%M'),
+            }
 
-    return JsonResponse({'viewers': merged, 'count': len(merged), 'replies': replies})
+    # Tri : emoji en premier, puis réponses sans emoji, puis vues simples
+    merged = (
+        [r for r in rows.values() if r.get('emoji')]                                   +
+        [r for r in rows.values() if not r.get('emoji') and r.get('reply_msg')]        +
+        [r for r in rows.values() if not r.get('emoji') and not r.get('reply_msg')]
+    )
+
+    return JsonResponse({'viewers': merged, 'count': len(merged)})
 
 
 # ── Story Reply ───────────────────────────────────────────────────────────────
