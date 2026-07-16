@@ -1700,5 +1700,36 @@ if(document.readyState==='loading'){
   document.addEventListener('DOMContentLoaded', function(){ _portal(); loadStories(); });
 } else { _portal(); loadStories(); }
 
+/* ── Shim window.zootStories ─────────────────────────────────────────────────
+   story_list.html (page /stories/) appelle window.zootStories.openCreator()
+   et window.zootStories.openViewer(storyId, userId).
+   On traduit vers les fonctions internes zsMyTap() / zvOpen(gi, si). */
+window.zootStories = {
+  openCreator: function(){
+    if(typeof zsMyTap === 'function') zsMyTap();
+  },
+  openViewer: function(storyId, userId){
+    /* Chercher le groupe de cet utilisateur dans _sv.groups */
+    var gi = -1, si = 0;
+    for(var g=0; g<_sv.groups.length; g++){
+      if(_sv.groups[g].user_id === userId){
+        gi = g;
+        /* Chercher l'index de la story spécifique */
+        var stories = _sv.groups[g].stories || [];
+        for(var s=0; s<stories.length; s++){
+          if(stories[s].id === storyId){ si = s; break; }
+        }
+        break;
+      }
+    }
+    if(gi >= 0){
+      zvOpen(gi, si);
+    } else {
+      /* Fallback : ouvrir le groupe 0 si les stories ne sont pas encore chargées */
+      zvOpen(0, 0);
+    }
+  }
+};
+
 })();
 </script>
