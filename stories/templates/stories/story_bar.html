@@ -1235,10 +1235,43 @@ function _zvResume(){
 function _zvAdvance(){
   cancelAnimationFrame(_sv.raf);
   var group = _sv.groups[_sv.curG];
-  if(_sv.curS < group.stories.length-1){ _sv.curS++; }
-  else if(_sv.curG < _sv.groups.length-1){ _sv.curG++; _sv.curS=0; }
-  else { zvClose(); return; }
-  _zvLoad();
+  /* Avancer dans le même groupe — immédiat */
+  if(_sv.curS < group.stories.length-1){
+    _sv.curS++;
+    _zvLoad();
+    return;
+  }
+  /* Dernière story du groupe : rafraîchir avant de changer de groupe
+     (évite de rater une story postée après l'ouverture du viewer) */
+  var _savedUID = group.user_id;
+  var _savedCurG = _sv.curG;
+  fetch(URLS.feed,{headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      _sv.groups = data.groups||[];
+      renderBar();
+      /* Retrouver le groupe actuel par user_id (son index peut avoir changé) */
+      var freshGi = -1;
+      for(var i=0;i<_sv.groups.length;i++){
+        if(_sv.groups[i].user_id===_savedUID){ freshGi=i; break; }
+      }
+      var freshGroup = freshGi>=0 ? _sv.groups[freshGi] : null;
+      if(freshGroup && _sv.curS < freshGroup.stories.length-1){
+        /* Nouvelle story trouvée dans le même groupe ! */
+        _sv.curG = freshGi; _sv.curS++;
+      } else if(freshGi>=0 && freshGi < _sv.groups.length-1){
+        /* Pas de nouvelle story → groupe suivant */
+        _sv.curG = freshGi+1; _sv.curS=0;
+      } else {
+        zvClose(); return;
+      }
+      _zvLoad();
+    })
+    .catch(function(){
+      /* Erreur réseau — avancer avec les données actuelles */
+      if(_savedCurG < _sv.groups.length-1){ _sv.curG=_savedCurG+1; _sv.curS=0; _zvLoad(); }
+      else { zvClose(); }
+    });
 }
 
 function _zvBack(){
