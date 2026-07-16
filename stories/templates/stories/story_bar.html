@@ -1429,18 +1429,27 @@ function _zvInitGestures(){
       g.swiping=false; return;
     }
     if(_sv.holding){ _sv.holding=false; _zvResume(); return; }
-    if(Math.abs(dx)<15 && Math.abs(dy)<15 && dt<500){
+    if(Math.abs(dx)<20 && Math.abs(dy)<20 && dt<500){
       var uiEl = t.target.closest('.zsv-ibtn,.zsv-emobtn,.zsv-reply-input,.zsv-reply-send,.zsv-views-btn,.zsv-del-btn,#zsv-link,#zsv-vmodal');
       if(!uiEl){
+        e.preventDefault();   /* bloque le click synthétique Android WebView */
+        _lastTouchNav = Date.now();
         if(t.clientX < window.innerWidth*0.35){ _zvBack(); } else { _zvAdvance(); }
       }
     }
     g.swiping=false; _sv.holding=false;
-  },{passive:true});
+  },{passive:false});   /* passive:false requis pour pouvoir appeler preventDefault */
 
-  /* Desktop */
-  document.getElementById('zsv-tap-prev').addEventListener('click', _zvBack);
-  document.getElementById('zsv-tap-next').addEventListener('click', _zvAdvance);
+  /* Desktop uniquement — ignoré sur mobile (touch déclenche preventDefault avant) */
+  var _lastTouchNav = 0;
+  document.getElementById('zsv-tap-prev').addEventListener('click', function(e){
+    if(Date.now()-_lastTouchNav < 600) return;
+    _zvBack();
+  });
+  document.getElementById('zsv-tap-next').addEventListener('click', function(e){
+    if(Date.now()-_lastTouchNav < 600) return;
+    _zvAdvance();
+  });
 }
 
 /* ═══════════════════════════════════════════════════
