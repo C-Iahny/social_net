@@ -1661,6 +1661,12 @@
                         </button>
                         <span class="call-ctrl-lbl">{% trans "Caméra" %}</span>
                     </div>
+                    <div id="call-flip-wrap" style="display:none;flex-direction:column;align-items:center;gap:4px;">
+                        <button class="call-ctrl-btn" id="call-btn-flip" onclick="flipCallCamera()" title="Retourner la caméra">
+                            <span class="material-icons">camera_front</span>
+                        </button>
+                        <span class="call-ctrl-lbl">Retourner</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3169,8 +3175,9 @@ window._CT = {
     var _pendOffer   = null;     // SDP offer stockée en attendant Accept
     var _callTimerId = null;
     var _callSecs    = 0;
-    var _micMuted    = false;
-    var _camOff      = false;
+    var _micMuted      = false;
+    var _camOff        = false;
+    var _callFacingMode = 'user';  /* 'user' = selfie, 'environment' = caméra arrière */
     var _callPeerInfo = { name: '', img: '' };  // infos de l'interlocuteur
     var _ringPeerId  = null;     // user_id de l'appelant en cours (ringing/actif)
     var _iceCandidateQueue = [];  // candidats ICE reçus avant que _peerConn soit prêt
@@ -3309,8 +3316,9 @@ window._CT = {
         _callState = 'idle';
         _ringPeerId = null;
         _pendOffer  = null;
-        _micMuted   = false;
-        _camOff     = false;
+        _micMuted        = false;
+        _camOff          = false;
+        _callFacingMode  = 'user';
         _hideAllOverlays();
     }
 
@@ -3514,6 +3522,7 @@ window._CT = {
         var lv  = _callEl('call-local-video');
         var bg  = _callEl('call-audio-bg');
         var cw  = _callEl('call-cam-wrap');
+        var fw  = _callEl('call-flip-wrap');
         if(_callMode === 'audio'){
             /* Mode audio : rv rendu invisible (mais PAS display:none) —
                Sur Safari iOS, un <video> display:none ne joue pas l'audio WebRTC.
@@ -3528,6 +3537,7 @@ window._CT = {
             if(lv) lv.style.display = 'none';
             if(bg) bg.style.display = 'flex';
             if(cw) cw.style.display = 'none';
+            if(fw) fw.style.display = 'none';
         } else {
             /* Mode vidéo : display:block pour les deux vidéos
                play() sera appelé par onRemoteStream quand le stream arrive.
@@ -3536,6 +3546,7 @@ window._CT = {
             if(lv) lv.style.display = 'block';
             if(bg) bg.style.display = 'none';
             if(cw) cw.style.display = 'flex';
+            if(fw) fw.style.display = 'flex';  /* bouton flip visible uniquement en vidéo */
         }
     }
 
@@ -3895,7 +3906,7 @@ window._CT = {
         if(btn) btn.classList.toggle('active', _micMuted);
     }
 
-    /* ── Toggle caméra ───────────────────────────────────────── */
+    /* ── Toggle caméra (on/off) ─────────────────────────────── */
     function toggleCam(){
         _camOff = !_camOff;
         if(_localStream) _localStream.getVideoTracks().forEach(function(t){ t.enabled = !_camOff; });
@@ -3903,6 +3914,54 @@ window._CT = {
         var ico = _callEl('call-cam-icon');
         if(ico) ico.textContent = _camOff ? 'videocam_off' : 'videocam';
         if(btn) btn.classList.toggle('active', _camOff);
+    }
+
+    /* ── Retourner la caméra (selfie ↔ arrière) ─────────────── */
+    function flipCallCamera(){
+        if(!_localStream || !_localStream.getVideoTracks().length) return;
+        var btn = _callEl('call-btn-flip');
+        if(btn) btn.disabled = true;
+
+        var newFacing = (_callFacingMode === 'user') ? 'environment' : 'user';
+
+        /* Tenter 'exact' d'abord, fallback sans 'exact' si refusé */
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: newFacing } }, audio: false })
+        .catch(function(){
+            return navigator.mediaDevices.getUserMedia({ video: { facingMode: newFacing }, audio: false });
+        })
+        .then(function(newStream){
+            var newTrack = newStream.getVideoTracks()[0];
+            var oldTrack = _localStream.getVideoTracks()[0];
+
+            /* Remplacer le sender WebRTC → l'autre bout voit la nouvelle caméra */
+            if(_peerConn){
+                var sender = _peerConn.getSenders().find(function(s){
+                    return s.track && s.track.kind === 'video';
+                });
+                if(sender) sender.replaceTrack(newTrack);
+            }
+
+            /* Mettre à jour localStream + prévisualisation locale */
+            _localStream.removeTrack(oldTrack);
+            oldTrack.stop();
+            _localStream.addTrack(newTrack);
+
+            var lv  = _callEl('call-local-video');
+            if(lv)  lv.srcObject  = _localStream;
+            var lop = _callEl('call-out-local-vid');
+            if(lop) lop.srcObject = _localStream;
+
+            _callFacingMode = newFacing;
+            if(btn){
+                btn.disabled = false;
+                var ico = btn.querySelector('.material-icons');
+                if(ico) ico.textContent = newFacing === 'user' ? 'camera_front' : 'camera_rear';
+            }
+        })
+        .catch(function(err){
+            if(btn) btn.disabled = false;
+            console.warn('[CALL] flipCamera:', err.name, err.message);
+        });
     }
 
     function createOrReturnPrivateChat(id){
