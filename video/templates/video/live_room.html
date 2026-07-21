@@ -693,6 +693,8 @@ window.startSource = function(src) {
     p.then(function(stream) {
         localStream = stream;
         videoEl.srcObject = stream;
+        /* Miroir pour la caméra frontale — seulement pour la prévisualisation locale */
+        videoEl.style.transform = (src === 'camera' && currentFacingMode === 'user') ? 'scaleX(-1)' : '';
         if (controls) controls.style.display = 'flex';
         document.getElementById('btn-toggle-screen') &&
             document.getElementById('btn-toggle-screen').classList.toggle('active', src === 'screen');
@@ -857,6 +859,7 @@ window.flipCamera = function() {
         oldTrack.stop();
         localStream.addTrack(newTrack);
         videoEl.srcObject = localStream;
+        videoEl.style.transform = (newFacing === 'user') ? 'scaleX(-1)' : '';
 
         currentFacingMode = newFacing;
 

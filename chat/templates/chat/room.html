@@ -3664,7 +3664,7 @@ window._CT = {
             // Mode vidéo : afficher préview locale
             if(_callMode === 'video'){
                 var lop = _callEl('call-out-local-vid');
-                if(lop){ lop.srcObject = stream; lop.style.display = 'block'; }
+                if(lop){ lop.srcObject = stream; lop.style.display = 'block'; lop.style.transform = 'scaleX(-1)'; }
             }
             _buildPeer(function(remoteStream){
                 /* CALLER : ontrack arrive AVANT _activateCallUI → activer l'UI d'abord */
@@ -3688,6 +3688,7 @@ window._CT = {
                 if(lv && !lv.srcObject){
                     lv.style.display = 'block';
                     lv.srcObject = _localStream;
+                    lv.style.transform = (_callFacingMode === 'user') ? 'scaleX(-1)' : '';
                     lv.play().catch(function(){});
                 }
             });
@@ -3779,6 +3780,7 @@ window._CT = {
             if(lv && _callMode === 'video' && stream.getVideoTracks().length > 0){
                 lv.style.display = 'block';
                 lv.srcObject = stream;
+                lv.style.transform = 'scaleX(-1)';  /* miroir caméra frontale */
                 lv.play().catch(function(){});
             }
             _buildPeer(function(remoteStream){
@@ -3952,6 +3954,9 @@ window._CT = {
             if(lop) lop.srcObject = _localStream;
 
             _callFacingMode = newFacing;
+            var mirror = newFacing === 'user' ? 'scaleX(-1)' : '';
+            if(lv)  lv.style.transform  = mirror;
+            if(lop) lop.style.transform = mirror;
             if(btn){
                 btn.disabled = false;
                 var ico = btn.querySelector('.material-icons');
