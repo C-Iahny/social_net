@@ -513,6 +513,10 @@
             <span class="material-icons">videocam</span>
             Caméra
         </button>
+        <button class="lr-ctrl-btn" id="btn-flip-camera" onclick="flipCamera()" style="display:none;">
+            <span class="material-icons">camera_front</span>
+            Retourner
+        </button>
         <button class="lr-ctrl-btn" id="btn-toggle-mic" onclick="toggleMic()">
             <span class="material-icons">mic</span>
             Micro
@@ -555,11 +559,12 @@ var waitingOverlay = document.getElementById('lr-waiting-overlay');
 var controls       = document.getElementById('lr-controls');
 
 /* ── State ── */
-var ws            = null;
-var localStream   = null;
-var mediaRecorder = null;
-var micMuted      = false;
-var isFirstChunk  = true;
+var ws               = null;
+var localStream      = null;
+var mediaRecorder    = null;
+var micMuted         = false;
+var isFirstChunk     = true;
+var currentFacingMode = 'user';  /* 'user' = selfie, 'environment' = caméra arrière */
 
 /* Viewer MediaSource state */
 var mediaSource  = null;
@@ -683,7 +688,7 @@ window.startSource = function(src) {
     if (sourceOverlay) sourceOverlay.classList.add('hidden');
     var p = src === 'screen'
         ? navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-        : navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+        : navigator.mediaDevices.getUserMedia({ video: { facingMode: currentFacingMode }, audio: true });
 
     p.then(function(stream) {
         localStream = stream;
@@ -693,6 +698,10 @@ window.startSource = function(src) {
             document.getElementById('btn-toggle-screen').classList.toggle('active', src === 'screen');
         document.getElementById('btn-toggle-camera') &&
             document.getElementById('btn-toggle-camera').classList.toggle('active', src !== 'screen');
+
+        /* Bouton flip : visible uniquement en mode caméra */
+        var flipBtn = document.getElementById('btn-flip-camera');
+        if (flipBtn) flipBtn.style.display = (src === 'camera') ? '' : 'none';
 
         startRecording(stream);
 
@@ -822,6 +831,48 @@ window.toggleMic = function() {
         btn.classList.toggle('active', !micMuted);
         btn.querySelector('.material-icons').textContent = micMuted ? 'mic_off' : 'mic';
     }
+};
+
+/* ── Retourner la caméra (selfie ↔ arrière) ─────────────────────────────────
+   Remplace uniquement la piste vidéo dans localStream, garde la piste audio.
+   Redémarre le MediaRecorder pour produire un nouvel init segment (keyframe)
+   que les viewers recevront proprement. */
+window.flipCamera = function() {
+    if (!localStream || !localStream.getVideoTracks().length) return;
+    var btn = document.getElementById('btn-flip-camera');
+    if (btn) btn.disabled = true;
+
+    var newFacing = (currentFacingMode === 'user') ? 'environment' : 'user';
+
+    /* Tenter d'abord avec 'exact' (évite le fallback silencieux vers la même caméra) */
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: newFacing } }, audio: false })
+    .catch(function() {
+        /* Une seule caméra ou 'exact' non supporté → sans 'exact' */
+        return navigator.mediaDevices.getUserMedia({ video: { facingMode: newFacing }, audio: false });
+    })
+    .then(function(newStream) {
+        var newTrack = newStream.getVideoTracks()[0];
+        var oldTrack = localStream.getVideoTracks()[0];
+        localStream.removeTrack(oldTrack);
+        oldTrack.stop();
+        localStream.addTrack(newTrack);
+        videoEl.srcObject = localStream;
+
+        currentFacingMode = newFacing;
+
+        /* Redémarrer le recorder → nouvel init segment envoyé aux viewers */
+        requestKeyframeRestart();
+
+        if (btn) {
+            btn.disabled = false;
+            var icon = btn.querySelector('.material-icons');
+            if (icon) icon.textContent = newFacing === 'user' ? 'camera_front' : 'camera_rear';
+        }
+    })
+    .catch(function(err) {
+        if (btn) btn.disabled = false;
+        appendSystemMsg('Impossible de changer de caméra : ' + err.message);
+    });
 };
 
 /* ══════════════════════════════════════════════════
