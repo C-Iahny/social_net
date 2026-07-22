@@ -1,3 +1,5 @@
+import datetime
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -7,10 +9,28 @@ from django.views.decorators.http import require_POST
 
 from .models import LiveRoom
 
+# Durée max d'un live sans activité WebSocket — au-delà, la room est zombie
+STALE_LIVE_HOURS = 3
+
+
+def _cleanup_stale_rooms():
+    """Termine les lives qui traînent depuis plus de STALE_LIVE_HOURS heures."""
+    cutoff = timezone.now() - datetime.timedelta(hours=STALE_LIVE_HOURS)
+    LiveRoom.objects.filter(
+        status=LiveRoom.STATUS_ACTIVE,
+        created_at__lt=cutoff,
+    ).update(
+        status=LiveRoom.STATUS_ENDED,
+        ended_at=timezone.now(),
+        viewer_count=0,
+        host_channel='',
+    )
+
 
 @login_required(login_url='login')
 def live_list(request):
     """Page principale : liste des lives actifs + formulaire de création."""
+    _cleanup_stale_rooms()
     active_rooms = (
         LiveRoom.objects
         .filter(status=LiveRoom.STATUS_ACTIVE)
@@ -94,6 +114,7 @@ def live_api_active(request):
     JSON : live rooms actives (pour le widget feed / header).
     Accessible sans authentification pour simplifier le polling client.
     """
+    _cleanup_stale_rooms()
     rooms = (
         LiveRoom.objects
         .filter(status=LiveRoom.STATUS_ACTIVE)

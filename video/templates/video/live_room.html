@@ -565,6 +565,7 @@ var mediaRecorder    = null;
 var micMuted         = false;
 var isFirstChunk     = true;
 var currentFacingMode = 'user';  /* 'user' = selfie, 'environment' = caméra arrière */
+var _cameraFlipping   = false;   /* true pendant le retournement → ignore onended */
 
 /* Viewer MediaSource state */
 var mediaSource  = null;
@@ -708,6 +709,8 @@ window.startSource = function(src) {
         startRecording(stream);
 
         stream.getVideoTracks()[0].onended = function() {
+            /* Pendant un flip caméra, on arrête volontairement les tracks — ignorer */
+            if (_cameraFlipping) return;
             stopRecording();
             appendSystemMsg('Partage arrêté');
             if (controls) controls.style.display = 'none';
@@ -836,72 +839,33 @@ window.toggleMic = function() {
 };
 
 /* ── Retourner la caméra (selfie ↔ arrière) ─────────────────────────────────
-   Stratégie 1 (Android WebView / Capacitor) : enumerateDevices → deviceId exact.
-     Les WebViews Android ignorent souvent facingMode:{exact}, mais répondent bien
-     à deviceId:{exact}.
-   Stratégie 2 (fallback) : facingMode sans 'exact', puis video:true brut.
-   Redémarre le MediaRecorder → nouvel init segment keyframe envoyé aux viewers. */
+   Android WebView (Capacitor) ne permet pas d'ouvrir une 2ᵉ caméra tant que
+   la première est encore active. La solution fiable :
+   1. Basculer currentFacingMode
+   2. Arrêter le recorder + le stream actuel
+   3. Relancer startSource('camera') — qui rappelle getUserMedia avec le nouveau mode
+   startSource gère déjà le miroir, le bouton flip, et le redémarrage MediaRecorder. */
 window.flipCamera = function() {
-    if (!localStream || !localStream.getVideoTracks().length) return;
+    if (!localStream) return;
     var btn = document.getElementById('btn-flip-camera');
     if (btn) btn.disabled = true;
 
-    var wantFacing  = (currentFacingMode === 'user') ? 'environment' : 'user';
-    var currentTrack = localStream.getVideoTracks()[0];
+    /* 1. Basculer le mode désiré AVANT d'arrêter (startSource le lira) */
+    currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
 
-    function _applyNewTrack(newStream) {
-        var newTrack = newStream.getVideoTracks()[0];
-        var oldTrack = localStream.getVideoTracks()[0];
-        localStream.removeTrack(oldTrack);
-        oldTrack.stop();
-        localStream.addTrack(newTrack);
-        videoEl.srcObject = localStream;
-
-        /* Lire le facingMode réel depuis getSettings() (plus fiable que la valeur demandée) */
-        var settings = newTrack.getSettings ? newTrack.getSettings() : {};
-        currentFacingMode = settings.facingMode || wantFacing;
-        videoEl.style.transform = (currentFacingMode === 'user') ? 'scaleX(-1)' : '';
-
-        requestKeyframeRestart();
-
-        if (btn) {
-            btn.disabled = false;
-            var icon = btn.querySelector('.material-icons');
-            if (icon) icon.textContent = (currentFacingMode === 'user') ? 'camera_front' : 'camera_rear';
-        }
+    /* 2. Arrêter recorder et libérer tous les tracks (caméra relâchée)
+          _cameraFlipping empêche le handler onended de cacher les contrôles */
+    _cameraFlipping = true;
+    stopRecording();
+    if (localStream) {
+        localStream.getTracks().forEach(function(t) { t.stop(); });
+        localStream = null;
     }
+    _cameraFlipping = false;
 
-    function _fallback() {
-        /* Dernier recours : facingMode sans 'exact' */
-        return navigator.mediaDevices.getUserMedia({ video: { facingMode: wantFacing }, audio: false })
-        .catch(function() {
-            return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-        });
-    }
-
-    /* Stratégie principale : enumerateDevices → cycle par deviceId */
-    navigator.mediaDevices.enumerateDevices()
-    .then(function(devices) {
-        var cams = devices.filter(function(d) { return d.kind === 'videoinput'; });
-        if (cams.length < 2) return _fallback();
-
-        var currentSettings = currentTrack.getSettings ? currentTrack.getSettings() : {};
-        var currentId = currentSettings.deviceId || '';
-        var idx = cams.findIndex(function(d) { return d.deviceId === currentId; });
-        if (idx === -1) idx = 0;
-        var nextCam = cams[(idx + 1) % cams.length];
-
-        return navigator.mediaDevices.getUserMedia({
-            video: { deviceId: { exact: nextCam.deviceId } },
-            audio: false
-        }).catch(_fallback);
-    })
-    .then(_applyNewTrack)
-    .catch(function(err) {
-        if (btn) btn.disabled = false;
-        console.warn('[FLIP]', err);
-        appendSystemMsg('Impossible de changer de caméra.');
-    });
+    /* 3. Réactiver le bouton puis relancer la caméra avec le nouveau facingMode */
+    if (btn) btn.disabled = false;
+    startSource('camera');  /* startSource utilise currentFacingMode et gère le miroir */
 };
 
 /* ══════════════════════════════════════════════════
@@ -1328,6 +1292,17 @@ connect();
    Les deux événements sont couverts :
    - pagehide      → retour arrière, fermeture onglet, navigation (Android Capacitor)
    - visibilitychange hidden → mise en arrière-plan de l'app mobile               */
+/* ── Heartbeat hôte → serveur toutes les 20 s ──────────────────────────────
+   Si le serveur ne reçoit pas de ping pendant 90 s, il termine le live
+   automatiquement (fiable même si pagehide/sendBeacon échouent sur Android). */
+if (IS_HOST) {
+    setInterval(function() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            try { ws.send(JSON.stringify({ type: 'heartbeat' })); } catch(e) {}
+        }
+    }, 20000);
+}
+
 if (IS_HOST) {
     var _liveEndSent = false;
     function _sendLiveEnd() {
