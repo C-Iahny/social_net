@@ -836,45 +836,71 @@ window.toggleMic = function() {
 };
 
 /* ── Retourner la caméra (selfie ↔ arrière) ─────────────────────────────────
-   Remplace uniquement la piste vidéo dans localStream, garde la piste audio.
-   Redémarre le MediaRecorder pour produire un nouvel init segment (keyframe)
-   que les viewers recevront proprement. */
+   Stratégie 1 (Android WebView / Capacitor) : enumerateDevices → deviceId exact.
+     Les WebViews Android ignorent souvent facingMode:{exact}, mais répondent bien
+     à deviceId:{exact}.
+   Stratégie 2 (fallback) : facingMode sans 'exact', puis video:true brut.
+   Redémarre le MediaRecorder → nouvel init segment keyframe envoyé aux viewers. */
 window.flipCamera = function() {
     if (!localStream || !localStream.getVideoTracks().length) return;
     var btn = document.getElementById('btn-flip-camera');
     if (btn) btn.disabled = true;
 
-    var newFacing = (currentFacingMode === 'user') ? 'environment' : 'user';
+    var wantFacing  = (currentFacingMode === 'user') ? 'environment' : 'user';
+    var currentTrack = localStream.getVideoTracks()[0];
 
-    /* Tenter d'abord avec 'exact' (évite le fallback silencieux vers la même caméra) */
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: newFacing } }, audio: false })
-    .catch(function() {
-        /* Une seule caméra ou 'exact' non supporté → sans 'exact' */
-        return navigator.mediaDevices.getUserMedia({ video: { facingMode: newFacing }, audio: false });
-    })
-    .then(function(newStream) {
+    function _applyNewTrack(newStream) {
         var newTrack = newStream.getVideoTracks()[0];
         var oldTrack = localStream.getVideoTracks()[0];
         localStream.removeTrack(oldTrack);
         oldTrack.stop();
         localStream.addTrack(newTrack);
         videoEl.srcObject = localStream;
-        videoEl.style.transform = (newFacing === 'user') ? 'scaleX(-1)' : '';
 
-        currentFacingMode = newFacing;
+        /* Lire le facingMode réel depuis getSettings() (plus fiable que la valeur demandée) */
+        var settings = newTrack.getSettings ? newTrack.getSettings() : {};
+        currentFacingMode = settings.facingMode || wantFacing;
+        videoEl.style.transform = (currentFacingMode === 'user') ? 'scaleX(-1)' : '';
 
-        /* Redémarrer le recorder → nouvel init segment envoyé aux viewers */
         requestKeyframeRestart();
 
         if (btn) {
             btn.disabled = false;
             var icon = btn.querySelector('.material-icons');
-            if (icon) icon.textContent = newFacing === 'user' ? 'camera_front' : 'camera_rear';
+            if (icon) icon.textContent = (currentFacingMode === 'user') ? 'camera_front' : 'camera_rear';
         }
+    }
+
+    function _fallback() {
+        /* Dernier recours : facingMode sans 'exact' */
+        return navigator.mediaDevices.getUserMedia({ video: { facingMode: wantFacing }, audio: false })
+        .catch(function() {
+            return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        });
+    }
+
+    /* Stratégie principale : enumerateDevices → cycle par deviceId */
+    navigator.mediaDevices.enumerateDevices()
+    .then(function(devices) {
+        var cams = devices.filter(function(d) { return d.kind === 'videoinput'; });
+        if (cams.length < 2) return _fallback();
+
+        var currentSettings = currentTrack.getSettings ? currentTrack.getSettings() : {};
+        var currentId = currentSettings.deviceId || '';
+        var idx = cams.findIndex(function(d) { return d.deviceId === currentId; });
+        if (idx === -1) idx = 0;
+        var nextCam = cams[(idx + 1) % cams.length];
+
+        return navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: nextCam.deviceId } },
+            audio: false
+        }).catch(_fallback);
     })
+    .then(_applyNewTrack)
     .catch(function(err) {
         if (btn) btn.disabled = false;
-        appendSystemMsg('Impossible de changer de caméra : ' + err.message);
+        console.warn('[FLIP]', err);
+        appendSystemMsg('Impossible de changer de caméra.');
     });
 };
 
@@ -1295,6 +1321,38 @@ if (!IS_HOST) {
 
 /* ── Init ── */
 connect();
+
+/* ── Auto-fin du live quand l'hôte quitte la page ──────────────────────────
+   Priorité 1 : message WS {type:'end'} (consumer → _do_end_room + stream_ended).
+   Priorité 2 : navigator.sendBeacon vers /video/<id>/end/ (fiable même si WS fermé).
+   Les deux événements sont couverts :
+   - pagehide      → retour arrière, fermeture onglet, navigation (Android Capacitor)
+   - visibilitychange hidden → mise en arrière-plan de l'app mobile               */
+if (IS_HOST) {
+    var _liveEndSent = false;
+    function _sendLiveEnd() {
+        if (_liveEndSent) return;
+        _liveEndSent = true;
+        /* 1. WebSocket */
+        try {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'end' }));
+            }
+        } catch(e) {}
+        /* 2. Beacon (fallback : le navigateur garantit l'envoi même après unload) */
+        try {
+            if (navigator.sendBeacon) {
+                var fd = new FormData();
+                fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                navigator.sendBeacon('{% url "video:live-end" room_id=room.pk %}', fd);
+            }
+        } catch(e) {}
+    }
+    window.addEventListener('pagehide', _sendLiveEnd);
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden') _sendLiveEnd();
+    });
+}
 
 /* ── Adapter l'UI hôte selon les capacités du navigateur ── */
 (function applyCapabilityUI() {
