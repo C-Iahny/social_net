@@ -2013,6 +2013,17 @@ window._CT = {
         }
     })();
 
+    /* Override bouton retour Android : sur mobile, si une conv est ouverte,
+       fermer le panneau au lieu de quitter la page chat. */
+    window._androidBackHandler = function() {
+        var chatPage = document.querySelector('.chat-page');
+        if (chatPage && chatPage.classList.contains('chat-in-convo')) {
+            chatPage.classList.remove('chat-in-convo');
+            return true; // géré — ne pas remonter dans l'historique
+        }
+        return false; // laisser le handler global faire history.back()
+    };
+
     function setWsIndicator(state){ // 'connected' | 'connecting' | 'disconnected'
         var dot = document.getElementById('ws-status-dot');
         if(!dot) return;

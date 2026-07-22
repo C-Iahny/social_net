@@ -1742,5 +1742,76 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 {% endif %}
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   ANDROID — Bouton retour matériel (Capacitor backButton)
+   Priorités :
+   1. window._androidBackHandler() — override par page (retourne true si géré)
+   2. Fermeture de modale/drawer ouverte
+   3. history.back() si l'historique le permet
+   4. Double-appui pour quitter (toast + exitApp)
+   ══════════════════════════════════════════════════════════════════ */
+(function () {
+    var cap = window.Capacitor;
+    if (!cap || !cap.Plugins || !cap.Plugins.App) return;
+
+    var _lastBackMs = 0;
+
+    cap.Plugins.App.addListener('backButton', function (info) {
+
+        /* 1. Override spécifique à la page */
+        if (typeof window._androidBackHandler === 'function') {
+            try { if (window._androidBackHandler()) return; } catch(e) {}
+        }
+
+        /* 2. Fermer la première modale Bootstrap visible */
+        var modal = document.querySelector('.modal.show');
+        if (modal) {
+            var closeBtn = modal.querySelector('[data-bs-dismiss="modal"],[data-dismiss="modal"],.btn-close,.modal-close-btn');
+            if (closeBtn) { closeBtn.click(); return; }
+            modal.classList.remove('show');
+            return;
+        }
+
+        /* 3. Fermer un drawer/overlay générique (class .open ou aria-hidden=false) */
+        var drawer = document.querySelector('.drawer.open, .side-panel.open, .overlay-panel.open');
+        if (drawer) { drawer.classList.remove('open'); return; }
+
+        /* 4. Revenir en arrière si l'historique le permet */
+        if (info.canGoBack) {
+            window.history.back();
+            return;
+        }
+
+        /* 5. Plus d'historique — double-appui pour quitter */
+        var now = Date.now();
+        if (now - _lastBackMs < 2000) {
+            cap.Plugins.App.exitApp();
+        } else {
+            _lastBackMs = now;
+            _showExitToast();
+        }
+    });
+
+    function _showExitToast() {
+        var t = document.getElementById('_cap-exit-toast');
+        if (!t) {
+            t = document.createElement('div');
+            t.id = '_cap-exit-toast';
+            t.setAttribute('style',
+                'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
+                'background:rgba(30,30,30,.92);color:#fff;padding:10px 22px;' +
+                'border-radius:24px;font-size:.85rem;z-index:999999;' +
+                'opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;');
+            document.body.appendChild(t);
+        }
+        t.textContent = 'Appuyez encore pour quitter';
+        t.style.opacity = '1';
+        clearTimeout(t._tid);
+        t._tid = setTimeout(function () { t.style.opacity = '0'; }, 1800);
+    }
+})();
+</script>
 </body>
 </html>
