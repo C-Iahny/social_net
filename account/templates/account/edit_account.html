@@ -220,7 +220,7 @@
         <!-- Form -->
         <div class="edit-form-body">
             <form class="form-signin" method="post" enctype="multipart/form-data">{% csrf_token %}
-                <input class="d-none" type="file" name="profile_image" id="id_profile_image" accept="*/*" onchange="readURL(this)">
+                <input class="d-none" type="file" name="profile_image" id="id_profile_image" accept="image/*" onchange="readURL(this)">
 
                 <!-- Errors -->
                 {% for field in form %}{% for error in field.errors %}
