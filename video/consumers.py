@@ -74,12 +74,15 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             return
 
         if self.is_host:
-            # Ne PAS terminer le room — l'hôte peut revenir.
-            await self._clear_host_channel()
+            # Terminer le live proprement : nettoyer les caches et notifier les viewers.
+            rid = str(self.room_id)
+            _init_chunks.pop(rid, None)
+            _recent_chunks.pop(rid, None)
+            await self._do_end_room()
             try:
                 await self.channel_layer.group_send(self.room_group, {
                     'type': 'room_event',
-                    'payload': {'type': 'host_disconnected'},
+                    'payload': {'type': 'stream_ended'},
                 })
             except Exception:
                 pass

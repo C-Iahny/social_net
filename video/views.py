@@ -68,13 +68,24 @@ def live_room(request, room_id):
 @login_required(login_url='login')
 @require_POST
 def live_end(request, room_id):
-    """Termine un live (hôte uniquement)."""
+    """Termine un live (hôte uniquement).
+    Supporte deux modes :
+    - Formulaire classique → redirection vers la liste
+    - navigator.sendBeacon (ping de fin) → réponse 204 No Content (pas de redirection)
+    """
     room = get_object_or_404(LiveRoom, pk=room_id, host=request.user)
-    room.status   = LiveRoom.STATUS_ENDED
-    room.ended_at = timezone.now()
+    room.status       = LiveRoom.STATUS_ENDED
+    room.ended_at     = timezone.now()
     room.host_channel = ''
     room.viewer_count = 0
     room.save(update_fields=['status', 'ended_at', 'host_channel', 'viewer_count'])
+
+    # sendBeacon envoie Content-Type multipart/form-data, n'attend pas de redirection
+    is_beacon = (request.POST.get('_beacon') == '1' or
+                 'multipart' in request.content_type or
+                 request.headers.get('X-Requested-With') == 'beacon')
+    if is_beacon or request.headers.get('Accept') == '*/*':
+        return JsonResponse({'ok': True}, status=200)
     return redirect('video:live-list')
 
 
