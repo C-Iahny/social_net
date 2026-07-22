@@ -23,12 +23,16 @@ Protocol (server → client):
   {type: 'stream_ended'}
 """
 
+import asyncio
 from collections import deque
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from channels.db import database_sync_to_async
 from django.utils import timezone
 from video.models import LiveRoom
+
+# Délai sans heartbeat avant de terminer automatiquement le live (secondes)
+HOST_HEARTBEAT_TIMEOUT = 90
 
 # Cache en mémoire du chunk d'initialisation par salle.
 # Valide sur un seul worker (Railway free tier = 1 worker Daphne).
@@ -50,11 +54,12 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             await self.close()
             return
 
-        self.room_id    = self.scope['url_route']['kwargs']['room_id']
-        self.room_group = f'live_{self.room_id}'
-        self.user       = user
-        self.is_host    = False
-        self.has_joined = False   # viewers : évite le double-comptage sur rejoin
+        self.room_id          = self.scope['url_route']['kwargs']['room_id']
+        self.room_group       = f'live_{self.room_id}'
+        self.user             = user
+        self.is_host          = False
+        self.has_joined       = False   # viewers : évite le double-comptage sur rejoin
+        self._heartbeat_task  = None    # asyncio.Task du watchdog hôte
 
         room = await self._get_room()
         if not room or room.status != LiveRoom.STATUS_ACTIVE:
@@ -67,11 +72,38 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         except Exception as e:
             print(f"LiveConsumer group_add error: {e}")
 
+    # ── Heartbeat watchdog ──────────────────────────────────────────────────────
+
+    async def _heartbeat_monitor(self):
+        """Termine le live si l'hôte ne ping plus pendant HOST_HEARTBEAT_TIMEOUT s."""
+        # Laisser le temps à l'hôte d'envoyer son premier ping
+        await asyncio.sleep(HOST_HEARTBEAT_TIMEOUT)
+        print(f"[LIVE {self.room_id}] ⏱️ heartbeat timeout — terminaison automatique du live", flush=True)
+        rid = str(self.room_id)
+        _init_chunks.pop(rid, None)
+        _recent_chunks.pop(rid, None)
+        await self._do_end_room()
+        try:
+            await self.channel_layer.group_send(self.room_group, {
+                'type': 'room_event',
+                'payload': {'type': 'stream_ended'},
+            })
+        except Exception:
+            pass
+        try:
+            await self.close()
+        except Exception:
+            pass
+
     # ── Disconnect ──────────────────────────────────────────────────────────────
 
     async def disconnect(self, code):
         if not hasattr(self, 'room_group'):
             return
+
+        # Annuler le watchdog heartbeat s'il tourne encore
+        if self._heartbeat_task and not self._heartbeat_task.done():
+            self._heartbeat_task.cancel()
 
         if self.is_host:
             # Terminer le live proprement : nettoyer les caches et notifier les viewers.
@@ -164,6 +196,13 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                         },
                     })
 
+            elif msg_type == 'heartbeat':
+                # Réinitialiser le watchdog en annulant + relançant la tâche
+                if self.is_host:
+                    if self._heartbeat_task and not self._heartbeat_task.done():
+                        self._heartbeat_task.cancel()
+                    self._heartbeat_task = asyncio.ensure_future(self._heartbeat_monitor())
+
             elif msg_type == 'end':
                 if self.is_host:
                     rid = str(self.room_id)
@@ -198,6 +237,10 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             self.is_host = True
             await self._save_host_channel()
             print(f"[LIVE {self.room_id}] ✅ host connecté : {self.user.username}", flush=True)
+            # Lancer le watchdog heartbeat (annulé dans disconnect)
+            if self._heartbeat_task and not self._heartbeat_task.done():
+                self._heartbeat_task.cancel()
+            self._heartbeat_task = asyncio.ensure_future(self._heartbeat_monitor())
             # Notifier les viewers → ils renverront join_viewer
             try:
                 await self.channel_layer.group_send(self.room_group, {
