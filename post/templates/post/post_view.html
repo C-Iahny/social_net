@@ -727,18 +727,18 @@ body { background: var(--bg); }
 .pc-footer-btn.bookmarked { color: #f59e0b; }
 .pc-footer-btn.bookmarked .material-icons { color: #f59e0b; }
 
-/* Reaction picker */
+/* Reaction picker — position:fixed pour échapper aux overflow:auto/hidden des parents
+   (feed-main scrollable, post-card overflow-x:hidden...).
+   top/left sont calculés dynamiquement par _positionPicker() en JS.             */
 .reaction-picker {
     display: none;
-    position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%; transform: translateX(-50%);
+    position: fixed;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 40px;
     padding: .32rem .45rem;
     box-shadow: 0 8px 32px rgba(0,0,0,.22);
-    gap: .1rem; z-index: 200;
+    gap: .1rem; z-index: 9999;
     white-space: nowrap;
     animation: reactionPop .18s cubic-bezier(.34,1.56,.64,1) both;
 }
@@ -2176,11 +2176,38 @@ var _REACT_LABELS = { like:'{% trans "Like"|escapejs %}', heart:'{% trans "Love"
 var _pickerTimers = {};
 var _userReactions = {};
 
+/* Positionne le picker en position:fixed au-dessus (ou en-dessous) du bouton réagir.
+   Bypass complet des overflow:auto/hidden des conteneurs parents (feed-main, post-card…) */
+function _positionPicker(picker, wrapEl) {
+    if (!picker || !wrapEl) return;
+    var rect = wrapEl.getBoundingClientRect();
+    /* Mesure des dimensions réelles en affichant invisiblement */
+    picker.style.visibility = 'hidden';
+    picker.style.display    = 'flex';
+    var ph = picker.offsetHeight || 56;
+    var pw = picker.offsetWidth  || 250;
+    picker.style.display    = '';
+    picker.style.visibility = '';
+    /* Position verticale : au-dessus par défaut, en-dessous si trop près du haut */
+    var top = rect.top - ph - 10;
+    if (top < 8) top = rect.bottom + 8;
+    /* Position horizontale : centré sur le bouton, contraint aux bords d'écran */
+    var cx   = rect.left + rect.width / 2;
+    var left = Math.max(pw / 2 + 8, Math.min(window.innerWidth - pw / 2 - 8, cx));
+    picker.style.top       = top + 'px';
+    picker.style.left      = left + 'px';
+    picker.style.transform = 'translateX(-50%)';
+    picker.style.bottom    = 'auto';
+}
+
 function openPicker(postId) {
     clearTimeout(_pickerTimers[postId]);
     _pickerTimers[postId] = setTimeout(function() {
-        var p = document.getElementById('picker-' + postId);
-        if (p) p.classList.add('open');
+        var p    = document.getElementById('picker-' + postId);
+        var wrap = document.getElementById('reaction-wrap-' + postId);
+        if (!p) return;
+        _positionPicker(p, wrap);
+        p.classList.add('open');
     }, 200);
 }
 function closePicker(postId) {
@@ -2215,6 +2242,7 @@ document.addEventListener('click', function(e) {
                 _lpTimers[postId] = null;
                 clearTimeout(_pickerTimers[postId]);
                 var p = document.getElementById('picker-' + postId);
+                _positionPicker(p, wrap);
                 if (p) p.classList.add('open');
                 // Bloquer le tap "quickReact" qui suivrait le touchend
                 wrap._longPressed = true;
