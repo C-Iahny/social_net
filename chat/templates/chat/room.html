@@ -250,6 +250,22 @@
     object-fit: cover;
     border: 2px solid var(--accent);
 }
+/* Indicateur de présence pair dans le header */
+#chat-header-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+#chat-header-presence-dot {
+    position: absolute;
+    bottom: 1px; right: 1px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #aaa;           /* gris = hors ligne par défaut */
+    border: 2px solid var(--bg, #fff);
+    display: none;              /* caché jusqu'à ouverture d'une conv */
+}
+#chat-header-presence-dot.online  { background: #22c55e; }
+#chat-header-presence-dot.offline { background: #aaa; }
 #id_other_username {
     font-size: .95rem;
     font-weight: 700;
@@ -1422,9 +1438,12 @@
                 <span class="material-icons">arrow_back</span>
             </button>
             <a class="d-flex align-items-center" style="gap:.65rem;" id="id_user_info_container" target="_blank">
+                <div id="chat-header-avatar-wrap">
                 <img class="d-none" id="id_other_user_profile_image"
                      src="{% static 'images/profile_pic.png' %}"
                      alt="avatar">
+                <span id="chat-header-presence-dot"></span>
+                </div>
                 <div>
                     <h3 id="id_other_username" style="margin:0;font-size:.95rem;font-weight:700;color:var(--text);"></h3>
                     <div class="chat-header-status" id="chat-header-sub" style="display:none;">
@@ -1446,9 +1465,6 @@
                 <button class="chat-header-btn" title="{% trans 'Infos' %}" id="chat-header-info-btn" style="display:none;" onclick="if(typeof selectUser==='function'){selectUser(currentFriendId);}">
                     <span class="material-icons">info_outline</span>
                 </button>
-                <span id="ws-status-dot"
-                      style="width:8px;height:8px;border-radius:50%;background:#aaa;display:inline-block;margin-left:4px;flex-shrink:0;align-self:center;"
-                      title="En attente de connexion…"></span>
             </div>
 
             <!-- No conversation selected placeholder -->
@@ -1969,9 +1985,11 @@ window._CT = {
         highlightFriend(userId)
         document.getElementById('chat-no-selection').style.display = 'none';
         document.getElementById('id_other_user_profile_image').classList.remove('d-none');
-        /* Ne pas afficher "En ligne" par défaut — seulement quand l'ami rejoint la room via WS */
+        /* Réinitialiser la présence : on ne sait pas encore si l'ami est en ligne */
         var sub = document.getElementById('chat-header-sub');
         if(sub) sub.style.display = 'none';
+        var pdot = document.getElementById('chat-header-presence-dot');
+        if(pdot){ pdot.className = 'offline'; pdot.style.display = 'block'; }
         // Afficher les boutons d'appel immédiatement sans attendre handleUserInfoPayload
         var btnA = document.getElementById('btn-call-audio');
         var btnV = document.getElementById('btn-call-video');
@@ -2664,14 +2682,17 @@ window._CT = {
                 if(evtUserId && evtUserId !== String(currentUserId)){
                     var fc = document.getElementById('id_friend_container_' + evtUserId);
                     var sub = document.getElementById('chat-header-sub');
+                    var pdot = document.getElementById('chat-header-presence-dot');
                     if(data.msg_type == 1){
                         // Ami vient de rejoindre la room → marquer en ligne
                         if(fc) fc.classList.add('online');
                         if(sub && String(currentFriendId) === evtUserId) sub.style.display = '';
+                        if(pdot && String(currentFriendId) === evtUserId){ pdot.className = 'online'; }
                     } else {
                         // Ami a quitté la room → marquer hors ligne
                         if(fc) fc.classList.remove('online');
                         if(sub && String(currentFriendId) === evtUserId) sub.style.display = 'none';
+                        if(pdot && String(currentFriendId) === evtUserId){ pdot.className = 'offline'; }
                     }
                 }
             }
