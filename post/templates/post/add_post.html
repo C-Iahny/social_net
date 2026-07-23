@@ -602,34 +602,53 @@ function _doFetch(extraAction, extraScheduledAt) {
 
         console.log('[Vazimba] _doFetch action=' + actionVal + ' files=' + count);
 
-        fetch(_form.action, { method: 'POST', body: fd, credentials: 'same-origin' })
+        /* Lire le token CSRF depuis le cookie (plus fiable que le champ caché) */
+        var csrfFromCookie = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+
+        var targetUrl = _form.action;
+        console.log('[Vazimba] _doFetch POST → ' + targetUrl + ' (files=' + count + ')');
+
+        fetch(targetUrl, {
+            method: 'POST',
+            body: fd,
+            credentials: 'same-origin',
+            headers: {
+                /* En-tête CSRF — requis pour certaines configs Django/Capacitor */
+                'X-CSRFToken': csrfFromCookie || (csrf ? csrf.value : ''),
+            }
+        })
         .then(function(r) {
-            console.log('[Vazimba] HTTP', r.status);
-            return r.text().then(function(txt) { return { status: r.status, txt: txt }; });
+            console.log('[Vazimba] HTTP ' + r.status + ' — url: ' + r.url);
+            return r.text().then(function(txt) { return { status: r.status, url: r.url, txt: txt }; });
         })
         .then(function(res) {
             var data = null;
             try { data = JSON.parse(res.txt); } catch(e) {}
 
+            console.log('[Vazimba] réponse status=' + res.status + ' ok=' + (data && data.ok));
+
             if (data && data.ok && data.redirect) {
                 /* Succès → redirection */
                 if (data.received !== undefined) {
-                    _diagToast('✓ ' + data.saved + '/' + data.received + ' fichier(s) sauvegardé(s)', data.saved > 0 ? 'green' : 'orange');
+                    _diagToast('✓ ' + data.saved + '/' + data.received + ' fichier(s) sauvegardé(s)', 'green');
                     setTimeout(function() { window.location.href = data.redirect; }, 1800);
                 } else {
                     window.location.href = data.redirect;
                 }
             } else if (data && data.errors) {
-                /* Erreurs de validation renvoyées en JSON par le serveur */
+                /* Erreurs de validation JSON du serveur */
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = ''; }
-                _diagToast('Erreur : ' + JSON.stringify(data.errors), 'orange');
+                _diagToast('Veuillez remplir tous les champs obligatoires.', 'orange');
             } else if (res.status === 200 && res.txt.indexOf('<form') !== -1) {
-                /* Formulaire invalide — rechargement pour afficher les erreurs */
+                /* Formulaire invalide (réponse HTML) */
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = ''; }
                 _diagToast('Veuillez vérifier les champs obligatoires.', 'orange');
+            } else if (res.status === 302 || (res.url && res.url.indexOf('/login') !== -1)) {
+                /* Session expirée — rediriger vers login */
+                window.location.href = '/login/?next=' + encodeURIComponent(window.location.pathname);
             } else {
                 if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = ''; }
-                _diagToast('Erreur serveur (' + res.status + '). Réessayez.', 'orange');
+                _diagToast('Erreur ' + res.status + ' — URL: ' + res.url.split('?')[0], 'orange');
             }
         })
         .catch(function(err) {
