@@ -1665,6 +1665,13 @@
                         </button>
                         <span class="call-ctrl-lbl">{% trans "Micro" %}</span>
                     </div>
+                    <!-- Bouton haut-parleur (toggle écouteur ↔ haut-parleur) -->
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                        <button class="call-ctrl-btn" id="call-btn-speaker" onclick="toggleSpeaker()" title="Haut-parleur">
+                            <span class="material-icons" id="call-speaker-icon">volume_up</span>
+                        </button>
+                        <span class="call-ctrl-lbl">HP</span>
+                    </div>
                     <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
                         <button class="call-ctrl-btn call-ctrl-hangup" onclick="hangUp()" title="{% trans 'Raccrocher' %}">
                             <span class="material-icons">call_end</span>
@@ -3330,11 +3337,46 @@ window._CT = {
         rv.style.pointerEvents = '';
     }
 
+    /* ── Routage audio Android vers écouteur (MODE_IN_COMMUNICATION) ────────
+       Android WebView route WebRTC vers le haut-parleur par défaut.
+       VzbAudioPlugin.java expose setMode/setSpeaker via le bridge Capacitor.
+       Sur web ou navigateur classique → appel ignoré silencieusement.       */
+    var _callSpeakerOn = false;  /* état courant du bouton haut-parleur */
+
+    function _vzbAudio(method, args){
+        try {
+            var P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.VzbAudio;
+            if(P && typeof P[method] === 'function') P[method](args || {});
+        } catch(e){}
+    }
+
+    function _callSetEarpiece(){
+        _callSpeakerOn = false;
+        _vzbAudio('setMode', { mode: 'call' });
+        /* Mettre à jour l'icône bouton haut-parleur si visible */
+        var spIcon = document.getElementById('call-speaker-icon');
+        if(spIcon) spIcon.textContent = 'volume_up';
+        var spBtn = document.getElementById('call-btn-speaker');
+        if(spBtn) spBtn.classList.remove('active');
+    }
+
+    function toggleSpeaker(){
+        _callSpeakerOn = !_callSpeakerOn;
+        _vzbAudio('setSpeaker', { on: _callSpeakerOn });
+        var spIcon = document.getElementById('call-speaker-icon');
+        var spBtn  = document.getElementById('call-btn-speaker');
+        if(spIcon) spIcon.textContent = _callSpeakerOn ? 'volume_off' : 'volume_up';
+        if(spBtn)  _callSpeakerOn ? spBtn.classList.add('active') : spBtn.classList.remove('active');
+    }
+
     /* Libérer toutes les ressources */
     function _callCleanup(sendEnd){
         if(sendEnd && chatSocket && chatSocket.readyState===WebSocket.OPEN && roomId){
             chatSocket.send(JSON.stringify({ command:'call_end', room:roomId }));
         }
+        /* Restaurer le mode audio normal (annule MODE_IN_COMMUNICATION) */
+        _vzbAudio('setMode', { mode: 'normal' });
+        _callSpeakerOn = false;
         if(_peerConn){ _peerConn.close(); _peerConn = null; }
         if(_localStream){ _localStream.getTracks().forEach(function(t){ t.stop(); }); _localStream = null; }
         var rv  = _callEl('call-remote-video'); if(rv){ rv.pause(); rv.srcObject = null; rv.muted = true; _resetRemoteVideoStyle(rv); rv.style.display = 'none'; }
@@ -3488,6 +3530,8 @@ window._CT = {
         if(b) b.remove();
     }
     function _ensureRemotePlayback(rv){
+        /* Basculer en MODE_IN_COMMUNICATION → écouteur dès le premier flux audio */
+        _callSetEarpiece();
         rv.muted = false;
         var p = rv.play();
         if(p && p.catch){

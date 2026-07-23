@@ -1,8 +1,16 @@
 package mg.vazimba.app;
 
+import android.os.Bundle;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        /* Enregistrer le plugin audio AVANT super.onCreate() */
+        registerPlugin(VzbAudioPlugin.class);
+        super.onCreate(savedInstanceState);
+    }
 
     /**
      * Intercepte le bouton Retour Android.
