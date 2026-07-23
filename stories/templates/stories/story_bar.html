@@ -1128,15 +1128,22 @@ function _zvLoad(){
   /* Arrêt complet : pause + src vide + load() force le navigateur à libérer
      le décodeur audio — sans load() l'audio continue en arrière-plan */
   vid.pause(); vid.removeAttribute('src'); vid.load();
+  vid.onloadedmetadata = null; vid.onended = null; vid.onerror = null;
   _sv.duration = 5000;
 
   if(story.media_type==='video' && story.media_url){
     vid.src = story.media_url; vid.muted = _sv.muted;
     vid.classList.add('active');
     vid.onloadedmetadata = function(){
-      _sv.duration = Math.min((vid.duration||5)*1000, 30000);
+      /* Certains formats retournent Infinity ou NaN — fallback 5 s */
+      var rawDur = vid.duration;
+      var dur = (rawDur && isFinite(rawDur) && rawDur > 0) ? rawDur : 5;
+      _sv.duration = Math.min(dur * 1000, 30000);
       _zvStartProgress();
     };
+    /* La vidéo se termine avant le timer (durée réelle < cap 30 s) :
+       avancer immédiatement sans attendre → pas de rebouclage inutile */
+    vid.onended = function(){ if(!_sv.paused) _zvAdvance(); };
     vid.onerror = function(){ _sv.duration=5000; _zvStartProgress(); };
     vid.play().catch(function(){});
   } else if(story.media_url){
