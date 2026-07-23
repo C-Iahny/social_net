@@ -388,7 +388,8 @@
 
 <script>
 var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
-var _pending = []; // tableau de File/Blob objects
+var _pending = [];       // tableau de File/Blob objects
+var _blobPromises = [];  // promesses de lecture en mémoire (pour _doFetch)
 
 function isVideo(file) {
     var name = file.name || file._name || '';
@@ -429,11 +430,13 @@ function addToSelection(newFiles) {
     _renderPreview();
 
     // 2. Lecture en mémoire immédiate (Android anti-expiration URI)
+    //    Les promesses sont stockées dans _blobPromises pour que _doFetch attende
     raw.forEach(function(file, i) {
         var idx = startIdx + i;
-        _safeBlob(file).then(function(blob) {
-            if (_pending[idx] === file) _pending[idx] = blob; // remplace si non modifié
+        var p = _safeBlob(file).then(function(blob) {
+            if (_pending[idx] === file) _pending[idx] = blob;
         });
+        _blobPromises.push(p);
     });
 
     // 3. Conversion WebP asynchrone (remplace quelle que soit l'entrée courante)
@@ -534,122 +537,118 @@ function _renderPreview() {
     });
 })();
 
-/* Intercept submit — injecte les fichiers via FormData AJAX
-   ─────────────────────────────────────────────────────────
-   STRATÉGIE DOUBLE SOURCE (robustesse Capacitor/Android) :
-   1. Source principale : _pending (fichiers convertis WebP ou bruts)
-   2. Fallback si _pending vide : lire directement les <input type="file">
-      qui gardent leurs fichiers (this.value=null a été retiré des onchange)
-   Cela garantit que même si le WebView recharge la page ou que _pending
-   se vide entre la sélection et le submit, les fichiers arrivent quand même. */
-(function() {
-    var form = document.getElementById('add-post-form');
-    if (!form) return;
-    form.addEventListener('submit', function(e) {
+/* ═══════════════════════════════════════════════════════════════════════════
+   SOUMISSION — 100 % fetch(), jamais form.submit()
+   ───────────────────────────────────────────────────────────────────────────
+   RAISON : form.submit() lit les <input type="file"> natifs dont les URI
+   content:// Android sont expirées → ERR_UPLOAD_FILE_CHANGED.
+   Tous les chemins (publier / brouillon / programmer / erreur réseau / form
+   invalide) passent par fetch(). La bascule vers form.submit() est interdite.
+   ═══════════════════════════════════════════════════════════════════════════ */
 
-        /* Sync CKEditor si présent */
-        if (typeof CKEDITOR !== 'undefined') {
-            for (var k in CKEDITOR.instances) {
-                try { CKEDITOR.instances[k].updateElement(); } catch(ex) {}
-            }
+var _form = document.getElementById('add-post-form');
+
+/* Noyau d'envoi — appelé par le listener submit ET par submitAs() */
+function _doFetch(extraAction, extraScheduledAt) {
+    if (!_form) return;
+    var submitBtn = _form.querySelector('.btn-submit');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = '.6'; }
+
+    /* Sync CKEditor */
+    if (typeof CKEDITOR !== 'undefined') {
+        for (var k in CKEDITOR.instances) {
+            try { CKEDITOR.instances[k].updateElement(); } catch(ex) {}
         }
+    }
 
-        /* ── Collecter les fichiers depuis TOUTES les sources ── */
-        var filesToSend = [];
-
-        /* Source 1 : _pending (WebP convertis ou bruts, accumulés) */
-        _pending.forEach(function(f) { filesToSend.push(f); });
-
-        /* Source 2 (FALLBACK) : inputs réels — si _pending est vide
-           (cas Capacitor où le WebView a reinitialisé la page entre temps) */
-        if (filesToSend.length === 0) {
-            Array.from(
-                form.querySelectorAll('input[type="file"][name="media_files"]')
-            ).forEach(function(inp) {
-                Array.from(inp.files || []).forEach(function(f) {
-                    filesToSend.push(f);
-                });
-            });
-        }
-
-        console.log('[Vazimba] submit — _pending:', _pending.length,
-                    '| filesToSend total:', filesToSend.length);
-
-        if (filesToSend.length === 0) {
-            /* Vraiment aucun fichier → submit natif (post texte seul) */
-            console.log('[Vazimba] submit natif (0 fichiers détectés)');
-            return;
-        }
-
-        e.preventDefault();
+    /* Attendre que tous les fichiers soient lus en mémoire (Blob sécurisé) */
+    Promise.all(_blobPromises.map(function(p){ return p ? p.catch(function(){}) : Promise.resolve(); }))
+    .then(function() {
 
         var fd = new FormData();
-        var csrf = form.querySelector('[name=csrfmiddlewaretoken]');
-        if (csrf) fd.append('csrfmiddlewaretoken', csrf.value);
-        var titleEl = form.querySelector('[name=title]');
-        if (titleEl) fd.append('title', titleEl.value);
-        var bodyEl = form.querySelector('[name=body]');
-        if (bodyEl) fd.append('body', bodyEl.value);
-        var fileEl = form.querySelector('[name=file]');
-        if (fileEl && fileEl.files && fileEl.files[0]) fd.append('file', fileEl.files[0]);
-        /* Inclure les champs cachés action + scheduled_at */
-        var actionEl = form.querySelector('[name=action]');
-        if (actionEl) fd.append('action', actionEl.value);
-        var schedEl = form.querySelector('[name=scheduled_at]');
-        if (schedEl && schedEl.value) fd.append('scheduled_at', schedEl.value);
 
-        /* Injecter les fichiers (f peut être un File ou un Blob pur avec _name) */
-        filesToSend.forEach(function(f) {
-            var fname = f.name || f._name || ('media.' + (f.type || 'bin').split('/')[1]);
-            fd.append('media_files', f, fname);
+        /* CSRF */
+        var csrf = _form.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrf) fd.append('csrfmiddlewaretoken', csrf.value);
+
+        /* Champs texte */
+        ['title', 'body'].forEach(function(n) {
+            var el = _form.querySelector('[name=' + n + ']');
+            if (el) fd.append(n, el.value || '');
         });
 
-        /* 'ajax=1' dans le CORPS du FormData — plus fiable que X-Requested-With
-           qui peut être bloqué par Capacitor / Android WebView (réseau sécurisé) */
+        /* action + scheduled_at (peut être surchargé par submitAs) */
+        var actionVal = extraAction || (_form.querySelector('[name=action]') || {}).value || 'publish';
+        fd.append('action', actionVal);
+        var schedVal = extraScheduledAt || ((_form.querySelector('[name=scheduled_at]') || {}).value || '');
+        if (schedVal) fd.append('scheduled_at', schedVal);
+
+        /* Fichiers médias depuis _pending (tous des Blobs en mémoire) */
+        var count = 0;
+        _pending.forEach(function(f) {
+            if (!f) return;
+            var fname = f.name || f._name || ('media.' + (f.type || 'application/octet-stream').split('/')[1]);
+            fd.append('media_files', f, fname);
+            count++;
+        });
+
+        /* Pièce jointe optionnelle */
+        var fileEl = _form.querySelector('[name=file]');
+        if (fileEl && fileEl.files && fileEl.files[0]) {
+            fd.append('file', fileEl.files[0]);
+        }
+
         fd.append('ajax', '1');
 
-        var btn = form.querySelector('.btn-submit');
-        if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
+        console.log('[Vazimba] _doFetch action=' + actionVal + ' files=' + count);
 
-        console.log('[Vazimba] submit AJAX — envoi de', filesToSend.length, 'fichier(s)');
+        fetch(_form.action, { method: 'POST', body: fd, credentials: 'same-origin' })
+        .then(function(r) {
+            console.log('[Vazimba] HTTP', r.status);
+            return r.text().then(function(txt) { return { status: r.status, txt: txt }; });
+        })
+        .then(function(res) {
+            var data = null;
+            try { data = JSON.parse(res.txt); } catch(e) {}
 
-        fetch(form.action, {
-            method: 'POST',
-            body: fd,
-            credentials: 'same-origin'
-        }).then(function(r) {
-            console.log('[Vazimba] réponse HTTP', r.status, r.url);
-            if (r.ok) {
-                return r.json().catch(function() { return null; }).then(function(data) {
-                    console.log('[Vazimba] réponse JSON', JSON.stringify(data));
-                    if (data && data.ok && data.redirect) {
-                        if (data.received !== undefined) {
-                            var msg = '📤 ' + filesToSend.length + ' fichier(s) envoyé(s) → '
-                                + data.received + ' reçu(s) → '
-                                + data.saved + ' sauvegardé(s)';
-                            _diagToast(msg, data.saved > 0 ? 'green' : 'orange');
-                            setTimeout(function() { window.location.href = data.redirect; }, 2500);
-                        } else {
-                            window.location.href = data.redirect;
-                        }
-                    } else {
-                        /* 200 HTML = form_invalid */
-                        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-                        form.submit();
-                    }
-                });
+            if (data && data.ok && data.redirect) {
+                /* Succès → redirection */
+                if (data.received !== undefined) {
+                    _diagToast('✓ ' + data.saved + '/' + data.received + ' fichier(s) sauvegardé(s)', data.saved > 0 ? 'green' : 'orange');
+                    setTimeout(function() { window.location.href = data.redirect; }, 1800);
+                } else {
+                    window.location.href = data.redirect;
+                }
+            } else if (data && data.errors) {
+                /* Erreurs de validation renvoyées en JSON par le serveur */
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = ''; }
+                _diagToast('Erreur : ' + JSON.stringify(data.errors), 'orange');
+            } else if (res.status === 200 && res.txt.indexOf('<form') !== -1) {
+                /* Formulaire invalide — rechargement pour afficher les erreurs */
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = ''; }
+                _diagToast('Veuillez vérifier les champs obligatoires.', 'orange');
             } else {
-                console.error('[Vazimba] addPost HTTP', r.status);
-                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-                form.submit();
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = ''; }
+                _diagToast('Erreur serveur (' + res.status + '). Réessayez.', 'orange');
             }
-        }).catch(function(err) {
-            console.warn('[Vazimba] addPost network error', err);
-            if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-            form.submit();
+        })
+        .catch(function(err) {
+            console.warn('[Vazimba] fetch error', err);
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = ''; }
+            _diagToast('Erreur réseau. Vérifiez votre connexion.', 'orange');
+            /* NE PAS appeler form.submit() — cela déclencherait ERR_UPLOAD_FILE_CHANGED */
         });
+
     });
-})();
+}
+
+/* Intercepter le submit natif — TOUJOURS preventDefault */
+if (_form) {
+    _form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        _doFetch();
+    });
+}
 
 // ── Toast diagnostic ─────────────────────────────────────────────────────────
 function _diagToast(msg, color) {
@@ -665,13 +664,13 @@ function _diagToast(msg, color) {
 
 // ── Brouillon / Programmer ────────────────────────────────────────────────────
 function submitAs(action) {
-    document.getElementById('post-action').value = action;
     if (action === 'schedule') {
         var dt = document.getElementById('sched-dt-input').value;
         if (!dt) { alert('{% trans "Veuillez choisir une date et heure." %}'); return; }
-        document.getElementById('post-scheduled-at').value = dt;
+        _doFetch('schedule', dt);
+    } else {
+        _doFetch(action);
     }
-    document.getElementById('add-post-form').submit();
 }
 function toggleSchedulePicker() {
     var p = document.getElementById('schedule-picker');

@@ -539,6 +539,12 @@ class AddPostView(CreateView):
     def form_invalid(self, form):
         """Affiche les erreurs de formulaire de façon lisible."""
         _logger.warning("AddPostView form_invalid: %s", form.errors)
+        is_ajax = (
+            self.request.POST.get('ajax') == '1'
+            or self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        )
+        if is_ajax:
+            return JsonResponse({'ok': False, 'errors': form.errors.as_json()}, status=400)
         return self.render_to_response(self.get_context_data(form=form))
 
 
