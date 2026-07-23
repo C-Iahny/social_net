@@ -80,11 +80,12 @@
 .zsv-media {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
-  object-fit: cover; display: none;
+  object-fit: contain;   /* contain = taille réelle, sans découpage */
+  background: #000;      /* barres noires si ratio différent du container */
+  display: none;
   -webkit-user-drag: none; pointer-events: none;
 }
 .zsv-media.active { display: block; }
-/* Les images s'affichent en entier (contain) — les vidéos restent en cover */
 #zsv-img { object-fit: contain; background: #000; }
 
 #zsv-txtbg {
