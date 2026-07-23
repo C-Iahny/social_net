@@ -390,6 +390,28 @@
 var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
 var _pending = []; // tableau de File objects — cross-browser fiable
 
+/* Copie un File en mémoire via ArrayBuffer pour éviter ERR_UPLOAD_FILE_CHANGED
+   sur Android WebView : les URI content:// deviennent invalides entre sélection
+   et envoi. Un File créé depuis ArrayBuffer n'a plus aucune dépendance externe. */
+function _readFileIntoMemory(file) {
+    return new Promise(function(resolve) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                resolve(new File([e.target.result], file.name, {
+                    type: file.type || 'application/octet-stream',
+                    lastModified: file.lastModified || Date.now()
+                }));
+            } catch(ex) {
+                // Fallback : Blob si File() n'est pas supporté
+                resolve(new Blob([e.target.result], { type: file.type }));
+            }
+        };
+        reader.onerror = function() { resolve(file); }; // dernier recours : fichier brut
+        reader.readAsArrayBuffer(file);
+    });
+}
+
 function isVideo(file) {
     var ext = (file.name.split('.').pop() || '').toLowerCase();
     return file.type.startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
@@ -408,14 +430,24 @@ function addToSelection(newFiles) {
     raw.forEach(function(f) { _pending.push(f); });
     _renderPreview();
 
-    // 2. Conversion asynchrone : remplace les bruts si toujours présents
+    // 2. Lire en mémoire dès maintenant (Android : évite ERR_UPLOAD_FILE_CHANGED)
+    raw.forEach(function(f, i) {
+        var idx = startIdx + i;
+        _readFileIntoMemory(f).then(function(memFile) {
+            if (_pending[idx] === raw[i]) { _pending[idx] = memFile; }
+        });
+    });
+
+    // 3. Conversion asynchrone WebP : remplace les bruts si toujours présents
     if (window.ZootMediaConverter) {
         ZootMediaConverter.processFiles(raw).then(function(converted) {
             var changed = false;
             converted.forEach(function(f, i) {
-                // Vérifier que l'entrée n'a pas été supprimée entre-temps
-                if (_pending[startIdx + i] === raw[i]) {
-                    _pending[startIdx + i] = f;
+                // Remplacer si l'index est encore occupé (fichier non supprimé)
+                // Note: _pending[idx] peut être la copie mémoire (≠ raw[i]) — c'est normal
+                var idx = startIdx + i;
+                if (idx < _pending.length && _pending[idx] != null) {
+                    _pending[idx] = f;
                     changed = true;
                 }
             });
