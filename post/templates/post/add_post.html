@@ -605,7 +605,8 @@ function _doFetch(extraAction, extraScheduledAt) {
         /* Lire le token CSRF depuis le cookie (plus fiable que le champ caché) */
         var csrfFromCookie = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
 
-        var targetUrl = _form.action;
+        /* getAttribute évite le shadow du champ <input name="action"> sur certains WebView Android */
+        var targetUrl = _form.getAttribute('action') || '/feed/add-post/';
         console.log('[Vazimba] _doFetch POST → ' + targetUrl + ' (files=' + count + ')');
 
         fetch(targetUrl, {
