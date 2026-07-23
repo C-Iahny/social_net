@@ -734,6 +734,16 @@ textarea:focus, select:focus {
 /* Masquer l'overlay quand la vidéo est lancée */
 .ds-vid-wrap.ds-playing .ds-vid-overlay { display: none; }
 
+/* Autoplay actif (hors mode économie) : overlay plus discret,
+   label "Toucher pour lire" caché (autoplay prend en charge) */
+html:not(.data-saver) .ds-vid-overlay {
+    background: rgba(0,0,0,.18);
+}
+html:not(.data-saver) .ds-vid-overlay:hover {
+    background: rgba(0,0,0,.32);
+}
+html:not(.data-saver) .ds-vid-label { display: none; }
+
 /* Images : placeholders en mode économie */
 html.data-saver .ds-img.ds-pending {
     background: linear-gradient(135deg, var(--bg-secondary, #f0ece6) 0%, var(--border) 100%);

@@ -658,18 +658,114 @@ document.addEventListener('click', function(e) {
     }
 }, true);
 
-/* ── Lecture d'une vidéo lazy (overlay play button) ── */
+/* ── Lecture explicite (clic overlay) — toujours avec son ── */
 window.dsPlayVideo = function(overlay) {
     var wrap = overlay.closest('.ds-vid-wrap');
-    var vid  = wrap ? wrap.querySelector('video[data-src]') : null;
+    var vid  = wrap ? wrap.querySelector('video') : null;
     if (!vid) return;
-    vid.src = vid.dataset.src;
-    vid.load();
-    vid.play().catch(function() { /* autoplay bloqué → l'utilisateur a le contrôle */ });
+    if (!vid.src && vid.dataset.src) { vid.src = vid.dataset.src; vid.load(); }
+    vid.muted = false;   /* clic utilisateur = son activé */
+    vid.play().catch(function() { vid.muted = true; vid.play().catch(function(){}); });
     wrap.classList.add('ds-playing');
 };
 
-/* MutationObserver supprimé : les images se chargent toujours normalement */
+/* ════════════════════════════════════════════════════════════
+   AUTOPLAY VIDÉO — hover (desktop) / IntersectionObserver (mobile)
+   • Première image affichée via preload="metadata" (src chargé
+     dès que la vidéo approche du viewport, ~200 px avant)
+   • Mode économie désactivé = autoplay muet uniquement
+   ════════════════════════════════════════════════════════════ */
+(function() {
+    var _touch  = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    var _ioMeta = null;  /* Observer pré-chargement 1ère image */
+    var _ioPlay = null;  /* Observer lecture (mobile seulement)  */
+
+    function _preloadMeta(vid) {
+        if (vid.src || !vid.dataset.src) return;
+        vid.preload = 'metadata';
+        vid.src = vid.dataset.src;   /* navigateur charge métadonnées → affiche 1ère frame */
+    }
+
+    function _play(wrap, vid) {
+        _preloadMeta(vid);
+        vid.muted = true;
+        vid.play().then(function() {
+            wrap.classList.add('ds-playing');
+        }).catch(function() {});
+    }
+
+    function _pause(wrap, vid) {
+        if (!vid.paused) vid.pause();
+        wrap.classList.remove('ds-playing');
+    }
+
+    function _initWrap(wrap) {
+        if (wrap.dataset.apInit) return;
+        wrap.dataset.apInit = '1';
+        var vid = wrap.querySelector('video');
+        if (!vid) return;
+
+        /* Sync classe ds-playing sur les événements natifs */
+        vid.addEventListener('play',  function() { wrap.classList.add('ds-playing'); });
+        vid.addEventListener('pause', function() { wrap.classList.remove('ds-playing'); });
+
+        /* Pré-charger la 1ère image dès que la vidéo approche du viewport */
+        if (_ioMeta) _ioMeta.observe(wrap);
+
+        if (_touch) {
+            if (_ioPlay) _ioPlay.observe(wrap);
+        } else {
+            /* Desktop : lecture au survol */
+            wrap.addEventListener('mouseenter', function() {
+                if (window.__VZB_DATA_SAVER) return;
+                _play(wrap, vid);
+            });
+            wrap.addEventListener('mouseleave', function() { _pause(wrap, vid); });
+        }
+    }
+
+    /* Exposé pour l'infinite scroll et les pages qui ajoutent du contenu */
+    window.vzInitVideoAutoplay = function() {
+        document.querySelectorAll('.ds-vid-wrap:not([data-ap-init])').forEach(_initWrap);
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        /* Observer pré-chargement : charge métadonnées 200 px avant le viewport */
+        _ioMeta = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (!e.isIntersecting) return;
+                var vid = e.target.querySelector('video');
+                if (vid && !window.__VZB_DATA_SAVER) _preloadMeta(vid);
+                _ioMeta.unobserve(e.target); /* une seule passe suffit */
+            });
+        }, { rootMargin: '200px' });
+
+        /* Observer lecture mobile : joue quand > 50 % visible */
+        if (_touch && !window.__VZB_DATA_SAVER) {
+            _ioPlay = new IntersectionObserver(function(entries) {
+                entries.forEach(function(e) {
+                    var wrap = e.target;
+                    var vid  = wrap.querySelector('video');
+                    if (!vid) return;
+                    if (e.isIntersecting && !window.__VZB_DATA_SAVER) {
+                        _play(wrap, vid);
+                    } else {
+                        _pause(wrap, vid);
+                    }
+                });
+            }, { threshold: 0.5 });
+        }
+
+        window.vzInitVideoAutoplay();
+
+        /* MutationObserver : initialiser les nouvelles vidéos (infinite scroll) */
+        var feed = document.querySelector('.feed-main');
+        if (feed) {
+            new MutationObserver(window.vzInitVideoAutoplay)
+                .observe(feed, { childList: true });
+        }
+    });
+})();
 
 /* ── Bannière connexion lente ── */
 window.dsDismissBanner = function() {
