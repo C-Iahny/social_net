@@ -590,6 +590,16 @@ function _renderPreview() {
 
         e.preventDefault();
 
+        var btn = form.querySelector('.btn-submit');
+        if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
+
+        /* Lire TOUS les fichiers en mémoire avant de construire le FormData.
+           Sur Android WebView, les File objects référencent des URI content://
+           qui expirent entre la sélection et l'envoi → ERR_UPLOAD_FILE_CHANGED.
+           Cette étape garantit que chaque fichier est un Blob en RAM pure. */
+        Promise.all(filesToSend.map(function(f) { return _readFileIntoMemory(f); }))
+        .then(function(memFiles) {
+
         var fd = new FormData();
         var csrf = form.querySelector('[name=csrfmiddlewaretoken]');
         if (csrf) fd.append('csrfmiddlewaretoken', csrf.value);
@@ -605,17 +615,14 @@ function _renderPreview() {
         var schedEl = form.querySelector('[name=scheduled_at]');
         if (schedEl && schedEl.value) fd.append('scheduled_at', schedEl.value);
 
-        /* Injecter les fichiers */
-        filesToSend.forEach(function(f) { fd.append('media_files', f); });
+        /* Injecter les fichiers en mémoire (plus de référence content://) */
+        memFiles.forEach(function(f) { fd.append('media_files', f); });
 
         /* 'ajax=1' dans le CORPS du FormData — plus fiable que X-Requested-With
            qui peut être bloqué par Capacitor / Android WebView (réseau sécurisé) */
         fd.append('ajax', '1');
 
-        var btn = form.querySelector('.btn-submit');
-        if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
-
-        console.log('[Vazimba] submit AJAX — envoi de', filesToSend.length, 'fichier(s)');
+        console.log('[Vazimba] submit AJAX — envoi de', memFiles.length, 'fichier(s) (mémoire)');
 
         fetch(form.action, {
             method: 'POST',
@@ -651,6 +658,12 @@ function _renderPreview() {
             console.warn('[Vazimba] addPost network error', err);
             if (btn) { btn.disabled = false; btn.style.opacity = ''; }
             form.submit();
+        });
+
+        }).catch(function(err) {
+            /* Erreur de lecture en mémoire — très rare, fallback submit natif */
+            console.warn('[Vazimba] _readFileIntoMemory error', err);
+            if (btn) { btn.disabled = false; btn.style.opacity = ''; }
         });
     });
 })();
