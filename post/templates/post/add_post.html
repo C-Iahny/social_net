@@ -388,39 +388,64 @@
 
 <script>
 var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
-var _pending = []; // tableau de File objects — cross-browser fiable
+var _pending = []; // tableau de File/Blob objects
 
 function isVideo(file) {
-    var ext = (file.name.split('.').pop() || '').toLowerCase();
-    return file.type.startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
+    var name = file.name || file._name || '';
+    var ext = (name.split('.').pop() || '').toLowerCase();
+    return (file.type || '').startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
+}
+
+/* Lit un File Android en mémoire (ArrayBuffer → Blob) pour éviter l'expiration
+   des URI content:// (ERR_UPLOAD_FILE_CHANGED sur Android 13+).
+   Appelé IMMÉDIATEMENT après la sélection, tant que l'URI est encore valide. */
+function _safeBlob(file) {
+    return new Promise(function(resolve) {
+        if (!(file instanceof File)) { resolve(file); return; } // déjà un Blob pur
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var b = new Blob([e.target.result], { type: file.type || 'application/octet-stream' });
+            b._name = file.name; // conserver le nom pour FormData
+            resolve(b);
+        };
+        reader.onerror = function() { resolve(file); }; // fallback si lecture échoue
+        reader.readAsArrayBuffer(file);
+    });
 }
 
 /* Ajoute les nouveaux fichiers au panier.
-   IMPORTANT : les fichiers bruts sont ajoutés à _pending IMMÉDIATEMENT
-   (garantit qu'un submit rapide envoie quand même les fichiers), puis la
-   conversion WebP tourne en arrière-plan et remplace les bruts quand elle
-   est terminée — empêche la race condition "submit avant fin de conversion". */
+   STRATÉGIE :
+   1. Insérer les File originaux immédiatement dans _pending (UI réactive)
+   2. Lire chaque fichier en mémoire via FileReader IMMÉDIATEMENT (les URI
+      content:// Android expirent rapidement — c'est la cause du ERR_UPLOAD_FILE_CHANGED)
+   3. Remplacer chaque entrée par son Blob sécurisé dès que la lecture est faite
+   4. Si ZootMediaConverter est disponible, convertir en WebP par-dessus */
 function addToSelection(newFiles) {
     var raw = Array.from(newFiles);
-
-    // 1. Ajouter immédiatement les fichiers originaux
     var startIdx = _pending.length;
+
+    // 1. Insérer immédiatement pour l'UI
     raw.forEach(function(f) { _pending.push(f); });
     _renderPreview();
 
-    // 2. Conversion asynchrone : remplace les bruts si toujours présents
+    // 2. Lecture en mémoire immédiate (Android anti-expiration URI)
+    raw.forEach(function(file, i) {
+        var idx = startIdx + i;
+        _safeBlob(file).then(function(blob) {
+            if (_pending[idx] === file) _pending[idx] = blob; // remplace si non modifié
+        });
+    });
+
+    // 3. Conversion WebP asynchrone (remplace quelle que soit l'entrée courante)
     if (window.ZootMediaConverter) {
         ZootMediaConverter.processFiles(raw).then(function(converted) {
             var changed = false;
             converted.forEach(function(f, i) {
-                // Vérifier que l'entrée n'a pas été supprimée entre-temps
-                if (_pending[startIdx + i] === raw[i]) {
-                    _pending[startIdx + i] = f;
-                    changed = true;
-                }
+                var idx = startIdx + i;
+                if (_pending[idx] != null) { _pending[idx] = f; changed = true; }
             });
             if (changed) _renderPreview();
-        }).catch(function() { /* bruts déjà en place, rien à faire */ });
+        }).catch(function() {});
     }
 }
 
@@ -573,8 +598,11 @@ function _renderPreview() {
         var schedEl = form.querySelector('[name=scheduled_at]');
         if (schedEl && schedEl.value) fd.append('scheduled_at', schedEl.value);
 
-        /* Injecter les fichiers */
-        filesToSend.forEach(function(f) { fd.append('media_files', f); });
+        /* Injecter les fichiers (f peut être un File ou un Blob pur avec _name) */
+        filesToSend.forEach(function(f) {
+            var fname = f.name || f._name || ('media.' + (f.type || 'bin').split('/')[1]);
+            fd.append('media_files', f, fname);
+        });
 
         /* 'ajax=1' dans le CORPS du FormData — plus fiable que X-Requested-With
            qui peut être bloqué par Capacitor / Android WebView (réseau sécurisé) */
