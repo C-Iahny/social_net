@@ -1124,7 +1124,9 @@ function _zvLoad(){
   var txtpos = document.getElementById('zsv-txtpos');
   img.classList.remove('active'); vid.classList.remove('active');
   txtbg.classList.remove('active'); txtpos.style.display='none';
-  vid.pause(); vid.src='';
+  /* Arrêt complet : pause + src vide + load() force le navigateur à libérer
+     le décodeur audio — sans load() l'audio continue en arrière-plan */
+  vid.pause(); vid.removeAttribute('src'); vid.load();
   _sv.duration = 5000;
 
   if(story.media_type==='video' && story.media_url){
@@ -1173,7 +1175,7 @@ function _zvLoad(){
   /* Audio */
   var audioEl = document.getElementById('zsv-audio');
   var audioInd = document.getElementById('zsv-audio-ind');
-  audioEl.pause(); audioEl.src='';
+  audioEl.pause(); audioEl.removeAttribute('src'); audioEl.load();
   if(story.audio_url){
     audioEl.src = story.audio_url; audioEl.muted = _sv.muted;
     audioEl.currentTime = story.audio_trim_start||0;
@@ -1307,8 +1309,10 @@ window.zvClose = function(){
     ov.classList.remove('open');
     document.body.style.overflow='';
     inn.style.transition=''; inn.style.opacity=''; inn.style.transform='';
-    document.getElementById('zsv-vid').pause();
-    document.getElementById('zsv-audio').pause();
+    var _v = document.getElementById('zsv-vid');
+    var _a = document.getElementById('zsv-audio');
+    _v.pause(); _v.removeAttribute('src'); _v.load();
+    _a.pause(); _a.removeAttribute('src'); _a.load();
   }, 200);
   loadStories();
 };
