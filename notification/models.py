@@ -27,7 +27,7 @@ class Notification(models.Model):
 	# A generic type that can refer to a FriendRequest, Unread Message, or any other type of "Notification"
 	# See article: https://simpleisbetterthancomplex.com/tutorial/2016/10/13/how-to-use-generic-relations.html
 	content_type 				= models.ForeignKey(ContentType, on_delete=models.CASCADE)
-	object_id 					= models.PositiveIntegerField()
+	object_id 					= models.CharField(max_length=255)  # CharField pour supporter UUID (LiveRoom) et integer PKs
 	content_object 				= GenericForeignKey()
 
 	def __str__(self):
