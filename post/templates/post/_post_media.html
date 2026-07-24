@@ -7,7 +7,7 @@
     {% if m.is_video %}
     {% if m.url %}
     <div class="pc-gal-item pc-gal-video ds-vid-wrap">
-        <video class="pc-gal-vid" data-src="{{ m.url }}" controls preload="none"></video>
+        <video class="pc-gal-vid" data-src="{{ m.url }}" controls preload="none" playsinline webkit-playsinline></video>
         <div class="ds-vid-overlay" onclick="dsPlayVideo(this)">
             <div class="ds-vid-play-btn">
                 <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
