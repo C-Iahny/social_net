@@ -2,6 +2,16 @@ from django.core.serializers.python import Serializer
 from django.contrib.humanize.templatetags.humanize import naturaltime
 
 
+def _safe_img_url(user):
+	"""Return user profile image URL, or '' if missing/unset."""
+	if not user:
+		return ''
+	try:
+		return str(user.profile_image.url)
+	except (ValueError, AttributeError):
+		return ''
+
+
 class LazyNotificationEncoder(Serializer):
 	"""
 	Serialize a Notification into JSON.
@@ -36,7 +46,7 @@ class LazyNotificationEncoder(Serializer):
 					'redirect_url': str(obj.redirect_url) if obj.redirect_url else '/',
 				},
 				"from": {
-					"image_url": str(obj.from_user.profile_image.url) if obj.from_user else ''
+					"image_url": _safe_img_url(obj.from_user)
 				}
 			})
 		if ctype == "FriendList":
@@ -51,7 +61,7 @@ class LazyNotificationEncoder(Serializer):
 					'redirect_url': str(obj.redirect_url) if obj.redirect_url else '/',
 				},
 				"from": {
-					"image_url": str(obj.from_user.profile_image.url) if obj.from_user else ''
+					"image_url": _safe_img_url(obj.from_user)
 				}
 			})
 		if ctype == "UnreadChatRoomMessages":
@@ -88,7 +98,7 @@ class LazyNotificationEncoder(Serializer):
 					'redirect_url': str(obj.redirect_url) if obj.redirect_url else '/',
 				},
 				"from": {
-					"image_url": str(obj.from_user.profile_image.url) if obj.from_user else '',
+					"image_url": _safe_img_url(obj.from_user),
 				}
 			})
 
@@ -104,7 +114,7 @@ class LazyNotificationEncoder(Serializer):
 					'redirect_url': str(obj.redirect_url) if obj.redirect_url else '/live/',
 				},
 				"from": {
-					"image_url": str(obj.from_user.profile_image.url) if obj.from_user else '',
+					"image_url": _safe_img_url(obj.from_user),
 				}
 			})
 
