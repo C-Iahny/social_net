@@ -74,9 +74,11 @@ def unread_counts(request):
     chat_ct = ContentType.objects.get_for_model(UnreadChatRoomMessages)
     post_ct = ContentType.objects.get_for_model(PostModel)
 
-    # FIX: inclure post_ct (likes + commentaires + reposts) dans le compteur badge
+    from video.models import LiveRoom
+    live_ct = ContentType.objects.get_for_model(LiveRoom)
+    # FIX: inclure post_ct (likes + commentaires + reposts) et live_ct dans le compteur badge
     general_count = Notification.objects.filter(
-        target=user, content_type__in=[fr_ct, fl_ct, post_ct], read=False,
+        target=user, content_type__in=[fr_ct, fl_ct, post_ct, live_ct], read=False,
     ).count()
 
     chat_count = Notification.objects.filter(
@@ -94,14 +96,16 @@ def notification_journal(request):
     from chat.models import UnreadChatRoomMessages
     from post.models import Post as PostModel
 
+    from video.models import LiveRoom
     fr_ct   = ContentType.objects.get_for_model(FriendRequest)
     fl_ct   = ContentType.objects.get_for_model(FriendList)
     chat_ct = ContentType.objects.get_for_model(UnreadChatRoomMessages)
     post_ct = ContentType.objects.get_for_model(PostModel)
+    live_ct = ContentType.objects.get_for_model(LiveRoom)
 
     notifications = (
         Notification.objects
-        .filter(target=request.user, content_type__in=[fr_ct, fl_ct, post_ct])
+        .filter(target=request.user, content_type__in=[fr_ct, fl_ct, post_ct, live_ct])
         .select_related('from_user', 'content_type')
         .order_by('-timestamp')
     )
