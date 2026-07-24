@@ -2,6 +2,7 @@ import datetime
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 from django.utils import timezone
 from django.contrib import messages
@@ -28,6 +29,7 @@ def _cleanup_stale_rooms():
 
 
 @login_required(login_url='login')
+@ensure_csrf_cookie
 def live_list(request):
     """Page principale : liste des lives actifs + formulaire de création."""
     _cleanup_stale_rooms()
