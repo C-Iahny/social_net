@@ -1406,34 +1406,108 @@
     };
 
     window.handleLiveStartedNotification = function(data) {
-        var container = document.getElementById('zoot-post-toast');
-        if (!container) return;
-        var liveUrl = data.live_url || '/live/';
-        var toast = document.createElement('div');
-        toast.className = 'zoot-toast-item zoot-toast-live';
-        toast.innerHTML =
-            '<img class="zoot-toast-avatar" src="' + (data.host_image || '') + '" alt="">' +
-            '<div class="zoot-toast-body">' +
-                '<div class="zoot-toast-user" style="display:flex;align-items:center;gap:6px;">' +
-                    '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f44336;flex-shrink:0;"></span>' +
-                    '<strong>' + (data.host_username || '') + '</strong> est en live !' +
+        var liveUrl      = data.live_url      || '/live/';
+        var hostUsername = data.host_username || '';
+        var hostImage    = data.host_image    || '';
+        var liveTitle    = data.live_title    || 'Rejoins maintenant';
+
+        /* ── 1. Toast temporaire ── */
+        var toastContainer = document.getElementById('zoot-post-toast');
+        if (toastContainer) {
+            var toast = document.createElement('div');
+            toast.className = 'zoot-toast-item zoot-toast-live';
+            toast.innerHTML =
+                '<img class="zoot-toast-avatar" src="' + hostImage + '" alt="">' +
+                '<div class="zoot-toast-body">' +
+                    '<div class="zoot-toast-user" style="display:flex;align-items:center;gap:6px;">' +
+                        '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f44336;flex-shrink:0;"></span>' +
+                        '<strong>' + hostUsername + '</strong> est en live !' +
+                    '</div>' +
+                    '<div class="zoot-toast-msg">' + liveTitle + '</div>' +
                 '</div>' +
-                '<div class="zoot-toast-msg">' + (data.live_title || 'Rejoins maintenant') + '</div>' +
-            '</div>' +
-            '<button class="zoot-toast-close material-icons" onclick="this.closest(\'.zoot-toast-item\').remove()">close</button>';
-        toast.style.cursor = 'pointer';
-        toast.addEventListener('click', function(ev) {
-            if (!ev.target.classList.contains('zoot-toast-close')) window.location.href = liveUrl;
-        });
-        container.appendChild(toast);
-        /* Mettre à jour le badge live navbar immédiatement sans attendre le poll */
-        var badge = document.getElementById('nav-live-count');
-        if (badge) {
-            var cur = parseInt(badge.textContent, 10) || 0;
-            badge.textContent = cur + 1;
-            badge.style.display = 'inline-block';
+                '<button class="zoot-toast-close material-icons" onclick="this.closest(\'.zoot-toast-item\').remove()">close</button>';
+            toast.style.cursor = 'pointer';
+            toast.addEventListener('click', function(ev) {
+                if (!ev.target.classList.contains('zoot-toast-close')) window.location.href = liveUrl;
+            });
+            toastContainer.appendChild(toast);
+            setTimeout(function() { if (toast.parentNode) toast.remove(); }, 12000);
         }
-        setTimeout(function() { if (toast.parentNode) toast.remove(); }, 12000);
+
+        /* ── 2. Carte persistante dans le dropdown cloche ── */
+        var notifContainer = document.getElementById('id_general_notifications_container');
+        if (notifContainer) {
+            /* Virer l'état vide si présent */
+            var empty = document.getElementById('id_no_general_notifications');
+            if (empty && empty.parentNode) empty.parentNode.removeChild(empty);
+
+            /* Créer la carte avec la même structure CSS que les autres notifs */
+            var cardId = 'id_notification_live_' + Date.now();
+            var card = document.createElement('div');
+            card.id = cardId;
+            card.className = 'd-flex flex-column align-items-start general-card p-4 unread';
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', function() { window.location.href = liveUrl; });
+
+            /* Rangée avatar + texte */
+            var row = document.createElement('div');
+            row.className = 'd-flex flex-row align-items-center';
+
+            /* Avatar avec badge rouge live */
+            var avatarWrap = document.createElement('div');
+            avatarWrap.className = 'notif-avatar-wrap mr-2';
+            var img = document.createElement('img');
+            img.className = 'notification-thumbnail-image img-fluid rounded-circle';
+            img.src = hostImage;
+            img.alt = hostUsername;
+            img.onerror = function() { this.src = '/static/images/profile_pic.png'; };
+            avatarWrap.appendChild(img);
+            var typeBadge = document.createElement('span');
+            typeBadge.className = 'notif-type-icon';
+            typeBadge.style.cssText = 'background:#f44336;color:#fff;';
+            typeBadge.innerHTML = '<span class="material-icons">live_tv</span>';
+            avatarWrap.appendChild(typeBadge);
+            row.appendChild(avatarWrap);
+
+            /* Texte */
+            var verb = document.createElement('span');
+            verb.className = 'notif-verb';
+            verb.innerHTML = '<strong>' + hostUsername + '</strong> est en live — ' + liveTitle;
+            row.appendChild(verb);
+            card.appendChild(row);
+
+            /* Timestamp "à l'instant" */
+            var ts = document.createElement('p');
+            ts.className = 'small pt-2 timestamp-text';
+            ts.textContent = 'À l\'instant';
+            card.appendChild(ts);
+
+            /* Insérer en tête (juste après le .zoot-dropdown-header) */
+            var header = notifContainer.querySelector('.zoot-dropdown-header');
+            if (header && header.nextSibling) {
+                notifContainer.insertBefore(card, header.nextSibling);
+            } else {
+                notifContainer.appendChild(card);
+            }
+
+            /* Incrémenter le badge cloche */
+            var countEl = document.getElementById('id_general_notifications_count');
+            if (countEl) {
+                var cur = parseInt(countEl.innerHTML, 10) || 0;
+                countEl.innerHTML = cur + 1;
+                countEl.style.display = 'block';
+                var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent3').trim() || '#e0245e';
+                countEl.style.background = accentColor;
+            }
+        }
+
+        /* ── 3. Badge live navbar ── */
+        var liveBadge = document.getElementById('nav-live-count');
+        if (liveBadge) {
+            var cur = parseInt(liveBadge.textContent, 10) || 0;
+            liveBadge.textContent = cur + 1;
+            liveBadge.style.display = 'inline-block';
+        }
     };
 
     connect();
