@@ -345,9 +345,10 @@
 
 		var span = document.createElement("span")
 		span.classList.add("notif-verb")
-		span.innerHTML = notification['verb'].length > 70
-			? notification['verb'].slice(0, 70) + "…"
-			: notification['verb']
+		var verbText = notification['verb'] || ''
+		span.innerHTML = verbText.length > 70
+			? verbText.slice(0, 70) + "…"
+			: verbText
 		span.id = assignGeneralVerbId(notification)
 		div1.appendChild(span)
 

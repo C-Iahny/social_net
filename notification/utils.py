@@ -105,7 +105,7 @@ class LazyNotificationEncoder(Serializer):
 		if ctype == "Live":
 			dump_object.update({'notification_type': 'Live'})
 			dump_object.update({'notification_id': str(obj.pk)})
-			dump_object.update({'verb': obj.verb})
+			dump_object.update({'verb': obj.verb or ''})
 			dump_object.update({'natural_timestamp': str(naturaltime(obj.timestamp))})
 			dump_object.update({'timestamp': str(obj.timestamp)})
 			dump_object.update({'is_read': str(obj.read)})
