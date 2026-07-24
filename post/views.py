@@ -324,6 +324,12 @@ def post_feed_view(request):
         )
 
     from regions import REGION_LABELS
+    from video.models import LiveRoom
+    active_lives = LiveRoom.objects.filter(
+        host__in=list(friends) + [user],
+        status=LiveRoom.STATUS_ACTIVE,
+    ).select_related('host').order_by('-created_at')
+
     context = {
         "friends":            friends,
         "friends_count":      friends.count(),
@@ -336,6 +342,8 @@ def post_feed_view(request):
         "active_tab":         tab,
         "user_region":        user_region,
         "user_region_label":  REGION_LABELS.get(user_region, ''),
+        # lives actifs des amis/soi
+        "active_lives":       active_lives,
     }
     return render(request, "post/post_view.html", context)
 

@@ -1534,6 +1534,13 @@ body { background: var(--bg); }
             </div>
         </div>
 
+        <!-- ── Lives actifs (épinglés en haut) ── -->
+        {% if active_lives %}
+            {% for live in active_lives %}
+                {% include 'video/_live_feed_card.html' %}
+            {% endfor %}
+        {% endif %}
+
         <!-- ── Post list ── -->
         {% if posts_of_the_page %}
             {% for post in posts_of_the_page %}
