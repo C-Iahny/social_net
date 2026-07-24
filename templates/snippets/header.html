@@ -1315,6 +1315,7 @@
             if(data.general_msg_type == 4){ setUnreadGeneralNotificationsCount(data.count); }
             if(data.general_msg_type == 5){ updateGeneralNotificationDiv(data.notification); }
             if(data.general_msg_type == 6){ handleNewPostNotification(data); }
+            if(data.general_msg_type == 7){ handleLiveStartedNotification(data); }
             if(data.chat_msg_type == 10){ handleChatNotificationsData(data.notifications, data.new_page_number); }
             if(data.chat_msg_type == 11){ setChatPaginationExhausted(); }
             if(data.chat_msg_type == 13){ handleNewChatNotificationsData(data.notifications); }
@@ -1402,6 +1403,37 @@
         container.appendChild(toast);
         setTimeout(function(){ if(toast.parentNode) toast.remove(); }, 8000);
         if(typeof showNewPostsBanner === 'function') showNewPostsBanner(data.from_username);
+    };
+
+    window.handleLiveStartedNotification = function(data) {
+        var container = document.getElementById('zoot-post-toast');
+        if (!container) return;
+        var liveUrl = data.live_url || '/live/';
+        var toast = document.createElement('div');
+        toast.className = 'zoot-toast-item zoot-toast-live';
+        toast.innerHTML =
+            '<img class="zoot-toast-avatar" src="' + (data.host_image || '') + '" alt="">' +
+            '<div class="zoot-toast-body">' +
+                '<div class="zoot-toast-user" style="display:flex;align-items:center;gap:6px;">' +
+                    '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f44336;flex-shrink:0;"></span>' +
+                    '<strong>' + (data.host_username || '') + '</strong> est en live !' +
+                '</div>' +
+                '<div class="zoot-toast-msg">' + (data.live_title || 'Rejoins maintenant') + '</div>' +
+            '</div>' +
+            '<button class="zoot-toast-close material-icons" onclick="this.closest(\'.zoot-toast-item\').remove()">close</button>';
+        toast.style.cursor = 'pointer';
+        toast.addEventListener('click', function(ev) {
+            if (!ev.target.classList.contains('zoot-toast-close')) window.location.href = liveUrl;
+        });
+        container.appendChild(toast);
+        /* Mettre à jour le badge live navbar immédiatement sans attendre le poll */
+        var badge = document.getElementById('nav-live-count');
+        if (badge) {
+            var cur = parseInt(badge.textContent, 10) || 0;
+            badge.textContent = cur + 1;
+            badge.style.display = 'inline-block';
+        }
+        setTimeout(function() { if (toast.parentNode) toast.remove(); }, 12000);
     };
 
     connect();

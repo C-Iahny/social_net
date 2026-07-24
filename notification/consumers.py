@@ -323,6 +323,16 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 			"count":        event["count"],
 		})
 
+	async def live_started(self, event):
+		"""Un ami a démarré un live — transmettre au client pour afficher le toast."""
+		await self.send_json({
+			"general_msg_type": GENERAL_MSG_TYPE_LIVE_STARTED,
+			"host_username":    event["host_username"],
+			"host_image":       event["host_image"],
+			"live_title":       event["live_title"],
+			"live_url":         event["live_url"],
+		})
+
 	async def post_action_notification(self, event):
 		"""Called when someone likes/comments/reposts on this user's post."""
 		# 1. Envoyer la notification dans le dropdown (type 3)
