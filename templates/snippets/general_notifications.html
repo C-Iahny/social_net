@@ -196,15 +196,17 @@
 			2. pagination
 	*/
 	function handleGeneralNotificationsData(notifications, new_page_number){
+		console.log('[NOTIF] handleGeneralNotificationsData count=', notifications.length, notifications)
 		if(notifications.length > 0){
 			clearNoGeneralNotificationsCard()
 			notifications.forEach(notification => {
-
-				appendBottomGeneralNotification(notification)
-
+				try {
+					appendBottomGeneralNotification(notification)
+				} catch(e) {
+					console.error('[NOTIF] appendBottom crash', notification, e)
+				}
 				setGeneralOldestTimestamp(notification['timestamp'])
 				setGeneralNewestTimestamp(notification['timestamp'])
-
 			})
 			setGeneralPageNumber(new_page_number)
 		}
@@ -242,7 +244,7 @@
 				break;
 
 			default:
-				// code block
+				console.warn('[NOTIF] unknown notification_type:', notification['notification_type'], notification)
 		}
 		if(notification['from'] && notification['from']['image_url'])
 			preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
