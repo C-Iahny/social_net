@@ -384,16 +384,24 @@ def get_general_notifications(user, page_number):
 		live_ct = ContentType.objects.get_for_model(LiveRoom)
 		notifications = Notification.objects.filter(target=user, content_type__in=[friend_request_ct, friend_list_ct, post_ct, live_ct]).order_by('-timestamp')
 		p = Paginator(notifications, DEFAULT_NOTIFICATION_PAGE_SIZE)
+		print(f"[NOTIF DEBUG] user={user.username} count={len(notifications)} pages={p.num_pages}")
 
 		payload = {}
 		if len(notifications) > 0:
 			if int(page_number) <= p.num_pages:
-				s = LazyNotificationEncoder()
-				serialized_notifications = s.serialize(p.page(page_number).object_list)
-				payload['notifications'] = serialized_notifications
-				new_page_number = int(page_number) + 1
-				payload['new_page_number'] = new_page_number
+				try:
+					s = LazyNotificationEncoder()
+					serialized_notifications = s.serialize(p.page(page_number).object_list)
+					payload['notifications'] = serialized_notifications
+					new_page_number = int(page_number) + 1
+					payload['new_page_number'] = new_page_number
+					print(f"[NOTIF DEBUG] serialized {len(serialized_notifications)} notifications OK")
+				except Exception as e:
+					print(f"[NOTIF DEBUG] SERIALIZATION ERROR: {e}")
+					import traceback; traceback.print_exc()
+					return None
 		else:
+			print(f"[NOTIF DEBUG] no notifications for {user.username}")
 			return None
 	else:
 		raise ClientError("AUTH_ERROR", "User must be authenticated to get notifications.")
