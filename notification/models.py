@@ -96,6 +96,40 @@ class PushSubscription(models.Model):
                 sub.delete()
 
     @classmethod
+    def send_live_notification(cls, user, host_username, host_image, live_title, room_id):
+        """Envoie une push notification 'X est en live' à un utilisateur."""
+        import json
+        from django.conf import settings as cfg
+
+        if not cfg.VAPID_PUBLIC_KEY or not cfg.VAPID_PRIVATE_KEY:
+            return
+
+        try:
+            from pywebpush import webpush, WebPushException
+        except ImportError:
+            return
+
+        payload = json.dumps({
+            'type':          'live_started',
+            'title':         f'🔴 {host_username} est en live !',
+            'body':          live_title or 'Rejoins maintenant',
+            'icon':          host_image or '/static/logo/vazimba_v2_icon.png',
+            'url':           f'/live/{room_id}/',
+        })
+        vapid_claims = {'sub': f"mailto:{cfg.VAPID_CLAIMS_EMAIL}"}
+
+        for sub in cls.objects.filter(user=user):
+            try:
+                webpush(
+                    subscription_info=sub.as_subscription_info(),
+                    data=payload,
+                    vapid_private_key=cfg.VAPID_PRIVATE_KEY,
+                    vapid_claims=vapid_claims,
+                )
+            except Exception:
+                sub.delete()
+
+    @classmethod
     def send_call_notification(cls, callee, caller_name, caller_image, room_id, call_mode='video'):
         """
         Envoie une push notification d'appel entrant.

@@ -249,9 +249,66 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                 })
             except Exception:
                 pass
+            # Notifier les amis du host (WebSocket temps-réel + push)
+            await self._notify_friends_live_started(room)
         else:
             print(f"[LIVE {self.room_id}] ⚠️ join_host refusé pour {self.user.username} "
                   f"(host_id={getattr(room,'host_id','?')}, user_id={self.user.id})", flush=True)
+
+    async def _notify_friends_live_started(self, room):
+        """Envoie une notification temps-réel + push à tous les amis du host."""
+        try:
+            friend_ids, host_image = await self._get_friends_and_avatar()
+            live_url = f'/live/{self.room_id}/'
+
+            for fid in friend_ids:
+                # Notification WebSocket (temps-réel, si l'ami est connecté)
+                try:
+                    await self.channel_layer.group_send(
+                        f'user_{fid}',
+                        {
+                            'type':          'live_started',
+                            'host_username': self.user.username,
+                            'host_image':    host_image,
+                            'live_title':    room.title or f'Live de {self.user.username}',
+                            'live_url':      live_url,
+                        }
+                    )
+                except Exception as e:
+                    print(f"[LIVE] WS notify friend {fid} error: {e}")
+
+            # Push notification en arrière-plan (ne pas bloquer le consumer)
+            asyncio.ensure_future(self._push_notify_friends(friend_ids, host_image, room, live_url))
+
+        except Exception as e:
+            print(f"[LIVE] _notify_friends_live_started error: {e}")
+
+    async def _push_notify_friends(self, friend_ids, host_image, room, live_url):
+        """Envoie les push notifications aux amis (tâche asyncio dédiée)."""
+        from channels.db import database_sync_to_async
+
+        @database_sync_to_async
+        def _push_all(friend_ids, host_image, room):
+            from django.contrib.auth import get_user_model
+            from notification.models import PushSubscription
+            User = get_user_model()
+            for fid in friend_ids:
+                try:
+                    friend = User.objects.get(pk=fid)
+                    PushSubscription.send_live_notification(
+                        user=friend,
+                        host_username=self.user.username,
+                        host_image=host_image,
+                        live_title=room.title or f'Live de {self.user.username}',
+                        room_id=self.room_id,
+                    )
+                except Exception as e:
+                    print(f"[LIVE] push notify friend {fid} error: {e}")
+
+        try:
+            await _push_all(friend_ids, host_image, room)
+        except Exception as e:
+            print(f"[LIVE] _push_notify_friends error: {e}")
 
     async def _handle_join_viewer(self):
         self.is_host = False
@@ -389,3 +446,18 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             return self.user.profile_image.url
         except Exception:
             return '/static/images/default_profile_image.png'
+
+    @database_sync_to_async
+    def _get_friends_and_avatar(self):
+        """Retourne (liste des IDs amis, url avatar host)."""
+        from friend.models import FriendList
+        try:
+            fl = FriendList.objects.get(user=self.user)
+            friend_ids = list(fl.friends.values_list('id', flat=True))
+        except Exception:
+            friend_ids = []
+        try:
+            avatar = self.user.profile_image.url
+        except Exception:
+            avatar = '/static/logo/vazimba_v2_icon.png'
+        return friend_ids, avatar
