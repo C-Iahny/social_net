@@ -292,7 +292,7 @@
         </div>
         <p class="live-create-sub">Partagez votre écran pour diffuser le match en direct à vos amis sur Vazimba.</p>
 
-        <form method="post" action="{% url 'video:live-create' %}" class="live-form">
+        <form method="post" action="{% url 'video:live-create' %}" class="live-form" id="live-create-form">
             {% csrf_token %}
             <input type="text" name="title" class="live-title-input"
                    placeholder="Ex : 🇲🇬 Madagascar vs France — Coupe du Monde !"
@@ -302,6 +302,26 @@
                 Commencer le live
             </button>
         </form>
+        <script>
+        /* Le Service Worker peut mettre en cache la page avec un ancien token CSRF.
+           On lit le token frais depuis le cookie avant chaque soumission. */
+        (function(){
+            function getCsrf(){
+                var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+                return m ? m[1] : null;
+            }
+            var form = document.getElementById('live-create-form');
+            if(form){
+                form.addEventListener('submit', function(){
+                    var fresh = getCsrf();
+                    if(fresh){
+                        var inp = form.querySelector('[name=csrfmiddlewaretoken]');
+                        if(inp) inp.value = fresh;
+                    }
+                });
+            }
+        })();
+        </script>
     </div>
 
     <!-- ── Lives actifs ── -->
