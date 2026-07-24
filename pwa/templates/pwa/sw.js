@@ -7,7 +7,7 @@
 /* ── Version ─────────────────────────────────────────────────────────────────
    Incrémenter SW_VERSION pour forcer la mise à jour chez tous les clients.
    ─────────────────────────────────────────────────────────────────────────── */
-const SW_VERSION  = 'vazimba-v16';
+const SW_VERSION  = 'vazimba-v17';
 const STATIC_CACHE = SW_VERSION + '-static';
 const PAGES_CACHE  = SW_VERSION + '-pages';
 const IMG_CACHE    = SW_VERSION + '-images';
@@ -36,6 +36,8 @@ const NO_CACHE_PATHS = [
     // Bazar — pages personnalisées qui doivent toujours être fraîches
     '/bazar/mes-annonces/', '/bazar/vendre/', '/bazar/mes-favoris/',
     '/bazar/verification/',
+    // Live — contient un token CSRF, ne jamais servir depuis le cache
+    '/live/',
 ];
 function _isNoCachePath(url) {
     return NO_CACHE_PATHS.some(function(p) { return url.pathname.startsWith(p); });
