@@ -313,7 +313,7 @@
 
 		card.appendChild(div1)
 		card.appendChild(createGeneralTimestampElement(notification))
-		preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
+		// NOTE: preloadImage est appelé APRÈS appendChild dans appendBottomGeneralNotification
 		return card
 	}
 
@@ -356,8 +356,7 @@
 
 		card.appendChild(div1)
 		card.appendChild(createGeneralTimestampElement(notification))
-		if(notification['from'] && notification['from']['image_url'])
-			preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
+		// NOTE: preloadImage est appelé APRÈS appendChild dans appendBottomGeneralNotification
 		return card
 	}
 
