@@ -292,35 +292,58 @@
         </div>
         <p class="live-create-sub">Partagez votre écran pour diffuser le match en direct à vos amis sur Vazimba.</p>
 
-        <form method="post" action="{% url 'video:live-create' %}" class="live-form" id="live-create-form">
-            {% csrf_token %}
-            <input type="text" name="title" class="live-title-input"
+        <div class="live-form" id="live-create-form">
+            <input type="text" id="live-title-input" class="live-title-input"
                    placeholder="Ex : 🇲🇬 Madagascar vs France — Coupe du Monde !"
-                   maxlength="200" required>
-            <button type="submit" class="live-btn-start">
+                   maxlength="200">
+            <button type="button" class="live-btn-start" id="live-btn-start" onclick="startLive()">
                 <span class="material-icons">live_tv</span>
                 Commencer le live
             </button>
-        </form>
+        </div>
         <script>
-        /* Le Service Worker peut mettre en cache la page avec un ancien token CSRF.
-           On lit le token frais depuis le cookie avant chaque soumission. */
-        (function(){
-            function getCsrf(){
+        function startLive() {
+            var titleInput = document.getElementById('live-title-input');
+            var btn        = document.getElementById('live-btn-start');
+            var title      = (titleInput ? titleInput.value.trim() : '') || 'Live';
+
+            /* Lire le CSRF token depuis le cookie — toujours frais, jamais mis en cache */
+            function getCsrf() {
                 var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
-                return m ? m[1] : null;
+                return m ? decodeURIComponent(m[1]) : '';
             }
-            var form = document.getElementById('live-create-form');
-            if(form){
-                form.addEventListener('submit', function(){
-                    var fresh = getCsrf();
-                    if(fresh){
-                        var inp = form.querySelector('[name=csrfmiddlewaretoken]');
-                        if(inp) inp.value = fresh;
-                    }
-                });
+
+            var csrfToken = getCsrf();
+            if (!csrfToken) {
+                alert('Erreur de session. Rechargez la page et réessayez.');
+                return;
             }
-        })();
+
+            if (btn) { btn.disabled = true; btn.textContent = 'Création…'; }
+
+            var body = new URLSearchParams();
+            body.append('title', title);
+
+            fetch('{% url "video:live-create" %}', {
+                method:      'POST',
+                headers:     { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded' },
+                body:        body.toString(),
+                credentials: 'same-origin',
+                redirect:    'follow',
+            })
+            .then(function(r) {
+                /* Django redirige vers /live/{id}/ — on suit la redirection */
+                if (r.ok || r.redirected) {
+                    window.location.href = r.url;
+                } else {
+                    throw new Error('HTTP ' + r.status);
+                }
+            })
+            .catch(function(err) {
+                alert('Impossible de créer le live : ' + err.message);
+                if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">live_tv</span> Commencer le live'; }
+            });
+        }
         </script>
     </div>
 
