@@ -259,6 +259,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         """Envoie une notification temps-réel + push à tous les amis du host."""
         try:
             friend_ids, host_image = await self._get_friends_and_avatar()
+            print(f"[LIVE NOTIF] host={self.user.username}, {len(friend_ids)} ami(s) à notifier: {friend_ids}", flush=True)
             live_url = f'/live/{self.room_id}/'
 
             for fid in friend_ids:
@@ -278,37 +279,53 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                     print(f"[LIVE] WS notify friend {fid} error: {e}")
 
             # Push notification en arrière-plan (ne pas bloquer le consumer)
-            asyncio.ensure_future(self._push_notify_friends(friend_ids, host_image, room, live_url))
+            live_title   = room.title or f'Live de {self.user.username}'
+            host_username = self.user.username
+            asyncio.ensure_future(self._push_notify_friends(
+                friend_ids, host_image, live_title, host_username, self.room_id
+            ))
 
         except Exception as e:
             print(f"[LIVE] _notify_friends_live_started error: {e}")
 
-    async def _push_notify_friends(self, friend_ids, host_image, room, live_url):
-        """Envoie les push notifications aux amis (tâche asyncio dédiée)."""
-        from channels.db import database_sync_to_async
+    async def _push_notify_friends(self, friend_ids, host_image, live_title, host_username, room_id):
+        """Envoie les push notifications aux amis — méthode dédiée propre."""
+        # Passer uniquement des valeurs simples (str/int) pour éviter
+        # tout accès ORM implicite dans le thread pool
+        await self._do_push_notify_friends(
+            friend_ids, host_image, live_title, host_username, room_id
+        )
 
-        @database_sync_to_async
-        def _push_all(friend_ids, host_image, room):
-            from django.contrib.auth import get_user_model
-            from notification.models import PushSubscription
-            User = get_user_model()
-            for fid in friend_ids:
-                try:
-                    friend = User.objects.get(pk=fid)
-                    PushSubscription.send_live_notification(
-                        user=friend,
-                        host_username=self.user.username,
-                        host_image=host_image,
-                        live_title=room.title or f'Live de {self.user.username}',
-                        room_id=self.room_id,
-                    )
-                except Exception as e:
-                    print(f"[LIVE] push notify friend {fid} error: {e}")
+    @database_sync_to_async
+    def _do_push_notify_friends(self, friend_ids, host_image, live_title, host_username, room_id):
+        """Méthode sync wrappée proprement — s'exécute dans un thread pool."""
+        from django.contrib.auth import get_user_model
+        from notification.models import PushSubscription
+        User = get_user_model()
 
-        try:
-            await _push_all(friend_ids, host_image, room)
-        except Exception as e:
-            print(f"[LIVE] _push_notify_friends error: {e}")
+        print(f"[LIVE PUSH] début — {len(friend_ids)} amis à notifier", flush=True)
+
+        total_subs = 0
+        for fid in friend_ids:
+            try:
+                friend = User.objects.get(pk=fid)
+                subs_count = PushSubscription.objects.filter(user=friend).count()
+                print(f"[LIVE PUSH] ami {friend.username} (id={fid}) — {subs_count} subscription(s)", flush=True)
+                if subs_count == 0:
+                    continue
+                total_subs += subs_count
+                PushSubscription.send_live_notification(
+                    user=friend,
+                    host_username=host_username,
+                    host_image=host_image,
+                    live_title=live_title,
+                    room_id=room_id,
+                )
+                print(f"[LIVE PUSH] ✅ push envoyé à {friend.username}", flush=True)
+            except Exception as e:
+                print(f"[LIVE PUSH] ❌ erreur pour ami {fid}: {e}", flush=True)
+
+        print(f"[LIVE PUSH] terminé — {total_subs} subscription(s) au total", flush=True)
 
     async def _handle_join_viewer(self):
         self.is_host = False
