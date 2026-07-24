@@ -454,12 +454,26 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
     @database_sync_to_async
     def _do_end_room(self):
         from video.models import LiveRoom
+        from django.contrib.contenttypes.models import ContentType
+        from notification.models import Notification
         LiveRoom.objects.filter(id=self.room_id).update(
             status=LiveRoom.STATUS_ENDED,
             ended_at=timezone.now(),
             viewer_count=0,
             host_channel='',
         )
+        # Mettre les verbes des notifications au passé ("est en live" → "était en live")
+        try:
+            room_ct = ContentType.objects.get_for_model(LiveRoom)
+            notifs = Notification.objects.filter(
+                content_type=room_ct, object_id=str(self.room_id)
+            )
+            for n in notifs:
+                if n.verb and 'est en live' in n.verb:
+                    n.verb = n.verb.replace('est en live', 'était en live')
+                    n.save(update_fields=['verb'])
+        except Exception as e:
+            print(f"[LIVE END] verb update error: {e}", flush=True)
 
     @database_sync_to_async
     def _increment_viewer_count(self):
