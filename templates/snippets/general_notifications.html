@@ -235,10 +235,17 @@
 				notificationContainer.appendChild(card)
 				break;
 
+			case "Live":
+				notificationContainer = document.getElementById("id_general_notifications_container")
+				card = createLiveNotificationElement(notification)
+				notificationContainer.appendChild(card)
+				break;
+
 			default:
 				// code block
 		}
-		preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
+		if(notification['from'] && notification['from']['image_url'])
+			preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
 	}
 
 	function createFriendListElement(notification){
@@ -305,6 +312,49 @@
 		card.appendChild(div1)
 		card.appendChild(createGeneralTimestampElement(notification))
 		preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
+		return card
+	}
+
+	function createLiveNotificationElement(notification){
+		var card = createGeneralNotificationCard()
+		card.id = assignGeneralCardId(notification)
+		card.classList.toggle('unread', notification['is_read'] === 'False')
+		card.addEventListener("click", function(){
+			generalRedirect(notification['actions']['redirect_url'])
+		})
+
+		var div1 = document.createElement("div")
+		div1.classList.add("d-flex", "flex-row", "align-items-center")
+		div1.id = assignGeneralDiv1Id(notification)
+
+		// Avatar avec badge rouge live_tv
+		var wrap = document.createElement("div")
+		wrap.classList.add("notif-avatar-wrap", "mr-2")
+		var img = document.createElement("img")
+		img.classList.add("notification-thumbnail-image", "img-fluid", "rounded-circle")
+		img.src = "{% static 'images/profile_pic.png' %}"
+		img.id = assignGeneralImgId(notification)
+		img.onerror = function(){ this.src = "{% static 'images/profile_pic.png' %}"; }
+		wrap.appendChild(img)
+		var badge = document.createElement("span")
+		badge.classList.add("notif-type-icon")
+		badge.style.cssText = "background:#f44336;color:#fff;"
+		badge.innerHTML = '<span class="material-icons">live_tv</span>'
+		wrap.appendChild(badge)
+		div1.appendChild(wrap)
+
+		var span = document.createElement("span")
+		span.classList.add("notif-verb")
+		span.innerHTML = notification['verb'].length > 70
+			? notification['verb'].slice(0, 70) + "…"
+			: notification['verb']
+		span.id = assignGeneralVerbId(notification)
+		div1.appendChild(span)
+
+		card.appendChild(div1)
+		card.appendChild(createGeneralTimestampElement(notification))
+		if(notification['from'] && notification['from']['image_url'])
+			preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
 		return card
 	}
 
@@ -739,12 +789,19 @@
 				insertAfterHeader(notificationContainer, card);
 				break;
 
+			case "Live":
+				notificationContainer = document.getElementById("id_general_notifications_container")
+				card = createLiveNotificationElement(notification)
+				insertAfterHeader(notificationContainer, card);
+				break;
+
 			default:
 				break;
 
 		}
 
-		preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
+		if(notification['from'] && notification['from']['image_url'])
+			preloadImage(notification['from']['image_url'], assignGeneralImgId(notification))
 	}
 
 

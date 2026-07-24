@@ -300,28 +300,57 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
     def _do_push_notify_friends(self, friend_ids, host_image, live_title, host_username, room_id):
         """Méthode sync wrappée proprement — s'exécute dans un thread pool."""
         from django.contrib.auth import get_user_model
-        from notification.models import PushSubscription
+        from django.contrib.contenttypes.models import ContentType
+        from notification.models import Notification, PushSubscription
+        from video.models import LiveRoom
         User = get_user_model()
 
         print(f"[LIVE PUSH] début — {len(friend_ids)} amis à notifier", flush=True)
+
+        # Récupérer l'objet host et la room pour le GenericForeignKey
+        try:
+            host_user = User.objects.get(username=host_username)
+            room      = LiveRoom.objects.get(pk=room_id)
+            room_ct   = ContentType.objects.get_for_model(LiveRoom)
+        except Exception as e:
+            print(f"[LIVE PUSH] ❌ impossible de charger host/room: {e}", flush=True)
+            host_user = None
+            room      = None
+            room_ct   = None
 
         total_subs = 0
         for fid in friend_ids:
             try:
                 friend = User.objects.get(pk=fid)
+
+                # ── Sauvegarde Notification en base (persiste après rechargement) ──
+                if room_ct and room:
+                    Notification.objects.get_or_create(
+                        target=friend,
+                        from_user=host_user,
+                        content_type=room_ct,
+                        object_id=room.pk,
+                        defaults={
+                            'verb': f'🔴 {host_username} est en live — {live_title}',
+                            'redirect_url': f'/live/{room_id}/',
+                            'read': False,
+                        },
+                    )
+                    print(f"[LIVE PUSH] 📥 notif DB créée pour {friend.username}", flush=True)
+
+                # ── Push web (optionnel — seulement si abonné) ──
                 subs_count = PushSubscription.objects.filter(user=friend).count()
                 print(f"[LIVE PUSH] ami {friend.username} (id={fid}) — {subs_count} subscription(s)", flush=True)
-                if subs_count == 0:
-                    continue
-                total_subs += subs_count
-                PushSubscription.send_live_notification(
-                    user=friend,
-                    host_username=host_username,
-                    host_image=host_image,
-                    live_title=live_title,
-                    room_id=room_id,
-                )
-                print(f"[LIVE PUSH] ✅ push envoyé à {friend.username}", flush=True)
+                if subs_count > 0:
+                    total_subs += subs_count
+                    PushSubscription.send_live_notification(
+                        user=friend,
+                        host_username=host_username,
+                        host_image=host_image,
+                        live_title=live_title,
+                        room_id=room_id,
+                    )
+                    print(f"[LIVE PUSH] ✅ push envoyé à {friend.username}", flush=True)
             except Exception as e:
                 print(f"[LIVE PUSH] ❌ erreur pour ami {fid}: {e}", flush=True)
 
