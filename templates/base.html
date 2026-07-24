@@ -664,6 +664,8 @@ window.dsPlayVideo = function(overlay) {
     var vid  = wrap ? wrap.querySelector('video') : null;
     if (!vid) return;
     if (!vid.src && vid.dataset.src) { vid.src = vid.dataset.src; vid.load(); }
+    vid.setAttribute('playsinline', '');
+    vid.setAttribute('webkit-playsinline', '');
     vid.muted = false;   /* clic utilisateur = son activé */
     vid.play().catch(function() { vid.muted = true; vid.play().catch(function(){}); });
     wrap.classList.add('ds-playing');
@@ -688,6 +690,9 @@ window.dsPlayVideo = function(overlay) {
 
     function _play(wrap, vid) {
         _preloadMeta(vid);
+        /* playsinline indispensable sur Android/iOS pour éviter le plein écran natif */
+        vid.setAttribute('playsinline', '');
+        vid.setAttribute('webkit-playsinline', '');
         vid.muted = true;
         vid.play().then(function() {
             wrap.classList.add('ds-playing');
