@@ -34,3 +34,8 @@ class LiveRoom(models.Model):
 
     def __str__(self):
         return f"{self.host.username} — {self.title} [{self.status}]"
+
+    @property
+    def get_cname(self):
+        """Utilisé par le système de notification générale."""
+        return "Live"
