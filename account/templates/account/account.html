@@ -244,6 +244,9 @@ body { background: var(--bg); }
 @media (max-width: 768px) {
     .profile-body { grid-template-columns: 1fr; overflow-x: hidden; }
     .profile-sidebar { display: none; }
+    /* Create-box : icônes seules sur mobile */
+    .create-box-action span.btn-label { display: none; }
+    .create-box-actions { gap: .1rem; padding: .4rem .3rem; }
     .profile-cover { height: 140px; }
     .avatar-ring-wrap { width: 88px; height: 88px; }
     .profile-username { font-size: 1.2rem; }
@@ -495,6 +498,24 @@ body { background: var(--bg); }
     background: var(--btn-bg); padding: .15rem .55rem;
     border-radius: 20px; color: var(--text-muted);
 }
+
+/* ── Boutons action create-box ── */
+.create-box-actions {
+    display: flex; padding: .45rem .65rem;
+}
+.create-box-action {
+    display: inline-flex; align-items: center; gap: .38rem;
+    padding: .44rem .7rem; border-radius: 9px;
+    font-size: .81rem; font-weight: 600; color: var(--text-muted);
+    text-decoration: none; transition: background .12s, color .12s;
+    flex: 1; justify-content: center;
+    border: none; background: none; cursor: pointer;
+}
+.create-box-action:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.create-box-action .material-icons { font-size: 1.05rem; }
+.create-box-action.photo .material-icons { color: #43a047; }
+.create-box-action.file  .material-icons { color: #fb8c00; }
+.create-box-action.post  .material-icons { color: var(--accent); }
 
 /* ── Create post box inline (profile) ── */
 #pf-create-box {
