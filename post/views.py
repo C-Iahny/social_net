@@ -441,6 +441,23 @@ class AddPostView(CreateView):
     form_class = PostForm
     template_name = "post/add_post.html"
 
+    def get_form_kwargs(self):
+        """Pour les posts AJAX inline, auto-génère le title depuis le body si vide."""
+        kwargs = super().get_form_kwargs()
+        if self.request.method == 'POST':
+            is_ajax = (
+                self.request.POST.get('ajax') == '1'
+                or self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            )
+            if is_ajax and not self.request.POST.get('title', '').strip():
+                import re
+                data = self.request.POST.copy()
+                body_raw = re.sub(r'<[^>]+>', ' ', data.get('body', '') or '')
+                body_raw = re.sub(r'\s+', ' ', body_raw).strip()
+                data['title'] = (body_raw[:80] or f"Post de {self.request.user.username}")[:255]
+                kwargs['data'] = data
+        return kwargs
+
     def form_valid(self, form):
         form.instance.author = self.request.user
         form.instance.region = getattr(self.request.user, 'region', '') or ''
@@ -540,8 +557,32 @@ class AddPostView(CreateView):
         _logger.info("AddPostView: ajax=%s files_received=%d files_saved=%d post=#%s",
                      is_ajax, len(files), saved, post.pk)
         if is_ajax:
-            return JsonResponse({'ok': True, 'redirect': redirect_url,
-                                 'received': len(files), 'saved': saved})
+            # Rendre la carte du nouveau post pour injection immédiate dans le feed
+            card_html = ''
+            if post.status == Post.STATUS_PUBLISHED:
+                try:
+                    post.page_comments  = []
+                    post.total_comments = 0
+                    post.reaction_counts = {}
+                    post.user_reaction  = None
+                    post.total_reactions = 0
+                    post.repost_count   = 0
+                    post.user_reposted  = False
+                    _attach_media([post], [post.id])
+                    card_html = render_to_string(
+                        'post/post_cards_fragment.html',
+                        {'posts_of_the_page': [post], 'request': self.request},
+                        request=self.request,
+                    )
+                except Exception as e:
+                    _logger.exception("AddPostView AJAX card render error: %s", e)
+            return JsonResponse({
+                'ok': True,
+                'html': card_html,
+                'post_id': post.id,
+                'received': len(files),
+                'saved': saved,
+            })
         return redirect(redirect_url)
 
     def form_invalid(self, form):
