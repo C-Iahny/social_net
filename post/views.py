@@ -330,6 +330,14 @@ def post_feed_view(request):
         status=LiveRoom.STATUS_ACTIVE,
     ).select_related('host').order_by('-created_at')
 
+    # Annonces Bazar récentes pour le sidebar droit
+    from bazar.models import Annonce as BazarAnnonce
+    recent_bazar = list(
+        BazarAnnonce.objects.filter(status='active')
+        .order_by('-bumped_at', '-created_at')
+        .prefetch_related('images')[:4]
+    )
+
     context = {
         "friends":            friends,
         "friends_count":      friends.count(),
@@ -338,6 +346,7 @@ def post_feed_view(request):
         "my_post_count":      my_post_count,
         "trending_hashtags":  get_trending_hashtags(),
         "my_groups":          my_groups,
+        "recent_bazar":       recent_bazar,
         # région
         "active_tab":         tab,
         "user_region":        user_region,
