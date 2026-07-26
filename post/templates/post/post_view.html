@@ -2171,24 +2171,55 @@ body { background: var(--bg); }
             </div>
         </div>
 
-        {% if friends %}
+        {% if recent_bazar %}
         <div class="rsb-card">
-            <p class="rsb-section-label">
-                <span class="material-icons">group</span> {% trans "Friends" %}
-            </p>
-            {% for friend in friends|slice:":6" %}
-            <div class="rsb-friend-row">
-                <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}">
-                <div class="rsb-friend-info">
-                    <a class="rsb-friend-name" href="{% url 'account:view' user_id=friend.id %}">{{ friend.username }}</a>
-                    <span class="rsb-friend-sub">{% trans "Friend" %}</span>
-                </div>
-                <a class="rsb-chat-btn" href="{% url 'chat:private-chat-room' %}" title="Message">
-                    <span class="material-icons">chat</span>
+            <p class="rsb-section-label" style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="display:flex;align-items:center;gap:.3rem;">
+                    <span class="material-icons">storefront</span> {% trans "Marketplace" %}
+                </span>
+                <a href="{% url 'bazar:index' %}"
+                   style="font-size:.75rem;font-weight:700;color:var(--accent);text-decoration:none;opacity:.85;">
+                    {% trans "See all" %} →
                 </a>
-            </div>
+            </p>
+            {% for annonce in recent_bazar %}
+            {% with img=annonce.get_primary_image %}
+            <a href="{% url 'bazar:detail' annonce.pk %}"
+               style="display:flex;align-items:center;gap:.65rem;padding:.45rem .1rem;
+                      text-decoration:none;border-radius:10px;transition:background .13s;"
+               onmouseover="this.style.background='var(--btn-bg)'"
+               onmouseout="this.style.background=''">
+                <div style="width:46px;height:46px;border-radius:10px;flex-shrink:0;overflow:hidden;
+                            background:var(--btn-bg);display:flex;align-items:center;justify-content:center;">
+                    {% if img %}
+                    <img src="{{ img.image.url }}" alt="{{ annonce.title }}"
+                         style="width:100%;height:100%;object-fit:cover;">
+                    {% else %}
+                    <span class="material-icons" style="font-size:1.2rem;color:var(--text-muted);">image</span>
+                    {% endif %}
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:.83rem;font-weight:600;color:var(--text);
+                                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ annonce.title }}
+                    </div>
+                    <div style="font-size:.76rem;color:var(--accent);font-weight:700;">
+                        {{ annonce.formatted_price }}
+                    </div>
+                </div>
+            </a>
+            {% endwith %}
             {% endfor %}
-            <div style="height:.5rem;"></div>
+            <a href="{% url 'bazar:create' %}"
+               style="display:flex;align-items:center;justify-content:center;gap:.35rem;
+                      margin-top:.6rem;padding:.4rem .6rem;
+                      background:linear-gradient(135deg,var(--accent),var(--accent2));
+                      border-radius:10px;color:#fff;font-size:.78rem;font-weight:700;
+                      text-decoration:none;transition:opacity .15s;"
+               onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+                <span class="material-icons" style="font-size:.9rem;">add</span>
+                {% trans "Sell something" %}
+            </a>
         </div>
         {% endif %}
 
