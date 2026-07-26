@@ -19,7 +19,7 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ('title', 'body', 'header_image', 'video', 'file')
         widgets = {
-            'title':        forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'title required'}),
+            'title':        forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Title (optional for quick posts)'}),
             'body':         forms.Textarea(attrs={'class': 'form-control'}),
             'header_image': forms.FileInput(attrs={'class': 'form-control', 'accept': ACCEPTED_IMAGES}),
             'video':        forms.FileInput(attrs={'class': 'form-control', 'accept': ACCEPTED_VIDEOS}),

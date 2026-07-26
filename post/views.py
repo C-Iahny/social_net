@@ -441,22 +441,7 @@ class AddPostView(CreateView):
     form_class = PostForm
     template_name = "post/add_post.html"
 
-    def get_form_kwargs(self):
-        """Pour les posts AJAX inline, auto-génère le title depuis le body si vide."""
-        kwargs = super().get_form_kwargs()
-        if self.request.method == 'POST':
-            is_ajax = (
-                self.request.POST.get('ajax') == '1'
-                or self.request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-            )
-            if is_ajax and not self.request.POST.get('title', '').strip():
-                import re
-                data = self.request.POST.copy()
-                body_raw = re.sub(r'<[^>]+>', ' ', data.get('body', '') or '')
-                body_raw = re.sub(r'\s+', ' ', body_raw).strip()
-                data['title'] = (body_raw[:80] or f"Post de {self.request.user.username}")[:255]
-                kwargs['data'] = data
-        return kwargs
+    # title est désormais blank=True — pas besoin d'auto-génération
 
     def form_valid(self, form):
         form.instance.author = self.request.user
