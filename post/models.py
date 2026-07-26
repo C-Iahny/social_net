@@ -64,7 +64,7 @@ class Post(models.Model):
         (VINTANA, 'Capsule Vintana'),
     ]
 
-    title        = models.CharField(max_length=255)
+    title        = models.CharField(max_length=255, blank=True, default='')
     header_image = models.ImageField(blank=True, null=True, upload_to='header_images')
     body         = RichTextField(blank=True, null=True)
     snippet      = models.CharField(max_length=255, blank=True, default='click the link above.')

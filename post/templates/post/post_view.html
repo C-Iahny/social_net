@@ -1505,15 +1505,60 @@ body { background: var(--bg); }
         <!-- ══ Create post box — inline ══ -->
         <div class="create-box" id="create-box">
 
-            {# Inputs fichiers (hors formulaire pour éviter soumission vide) #}
+            {# Inputs fichiers cachés #}
             <input type="file" id="cb-media-input" multiple accept="image/*,video/*" style="display:none">
             <input type="file" id="cb-file-input"  multiple style="display:none">
 
-            {# ── Ligne trigger ── #}
-            <div class="create-box-top">
+            {# Formulaire caché (token CSRF + champs hidden) #}
+            <form id="cb-form" method="post" enctype="multipart/form-data"
+                  action="{% url 'post:addPost' %}" style="display:none;">
+                {% csrf_token %}
+                <input type="hidden" name="ajax" value="1">
+                <textarea name="body" id="cb-body-hidden"></textarea>
+            </form>
+
+            {# ── Ligne top : avatar + trigger OU textarea (même emplacement) ── #}
+            <div class="create-box-top" id="cb-top">
                 <img class="create-box-avatar" src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+
+                {# État FERMÉ : bouton-pill #}
                 <button class="create-box-trigger" id="cb-trigger" type="button">
                     {% trans "What's new" %} {{ request.user.username }} ?
+                </button>
+
+                {# État OUVERT : textarea (remplace le pill) #}
+                <textarea id="cb-body" rows="2"
+                    placeholder="{% trans "What's on your mind?" %}"
+                    style="display:none;flex:1;resize:none;background:var(--btn-bg);
+                           border:1.5px solid var(--accent);border-radius:14px;
+                           padding:.58rem 1rem;color:var(--text);font-size:.9rem;
+                           line-height:1.5;outline:none;font-family:inherit;
+                           min-height:40px;max-height:260px;box-sizing:border-box;
+                           transition:border-color .15s,background .15s;"
+                    oninput="cbResize(this)"></textarea>
+            </div>
+
+            {# Mosaïque prévisualisation (visible uniquement si fichiers) #}
+            <div id="cb-preview-grid" style="display:none;margin:.1rem 1.1rem .5rem;"></div>
+
+            {# Pied formulaire : Annuler + Publier (visible uniquement si ouvert) #}
+            <div id="cb-submit-bar" style="display:none;
+                 padding:.35rem 1.1rem .6rem;
+                 display:none;align-items:center;justify-content:flex-end;gap:.5rem;">
+                <span id="cb-file-count" style="flex:1;font-size:.79rem;color:var(--text-muted);"></span>
+                <button type="button" id="cb-cancel-btn"
+                    style="background:none;border:1.5px solid var(--border);border-radius:10px;
+                           padding:.4rem .85rem;color:var(--text-muted);font-size:.83rem;
+                           font-weight:600;cursor:pointer;">
+                    {% trans "Cancel" %}
+                </button>
+                <button type="button" id="cb-submit-btn"
+                    style="background:linear-gradient(135deg,var(--accent),var(--accent2));
+                           color:#fff;border:none;border-radius:10px;padding:.4rem 1rem;
+                           font-size:.88rem;font-weight:700;cursor:pointer;
+                           display:flex;align-items:center;gap:.35rem;">
+                    <span class="material-icons" style="font-size:.95rem;">send</span>
+                    {% trans "Publish" %}
                 </button>
             </div>
 
@@ -1541,174 +1586,123 @@ body { background: var(--bg); }
                     <span class="material-icons">lock_clock</span><span class="btn-label"> Vintana</span>
                 </a>
             </div>
-
-            {# ── Panneau étendu ── #}
-            <div id="cb-expand-panel" style="display:none;border-top:1px solid var(--border);padding:.9rem 1.1rem 1rem;">
-                <form id="cb-form" method="post" enctype="multipart/form-data" action="{% url 'post:addPost' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="ajax"  value="1">
-                    <input type="hidden" name="title" id="cb-title">
-
-                    <textarea id="cb-body" name="body" rows="3"
-                        placeholder="{% trans "What's on your mind?" %}"
-                        oninput="cbAutoResize(this);cbSyncTitle()"
-                        style="width:100%;resize:none;background:var(--btn-bg);border:1.5px solid var(--border);
-                               border-radius:14px;padding:.7rem 1rem;color:var(--text);font-size:.93rem;line-height:1.5;
-                               outline:none;transition:border-color .15s,background .15s;font-family:inherit;
-                               min-height:70px;max-height:300px;box-sizing:border-box;"></textarea>
-
-                    {# Mosaïque prévisualisation #}
-                    <div id="cb-preview-grid" style="display:none;margin:.65rem 0 0;"></div>
-
-                    {# Pied de formulaire #}
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.75rem;gap:.5rem;flex-wrap:wrap;">
-                        <span id="cb-file-count" style="font-size:.79rem;color:var(--text-muted);"></span>
-                        <div style="display:flex;gap:.5rem;align-items:center;margin-left:auto;">
-                            <button type="button" id="cb-cancel-btn"
-                                style="background:none;border:1.5px solid var(--border);border-radius:10px;
-                                       padding:.44rem .9rem;color:var(--text-muted);font-size:.83rem;font-weight:600;
-                                       cursor:pointer;transition:background .15s;">
-                                {% trans "Cancel" %}
-                            </button>
-                            <button type="submit" id="cb-submit-btn"
-                                style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
-                                       border:none;border-radius:10px;padding:.44rem 1.1rem;font-size:.88rem;font-weight:700;
-                                       cursor:pointer;transition:opacity .15s;display:flex;align-items:center;gap:.4rem;">
-                                <span class="material-icons" style="font-size:1rem;">send</span>
-                                {% trans "Publish" %}
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
         </div>
 
         <style>
         @keyframes cb-spin { to { transform: rotate(360deg); } }
         .cb-spinning { animation: cb-spin .8s linear infinite; display:inline-block; }
+        #cb-submit-bar { display: none; }
+        #cb-submit-bar.open { display: flex; }
         </style>
 
         <script>
         (function() {
         'use strict';
-        const box        = document.getElementById('create-box');
-        const panel      = document.getElementById('cb-expand-panel');
-        const bodyTA     = document.getElementById('cb-body');
-        const titleInput = document.getElementById('cb-title');
-        const trigger    = document.getElementById('cb-trigger');
-        const photoBtn   = document.getElementById('cb-photo-btn');
-        const fileBtn    = document.getElementById('cb-file-btn');
-        const writeBtn   = document.getElementById('cb-write-btn');
-        const cancelBtn  = document.getElementById('cb-cancel-btn');
-        const submitBtn  = document.getElementById('cb-submit-btn');
-        const mediaInput = document.getElementById('cb-media-input');
-        const fileInput  = document.getElementById('cb-file-input');
-        const prevGrid   = document.getElementById('cb-preview-grid');
-        const fileCount  = document.getElementById('cb-file-count');
-        const form       = document.getElementById('cb-form');
+        var box       = document.getElementById('create-box');
+        var trigger   = document.getElementById('cb-trigger');
+        var bodyTA    = document.getElementById('cb-body');
+        var submitBar = document.getElementById('cb-submit-bar');
+        var cancelBtn = document.getElementById('cb-cancel-btn');
+        var submitBtn = document.getElementById('cb-submit-btn');
+        var photoBtn  = document.getElementById('cb-photo-btn');
+        var fileBtn   = document.getElementById('cb-file-btn');
+        var writeBtn  = document.getElementById('cb-write-btn');
+        var mediaInput= document.getElementById('cb-media-input');
+        var fileInput = document.getElementById('cb-file-input');
+        var prevGrid  = document.getElementById('cb-preview-grid');
+        var fileCount = document.getElementById('cb-file-count');
+        var form      = document.getElementById('cb-form');
+        var bodyHidden= document.getElementById('cb-body-hidden');
 
-        let selectedFiles = [];
+        var selectedFiles = [];
+        var isOpen = false;
 
-        /* ── Expand / Collapse ── */
-        function expand(focus) {
-            panel.style.display = 'block';
-            if (focus !== false) bodyTA.focus();
+        /* ── Ouvrir : trigger → textarea en place ── */
+        function expand(doFocus) {
+            if (isOpen) return;
+            isOpen = true;
+            trigger.style.display = 'none';
+            bodyTA.style.display  = 'block';
+            submitBar.classList.add('open');
+            if (doFocus !== false) { bodyTA.focus(); }
         }
+
+        /* ── Fermer ── */
         function collapse() {
-            panel.style.display = 'none';
-            bodyTA.value = ''; bodyTA.style.height = '';
-            titleInput.value = '';
+            if (!isOpen) return;
+            isOpen = false;
+            bodyTA.style.display  = 'none';
+            bodyTA.value          = '';
+            bodyTA.style.height   = '';
+            trigger.style.display = '';   /* retrouve display:block du CSS */
+            submitBar.classList.remove('open');
             selectedFiles = [];
             prevGrid.innerHTML = ''; prevGrid.style.display = 'none';
             fileCount.textContent = '';
         }
 
-        /* ── Textarea helpers ── */
-        window.cbAutoResize = function(el) {
+        /* ── Auto-resize textarea ── */
+        window.cbResize = function(el) {
             el.style.height = 'auto';
-            el.style.height = Math.min(el.scrollHeight, 300) + 'px';
-        };
-        window.cbSyncTitle = function() {
-            var plain = bodyTA.value.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-            titleInput.value = (plain.slice(0,80) || 'Post de {{ request.user.username }}').slice(0,255);
+            el.style.height = Math.min(el.scrollHeight, 260) + 'px';
         };
 
-        /* ── File accumulation ── */
+        /* ── Gestion fichiers ── */
         function addFiles(files) {
-            for (var i = 0; i < files.length; i++) selectedFiles.push(files[i]);
+            for (var i=0; i<files.length; i++) selectedFiles.push(files[i]);
             renderPreview();
         }
-        function removeFile(idx) {
-            selectedFiles.splice(idx, 1);
-            renderPreview();
-        }
+        function removeFile(idx) { selectedFiles.splice(idx,1); renderPreview(); }
 
-        /* ── Mosaic preview ── */
         function renderPreview() {
             var n = selectedFiles.length;
-            if (n === 0) {
-                prevGrid.style.display = 'none';
-                prevGrid.innerHTML = '';
-                fileCount.textContent = '';
-                return;
+            if (!n) {
+                prevGrid.style.display='none'; prevGrid.innerHTML='';
+                fileCount.textContent=''; return;
             }
-            prevGrid.style.display = 'grid';
-            prevGrid.style.gap = '4px';
-            prevGrid.style.borderRadius = '12px';
-            prevGrid.style.overflow = 'hidden';
-            prevGrid.style.maxHeight = '320px';
+            prevGrid.style.cssText = 'display:grid;gap:4px;border-radius:12px;overflow:hidden;max-height:320px;margin:.1rem 1.1rem .5rem;';
             prevGrid.style.gridTemplateColumns = n===1?'1fr':n===2?'1fr 1fr':n===3?'2fr 1fr':'1fr 1fr';
             prevGrid.style.gridTemplateRows    = n>=3?'1fr 1fr':'';
-            prevGrid.innerHTML = '';
-
-            for (var idx = 0; idx < Math.min(n, 4); idx++) {
-                (function(i) {
-                    var f = selectedFiles[i];
-                    var item = document.createElement('div');
-                    item.style.cssText = 'position:relative;overflow:hidden;min-height:120px;background:var(--btn-bg);cursor:default;';
-                    if (n===3 && i===0) item.style.gridRow = '1/3';
-
-                    /* Remove button */
-                    var rm = document.createElement('button');
-                    rm.type = 'button';
-                    rm.innerHTML = '<span class="material-icons" style="font-size:.85rem;line-height:1;">close</span>';
-                    rm.style.cssText = 'position:absolute;top:5px;right:5px;z-index:3;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
-                    rm.onclick = function(e){e.stopPropagation();removeFile(i);};
-                    item.appendChild(rm);
-
-                    /* +N overlay on last visible item */
-                    if (i===3 && n>4) {
-                        var ov = document.createElement('div');
-                        ov.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,.52);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:800;z-index:2;pointer-events:none;';
-                        ov.textContent = '+' + (n-4);
-                        item.appendChild(ov);
+            prevGrid.innerHTML='';
+            for (var idx=0; idx<Math.min(n,4); idx++) {
+                (function(i){
+                    var f=selectedFiles[i];
+                    var it=document.createElement('div');
+                    it.style.cssText='position:relative;overflow:hidden;min-height:110px;background:var(--btn-bg);';
+                    if(n===3&&i===0) it.style.gridRow='1/3';
+                    var rm=document.createElement('button');
+                    rm.type='button';
+                    rm.innerHTML='<span class="material-icons" style="font-size:.85rem;line-height:1;">close</span>';
+                    rm.style.cssText='position:absolute;top:5px;right:5px;z-index:3;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+                    rm.onclick=function(e){e.stopPropagation();removeFile(i);};
+                    it.appendChild(rm);
+                    if(i===3&&n>4){
+                        var ov=document.createElement('div');
+                        ov.style.cssText='position:absolute;inset:0;background:rgba(0,0,0,.52);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:800;z-index:2;pointer-events:none;';
+                        ov.textContent='+'+(n-4); it.appendChild(ov);
                     }
-
-                    if (f.type.startsWith('image/')) {
-                        var img = document.createElement('img');
-                        img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
-                        img.src = URL.createObjectURL(f);
-                        item.appendChild(img);
-                    } else if (f.type.startsWith('video/')) {
-                        var vid = document.createElement('video');
-                        vid.style.cssText = 'width:100%;height:100%;object-fit:contain;display:block;background:#000;max-height:300px;';
-                        vid.src = URL.createObjectURL(f);
-                        vid.muted = true; vid.preload = 'metadata';
-                        var playOv = document.createElement('div');
-                        playOv.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1;';
-                        playOv.innerHTML = '<span class="material-icons" style="font-size:2.2rem;color:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));">play_circle_filled</span>';
-                        item.appendChild(vid);
-                        item.appendChild(playOv);
+                    if(f.type.startsWith('image/')){
+                        var img=document.createElement('img');
+                        img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';
+                        img.src=URL.createObjectURL(f); it.appendChild(img);
+                    } else if(f.type.startsWith('video/')){
+                        var vid=document.createElement('video');
+                        vid.style.cssText='width:100%;height:100%;object-fit:contain;display:block;background:#000;max-height:300px;';
+                        vid.src=URL.createObjectURL(f); vid.muted=true; vid.preload='metadata';
+                        var pOv=document.createElement('div');
+                        pOv.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1;';
+                        pOv.innerHTML='<span class="material-icons" style="font-size:2.2rem;color:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));">play_circle_filled</span>';
+                        it.appendChild(vid); it.appendChild(pOv);
                     } else {
-                        var ic = document.createElement('div');
-                        ic.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:120px;gap:.4rem;padding:1rem;';
-                        ic.innerHTML = '<span class="material-icons" style="font-size:2rem;color:var(--accent);">insert_drive_file</span><span style="font-size:.73rem;color:var(--text-muted);word-break:break-all;text-align:center;">' + f.name + '</span>';
-                        item.appendChild(ic);
+                        var ic=document.createElement('div');
+                        ic.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:110px;gap:.4rem;padding:1rem;';
+                        ic.innerHTML='<span class="material-icons" style="font-size:2rem;color:var(--accent);">insert_drive_file</span><span style="font-size:.73rem;color:var(--text-muted);word-break:break-all;text-align:center;">'+f.name+'</span>';
+                        it.appendChild(ic);
                     }
-                    prevGrid.appendChild(item);
+                    prevGrid.appendChild(it);
                 })(idx);
             }
-            fileCount.textContent = n + ' fichier' + (n>1?'s':'') + ' sélectionné' + (n>1?'s':'');
+            fileCount.textContent=n+' fichier'+(n>1?'s':'')+' sélectionné'+(n>1?'s':'');
         }
 
         /* ── Listeners ── */
@@ -1717,79 +1711,62 @@ body { background: var(--bg); }
         photoBtn.addEventListener('click', function(){ mediaInput.value=''; mediaInput.click(); expand(false); });
         fileBtn.addEventListener('click',  function(){ fileInput.value='';  fileInput.click();  expand(false); });
         cancelBtn.addEventListener('click', function(){ collapse(); });
-        mediaInput.addEventListener('change', function(){ addFiles(this.files); });
-        fileInput.addEventListener('change',  function(){ addFiles(this.files); });
+        mediaInput.addEventListener('change', function(){ addFiles(this.files); expand(false); });
+        fileInput.addEventListener('change',  function(){ addFiles(this.files); expand(false); });
 
-        /* Fermer en cliquant hors de la boîte (seulement si rien saisi) */
+        /* Clic hors de la boîte → ferme si vide */
         document.addEventListener('click', function(e){
-            if (panel.style.display !== 'none' && !box.contains(e.target)) {
-                if (!bodyTA.value.trim() && selectedFiles.length===0) collapse();
-            }
+            if (isOpen && !box.contains(e.target) && !bodyTA.value.trim() && !selectedFiles.length) collapse();
         });
 
         /* ── Soumission AJAX ── */
-        form.addEventListener('submit', async function(e){
-            e.preventDefault();
-            cbSyncTitle();
-
-            if (!bodyTA.value.trim() && selectedFiles.length===0) {
-                bodyTA.focus();
-                bodyTA.style.borderColor = '#e53935';
-                setTimeout(function(){ bodyTA.style.borderColor=''; }, 2000);
-                return;
+        submitBtn.addEventListener('click', async function(){
+            if (!bodyTA.value.trim() && !selectedFiles.length) {
+                bodyTA.focus(); bodyTA.style.borderColor='#e53935';
+                setTimeout(function(){ bodyTA.style.borderColor=''; },2000); return;
             }
+            submitBtn.disabled=true;
+            submitBtn.innerHTML='<span class="material-icons cb-spinning" style="font-size:.95rem;">refresh</span> Publication…';
 
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="material-icons cb-spinning" style="font-size:1rem;">refresh</span> Publication…';
+            /* Copier le body dans le champ hidden du formulaire */
+            bodyHidden.value = bodyTA.value;
 
-            var fd = new FormData(form);
-            /* Les <input file> sont dans le formulaire mais vides — Django les ignore.
-               On ajoute les fichiers accumulés manuellement. */
+            var fd=new FormData(form);
             fd.delete('media_files');
-            for (var i=0; i<selectedFiles.length; i++) fd.append('media_files', selectedFiles[i]);
+            for (var i=0;i<selectedFiles.length;i++) fd.append('media_files',selectedFiles[i]);
 
             try {
-                var resp = await fetch(form.action, {
-                    method: 'POST',
-                    headers: {'X-CSRFToken': fd.get('csrfmiddlewaretoken')},
-                    body: fd,
+                var resp=await fetch(form.action,{
+                    method:'POST',
+                    headers:{'X-CSRFToken':fd.get('csrfmiddlewaretoken')},
+                    body:fd,
                 });
-                var data = await resp.json();
+                var data=await resp.json();
                 if (data.ok) {
                     collapse();
                     if (data.html) {
-                        var anchor = document.getElementById('cb-post-list-anchor');
+                        var anchor=document.getElementById('cb-post-list-anchor');
                         if (anchor) {
-                            var tmp = document.createElement('div');
-                            tmp.innerHTML = data.html;
-                            var first = tmp.firstElementChild;
-                            while (tmp.firstChild) {
-                                anchor.insertBefore(tmp.firstChild, anchor.firstChild);
-                            }
-                            /* Animation d'apparition */
-                            var card = anchor.firstElementChild;
+                            var tmp=document.createElement('div');
+                            tmp.innerHTML=data.html;
+                            while(tmp.firstChild) anchor.insertBefore(tmp.firstChild,anchor.firstChild);
+                            var card=anchor.firstElementChild;
                             if (card) {
-                                card.style.opacity = '0';
-                                card.style.transform = 'translateY(-10px)';
-                                card.style.transition = 'opacity .35s,transform .35s';
+                                card.style.opacity='0'; card.style.transform='translateY(-10px)';
+                                card.style.transition='opacity .35s,transform .35s';
                                 requestAnimationFrame(function(){
                                     requestAnimationFrame(function(){
-                                        card.style.opacity = '1';
-                                        card.style.transform = 'translateY(0)';
+                                        card.style.opacity='1'; card.style.transform='translateY(0)';
                                     });
                                 });
                             }
                         }
                     }
-                } else {
-                    alert('Erreur lors de la publication. Veuillez réessayer.');
-                }
-            } catch(err) {
-                console.error('cb-form error:', err);
-                alert('Erreur réseau. Veuillez réessayer.');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span class="material-icons" style="font-size:1rem;">send</span> {% trans "Publish" %}';
+                } else { alert('Erreur lors de la publication.'); }
+            } catch(err) { console.error('cb-form:',err); alert('Erreur réseau.'); }
+            finally {
+                submitBtn.disabled=false;
+                submitBtn.innerHTML='<span class="material-icons" style="font-size:.95rem;">send</span> {% trans "Publish" %}';
             }
         });
         })();
