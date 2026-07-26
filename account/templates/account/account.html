@@ -496,31 +496,36 @@ body { background: var(--bg); }
     border-radius: 20px; color: var(--text-muted);
 }
 
-/* ── Create post box (profile) ── */
-.pf-create-box {
+/* ── Create post box inline (profile) ── */
+#pf-create-box {
     background: var(--bg-card);
     border-radius: 18px;
-    padding: .85rem 1.1rem;
     margin-bottom: 1rem;
-    display: flex; align-items: center; gap: .85rem;
-    text-decoration: none;
     box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
     transition: box-shadow .2s;
 }
-.pf-create-box:hover {
-    text-decoration: none;
+#pf-create-box:focus-within {
     box-shadow: 0 0 0 2px var(--accent), 0 4px 20px rgba(0,207,255,.1);
 }
-.pf-create-box img {
+.pf-cb-top {
+    display: flex; align-items: center; gap: .85rem;
+    padding: .85rem 1.1rem .6rem;
+}
+.pf-cb-avatar {
     width: 40px; height: 40px; border-radius: 50%;
     object-fit: cover; flex-shrink: 0; border: 1.5px solid var(--border);
 }
-.pf-create-prompt {
+.pf-cb-trigger {
     flex: 1; background: var(--btn-bg);
     border: 1.5px solid var(--border);
     border-radius: 24px; padding: .55rem 1.1rem;
     color: var(--text-muted); font-size: .9rem;
+    cursor: pointer; text-align: left;
+    transition: border-color .15s;
 }
+.pf-cb-trigger:hover { border-color: var(--accent); }
+#pf-cb-submit-bar { display: none; }
+#pf-cb-submit-bar.open { display: flex; }
 
 /* ══════════════════════════════════════════════
    POST CARD (shared with feed)
@@ -1423,12 +1428,256 @@ body { background: var(--bg); }
                     <div id="profile-stories-grid" style="display:flex;gap:.7rem;flex-wrap:wrap;"></div>
                 </div>
 
-                <!-- Create post (own profile) -->
+                <!-- Create post inline (own profile) -->
                 {% if is_self %}
-                <a class="pf-create-box" href="{% url 'post:addPost' %}">
-                    <img src="{{ profile_image }}" alt="{{ username }}">
-                    <span class="pf-create-prompt">{% trans "What's new" %} {{ username }} ?</span>
-                </a>
+                <div id="pf-create-box">
+                    <!-- Inputs fichiers cachés -->
+                    <input type="file" id="pf-cb-media-input" multiple accept="image/*,video/*" style="display:none">
+                    <input type="file" id="pf-cb-file-input"  multiple style="display:none">
+
+                    <!-- Formulaire caché -->
+                    <form id="pf-cb-form" method="post" enctype="multipart/form-data"
+                          action="{% url 'post:addPost' %}" style="display:none;">
+                        {% csrf_token %}
+                        <input type="hidden" name="ajax" value="1">
+                        <textarea name="body" id="pf-cb-body-hidden"></textarea>
+                    </form>
+
+                    <!-- Trigger + Textarea en même position -->
+                    <div class="pf-cb-top" id="pf-cb-top">
+                        <img class="pf-cb-avatar" src="{{ profile_image }}" alt="{{ username }}">
+                        <button class="pf-cb-trigger" id="pf-cb-trigger" type="button">
+                            {% trans "What's new" %} {{ username }} ?
+                        </button>
+                        <textarea id="pf-cb-body" rows="2"
+                            placeholder="{% trans "What's new" %} {{ username }} ?"
+                            style="display:none;flex:1;background:var(--btn-bg);border:1.5px solid var(--accent);
+                                   border-radius:14px;padding:.55rem 1rem;color:var(--text);font-size:.9rem;
+                                   resize:none;outline:none;line-height:1.5;min-height:42px;"
+                            oninput="pfCbResize(this)"></textarea>
+                    </div>
+
+                    <!-- Mosaïque aperçu -->
+                    <div id="pf-cb-preview-grid" style="display:none;margin:.1rem 1.1rem .5rem;"></div>
+
+                    <!-- Barre soumission -->
+                    <div id="pf-cb-submit-bar"
+                         style="padding:.35rem 1.1rem .6rem;align-items:center;justify-content:flex-end;gap:.5rem;">
+                        <span id="pf-cb-file-count" style="flex:1;font-size:.79rem;color:var(--text-muted);"></span>
+                        <button type="button" id="pf-cb-cancel-btn"
+                                style="padding:.35rem .9rem;border:1.5px solid var(--border);border-radius:10px;
+                                       background:none;color:var(--text-muted);font-size:.82rem;cursor:pointer;">
+                            {% trans "Cancel" %}
+                        </button>
+                        <button type="button" id="pf-cb-submit-btn"
+                                style="display:flex;align-items:center;gap:.3rem;padding:.38rem 1rem;
+                                       background:linear-gradient(135deg,var(--accent),var(--accent2));
+                                       border:none;border-radius:10px;color:#fff;font-size:.85rem;
+                                       font-weight:700;cursor:pointer;">
+                            <span class="material-icons" style="font-size:.95rem;">send</span>
+                            {% trans "Publish" %}
+                        </button>
+                    </div>
+
+                    <hr style="border:none;border-top:1px solid var(--border);margin:0;">
+
+                    <!-- Boutons action -->
+                    <div class="create-box-actions">
+                        <button class="create-box-action photo" type="button" id="pf-cb-photo-btn">
+                            <span class="material-icons">photo_library</span><span class="btn-label">{% trans "Photos" %}</span>
+                        </button>
+                        <button class="create-box-action file" type="button" id="pf-cb-file-btn">
+                            <span class="material-icons">attach_file</span><span class="btn-label">{% trans "File" %}</span>
+                        </button>
+                        <button class="create-box-action post" type="button" id="pf-cb-write-btn">
+                            <span class="material-icons">edit_note</span><span class="btn-label">{% trans "Write" %}</span>
+                        </button>
+                        <a class="create-box-action" href="{% url 'post:kabary-create' %}"
+                           style="color:var(--text-muted);text-decoration:none;">
+                            <span class="material-icons">record_voice_over</span><span class="btn-label">Kabary</span>
+                        </a>
+                        <a class="create-box-action" href="{% url 'post:vintana-create' %}"
+                           style="color:var(--text-muted);text-decoration:none;">
+                            <span class="material-icons">auto_stories</span><span class="btn-label">Vintana</span>
+                        </a>
+                    </div>
+                </div>
+
+                <style>
+                @keyframes pf-cb-spin { to { transform: rotate(360deg); } }
+                .pf-cb-spinning { animation: pf-cb-spin .8s linear infinite; display:inline-block; }
+                </style>
+
+                <script>
+                (function() {
+                'use strict';
+                var box        = document.getElementById('pf-create-box');
+                var trigger    = document.getElementById('pf-cb-trigger');
+                var bodyTA     = document.getElementById('pf-cb-body');
+                var submitBar  = document.getElementById('pf-cb-submit-bar');
+                var cancelBtn  = document.getElementById('pf-cb-cancel-btn');
+                var submitBtn  = document.getElementById('pf-cb-submit-btn');
+                var photoBtn   = document.getElementById('pf-cb-photo-btn');
+                var fileBtn    = document.getElementById('pf-cb-file-btn');
+                var writeBtn   = document.getElementById('pf-cb-write-btn');
+                var mediaInput = document.getElementById('pf-cb-media-input');
+                var fileInput  = document.getElementById('pf-cb-file-input');
+                var prevGrid   = document.getElementById('pf-cb-preview-grid');
+                var fileCount  = document.getElementById('pf-cb-file-count');
+                var form       = document.getElementById('pf-cb-form');
+                var bodyHidden = document.getElementById('pf-cb-body-hidden');
+
+                var selectedFiles = [];
+                var isOpen = false;
+
+                function expand(doFocus) {
+                    if (isOpen) return;
+                    isOpen = true;
+                    trigger.style.display = 'none';
+                    bodyTA.style.display  = 'block';
+                    submitBar.classList.add('open');
+                    if (doFocus !== false) bodyTA.focus();
+                }
+
+                function collapse() {
+                    if (!isOpen) return;
+                    isOpen = false;
+                    bodyTA.style.display  = 'none';
+                    bodyTA.value          = '';
+                    bodyTA.style.height   = '';
+                    trigger.style.display = '';
+                    submitBar.classList.remove('open');
+                    selectedFiles = [];
+                    prevGrid.innerHTML = ''; prevGrid.style.display = 'none';
+                    fileCount.textContent = '';
+                }
+
+                window.pfCbResize = function(el) {
+                    el.style.height = 'auto';
+                    el.style.height = Math.min(el.scrollHeight, 260) + 'px';
+                };
+
+                function addFiles(files) {
+                    for (var i=0; i<files.length; i++) selectedFiles.push(files[i]);
+                    renderPreview();
+                }
+                function removeFile(idx) { selectedFiles.splice(idx,1); renderPreview(); }
+
+                function renderPreview() {
+                    var n = selectedFiles.length;
+                    if (!n) { prevGrid.style.display='none'; prevGrid.innerHTML=''; fileCount.textContent=''; return; }
+                    prevGrid.style.cssText='display:grid;gap:4px;border-radius:12px;overflow:hidden;max-height:320px;margin:.1rem 1.1rem .5rem;';
+                    prevGrid.style.gridTemplateColumns = n===1?'1fr':n===2?'1fr 1fr':n===3?'2fr 1fr':'1fr 1fr';
+                    prevGrid.style.gridTemplateRows    = n>=3?'1fr 1fr':'';
+                    prevGrid.innerHTML='';
+                    for (var idx=0; idx<Math.min(n,4); idx++) {
+                        (function(i){
+                            var f=selectedFiles[i];
+                            var it=document.createElement('div');
+                            it.style.cssText='position:relative;overflow:hidden;min-height:110px;background:var(--btn-bg);';
+                            if(n===3&&i===0) it.style.gridRow='1/3';
+                            var rm=document.createElement('button');
+                            rm.type='button';
+                            rm.innerHTML='<span class="material-icons" style="font-size:.85rem;line-height:1;">close</span>';
+                            rm.style.cssText='position:absolute;top:5px;right:5px;z-index:3;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
+                            rm.onclick=function(e){e.stopPropagation();removeFile(i);};
+                            it.appendChild(rm);
+                            if(i===3&&n>4){
+                                var ov=document.createElement('div');
+                                ov.style.cssText='position:absolute;inset:0;background:rgba(0,0,0,.52);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.5rem;font-weight:800;z-index:2;pointer-events:none;';
+                                ov.textContent='+'+(n-4); it.appendChild(ov);
+                            }
+                            if(f.type.startsWith('image/')){
+                                var img=document.createElement('img');
+                                img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;';
+                                img.src=URL.createObjectURL(f); it.appendChild(img);
+                            } else if(f.type.startsWith('video/')){
+                                var vid=document.createElement('video');
+                                vid.style.cssText='width:100%;height:100%;object-fit:contain;display:block;background:#000;max-height:300px;';
+                                vid.src=URL.createObjectURL(f); vid.muted=true; vid.preload='metadata';
+                                var pOv=document.createElement('div');
+                                pOv.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1;';
+                                pOv.innerHTML='<span class="material-icons" style="font-size:2.2rem;color:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));">play_circle_filled</span>';
+                                it.appendChild(vid); it.appendChild(pOv);
+                            } else {
+                                var ic=document.createElement('div');
+                                ic.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:110px;gap:.4rem;padding:1rem;';
+                                ic.innerHTML='<span class="material-icons" style="font-size:2rem;color:var(--accent);">insert_drive_file</span><span style="font-size:.73rem;color:var(--text-muted);word-break:break-all;text-align:center;">'+f.name+'</span>';
+                                it.appendChild(ic);
+                            }
+                            prevGrid.appendChild(it);
+                        })(idx);
+                    }
+                    fileCount.textContent=n+' fichier'+(n>1?'s':'')+' sélectionné'+(n>1?'s':'');
+                }
+
+                trigger.addEventListener('click',  function(){ expand(); });
+                writeBtn.addEventListener('click',  function(){ expand(); });
+                photoBtn.addEventListener('click',  function(){ mediaInput.value=''; mediaInput.click(); expand(false); });
+                fileBtn.addEventListener('click',   function(){ fileInput.value='';  fileInput.click();  expand(false); });
+                cancelBtn.addEventListener('click', function(){ collapse(); });
+                mediaInput.addEventListener('change', function(){ addFiles(this.files); expand(false); });
+                fileInput.addEventListener('change',  function(){ addFiles(this.files); expand(false); });
+
+                document.addEventListener('click', function(e){
+                    if (isOpen && !box.contains(e.target) && !bodyTA.value.trim() && !selectedFiles.length) collapse();
+                });
+
+                submitBtn.addEventListener('click', async function(){
+                    if (!bodyTA.value.trim() && !selectedFiles.length) {
+                        bodyTA.focus(); bodyTA.style.borderColor='#e53935';
+                        setTimeout(function(){ bodyTA.style.borderColor='var(--accent)'; },2000); return;
+                    }
+                    submitBtn.disabled=true;
+                    submitBtn.innerHTML='<span class="material-icons pf-cb-spinning" style="font-size:.95rem;">refresh</span> Publication…';
+
+                    bodyHidden.value = bodyTA.value;
+                    var fd=new FormData(form);
+                    fd.delete('media_files');
+                    for (var i=0;i<selectedFiles.length;i++) fd.append('media_files',selectedFiles[i]);
+
+                    try {
+                        var resp=await fetch(form.action,{
+                            method:'POST',
+                            headers:{'X-CSRFToken':fd.get('csrfmiddlewaretoken')},
+                            body:fd,
+                        });
+                        var data=await resp.json();
+                        if (data.ok) {
+                            collapse();
+                            if (data.html) {
+                                var container=document.getElementById('profile-posts-container');
+                                if (!container) {
+                                    /* Cas "aucun post" : créer le container et retirer l'état vide */
+                                    var empty=document.querySelector('.pf-empty');
+                                    if (empty) empty.style.display='none';
+                                    container=document.createElement('div');
+                                    container.id='profile-posts-container';
+                                    document.getElementById('pf-create-box').insertAdjacentElement('afterend',container);
+                                }
+                                var tmp=document.createElement('div');
+                                tmp.innerHTML=data.html;
+                                while(tmp.firstChild) container.insertBefore(tmp.firstChild,container.firstChild);
+                                var card=container.firstElementChild;
+                                if (card) {
+                                    card.style.opacity='0'; card.style.transform='translateY(-10px)';
+                                    card.style.transition='opacity .35s,transform .35s';
+                                    requestAnimationFrame(function(){
+                                        requestAnimationFrame(function(){
+                                            card.style.opacity='1'; card.style.transform='translateY(0)';
+                                        });
+                                    });
+                                }
+                            }
+                        } else { alert('Erreur lors de la publication.'); }
+                    } catch(err) { console.error('pf-cb-form:',err); alert('Erreur réseau.'); }
+                    finally {
+                        submitBtn.disabled=false;
+                        submitBtn.innerHTML='<span class="material-icons" style="font-size:.95rem;">send</span> {% trans "Publish" %}';
+                    }
+                });
+                })();
+                </script>
                 {% endif %}
 
                 <!-- Posts — same cards as the feed (reactions + comments + share) -->
