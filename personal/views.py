@@ -19,8 +19,12 @@ def home_screen_view(request):
 def landing_view(request):
 	"""
 	Vue de la landing page publique.
-	Affiche les annonces actives selon la date/heure courante.
+	Les utilisateurs connectés sont redirigés directement vers le feed (mobile-first).
 	"""
+	if request.user.is_authenticated:
+		from django.shortcuts import redirect
+		return redirect('post:post-view')
+
 	now = timezone.now()
 
 	announcements = Announcement.objects.filter(
