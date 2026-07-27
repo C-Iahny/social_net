@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block extra_head %}
+<style>
+/* ============================================================
+   TOURISME — PROPOSER UN LIEU
+   ============================================================ */
+.lieu-submit-wrap {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+}
+
+.tour-breadcrumb {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .8rem; color: var(--text-muted);
+    margin-bottom: 1.2rem; flex-wrap: wrap;
+}
+.tour-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.tour-breadcrumb a:hover { text-decoration: underline; }
+.tour-breadcrumb .material-icons { font-size: .9rem; }
+
+.ls-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 1.8rem 1.6rem;
+    box-shadow: var(--shadow);
+}
+.ls-title {
+    font-size: 1.5rem; font-weight: 800; letter-spacing: -.03em;
+    color: var(--text); margin: 0 0 .4rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.ls-title .material-icons { color: var(--accent); font-size: 1.7rem; }
+.ls-subtitle {
+    font-size: .88rem; color: var(--text-muted); margin-bottom: 1.6rem;
+    line-height: 1.5;
+}
+.ls-info-banner {
+    background: var(--accent-glow);
+    border-left: 4px solid var(--accent);
+    border-radius: 0 10px 10px 0;
+    padding: .7rem 1rem;
+    font-size: .83rem; color: var(--accent);
+    margin-bottom: 1.4rem;
+    display: flex; align-items: flex-start; gap: .4rem;
+}
+.ls-info-banner .material-icons { font-size: 1rem; flex-shrink: 0; margin-top: .05rem; }
+
+.ls-section-label {
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--text-muted);
+    margin: 1.4rem 0 .8rem;
+    display: flex; align-items: center; gap: .3rem;
+}
+.ls-section-label .material-icons { font-size: .9rem; color: var(--accent); }
+
+.ls-field { margin-bottom: 1rem; }
+.ls-label {
+    display: block; font-size: .82rem; font-weight: 600;
+    color: var(--text); margin-bottom: .35rem;
+}
+.ls-label span.req { color: var(--accent); }
+.ls-input, .ls-select, .ls-textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    padding: .65rem .85rem;
+    font-size: .9rem;
+    font-family: inherit;
+    transition: border-color .18s;
+}
+.ls-input:focus, .ls-select:focus, .ls-textarea:focus {
+    outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.ls-textarea { resize: vertical; min-height: 100px; }
+
+.ls-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+@media (max-width: 520px) { .ls-row { grid-template-columns: 1fr; } }
+
+/* Image upload zone */
+.ls-upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    position: relative;
+}
+.ls-upload-zone:hover, .ls-upload-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+}
+.ls-upload-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.ls-upload-icon { font-size: 2.2rem; color: var(--text-subtle); margin-bottom: .4rem; }
+.ls-upload-label { font-size: .85rem; color: var(--text-muted); }
+.ls-upload-hint { font-size: .75rem; color: var(--text-subtle); margin-top: .2rem; }
+.ls-preview-grid {
+    display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .9rem;
+}
+.ls-preview-thumb {
+    width: 72px; height: 72px; border-radius: 8px; overflow: hidden;
+    border: 2px solid var(--border); position: relative; flex-shrink: 0;
+}
+.ls-preview-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.ls-preview-primary-badge {
+    position: absolute; bottom: 2px; left: 2px;
+    background: var(--accent); color: #fff;
+    font-size: .55rem; font-weight: 700; border-radius: 4px;
+    padding: 1px 4px; line-height: 1.4;
+}
+
+/* Error */
+.ls-error {
+    background: #fde8e8; color: #b91c1c; border-radius: 9px;
+    padding: .65rem .9rem; font-size: .85rem; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .4rem;
+}
+[data-theme="dark"] .ls-error { background: #2d0a0a; color: #f87171; }
+.ls-error .material-icons { font-size: 1rem; }
+
+/* Submit */
+.ls-submit-btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 11px;
+    padding: .75rem 2rem; font-size: .95rem; font-weight: 700;
+    cursor: pointer; transition: opacity .18s; width: 100%;
+    justify-content: center; margin-top: .5rem;
+}
+.ls-submit-btn:hover { opacity: .88; }
+.ls-submit-btn .material-icons { font-size: 1.15rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+<div class="lieu-submit-wrap">
+
+    <!-- Breadcrumb -->
+    <nav class="tour-breadcrumb">
+        <a href="{% url 'tourisme:home' %}">Tourisme</a>
+        <span class="material-icons">chevron_right</span>
+        <a href="{% url 'tourisme:lieux_list' %}">Lieux</a>
+        <span class="material-icons">chevron_right</span>
+        <span>Proposer un lieu</span>
+    </nav>
+
+    <div class="ls-card">
+        <h1 class="ls-title">
+            <span class="material-icons">add_location_alt</span>
+            Proposer un lieu touristique
+        </h1>
+        <p class="ls-subtitle">
+            Partagez un lieu que vous connaissez et aidez les voyageurs à découvrir Madagascar.
+        </p>
+
+        <div class="ls-info-banner">
+            <span class="material-icons">info</span>
+            Votre soumission sera vérifiée par un administrateur avant d'être publiée.
+            Vous recevrez une notification dès qu'elle sera approuvée.
+        </div>
+
+        {% if error %}
+        <div class="ls-error">
+            <span class="material-icons">error_outline</span>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Infos principales -->
+            <div class="ls-section-label">
+                <span class="material-icons">info</span>
+                Informations principales
+            </div>
+
+            <div class="ls-field">
+                <label class="ls-label" for="id_name">Nom du lieu <span class="req">*</span></label>
+                <input class="ls-input" type="text" id="id_name" name="name"
+                       placeholder="Ex: Tsingy de Bemaraha, Nosy Be, Isalo…"
+                       required maxlength="200">
+            </div>
+
+            <div class="ls-row">
+                <div class="ls-field">
+                    <label class="ls-label" for="id_category">Catégorie <span class="req">*</span></label>
+                    <select class="ls-select" id="id_category" name="category">
+                        {% for val, label in categories %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ls-field">
+                    <label class="ls-label" for="id_region">Région</label>
+                    <select class="ls-select" id="id_region" name="region">
+                        <option value="">— Choisir —</option>
+                        {% for val, label in regions %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="ls-field">
+                <label class="ls-label" for="id_description">Description <span class="req">*</span></label>
+                <textarea class="ls-textarea" id="id_description" name="description"
+                          placeholder="Décrivez ce lieu : paysage, histoire, ce qui le rend unique…"
+                          required style="min-height:140px;"></textarea>
+            </div>
+
+            <!-- Infos pratiques -->
+            <div class="ls-section-label">
+                <span class="material-icons">directions</span>
+                Informations pratiques
+            </div>
+
+            <div class="ls-field">
+                <label class="ls-label" for="id_address">Adresse / Coordonnées GPS</label>
+                <input class="ls-input" type="text" id="id_address" name="address"
+                       placeholder="Ex: -18.9249, 44.8237 ou nom du village">
+            </div>
+
+            <div class="ls-row">
+                <div class="ls-field">
+                    <label class="ls-label" for="id_best_period">Meilleure période</label>
+                    <input class="ls-input" type="text" id="id_best_period" name="best_period"
+                           placeholder="Ex: Avril à Novembre">
+                </div>
+                <div class="ls-field">
+                    <label class="ls-label" for="id_entry_fee">Tarif d'entrée</label>
+                    <input class="ls-input" type="text" id="id_entry_fee" name="entry_fee"
+                           placeholder="Ex: Gratuit, 5 000 Ar…">
+                </div>
+            </div>
+
+            <div class="ls-field">
+                <label class="ls-label" for="id_tips">Conseils pratiques</label>
+                <textarea class="ls-textarea" id="id_tips" name="tips"
+                          placeholder="Conseils pour les visiteurs : transport, hébergement, précautions…"
+                          style="min-height:80px;"></textarea>
+            </div>
+
+            <!-- Photos -->
+            <div class="ls-section-label">
+                <span class="material-icons">photo_library</span>
+                Photos (jusqu'à 8)
+            </div>
+
+            <div class="ls-upload-zone" id="uploadZone">
+                <input type="file" name="images" id="imgInput"
+                       accept="image/*" multiple
+                       onchange="previewImages(this)">
+                <div class="ls-upload-icon">
+                    <span class="material-icons" style="font-size:2.5rem;color:var(--accent);">add_photo_alternate</span>
+                </div>
+                <div class="ls-upload-label">Cliquez ou glissez vos photos ici</div>
+                <div class="ls-upload-hint">JPG, PNG, WEBP — max 8 photos. La première sera la photo principale.</div>
+            </div>
+            <div class="ls-preview-grid" id="previewGrid"></div>
+
+            <button type="submit" class="ls-submit-btn">
+                <span class="material-icons">send</span>
+                Soumettre le lieu
+            </button>
+        </form>
+    </div>
+
+</div>
+</main>
+
+<script>
+function previewImages(input) {
+    var grid = document.getElementById('previewGrid');
+    grid.innerHTML = '';
+    var files = Array.from(input.files).slice(0, 8);
+    files.forEach(function(file, i) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var div = document.createElement('div');
+            div.className = 'ls-preview-thumb';
+            div.innerHTML = '<img src="' + e.target.result + '" alt="">'
+                + (i === 0 ? '<span class="ls-preview-primary-badge">Principal</span>' : '');
+            grid.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// Drag & drop feedback
+var zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', function() { zone.classList.remove('drag-over'); });
+zone.addEventListener('drop', function(e) {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    // Handled by input change event
+});
+</script>
+{% endblock %}

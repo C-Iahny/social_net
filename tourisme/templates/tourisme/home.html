@@ -429,6 +429,13 @@
             <span class="material-icons" style="font-size:1.1rem">person</span>
             Trouver un guide
         </a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'tourisme:lieu_submit' %}" class="tour-btn-outline"
+           style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.35);">
+            <span class="material-icons" style="font-size:1.1rem">add_location_alt</span>
+            Proposer un lieu
+        </a>
+        {% endif %}
     </div>
     <div class="tour-hero-stats">
         <div class="tour-stat">

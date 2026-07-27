@@ -14,6 +14,7 @@ Normalisation des numéros malgaches :
 
 import logging
 import re
+from typing import Optional
 
 from django.conf import settings
 
@@ -27,7 +28,7 @@ logger = logging.getLogger(__name__)
 _MADAGASCAR_PREFIXES = ('32', '33', '34', '38', '20')
 
 
-def normalize_madagascar_phone(raw: str) -> str | None:
+def normalize_madagascar_phone(raw: str) -> Optional[str]:
     """
     Convertit un numéro saisi librement en format E.164 (+261XXXXXXXXX).
     Retourne None si le numéro n'est pas reconnaissable.
