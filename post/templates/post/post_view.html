@@ -3458,7 +3458,7 @@ function escHtml(str) {
             '<p style="color:var(--text-muted);font-size:.88rem;padding:.8rem .4rem;">Chargement…</p>';
         document.getElementById('rw-tabs').innerHTML = '';
 
-        fetch('/post/' + postId + '/reactions/')
+        fetch('/feed/' + postId + '/reactions/')
             .then(function(r){
                 if (!r.ok) { throw new Error('HTTP ' + r.status + ' ' + r.url); }
                 return r.json();
