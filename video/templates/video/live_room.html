@@ -402,6 +402,28 @@
     .lr-video-area { min-height: 55vw; }
     .lr-title { max-width: 160px; font-size: .88rem; }
 }
+
+/* ── Emoji reactions ── */
+.lr-reactions-bar {
+    display: flex; gap: .5rem; padding: .5rem .7rem;
+    background: rgba(0,0,0,.3); backdrop-filter: blur(4px);
+    border-radius: 20px;
+}
+.lr-react-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.5rem; line-height: 1;
+    transition: transform .1s;
+    padding: .1rem .2rem; border-radius: 8px;
+}
+.lr-react-btn:hover { transform: scale(1.3); background: rgba(255,255,255,.1); }
+.lr-float-emoji {
+    position: fixed; pointer-events: none; z-index: 9999;
+    font-size: 2rem; animation: lr-float-up 2.5s ease-out forwards;
+}
+@keyframes lr-float-up {
+    0%   { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-220px) scale(1.6); }
+}
 </style>
 
 <!-- ── Ended overlay ── -->
@@ -432,6 +454,14 @@
                 <span class="material-icons">visibility</span>
                 <span id="lr-viewer-count">{{ room.viewer_count }}</span>
             </span>
+            <div class="lr-reactions-bar" id="lr-reactions-bar">
+                <button class="lr-react-btn" onclick="sendReaction('❤️')">❤️</button>
+                <button class="lr-react-btn" onclick="sendReaction('🔥')">🔥</button>
+                <button class="lr-react-btn" onclick="sendReaction('😂')">😂</button>
+                <button class="lr-react-btn" onclick="sendReaction('👏')">👏</button>
+                <button class="lr-react-btn" onclick="sendReaction('😮')">😮</button>
+                <button class="lr-react-btn" onclick="sendReaction('🎉')">🎉</button>
+            </div>
             <a href="{% url 'video:live-list' %}"
                style="color:rgba(255,255,255,.45);font-size:.82rem;text-decoration:none;display:flex;align-items:center;gap:.2rem;">
                 <span class="material-icons" style="font-size:1rem;">arrow_back</span>
@@ -667,6 +697,9 @@ function connect() {
                 break;
             case 'stream_ended':
                 onStreamEnded();
+                break;
+            case 'reaction':
+                spawnFloatingEmoji(d.emoji);
                 break;
         }
     };
@@ -1241,6 +1274,24 @@ function appendSystemMsg(text) {
 
 function escH(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Réactions emoji ──
+window.sendReaction = function(emoji) {
+    wsSend({ type: 'reaction', emoji: emoji });
+    // Afficher localement immédiatement
+    spawnFloatingEmoji(emoji);
+};
+
+function spawnFloatingEmoji(emoji) {
+    var el = document.createElement('span');
+    el.className = 'lr-float-emoji';
+    el.textContent = emoji;
+    // Position aléatoire en bas de l'écran côté viewer
+    el.style.left = (20 + Math.random() * 60) + '%';
+    el.style.bottom = '120px';
+    document.body.appendChild(el);
+    setTimeout(function() { el.remove(); }, 2600);
 }
 
 function wsSend(obj) {
