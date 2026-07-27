@@ -6,6 +6,7 @@ app_name = 'tourisme'
 urlpatterns = [
     path('',                     views.tourisme_home,   name='home'),
     path('lieux/',               views.lieux_list,      name='lieux_list'),
+    path('lieux/autocomplete/',            views.lieu_autocomplete, name='lieu_autocomplete'),
     path('lieux/proposer/',               views.lieu_submit,  name='lieu_submit'),
     path('lieux/<slug:slug>/modifier/',   views.lieu_edit,    name='lieu_edit'),
     path('lieux/<slug:slug>/',            views.lieu_detail,  name='lieu_detail'),

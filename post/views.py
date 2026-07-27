@@ -486,6 +486,16 @@ class AddPostView(CreateView):
         self.object = form.save()
         post = self.object
 
+        # ── Lier un lieu touristique ──────────────────────────────────────
+        lieu_id = self.request.POST.get('lieu_id', '').strip()
+        if lieu_id:
+            try:
+                from tourisme.models import LieuTouristique
+                post.lieu = LieuTouristique.objects.get(id=int(lieu_id), is_approved=True)
+                post.save(update_fields=['lieu'])
+            except Exception:
+                pass
+
         # ── Enregistrer les fichiers média ───────────────────────────────
         _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
         files = self.request.FILES.getlist('media_files')
