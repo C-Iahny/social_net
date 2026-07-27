@@ -1568,7 +1568,39 @@ def diag_media(request):
 
     # ── Informations de configuration R2 ─────────────────────────────────────
     r2_account_id   = getattr(_settings, 'R2_ACCOUNT_ID', None)
-    def reactions_who(request, post_id):
+    r2_public_url   = getattr(_settings, 'R2_PUBLIC_URL', None)
+    r2_bucket       = getattr(_settings, 'AWS_STORAGE_BUCKET_NAME', None) or getattr(_settings, 'R2_BUCKET_NAME', None)
+    r2_access_key   = bool(getattr(_settings, 'AWS_ACCESS_KEY_ID', None))
+    media_url       = getattr(_settings, 'MEDIA_URL', '/')
+    storage_backend = _settings.STORAGES['default']['BACKEND']
+    querystring_auth = getattr(_settings, 'AWS_QUERYSTRING_AUTH', True)
+    default_acl      = getattr(_settings, 'AWS_DEFAULT_ACL', None)
+
+    # Construire l'URL type pour tester
+    sample_url = None
+    if r2_public_url:
+        sample_url = f"https://{r2_public_url}/post_media/test.jpg"
+    elif r2_account_id and r2_bucket:
+        sample_url = f"https://{r2_account_id}.r2.cloudflarestorage.com/{r2_bucket}/post_media/test.jpg"
+
+    r2_info = {
+        'storage_backend': storage_backend,
+        'media_url': media_url,
+        'r2_account_id_set': bool(r2_account_id),
+        'r2_public_url': r2_public_url,
+        'r2_bucket': r2_bucket,
+        'r2_access_key_set': r2_access_key,
+        'querystring_auth': querystring_auth,
+        'default_acl': default_acl,
+        'sample_url': sample_url,
+        'is_local': 'FileSystemStorage' in storage_backend,
+        'is_r2': 'R2Media' in storage_backend or 'S3Boto3' in storage_backend,
+    }
+
+    return render(request, 'post/diag_media.html', {'posts': posts, 'r2_info': r2_info})
+
+
+def reactions_who(request, post_id):
     """GET /post/<id>/reactions/ — liste des utilisateurs qui ont réagi."""
     post = get_object_or_404(Post, id=post_id)
 
@@ -1605,35 +1637,3 @@ def diag_media(request):
     total  = sum(counts.values())
 
     return JsonResponse({'rows': rows, 'counts': counts, 'total': total})
-
-
-r2_public_url   = getattr(_settings, 'R2_PUBLIC_URL', None)
-    r2_bucket       = getattr(_settings, 'AWS_STORAGE_BUCKET_NAME', None) or getattr(_settings, 'R2_BUCKET_NAME', None)
-    r2_access_key   = bool(getattr(_settings, 'AWS_ACCESS_KEY_ID', None))
-    media_url       = getattr(_settings, 'MEDIA_URL', '/')
-    storage_backend = _settings.STORAGES['default']['BACKEND']
-    querystring_auth = getattr(_settings, 'AWS_QUERYSTRING_AUTH', True)
-    default_acl      = getattr(_settings, 'AWS_DEFAULT_ACL', None)
-
-    # Construire l'URL type pour tester
-    sample_url = None
-    if r2_public_url:
-        sample_url = f"https://{r2_public_url}/post_media/test.jpg"
-    elif r2_account_id and r2_bucket:
-        sample_url = f"https://{r2_account_id}.r2.cloudflarestorage.com/{r2_bucket}/post_media/test.jpg"
-
-    r2_info = {
-        'storage_backend': storage_backend,
-        'media_url': media_url,
-        'r2_account_id_set': bool(r2_account_id),
-        'r2_public_url': r2_public_url,
-        'r2_bucket': r2_bucket,
-        'r2_access_key_set': r2_access_key,
-        'querystring_auth': querystring_auth,
-        'default_acl': default_acl,
-        'sample_url': sample_url,
-        'is_local': 'FileSystemStorage' in storage_backend,
-        'is_r2': 'R2Media' in storage_backend or 'S3Boto3' in storage_backend,
-    }
-
-    return render(request, 'post/diag_media.html', {'posts': posts, 'r2_info': r2_info})
