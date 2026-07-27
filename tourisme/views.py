@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
 
-from .models import LieuTouristique, GuideTouristique, LieuImage, LIEU_CATEGORY_CHOICES, REGION_CHOICES
+from .models import LieuTouristique, GuideTouristique, LieuImage, LieuAvis, LIEU_CATEGORY_CHOICES, REGION_CHOICES
 
 logger = logging.getLogger(__name__)
 
@@ -76,11 +76,102 @@ def lieu_detail(request, slug):
         .prefetch_related('images')[:4]
     )
 
+    # Avis utilisateurs
+    avis_list = lieu.avis.select_related('author').order_by('-created_at')[:20]
+    avis_count = lieu.avis.count()
+    avg_rating = None
+    if avis_count:
+        from django.db.models import Avg
+        avg_rating = round(lieu.avis.aggregate(v=Avg('rating'))['v'] or 0, 1)
+
+    # Avis de l'utilisateur courant (pour pré-remplir le formulaire)
+    user_avis = None
+    if request.user.is_authenticated:
+        user_avis = lieu.avis.filter(author=request.user).first()
+
+    # Soumission d'un avis (POST)
+    avis_error = ''
+    if request.method == 'POST' and request.user.is_authenticated:
+        action = request.POST.get('action', 'avis')
+        if action == 'avis':
+            try:
+                rating  = int(request.POST.get('rating', 5))
+                comment = request.POST.get('comment', '').strip()
+                if 1 <= rating <= 5 and comment:
+                    obj, created = LieuAvis.objects.update_or_create(
+                        lieu=lieu, author=request.user,
+                        defaults={
+                            'rating':  rating,
+                            'comment': comment,
+                            'visited_at': request.POST.get('visited_at') or None,
+                        },
+                    )
+                    return redirect('tourisme:lieu_detail', slug=slug)
+                else:
+                    avis_error = 'Veuillez renseigner un commentaire et une note valide.'
+            except Exception:
+                avis_error = 'Erreur lors de l\'enregistrement de votre avis.'
+
+    # Posts liés à ce lieu
+    from post.models import Post as PostModel
+    lieu_posts = (
+        PostModel.objects.filter(lieu=lieu, status='published')
+        .select_related('author')
+        .order_by('-id')[:6]
+    )
+
     return render(request, 'tourisme/lieu_detail.html', {
-        'lieu':       lieu,
-        'images':     lieu.images.all(),
-        'guides':     guides,
-        'similaires': similaires,
+        'lieu':        lieu,
+        'images':      lieu.images.all(),
+        'guides':      guides,
+        'similaires':  similaires,
+        'avis_list':   avis_list,
+        'avis_count':  avis_count,
+        'avg_rating':  avg_rating,
+        'user_avis':   user_avis,
+        'avis_error':  avis_error,
+        'lieu_posts':  lieu_posts,
+    })
+
+
+@login_required
+def lieu_submit(request):
+    """Proposer un nouveau lieu touristique (en attente d'approbation admin)."""
+    error = ''
+    if request.method == 'POST':
+        name        = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        category    = request.POST.get('category', 'nature')
+        region      = request.POST.get('region', '')
+        address     = request.POST.get('address', '').strip()
+        best_period = request.POST.get('best_period', '').strip()
+        entry_fee   = request.POST.get('entry_fee', '').strip()
+        tips        = request.POST.get('tips', '').strip()
+
+        if not name or not description:
+            error = 'Le nom et la description sont obligatoires.'
+        else:
+            lieu = LieuTouristique.objects.create(
+                name=name, description=description, category=category,
+                region=region, address=address, best_period=best_period,
+                entry_fee=entry_fee, tips=tips,
+                added_by=request.user, is_approved=False,
+            )
+            # Images multiples
+            images = request.FILES.getlist('images')
+            for i, img in enumerate(images[:8]):
+                LieuImage.objects.create(
+                    lieu=lieu, image=img,
+                    is_primary=(i == 0), order=i,
+                )
+            messages.success(request,
+                'Votre lieu a été soumis ! Il sera visible après validation par un administrateur.')
+            return redirect('tourisme:lieux_list')
+
+    return render(request, 'tourisme/lieu_submit.html', {
+        'categories': LIEU_CATEGORY_CHOICES,
+        'regions':    REGION_CHOICES,
+        'error':      error,
     })
 
 

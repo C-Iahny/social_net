@@ -10,4 +10,5 @@ urlpatterns = [
     path('guides/',              views.guides_list,     name='guides_list'),
     path('guides/<int:pk>/',     views.guide_profile,   name='guide_profile'),
     path('guides/inscription/',  views.guide_register,  name='guide_register'),
+    path('lieux/proposer/',      views.lieu_submit,     name='lieu_submit'),
 ]
