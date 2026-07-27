@@ -1977,13 +1977,19 @@ body { background: var(--bg); }
                         lieuResults.style.display = 'none'; return;
                     }
                     var html = results.map(function(item) {
-                        return '<div class="cb-lieu-item" onclick="(function(){'
-                            + 'var it={id:' + item.id + ',name:' + JSON.stringify(item.name) + ',slug:' + JSON.stringify(item.slug) + '};'
-                            + 'selectLieu(it);'
-                            + '})()">'
-                            + '<span class="material-icons">location_on</span>'
+                        var slug = item.slug || '';
+                        return '<div class="cb-lieu-item">'
+                            + '<span class="material-icons" style="color:#e91e63;flex-shrink:0;">location_on</span>'
+                            + '<span style="flex:1;cursor:pointer;" onclick="(function(){'
+                            + 'var it={id:' + item.id + ',name:' + JSON.stringify(item.name) + ',slug:' + JSON.stringify(slug) + '};'
+                            + 'selectLieu(it);})()">'
                             + _esc(item.name)
+                            + '</span>'
                             + '<span class="cb-lieu-item-sub">' + _esc(item.region || '') + '</span>'
+                            + (slug ? '<a href="/tourisme/lieux/' + _esc(slug) + '/" target="_blank" rel="noopener"'
+                              + ' onclick="event.stopPropagation()"'
+                              + ' style="flex-shrink:0;color:var(--text-muted);display:flex;align-items:center;" title="Voir le lieu">'
+                              + '<span class="material-icons" style="font-size:.95rem;">open_in_new</span></a>' : '')
                             + '</div>';
                     }).join('');
                     lieuResults.innerHTML = html;
