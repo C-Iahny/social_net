@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block extra_head %}
+<style>
+.lieu-submit-wrap { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.tour-breadcrumb {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .8rem; color: var(--text-muted); margin-bottom: 1.2rem; flex-wrap: wrap;
+}
+.tour-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.tour-breadcrumb a:hover { text-decoration: underline; }
+.tour-breadcrumb .material-icons { font-size: .9rem; }
+.ls-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.8rem 1.6rem; box-shadow: var(--shadow);
+}
+.ls-title {
+    font-size: 1.5rem; font-weight: 800; letter-spacing: -.03em;
+    color: var(--text); margin: 0 0 .4rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.ls-title .material-icons { color: var(--accent); font-size: 1.7rem; }
+.ls-subtitle { font-size: .88rem; color: var(--text-muted); margin-bottom: 1.4rem; }
+.ls-section-label {
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--text-muted);
+    margin: 1.4rem 0 .8rem;
+    display: flex; align-items: center; gap: .3rem;
+}
+.ls-section-label .material-icons { font-size: .9rem; color: var(--accent); }
+.ls-field { margin-bottom: 1rem; }
+.ls-label { display: block; font-size: .82rem; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+.ls-label span.req { color: var(--accent); }
+.ls-input, .ls-select, .ls-textarea {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+    background: var(--bg); color: var(--text); padding: .65rem .85rem;
+    font-size: .9rem; font-family: inherit; transition: border-color .18s;
+}
+.ls-input:focus, .ls-select:focus, .ls-textarea:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.ls-textarea { resize: vertical; min-height: 100px; }
+.ls-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+@media (max-width: 520px) { .ls-row { grid-template-columns: 1fr; } }
+.ls-error {
+    background: #fde8e8; color: #b91c1c; border-radius: 9px;
+    padding: .65rem .9rem; font-size: .85rem; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .4rem;
+}
+[data-theme="dark"] .ls-error { background: #2d0a0a; color: #f87171; }
+.ls-error .material-icons { font-size: 1rem; }
+.ls-submit-btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: var(--accent); color: #fff; border: none; border-radius: 11px;
+    padding: .75rem 2rem; font-size: .95rem; font-weight: 700;
+    cursor: pointer; transition: opacity .18s; width: 100%;
+    justify-content: center; margin-top: .5rem;
+}
+.ls-submit-btn:hover { opacity: .88; }
+
+/* Photos existantes */
+.existing-images-grid {
+    display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem;
+}
+.existing-img-item {
+    position: relative; width: 90px; height: 90px;
+    border-radius: 10px; overflow: hidden;
+    border: 2px solid var(--border);
+}
+.existing-img-item img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.existing-img-item label {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0); cursor: pointer;
+    transition: background .18s;
+}
+.existing-img-item input[type=checkbox] { display: none; }
+.existing-img-item input[type=checkbox]:checked + label {
+    background: rgba(220,38,38,.6);
+}
+.existing-img-item input[type=checkbox]:checked + label .del-icon { opacity: 1; }
+.del-icon {
+    color: #fff; font-size: 1.8rem; opacity: 0; transition: opacity .15s;
+}
+.existing-img-item label:hover { background: rgba(0,0,0,.25); }
+.existing-img-item label:hover .del-icon { opacity: .7; }
+.existing-img-primary {
+    position: absolute; top: 3px; left: 3px;
+    background: var(--accent); color: #fff;
+    font-size: .55rem; font-weight: 700; border-radius: 4px;
+    padding: 1px 4px; line-height: 1.4;
+}
+.delete-hint { font-size: .78rem; color: var(--text-muted); margin-bottom: .7rem; }
+
+/* Upload zone */
+.ls-upload-zone {
+    border: 2px dashed var(--border); border-radius: 12px;
+    padding: 1.2rem 1rem; text-align: center; cursor: pointer;
+    transition: border-color .2s, background .2s; position: relative;
+}
+.ls-upload-zone:hover { border-color: var(--accent); background: var(--accent-glow); }
+.ls-upload-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.ls-upload-label { font-size: .85rem; color: var(--text-muted); }
+.ls-upload-hint { font-size: .75rem; color: var(--text-subtle); margin-top: .2rem; }
+.ls-preview-grid { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .8rem; }
+.ls-preview-thumb {
+    width: 72px; height: 72px; border-radius: 8px; overflow: hidden;
+    border: 2px solid var(--border);
+}
+.ls-preview-thumb img { width: 100%; height: 100%; object-fit: cover; }
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+<div class="lieu-submit-wrap">
+
+    <nav class="tour-breadcrumb">
+        <a href="{% url 'tourisme:home' %}">Tourisme</a>
+        <span class="material-icons">chevron_right</span>
+        <a href="{% url 'tourisme:lieux_list' %}">Lieux</a>
+        <span class="material-icons">chevron_right</span>
+        <a href="{% url 'tourisme:lieu_detail' lieu.slug %}">{{ lieu.name }}</a>
+        <span class="material-icons">chevron_right</span>
+        <span>Modifier</span>
+    </nav>
+
+    <div class="ls-card">
+        <h1 class="ls-title">
+            <span class="material-icons">edit_location_alt</span>
+            Modifier le lieu
+        </h1>
+        <p class="ls-subtitle">{{ lieu.name }}</p>
+
+        {% if error %}
+        <div class="ls-error">
+            <span class="material-icons">error_outline</span>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="ls-section-label">
+                <span class="material-icons">info</span>
+                Informations principales
+            </div>
+
+            <div class="ls-field">
+                <label class="ls-label" for="id_name">Nom du lieu <span class="req">*</span></label>
+                <input class="ls-input" type="text" id="id_name" name="name"
+                       value="{{ lieu.name }}" required maxlength="200">
+            </div>
+
+            <div class="ls-row">
+                <div class="ls-field">
+                    <label class="ls-label" for="id_category">Catégorie</label>
+                    <select class="ls-select" id="id_category" name="category">
+                        {% for val, label in categories %}
+                        <option value="{{ val }}" {% if lieu.category == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ls-field">
+                    <label class="ls-label" for="id_region">Région</label>
+                    <select class="ls-select" id="id_region" name="region">
+                        <option value="">— Choisir —</option>
+                        {% for val, label in regions %}
+                        <option value="{{ val }}" {% if lieu.region == val %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="ls-field">
+                <label class="ls-label" for="id_description">Description <span class="req">*</span></label>
+                <textarea class="ls-textarea" id="id_description" name="description"
+                          required style="min-height:140px;">{{ lieu.description }}</textarea>
+            </div>
+
+            <div class="ls-section-label">
+                <span class="material-icons">directions</span>
+                Informations pratiques
+            </div>
+
+            <div class="ls-field">
+                <label class="ls-label" for="id_address">Adresse / Coordonnées GPS</label>
+                <input class="ls-input" type="text" id="id_address" name="address"
+                       value="{{ lieu.address }}">
+            </div>
+
+            <div class="ls-row">
+                <div class="ls-field">
+                    <label class="ls-label" for="id_best_period">Meilleure période</label>
+                    <input class="ls-input" type="text" id="id_best_period" name="best_period"
+                           value="{{ lieu.best_period }}">
+                </div>
+                <div class="ls-field">
+                    <label class="ls-label" for="id_entry_fee">Tarif d'entrée</label>
+                    <input class="ls-input" type="text" id="id_entry_fee" name="entry_fee"
+                           value="{{ lieu.entry_fee }}">
+                </div>
+            </div>
+
+            <div class="ls-field">
+                <label class="ls-label" for="id_tips">Conseils pratiques</label>
+                <textarea class="ls-textarea" id="id_tips" name="tips"
+                          style="min-height:80px;">{{ lieu.tips }}</textarea>
+            </div>
+
+            <!-- Photos existantes -->
+            <div class="ls-section-label">
+                <span class="material-icons">photo_library</span>
+                Photos existantes
+            </div>
+
+            {% if images %}
+            <p class="delete-hint">Cliquez sur une photo pour la marquer à supprimer (fond rouge = sera supprimée).</p>
+            <div class="existing-images-grid">
+                {% for img in images %}
+                <div class="existing-img-item">
+                    <input type="checkbox" name="delete_images" value="{{ img.pk }}" id="delimg{{ img.pk }}">
+                    <label for="delimg{{ img.pk }}">
+                        <span class="material-icons del-icon">delete</span>
+                    </label>
+                    <img src="{{ img.image.url }}" alt="">
+                    {% if img.is_primary %}
+                    <span class="existing-img-primary">Principal</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.8rem;">Aucune photo pour le moment.</p>
+            {% endif %}
+
+            <!-- Ajouter des photos -->
+            <div class="ls-section-label">
+                <span class="material-icons">add_photo_alternate</span>
+                Ajouter des photos
+            </div>
+
+            <div class="ls-upload-zone">
+                <input type="file" name="images" accept="image/*" multiple
+                       onchange="previewNewImages(this)">
+                <div class="ls-upload-label">Cliquez ou glissez vos nouvelles photos ici</div>
+                <div class="ls-upload-hint">JPG, PNG, WEBP — maximum 8 photos au total</div>
+            </div>
+            <div class="ls-preview-grid" id="newPreviewGrid"></div>
+
+            <button type="submit" class="ls-submit-btn" style="margin-top:1.2rem;">
+                <span class="material-icons" style="font-size:1.1rem;">save</span>
+                Enregistrer les modifications
+            </button>
+        </form>
+    </div>
+
+</div>
+</main>
+
+<script>
+function previewNewImages(input) {
+    var grid = document.getElementById('newPreviewGrid');
+    grid.innerHTML = '';
+    Array.from(input.files).slice(0, 8).forEach(function(file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var div = document.createElement('div');
+            div.className = 'ls-preview-thumb';
+            div.innerHTML = '<img src="' + e.target.result + '" alt="">';
+            grid.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+</script>
+{% endblock %}
