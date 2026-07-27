@@ -80,6 +80,12 @@ msgstr "Mon Profil"
 msgid "What's new"
 msgstr "Quoi de neuf"
 
+msgid "What's on your mind?"
+msgstr "Quoi de neuf ?"
+
+msgid "Sell something"
+msgstr "Vendre quelque chose"
+
 msgid "Photo"
 msgstr "Photo"
 
