@@ -215,12 +215,141 @@
 .sim-card-name { font-size: .88rem; font-weight: 700; }
 .sim-card-cat { font-size: .72rem; color: var(--text-muted); margin-top: .15rem; }
 
+/* ── Avis ── */
+.lieu-avis-summary {
+    display: flex; align-items: center; gap: 1rem;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1rem 1.2rem; margin-bottom: 1.2rem;
+}
+.lieu-avis-big-score {
+    font-size: 2.8rem; font-weight: 900; color: var(--accent);
+    line-height: 1;
+}
+.lieu-avis-stars-big {
+    font-size: 1.3rem; color: #f59e0b; letter-spacing: .05rem;
+}
+.lieu-avis-count-label {
+    font-size: .82rem; color: var(--text-muted); margin-top: .2rem;
+}
+.avis-form-wrap {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.2rem 1.3rem; margin-bottom: 1.2rem;
+}
+.avis-form-title {
+    font-size: .92rem; font-weight: 700; color: var(--text); margin-bottom: .9rem;
+}
+.star-rating-input { display: flex; flex-direction: row-reverse; gap: .15rem; margin-bottom: .8rem; }
+.star-rating-input input { display: none; }
+.star-rating-input label {
+    font-size: 1.7rem; cursor: pointer; color: #d1d5db; line-height: 1;
+    transition: color .15s;
+}
+.star-rating-input input:checked ~ label,
+.star-rating-input label:hover,
+.star-rating-input label:hover ~ label { color: #f59e0b; }
+.avis-comment-input {
+    width: 100%; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text); padding: .7rem .9rem;
+    font-size: .9rem; resize: vertical; min-height: 80px;
+    font-family: inherit;
+}
+.avis-comment-input:focus { outline: 2px solid var(--accent); }
+.avis-visited-row {
+    display: flex; align-items: center; gap: .6rem;
+    font-size: .82rem; color: var(--text-muted); margin: .6rem 0 .9rem;
+}
+.avis-visited-row input[type=date] {
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--text); padding: .3rem .5rem; font-size: .82rem;
+}
+.avis-submit-btn {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 9px; padding: .55rem 1.2rem;
+    font-size: .87rem; font-weight: 700; cursor: pointer;
+    transition: opacity .18s;
+}
+.avis-submit-btn:hover { opacity: .87; }
+.avis-error { color: #e53935; font-size: .83rem; margin-bottom: .7rem; }
+.avis-list { display: flex; flex-direction: column; gap: .85rem; }
+.avis-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: .9rem 1rem;
+}
+.avis-card-header { display: flex; align-items: center; gap: .6rem; margin-bottom: .4rem; }
+.avis-avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: .95rem; color: #fff; overflow: hidden;
+}
+.avis-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avis-author-name { font-size: .87rem; font-weight: 700; color: var(--text); }
+.avis-date { font-size: .74rem; color: var(--text-muted); }
+.avis-stars { font-size: 1rem; color: #f59e0b; letter-spacing: .04rem; margin-bottom: .3rem; }
+.avis-comment-text { font-size: .88rem; color: var(--text); line-height: 1.6; }
+.avis-visited-badge {
+    display: inline-flex; align-items: center; gap: .2rem;
+    font-size: .72rem; color: var(--text-muted);
+    margin-top: .35rem;
+}
+.avis-visited-badge .material-icons { font-size: .85rem; }
+
+/* ── Posts liés ── */
+.lieu-posts-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: .9rem; margin-bottom: 2rem;
+}
+.lieu-post-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; text-decoration: none; color: var(--text);
+    transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column;
+}
+.lieu-post-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); text-decoration: none; color: var(--text); }
+.lieu-post-thumb {
+    height: 130px; background: linear-gradient(135deg, #1a3a6a, #0d2040);
+    overflow: hidden; flex-shrink: 0;
+}
+.lieu-post-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.lieu-post-thumb-ph {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+}
+.lieu-post-thumb-ph .material-icons { font-size: 2rem; color: rgba(255,255,255,.3); }
+.lieu-post-body { padding: .75rem .9rem; flex: 1; }
+.lieu-post-author {
+    display: flex; align-items: center; gap: .4rem;
+    margin-bottom: .35rem;
+}
+.lieu-post-av {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem; font-weight: 800; overflow: hidden; flex-shrink: 0;
+}
+.lieu-post-av img { width: 100%; height: 100%; object-fit: cover; }
+.lieu-post-username { font-size: .76rem; color: var(--text-muted); }
+.lieu-post-snippet {
+    font-size: .85rem; color: var(--text); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ── Rating pill in header ── */
+.lieu-rating-pill {
+    display: inline-flex; align-items: center; gap: .2rem;
+    background: #fef3c7; color: #92400e; border-radius: 50px;
+    padding: .2rem .7rem; font-size: .8rem; font-weight: 700;
+}
+[data-theme="dark"] .lieu-rating-pill { background: #3d2c00; color: #fcd34d; }
+.lieu-rating-pill .material-icons { font-size: .9rem; color: #f59e0b; }
+
 @media (max-width: 575px) {
     .lieu-main-img { height: 220px; }
     .lieu-name { font-size: 1.4rem; }
     .lieu-info-grid { grid-template-columns: 1fr 1fr; }
     .lieu-guides-grid { grid-template-columns: 1fr; }
     .similaires-grid { grid-template-columns: 1fr 1fr; }
+    .lieu-posts-grid { grid-template-columns: 1fr; }
 }
 </style>
 {% endblock %}
@@ -274,6 +403,13 @@
                 <span class="lieu-region-tag">
                     <span class="material-icons">place</span>
                     {{ lieu.get_region_display }}
+                </span>
+                {% endif %}
+                {% if avg_rating %}
+                <span class="lieu-rating-pill">
+                    <span class="material-icons">star</span>
+                    {{ avg_rating }}/5
+                    <span style="font-weight:400;color:var(--text-muted);">({{ avis_count }})</span>
                 </span>
                 {% endif %}
                 <span class="lieu-views">
@@ -382,6 +518,144 @@
         </div>
     </section>
     {% endif %}
+
+    <!-- ── Posts liés à ce lieu ── -->
+    {% if lieu_posts %}
+    <section style="margin-bottom:2rem;">
+        <h2 class="lieu-section-title">
+            <span class="material-icons">article</span>
+            Publications sur ce lieu
+        </h2>
+        <div class="lieu-posts-grid">
+            {% for post in lieu_posts %}
+            <a href="{% url 'post:post-detail' post.pk %}" class="lieu-post-card">
+                <div class="lieu-post-thumb">
+                    {% if post.header_image_url %}
+                        <img src="{{ post.header_image_url }}" alt="{{ post.title|default:'Post' }}" loading="lazy">
+                    {% else %}
+                        <div class="lieu-post-thumb-ph">
+                            <span class="material-icons">image</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="lieu-post-body">
+                    <div class="lieu-post-author">
+                        <div class="lieu-post-av">
+                            {% if post.author.profile_image %}
+                                <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+                            {% else %}
+                                {{ post.author.username|first|upper }}
+                            {% endif %}
+                        </div>
+                        <span class="lieu-post-username">{{ post.author.username }}</span>
+                    </div>
+                    {% if post.title %}
+                    <div style="font-size:.9rem;font-weight:700;margin-bottom:.25rem;">{{ post.title|truncatechars:60 }}</div>
+                    {% endif %}
+                    {% if post.snippet %}
+                    <div class="lieu-post-snippet">{{ post.snippet }}</div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ── Avis des visiteurs ── -->
+    <section style="margin-bottom:2rem;" id="avis">
+        <h2 class="lieu-section-title">
+            <span class="material-icons">rate_review</span>
+            Avis des visiteurs
+            {% if avis_count %}
+            <span style="font-size:.85rem;font-weight:600;color:var(--text-muted);">({{ avis_count }})</span>
+            {% endif %}
+        </h2>
+
+        {% if avg_rating %}
+        <div class="lieu-avis-summary">
+            <div class="lieu-avis-big-score">{{ avg_rating }}</div>
+            <div>
+                <div class="lieu-avis-stars-big">
+                    {% with r=avg_rating|floatformat:"0" %}
+                    {% for i in "12345" %}★{% endfor %}
+                    {% endwith %}
+                </div>
+                <div class="lieu-avis-count-label">{{ avis_count }} avis</div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+        <div class="avis-form-wrap">
+            <div class="avis-form-title">
+                {% if user_avis %}Modifier votre avis{% else %}Laisser un avis{% endif %}
+            </div>
+            {% if avis_error %}<div class="avis-error">{{ avis_error }}</div>{% endif %}
+            <form method="post" action="{% url 'tourisme:lieu_detail' lieu.slug %}#avis">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="avis">
+                <div class="star-rating-input">
+                    {% for v in "54321" %}
+                    <input type="radio" name="rating" id="star{{ v }}" value="{{ v }}"
+                        {% if user_avis and user_avis.rating|stringformat:"s" == v %}checked{% elif not user_avis and v == "5" %}checked{% endif %}>
+                    <label for="star{{ v }}">★</label>
+                    {% endfor %}
+                </div>
+                <textarea class="avis-comment-input" name="comment" placeholder="Décrivez votre expérience..." required>{% if user_avis %}{{ user_avis.comment }}{% endif %}</textarea>
+                <div class="avis-visited-row">
+                    <span class="material-icons" style="font-size:1rem;">event</span>
+                    Date de visite (optionnel) :
+                    <input type="date" name="visited_at"
+                           value="{% if user_avis and user_avis.visited_at %}{{ user_avis.visited_at|date:'Y-m-d' }}{% endif %}">
+                </div>
+                <button type="submit" class="avis-submit-btn">
+                    <span class="material-icons" style="font-size:1rem;">send</span>
+                    {% if user_avis %}Mettre à jour{% else %}Publier{% endif %}
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1rem;">
+            <a href="{% url 'login' %}" style="color:var(--accent);font-weight:600;">Connectez-vous</a>
+            pour laisser un avis.
+        </p>
+        {% endif %}
+
+        {% if avis_list %}
+        <div class="avis-list">
+            {% for avis in avis_list %}
+            <div class="avis-card">
+                <div class="avis-card-header">
+                    <div class="avis-avatar">
+                        {% if avis.author.profile_image %}
+                            <img src="{{ avis.author.profile_image.url }}" alt="{{ avis.author.username }}">
+                        {% else %}
+                            {{ avis.author.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="avis-author-name">{{ avis.author.username }}</div>
+                        <div class="avis-date">{{ avis.created_at|date:"j N Y" }}</div>
+                    </div>
+                </div>
+                <div class="avis-stars">{{ avis.stars }}</div>
+                <div class="avis-comment-text">{{ avis.comment }}</div>
+                {% if avis.visited_at %}
+                <div class="avis-visited-badge">
+                    <span class="material-icons">event</span>
+                    Visité le {{ avis.visited_at|date:"j N Y" }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="font-size:.87rem;color:var(--text-muted);">
+            Soyez le premier à laisser un avis sur ce lieu !
+        </p>
+        {% endif %}
+    </section>
 
     <!-- ── Lieux similaires ── -->
     {% if similaires %}
