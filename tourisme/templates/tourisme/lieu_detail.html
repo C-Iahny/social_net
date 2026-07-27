@@ -40,6 +40,7 @@
 }
 .lieu-main-img img {
     width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: opacity .18s;
 }
 .lieu-main-img-ph {
     width: 100%; height: 100%;
@@ -48,6 +49,31 @@
     color: rgba(255,255,255,.45);
 }
 .lieu-main-img-ph .material-icons { font-size: 3.5rem; }
+
+/* Flèches nav galerie */
+.gallery-nav-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(0,0,0,.45); color: #fff;
+    border: none; border-radius: 50%; width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 5; transition: background .18s, opacity .18s;
+    backdrop-filter: blur(4px);
+}
+.gallery-nav-btn:hover { background: rgba(0,0,0,.7); }
+.gallery-nav-btn.prev { left: 10px; }
+.gallery-nav-btn.next { right: 10px; }
+.gallery-nav-btn .material-icons { font-size: 1.3rem; }
+.gallery-nav-btn:disabled { opacity: .25; cursor: default; }
+
+/* Compteur */
+.gallery-counter {
+    position: absolute; bottom: 10px; right: 12px;
+    background: rgba(0,0,0,.5); color: #fff;
+    font-size: .75rem; font-weight: 700; border-radius: 50px;
+    padding: .2rem .65rem; backdrop-filter: blur(4px);
+    letter-spacing: .04em;
+}
+
 .lieu-thumbs {
     display: flex; gap: 0;
     overflow-x: auto; scrollbar-width: none;
@@ -371,9 +397,16 @@
     <div class="lieu-gallery">
         <div class="lieu-main-img" id="mainImgWrap">
             {% if images %}
-                {% with img=images|first %}
-                <img src="{{ img.image.url }}" alt="{{ lieu.name }}" id="mainImg">
-                {% endwith %}
+                <img src="{{ images.0.image.url }}" alt="{{ lieu.name }}" id="mainImg">
+                {% if images|length > 1 %}
+                <button class="gallery-nav-btn prev" id="galleryPrev" onclick="galleryNav(-1)" aria-label="Image précédente">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                <button class="gallery-nav-btn next" id="galleryNext" onclick="galleryNav(1)" aria-label="Image suivante">
+                    <span class="material-icons">chevron_right</span>
+                </button>
+                <div class="gallery-counter" id="galleryCounter">1 / {{ images|length }}</div>
+                {% endif %}
             {% else %}
                 <div class="lieu-main-img-ph">
                     <span class="material-icons">landscape</span>
@@ -382,10 +415,12 @@
             {% endif %}
         </div>
         {% if images|length > 1 %}
-        <div class="lieu-thumbs">
+        <div class="lieu-thumbs" id="thumbsRow">
             {% for img in images %}
             <div class="lieu-thumb {% if forloop.first %}active{% endif %}"
-                 onclick="switchImg(this, '{{ img.image.url }}')">
+                 data-idx="{{ forloop.counter0 }}"
+                 data-src="{{ img.image.url }}"
+                 onclick="galleryGoTo({{ forloop.counter0 }})">
                 <img src="{{ img.image.url }}" alt="{{ img.caption|default:lieu.name }}">
             </div>
             {% endfor %}
@@ -692,13 +727,56 @@
 </main>
 
 <script>
-function switchImg(thumb, url) {
-    var mainImg = document.getElementById('mainImg');
-    if (mainImg) {
-        mainImg.src = url;
-        document.querySelectorAll('.lieu-thumb').forEach(function(t) { t.classList.remove('active'); });
-        thumb.classList.add('active');
+(function() {
+    var thumbs   = Array.from(document.querySelectorAll('.lieu-thumb'));
+    var mainImg  = document.getElementById('mainImg');
+    var counter  = document.getElementById('galleryCounter');
+    var prevBtn  = document.getElementById('galleryPrev');
+    var nextBtn  = document.getElementById('galleryNext');
+    var current  = 0;
+    var total    = thumbs.length;
+
+    if (!mainImg || total === 0) return;
+
+    function goTo(idx) {
+        if (total === 0) return;
+        current = (idx + total) % total;
+        mainImg.style.opacity = '.5';
+        setTimeout(function() {
+            mainImg.src = thumbs[current].dataset.src;
+            mainImg.style.opacity = '1';
+        }, 80);
+        thumbs.forEach(function(t) { t.classList.remove('active'); });
+        thumbs[current].classList.add('active');
+        // Scroll thumbnail into view
+        thumbs[current].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        if (counter) counter.textContent = (current + 1) + ' / ' + total;
+        if (prevBtn) prevBtn.disabled = false;
+        if (nextBtn) nextBtn.disabled = false;
     }
-}
+
+    // Expose for inline onclick on thumbnails
+    window.galleryGoTo = goTo;
+    window.galleryNav  = function(dir) { goTo(current + dir); };
+
+    // Keyboard
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft')  goTo(current - 1);
+        if (e.key === 'ArrowRight') goTo(current + 1);
+    });
+
+    // Touch swipe
+    var touchStartX = 0;
+    var wrap = document.getElementById('mainImgWrap');
+    if (wrap) {
+        wrap.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].clientX;
+        }, { passive: true });
+        wrap.addEventListener('touchend', function(e) {
+            var dx = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(dx) > 40) goTo(current + (dx < 0 ? 1 : -1));
+        }, { passive: true });
+    }
+})();
 </script>
 {% endblock %}
