@@ -80,6 +80,12 @@ msgstr "Profile-ko"
 msgid "What's new"
 msgstr "Inona ny vaovao"
 
+msgid "What's on your mind?"
+msgstr "Inona no ao an-tsainao ?"
+
+msgid "Sell something"
+msgstr "Amidio zavatra"
+
 msgid "Photo"
 msgstr "Sary"
 
