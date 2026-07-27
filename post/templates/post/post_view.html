@@ -1631,29 +1631,6 @@ body { background: var(--bg); }
                 <textarea name="body" id="cb-body-hidden"></textarea>
             </form>
 
-            {# ── Lieu sélectionné (chip) ── #}
-            <div id="cb-lieu-chip" style="display:none;padding:.25rem 1.1rem 0;"></div>
-
-            {# ── Autocomplete lieu ── #}
-            <div id="cb-lieu-box" style="display:none;padding:.35rem 1.1rem 0;position:relative;">
-                <div style="display:flex;align-items:center;gap:.4rem;background:var(--btn-bg);
-                            border:1.5px solid var(--accent);border-radius:10px;padding:.35rem .75rem;">
-                    <span class="material-icons" style="font-size:1rem;color:var(--accent);">location_on</span>
-                    <input id="cb-lieu-input" type="text" placeholder="Rechercher un lieu…"
-                           style="flex:1;background:none;border:none;outline:none;
-                                  color:var(--text);font-size:.87rem;"
-                           autocomplete="off">
-                    <button type="button" onclick="cbLieuClose()"
-                            style="background:none;border:none;cursor:pointer;padding:0;color:var(--text-muted);">
-                        <span class="material-icons" style="font-size:1rem;">close</span>
-                    </button>
-                </div>
-                <div id="cb-lieu-results"
-                     style="display:none;position:absolute;left:1.1rem;right:1.1rem;top:calc(100% + 2px);
-                            background:var(--card-bg);border:1px solid var(--border);border-radius:10px;
-                            box-shadow:0 4px 18px rgba(0,0,0,.18);z-index:120;overflow:hidden;"></div>
-            </div>
-
             {# ── Ligne top : avatar + trigger OU textarea (même emplacement) ── #}
             <div class="create-box-top" id="cb-top">
                 <img class="create-box-avatar" src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
@@ -1714,16 +1691,29 @@ body { background: var(--bg); }
                 <button class="create-box-action post" type="button" id="cb-write-btn">
                     <span class="material-icons">edit_note</span><span class="btn-label"> {% trans "Write" %}</span>
                 </button>
-                <a class="create-box-action" href="{% url 'post:kabary-create' %}"
-                   style="background:linear-gradient(135deg,var(--accent-glow,rgba(99,102,241,.1)),transparent);
-                           border:1px solid var(--accent);color:var(--accent);">
-                    <span class="material-icons">record_voice_over</span><span class="btn-label"> Kabary</span>
-                </a>
-                <a class="create-box-action" href="{% url 'post:vintana-create' %}"
-                   style="background:linear-gradient(135deg,rgba(191,95,255,.1),rgba(0,207,255,.07));
-                           border:1px solid rgba(191,95,255,.4);color:#bf5fff;">
-                    <span class="material-icons">lock_clock</span><span class="btn-label"> Vintana</span>
-                </a>
+            </div>
+
+            {# ── Lieu sélectionné (chip) — visible sous les boutons quand sélectionné ── #}
+            <div id="cb-lieu-chip" style="display:none;padding:.3rem 1.1rem .1rem;"></div>
+
+            {# ── Autocomplete lieu — s'ouvre au-dessus des boutons via bottom positioning ── #}
+            <div id="cb-lieu-box" style="display:none;padding:.35rem 1.1rem .4rem;position:relative;">
+                <div style="display:flex;align-items:center;gap:.4rem;background:var(--btn-bg);
+                            border:1.5px solid #e91e63;border-radius:10px;padding:.35rem .75rem;">
+                    <span class="material-icons" style="font-size:1rem;color:#e91e63;">location_on</span>
+                    <input id="cb-lieu-input" type="text" placeholder="Rechercher un lieu…"
+                           style="flex:1;background:none;border:none;outline:none;
+                                  color:var(--text);font-size:.87rem;"
+                           autocomplete="off">
+                    <button type="button" onclick="cbLieuClose()"
+                            style="background:none;border:none;cursor:pointer;padding:0;color:var(--text-muted);">
+                        <span class="material-icons" style="font-size:1rem;">close</span>
+                    </button>
+                </div>
+                <div id="cb-lieu-results"
+                     style="display:none;position:absolute;left:1.1rem;right:1.1rem;bottom:calc(100% + 2px);
+                            background:var(--card-bg);border:1px solid var(--border);border-radius:10px;
+                            box-shadow:0 -4px 18px rgba(0,0,0,.18);z-index:120;overflow:hidden;max-height:220px;overflow-y:auto;"></div>
             </div>
         </div>
 
