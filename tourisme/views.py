@@ -247,6 +247,20 @@ def lieu_submit(request):
     })
 
 
+def lieu_autocomplete(request):
+    """API JSON — recherche rapide de lieux pour le create-box."""
+    from django.http import JsonResponse as _JR
+    q = request.GET.get('q', '').strip()
+    if len(q) < 2:
+        return _JR({'results': []})
+    qs = (
+        LieuTouristique.objects.filter(is_approved=True)
+        .filter(Q(name__icontains=q) | Q(region__icontains=q))
+        .values('id', 'name', 'region', 'category', 'slug')[:8]
+    )
+    return _JR({'results': list(qs)})
+
+
 def guides_list(request):
     """Liste des guides touristiques vérifiés"""
     qs = GuideTouristique.objects.filter(is_active=True).select_related('user')

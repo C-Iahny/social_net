@@ -513,6 +513,55 @@ body { background: var(--bg); }
     /* opacity retiré — dégrade le contraste sans apport visuel */
 }
 .pc-sub .material-icons { font-size: .82rem; }
+/* ── Lieu chip on post cards ── */
+.pc-lieu-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    margin: .45rem 1rem .1rem;
+    padding: .22rem .65rem;
+    background: rgba(233,30,99,.08);
+    border: 1px solid rgba(233,30,99,.25);
+    border-radius: 20px;
+    color: #e91e63;
+    font-size: .8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .15s;
+}
+.pc-lieu-chip:hover { background: rgba(233,30,99,.15); }
+.pc-lieu-chip .material-icons { font-size: .9rem; }
+/* ── Lieu chip selected in create-box ── */
+.cb-lieu-selected {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    background: rgba(233,30,99,.1);
+    border: 1.5px solid rgba(233,30,99,.35);
+    border-radius: 20px;
+    padding: .22rem .7rem;
+    font-size: .82rem;
+    font-weight: 600;
+    color: #e91e63;
+}
+.cb-lieu-selected .material-icons { font-size: .9rem; }
+.cb-lieu-selected button { background:none;border:none;cursor:pointer;padding:0;color:#e91e63;line-height:1; }
+/* ── Lieu autocomplete result items ── */
+.cb-lieu-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .55rem .85rem;
+    cursor: pointer;
+    font-size: .86rem;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    transition: background .12s;
+}
+.cb-lieu-item:last-child { border-bottom: none; }
+.cb-lieu-item:hover { background: var(--hover); }
+.cb-lieu-item .material-icons { font-size: 1rem; color: #e91e63; flex-shrink: 0; }
+.cb-lieu-item-sub { font-size: .75rem; color: var(--text-muted); margin-left: auto; }
 .pc-category-tag {
     display: inline-block;
     background: var(--btn-bg);
@@ -1578,8 +1627,32 @@ body { background: var(--bg); }
                   action="{% url 'post:addPost' %}" style="display:none;">
                 {% csrf_token %}
                 <input type="hidden" name="ajax" value="1">
+                <input type="hidden" name="lieu_id" id="cb-lieu-id" value="">
                 <textarea name="body" id="cb-body-hidden"></textarea>
             </form>
+
+            {# ── Lieu sélectionné (chip) ── #}
+            <div id="cb-lieu-chip" style="display:none;padding:.25rem 1.1rem 0;"></div>
+
+            {# ── Autocomplete lieu ── #}
+            <div id="cb-lieu-box" style="display:none;padding:.35rem 1.1rem 0;position:relative;">
+                <div style="display:flex;align-items:center;gap:.4rem;background:var(--btn-bg);
+                            border:1.5px solid var(--accent);border-radius:10px;padding:.35rem .75rem;">
+                    <span class="material-icons" style="font-size:1rem;color:var(--accent);">location_on</span>
+                    <input id="cb-lieu-input" type="text" placeholder="Rechercher un lieu…"
+                           style="flex:1;background:none;border:none;outline:none;
+                                  color:var(--text);font-size:.87rem;"
+                           autocomplete="off">
+                    <button type="button" onclick="cbLieuClose()"
+                            style="background:none;border:none;cursor:pointer;padding:0;color:var(--text-muted);">
+                        <span class="material-icons" style="font-size:1rem;">close</span>
+                    </button>
+                </div>
+                <div id="cb-lieu-results"
+                     style="display:none;position:absolute;left:1.1rem;right:1.1rem;top:calc(100% + 2px);
+                            background:var(--card-bg);border:1px solid var(--border);border-radius:10px;
+                            box-shadow:0 4px 18px rgba(0,0,0,.18);z-index:120;overflow:hidden;"></div>
+            </div>
 
             {# ── Ligne top : avatar + trigger OU textarea (même emplacement) ── #}
             <div class="create-box-top" id="cb-top">
@@ -1628,6 +1701,10 @@ body { background: var(--bg); }
 
             {# ── Boutons d'action ── #}
             <div class="create-box-actions">
+                <button class="create-box-action" type="button" id="cb-lieu-btn" onclick="cbLieuToggle()"
+                        style="color:#e91e63;">
+                    <span class="material-icons">location_on</span><span class="btn-label"> Lieu</span>
+                </button>
                 <button class="create-box-action photo" type="button" id="cb-photo-btn">
                     <span class="material-icons">add_photo_alternate</span><span class="btn-label"> {% trans "Photos" %}</span>
                 </button>
@@ -1701,6 +1778,7 @@ body { background: var(--bg); }
             selectedFiles = [];
             prevGrid.innerHTML = ''; prevGrid.style.display = 'none';
             fileCount.textContent = '';
+            if (typeof cbLieuReset === 'function') cbLieuReset();
         }
 
         /* ── Auto-resize textarea ── */
@@ -1834,6 +1912,103 @@ body { background: var(--bg); }
         })();
         </script>
 
+        <script>
+        /* ── Lieu autocomplete dans le create-box ── */
+        (function(){
+        var lieuBox     = document.getElementById('cb-lieu-box');
+        var lieuInput   = document.getElementById('cb-lieu-input');
+        var lieuResults = document.getElementById('cb-lieu-results');
+        var lieuChip    = document.getElementById('cb-lieu-chip');
+        var lieuIdField = document.getElementById('cb-lieu-id');
+        var _timer = null;
+        var _selected = null;
+
+        window.cbLieuToggle = function() {
+            if (lieuBox.style.display === 'none') {
+                lieuBox.style.display = 'block';
+                lieuInput.focus();
+                /* Expand the create-box if not open */
+                var trigger = document.getElementById('cb-trigger');
+                if (trigger && trigger.style.display !== 'none') {
+                    trigger.click();
+                }
+            } else {
+                cbLieuClose();
+            }
+        };
+
+        window.cbLieuClose = function() {
+            lieuBox.style.display = 'none';
+            lieuResults.style.display = 'none';
+            lieuInput.value = '';
+        };
+
+        window.cbLieuReset = function() {
+            _selected = null;
+            lieuIdField.value = '';
+            lieuChip.style.display = 'none';
+            lieuChip.innerHTML = '';
+            cbLieuClose();
+        };
+
+        function selectLieu(item) {
+            _selected = item;
+            lieuIdField.value = item.id;
+            lieuChip.style.display = 'block';
+            lieuChip.innerHTML =
+                '<span class="cb-lieu-selected">'
+                + '<span class="material-icons">location_on</span>'
+                + _esc(item.name)
+                + ' <button type="button" onclick="cbLieuReset()" title="Retirer">'
+                + '<span class="material-icons" style="font-size:.85rem;">close</span>'
+                + '</button></span>';
+            lieuResults.style.display = 'none';
+            lieuBox.style.display = 'none';
+            lieuInput.value = '';
+        }
+
+        function _esc(s) {
+            return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        function _search(q) {
+            fetch('/tourisme/lieux/autocomplete/?q=' + encodeURIComponent(q))
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    var results = d.results || [];
+                    if (!results.length) {
+                        lieuResults.style.display = 'none'; return;
+                    }
+                    var html = results.map(function(item) {
+                        return '<div class="cb-lieu-item" onclick="(function(){'
+                            + 'var it={id:' + item.id + ',name:' + JSON.stringify(item.name) + ',slug:' + JSON.stringify(item.slug) + '};'
+                            + 'selectLieu(it);'
+                            + '})()">'
+                            + '<span class="material-icons">location_on</span>'
+                            + _esc(item.name)
+                            + '<span class="cb-lieu-item-sub">' + _esc(item.region || '') + '</span>'
+                            + '</div>';
+                    }).join('');
+                    lieuResults.innerHTML = html;
+                    lieuResults.style.display = 'block';
+                })
+                .catch(function(){});
+        }
+
+        lieuInput.addEventListener('input', function(){
+            clearTimeout(_timer);
+            var q = lieuInput.value.trim();
+            if (q.length < 2) { lieuResults.style.display='none'; return; }
+            _timer = setTimeout(function(){ _search(q); }, 280);
+        });
+
+        /* Fermer dropdown si clic hors */
+        document.addEventListener('click', function(e){
+            if (!lieuBox.contains(e.target)) lieuResults.style.display = 'none';
+        });
+        })();
+        </script>
+
         <!-- ── Anchor pour injection des nouveaux posts créés inline ── -->
         <div id="cb-post-list-anchor">
 
@@ -1948,6 +2123,13 @@ body { background: var(--bg); }
                 {% endif %}
 
                 {% include 'post/_post_media.html' %}
+
+                {% if post.lieu %}
+                <a href="{% url 'tourisme:lieu_detail' post.lieu.slug %}" class="pc-lieu-chip">
+                    <span class="material-icons">location_on</span>
+                    {{ post.lieu.name }}
+                </a>
+                {% endif %}
 
                 <!-- Reaction summary bar -->
                 <div class="pc-reaction-bar" id="reaction-bar-{{ post.id }}"
