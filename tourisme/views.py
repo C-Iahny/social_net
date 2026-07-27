@@ -63,8 +63,18 @@ def lieux_list(request):
 
 def lieu_detail(request, slug):
     """Page de détail d'un lieu touristique"""
-    lieu = get_object_or_404(LieuTouristique, slug=slug, is_approved=True)
-    LieuTouristique.objects.filter(pk=lieu.pk).update(views_count=lieu.views_count + 1)
+    lieu = get_object_or_404(LieuTouristique, slug=slug)
+
+    # Auteur et staff peuvent voir les lieux non encore approuvés
+    is_owner = request.user.is_authenticated and (
+        lieu.added_by == request.user or request.user.is_staff
+    )
+    if not lieu.is_approved and not is_owner:
+        from django.http import Http404
+        raise Http404
+
+    if lieu.is_approved:
+        LieuTouristique.objects.filter(pk=lieu.pk).update(views_count=lieu.views_count + 1)
 
     # Guides qui couvrent ce lieu
     guides = lieu.guides.filter(is_verified=True, is_active=True).select_related('user')[:4]
@@ -131,6 +141,68 @@ def lieu_detail(request, slug):
         'user_avis':   user_avis,
         'avis_error':  avis_error,
         'lieu_posts':  lieu_posts,
+        'is_owner':    is_owner,
+    })
+
+
+@login_required
+def lieu_edit(request, slug):
+    """Modifier un lieu soumis par l'utilisateur courant."""
+    lieu = get_object_or_404(LieuTouristique, slug=slug)
+
+    # Seul l'auteur ou un staff peut modifier
+    if lieu.added_by != request.user and not request.user.is_staff:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden('Vous ne pouvez pas modifier ce lieu.')
+
+    error = ''
+    if request.method == 'POST':
+        name        = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        category    = request.POST.get('category', lieu.category)
+        region      = request.POST.get('region', lieu.region)
+        address     = request.POST.get('address', '').strip()
+        best_period = request.POST.get('best_period', '').strip()
+        entry_fee   = request.POST.get('entry_fee', '').strip()
+        tips        = request.POST.get('tips', '').strip()
+
+        if not name or not description:
+            error = 'Le nom et la description sont obligatoires.'
+        else:
+            lieu.name        = name
+            lieu.description = description
+            lieu.category    = category
+            lieu.region      = region
+            lieu.address     = address
+            lieu.best_period = best_period
+            lieu.entry_fee   = entry_fee
+            lieu.tips        = tips
+            lieu.save()
+
+            # Suppression d'images cochées
+            delete_ids = request.POST.getlist('delete_images')
+            if delete_ids:
+                lieu.images.filter(pk__in=delete_ids).delete()
+
+            # Ajout de nouvelles images
+            new_images = request.FILES.getlist('images')
+            existing_count = lieu.images.count()
+            for i, img in enumerate(new_images[:max(0, 8 - existing_count)]):
+                LieuImage.objects.create(
+                    lieu=lieu, image=img,
+                    is_primary=(existing_count == 0 and i == 0),
+                    order=existing_count + i,
+                )
+
+            messages.success(request, 'Lieu mis à jour avec succès.')
+            return redirect('tourisme:lieu_detail', slug=lieu.slug)
+
+    return render(request, 'tourisme/lieu_edit.html', {
+        'lieu':       lieu,
+        'images':     lieu.images.all(),
+        'categories': LIEU_CATEGORY_CHOICES,
+        'regions':    REGION_CHOICES,
+        'error':      error,
     })
 
 

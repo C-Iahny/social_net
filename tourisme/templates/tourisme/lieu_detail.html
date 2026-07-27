@@ -384,6 +384,13 @@
 <main>
 <div class="lieu-detail-wrap">
 
+    {% if not lieu.is_approved and is_owner %}
+    <div style="background:#fff3e0;border-left:4px solid #f57c00;border-radius:0 12px 12px 0;padding:.75rem 1rem;margin-bottom:1rem;font-size:.86rem;color:#e65100;display:flex;align-items:center;gap:.5rem;">
+        <span class="material-icons" style="font-size:1.1rem;">hourglass_top</span>
+        Ce lieu est en attente de validation par un administrateur. Il n'est visible que par vous.
+    </div>
+    {% endif %}
+
     <!-- Breadcrumb -->
     <nav class="tour-breadcrumb">
         <a href="{% url 'tourisme:home' %}">Tourisme</a>
@@ -453,11 +460,20 @@
                 </span>
             </div>
         </div>
-        <a href="{% url 'tourisme:lieux_list' %}?cat={{ lieu.category }}"
-           style="color:var(--accent);font-size:.82rem;font-weight:600;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:.2rem;">
-            <span class="material-icons" style="font-size:1rem">filter_list</span>
-            Plus de {{ lieu.get_category_display|lower }}
-        </a>
+        <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+            {% if is_owner %}
+            <a href="{% url 'tourisme:lieu_edit' lieu.slug %}"
+               style="display:inline-flex;align-items:center;gap:.3rem;background:var(--btn-bg);border:1.5px solid var(--border);color:var(--text);border-radius:50px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;text-decoration:none;">
+                <span class="material-icons" style="font-size:.95rem">edit</span>
+                Modifier
+            </a>
+            {% endif %}
+            <a href="{% url 'tourisme:lieux_list' %}?cat={{ lieu.category }}"
+               style="color:var(--accent);font-size:.82rem;font-weight:600;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:.2rem;">
+                <span class="material-icons" style="font-size:1rem">filter_list</span>
+                Plus de {{ lieu.get_category_display|lower }}
+            </a>
+        </div>
     </div>
 
     <!-- ── Description ── -->
