@@ -1568,7 +1568,46 @@ def diag_media(request):
 
     # ── Informations de configuration R2 ─────────────────────────────────────
     r2_account_id   = getattr(_settings, 'R2_ACCOUNT_ID', None)
-    r2_public_url   = getattr(_settings, 'R2_PUBLIC_URL', None)
+    def reactions_who(request, post_id):
+    """GET /post/<id>/reactions/ — liste des utilisateurs qui ont réagi."""
+    post = get_object_or_404(Post, id=post_id)
+
+    filter_type = request.GET.get('type', '')  # '' = tous
+    qs = Reaction.objects.filter(post=post).select_related('user')
+    if filter_type:
+        qs = qs.filter(reaction_type=filter_type)
+    qs = qs.order_by('-created_at')[:200]
+
+    EMOJI_MAP = {'like': '👍', 'heart': '❤️', 'laugh': '😂', 'wow': '😮', 'sad': '😢'}
+
+    rows = []
+    for r in qs:
+        try:
+            avatar = r.user.profile_image.url if r.user.profile_image else None
+        except Exception:
+            avatar = None
+        rows.append({
+            'id':            r.user.id,
+            'username':      r.user.username,
+            'avatar':        avatar or '/static/images/default_profile_image.png',
+            'reaction_type': r.reaction_type,
+            'emoji':         EMOJI_MAP.get(r.reaction_type, ''),
+        })
+
+    # Comptages par type pour les onglets
+    from django.db.models import Count
+    counts_qs = (
+        Reaction.objects.filter(post=post)
+        .values('reaction_type')
+        .annotate(c=Count('id'))
+    )
+    counts = {row['reaction_type']: row['c'] for row in counts_qs}
+    total  = sum(counts.values())
+
+    return JsonResponse({'rows': rows, 'counts': counts, 'total': total})
+
+
+r2_public_url   = getattr(_settings, 'R2_PUBLIC_URL', None)
     r2_bucket       = getattr(_settings, 'AWS_STORAGE_BUCKET_NAME', None) or getattr(_settings, 'R2_BUCKET_NAME', None)
     r2_access_key   = bool(getattr(_settings, 'AWS_ACCESS_KEY_ID', None))
     media_url       = getattr(_settings, 'MEDIA_URL', '/')
