@@ -45,6 +45,9 @@ _init_chunks: dict = {}     # room_id (str) → { 'data': base64_str, 'mime': st
 RING_BUFFER_SIZE = 12       # 12 chunks × 250 ms ≈ 3 secondes (≥ 1 keyframe VP9)
 _recent_chunks: dict = {}   # room_id (str) → deque[{ 'data': str, 'mime': str }]
 
+MAX_VOD_CHUNKS = 1800   # ~7 min à 4 chunks/s — protège la RAM
+_vod_chunks: dict = {}  # room_id → list[{'data': base64, 'is_init': bool, 'mime': str}]
+
 
 class LiveConsumer(AsyncJsonWebsocketConsumer):
 
@@ -170,6 +173,15 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                             _recent_chunks[rid] = deque(maxlen=RING_BUFFER_SIZE)
                         _recent_chunks[rid].append({'data': data_b64, 'mime': mime})
 
+                    # Accumulation VOD (limité à MAX_VOD_CHUNKS)
+                    if rid not in _vod_chunks:
+                        _vod_chunks[rid] = []
+                    if is_init:
+                        # Réinitialiser les chunks VOD à chaque nouveau flux (flip caméra etc.)
+                        _vod_chunks[rid] = [{'data': data_b64, 'is_init': True, 'mime': mime}]
+                    elif len(_vod_chunks[rid]) < MAX_VOD_CHUNKS:
+                        _vod_chunks[rid].append({'data': data_b64, 'is_init': False, 'mime': mime})
+
                     await self.channel_layer.group_send(self.room_group, {
                         'type': 'room_event',
                         'payload': {
@@ -196,6 +208,21 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                         },
                     })
 
+            elif msg_type == 'reaction':
+                emoji = content.get('emoji', '')
+                ALLOWED = ['❤️','🔥','😂','👏','😮','🎉']
+                if emoji in ALLOWED:
+                    avatar = await self._get_avatar_url()
+                    await self.channel_layer.group_send(self.room_group, {
+                        'type': 'room_event',
+                        'payload': {
+                            'type':     'reaction',
+                            'emoji':    emoji,
+                            'username': self.user.username,
+                            'avatar':   avatar,
+                        },
+                    })
+
             elif msg_type == 'heartbeat':
                 # Réinitialiser le watchdog en annulant + relançant la tâche
                 if self.is_host:
@@ -208,6 +235,10 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                     rid = str(self.room_id)
                     _init_chunks.pop(rid, None)
                     _recent_chunks.pop(rid, None)
+                    # Générer le replay VOD si des chunks ont été accumulés
+                    vod = _vod_chunks.pop(rid, None)
+                    if vod and len(vod) > 10:
+                        asyncio.ensure_future(self._upload_vod(vod))
                     await self._do_end_room()
                     await self.channel_layer.group_send(self.room_group, {
                         'type': 'room_event',
@@ -506,6 +537,43 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             return self.user.profile_image.url
         except Exception:
             return '/static/images/default_profile_image.png'
+
+    async def _upload_vod(self, chunks):
+        """Upload les chunks WebM accumulés vers Cloudinary comme replay VOD."""
+        import base64 as _b64
+        import io
+        try:
+            raw = b''.join(_b64.b64decode(c['data']) for c in chunks)
+            print(f"[LIVE VOD] assemblage {len(raw)//1024} KB pour room {self.room_id}", flush=True)
+
+            from channels.db import database_sync_to_async
+            @database_sync_to_async
+            def _do_upload():
+                try:
+                    import cloudinary.uploader
+                    result = cloudinary.uploader.upload(
+                        io.BytesIO(raw),
+                        resource_type='video',
+                        folder='vazimba/vod/',
+                        public_id=f'live_{self.room_id}',
+                        overwrite=True,
+                        format='webm',
+                    )
+                    url = result.get('secure_url', '')
+                    from video.models import LiveRoom
+                    LiveRoom.objects.filter(pk=self.room_id).update(
+                        replay_url=url,
+                        replay_available=True,
+                    )
+                    print(f"[LIVE VOD] ✅ replay disponible: {url}", flush=True)
+                    return url
+                except Exception as e:
+                    print(f"[LIVE VOD] ❌ upload échoué: {e}", flush=True)
+                    return ''
+
+            await _do_upload()
+        except Exception as e:
+            print(f"[LIVE VOD] ❌ erreur assemblage: {e}", flush=True)
 
     @database_sync_to_async
     def _get_friends_and_avatar(self):

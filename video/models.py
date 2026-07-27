@@ -24,10 +24,12 @@ class LiveRoom(models.Model):
         related_name='live_rooms',
     )
     # Django Channels channel_name of the host's WebSocket — used for direct signaling
-    host_channel  = models.CharField(max_length=300, blank=True)
-    viewer_count  = models.PositiveIntegerField(default=0)
-    created_at    = models.DateTimeField(auto_now_add=True)
-    ended_at      = models.DateTimeField(null=True, blank=True)
+    host_channel     = models.CharField(max_length=300, blank=True)
+    viewer_count     = models.PositiveIntegerField(default=0)
+    created_at       = models.DateTimeField(auto_now_add=True)
+    ended_at         = models.DateTimeField(null=True, blank=True)
+    replay_url       = models.URLField(max_length=500, blank=True, default='')
+    replay_available = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['-created_at']
