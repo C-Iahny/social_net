@@ -697,6 +697,70 @@ body { background: var(--bg); }
     margin-right: -5px; position: relative; z-index: 1;
 }
 .rc-count { font-weight: 600; color: var(--text-muted); font-size: .78rem; margin-left: 8px; }
+.pc-reaction-bar { cursor: pointer; border-radius: 8px; transition: background .15s; }
+.pc-reaction-bar:hover { background: var(--hover); }
+
+/* ── Modal réactions ── */
+#rw-modal {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.45); align-items: center; justify-content: center;
+    padding: 1rem;
+}
+#rw-modal.open { display: flex; }
+#rw-panel {
+    background: var(--bg-card); border-radius: 18px;
+    box-shadow: 0 12px 48px rgba(0,0,0,.25);
+    width: 100%; max-width: 420px;
+    max-height: 80vh; display: flex; flex-direction: column;
+    overflow: hidden;
+}
+#rw-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.1rem .6rem;
+    border-bottom: 1px solid var(--border);
+}
+#rw-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+#rw-close {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); padding: .2rem;
+    display: flex; align-items: center;
+}
+#rw-close .material-icons { font-size: 1.3rem; }
+#rw-tabs {
+    display: flex; overflow-x: auto; scrollbar-width: none;
+    padding: .5rem .8rem 0; gap: .3rem; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+#rw-tabs::-webkit-scrollbar { display: none; }
+.rw-tab {
+    background: none; border: none; border-radius: 50px;
+    padding: .3rem .75rem; font-size: .83rem; font-weight: 600;
+    cursor: pointer; color: var(--text-muted); white-space: nowrap;
+    transition: background .15s, color .15s;
+    border-bottom: 2px solid transparent;
+    border-radius: 6px 6px 0 0;
+}
+.rw-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-glow); }
+.rw-tab:hover:not(.active) { background: var(--hover); color: var(--text); }
+#rw-list {
+    flex: 1; overflow-y: auto; padding: .6rem .8rem;
+}
+.rw-row {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .55rem .4rem; border-radius: 10px;
+    text-decoration: none; color: var(--text);
+    transition: background .15s;
+}
+.rw-row:hover { background: var(--hover); }
+.rw-av {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 1rem; color: #fff; overflow: hidden;
+}
+.rw-av img { width: 100%; height: 100%; object-fit: cover; }
+.rw-name { font-size: .9rem; font-weight: 600; flex: 1; }
+.rw-emoji { font-size: 1.25rem; flex-shrink: 0; }
 
 /* ── Action bar ── */
 .pc-footer {
@@ -1887,6 +1951,8 @@ body { background: var(--bg); }
 
                 <!-- Reaction summary bar -->
                 <div class="pc-reaction-bar" id="reaction-bar-{{ post.id }}"
+                     onclick="rwOpen({{ post.id }})"
+                     title="Voir les réactions"
                      {% if not post.total_reactions %}style="display:none"{% endif %}>
                     <div class="rc-emoji-group" id="reaction-summary-{{ post.id }}">
                         {% for rtype, cnt in post.reaction_counts.items %}
@@ -3356,6 +3422,106 @@ function escHtml(str) {
 
     document.addEventListener('DOMContentLoaded', refreshLives);
     setInterval(refreshLives, 20000);
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════
+     MODAL RÉACTIONS — qui a réagi au post
+     ══════════════════════════════════════════════ -->
+<div id="rw-modal" onclick="if(event.target===this)rwClose()">
+  <div id="rw-panel">
+    <div id="rw-header">
+      <span id="rw-title">Réactions</span>
+      <button id="rw-close" onclick="rwClose()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div id="rw-tabs"></div>
+    <div id="rw-list"><p style="color:var(--text-muted);font-size:.88rem;padding:.8rem .4rem;">Chargement…</p></div>
+  </div>
+</div>
+
+<script>
+(function(){
+    var _rwPostId   = null;
+    var _rwCounts   = {};
+    var _rwRows     = [];
+    var _rwActive   = '';
+    var EMOJI_MAP   = {like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢'};
+    var LABEL_MAP   = {like:'J\'aime', heart:'Amour', laugh:'Hilarant', wow:'Wow', sad:'Triste'};
+
+    window.rwOpen = function(postId) {
+        _rwPostId = postId;
+        _rwActive = '';
+        document.getElementById('rw-modal').classList.add('open');
+        document.getElementById('rw-list').innerHTML =
+            '<p style="color:var(--text-muted);font-size:.88rem;padding:.8rem .4rem;">Chargement…</p>';
+        document.getElementById('rw-tabs').innerHTML = '';
+
+        fetch('/post/' + postId + '/reactions/')
+            .then(function(r){ return r.json(); })
+            .then(function(d){
+                _rwCounts = d.counts || {};
+                _rwRows   = d.rows   || [];
+                _buildTabs(d.total || 0);
+                _renderList('');
+            })
+            .catch(function(){
+                document.getElementById('rw-list').innerHTML =
+                    '<p style="color:var(--text-muted);padding:.8rem .4rem;">Erreur de chargement.</p>';
+            });
+    };
+
+    window.rwClose = function() {
+        document.getElementById('rw-modal').classList.remove('open');
+    };
+
+    function _buildTabs(total) {
+        var tabs = document.getElementById('rw-tabs');
+        var html = '<button class="rw-tab active" onclick="rwFilter(\'\')">Tous ' + total + '</button>';
+        Object.keys(_rwCounts).forEach(function(type) {
+            var emoji = EMOJI_MAP[type] || '';
+            var cnt   = _rwCounts[type] || 0;
+            html += '<button class="rw-tab" onclick="rwFilter(\'' + type + '\')">'
+                  + emoji + ' ' + cnt + '</button>';
+        });
+        tabs.innerHTML = html;
+    }
+
+    window.rwFilter = function(type) {
+        _rwActive = type;
+        document.querySelectorAll('.rw-tab').forEach(function(t){ t.classList.remove('active'); });
+        var active = document.querySelector('.rw-tab[onclick="rwFilter(\'' + type + '\')"]');
+        if (!active) active = document.querySelector('.rw-tab');
+        if (active) active.classList.add('active');
+        _renderList(type);
+    };
+
+    function _renderList(type) {
+        var list = document.getElementById('rw-list');
+        var rows = type ? _rwRows.filter(function(r){ return r.reaction_type === type; }) : _rwRows;
+
+        if (!rows.length) {
+            list.innerHTML = '<p style="color:var(--text-muted);font-size:.88rem;padding:.8rem .4rem;">Aucune réaction.</p>';
+            return;
+        }
+
+        var html = rows.map(function(r) {
+            return '<a href="/account/' + r.id + '/" class="rw-row">'
+                + '<div class="rw-av"><img src="' + _e(r.avatar) + '" onerror="this.parentNode.textContent=\'' + _e(r.username.charAt(0).toUpperCase()) + '\'"></div>'
+                + '<span class="rw-name">' + _e(r.username) + '</span>'
+                + '<span class="rw-emoji">' + (r.emoji || '') + '</span>'
+                + '</a>';
+        }).join('');
+        list.innerHTML = html;
+    }
+
+    function _e(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // Fermeture clavier
+    document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') rwClose();
+    });
 })();
 </script>
 

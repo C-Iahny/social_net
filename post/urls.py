@@ -26,6 +26,7 @@ from .views import (
     mes_brouillons,
     mes_favoris_posts,
     diag_media,
+    reactions_who,
 )
 
 app_name = 'post'
@@ -55,5 +56,6 @@ urlpatterns = [
     path('tendances/',         tendances_view,        name='tendances'),
     path('signaler/',          report_content,        name='report-content'),
     path('diag/',              diag_media,            name='diag-media'),
-    path('<int:post_id>/',     post_detail,           name='post-detail'),
+    path('<int:post_id>/reactions/', reactions_who,  name='reactions-who'),
+    path('<int:post_id>/',           post_detail,    name='post-detail'),
 ]
