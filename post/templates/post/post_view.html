@@ -3459,14 +3459,18 @@ function escHtml(str) {
         document.getElementById('rw-tabs').innerHTML = '';
 
         fetch('/post/' + postId + '/reactions/')
-            .then(function(r){ return r.json(); })
+            .then(function(r){
+                if (!r.ok) { throw new Error('HTTP ' + r.status + ' ' + r.url); }
+                return r.json();
+            })
             .then(function(d){
                 _rwCounts = d.counts || {};
                 _rwRows   = d.rows   || [];
                 _buildTabs(d.total || 0);
                 _renderList('');
             })
-            .catch(function(){
+            .catch(function(err){
+                console.error('[reactions_who] fetch error:', err);
                 document.getElementById('rw-list').innerHTML =
                     '<p style="color:var(--text-muted);padding:.8rem .4rem;">Erreur de chargement.</p>';
             });
