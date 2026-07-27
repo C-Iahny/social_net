@@ -167,3 +167,31 @@ class GuideTouristique(models.Model):
     @property
     def language_list(self):
         return [l.strip() for l in self.languages.split(',') if l.strip()]
+
+
+class LieuAvis(models.Model):
+    """Avis / note laissé par un utilisateur sur un lieu touristique."""
+    RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
+
+    lieu      = models.ForeignKey(LieuTouristique, on_delete=models.CASCADE,
+                                  related_name='avis', verbose_name=_('Lieu'))
+    author    = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                  related_name='avis_tourisme', verbose_name=_('Auteur'))
+    rating    = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=5,
+                                                  verbose_name=_('Note (1-5)'))
+    comment   = models.TextField(verbose_name=_('Commentaire'))
+    visited_at = models.DateField(null=True, blank=True, verbose_name=_('Date de visite'))
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        unique_together = [('lieu', 'author')]   # 1 avis par utilisateur par lieu
+        verbose_name = _('Avis')
+        verbose_name_plural = _('Avis')
+
+    def __str__(self):
+        return f'{self.author.username} → {self.lieu.name} ({self.rating}★)'
+
+    @property
+    def stars(self):
+        return '★' * self.rating + '☆' * (5 - self.rating)

@@ -95,6 +95,13 @@ class Post(models.Model):
         help_text='Région de Madagascar du post (auto-remplie depuis le profil de l\'auteur)',
         db_index=True,
     )
+    lieu = models.ForeignKey(
+        'tourisme.LieuTouristique',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='posts',
+        verbose_name='Lieu touristique lié',
+    )
 
     # ── Statut & publication programmée ──────────────────────────────────────
     STATUS_PUBLISHED = 'published'
