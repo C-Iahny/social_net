@@ -1711,9 +1711,9 @@ body { background: var(--bg); }
                     </button>
                 </div>
                 <div id="cb-lieu-results"
-                     style="display:none;position:absolute;left:1.1rem;right:1.1rem;bottom:calc(100% + 2px);
+                     style="display:none;position:fixed;
                             background:var(--card-bg);border:1px solid var(--border);border-radius:10px;
-                            box-shadow:0 -4px 18px rgba(0,0,0,.18);z-index:120;overflow:hidden;max-height:220px;overflow-y:auto;"></div>
+                            box-shadow:0 4px 18px rgba(0,0,0,.22);z-index:9999;overflow:hidden;max-height:220px;overflow-y:auto;min-width:240px;"></div>
             </div>
         </div>
 
@@ -1961,6 +1961,13 @@ body { background: var(--bg); }
             return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         }
 
+        function _positionResults() {
+            var rect = lieuInput.getBoundingClientRect();
+            lieuResults.style.left  = rect.left + 'px';
+            lieuResults.style.width = rect.width + 'px';
+            lieuResults.style.top   = (rect.bottom + 6) + 'px';
+        }
+
         function _search(q) {
             fetch('/tourisme/lieux/autocomplete/?q=' + encodeURIComponent(q))
                 .then(function(r){ return r.json(); })
@@ -1980,6 +1987,7 @@ body { background: var(--bg); }
                             + '</div>';
                     }).join('');
                     lieuResults.innerHTML = html;
+                    _positionResults();
                     lieuResults.style.display = 'block';
                 })
                 .catch(function(){});
