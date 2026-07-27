@@ -1602,38 +1602,46 @@ def diag_media(request):
 
 def reactions_who(request, post_id):
     """GET /post/<id>/reactions/ — liste des utilisateurs qui ont réagi."""
-    post = get_object_or_404(Post, id=post_id)
+    try:
+        post = get_object_or_404(Post, id=post_id)
 
-    filter_type = request.GET.get('type', '')  # '' = tous
-    qs = Reaction.objects.filter(post=post).select_related('user')
-    if filter_type:
-        qs = qs.filter(reaction_type=filter_type)
-    qs = qs.order_by('-created_at')[:200]
+        filter_type = request.GET.get('type', '')  # '' = tous
+        qs = Reaction.objects.filter(post=post).select_related('user')
+        if filter_type:
+            qs = qs.filter(reaction_type=filter_type)
+        qs = qs.order_by('-created_at')[:200]
 
-    EMOJI_MAP = {'like': '👍', 'heart': '❤️', 'laugh': '😂', 'wow': '😮', 'sad': '😢'}
+        EMOJI_MAP = {'like': '👍', 'heart': '❤️', 'laugh': '😂', 'wow': '😮', 'sad': '😢'}
 
-    rows = []
-    for r in qs:
-        try:
-            avatar = r.user.profile_image.url if r.user.profile_image else None
-        except Exception:
-            avatar = None
-        rows.append({
-            'id':            r.user.id,
-            'username':      r.user.username,
-            'avatar':        avatar or '/static/images/default_profile_image.png',
-            'reaction_type': r.reaction_type,
-            'emoji':         EMOJI_MAP.get(r.reaction_type, ''),
-        })
+        rows = []
+        for r in qs:
+            try:
+                avatar = r.user.profile_image.url if r.user.profile_image else None
+            except Exception:
+                avatar = None
+            rows.append({
+                'id':            r.user.id,
+                'username':      r.user.username,
+                'avatar':        avatar or '/static/images/default_profile_image.png',
+                'reaction_type': r.reaction_type,
+                'emoji':         EMOJI_MAP.get(r.reaction_type, ''),
+            })
 
-    # Comptages par type pour les onglets
-    from django.db.models import Count
-    counts_qs = (
-        Reaction.objects.filter(post=post)
-        .values('reaction_type')
-        .annotate(c=Count('id'))
-    )
-    counts = {row['reaction_type']: row['c'] for row in counts_qs}
-    total  = sum(counts.values())
+        # Comptages par type pour les onglets
+        from django.db.models import Count
+        counts_qs = (
+            Reaction.objects.filter(post=post)
+            .values('reaction_type')
+            .annotate(c=Count('id'))
+        )
+        counts = {row['reaction_type']: row['c'] for row in counts_qs}
+        total  = sum(counts.values())
 
-    return JsonResponse({'rows': rows, 'counts': counts, 'total': total})
+        resp = JsonResponse({'rows': rows, 'counts': counts, 'total': total})
+        resp['Cache-Control'] = 'no-store'
+        return resp
+
+    except Exception as exc:
+        import logging
+        logging.getLogger(__name__).exception('reactions_who error post_id=%s: %s', post_id, exc)
+        return JsonResponse({'error': str(exc), 'rows': [], 'counts': {}, 'total': 0}, status=500)
