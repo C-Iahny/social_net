@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Palette Vazimba -->
+    <color name="colorPrimary">#1a1a2e</color>
+    <color name="colorPrimaryDark">#16213e</color>
+    <color name="colorAccent">#e94560</color>
+    <color name="colorBackground">#1a1a2e</color>
+    <color name="colorSurface">#16213e</color>
+    <color name="colorOnPrimary">#ffffff</color>
+    <color name="splashBackground">#1a1a2e</color>
+</resources>

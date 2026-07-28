@@ -1,0 +1,1656 @@
+# English translations — VAZIMBA Social Network
+# Language: English (en)
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# ── Navigation ──
+msgid "Feed"
+msgstr "Feed"
+
+msgid "Explore"
+msgstr "Explore"
+
+msgid "Search..."
+msgstr "Search..."
+
+msgid "Logout"
+msgstr "Logout"
+
+msgid "Login"
+msgstr "Login"
+
+msgid "Register"
+msgstr "Register"
+
+msgid "Dark mode"
+msgstr "Dark mode"
+
+# ── Profile ──
+msgid "Edit profile"
+msgstr "Edit profile"
+
+msgid "Change password"
+msgstr "Change password"
+
+msgid "My profile"
+msgstr "My profile"
+
+msgid "About me"
+msgstr "About me"
+
+msgid "posts"
+msgstr "posts"
+
+msgid "friends"
+msgstr "friends"
+
+msgid "Send message"
+msgstr "Send message"
+
+msgid "Add friend"
+msgstr "Add friend"
+
+msgid "Friend request sent"
+msgstr "Friend request sent"
+
+msgid "Remove friend"
+msgstr "Remove friend"
+
+msgid "Cancel request"
+msgstr "Cancel request"
+
+# ── Profile tabs ──
+msgid "Posts"
+msgstr "Posts"
+
+msgid "Photos"
+msgstr "Photos"
+
+msgid "Friends"
+msgstr "Friends"
+
+msgid "My Profile"
+msgstr "My Profile"
+
+# ── Feed ──
+msgid "What's new"
+msgstr "What's on your mind"
+
+msgid "Photo"
+msgstr "Photo"
+
+msgid "Video"
+msgstr "Video"
+
+msgid "Feeling"
+msgstr "Feeling"
+
+msgid "New posts available — click to refresh"
+msgstr "New posts available — click to refresh"
+
+# ── Friends ──
+msgid "Friend requests"
+msgstr "Friend requests"
+
+msgid "My friends"
+msgstr "My friends"
+
+msgid "People you may know"
+msgstr "People you may know"
+
+msgid "Accept"
+msgstr "Accept"
+
+msgid "Decline"
+msgstr "Decline"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "No friends yet"
+msgstr "No friends yet"
+
+# ── Stories ──
+msgid "My story"
+msgstr "My story"
+
+msgid "Add story"
+msgstr "Add story"
+
+msgid "Image"
+msgstr "Image"
+
+msgid "Text"
+msgstr "Text"
+
+msgid "Image + Text"
+msgstr "Image + Text"
+
+msgid "Publish"
+msgstr "Publish"
+
+msgid "Cancel"
+msgstr "Cancel"
+
+msgid "Choose a file"
+msgstr "Choose a file"
+
+msgid "Add a caption..."
+msgstr "Add a caption..."
+
+# ── Authentication ──
+msgid "Welcome back"
+msgstr "Welcome back"
+
+msgid "Username"
+msgstr "Username"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Forgot password?"
+msgstr "Forgot password?"
+
+msgid "Don't have an account?"
+msgstr "Don't have an account?"
+
+msgid "Already have an account?"
+msgstr "Already have an account?"
+
+msgid "First name"
+msgstr "First name"
+
+msgid "Last name"
+msgstr "Last name"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Confirm password"
+msgstr "Confirm password"
+
+msgid "Create account"
+msgstr "Create account"
+
+msgid "Password strength"
+msgstr "Password strength"
+
+msgid "Weak"
+msgstr "Weak"
+
+msgid "Medium"
+msgstr "Medium"
+
+msgid "Strong"
+msgstr "Strong"
+
+msgid "Excellent"
+msgstr "Excellent"
+
+# ── Notifications ──
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "No notifications"
+msgstr "No notifications"
+
+msgid "sent a friend request"
+msgstr "sent you a friend request"
+
+msgid "accepted your friend request"
+msgstr "accepted your friend request"
+
+msgid "liked your post"
+msgstr "liked your post"
+
+msgid "commented on your post"
+msgstr "commented on your post"
+
+# ── Chat ──
+msgid "Messages"
+msgstr "Messages"
+
+msgid "No messages"
+msgstr "No messages"
+
+msgid "Type a message..."
+msgstr "Type a message..."
+
+msgid "Send"
+msgstr "Send"
+
+msgid "Attach file"
+msgstr "Attach file"
+
+# ── General ──
+msgid "Settings"
+msgstr "Settings"
+
+msgid "Home"
+msgstr "Home"
+
+msgid "Save"
+msgstr "Save"
+
+msgid "Delete"
+msgstr "Delete"
+
+msgid "Confirm"
+msgstr "Confirm"
+
+msgid "Close"
+msgstr "Close"
+
+msgid "Loading..."
+msgstr "Loading..."
+
+msgid "See all"
+msgstr "See all"
+
+msgid "View profile"
+msgstr "View profile"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "French"
+msgstr "French"
+
+msgid "English"
+msgstr "English"
+
+msgid "Malagasy"
+msgstr "Malagasy"
+
+# ── Landing page ──
+msgid "Join VAZIMBA"
+msgstr "Join VAZIMBA"
+
+msgid "Discover publications, people and content from around the world."
+msgstr "Discover publications, people and content from around the world."
+
+msgid "Recent posts"
+msgstr "Recent posts"
+
+msgid "Popular"
+msgstr "Popular"
+
+msgid "Recent"
+msgstr "Recent"
+
+msgid "Publications"
+msgstr "Publications"
+
+msgid "Members"
+msgstr "Members"
+
+msgid "View my feed"
+msgstr "View my feed"
+
+msgid "About"
+msgstr "About"
+
+msgid "Privacy"
+msgstr "Privacy"
+
+msgid "Rules"
+msgstr "Rules"
+
+msgid "Trends"
+msgstr "Trends"
+
+msgid "Write"
+msgstr "Write"
+
+msgid "New post"
+msgstr "New post"
+
+msgid "New Post — Click to refresh"
+msgstr "New Post — Click to refresh"
+
+msgid "Nothing new for now."
+msgstr "Nothing new for now."
+
+msgid "You've seen all posts!"
+msgstr "You've seen all posts!"
+
+msgid "Invite friends or post something."
+msgstr "Invite friends or post something."
+
+msgid "Link copied to clipboard!"
+msgstr "Link copied to clipboard!"
+
+msgid "Link copied!"
+msgstr "Link copied!"
+
+msgid "Share"
+msgstr "Share"
+
+msgid "Reply"
+msgstr "Reply"
+
+msgid "Reply to"
+msgstr "Reply to"
+
+msgid "Comments"
+msgstr "Comments"
+
+msgid "File"
+msgstr "File"
+
+msgid "My posts"
+msgstr "My posts"
+
+msgid "My first post"
+msgstr "My first post"
+
+msgid "Friend"
+msgstr "Friend"
+
+msgid "Info"
+msgstr "Info"
+
+msgid "Change cover"
+msgstr "Change cover"
+
+msgid "Hidden by user"
+msgstr "Hidden by user"
+
+msgid "Location"
+msgstr "Location"
+
+msgid "Member since"
+msgstr "Member since"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "New"
+msgstr "New"
+
+msgid "No photos yet."
+msgstr "No photos yet."
+
+msgid "No posts yet."
+msgstr "No posts yet."
+
+msgid "First Post"
+msgstr "First Post"
+
+msgid "Publish Photo"
+msgstr "Publish Photo"
+
+msgid "Profile photo"
+msgstr "Profile photo"
+
+msgid "Edit my profile"
+msgstr "Edit my profile"
+
+msgid "Account information"
+msgstr "Account information"
+
+msgid "Hide my email from other users"
+msgstr "Hide my email from other users"
+
+msgid "Save changes"
+msgstr "Save changes"
+
+msgid "Recommended format: square, JPG or PNG."
+msgstr "Recommended format: square, JPG or PNG."
+
+msgid "Click on the photo to change it."
+msgstr "Click on the photo to change it."
+
+msgid "About you"
+msgstr "About you"
+
+msgid "Bio"
+msgstr "Bio"
+
+msgid "Email address"
+msgstr "Email address"
+
+msgid "Post"
+msgstr "Post"
+
+msgid "Title"
+msgstr "Title"
+
+msgid "Content"
+msgstr "Content"
+
+msgid "Create a post"
+msgstr "Create a post"
+
+msgid "Edit post"
+msgstr "Edit post"
+
+msgid "Delete post?"
+msgstr "Delete post?"
+
+msgid "Yes, delete"
+msgstr "Yes, delete"
+
+msgid "This action is"
+msgstr "This action is"
+
+msgid "irreversible"
+msgstr "irreversible"
+
+msgid "The post will be permanently deleted."
+msgstr "The post will be permanently deleted."
+
+msgid "Published on"
+msgstr "Published on"
+
+msgid "Attachment (optional)"
+msgstr "Attachment (optional)"
+
+msgid "Attachment"
+msgstr "Attachment"
+
+msgid "Photos & Videos"
+msgstr "Photos & Videos"
+
+msgid "Images & Videos — multiple selections"
+msgstr "Images & Videos — multiple selections"
+
+msgid "Click to add"
+msgstr "Click to add"
+
+msgid "Click to attach"
+msgstr "Click to attach"
+
+msgid "or drag and drop"
+msgstr "or drag and drop"
+
+msgid "a file"
+msgstr "a file"
+
+msgid "Add media"
+msgstr "Add media"
+
+msgid "Current file:"
+msgstr "Current file:"
+
+msgid "Current image"
+msgstr "Current image"
+
+msgid "Current media"
+msgstr "Current media"
+
+msgid "Check to delete"
+msgstr "Check to delete"
+
+msgid "as"
+msgstr "as"
+
+msgid "video"
+msgstr "video"
+
+msgid "view"
+msgstr "view"
+
+msgid "Back"
+msgstr "Back"
+
+msgid "Edit"
+msgstr "Edit"
+
+msgid "No results"
+msgstr "No results"
+
+msgid "Try another search term or check the spelling."
+msgstr "Try another search term or check the spelling."
+
+msgid "Search"
+msgstr "Search"
+
+msgid "Search users, posts, hashtags…"
+msgstr "Search users, posts, hashtags…"
+
+msgid "Users"
+msgstr "Users"
+
+msgid "Profile"
+msgstr "Profile"
+
+msgid "You"
+msgstr "You"
+
+msgid "Not friends"
+msgstr "Not friends"
+
+msgid "Hashtags"
+msgstr "Hashtags"
+
+msgid "Find people"
+msgstr "Find people"
+
+msgid "Looking for friends? Search here and start connecting!"
+msgstr "Looking for friends? Search here and start connecting!"
+
+msgid "All"
+msgstr "All"
+
+msgid "Me"
+msgstr "Me"
+
+msgid "Search friends…"
+msgstr "Search friends…"
+
+msgid "Requests"
+msgstr "Requests"
+
+msgid "People who want to be friends with you"
+msgstr "People who want to be friends with you"
+
+msgid "When someone sends you a friend request, it will appear here."
+msgstr "When someone sends you a friend request, it will appear here."
+
+msgid "No requests"
+msgstr "No requests"
+
+msgid "Wants to be your friend"
+msgstr "Wants to be your friend"
+
+msgid "Previous"
+msgstr "Previous"
+
+msgid "Next"
+msgstr "Next"
+
+msgid "Back to feed"
+msgstr "Back to feed"
+
+msgid "Be the first to post with this hashtag!"
+msgstr "Be the first to post with this hashtag!"
+
+msgid "View"
+msgstr "View"
+
+msgid "Welcome!"
+msgstr "Welcome!"
+
+msgid "Sign in to your account"
+msgstr "Sign in to your account"
+
+msgid "Join the VAZIMBA community"
+msgstr "Join the VAZIMBA community"
+
+msgid "Create my account"
+msgstr "Create my account"
+
+msgid "requests"
+msgstr "requests"
+
+msgid "Like"
+msgstr "Like"
+
+# ── Explore / Index page ──
+msgid "Search users, posts…"
+msgstr "Search users, posts…"
+
+msgid "Continents"
+msgstr "Continents"
+
+msgid "Countries"
+msgstr "Countries"
+
+msgid "Countries (%(n)s)"
+msgstr "Countries (%(n)s)"
+
+msgid "+%(n)s more"
+msgstr "+%(n)s more"
+
+msgid "Want to share something with the community?"
+msgstr "Want to share something with the community?"
+
+msgid "My news feed"
+msgstr "My news feed"
+
+msgid "Join Vazimba to post, comment and interact with the community."
+msgstr "Join Vazimba to post, comment and interact with the community."
+
+msgid "Create an account"
+msgstr "Create an account"
+
+msgid "Sign in"
+msgstr "Sign in"
+
+msgid "Popular posts"
+msgstr "Popular posts"
+
+msgid "My feed →"
+msgstr "My feed →"
+
+msgid "Sign in →"
+msgstr "Sign in →"
+
+msgid "Trending"
+msgstr "Trending"
+
+msgid "My full news feed"
+msgstr "My full news feed"
+
+msgid "No posts to explore yet"
+msgstr "No posts to explore yet"
+
+msgid "Be the first to share something."
+msgstr "Be the first to share something."
+
+msgid "Create the first post"
+msgstr "Create the first post"
+
+# ── Footer ──
+msgid "Social network · Madagascar · 2025"
+msgstr "Social network · Madagascar · 2025"
+
+msgid "News feed"
+msgstr "News feed"
+
+msgid "Sign up"
+msgstr "Sign up"
+
+msgid "© 2025"
+msgstr "© 2025"
+
+msgid "All rights reserved."
+msgstr "All rights reserved."
+
+msgid "Built with ❤️ for the Malagasy community."
+msgstr "Built with ❤️ for the Malagasy community."
+
+msgid "See more"
+msgstr "See more"
+
+msgid "See less"
+msgstr "See less"
+
+# ── Bazar Vazimba ──
+msgid "Bazar"
+msgstr "Marketplace"
+
+msgid "Acheter et vendre entre Malgaches — simple, rapide, local"
+msgstr "Buy and sell between Malagasy — simple, fast, local"
+
+msgid "Chercher une annonce…"
+msgstr "Search for an ad…"
+
+msgid "Chercher"
+msgstr "Search"
+
+msgid "Publier une annonce"
+msgstr "Post an ad"
+
+msgid "Toutes catégories"
+msgstr "All categories"
+
+msgid "Tout état"
+msgstr "Any condition"
+
+msgid "Trier par"
+msgstr "Sort by"
+
+msgid "Plus récentes"
+msgstr "Most recent"
+
+msgid "Prix croissant"
+msgstr "Price: low to high"
+
+msgid "Prix décroissant"
+msgstr "Price: high to low"
+
+msgid "Plus vues"
+msgstr "Most viewed"
+
+msgid "Réinitialiser"
+msgstr "Reset"
+
+msgid "annonce"
+msgstr "ad"
+
+msgid "trouvée"
+msgstr "found"
+
+msgid "Mes annonces"
+msgstr "My ads"
+
+msgid "VENDUE"
+msgstr "SOLD"
+
+msgid "négociable"
+msgstr "negotiable"
+
+msgid "Aucune annonce trouvée"
+msgstr "No ads found"
+
+msgid "Le bazar est encore vide. Soyez le premier à publier !"
+msgstr "The marketplace is still empty. Be the first to post!"
+
+msgid "✓ Disponible"
+msgstr "✓ Available"
+
+msgid "✕ Vendue"
+msgstr "✕ Sold"
+
+msgid "En pause"
+msgstr "Paused"
+
+msgid "Prix à discuter"
+msgstr "Price on request"
+
+msgid "Membre depuis"
+msgstr "Member since"
+
+msgid "Modifier l'annonce"
+msgstr "Edit ad"
+
+msgid "Marquer comme vendue"
+msgstr "Mark as sold"
+
+msgid "Supprimer"
+msgstr "Delete"
+
+msgid "Contacter sur WhatsApp"
+msgstr "Contact on WhatsApp"
+
+msgid "Envoyer un message"
+msgstr "Send a message"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Détails"
+msgstr "Details"
+
+msgid "Catégorie"
+msgstr "Category"
+
+msgid "État"
+msgstr "Condition"
+
+msgid "Localisation"
+msgstr "Location"
+
+msgid "Publiée"
+msgstr "Posted"
+
+msgid "Vues"
+msgstr "Views"
+
+msgid "vue"
+msgstr "view"
+
+msgid "Annonces similaires"
+msgstr "Similar ads"
+
+msgid "Cette annonce n'est plus disponible."
+msgstr "This ad is no longer available."
+
+msgid "Votre annonce sera visible par tous les membres Vazimba."
+msgstr "Your ad will be visible to all Vazimba members."
+
+msgid "Cliquer pour ajouter des photos"
+msgstr "Click to add photos"
+
+msgid "JPG, PNG, WebP · Max 8 photos · La première = photo principale"
+msgstr "JPG, PNG, WebP · Max 8 photos · First = main photo"
+
+msgid "Article"
+msgstr "Item"
+
+msgid "Prix"
+msgstr "Price"
+
+msgid "Localisation & Contact"
+msgstr "Location & Contact"
+
+msgid "Annuler"
+msgstr "Cancel"
+
+msgid "Publier l'annonce"
+msgstr "Post ad"
+
+msgid "Laisser vide pour « Prix à discuter »"
+msgstr "Leave empty for «Price on request»"
+
+msgid "Laisser vide = « Prix à discuter »"
+msgstr "Leave empty = «Price on request»"
+
+msgid "Soyez précis : marque, modèle, dimensions, défauts éventuels…"
+msgstr "Be specific: brand, model, dimensions, any defects…"
+
+msgid "Photos actuelles"
+msgstr "Current photos"
+
+msgid "Ajouter des photos"
+msgstr "Add photos"
+
+msgid "Aucune photo pour le moment."
+msgstr "No photos yet."
+
+msgid "Enregistrer"
+msgstr "Save"
+
+msgid "Les modifications seront visibles immédiatement."
+msgstr "Changes will be visible immediately."
+
+msgid "Modifier"
+msgstr "Edit"
+
+msgid "Nouvelle annonce"
+msgstr "New ad"
+
+msgid "au total"
+msgstr "total"
+
+msgid "Active"
+msgstr "Active"
+
+msgid "Vendue"
+msgstr "Sold"
+
+msgid "Vous n'avez aucune annonce"
+msgstr "You have no ads yet"
+
+msgid "Publiez votre première annonce et touchez des milliers de Malgaches."
+msgstr "Post your first ad and reach thousands of Malagasy people."
+
+msgid "Publier maintenant"
+msgstr "Post now"
+
+msgid "Supprimer cette photo ?"
+msgstr "Delete this photo?"
+
+msgid "Erreur lors de la suppression."
+msgstr "Error during deletion."
+
+msgid "Électronique & Téléphones"
+msgstr "Electronics & Phones"
+
+msgid "Véhicules & Motos"
+msgstr "Vehicles & Motorbikes"
+
+msgid "Immobilier & Location"
+msgstr "Real Estate & Rental"
+
+msgid "Mode & Vêtements"
+msgstr "Fashion & Clothing"
+
+msgid "Maison & Mobilier"
+msgstr "Home & Furniture"
+
+msgid "Agriculture & Élevage"
+msgstr "Agriculture & Livestock"
+
+msgid "Alimentaire & Boissons"
+msgstr "Food & Beverages"
+
+msgid "Services & Prestations"
+msgstr "Services"
+
+msgid "Emploi & Formation"
+msgstr "Jobs & Training"
+
+msgid "Artisanat & Art"
+msgstr "Crafts & Art"
+
+msgid "Sports & Loisirs"
+msgstr "Sports & Leisure"
+
+msgid "Bébé & Enfants"
+msgstr "Baby & Children"
+
+msgid "Autres"
+msgstr "Other"
+
+msgid "Neuf"
+msgstr "New"
+
+msgid "Très bon état"
+msgstr "Like new"
+
+msgid "Bon état"
+msgstr "Good condition"
+
+msgid "État correct"
+msgstr "Fair condition"
+
+msgid "Pour pièces"
+msgstr "For parts"
+
+# ── Vérification vendeur ──
+msgid "Vérification vendeur"
+msgstr "Seller verification"
+
+msgid "Un compte vérifié renforce la confiance des acheteurs et vous donne accès à des fonctionnalités exclusives."
+msgstr "A verified account builds buyer trust and gives you access to exclusive features."
+
+msgid "Badge <strong>Vendeur vérifié</strong> sur toutes vos annonces et votre profil"
+msgstr "<strong>Verified Seller</strong> badge on all your ads and your profile"
+
+msgid "Vos annonces apparaissent <strong>en priorité</strong> dans les résultats"
+msgstr "Your ads appear <strong>first</strong> in search results"
+
+msgid "Les acheteurs peuvent filtrer pour voir <strong>uniquement les vendeurs vérifiés</strong>"
+msgstr "Buyers can filter to see <strong>verified sellers only</strong>"
+
+msgid "Quota photos porté à <strong>12 photos par annonce</strong> (au lieu de 8)"
+msgstr "Photo quota raised to <strong>12 photos per ad</strong> (instead of 8)"
+
+msgid "Demande en attente d'examen"
+msgstr "Request pending review"
+
+msgid "Soumise le {{ date }}."
+msgstr "Submitted on {{ date }}."
+
+msgid "L'équipe de modération examinera votre demande prochainement."
+msgstr "The moderation team will review your request shortly."
+
+msgid "Compte vérifié"
+msgstr "Verified account"
+
+msgid "Approuvé le {{ date }}."
+msgstr "Approved on {{ date }}."
+
+msgid "Tous les avantages sont actifs sur votre compte."
+msgstr "All benefits are active on your account."
+
+msgid "Demande refusée"
+msgstr "Request rejected"
+
+msgid "Examinée le {{ date }}."
+msgstr "Reviewed on {{ date }}."
+
+msgid "Motif :"
+msgstr "Reason:"
+
+msgid "Vous pouvez soumettre une nouvelle demande en corrigeant les points signalés."
+msgstr "You can submit a new request by addressing the issues raised."
+
+msgid "Votre message (facultatif)"
+msgstr "Your message (optional)"
+
+msgid "Expliquez pourquoi votre compte mérite d'être vérifié…"
+msgstr "Explain why your account deserves to be verified…"
+
+msgid "Maximum 2 000 caractères."
+msgstr "Maximum 2,000 characters."
+
+msgid "Envoyer une nouvelle demande"
+msgstr "Submit a new request"
+
+msgid "Message (facultatif)"
+msgstr "Message (optional)"
+
+msgid "Présentez-vous en quelques mots : activité, types de produits vendus, pourquoi vous souhaitez être vérifié…"
+msgstr "Introduce yourself briefly: activity, types of products sold, why you wish to be verified…"
+
+msgid "Soumettre ma demande"
+msgstr "Submit my request"
+
+msgid "Devenez un vendeur vérifié"
+msgstr "Become a verified seller"
+
+msgid "Badge ✓, priorité dans les résultats, 12 photos par annonce."
+msgstr "✓ badge, priority in results, 12 photos per ad."
+
+msgid "Faire une demande →"
+msgstr "Apply →"
+
+msgid "Demande de vérification en attente"
+msgstr "Verification request pending"
+
+msgid "l'admin examinera votre compte prochainement."
+msgstr "the admin will review your account shortly."
+
+msgid "Vendeur vérifié"
+msgstr "Verified Seller"
+
+msgid "badge ✓ actif sur toutes vos annonces, 12 photos autorisées."
+msgstr "✓ badge active on all your ads, 12 photos allowed."
+
+msgid "Demande refusée."
+msgstr "Request rejected."
+
+msgid "Réessayer"
+msgstr "Try again"
+
+msgid "Vendeurs vérifiés"
+msgstr "Verified sellers"
+
+msgid "Vérifié"
+msgstr "Verified"
+
+msgid "En attente"
+msgstr "Pending"
+
+msgid "Approuvé"
+msgstr "Approved"
+
+msgid "Refusé"
+msgstr "Rejected"
+
+# ── Groupes thématiques ───────────────────────────────────────────────────────
+
+msgid "Groups"
+msgstr "Groups"
+
+msgid "Create a group"
+msgstr "Create a group"
+
+msgid "My groups"
+msgstr "My groups"
+
+msgid "Recommended"
+msgstr "Recommended"
+
+msgid "Search a group…"
+msgstr "Search a group…"
+
+msgid "Toutes les catégories"
+msgstr "All categories"
+
+msgid "No group matches your search."
+msgstr "No group matches your search."
+
+msgid "Clear filters"
+msgstr "Clear filters"
+
+msgid "Clear filter"
+msgstr "Clear filter"
+
+msgid "You haven't joined any group yet."
+msgstr "You haven't joined any group yet."
+
+msgid "No groups yet. Be the first to create one!"
+msgstr "No groups yet. Be the first to create one!"
+
+msgid "Member"
+msgstr "Member"
+
+msgid "Join"
+msgstr "Join"
+
+msgid "Join group"
+msgstr "Join group"
+
+msgid "Leave group"
+msgstr "Leave group"
+
+msgid "from the group?"
+msgstr "from the group?"
+
+msgid "All groups"
+msgstr "All groups"
+
+msgid "Trending hashtags"
+msgstr "Trending hashtags"
+
+msgid "Filtering by"
+msgstr "Filtering by"
+
+msgid "This group is private. You need to be a member to view its content."
+msgstr "This group is private. You need to be a member to view its content."
+
+msgid "Request to join"
+msgstr "Request to join"
+
+msgid "Sign in to join"
+msgstr "Sign in to join"
+
+msgid "Back to groups"
+msgstr "Back to groups"
+
+msgid "Created by"
+msgstr "Created by"
+
+msgid "Edit group"
+msgstr "Edit group"
+
+msgid "Delete this group?"
+msgstr "Delete this group?"
+
+# ── Posts & réactions dans les groupes ───────────────────────────────────────
+
+msgid "Pinned announcements"
+msgstr "Pinned announcements"
+
+msgid "No posts yet in this group."
+msgstr "No posts yet in this group."
+
+msgid "Be the first to share something!"
+msgstr "Be the first to share something!"
+
+msgid "Pin this post"
+msgstr "Pin this post"
+
+msgid "Love"
+msgstr "Love"
+
+msgid "Haha"
+msgstr "Haha"
+
+msgid "Wow"
+msgstr "Wow"
+
+msgid "Sad"
+msgstr "Sad"
+
+# ── Membres & modération ──────────────────────────────────────────────────────
+
+msgid "members"
+msgstr "members"
+
+msgid "Admin"
+msgstr "Admin"
+
+msgid "Moderator"
+msgstr "Moderator"
+
+msgid "Add a member"
+msgstr "Add a member"
+
+msgid "Add member"
+msgstr "Add member"
+
+msgid "No users found."
+msgstr "No users found."
+
+msgid "Added!"
+msgstr "Added!"
+
+msgid "Remove"
+msgstr "Remove"
+
+# ── Médias ────────────────────────────────────────────────────────────────────
+
+msgid "Media"
+msgstr "Media"
+
+msgid "Videos"
+msgstr "Videos"
+
+msgid "No media posted yet."
+msgstr "No media posted yet."
+
+# ── Événements ────────────────────────────────────────────────────────────────
+
+msgid "Events"
+msgstr "Events"
+
+msgid "Create an event"
+msgstr "Create an event"
+
+msgid "Upcoming events"
+msgstr "Upcoming events"
+
+msgid "No upcoming events."
+msgstr "No upcoming events."
+
+msgid "Going"
+msgstr "Going"
+
+msgid "going"
+msgstr "going"
+
+msgid "Event created!"
+msgstr "Event created!"
+
+# ── Dina (charte communautaire) ───────────────────────────────────────────────
+
+msgid "Community Charter"
+msgstr "Community Charter"
+
+msgid "Dina"
+msgstr "Dina"
+
+msgid "Edit Dina"
+msgstr "Edit Dina"
+
+msgid "Save Dina"
+msgstr "Save Dina"
+
+msgid "What is a Dina?"
+msgstr "What is a Dina?"
+
+msgid "In Malagasy culture, the Dina is a community agreement — a set of rules and commitments freely accepted by all members of a community to live together with respect and solidarity (Fihavanana)."
+msgstr "In Malagasy culture, the Dina is a community agreement — a set of rules and commitments freely accepted by all members of a community to live together with respect and solidarity (Fihavanana)."
+
+msgid "No Dina defined yet for this group."
+msgstr "No Dina defined yet for this group."
+
+msgid "As admin, you can write the community charter below."
+msgstr "As admin, you can write the community charter below."
+
+msgid "Agreements, rules and traditions that govern this community."
+msgstr "Agreements, rules and traditions that govern this community."
+
+# ── Actions génériques ────────────────────────────────────────────────────────
+
+msgid "Create"
+msgstr "Create"
+
+msgid "Saved!"
+msgstr "Saved!"
+
+msgid "Saving…"
+msgstr "Saving…"
+
+msgid "Error."
+msgstr "Error."
+
+msgid "An error occurred."
+msgstr "An error occurred."
+
+msgid "Server error."
+msgstr "Server error."
+
+msgid "Server error. Please try again."
+msgstr "Server error. Please try again."
+
+# ── Stories marchands ─────────────────────────────────────────────────────────
+
+msgid "Annonces éphémères 24h des vendeurs vérifiés"
+msgstr "24h ephemeral ads from verified sellers"
+
+msgid "Stories des commerçants"
+msgstr "Merchant Stories"
+
+msgid "Image, vidéo, texte ou lien promo — visible par toute la communauté pendant 24 heures."
+msgstr "Image, video, text or promo link — visible to the entire community for 24 hours."
+
+msgid "Créer une story"
+msgstr "Create a story"
+
+msgid "Aucune story active pour l'instant."
+msgstr "No active stories right now."
+
+msgid "Commerçant vérifié"
+msgstr "Verified Merchant"
+
+msgid "Devenez commerçant vérifié pour publier des annonces éphémères."
+msgstr "Become a verified merchant to post ephemeral ads."
+
+msgid "Publier"
+msgstr "Publish"
+
+msgid "Publiez votre annonce du jour"
+msgstr "Post your daily announcement"
+
+msgid "Photo / Vidéo"
+msgstr "Photo / Video"
+
+# ── Navigation (Feature 7 + bottom nav) ──────────────────────────────────────
+
+msgid "Tendances"
+msgstr "Trends"
+
+msgid "Créer"
+msgstr "Create"
+
+msgid "Profil"
+msgstr "Profile"
+
+# ── Vérification téléphone (Feature 6) ───────────────────────────────────────
+
+msgid "Tél. vérifié"
+msgstr "Tel. verified"
+
+msgid "Numéro de téléphone vérifié par SMS"
+msgstr "Phone number verified by SMS"
+
+# ── Nouvelles traductions — audit complet 2026-06 ────────────────────────────
+
+# bazar/create.html
+msgid "Publication…"
+msgstr "Publishing…"
+
+msgid "Erreur réseau. Vérifiez votre connexion et réessayez."
+msgstr "Network error. Check your connection and try again."
+
+# bazar/edit.html
+msgid "l'annonce"
+msgstr "the ad"
+
+msgid "Enregistrement…"
+msgstr "Saving…"
+
+msgid "Erreur réseau. Réessayez."
+msgstr "Network error. Try again."
+
+# bazar/detail.html
+msgid "Image non disponible"
+msgstr "Image not available"
+
+msgid "Marquer cette annonce comme vendue ?"
+msgstr "Mark this ad as sold?"
+
+msgid "Supprimer définitivement cette annonce ?"
+msgstr "Permanently delete this ad?"
+
+msgid "Copier le lien"
+msgstr "Copy link"
+
+msgid "✓ Copié !"
+msgstr "✓ Copied!"
+
+# bazar/index.html
+msgid "Près de chez moi :"
+msgstr "Near me:"
+
+msgid "Toute Madagascar"
+msgstr "All of Madagascar"
+
+msgid "Détecter ma région automatiquement"
+msgstr "Auto-detect my region"
+
+msgid "Près de moi"
+msgstr "Near me"
+
+msgid "Aucun résultat pour <strong>« %(q)s »</strong>. Essayez un autre mot-clé."
+msgstr "No results for <strong>« %(q)s »</strong>. Try another keyword."
+
+msgid "Aucune annonce dans cette catégorie pour le moment."
+msgstr "No ads in this category yet."
+
+msgid "La géolocalisation n'est pas disponible sur votre appareil."
+msgstr "Geolocation is not available on your device."
+
+msgid "Localisation…"
+msgstr "Locating…"
+
+msgid "Permission refusée"
+msgstr "Permission denied"
+
+msgid "Position indisponible"
+msgstr "Position unavailable"
+
+msgid "Délai dépassé"
+msgstr "Timeout"
+
+msgid "Erreur de géolocalisation"
+msgstr "Geolocation error"
+
+# bazar/mes_annonces.html
+msgid "active"
+msgstr "active"
+
+msgid "vendue"
+msgstr "sold"
+
+msgid "🔝 Remonter en tête (1×/24h)"
+msgstr "🔝 Bump to top (1×/24h)"
+
+msgid "Marquer vendue"
+msgstr "Mark sold"
+
+# stories/story_bar.html
+msgid "Ma story"
+msgstr "My story"
+
+msgid "✥ maintenir pour déplacer"
+msgstr "✥ hold to move"
+
+msgid "Tapez votre texte…"
+msgstr "Type your text…"
+
+msgid "Ajouter une légende…"
+msgstr "Add a caption…"
+
+msgid "Cliquer pour choisir un fichier"
+msgstr "Click to choose a file"
+
+msgid "Musique (optionnel — clip de 30 s)"
+msgstr "Music (optional — 30 s clip)"
+
+msgid "Choisir un fichier (MP3, OGG, WAV, AAC…)"
+msgstr "Choose a file (MP3, OGG, WAV, AAC…)"
+
+msgid "Lien direct vers un fichier MP3 / OGG / WAV public"
+msgstr "Direct link to a public MP3 / OGG / WAV file"
+
+msgid "Musique libre de droits via"
+msgstr "Royalty-free music via"
+
+msgid "Choisir le début du clip (30 s)"
+msgstr "Choose clip start (30 s)"
+
+msgid "Publier ma story"
+msgstr "Publish my story"
+
+# templates/snippets/header.html
+msgid "A propos de moi"
+msgstr "About me"
+
+msgid "Compte"
+msgstr "Account"
+
+msgid "Mode économie"
+msgstr "Data saver"
+
+msgid "Connexion"
+msgstr "Sign in"
+
+msgid "S'inscrire"
+msgstr "Sign up"
+
+# account/account.html
+msgid "demande"
+msgstr "request"
+
+msgid "Niveau maximum atteint !"
+msgstr "Maximum level reached!"
+
+msgid "Comment gagner des points"
+msgstr "How to earn points"
+
+msgid "Post standard"
+msgstr "Standard post"
+
+msgid "Commentaire"
+msgstr "Comment"
+
+msgid "Réaction reçue"
+msgstr "Reaction received"
+
+msgid "Repost reçu"
+msgstr "Repost received"
+
+msgid "Groupe rejoint"
+msgstr "Group joined"
+
+msgid "Mes stories"
+msgstr "My stories"
+
+msgid "Stories"
+msgstr "Stories"
+
+# post/tendances.html
+msgid "Tendances Malgaches"
+msgstr "Malagasy Trends"
+
+msgid "Les hashtags les plus utilisés sur Vazimba — %(hours_label)s"
+msgstr "The most used hashtags on Vazimba — %(hours_label)s"
+
+msgid "post"
+msgstr "post"
+
+msgid "Mis à jour toutes les 15 minutes"
+msgstr "Updated every 15 minutes"
+
+msgid "Actualiser"
+msgstr "Refresh"
+
+msgid "Aucune tendance sur les %(hours_label)s"
+msgstr "No trends in the past %(hours_label)s"
+
+msgid "Publiez des posts avec des hashtags pour alimenter les tendances !"
+msgstr "Post with hashtags to feed the trends!"
+
+msgid "Essayez sur une période plus longue →"
+msgstr "Try a longer time period →"
+
+
+# -- Favoris Bazar
+
+msgid "Sauvegarder"
+msgstr "Save"
+
+msgid "Sauvegardé"
+msgstr "Saved"
+
+msgid "Chargement…"
+msgstr "Loading…"
+
+msgid "Retirer des favoris"
+msgstr "Remove from favorites"
+
+msgid "Mes favoris"
+msgstr "My favorites"
+
+msgid "Explorer le Bazar"
+msgstr "Browse the Marketplace"
+
+msgid "Prix à discuter"
+msgstr "Price on request"
+
+msgid "Aucun favori pour l'instant"
+msgstr "No favorites yet"
+
+msgid "Sauvegardez des annonces qui vous intéressent pour les retrouver facilement ici."
+msgstr "Save listings you're interested in to find them easily here."
+
+msgid "Parcourir le Bazar"
+msgstr "Browse the Marketplace"
+
+msgid "Appel audio"
+msgstr "Audio call"
+
+msgid "Appel vidéo"
+msgstr "Video call"
+
+msgid "Appel en cours…"
+msgstr "Calling…"
+
+msgid "Appel audio en cours…"
+msgstr "Audio call in progress…"
+
+msgid "Appel vidéo en cours…"
+msgstr "Video call in progress…"
+
+msgid "Appel audio entrant"
+msgstr "Incoming audio call"
+
+msgid "Appel vidéo entrant"
+msgstr "Incoming video call"
+
+msgid "Annuler"
+msgstr "Cancel"
+
+msgid "Refuser"
+msgstr "Decline"
+
+msgid "Accepter"
+msgstr "Accept"
+
+msgid "Micro"
+msgstr "Microphone"
+
+msgid "Fin"
+msgstr "End"
+
+msgid "Raccrocher"
+msgstr "Hang up"
+
+msgid "Caméra"
+msgstr "Camera"
+
+msgid "Appel refusé."
+msgstr "Call declined."
+
+msgid "Appel terminé —"
+msgstr "Call ended —"
+
+msgid "Appel interrompu."
+msgstr "Call interrupted."
+
+msgid "Appel manqué."
+msgstr "Missed call."
+
+msgid "Un appel est déjà en cours."
+msgstr "A call is already in progress."
+
+msgid "Ouvrez d'abord une conversation."
+msgstr "Open a conversation first."
+
+msgid "Impossible d'accéder au micro."
+msgstr "Cannot access microphone."
+
+msgid "Impossible d'accéder au micro / caméra."
+msgstr "Cannot access microphone / camera."
+
+msgid "Aujourd'hui"
+msgstr "Today"
+
+msgid "Hier"
+msgstr "Yesterday"
+
+msgid "est en train d'écrire…"
+msgstr "is typing…"
+
+msgid "Quelqu'un"
+msgstr "Someone"
+
+msgid "Messages"
+msgstr "Messages"
+
+msgid "Rechercher…"
+msgstr "Search…"
+
+msgid "Sélectionnez une conversation"
+msgstr "Select a conversation"
+
+msgid "Aucun ami pour l'instant"
+msgstr "No friends yet"
+
+msgid "Chargement…"
+msgstr "Loading…"
+
+msgid "Écrire un message…"
+msgstr "Write a message…"
+
+msgid "Joindre un fichier"
+msgstr "Attach a file"
+
+msgid "Envoyer (Entrée)"
+msgstr "Send (Enter)"
+
+msgid "Envoyer"
+msgstr "Send"
+
+msgid "Entrée pour envoyer · Maj+Entrée pour aller à la ligne"
+msgstr "Enter to send · Shift+Enter for new line"
+
+msgid "Conversations"
+msgstr "Conversations"
+
+msgid "Fermer"
+msgstr "Close"
+
+msgid "Télécharger"
+msgstr "Download"
+
+msgid "En ligne"
+msgstr "Online"
+
+msgid "Connexion perdue. Rechargement…"
+msgstr "Connection lost. Reloading…"
+
+msgid "Infos"
+msgstr "Info"

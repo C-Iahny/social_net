@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+body { background: var(--bg); }
+.search-page {
+    max-width: 860px;
+    margin: 80px auto 3rem;
+    padding: 0 1rem;
+}
+.search-hero {
+    margin-bottom: 1.5rem;
+}
+.search-hero h1 {
+    font-size: 1.5rem; font-weight: 900;
+    color: var(--text); margin: 0 0 .25rem;
+}
+.search-hero p {
+    font-size: .88rem; color: var(--text-muted); margin: 0;
+}
+.query-highlight { color: var(--accent); font-weight: 700; }
+
+/* ── Search bar ── */
+.search-bar-top {
+    display: flex; align-items: center;
+    background: var(--bg-card); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 0 1rem; height: 52px;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+    transition: border-color .2s, box-shadow .2s;
+}
+.search-bar-top:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,207,255,.12);
+}
+.search-bar-top .material-icons { color: var(--text-muted); margin-right: .65rem; font-size: 1.2rem; }
+.search-bar-top input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-size: 1rem; font-family: inherit;
+}
+.search-bar-top input::placeholder { color: var(--text-muted); }
+.search-bar-top button {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 10px;
+    padding: .45rem 1.1rem; font-size: .88rem; font-weight: 700;
+    cursor: pointer; transition: opacity .2s;
+}
+.search-bar-top button:hover { opacity: .88; }
+
+/* ── Section headers ── */
+.search-section-title {
+    font-size: .72rem; font-weight: 800; letter-spacing: .07em;
+    text-transform: uppercase; color: var(--text-muted);
+    margin: 1.8rem 0 .75rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.search-section-title .material-icons { font-size: .95rem; color: var(--accent); }
+
+/* ── User result cards ── */
+.results-list { display: flex; flex-direction: column; gap: .65rem; }
+.result-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: .85rem 1.1rem;
+    display: flex; align-items: center; gap: 1rem;
+    transition: border-color .2s, box-shadow .2s;
+    text-decoration: none;
+}
+.result-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 20px rgba(0,207,255,.1);
+    text-decoration: none;
+}
+.result-avatar img {
+    width: 52px; height: 52px;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--border);
+}
+.result-info { flex: 1; min-width: 0; }
+.result-name { font-size: .97rem; font-weight: 800; color: var(--text); margin: 0 0 .1rem; }
+.result-handle { font-size: .8rem; color: var(--text-muted); }
+.result-status {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .3rem .8rem;
+    border-radius: 20px; font-size: .78rem; font-weight: 700;
+    flex-shrink: 0;
+}
+.status-friend { background: rgba(76,175,125,.12); color: #2e7d5a; border: 1px solid rgba(76,175,125,.3); }
+[data-theme="dark"] .status-friend { color: #4caf7d; }
+.status-not-friend { background: var(--btn-bg); color: var(--text-muted); border: 1px solid var(--border); }
+.status-self { background: rgba(0,207,255,.1); color: var(--accent); border: 1px solid rgba(0,207,255,.2); }
+.result-status .material-icons { font-size: .85rem; }
+.result-actions { display: flex; gap: .45rem; flex-shrink: 0; }
+.result-action-btn {
+    display: inline-flex; align-items: center; gap: .3rem;
+    padding: .38rem .85rem;
+    border-radius: 22px; font-size: .8rem; font-weight: 700;
+    border: none; cursor: pointer; text-decoration: none;
+    transition: opacity .15s, transform .15s;
+}
+.result-action-btn:hover { opacity: .85; transform: scale(1.03); text-decoration: none; }
+.result-action-btn .material-icons { font-size: .9rem; }
+.btn-msg { background: var(--btn-bg); color: var(--text); border: 1px solid var(--border); }
+.btn-msg:hover { color: var(--accent); }
+
+/* ── Post result cards ── */
+.post-result {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: .9rem 1.1rem;
+    display: flex; gap: .85rem; align-items: flex-start;
+    transition: border-color .2s, box-shadow .2s;
+    text-decoration: none; color: var(--text);
+}
+.post-result:hover { border-color: var(--accent2); box-shadow: 0 4px 20px rgba(191,95,255,.1); text-decoration: none; }
+.post-result-avatar img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+.post-result-body { flex: 1; min-width: 0; }
+.post-result-title { font-weight: 800; font-size: .95rem; color: var(--text); margin-bottom: .2rem; }
+.post-result-author { font-size: .78rem; color: var(--text-muted); }
+
+/* ── Hashtag pills ── */
+.hashtag-grid { display: flex; flex-wrap: wrap; gap: .5rem; }
+.hashtag-pill {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .4rem .9rem;
+    background: var(--btn-bg); border: 1px solid var(--border);
+    border-radius: 24px; text-decoration: none;
+    color: var(--accent); font-weight: 700; font-size: .88rem;
+    transition: background .15s, border-color .15s;
+}
+.hashtag-pill:hover { background: var(--accent); color: #fff; border-color: transparent; text-decoration: none; }
+.hashtag-pill .ht-count { font-size: .75rem; color: var(--text-muted); font-weight: 600; }
+.hashtag-pill:hover .ht-count { color: rgba(255,255,255,.8); }
+
+/* ── Empty state ── */
+.search-empty {
+    text-align: center; padding: 4rem 1rem;
+    color: var(--text-muted);
+}
+.search-empty .material-icons { font-size: 3.5rem; display: block; margin-bottom: 1rem; opacity: .3; }
+.search-empty h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin: 0 0 .5rem; }
+</style>
+
+<div class="search-page">
+
+    <!-- Hero -->
+    <div class="search-hero">
+        <h1>{% trans "Search" %}</h1>
+        {% if query %}
+        <p>
+            <span class="query-highlight">{{ total }}</span> résultat{{ total|pluralize }} pour
+            <span class="query-highlight">« {{ query }} »</span>
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Search bar -->
+    <form class="search-bar-top" method="get" action="/search/">
+        <span class="material-icons">search</span>
+        <input type="text" name="q" id="id_q_large"
+               value="{{ query }}"
+               placeholder="{% trans "Search users, posts, hashtags…" %}" autofocus>
+        <button type="submit">{% trans "Search" %}</button>
+    </form>
+
+    {% if query %}
+
+        {% if not accounts and not posts and not hashtags %}
+        <div class="search-empty">
+            <span class="material-icons">search_off</span>
+            <h3>{% trans "No results" %}</h3>
+            <p>{% trans "Try another search term or check the spelling." %}</p>
+        </div>
+
+        {% else %}
+
+        <!-- ── Hashtags ───────────────────────────────────────────── -->
+        {% if hashtags %}
+        <div class="search-section-title">
+            <span class="material-icons">tag</span> {% trans "Hashtags" %}
+        </div>
+        <div class="hashtag-grid">
+            {% for ht in hashtags %}
+            <a class="hashtag-pill" href="{% url 'post:hashtag' ht.tag|slice:'1:' %}">
+                {{ ht.tag }}
+                <span class="ht-count">{{ ht.count }}</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ── Utilisateurs ───────────────────────────────────────── -->
+        {% if accounts %}
+        <div class="search-section-title">
+            <span class="material-icons">group</span> {% trans "Users" %}
+        </div>
+        <div class="results-list">
+            {% for account, is_friend in accounts %}
+            <div class="result-card">
+                <div class="result-avatar">
+                    <a href="{% url 'account:view' user_id=account.id %}">
+                        <img src="{{ account.profile_image.url }}" alt="{{ account.username }}" loading="lazy">
+                    </a>
+                </div>
+                <div class="result-info">
+                    <div class="result-name">{{ account.username }}</div>
+                    <div class="result-handle">@{{ account.username }}</div>
+                </div>
+                <div class="result-actions">
+                    {% if account == request.user %}
+                        <span class="result-status status-self">
+                            <span class="material-icons">person_pin</span> {% trans "You" %}
+                        </span>
+                    {% elif is_friend %}
+                        <span class="result-status status-friend">
+                            <span class="material-icons">check</span> {% trans "Friend" %}
+                        </span>
+                        <a class="result-action-btn btn-msg" href="#"
+                           onclick="createOrReturnPrivateChat('{{ account.id }}'); return false;">
+                            <span class="material-icons">chat_bubble_outline</span> {% trans "Message" %}
+                        </a>
+                    {% else %}
+                        <span class="result-status status-not-friend">
+                            <span class="material-icons">person_outline</span> {% trans "Not friends" %}
+                        </span>
+                        <a class="result-action-btn"
+                           href="{% url 'account:view' user_id=account.id %}"
+                           style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;">
+                            <span class="material-icons">visibility</span> {% trans "Profile" %}
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- ── Posts ─────────────────────────────────────────────── -->
+        {% if posts %}
+        <div class="search-section-title">
+            <span class="material-icons">article</span> {% trans "Posts" %}
+        </div>
+        <div class="results-list">
+            {% for post in posts %}
+            <a class="post-result" href="{% url 'post:post-view' %}#post-{{ post.id }}">
+                <div class="post-result-avatar">
+                    <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy">
+                </div>
+                <div class="post-result-body">
+                    <div class="post-result-title">{{ post.title|truncatechars:80 }}</div>
+                    <div class="post-result-author">
+                        @{{ post.author.username }} &nbsp;·&nbsp; {{ post.post_date|date:"d M Y" }}
+                    </div>
+                </div>
+                <span class="material-icons" style="color:var(--accent2);font-size:1.1rem;flex-shrink:0;">chevron_right</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% endif %}
+
+    {% endif %}
+
+</div>
+
+{% include 'chat/snippets/create_or_return_private_chat.html' %}
+{% endblock content %}

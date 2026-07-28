@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+/* ═══════════════════════════════════════════════════════════
+   Page Tendances
+   ═══════════════════════════════════════════════════════════ */
+.td-page {
+    max-width: 760px;
+    margin: 74px auto 5rem;
+    padding: 0 .85rem;
+}
+
+/* ── Hero ── */
+.td-hero {
+    background: linear-gradient(135deg, var(--accent-dark, #6b3410) 0%, var(--accent, #8B4513) 55%, var(--accent2, #A0522D) 100%);
+    border-radius: 20px;
+    padding: 1.6rem 1.5rem 1.4rem;
+    margin-bottom: 1.25rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+.td-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.td-hero-title {
+    font-size: clamp(1.35rem, 4vw, 1.8rem);
+    font-weight: 900;
+    letter-spacing: -.02em;
+    margin: 0 0 .2rem;
+    position: relative;
+}
+.td-hero-sub {
+    font-size: .88rem;
+    opacity: .85;
+    margin: 0;
+    position: relative;
+}
+
+/* ── Filtres ── */
+.td-filters {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+.td-filter-btn {
+    padding: .42rem 1rem;
+    border-radius: 50px;
+    font-size: .84rem;
+    font-weight: 700;
+    border: 2px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all .18s;
+    cursor: pointer;
+    display: inline-block;
+}
+.td-filter-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+}
+.td-filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+/* ── Cards ── */
+.td-card {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    margin-bottom: .65rem;
+    text-decoration: none;
+    transition: border-color .18s, box-shadow .18s, transform .12s;
+    color: var(--text);
+    cursor: pointer;
+}
+.td-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 20px var(--accent-glow, rgba(139,69,19,.15));
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: var(--text);
+}
+
+/* Rank */
+.td-rank {
+    font-size: 1.6rem;
+    font-weight: 900;
+    min-width: 2.4rem;
+    text-align: center;
+    line-height: 1;
+    padding-top: .1rem;
+    flex-shrink: 0;
+}
+.td-rank-1 { color: #f59e0b; }
+.td-rank-2 { color: #9ca3af; }
+.td-rank-3 { color: #cd7c3a; }
+.td-rank-other { color: var(--text-muted); font-size: 1.2rem; }
+
+/* Content */
+.td-content { flex: 1; min-width: 0; }
+.td-tag-row {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    flex-wrap: wrap;
+    margin-bottom: .3rem;
+}
+.td-tag {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -.01em;
+    word-break: break-all;
+}
+.td-count {
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    background: var(--accent-glow, rgba(139,69,19,.12));
+    color: var(--accent);
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .15rem .55rem;
+    border-radius: 50px;
+    white-space: nowrap;
+}
+[data-theme="dark"] .td-count { background: rgba(212,175,55,.18); }
+
+/* Barre de progression relative */
+.td-bar-wrap {
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    margin: .35rem 0 .4rem;
+    overflow: hidden;
+}
+.td-bar {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent), #7c3aed);
+    transition: width .4s ease;
+}
+
+/* Preview */
+.td-preview {
+    font-size: .8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+.td-preview strong { color: var(--text); font-weight: 600; }
+
+/* Trending arrow icon */
+.td-arrow {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-top: .1rem;
+    transition: color .18s;
+}
+.td-card:hover .td-arrow { color: var(--accent); }
+
+/* Empty state */
+.td-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+.td-empty-icon { font-size: 3rem; margin-bottom: .75rem; opacity: .4; }
+.td-empty h3 { font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: .4rem; }
+.td-empty p  { font-size: .88rem; }
+
+/* Refresh hint */
+.td-refresh-hint {
+    text-align: center;
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+</style>
+
+<div class="td-page">
+
+    <!-- Hero -->
+    <div class="td-hero">
+        <h1 class="td-hero-title">🔥 {% trans "Tendances Malgaches" %}</h1>
+        <p class="td-hero-sub">{% blocktrans with hours_label=hours_label %}Les hashtags les plus utilisés sur Vazimba — {{ hours_label }}{% endblocktrans %}</p>
+    </div>
+
+    <!-- Filtres temps -->
+    <div class="td-filters">
+        {% for h, label in valid_hours.items %}
+        <a href="?h={{ h }}"
+           class="td-filter-btn {% if h == hours %}active{% endif %}">
+            {{ label }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Liste des hashtags -->
+    {% if hashtags %}
+
+    {% with max_count=hashtags.0.count %}
+    {% for ht in hashtags %}
+    <a href="{% url 'post:hashtag' ht.slug %}" class="td-card">
+
+        <!-- Rang -->
+        <div class="td-rank {% if forloop.counter == 1 %}td-rank-1{% elif forloop.counter == 2 %}td-rank-2{% elif forloop.counter == 3 %}td-rank-3{% else %}td-rank-other{% endif %}">
+            {% if forloop.counter == 1 %}🥇
+            {% elif forloop.counter == 2 %}🥈
+            {% elif forloop.counter == 3 %}🥉
+            {% else %}{{ forloop.counter }}{% endif %}
+        </div>
+
+        <!-- Contenu -->
+        <div class="td-content">
+            <div class="td-tag-row">
+                <span class="td-tag">{{ ht.tag }}</span>
+                <span class="td-count">
+                    <span class="material-icons" style="font-size:.72rem;">post_add</span>
+                    {{ ht.count }} {% trans "post" %}{{ ht.count|pluralize }}
+                </span>
+            </div>
+
+            <!-- Barre relative (100% = max_count) -->
+            <div class="td-bar-wrap">
+                <div class="td-bar" style="width:{% widthratio ht.count max_count 100 %}%"></div>
+            </div>
+
+            {% if ht.preview_text %}
+            <p class="td-preview">
+                <strong>@{{ ht.preview_author }}</strong> — {{ ht.preview_text }}
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Flèche -->
+        <span class="material-icons td-arrow">chevron_right</span>
+
+    </a>
+    {% endfor %}
+    {% endwith %}
+
+    <p class="td-refresh-hint">
+        {% trans "Mis à jour toutes les 15 minutes" %} •
+        <a href="{% url 'post:tendances' %}?h={{ hours }}" style="color:var(--accent);">{% trans "Actualiser" %}</a>
+    </p>
+
+    {% else %}
+
+    <div class="td-empty">
+        <div class="td-empty-icon">📭</div>
+        <h3>{% blocktrans with hours_label=hours_label %}Aucune tendance sur les {{ hours_label }}{% endblocktrans %}</h3>
+        <p>{% trans "Publiez des posts avec des hashtags pour alimenter les tendances !" %}<br>
+        {% trans "Essayez sur une période plus longue →" %}
+        <a href="?h=168" style="color:var(--accent);">7 jours</a></p>
+    </div>
+
+    {% endif %}
+
+</div>
+{% endblock content %}

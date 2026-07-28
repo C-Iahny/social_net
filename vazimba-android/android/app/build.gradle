@@ -17,8 +17,8 @@ android {
         applicationId "com.vazimba.io"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2        // ← incrémenter à chaque upload Play Store
-        versionName "1.1"    // ← version affichée aux utilisateurs
+        versionCode 3        // ← incrémenter à chaque upload Play Store
+        versionName "1.2"    // ← version affichée aux utilisateurs
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'

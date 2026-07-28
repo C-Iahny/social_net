@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<style>
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.verif-wrap {
+    max-width: 680px;
+    margin: 2.5rem auto 5rem;
+    padding: 0 1rem;
+}
+.verif-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2rem;
+}
+.verif-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    margin-bottom: .35rem;
+}
+.verif-sub {
+    font-size: .88rem;
+    color: var(--text-muted);
+    margin-bottom: 1.75rem;
+    line-height: 1.55;
+}
+
+/* ── Choix du type ───────────────────────────────────────────────────────── */
+.verif-type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .85rem;
+    margin-bottom: 1.75rem;
+}
+@media (max-width: 480px) { .verif-type-grid { grid-template-columns: 1fr; } }
+
+.verif-type-card {
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 1.1rem 1rem;
+    cursor: pointer;
+    transition: border-color .18s, background .18s;
+    position: relative;
+    text-align: left;
+    background: var(--bg-secondary);
+}
+.verif-type-card:hover { border-color: var(--accent); }
+.verif-type-card.active-verified {
+    border-color: #10b981;
+    background: rgba(16,185,129,.07);
+}
+.verif-type-card.active-pro {
+    border-color: #d97706;
+    background: rgba(217,119,6,.07);
+}
+.verif-type-icon { font-size: 1.8rem; margin-bottom: .5rem; display: block; }
+.verif-type-name {
+    font-weight: 800;
+    font-size: .95rem;
+    margin-bottom: .25rem;
+}
+.verif-type-desc {
+    font-size: .78rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+.verif-type-perks {
+    margin-top: .65rem;
+    display: flex;
+    flex-direction: column;
+    gap: .22rem;
+}
+.verif-type-perk {
+    font-size: .75rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+.verif-type-perk::before { content: '✓'; font-size: .7rem; }
+.verif-type-card.active-verified .verif-type-perk::before { color: #10b981; }
+.verif-type-card.active-pro .verif-type-perk::before { color: #d97706; }
+
+/* ── Statut badge ─────────────────────────────────────────────────────────── */
+.verif-status-box {
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.verif-status-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
+.verif-status-pending  { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.verif-status-approved { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
+.verif-status-rejected { background: #fff1f2; border: 1px solid #fca5a5; color: #9f1239; }
+.verif-status-pro-approved { background: #fffbeb; border: 1px solid #fcd34d; color: #78350f; }
+[data-theme="dark"] .verif-status-pending  { background: rgba(254,243,199,.08); border-color: #92400e; color: #fde68a; }
+[data-theme="dark"] .verif-status-approved { background: rgba(6,95,70,.12); border-color: #065f46; color: #6ee7b7; }
+[data-theme="dark"] .verif-status-rejected { background: rgba(159,18,57,.12); border-color: #9f1239; color: #fca5a5; }
+[data-theme="dark"] .verif-status-pro-approved { background: rgba(120,53,15,.15); border-color: #92400e; color: #fcd34d; }
+.verif-status-label  { font-weight: 700; font-size: 1rem; margin-bottom: .2rem; }
+.verif-status-detail { font-size: .83rem; opacity: .85; }
+
+/* ── Formulaire ──────────────────────────────────────────────────────────── */
+.verif-label {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: .4rem;
+    display: block;
+}
+.verif-label .req { color: #ef4444; margin-left: .2rem; }
+
+.verif-input, .verif-select, .verif-textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: .7rem 1rem;
+    font-size: .9rem;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color .18s;
+}
+.verif-textarea { min-height: 110px; resize: vertical; }
+.verif-input:focus, .verif-select:focus, .verif-textarea:focus { border-color: var(--accent); }
+
+.verif-row { margin-bottom: 1rem; }
+.verif-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .85rem;
+    margin-bottom: 1rem;
+}
+@media (max-width: 480px) { .verif-row-2 { grid-template-columns: 1fr; } }
+
+.verif-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: .65rem 1.5rem;
+    font-weight: 700;
+    font-size: .92rem;
+    cursor: pointer;
+    transition: opacity .18s;
+    margin-top: 1rem;
+}
+[data-theme="dark"] .verif-submit { color: #1a0a02; }
+.verif-submit:hover { opacity: .85; }
+.verif-hint { font-size: .78rem; color: var(--text-muted); margin-top: .35rem; }
+.verif-section-title {
+    font-size: .82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    margin: 1.5rem 0 .85rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.verif-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+hr.verif-sep { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+/* Boutique form — caché par défaut */
+#verif-boutique-fields { display: none; }
+#verif-boutique-fields.visible { display: block; }
+
+/* Bannière preview */
+.banner-preview {
+    width: 100%;
+    height: 80px;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-top: .5rem;
+    display: none;
+}
+.banner-preview.visible { display: block; }
+</style>
+
+<div class="verif-wrap">
+    <!-- Fil d'Ariane -->
+    <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:1.25rem;">
+        <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
+        <span> › </span>
+        <a href="{% url 'bazar:mes_annonces' %}" style="color:var(--accent);text-decoration:none;">{% trans "Mes annonces" %}</a>
+        <span> › </span>{% trans "Vérification vendeur" %}
+    </nav>
+
+    <div class="verif-card">
+        <h1 class="verif-title">🛡️ {% trans "Vérification vendeur" %}</h1>
+        <p class="verif-sub">
+            {% trans "Un compte vérifié renforce la confiance des acheteurs. Choisissez le profil qui correspond à votre activité." %}
+        </p>
+
+        {% if verification %}
+
+            {% if verification.status == 'pending' %}
+            <div class="verif-status-box verif-status-pending">
+                <span class="verif-status-icon">⏳</span>
+                <div>
+                    <div class="verif-status-label">
+                        {% if verification.seller_type == 'pro' %}⭐{% else %}✓{% endif %}
+                        {% trans "Demande en attente d'examen" %}
+                    </div>
+                    <div class="verif-status-detail">
+                        {% blocktrans with date=verification.created_at|date:"d/m/Y" %}Soumise le {{ date }}.{% endblocktrans %}
+                        {% trans "L'équipe de modération examinera votre demande prochainement." %}
+                    </div>
+                </div>
+            </div>
+
+            {% elif verification.status == 'approved' and verification.seller_type == 'pro' %}
+            <div class="verif-status-box verif-status-pro-approved">
+                <span class="verif-status-icon">⭐</span>
+                <div>
+                    <div class="verif-status-label">{% trans "Boutique Pro active" %}</div>
+                    <div class="verif-status-detail">
+                        {% blocktrans with date=verification.reviewed_at|date:"d/m/Y" %}Approuvée le {{ date }}.{% endblocktrans %}
+                        {% trans "Votre page boutique est visible par tous les acheteurs." %}
+                    </div>
+                    <div style="margin-top:.6rem;">
+                        <a href="{% url 'bazar:boutique' username=request.user.username %}"
+                           style="display:inline-flex;align-items:center;gap:.4rem;color:#d97706;font-weight:700;font-size:.83rem;text-decoration:none;">
+                            🏪 {% trans "Voir ma page boutique" %} →
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% elif verification.status == 'approved' and verification.seller_type == 'verified' %}
+            <div class="verif-status-box verif-status-approved">
+                <span class="verif-status-icon">✅</span>
+                <div>
+                    <div class="verif-status-label">{% trans "Compte vérifié" %}</div>
+                    <div class="verif-status-detail">
+                        {% blocktrans with date=verification.reviewed_at|date:"d/m/Y" %}Approuvé le {{ date }}.{% endblocktrans %}
+                        {% trans "Badge ✓ actif, 12 photos par annonce." %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upgrade vers Pro -->
+            <hr class="verif-sep">
+            <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fcd34d;border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1.5rem;">
+                <div style="font-size:1.1rem;font-weight:800;color:#78350f;margin-bottom:.35rem;">⭐ {% trans "Évoluer vers Boutique Pro" %}</div>
+                <div style="font-size:.83rem;color:#92400e;margin-bottom:1rem;line-height:1.55;">
+                    {% trans "Votre activité a grandi ? Passez au niveau supérieur : page boutique dédiée, badge doré, 20 photos par annonce, priorité maximale dans les résultats." %}
+                </div>
+                <button type="button" onclick="showUpgradeForm()"
+                        style="display:inline-flex;align-items:center;gap:.45rem;background:#d97706;color:#fff;border:none;border-radius:10px;padding:.6rem 1.3rem;font-weight:700;font-size:.88rem;cursor:pointer;">
+                    ⭐ {% trans "Demander le statut Boutique Pro" %}
+                </button>
+            </div>
+
+            <!-- Formulaire upgrade (caché par défaut) -->
+            <div id="upgrade-form-wrap" style="display:none;">
+                <form method="post" enctype="multipart/form-data" id="verif-form">
+                    {% csrf_token %}
+                    {# On force le type pro directement #}
+                    {% include "bazar/_verification_form.html" with initial_type="pro" %}
+                </form>
+            </div>
+            <script>
+            function showUpgradeForm() {
+                document.getElementById('upgrade-form-wrap').style.display = 'block';
+                document.getElementById('upgrade-form-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Forcer le type à 'pro' et masquer les cartes de choix
+                var grid = document.getElementById('verif-type-grid');
+                if (grid) grid.style.display = 'none';
+                var inp = document.getElementById('seller-type-input');
+                if (inp) inp.value = 'pro';
+                var bf = document.getElementById('verif-boutique-fields');
+                if (bf) bf.classList.add('visible');
+            }
+            </script>
+
+            {% elif verification.status == 'rejected' %}
+            <div class="verif-status-box verif-status-rejected">
+                <span class="verif-status-icon">❌</span>
+                <div>
+                    <div class="verif-status-label">{% trans "Demande refusée" %}</div>
+                    <div class="verif-status-detail">
+                        {% blocktrans with date=verification.reviewed_at|date:"d/m/Y" %}Examinée le {{ date }}.{% endblocktrans %}
+                        {% if verification.admin_notes %}
+                        <br>{% trans "Motif :" %} {{ verification.admin_notes }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <hr class="verif-sep">
+            <p style="font-size:.88rem;color:var(--text-secondary);margin-bottom:1rem;">
+                {% trans "Vous pouvez soumettre une nouvelle demande en corrigeant les points signalés." %}
+            </p>
+
+            <!-- Formulaire re-soumission -->
+            <form method="post" enctype="multipart/form-data" id="verif-form">
+                {% csrf_token %}
+                {% include "bazar/_verification_form.html" with initial_type=verification.seller_type %}
+            </form>
+            {% endif %}
+
+        {% else %}
+        <!-- Première demande -->
+        <form method="post" enctype="multipart/form-data" id="verif-form">
+            {% csrf_token %}
+            {% include "bazar/_verification_form.html" with initial_type="verified" %}
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

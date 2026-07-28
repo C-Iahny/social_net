@@ -10,7 +10,8 @@ urlpatterns = [
     path('lieux/proposer/',               views.lieu_submit,  name='lieu_submit'),
     path('lieux/<slug:slug>/modifier/',   views.lieu_edit,    name='lieu_edit'),
     path('lieux/<slug:slug>/',            views.lieu_detail,  name='lieu_detail'),
-    path('guides/',              views.guides_list,     name='guides_list'),
+    path('guides/',              views.guides_list,       name='guides_list'),
+    path('guides/autocomplete/', views.guides_autocomplete, name='guides_autocomplete'),
     path('guides/inscription/',  views.guide_register,  name='guide_register'),
     path('guides/<int:pk>/',     views.guide_profile,   name='guide_profile'),
 ]

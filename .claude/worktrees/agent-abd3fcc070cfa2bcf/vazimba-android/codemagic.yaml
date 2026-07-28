@@ -1,0 +1,120 @@
+# ── Codemagic CI/CD — Vazimba Android + iOS ───────────────────────────────────
+# https://docs.codemagic.io/yaml-quick-start/building-a-capacitor-app/
+#
+# Configuration pour builder l'APK Android ET l'IPA iOS depuis le cloud.
+# Sans Mac, iOS ne peut être compilé que via ce service (gratuit : 500 min/mois).
+#
+# SETUP CODEMAGIC :
+#  1. Créer un compte sur https://codemagic.io (gratuit)
+#  2. Connecter votre dépôt GitHub/GitLab
+#  3. Sélectionner le fichier codemagic.yaml comme configuration
+#  4. Ajouter les variables d'env dans l'interface Codemagic (voir ci-dessous)
+
+workflows:
+
+  # ════════════════════════════════════════
+  #  BUILD ANDROID — Play Store AAB
+  # ════════════════════════════════════════
+  android-release:
+    name: "Vazimba Android — Release AAB"
+    max_build_duration: 60
+    instance_type: mac_mini_m1  # ou linux_x2 (moins cher)
+    environment:
+      node: latest
+      java: 21
+      vars:
+        PACKAGE_NAME: "mg.vazimba.app"
+      groups:
+        - android_signing  # variables secrètes définies dans Codemagic UI
+
+    scripts:
+      - name: Install Node dependencies
+        script: |
+          cd vazimba-android
+          npm install
+
+      - name: Sync Capacitor
+        script: |
+          cd vazimba-android
+          npx cap sync android
+
+      - name: Build Release AAB
+        script: |
+          cd vazimba-android/android
+          ./gradlew bundleRelease \
+            -PkeyAlias=$CM_KEY_ALIAS \
+            -PkeyPassword=$CM_KEY_PASSWORD \
+            -PstoreFile=$CM_KEYSTORE_PATH \
+            -PstorePassword=$CM_KEYSTORE_PASSWORD
+
+    artifacts:
+      - vazimba-android/android/app/build/outputs/bundle/release/*.aab
+
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal  # internal → alpha → beta → production
+        submit_as_draft: true
+
+
+  # ════════════════════════════════════════
+  #  BUILD iOS — App Store IPA
+  # ════════════════════════════════════════
+  ios-release:
+    name: "Vazimba iOS — Release IPA"
+    max_build_duration: 90
+    instance_type: mac_mini_m1  # macOS requis pour iOS
+    environment:
+      xcode: latest
+      node: latest
+      cocoapods: default
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: mg.vazimba.app
+      vars:
+        APP_STORE_CONNECT_ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID
+        APP_STORE_CONNECT_KEY_IDENTIFIER: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
+        CERTIFICATE_PRIVATE_KEY: $CERTIFICATE_PRIVATE_KEY
+
+    scripts:
+      - name: Install Node dependencies
+        script: |
+          cd vazimba-android
+          npm install
+
+      - name: Add iOS platform (si pas déjà fait)
+        script: |
+          cd vazimba-android
+          if [ ! -d "ios" ]; then
+            npx cap add ios
+          fi
+
+      - name: Sync Capacitor iOS
+        script: |
+          cd vazimba-android
+          npx cap sync ios
+
+      - name: Install CocoaPods
+        script: |
+          cd vazimba-android/ios/App
+          pod install
+
+      - name: Build iOS IPA
+        script: |
+          cd vazimba-android
+          xcode-project use-profiles
+          xcode-project build-ipa \
+            --workspace ios/App/App.xcworkspace \
+            --scheme App
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true

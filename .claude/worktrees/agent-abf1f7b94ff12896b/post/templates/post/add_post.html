@@ -1,0 +1,478 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+.post-form-wrapper {
+    max-width: 680px;
+    margin: 90px auto 2rem;
+    padding: 0 1rem;
+}
+.post-form-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.04);
+    overflow: hidden;
+    transition: background .3s;
+}
+.post-form-header {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+}
+.post-form-header img {
+    width: 46px; height: 46px;
+    border-radius: 50%; object-fit: cover;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+}
+.post-form-header h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+}
+.post-form-header span { font-size: .85rem; color: var(--text-muted); }
+.post-form-body { padding: 1.5rem; }
+
+.form-field { margin-bottom: 1.2rem; }
+.form-field label {
+    display: block;
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: .45rem;
+}
+.form-field input[type="text"],
+.form-field textarea,
+.form-field select {
+    width: 100%;
+    background: var(--input-bg, var(--bg-card));
+    color: var(--text);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: .65rem .9rem;
+    font-size: .95rem;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+}
+.form-field input[type="text"]:focus,
+.form-field textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(24,119,242,.15);
+}
+.form-field textarea { min-height: 100px; resize: vertical; }
+
+/* Media upload zone */
+.upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    position: relative;
+    background: var(--btn-bg);
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: var(--bg-card); }
+.upload-zone input[type="file"] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-zone .material-icons { font-size: 2rem; color: var(--text-muted); display: block; margin-bottom: .3rem; }
+.upload-zone p { color: var(--text-muted); font-size: .88rem; margin: 0; }
+.upload-zone .upload-label { color: var(--accent); font-weight: 600; }
+
+/* Preview grid */
+.media-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+    margin-top: .8rem;
+}
+.media-preview-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--btn-bg);
+    border: 1px solid var(--border);
+}
+.media-preview-item img,
+.media-preview-item video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.media-preview-item .mp-remove {
+    position: absolute; top: 3px; right: 3px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.65);
+    border: none; color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem; line-height: 1;
+    transition: background .15s;
+}
+.media-preview-item .mp-remove:hover { background: #e53935; }
+.media-preview-item .mp-type-badge {
+    position: absolute; bottom: 3px; left: 3px;
+    background: rgba(0,0,0,.6);
+    color: #fff; font-size: .58rem; font-weight: 700;
+    padding: 1px 5px; border-radius: 4px;
+    text-transform: uppercase;
+}
+
+/* CKEditor override */
+.django-ckeditor-widget { width: 100% !important; }
+.ck-editor__editable { min-height: 120px; background: var(--input-bg, #fff) !important; color: var(--text) !important; }
+
+/* Action buttons */
+.post-form-actions {
+    display: flex;
+    gap: .7rem;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg-card);
+}
+.btn-submit {
+    flex: 1;
+    padding: .6rem 1.5rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    border-radius: 22px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s, box-shadow .2s;
+    display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    box-shadow: 0 4px 16px rgba(0,207,255,.25);
+}
+[data-theme="dark"] .btn-submit { color: #000; }
+.btn-submit:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(0,207,255,.35); }
+.btn-cancel {
+    padding: .6rem 1.2rem;
+    border: 1.5px solid var(--border);
+    border-radius: 22px;
+    background: none;
+    color: var(--text-muted);
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .15s, color .15s, border-color .15s;
+    display: inline-flex; align-items: center; gap: .35rem;
+}
+.btn-cancel:hover { background: var(--btn-bg); color: var(--text); border-color: var(--accent); text-decoration: none; }
+</style>
+
+<div class="post-form-wrapper">
+    <div class="post-form-card">
+
+        <!-- Header -->
+        <div class="post-form-header">
+            <img src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+            <div>
+                <h4>{% trans "Create a post" %}</h4>
+                <span>{% trans "as" %} <strong>{{ request.user.username }}</strong></span>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form id="add-post-form" method="POST" action="{% url 'post:addPost' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="post-form-body">
+
+                <!-- Title -->
+                <div class="form-field">
+                    <label for="id_title">{% trans "Title" %} <span style="color:var(--badge-danger-t,red)">*</span></label>
+                    <input type="text" name="title" id="id_title"
+                           placeholder="Donnez un titre à votre post…"
+                           value="{{ form.title.value|default:'' }}" required>
+                    {% if form.title.errors %}
+                    <p style="color:var(--badge-danger-t,red);font-size:.83rem;margin-top:.3rem;">{{ form.title.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Body (CKEditor) -->
+                <div class="form-field">
+                    <label>{% trans "Content" %}</label>
+                    {{ form.body }}
+                    {% if form.body.errors %}
+                    <p style="color:var(--badge-danger-t,red);font-size:.83rem;margin-top:.3rem;">{{ form.body.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Photos + Vidéos (multi-upload) -->
+                <div class="form-field">
+                    <label>
+                        <span class="material-icons" style="font-size:1rem;vertical-align:middle;">perm_media</span>
+                        {% trans "Photos & Videos" %}
+                    </label>
+                    <label for="id_media_files" class="upload-zone" id="media-upload-zone">
+                        <input type="file" name="media_files" id="id_media_files"
+                               accept="*/*"
+                               multiple
+                               style="display:none;"
+                               onchange="addToSelection(this.files); this.value=null;">
+                        <span class="material-icons">add_photo_alternate</span>
+                        <p id="media-zone-label"><span class="upload-label">{% trans "Click to add" %}</span> {% trans "or drag and drop" %}</p>
+                        <p style="font-size:.78rem;margin-top:.2rem;">{% trans "Images & Videos — multiple selections" %}</p>
+                    </label>
+                    <div class="media-preview-grid" id="media-preview-grid"></div>
+                </div>
+
+                <!-- File attachment -->
+                <div class="form-field">
+                    <label>{% trans "Attachment (optional)" %}</label>
+                    <div class="upload-zone">
+                        <input type="file" name="file" id="id_file">
+                        <span class="material-icons">attach_file</span>
+                        <p><span class="upload-label">{% trans "Click to attach" %}</span> {% trans "a file" %}</p>
+                    </div>
+                </div>
+
+                {% if form.non_field_errors %}
+                <div style="color:var(--badge-danger-t,red);font-size:.88rem;margin-bottom:.8rem;">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+            </div><!-- /post-form-body -->
+
+            <!-- ── Brouillon / Programmer / Publier ──────────────────────────── -->
+            <input type="hidden" name="action" id="post-action" value="publish">
+            <input type="hidden" name="scheduled_at" id="post-scheduled-at" value="">
+
+            <div class="post-form-actions" style="flex-wrap:wrap;gap:.5rem;">
+                <a class="btn-cancel" href="{% url 'post:post-view' %}">
+                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> {% trans "Cancel" %}
+                </a>
+
+                <!-- Brouillon -->
+                <button class="btn-cancel" type="button" onclick="submitAs('draft')"
+                        style="color:var(--text-muted);border:1.5px solid var(--border);">
+                    <span class="material-icons" style="font-size:1rem;">drafts</span> {% trans "Brouillon" %}
+                </button>
+
+                <!-- Programmer -->
+                <button class="btn-cancel" type="button" onclick="toggleSchedulePicker()"
+                        id="schedule-toggle-btn"
+                        style="color:var(--accent2);border:1.5px solid var(--accent2);">
+                    <span class="material-icons" style="font-size:1rem;">schedule</span> {% trans "Programmer" %}
+                </button>
+
+                <!-- Publier -->
+                <button class="btn-submit" type="submit">
+                    <span class="material-icons" style="font-size:1rem;">send</span> {% trans "Publish" %}
+                </button>
+            </div>
+
+            <!-- Picker date/heure pour publication programmée (caché par défaut) -->
+            <div id="schedule-picker" style="display:none;padding:.75rem 0 0;border-top:1px solid var(--border);margin-top:.5rem;">
+                <label style="font-size:.88rem;color:var(--text-muted);display:block;margin-bottom:.4rem;">
+                    {% trans "Date et heure de publication" %}
+                </label>
+                <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+                    <input type="datetime-local" id="sched-dt-input"
+                           style="flex:1;min-width:200px;padding:.4rem .6rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:.9rem;">
+                    <button type="button" class="btn-submit"
+                            onclick="submitAs('schedule')"
+                            style="white-space:nowrap;">
+                        <span class="material-icons" style="font-size:1rem;">schedule_send</span>
+                        {% trans "Programmer" %}
+                    </button>
+                </div>
+            </div>
+        </form>
+
+    </div><!-- /post-form-card -->
+</div>
+
+<script>
+var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
+var _pending = []; // tableau de File objects — cross-browser fiable
+
+function isVideo(file) {
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
+    return file.type.startsWith('video/') || VIDEO_EXTS.indexOf(ext) !== -1;
+}
+
+/* Ajoute les nouveaux fichiers au panier (avec conversion WebP si possible) */
+function addToSelection(newFiles) {
+    var raw = Array.from(newFiles);
+    if (window.ZootMediaConverter) {
+        ZootMediaConverter.processFiles(raw).then(function(converted) {
+            converted.forEach(function(f) { _pending.push(f); });
+            _renderPreview();
+        }).catch(function() {
+            raw.forEach(function(f) { _pending.push(f); });
+            _renderPreview();
+        });
+    } else {
+        raw.forEach(function(f) { _pending.push(f); });
+        _renderPreview();
+    }
+}
+
+/* Retire le fichier à l'index idx du panier */
+function removeFromSelection(idx) {
+    _pending.splice(idx, 1);
+    _renderPreview();
+}
+
+/* Redessine la grille de prévisualisation */
+function _renderPreview() {
+    var grid  = document.getElementById('media-preview-grid');
+    var label = document.getElementById('media-zone-label');
+    grid.innerHTML = '';
+    var count = _pending.length;
+
+    label.innerHTML = count > 0
+        ? '<span class="upload-label">' + count + ' fichier(s)</span> — cliquer pour en ajouter'
+        : '<span class="upload-label">Click to add</span> or drag and drop';
+
+    _pending.forEach(function(file, idx) {
+        var item = document.createElement('div');
+        item.className = 'media-preview-item';
+        var url = URL.createObjectURL(file);
+
+        if (isVideo(file)) {
+            var vid = document.createElement('video');
+            vid.src = url; vid.muted = true; vid.preload = 'metadata';
+            vid.onloadedmetadata = function() { URL.revokeObjectURL(url); };
+            item.appendChild(vid);
+            var badge = document.createElement('span');
+            badge.className = 'mp-type-badge'; badge.textContent = 'vidéo';
+            item.appendChild(badge);
+        } else {
+            var img = document.createElement('img');
+            img.src = url;
+            img.onload = function() { URL.revokeObjectURL(url); };
+            item.appendChild(img);
+        }
+
+        /* Bouton supprimer */
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'mp-remove';
+        btn.innerHTML = '&#x2715;';
+        btn.title = 'Retirer';
+        (function(i){ btn.onclick = function(e){ e.stopPropagation(); removeFromSelection(i); }; })(idx);
+        item.appendChild(btn);
+
+        grid.appendChild(item);
+    });
+}
+
+/* Drag & drop : AJOUTE au panier (ne remplace pas) */
+(function() {
+    var zone = document.getElementById('media-upload-zone');
+    if (!zone) return;
+    zone.addEventListener('dragover',  function(e){ e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', function(){ zone.classList.remove('dragover'); });
+    zone.addEventListener('drop', function(e) {
+        e.preventDefault(); zone.classList.remove('dragover');
+        addToSelection(e.dataTransfer.files);
+    });
+})();
+
+/* Intercept submit — injecte les fichiers via FormData */
+(function() {
+    var form = document.getElementById('add-post-form');
+    if (!form) return;
+    form.addEventListener('submit', function(e) {
+
+        /* Sync CKEditor si présent */
+        if (typeof CKEDITOR !== 'undefined') {
+            for (var k in CKEDITOR.instances) {
+                try { CKEDITOR.instances[k].updateElement(); } catch(ex) {}
+            }
+        }
+
+        if (_pending.length === 0) return; /* aucun fichier → submit natif */
+
+        e.preventDefault();
+
+        var fd = new FormData();
+        var csrf = form.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrf) fd.append('csrfmiddlewaretoken', csrf.value);
+        var titleEl = form.querySelector('[name=title]');
+        if (titleEl) fd.append('title', titleEl.value);
+        var bodyEl = form.querySelector('[name=body]');
+        if (bodyEl) fd.append('body', bodyEl.value);
+        var fileEl = form.querySelector('[name=file]');
+        if (fileEl && fileEl.files && fileEl.files[0]) fd.append('file', fileEl.files[0]);
+        /* Inclure les champs cachés action + scheduled_at */
+        var actionEl = form.querySelector('[name=action]');
+        if (actionEl) fd.append('action', actionEl.value);
+        var schedEl = form.querySelector('[name=scheduled_at]');
+        if (schedEl && schedEl.value) fd.append('scheduled_at', schedEl.value);
+        _pending.forEach(function(f) { fd.append('media_files', f); });
+
+        var btn = form.querySelector('.btn-submit');
+        if (btn) { btn.disabled = true; btn.style.opacity = '.6'; }
+
+        fetch(form.action, {
+            method: 'POST',
+            body: fd,
+            credentials: 'same-origin',
+            /* X-Requested-With permet au view Django de retourner du JSON
+               plutôt qu'un redirect HTTP — plus fiable que suivre les redirects */
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).then(function(r) {
+            if (r.ok) {
+                /* Le view retourne {"ok": true, "redirect": "/feed/"} */
+                return r.json().catch(function() { return null; }).then(function(data) {
+                    if (data && data.ok && data.redirect) {
+                        window.location.href = data.redirect;
+                    } else {
+                        /* 200 HTML = form_invalid (erreurs de validation) */
+                        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                        form.submit(); /* soumettre en natif pour afficher les erreurs */
+                    }
+                });
+            } else {
+                /* 4xx / 5xx — soumettre en natif pour afficher l'erreur Django */
+                console.error('[Vazimba] addPost HTTP', r.status, r.url);
+                if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+                form.submit();
+            }
+        }).catch(function(err) {
+            /* Erreur réseau (offline, etc.) */
+            console.warn('[Vazimba] addPost network error', err);
+            if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+            form.submit();
+        });
+    });
+})();
+
+// ── Brouillon / Programmer ────────────────────────────────────────────────────
+function submitAs(action) {
+    document.getElementById('post-action').value = action;
+    if (action === 'schedule') {
+        var dt = document.getElementById('sched-dt-input').value;
+        if (!dt) { alert('{% trans "Veuillez choisir une date et heure." %}'); return; }
+        document.getElementById('post-scheduled-at').value = dt;
+    }
+    document.getElementById('add-post-form').submit();
+}
+function toggleSchedulePicker() {
+    var p = document.getElementById('schedule-picker');
+    if (p) p.style.display = (p.style.display === 'none') ? 'block' : 'none';
+}
+</script>
+
+{% endblock content %}

@@ -1,0 +1,2448 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+/* ════════════════════════════════════════════════════
+   PROFILE PAGE — PREMIUM REDESIGN
+   ════════════════════════════════════════════════════ */
+body { background: var(--bg); }
+
+.profile-wrapper {
+    max-width: 960px;
+    margin: 72px auto 2rem;
+    padding: 0 .75rem;
+}
+
+/* ── Cover ── */
+.profile-cover {
+    height: 260px;
+    border-radius: 22px 22px 0 0;
+    overflow: hidden;
+    position: relative;
+    background: var(--bg-card);
+}
+.profile-cover-img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    display: block;
+}
+.cover-edit-btn {
+    position: absolute;
+    bottom: .75rem; right: .75rem;
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .35rem .85rem;
+    background: rgba(0,0,0,.52);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff; font-size: .8rem; font-weight: 700;
+    border: 1.5px solid rgba(255,255,255,.2);
+    border-radius: 10px; cursor: pointer;
+    transition: background .15s;
+    z-index: 2;
+}
+.cover-edit-btn:hover { background: rgba(0,0,0,.72); }
+.cover-edit-btn .material-icons { font-size: .95rem; }
+.profile-cover-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 10% 70%, rgba(0,207,255,.38) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 30%, rgba(191,95,255,.32) 0%, transparent 55%),
+        radial-gradient(ellipse at 55% 110%, rgba(255,77,166,.22) 0%, transparent 50%);
+}
+[data-theme="dark"] .profile-cover-bg {
+    background:
+        radial-gradient(ellipse at 10% 70%, rgba(0,207,255,.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 90% 30%, rgba(191,95,255,.16) 0%, transparent 55%),
+        radial-gradient(ellipse at 55% 110%, rgba(255,77,166,.1) 0%, transparent 50%);
+}
+.profile-cover-noise {
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+    opacity: .5;
+}
+
+/* ── Profile header block ── */
+.profile-header {
+    background: var(--bg-card);
+    border-radius: 0 0 22px 22px;
+    padding: .5rem 1.5rem 1.25rem;   /* .5rem top = petit espace au-dessus du nom */
+    position: relative; /* fix: sans ça, le nom est peint avant .profile-cover (positionné)
+                           et donc caché derrière la photo de couverture quand la bio le
+                           pousse au-dessus du bord supérieur du header */
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.04),
+        0 6px 20px rgba(0,0,0,.07),
+        0 0 0 .5px rgba(0,0,0,.05);
+    margin-bottom: 1.1rem;
+}
+[data-theme="dark"] .profile-header {
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.3),
+        0 8px 28px rgba(0,0,0,.45),
+        0 0 0 .5px rgba(255,255,255,.06);
+}
+
+.avatar-area {
+    /* L'avatar est en position:absolute → on laisse de la place à gauche */
+    padding-left: 144px;   /* 124px avatar + 20px gap */
+    padding-top: .6rem;
+    padding-bottom: .75rem;
+}
+
+/* Avatar ring */
+.avatar-ring-wrap {
+    width: 124px; height: 124px;
+    border-radius: 50%;
+    position: absolute;    /* sorti du flux — positionné par rapport au .profile-header */
+    left: 1.5rem;          /* aligné avec le padding du header */
+    top: -62px;            /* exactement moitié (62px = 124px / 2) dans le cover */
+    cursor: pointer;
+    transition: transform .18s;
+}
+.avatar-ring-wrap:hover { transform: scale(1.04); }
+.avatar-ring-wrap img {
+    width: 100%; height: 100%;
+    border-radius: 50%; object-fit: cover;
+    display: block;
+    position: relative; z-index: 1;
+}
+#profile-story-ring-el {
+    position: absolute;
+    inset: -5px; border-radius: 50%;
+    z-index: 0;
+}
+.avatar-edit-fab {
+    position: absolute;
+    bottom: 5px; right: 5px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: 2.5px solid var(--bg-card);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; z-index: 2;
+    transition: opacity .15s;
+}
+.avatar-edit-fab:hover { opacity: .85; text-decoration: none; }
+.avatar-edit-fab .material-icons { font-size: .85rem; color: #fff; }
+
+/* Name area */
+.profile-name-area {
+    min-width: 0;
+    padding-bottom: .4rem;
+}
+.profile-username {
+    font-size: 1.55rem; font-weight: 800;
+    color: var(--text); margin: 0; line-height: 1.2;
+    letter-spacing: -.02em;
+}
+.profile-bio-text {
+    color: var(--text-muted); font-size: .9rem;
+    margin: .4rem 0 0; line-height: 1.5;
+}
+.profile-stats-row {
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    margin-top: 1rem;
+}
+.profile-stat {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .87rem; color: var(--text-muted);
+}
+.profile-stat-val { font-weight: 700; color: var(--text); }
+.profile-stat .material-icons { font-size: .95rem; color: var(--accent); }
+
+/* Action buttons */
+.profile-actions {
+    display: flex; gap: .55rem;
+    flex-wrap: wrap;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0,0,0,.05);
+}
+[data-theme="dark"] .profile-actions { border-top-color: rgba(255,255,255,.05); }
+.btn-p {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .44rem 1.05rem; border-radius: 12px;
+    font-weight: 600; font-size: .88rem; border: none;
+    cursor: pointer; text-decoration: none;
+    transition: opacity .15s, transform .12s;
+    font-family: inherit;
+}
+.btn-p:hover { opacity: .88; transform: translateY(-1px); text-decoration: none; }
+.btn-p .material-icons { font-size: .95rem; }
+.btn-p-primary  { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+.btn-p-secondary { background: var(--btn-bg); color: var(--text); border: 1.5px solid var(--border); }
+.btn-p-secondary:hover { background: var(--btn-hover); color: var(--text); }
+.btn-p-danger { background: rgba(229,57,53,.1); color: #e53935; border: 1.5px solid rgba(229,57,53,.25); }
+[data-theme="dark"] .btn-p-danger { color: #f28b82; border-color: rgba(242,139,130,.25); }
+.btn-p-success { background: rgba(76,175,80,.1); color: #388e3c; border: 1.5px solid rgba(76,175,80,.25); }
+[data-theme="dark"] .btn-p-success { color: #66bb6a; border-color: rgba(102,187,106,.25); }
+.btn-p-pending { background: rgba(245,158,11,.1); color: #d97706; border: 1.5px solid rgba(245,158,11,.3); cursor: default; }
+.btn-p-pending:hover { opacity: 1; transform: none; }
+[data-theme="dark"] .btn-p-pending { color: #fbbf24; border-color: rgba(251,191,36,.28); }
+
+/* Friend request banner */
+.fr-banner {
+    background: rgba(0,207,255,.06);
+    border: 1.5px solid rgba(0,207,255,.2);
+    border-radius: 14px; padding: .75rem 1rem;
+    display: flex; align-items: center; gap: .8rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.fr-banner .fr-text { flex: 1; font-size: .9rem; color: var(--text); min-width: 160px; }
+.fr-banner .material-icons { color: var(--accent); font-size: 1.2rem; flex-shrink: 0; }
+
+/* ── Tabs ── */
+.profile-tabs {
+    display: flex;
+    border-bottom: 1.5px solid var(--border);
+    margin: 0 0 1.1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--bg-card);
+    border-radius: 14px 14px 0 0;
+    padding: 0 .5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
+}
+.profile-tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+    padding: .8rem 1.1rem;
+    background: none; border: none;
+    border-bottom: 2.5px solid transparent;
+    margin-bottom: -1.5px;
+    cursor: pointer;
+    font-weight: 600; font-size: .88rem;
+    color: var(--text-muted);
+    transition: color .18s, border-color .18s;
+    white-space: nowrap;
+    display: flex; align-items: center; gap: .35rem;
+    font-family: inherit;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-btn .material-icons { font-size: 1rem; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── Profile body grid ── */
+.profile-body {
+    display: grid;
+    grid-template-columns: 284px 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+.profile-sidebar {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+@media (max-width: 768px) {
+    .profile-body { grid-template-columns: 1fr; overflow-x: hidden; }
+    .profile-sidebar { display: none; }
+    .profile-cover { height: 140px; }
+    .avatar-ring-wrap { width: 88px; height: 88px; }
+    .profile-username { font-size: 1.2rem; }
+
+    /* Mobile : même logique, avatar absolu + contenu décalé à droite */
+    .avatar-ring-wrap {
+        left: 1rem;
+        top: -44px;  /* avatar 88px / 2 */
+    }
+    .avatar-area {
+        padding-left: 104px;  /* 88px avatar + 16px gap */
+        padding-top: .4rem;
+        padding-bottom: .5rem;
+    }
+    .profile-name-area {
+        padding-bottom: 0;
+    }
+
+    /* Wrapper profil */
+    .profile-wrapper {
+        margin: 70px auto 3rem;
+        padding: 0 .5rem;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;   /* ← verrou global sur le wrapper */
+    }
+
+    /* Colonne principale — DOIT avoir min-width:0 dans un grid sinon déborde */
+    .profile-main {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Create-box profil */
+    .pf-create-box {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    /* Post cards (profil) */
+    .post-card, .pf-post-card {
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+
+    /* Corps des posts — empêche le HTML CKEditor de déborder */
+    .pf-post-card .pc-body,
+    .post-card    .pc-body {
+        overflow: hidden;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    .pf-post-card .pc-body *,
+    .post-card    .pc-body * {
+        max-width: 100% !important;
+        height: auto !important;
+        box-sizing: border-box;
+    }
+
+    /* Section stories */
+    #profile-stories-section {
+        max-width: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+    #profile-stories-section > div {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Tabs profil */
+    .profile-tabs {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    /* Stats en ligne scrollable */
+    .profile-stats-row {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+        padding-bottom: .2rem;
+        gap: .65rem;
+    }
+    .profile-stats-row::-webkit-scrollbar { display: none; }
+    .profile-stat { flex-shrink: 0; }
+    .fihav-badge-inline { font-size: .68rem; padding: .1rem .45rem; }
+
+    /* Actions en grille 2 colonnes */
+    .profile-actions {
+        gap: .4rem;
+    }
+    .btn-p {
+        font-size: .82rem;
+        padding: .4rem .85rem;
+    }
+
+    /* Tabs profil : 4 boutons en largeur égale, pas de scroll */
+    .profile-tabs {
+        overflow-x: hidden;
+        flex-wrap: nowrap;
+        padding: 0;
+    }
+    .tab-btn {
+        flex: 1;
+        min-width: 0;
+        padding: .65rem .25rem;
+        font-size: .74rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* ── Sidebar cards ── */
+.pc-sidebar-card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    padding: 1.1rem;
+    margin-bottom: .9rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.05);
+}
+[data-theme="dark"] .pc-sidebar-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 0 0 .5px rgba(255,255,255,.05);
+}
+.pc-sidebar-label {
+    font-size: .68rem; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: .75rem;
+}
+.info-row {
+    display: flex; align-items: flex-start; gap: .65rem;
+    padding: .42rem 0;
+    color: var(--text); font-size: .88rem;
+    border-bottom: 1px solid rgba(0,0,0,.04);
+}
+[data-theme="dark"] .info-row { border-bottom-color: rgba(255,255,255,.04); }
+.info-row:last-child { border-bottom: none; }
+.info-row .material-icons { font-size: 1rem; color: var(--text-muted); margin-top: 1px; flex-shrink: 0; }
+
+/* Mini friends grid */
+.mini-friends-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-top: .4rem;
+}
+.mini-friend {
+    position: relative; border-radius: 10px;
+    overflow: hidden; aspect-ratio: 1;
+}
+.mini-friend img {
+    width: 100%; height: 100%; object-fit: cover;
+    border-radius: 10px; transition: transform .2s;
+}
+.mini-friend:hover img { transform: scale(1.06); }
+.mini-friend-label {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,.55);
+    color: #fff; font-size: .65rem;
+    padding: 2px 4px; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── Post cards (profile) ── */
+.pf-post-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    margin-bottom: 1.1rem;
+    overflow: hidden;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.05);
+    transition: transform .22s ease, box-shadow .22s ease;
+}
+.pf-post-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,.05), 0 10px 28px rgba(0,0,0,.1), 0 0 0 .5px rgba(0,0,0,.07);
+}
+[data-theme="dark"] .pf-post-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 6px 22px rgba(0,0,0,.42), 0 0 0 .5px rgba(255,255,255,.06);
+}
+[data-theme="dark"] .pf-post-card:hover {
+    box-shadow: 0 2px 5px rgba(0,0,0,.3), 0 14px 36px rgba(0,0,0,.55), 0 0 0 .5px rgba(255,255,255,.08);
+}
+.pf-post-header {
+    display: flex; align-items: center; gap: .85rem;
+    padding: 1rem 1.1rem .5rem;
+}
+.pf-avatar-ring {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    flex-shrink: 0; text-decoration: none;
+    transition: transform .15s; display: block;
+}
+.pf-avatar-ring:hover { transform: scale(1.07); text-decoration: none; }
+.pf-avatar-ring img {
+    width: 100%; height: 100%;
+    border-radius: 50%; object-fit: cover;
+    display: block;
+}
+.pf-author { font-weight: 700; color: var(--text); font-size: .9rem; text-decoration: none; display: block; }
+.pf-author:hover { color: var(--accent); text-decoration: none; }
+.pf-date { font-size: .76rem; color: var(--text-muted); }
+.pf-post-menu { margin-left: auto; display: flex; gap: .25rem; }
+.pf-menu-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent;
+    color: var(--text-muted); text-decoration: none;
+    cursor: pointer; transition: background .12s, color .12s;
+}
+.pf-menu-btn .material-icons { font-size: 1rem; }
+.pf-menu-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.pf-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; }
+.pf-post-title {
+    padding: .4rem 1.1rem .15rem;
+    font-weight: 700; font-size: 1.07rem; color: var(--text);
+    line-height: 1.4; letter-spacing: -.01em;
+}
+.pf-post-body {
+    padding: .2rem 1.1rem .65rem; color: var(--text);
+    font-size: .9rem; line-height: 1.68; opacity: .9;
+}
+.pf-post-body p { margin-bottom: .3rem; }
+.pf-post-image {
+    width: 100%; max-height: 500px; object-fit: cover; display: block;
+    cursor: zoom-in; transition: transform .35s;
+}
+.pf-image-wrap:hover .pf-post-image { transform: scale(1.015); }
+.pf-post-footer {
+    display: flex; align-items: center; gap: .6rem;
+    padding: .55rem 1.1rem;
+    border-top: 1px solid rgba(0,0,0,.05);
+    font-size: .82rem; color: var(--text-muted);
+}
+[data-theme="dark"] .pf-post-footer { border-top-color: rgba(255,255,255,.05); }
+.pf-likes { display: flex; align-items: center; gap: .3rem; }
+.pf-likes .material-icons { font-size: .95rem; color: var(--accent); }
+.pf-cat-tag {
+    margin-left: auto; font-size: .74rem;
+    background: var(--btn-bg); padding: .15rem .55rem;
+    border-radius: 20px; color: var(--text-muted);
+}
+
+/* ── Create post box (profile) ── */
+.pf-create-box {
+    background: var(--bg-card);
+    border-radius: 18px;
+    padding: .85rem 1.1rem;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .85rem;
+    text-decoration: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
+    transition: box-shadow .2s;
+}
+.pf-create-box:hover {
+    text-decoration: none;
+    box-shadow: 0 0 0 2px var(--accent), 0 4px 20px rgba(0,207,255,.1);
+}
+.pf-create-box img {
+    width: 40px; height: 40px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0; border: 1.5px solid var(--border);
+}
+.pf-create-prompt {
+    flex: 1; background: var(--btn-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 24px; padding: .55rem 1.1rem;
+    color: var(--text-muted); font-size: .9rem;
+}
+
+/* ══════════════════════════════════════════════
+   POST CARD (shared with feed)
+   ══════════════════════════════════════════════ */
+.post-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    margin-bottom: 1.1rem;
+    overflow: hidden;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.05);
+    transition: transform .22s ease, box-shadow .22s ease;
+    position: relative;
+}
+.post-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,.05), 0 10px 28px rgba(0,0,0,.1), 0 0 0 .5px rgba(0,0,0,.07);
+}
+[data-theme="dark"] .post-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 6px 22px rgba(0,0,0,.42), 0 0 0 .5px rgba(255,255,255,.06);
+}
+[data-theme="dark"] .post-card:hover {
+    box-shadow: 0 2px 5px rgba(0,0,0,.3), 0 14px 36px rgba(0,0,0,.55), 0 0 0 .5px rgba(255,255,255,.08);
+}
+.pc-header { display: flex; align-items: center; gap: .85rem; padding: 1rem 1.1rem .55rem; }
+.pc-avatar-ring {
+    width: 48px; height: 48px; border-radius: 50%;
+    flex-shrink: 0; text-decoration: none; transition: transform .15s; display: block;
+}
+.pc-avatar-ring:hover { transform: scale(1.07); text-decoration: none; }
+/* ── Post de groupe : avatar cover + badge utilisateur ── */
+.pc-gp-avatar-wrap { position: relative; flex-shrink: 0; width: 52px; height: 52px; }
+.pc-gp-cover-link { display: block; width: 52px; height: 52px; border-radius: 10px; overflow: hidden; text-decoration: none; flex-shrink: 0; }
+.pc-gp-cover { width: 52px; height: 52px; object-fit: cover; border-radius: 10px; display: block; }
+.pc-gp-cover-fallback { width: 52px; height: 52px; border-radius: 10px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%); display: flex; align-items: center; justify-content: center; color: #fff; }
+.pc-gp-cover-fallback .material-icons { font-size: 1.6rem; }
+.pc-gp-user-badge-link { position: absolute; bottom: -4px; right: -6px; display: block; width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--bg-card); overflow: hidden; text-decoration: none; background: var(--bg-card); box-shadow: 0 1px 4px rgba(0,0,0,.18); z-index: 2; }
+.pc-gp-user-badge { width: 22px; height: 22px; object-fit: cover; border-radius: 50%; display: block; }
+.pc-sub-user-link { color: var(--text-secondary); font-weight: 500; text-decoration: none; font-size: .78rem; }
+.pc-sub-user-link:hover { color: var(--accent); text-decoration: underline; }
+.pc-avatar-ring img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.pc-meta { flex: 1; min-width: 0; }
+.pc-author { font-weight: 700; color: var(--text); font-size: .93rem; text-decoration: none; display: block; line-height: 1.25; }
+.pc-author:hover { color: var(--accent); text-decoration: none; }
+.pc-sub { font-size: .78rem; color: var(--text-muted); display: flex; align-items: center; gap: .3rem; margin-top: .05rem; }
+.pc-sub .material-icons { font-size: .82rem; }
+.pc-category-tag { display: inline-block; background: var(--btn-bg); color: var(--text-muted); border-radius: 6px; padding: .05rem .45rem; font-size: .72rem; font-weight: 700; }
+.pc-dot { color: var(--text-subtle, var(--border)); }
+.pc-owner-menu { display: flex; gap: .3rem; margin-left: auto; flex-shrink: 0; }
+.pc-menu-btn {
+    width: 30px; height: 30px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: none; background: transparent; color: var(--text-muted);
+    cursor: pointer; text-decoration: none; transition: background .12s, color .12s;
+}
+.pc-menu-btn .material-icons { font-size: 1rem; }
+.pc-menu-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; }
+.pc-title { padding: .4rem 1.1rem .15rem; font-weight: 700; font-size: 1.07rem; color: var(--text); line-height: 1.4; letter-spacing: -.01em; }
+.pc-title-link { color: inherit; text-decoration: none; }
+.pc-title-link:hover { color: var(--accent); text-decoration: none; }
+.pc-body {
+    max-height: 160px; overflow: hidden; position: relative; cursor: pointer;
+    padding: .2rem 1.1rem .7rem; color: var(--text); font-size: .9rem; line-height: 1.68; opacity: .9;
+}
+.pc-body:not(.expanded)::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 52px; background: linear-gradient(transparent, var(--bg-card)); pointer-events: none;
+}
+.pc-body.expanded { max-height: none; overflow-x: hidden; overflow-y: visible; cursor: default; }
+.pc-body.expanded::after { display: none; }
+.pc-body img { max-width: 100%; border-radius: 8px; margin: .3rem 0; }
+.pc-body p { margin-bottom: .35rem; }
+.pc-read-more {
+    display: inline-block;
+    margin: -.2rem 1.1rem .4rem;
+    font-size: .82rem; font-weight: 700;
+    color: var(--accent); cursor: pointer; user-select: none;
+}
+.pc-read-more:hover { opacity: .75; }
+.pc-read-more.hidden { display: none; }
+.pc-image-wrap { overflow: hidden; position: relative; }
+.pc-image { width: 100%; max-height: 520px; object-fit: cover; display: block; cursor: zoom-in; transition: transform .35s; }
+.pc-image-wrap:hover .pc-image { transform: scale(1.015); }
+.pc-image[data-src] { opacity: 0; filter: blur(8px); }
+.pc-image.lazy-loaded { opacity: 1; filter: none; transform: scale(1); transition: opacity .4s, filter .4s, transform .4s; }
+.pc-file-attach {
+    margin: .5rem 1.1rem; display: inline-flex; align-items: center; gap: .5rem;
+    padding: .48rem .9rem; border-radius: 10px; background: var(--btn-bg); border: 1px solid var(--border);
+    color: var(--text); text-decoration: none; font-size: .83rem; font-weight: 600; transition: background .15s;
+}
+.pc-file-attach:hover { background: var(--btn-hover); text-decoration: none; color: var(--text); }
+.pc-file-attach .material-icons { font-size: 1.05rem; color: var(--accent); }
+/* Gallery multi-media */
+.pc-gallery { display: grid; gap: 2px; overflow: hidden; border-radius: 0; }
+.pc-gallery-1 { grid-template-columns: 1fr; }
+.pc-gallery-2 { grid-template-columns: 1fr 1fr; }
+.pc-gallery-3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+.pc-gallery-3 .pc-gal-item:first-child { grid-row: 1 / 3; }
+.pc-gallery-4,.pc-gallery-5,.pc-gallery-6,.pc-gallery-7 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.pc-gallery-4 .pc-gal-item:nth-child(n+5),
+.pc-gallery-5 .pc-gal-item:nth-child(n+5),
+.pc-gallery-6 .pc-gal-item:nth-child(n+5),
+.pc-gallery-7 .pc-gal-item:nth-child(n+5) { display: none; }
+.pc-gal-item { position: relative; overflow: hidden; aspect-ratio: 1; background: #000; cursor: zoom-in; }
+.pc-gal-item:first-child:last-child { min-height: 320px; max-height: 520px; aspect-ratio: unset; }
+.pc-gal-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .25s; }
+.pc-gal-item:hover .pc-gal-img { transform: scale(1.04); }
+.pc-gal-more { position: absolute; inset: 0; background: rgba(0,0,0,.5); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; }
+.pc-gal-video { background: #000; cursor: default; }
+.pc-gal-vid { width: 100%; height: 100%; object-fit: contain; display: block; }
+.pc-video-wrap { margin: .4rem 0 0; background: #000; overflow: hidden; }
+.pc-video { width: 100%; max-height: 460px; display: block; background: #000; outline: none; }
+.pc-video-label { display: flex; align-items: center; gap: .4rem; padding: .4rem 1.1rem; font-size: .78rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.pc-video-label .material-icons { font-size: .95rem; color: #7c3aed; }
+/* Reaction summary */
+.pc-reaction-bar { display: flex; align-items: center; gap: .45rem; padding: .3rem 1.1rem; font-size: .8rem; color: var(--text-muted); }
+.rc-emoji-group { display: flex; }
+.rc-emoji { width: 22px; height: 22px; border-radius: 50%; background: var(--bg-card); border: 1.5px solid var(--border); display: inline-flex; align-items: center; justify-content: center; font-size: .82rem; margin-right: -5px; position: relative; z-index: 1; }
+.rc-count { font-weight: 600; color: var(--text-muted); font-size: .78rem; margin-left: 8px; }
+/* Footer actions */
+.pc-footer { display: flex; gap: .2rem; padding: .35rem .65rem .4rem; border-top: 1px solid rgba(0,0,0,.05); }
+[data-theme="dark"] .pc-footer { border-top-color: rgba(255,255,255,.05); }
+.reaction-wrap { flex: 1; position: relative; }
+.pc-footer-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: .38rem;
+    padding: .5rem .5rem; border-radius: 11px; border: none; background: none;
+    color: var(--text-muted); font-size: .81rem; font-weight: 600; cursor: pointer;
+    text-decoration: none; transition: background .13s, color .13s; letter-spacing: .01em; font-family: inherit;
+}
+.pc-footer-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.pc-footer-btn .material-icons { font-size: 1.1rem; }
+.pc-footer-btn.liked { color: var(--accent); }
+.pc-footer-btn.active { color: var(--accent); }
+/* Reaction picker */
+.reaction-picker {
+    display: none; position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 40px;
+    padding: .32rem .45rem; box-shadow: 0 8px 32px rgba(0,0,0,.22); gap: .1rem; z-index: 200;
+    white-space: nowrap; animation: reactionPop .18s cubic-bezier(.34,1.56,.64,1) both;
+}
+.reaction-picker.open { display: flex; }
+@keyframes reactionPop {
+    from { opacity: 0; transform: translateX(-50%) scale(.55) translateY(8px); }
+    to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+}
+.reaction-emoji-btn { background: none; border: none; cursor: pointer; font-size: 1.6rem; padding: .1rem .15rem; border-radius: 50%; transition: transform .15s; line-height: 1; }
+.reaction-emoji-btn:hover { transform: scale(1.38) translateY(-5px); }
+.reaction-emoji-btn.selected { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 50%; }
+/* Comment panel */
+.pc-comment-panel { display: none; border-top: 1px solid rgba(0,0,0,.05); background: var(--bg-card); }
+[data-theme="dark"] .pc-comment-panel { border-top-color: rgba(255,255,255,.05); }
+.pc-comment-panel.open { display: block; }
+.pc-comment-list { padding: .75rem 1.1rem .4rem; display: flex; flex-direction: column; gap: .7rem; max-height: 440px; overflow-y: auto; scrollbar-width: thin; }
+.pc-comment-list:empty::after { content: "Aucun commentaire pour l'instant."; font-size: .82rem; color: var(--text-muted); display: block; }
+.pc-comment-item { display: flex; align-items: flex-start; gap: .6rem; }
+.pc-comment-item .cmt-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; margin-top: 1px; }
+.pc-comment-right { flex: 1; min-width: 0; }
+.pc-comment-bubble { background: var(--btn-bg); border-radius: 4px 14px 14px 14px; padding: .42rem .75rem .48rem; display: inline-block; max-width: 100%; }
+.pc-comment-author { font-size: .78rem; font-weight: 700; color: var(--text); text-decoration: none; display: inline-block; }
+.pc-comment-author:hover { color: var(--accent); text-decoration: none; }
+.pc-comment-body { font-size: .88rem; color: var(--text); margin: .05rem 0 0; word-break: break-word; line-height: 1.5; }
+.pc-comment-footer { display: flex; align-items: center; gap: .7rem; margin-top: .28rem; padding: 0 .1rem; }
+.pc-comment-time { font-size: .72rem; color: var(--text-muted); }
+.pc-comment-reply-btn { background: none; border: none; padding: 0; cursor: pointer; color: var(--text-muted); font-size: .72rem; font-weight: 700; transition: color .12s; text-transform: uppercase; }
+.pc-comment-reply-btn:hover { color: var(--accent); }
+.pc-comment-del { background: none; border: none; padding: 0; cursor: pointer; color: var(--text-muted); font-size: .72rem; font-weight: 600; transition: color .12s; margin-left: auto; }
+.pc-comment-del:hover { color: #e53935; }
+.pc-comment-replies { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; padding-left: .1rem; border-left: 2px solid rgba(0,207,255,.22); margin-left: .6rem; }
+[data-theme="dark"] .pc-comment-replies { border-left-color: rgba(0,207,255,.18); }
+.pc-comment-reply-item { display: flex; align-items: flex-start; gap: .5rem; }
+.pc-comment-reply-item .reply-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; margin-top: 1px; }
+.pc-reply-form-wrap { display: none; margin-top: .45rem; border-left: 2px solid rgba(0,207,255,.22); margin-left: .6rem; padding-left: .65rem; }
+[data-theme="dark"] .pc-reply-form-wrap { border-left-color: rgba(0,207,255,.18); }
+.pc-reply-form-wrap.open { display: flex; align-items: flex-end; gap: .5rem; }
+.pc-reply-form-wrap .reply-form-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; margin-bottom: 2px; }
+.pc-reply-input-wrap { flex: 1; }
+.pc-comment-form { display: flex; align-items: flex-end; gap: .55rem; padding: .55rem 1.1rem .7rem; border-top: 1px solid rgba(0,0,0,.05); }
+[data-theme="dark"] .pc-comment-form { border-top-color: rgba(255,255,255,.05); }
+.pc-comment-form .cmt-form-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border); flex-shrink: 0; margin-bottom: 2px; }
+.pc-comment-input-wrap { flex: 1; }
+.pc-comment-textarea, .pc-reply-textarea {
+    width: 100%; resize: none; overflow: hidden;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 18px; padding: .42rem .85rem;
+    color: var(--text); font-size: .88rem; line-height: 1.45;
+    outline: none; transition: border-color .15s, background .15s; font-family: inherit;
+    min-height: 36px; max-height: 120px;
+}
+.pc-comment-textarea:focus, .pc-reply-textarea:focus { border-color: var(--accent); background: var(--bg-card); }
+.pc-comment-textarea::placeholder, .pc-reply-textarea::placeholder { color: var(--text-muted); }
+.pc-comment-send {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 50%;
+    width: 34px; height: 34px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: opacity .15s; margin-bottom: 2px;
+}
+.pc-comment-send:hover { opacity: .85; }
+.pc-comment-send .material-icons { font-size: 1rem; }
+.pc-comment-send:disabled { opacity: .45; cursor: default; }
+/* Hashtags / mentions */
+.zf-hashtag { color: var(--accent) !important; font-weight: 700; text-decoration: none !important; border-radius: 4px; padding: 0 2px; transition: background .12s; }
+.zf-hashtag:hover { background: rgba(0,207,255,.12); }
+.zf-mention { color: var(--accent2) !important; font-weight: 700; text-decoration: none !important; border-radius: 4px; padding: 0 2px; transition: background .12s; }
+.zf-mention:hover { background: rgba(191,95,255,.12); }
+/* Share toast */
+#share-toast {
+    position: fixed; bottom: 1.8rem; left: 50%; transform: translateX(-50%) translateY(16px);
+    background: #1c1e20; color: #fff; padding: .6rem 1.3rem; border-radius: 12px;
+    font-size: .88rem; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,.4);
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+    z-index: 9999; display: flex; align-items: center; gap: .5rem;
+}
+#share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+#share-toast .material-icons { font-size: 1.05rem; color: #4caf50; }
+
+/* ── Empty state ── */
+.pf-empty {
+    text-align: center; padding: 3rem 1rem;
+    background: var(--bg-card); border-radius: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
+    color: var(--text-muted);
+}
+.pf-empty .material-icons { font-size: 3rem; display: block; margin-bottom: .8rem; opacity: .4; }
+
+/* ── Photos grid ── */
+.photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 8px;
+}
+.photo-thumb {
+    aspect-ratio: 1; border-radius: 12px;
+    overflow: hidden; background: var(--btn-bg);
+    cursor: pointer; position: relative;
+}
+.photo-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform .3s;
+    display: block;
+}
+.photo-thumb-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.28);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .2s;
+    border-radius: 12px;
+}
+.photo-thumb-overlay .material-icons {
+    color: #fff; font-size: 1.8rem;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.4));
+}
+.photo-thumb:hover img { transform: scale(1.06); }
+.photo-thumb:hover .photo-thumb-overlay { opacity: 1; }
+
+/* ── Lightbox ── */
+#pf-lightbox {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    align-items: center; justify-content: center;
+    flex-direction: column;
+    animation: lb-in .22s ease;
+}
+#pf-lightbox.open { display: flex; }
+@keyframes lb-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+.lb-img-wrap {
+    position: relative;
+    max-width: min(92vw, 960px);
+    max-height: 82vh;
+    display: flex; align-items: center; justify-content: center;
+}
+#lb-img {
+    max-width: 100%; max-height: 82vh;
+    border-radius: 16px;
+    box-shadow: 0 8px 48px rgba(0,0,0,.7);
+    object-fit: contain;
+    transition: opacity .18s;
+}
+.lb-caption {
+    color: rgba(255,255,255,.75);
+    font-size: .88rem;
+    margin-top: .75rem;
+    text-align: center;
+    max-width: 600px;
+    padding: 0 1rem;
+}
+/* Nav arrows */
+.lb-arrow {
+    position: fixed;
+    top: 50%; transform: translateY(-50%);
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.1);
+    border: 1.5px solid rgba(255,255,255,.18);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background .18s;
+    backdrop-filter: blur(4px);
+}
+.lb-arrow:hover { background: rgba(255,255,255,.22); }
+.lb-arrow.lb-prev { left: 1.2rem; }
+.lb-arrow.lb-next { right: 1.2rem; }
+.lb-arrow .material-icons { font-size: 1.4rem; }
+/* Close button */
+.lb-close {
+    position: fixed; top: 1rem; right: 1rem;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.12);
+    border: 1.5px solid rgba(255,255,255,.2);
+    color: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .18s;
+}
+.lb-close:hover { background: rgba(255,255,255,.25); }
+.lb-close .material-icons { font-size: 1.2rem; }
+/* Counter */
+.lb-counter {
+    position: fixed; top: 1.1rem; left: 50%; transform: translateX(-50%);
+    color: rgba(255,255,255,.55);
+    font-size: .8rem; font-weight: 600;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+@media (max-width: 600px) {
+    .lb-arrow { display: none; }
+}
+
+/* ── Friends grid ── */
+.friends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: .8rem;
+}
+.friend-card-link {
+    background: var(--bg-card);
+    border-radius: 16px;
+    overflow: hidden; text-align: center;
+    text-decoration: none; color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
+    transition: transform .2s, box-shadow .2s;
+    display: block;
+}
+.friend-card-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 18px rgba(0,0,0,.1), 0 0 0 .5px rgba(0,0,0,.06);
+    text-decoration: none; color: var(--text);
+}
+[data-theme="dark"] .friend-card-link {
+    box-shadow: 0 1px 3px rgba(0,0,0,.3), 0 0 0 .5px rgba(255,255,255,.05);
+}
+.friend-card-link img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.friend-card-name {
+    padding: .5rem .4rem; font-size: .84rem; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── Stories section ── */
+.profile-story-thumb {
+    position: relative; width: 80px; cursor: pointer; flex-shrink: 0;
+}
+.profile-story-thumb-inner {
+    width: 80px; height: 130px;
+    border-radius: 14px; overflow: hidden;
+    border: 2px solid var(--border);
+    transition: border-color .2s, transform .15s, box-shadow .2s;
+    background: var(--btn-bg);
+}
+.profile-story-thumb:hover .profile-story-thumb-inner {
+    border-color: var(--accent);
+    transform: scale(1.03);
+    box-shadow: 0 4px 18px rgba(0,207,255,.25);
+}
+.profile-story-thumb-inner img, .profile-story-thumb-inner video {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.profile-story-thumb-text {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center; padding: .5rem;
+}
+.profile-story-thumb-text p {
+    font-size: .68rem; font-weight: 700; color: #fff;
+    text-align: center; word-break: break-word; margin: 0;
+    text-shadow: 0 1px 4px rgba(0,0,0,.5); line-height: 1.3;
+}
+.profile-story-thumb-label {
+    font-size: .64rem; font-weight: 600; color: var(--text-muted);
+    text-align: center; margin-top: .3rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.profile-story-thumb-seen {
+    position: absolute; top: 6px; right: 6px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: rgba(0,0,0,.55);
+    display: flex; align-items: center; justify-content: center;
+}
+.profile-story-thumb-seen .material-icons { font-size: .7rem; color: #fff; }
+
+/* ── Stories amis sur la page profil ─────────────────────────────────── */
+#pf-friends-stories-wrap {
+    margin-bottom: 1rem;
+}
+#pf-friends-stories-wrap .pf-stories-header {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    margin-bottom: .55rem;
+}
+#pf-friends-stories-wrap .pf-stories-label {
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+/* On adapte le style de la barre dans ce contexte */
+#pf-friends-stories-wrap #zoot-stories-bar {
+    display: flex !important;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: .75rem;
+    padding: .25rem .1rem .5rem;
+    scrollbar-width: thin;
+}
+#pf-friends-stories-wrap #zoot-stories-bar::-webkit-scrollbar { height: 4px; }
+#pf-friends-stories-wrap #zoot-stories-bar::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════
+   SCORE FIHAVANANA
+   ═══════════════════════════════════════════ */
+.fihav-stat {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .87rem; color: var(--text-muted);
+    cursor: help;
+}
+.fihav-stat-val {
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.fihav-badge-inline {
+    display: inline-flex; align-items: center; gap: .25rem;
+    padding: .12rem .55rem;
+    border-radius: 20px;
+    font-size: .72rem; font-weight: 700;
+    background: linear-gradient(135deg, rgba(0,207,255,.12), rgba(191,95,255,.12));
+    border: 1px solid rgba(0,207,255,.25);
+    color: var(--accent);
+    white-space: nowrap;
+}
+
+/* Carte Fihavanana dans la sidebar */
+.fihav-card {
+    background: linear-gradient(135deg, rgba(0,207,255,.06) 0%, rgba(191,95,255,.06) 100%);
+    border: 1px solid rgba(0,207,255,.18);
+    border-radius: 18px;
+    padding: 1.1rem;
+    margin-bottom: .9rem;
+    position: relative;
+    overflow: hidden;
+}
+[data-theme="dark"] .fihav-card {
+    background: linear-gradient(135deg, rgba(0,207,255,.08) 0%, rgba(191,95,255,.08) 100%);
+    border-color: rgba(0,207,255,.22);
+}
+.fihav-card-title {
+    font-size: .68rem; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: .6rem;
+    display: flex; align-items: center; gap: .35rem;
+}
+.fihav-card-title .material-icons { font-size: .85rem; }
+.fihav-score-big {
+    font-size: 2.6rem; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.fihav-level-chip {
+    display: inline-flex; align-items: center; gap: .3rem;
+    margin-top: .35rem;
+    padding: .25rem .7rem;
+    border-radius: 20px;
+    background: rgba(0,207,255,.1);
+    border: 1px solid rgba(0,207,255,.2);
+    font-size: .8rem; font-weight: 700;
+    color: var(--accent);
+}
+.fihav-breakdown {
+    margin-top: .75rem;
+    font-size: .75rem; color: var(--text-muted);
+    border-top: 1px solid rgba(0,0,0,.05);
+    padding-top: .6rem;
+}
+[data-theme="dark"] .fihav-breakdown { border-top-color: rgba(255,255,255,.05); }
+.fihav-breakdown-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .15rem 0;
+}
+.fihav-breakdown-val { font-weight: 700; color: var(--text); }
+.fihav-progress-wrap {
+    margin-top: .65rem;
+    height: 6px; border-radius: 3px;
+    background: var(--btn-bg);
+    overflow: hidden;
+}
+.fihav-progress-bar {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.fihav-next-level {
+    font-size: .72rem; color: var(--text-muted);
+    margin-top: .35rem; text-align: right;
+}
+</style>
+
+<div class="profile-wrapper">
+
+    <!-- ══════════════════════════════════
+         COVER + HEADER
+         ══════════════════════════════════ -->
+    <div class="profile-cover" id="profile-cover-wrap">
+        {% if cover_image_url %}
+        <img src="{{ cover_image_url }}" class="profile-cover-img" id="cover-img" alt="Couverture" loading="lazy" decoding="async"
+             onclick="openPhotoDirectLb('{{ cover_image_url }}', '{% trans "Photo de couverture" %}')"
+             style="cursor:zoom-in;">
+        {% else %}
+        <div class="profile-cover-bg"></div>
+        <div class="profile-cover-noise"></div>
+        {% endif %}
+
+        {% if is_self %}
+        {# Bouton visible sur la couverture #}
+        <button class="cover-edit-btn" onclick="document.getElementById('cover-file-input').click()" type="button">
+            <span class="material-icons">photo_camera</span>
+            {% trans "Change cover" %}
+        </button>
+        {# Input caché #}
+        <input type="file" id="cover-file-input" accept="*/*" style="display:none"
+               onchange="uploadCoverImage(this)">
+        {% endif %}
+    </div>
+
+    <div class="profile-header">
+        <div class="avatar-area">
+            <div class="avatar-ring-wrap" id="profile-avatar-wrap">
+                <span id="profile-story-ring-el"></span>
+                <img src="{{ profile_image }}" alt="{{ username }}"
+                     style="position:relative;z-index:1;cursor:zoom-in;"
+                     onclick="openPhotoDirectLb('{{ profile_image }}', '{{ username|escapejs }}'); event.stopPropagation();">
+                {% if is_self %}
+                <a class="avatar-edit-fab" href="{% url 'account:edit' user_id=id %}"
+                   title="Modifier la photo" onclick="event.stopPropagation();">
+                    <span class="material-icons">photo_camera</span>
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="profile-name-area">
+                <h1 class="profile-username" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+                    {{ username }}
+                    {% if profile_user.phone_verified %}
+                    <span title="Numéro de téléphone vérifié par SMS"
+                          style="display:inline-flex;align-items:center;gap:.2rem;background:var(--accent-glow,rgba(139,69,19,.12));color:var(--accent);font-size:.62rem;font-weight:700;padding:.15rem .55rem;border-radius:20px;letter-spacing:.04em;border:1px solid rgba(139,69,19,.3);vertical-align:middle;">
+                        📱 {% trans "Tél. vérifié" %}
+                    </span>
+                    {% endif %}
+                </h1>
+                {% if bio %}<p class="profile-bio-text">{{ bio }}</p>{% endif %}
+                <div class="profile-stats-row">
+                    <span class="profile-stat">
+                        <span class="material-icons">article</span>
+                        <span class="profile-stat-val">{{ post_count }}</span>&nbsp;{% trans "posts" %}
+                    </span>
+                    <span class="profile-stat">
+                        <span class="material-icons">group</span>
+                        <span class="profile-stat-val">{{ friends_count }}</span>&nbsp;{% trans "friends" %}
+                    </span>
+                    {% if location %}
+                    <span class="profile-stat">
+                        <span class="material-icons">place</span>
+                        {{ location }}
+                    </span>
+                    {% endif %}
+                    <span class="fihav-stat"
+                          title="Score Fihavanana — solidarité &amp; engagement communautaire">
+                        <span class="fihav-badge-inline">
+                            <span class="material-icons" style="font-size:.75rem;">favorite</span>
+                            Fihavanana&nbsp;
+                            <span class="fihav-stat-val">{{ profile_user.score_fihavanana }}</span>
+                        </span>
+                        <span style="font-size:.8rem;">{{ profile_user.fihavanana_level.0 }}&nbsp;{{ profile_user.fihavanana_level.1 }}</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="profile-actions">
+            {% if request.user.is_authenticated %}
+                {% if is_self %}
+                    <a class="btn-p btn-p-secondary" href="{% url 'account:edit' user_id=id %}">
+                        <span class="material-icons">edit</span> {% trans "Edit profile" %}
+                    </a>
+                    <a class="btn-p btn-p-secondary" href="{% url 'password_change' %}">
+                        <span class="material-icons">lock</span> {% trans "Change password" %}
+                    </a>
+                    {% if friend_requests %}
+                    <a class="btn-p btn-p-primary" href="{% url 'friend:friend-requests' user_id=id %}">
+                        <span class="material-icons">notifications</span>
+                        {{ friend_requests|length }} {% trans "demande" %}
+                    </a>
+                    {% endif %}
+
+                {% else %}
+                    {% if request_sent == 0 %}
+                    <div class="fr-banner">
+                        <span class="material-icons">person_add</span>
+                        <span class="fr-text">{{ username }} a envoyé une demand d'ami.</span>
+                        <button class="btn-p btn-p-success" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")'>
+                            <span class="material-icons">check</span> {% trans "Accept" %}
+                        </button>
+                        <button class="btn-p btn-p-danger" onclick='triggerDeclineFriendRequest("{{ pending_friend_request_id }}")'>
+                            <span class="material-icons">close</span> {% trans "Decline" %}
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    {% if is_friend %}
+                    <div class="dropdown">
+                        <button class="btn-p btn-p-secondary dropdown-toggle" data-toggle="dropdown" id="friends-drop">
+                            <span class="material-icons">how_to_reg</span> {% trans "Ami" %}
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="friends-drop"
+                             style="border-radius:12px;border-color:var(--border);background:var(--bg-card);box-shadow:0 8px 28px rgba(0,0,0,.18);padding:.4rem;">
+                            <a class="dropdown-item" href="#"
+                               style="border-radius:8px;color:#e53935;font-size:.88rem;padding:.5rem .85rem;"
+                               onclick="removeFriend('{{ id }}', onFriendRemoved)">
+                                <span class="material-icons mr-1" style="font-size:.95rem;vertical-align:middle;">person_remove</span>
+                                {% trans "Remove friend" %}
+                            </a>
+                        </div>
+                    </div>
+                    <button class="btn-p btn-p-primary" onclick="createOrReturnPrivateChat('{{ id }}')">
+                        <span class="material-icons">message</span> {% trans "Message" %}
+                    </button>
+
+                    {% elif request_sent == 1 %}
+                    <button class="btn-p btn-p-secondary" id="id_cancel_friend_request_btn">
+                        <span class="material-icons">person_remove</span> {% trans "Cancel request" %}
+                    </button>
+
+                    {% elif request_sent == -1 %}
+                    <button class="btn-p btn-p-primary" id="id_send_friend_request_btn">
+                        <span class="material-icons">person_add</span> {% trans "Add friend" %}
+                    </button>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <a class="btn-p btn-p-primary" href="{% url 'login' %}">
+                    <span class="material-icons">login</span> {% trans "Login" %}
+                </a>
+            {% endif %}
+            {% if request.user.is_authenticated and not is_self %}
+            <button class="btn-p" onclick="openReportModal('account','{{ id }}')"
+                    style="background:none;border:1px solid rgba(239,68,68,.3);color:rgba(239,68,68,.75);padding:.45rem .9rem;border-radius:22px;cursor:pointer;font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:.35rem;">
+                <span class="material-icons" style="font-size:.95rem;">flag</span>
+                Signaler
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════
+         TABS
+         ══════════════════════════════════ -->
+    <div class="profile-tabs" id="profile-tabs">
+        <button class="tab-btn active" data-tab="posts">
+            <span class="material-icons">article</span> {% trans "Posts" %}
+        </button>
+        <button class="tab-btn" data-tab="photos">
+            <span class="material-icons">photo_library</span> {% trans "Photos" %}
+        </button>
+        <button class="tab-btn" data-tab="friends-tab">
+            <span class="material-icons">group</span> {% trans "Friends" %}
+        </button>
+        <button class="tab-btn" data-tab="about">
+            <span class="material-icons">info</span> {% trans "My Profile" %}
+        </button>
+    </div>
+
+    <!-- ══════════════════════════════════
+         TAB: POSTS
+         ══════════════════════════════════ -->
+    <div class="tab-pane active" id="tab-posts">
+        <div class="profile-body">
+
+            <!-- Sidebar -->
+            <aside class="profile-sidebar">
+
+                <!-- Score Fihavanana -->
+                <div class="fihav-card" id="fihav-sidebar-card">
+                    <div class="fihav-card-title">
+                        <span class="material-icons">favorite</span>
+                        Score Fihavanana
+                    </div>
+                    <div class="fihav-score-big" id="fihav-score-val">{{ profile_user.score_fihavanana }}</div>
+                    {% with lvl=profile_user.fihavanana_level %}
+                    <div class="fihav-level-chip" id="fihav-level-chip"
+                         style="border-color:{{ lvl.2 }}33;background:{{ lvl.2 }}18;color:{{ lvl.2 }}">
+                        {{ lvl.1 }} {{ lvl.0 }}
+                    </div>
+                    {% endwith %}
+
+                    <!-- Barre de progression vers le niveau suivant -->
+                    {% with score=profile_user.score_fihavanana %}
+                    {% if score < 30 %}
+                        {% with cur=score nxt=30 label="Mpankafy" %}
+                        <div class="fihav-progress-wrap" title="{{ cur }} / {{ nxt }}">
+                            <div class="fihav-progress-bar" style="width:{% widthratio cur nxt 100 %}%;"></div>
+                        </div>
+                        <p class="fihav-next-level">{{ cur }} / {{ nxt }} → {{ label }}</p>
+                        {% endwith %}
+                    {% elif score < 80 %}
+                        {% with cur=score nxt=80 label="Mpiray tsipy" %}
+                        <div class="fihav-progress-wrap" title="{{ cur }} / {{ nxt }}">
+                            <div class="fihav-progress-bar" style="width:{% widthratio cur nxt 100 %}%;"></div>
+                        </div>
+                        <p class="fihav-next-level">{{ cur }} / {{ nxt }} → {{ label }}</p>
+                        {% endwith %}
+                    {% elif score < 200 %}
+                        {% with cur=score nxt=200 label="Mpiahy" %}
+                        <div class="fihav-progress-wrap" title="{{ cur }} / {{ nxt }}">
+                            <div class="fihav-progress-bar" style="width:{% widthratio cur nxt 100 %}%;"></div>
+                        </div>
+                        <p class="fihav-next-level">{{ cur }} / {{ nxt }} → {{ label }}</p>
+                        {% endwith %}
+                    {% elif score < 500 %}
+                        {% with cur=score nxt=500 label="Mpitarika" %}
+                        <div class="fihav-progress-wrap" title="{{ cur }} / {{ nxt }}">
+                            <div class="fihav-progress-bar" style="width:{% widthratio cur nxt 100 %}%;"></div>
+                        </div>
+                        <p class="fihav-next-level">{{ cur }} / {{ nxt }} → {{ label }}</p>
+                        {% endwith %}
+                    {% else %}
+                        <div class="fihav-progress-wrap">
+                            <div class="fihav-progress-bar" style="width:100%;"></div>
+                        </div>
+                        <p class="fihav-next-level" style="text-align:center;font-weight:700;color:var(--accent);">
+                            🌟 {% trans "Niveau maximum atteint !" %}
+                        </p>
+                    {% endif %}
+                    {% endwith %}
+
+                    <div class="fihav-breakdown">
+                        <p style="font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.35rem;">
+                            {% trans "Comment gagner des points" %}
+                        </p>
+                        <div class="fihav-breakdown-row">
+                            <span>📝 {% trans "Post standard" %}</span>
+                            <span class="fihav-breakdown-val">+5</span>
+                        </div>
+                        <div class="fihav-breakdown-row">
+                            <span>🎙️ Kabary</span>
+                            <span class="fihav-breakdown-val">+10</span>
+                        </div>
+                        <div class="fihav-breakdown-row">
+                            <span>💬 {% trans "Commentaire" %}</span>
+                            <span class="fihav-breakdown-val">+2</span>
+                        </div>
+                        <div class="fihav-breakdown-row">
+                            <span>❤️ {% trans "Réaction reçue" %}</span>
+                            <span class="fihav-breakdown-val">+3</span>
+                        </div>
+                        <div class="fihav-breakdown-row">
+                            <span>🔁 {% trans "Repost reçu" %}</span>
+                            <span class="fihav-breakdown-val">+4</span>
+                        </div>
+                        <div class="fihav-breakdown-row">
+                            <span>👤 {% trans "Ami" %}</span>
+                            <span class="fihav-breakdown-val">+3</span>
+                        </div>
+                        <div class="fihav-breakdown-row">
+                            <span>👥 {% trans "Groupe rejoint" %}</span>
+                            <span class="fihav-breakdown-val">+2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Infos -->
+                <div class="pc-sidebar-card">
+                    <p class="pc-sidebar-label">{% trans "Info" %}</p>
+                    {% if location %}
+                    <div class="info-row">
+                        <span class="material-icons">place</span>
+                        <span>{{ location }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="info-row">
+                        <span class="material-icons">calendar_today</span>
+                        <span>{% trans "Member since" %} {{ date_joined|date:"F Y" }}</span>
+                    </div>
+                    {% if is_self or not hide_email %}
+                    <div class="info-row">
+                        <span class="material-icons">mail</span>
+                        <span>{{ email }}</span>
+                    </div>
+                    {% endif %}
+                    {% if bio %}
+                    <div class="info-row">
+                        <span class="material-icons">notes</span>
+                        <span>{{ bio }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Mini friends -->
+                {% if friends %}
+                <div class="pc-sidebar-card">
+                    <p class="pc-sidebar-label">{% trans "Friends" %} · {{ friends_count }}</p>
+                    <div class="mini-friends-grid">
+                        {% for friend in friends|slice:":9" %}
+                        <a class="mini-friend" href="{% url 'account:view' user_id=friend.id %}" title="{{ friend.username }}">
+                            <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}" loading="lazy" decoding="async">
+                            <span class="mini-friend-label">{{ friend.username }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% if friends_count > 9 %}
+                    <a href="{% url 'friend:list' user_id=id %}" class="btn-p btn-p-secondary"
+                       style="width:100%;margin-top:.75rem;justify-content:center;">
+                        {% trans "My friends" %}
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Mini photos -->
+                {% if photos %}
+                <div class="pc-sidebar-card">
+                    <p class="pc-sidebar-label">{% trans "Photos" %}</p>
+                    <div class="mini-friends-grid">
+                        {% for photo in photos|slice:":9" %}
+                        <div class="mini-friend" style="cursor:zoom-in;"
+                             onclick="openGalleryLightbox([{% for p in photos|slice:':9' %}'{{ p.url }}'{% if not forloop.last %},{% endif %}{% endfor %}], {{ forloop.counter0 }})"
+                             title="{{ photo.title }}">
+                            <img src="{{ photo.url }}" alt="{{ photo.title }}" loading="lazy" decoding="async">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            </aside>
+
+            <!-- Main content -->
+            <div class="profile-main">
+
+                <!-- Stories des amis -->
+                {% if request.user.is_authenticated %}
+                <div id="pf-friends-stories-wrap" style="display:none;">
+                    <div class="pf-stories-header">
+                        <span class="material-icons" style="color:var(--accent);font-size:1rem;">groups</span>
+                        <span class="pf-stories-label">{% trans "Friends' stories" %}</span>
+                    </div>
+                    {% include 'stories/story_bar.html' %}
+                </div>
+                {% endif %}
+
+                <!-- Stories section -->
+                <div id="profile-stories-section" style="display:none;margin-bottom:1rem;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;">
+                        <div style="display:flex;align-items:center;gap:.45rem;">
+                            <span class="material-icons" style="color:var(--accent);font-size:1rem;">auto_stories</span>
+                            <span style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);">
+                                {% if is_self %}{% trans "Mes stories" %}{% else %}{% trans "Stories" %}{% endif %}
+                            </span>
+                        </div>
+                        {% if is_self %}
+                        <button onclick="openStoryCreator()"
+                            style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:20px;padding:.3rem .85rem;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.3rem;">
+                            <span class="material-icons" style="font-size:.85rem;">add</span> {% trans "New" %}
+                        </button>
+                        {% endif %}
+                    </div>
+                    <div id="profile-stories-grid" style="display:flex;gap:.7rem;flex-wrap:wrap;"></div>
+                </div>
+
+                <!-- Create post (own profile) -->
+                {% if is_self %}
+                <a class="pf-create-box" href="{% url 'post:addPost' %}">
+                    <img src="{{ profile_image }}" alt="{{ username }}">
+                    <span class="pf-create-prompt">{% trans "What's new" %} {{ username }} ?</span>
+                </a>
+                {% endif %}
+
+                <!-- Posts — same cards as the feed (reactions + comments + share) -->
+                {% if posts %}
+                    <div id="profile-posts-container">
+                        {% include 'post/post_cards_fragment.html' with posts_of_the_page=posts %}
+                    </div>
+                    <!-- Infinite scroll sentinel -->
+                    {% if posts_has_next %}
+                    <div id="profile-posts-sentinel"
+                         data-next="{{ posts_next_page }}"
+                         data-url="{% url 'account:profile-posts-more' user_id=id %}"
+                         style="height:1px;margin-bottom:2rem;">
+                    </div>
+                    <div id="profile-posts-loader" style="display:none;text-align:center;padding:1.2rem 0;">
+                        <div class="spinner-border text-primary" role="status" style="width:1.6rem;height:1.6rem;"></div>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="pf-empty">
+                        <span class="material-icons">article</span>
+                        <p>{% trans "No posts yet." %}</p>
+                        {% if is_self %}
+                        <a class="btn-p btn-p-primary" href="{% url 'post:addPost' %}" style="margin-top:.75rem;">
+                            <span class="material-icons">add</span> {% trans "First Post" %}
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div><!-- /tab-posts -->
+
+    <!-- ══════════════════════════════════
+         TAB: PHOTOS
+         ══════════════════════════════════ -->
+    <div class="tab-pane" id="tab-photos">
+        {% if photos %}
+        <div class="photos-grid">
+            {% for photo in photos %}
+            <div class="photo-thumb" onclick="openLightbox('{{ photo.url }}', '{{ photo.title|escapejs }}', {{ forloop.counter0 }})">
+                <img src="{{ photo.url }}" alt="{{ photo.title }}" loading="lazy">
+                <div class="photo-thumb-overlay">
+                    <span class="material-icons">zoom_in</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="pf-empty">
+            <span class="material-icons">photo_library</span>
+            <p>{% trans "No photos yet." %}</p>
+            {% if is_self %}
+            <a class="btn-p btn-p-primary" href="{% url 'post:addPost' %}" style="margin-top:.75rem;">
+                <span class="material-icons">add_photo_alternate</span> {% trans "Publish Photo" %}
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ══════════════════════════════════
+         TAB: FRIENDS
+         ══════════════════════════════════ -->
+    <div class="tab-pane" id="tab-friends-tab">
+        {% if friends %}
+        <div class="friends-grid">
+            {% for friend in friends %}
+            <a class="friend-card-link" href="{% url 'account:view' user_id=friend.id %}">
+                <img src="{{ friend.profile_image.url }}" alt="{{ friend.username }}" loading="lazy" decoding="async">
+                <div class="friend-card-name">{{ friend.username }}</div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="pf-empty">
+            <span class="material-icons">group</span>
+            <p>{% trans "No friends yet" %}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ══════════════════════════════════
+         TAB: ABOUT
+         ══════════════════════════════════ -->
+    <div class="tab-pane" id="tab-about">
+        <div class="pc-sidebar-card" style="max-width:600px;">
+            <p class="pc-sidebar-label">{% trans "About" %}</p>
+
+            <div class="info-row">
+                <span class="material-icons">person</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Name" %}</div>
+                    <strong>{{ username }}</strong>
+                </div>
+            </div>
+            <div class="info-row">
+                <span class="material-icons">mail</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Email" %}</div>
+                    <div>
+                        {% if is_self %}{{ email }}
+                        {% elif hide_email %}<em style="color:var(--text-muted)">{% trans "Hidden by user" %}</em>
+                        {% else %}{{ email }}{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% if bio %}
+            <div class="info-row">
+                <span class="material-icons">notes</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Bio" %}</div>
+                    <div>{{ bio }}</div>
+                </div>
+            </div>
+            {% endif %}
+            {% if location %}
+            <div class="info-row">
+                <span class="material-icons">place</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Location" %}</div>
+                    <div>{{ location }}</div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <span class="material-icons">calendar_today</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Member since" %}</div>
+                    <div>{{ date_joined|date:"d F Y" }}</div>
+                </div>
+            </div>
+            <div class="info-row">
+                <span class="material-icons">article</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Posts" %}</div>
+                    <div>{{ post_count }}</div>
+                </div>
+            </div>
+            <div class="info-row">
+                <span class="material-icons">group</span>
+                <div>
+                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Friends" %}</div>
+                    <div>{{ friends_count }}</div>
+                </div>
+            </div>
+
+            {% if is_self %}
+            <div style="margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap;">
+                <a class="btn-p btn-p-primary" href="{% url 'account:edit' user_id=id %}">
+                    <span class="material-icons">edit</span> {% trans "Edit profile" %}
+                </a>
+                <a class="btn-p btn-p-secondary" href="{% url 'password_change' %}">
+                    <span class="material-icons">lock</span> {% trans "Change password" %}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div><!-- /profile-wrapper -->
+
+<!-- Share toast -->
+<div id="share-toast"><span class="material-icons">link</span> {% trans "Link copied!" %}</div>
+
+<script>
+/* ── Tab navigation ── */
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var target = this.dataset.tab;
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
+        this.classList.add('active');
+        var pane = document.getElementById('tab-' + target);
+        if (pane) pane.classList.add('active');
+        try { sessionStorage.setItem('profile_tab_{{ id }}', target); } catch(e){}
+    });
+});
+(function() {
+    try {
+        var saved = sessionStorage.getItem('profile_tab_{{ id }}');
+        if (saved) { var b = document.querySelector('[data-tab="' + saved + '"]'); if (b) b.click(); }
+    } catch(e){}
+})();
+
+/* ── Swipe horizontal entre onglets (mobile) ── */
+(function() {
+    var TABS = ['posts', 'photos', 'friends-tab', 'about'];
+    var _swX = null, _swY = 0;
+
+    /* Zones à exclure : éléments avec leur propre scroll horizontal */
+    var EXCLUDE_SEL = '.profile-stats-row, .pc-gallery, .pc-comment-list, .friends-grid, .pf-stories-row';
+
+    document.addEventListener('touchstart', function(e) {
+        /* Ignorer si le toucher commence dans une zone exclue */
+        if (e.target.closest(EXCLUDE_SEL)) { _swX = null; return; }
+        _swX = e.touches[0].clientX;
+        _swY = e.touches[0].clientY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+        if (_swX === null) return;
+        var dx = e.changedTouches[0].clientX - _swX;
+        var dy = e.changedTouches[0].clientY - _swY;
+        /* Seuil : ≥ 40px horizontal, et plus horizontal que vertical */
+        if (Math.abs(dx) < 40 || Math.abs(dy) >= Math.abs(dx)) return;
+        /* Ignorer si zone exclue */
+        if (e.target.closest(EXCLUDE_SEL)) return;
+
+        var activeBtn = document.querySelector('.tab-btn.active');
+        if (!activeBtn) return;
+        var curIdx = TABS.indexOf(activeBtn.dataset.tab);
+        var nextIdx = dx < 0 ? curIdx + 1 : curIdx - 1;
+        if (nextIdx < 0 || nextIdx >= TABS.length) return;
+        var nextBtn = document.querySelector('[data-tab="' + TABS[nextIdx] + '"]');
+        if (nextBtn) nextBtn.click();
+    }, { passive: true });
+})();
+
+/* ── Friend callbacks ── */
+function onFriendRequestSent() {
+    var btn = document.getElementById("id_send_friend_request_btn");
+    if (!btn) return;
+    /* Changer l'apparence → état "demande envoyée" */
+    btn.classList.remove('btn-p-primary');
+    btn.classList.add('btn-p-pending');
+    btn.disabled = true;
+    btn.style.pointerEvents = 'none';
+    btn.innerHTML = '<span class="material-icons" style="font-size:.95rem;">schedule</span> {% trans "Request sent"|escapejs %}';
+
+    /* Ajouter un lien "Annuler" discret juste après le bouton */
+    if (!document.getElementById('id_inline_cancel_link')) {
+        var cancelLink = document.createElement('button');
+        cancelLink.id = 'id_inline_cancel_link';
+        cancelLink.className = 'btn-p btn-p-secondary';
+        cancelLink.style.fontSize = '.82rem';
+        cancelLink.innerHTML = '<span class="material-icons" style="font-size:.85rem;">close</span> {% trans "Cancel"|escapejs %}';
+        cancelLink.onclick = function() {
+            cancelFriendRequest("{{ id }}", onFriendRequestCancelled);
+        };
+        btn.parentNode.insertBefore(cancelLink, btn.nextSibling);
+    }
+}
+
+function onFriendRequestCancelled() {
+    /* Remettre le bouton "Ajouter en ami" */
+    var btn = document.getElementById("id_send_friend_request_btn");
+    if (btn) {
+        btn.classList.remove('btn-p-pending');
+        btn.classList.add('btn-p-primary');
+        btn.disabled = false;
+        btn.style.pointerEvents = '';
+        btn.innerHTML = '<span class="material-icons" style="font-size:.95rem;">person_add</span> {% trans "Add friend"|escapejs %}';
+    }
+    var cancelLink = document.getElementById('id_inline_cancel_link');
+    if (cancelLink) cancelLink.remove();
+}
+
+function onFriendRemoved()         { location.reload(); }
+function onFriendRequestAccepted() { location.reload(); }
+function onFriendRequestDeclined() { location.reload(); }
+
+var sendBtn = document.getElementById("id_send_friend_request_btn");
+if (sendBtn) sendBtn.onclick = function() { sendFriendRequest("{{ id }}", onFriendRequestSent); };
+
+var cancelBtn = document.getElementById("id_cancel_friend_request_btn");
+if (cancelBtn) cancelBtn.onclick = function() { cancelFriendRequest("{{ id }}", onFriendRequestCancelled); };
+
+function triggerAcceptFriendRequest(id) { acceptFriendRequest(id, onFriendRequestAccepted); }
+function triggerDeclineFriendRequest(id) { declineFriendRequest(id, onFriendRequestDeclined); }
+</script>
+
+<script>
+/* ══════════════════════════════════════
+   REACTIONS
+   ══════════════════════════════════════ */
+var _REACT_URL    = "{% url 'post:react-post' %}";
+var _REACT_EMOJIS = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
+var _REACT_LABELS = { like:'{% trans "Like"|escapejs %}', heart:'{% trans "Love"|escapejs %}', laugh:'{% trans "Haha"|escapejs %}', wow:'{% trans "Wow"|escapejs %}', sad:'{% trans "Sad"|escapejs %}' };
+var _pickerTimers = {};
+var _userReactions = {};
+
+function openPicker(postId) {
+    clearTimeout(_pickerTimers[postId]);
+    _pickerTimers[postId] = setTimeout(function() {
+        var p = document.getElementById('picker-' + postId);
+        if (p) p.classList.add('open');
+    }, 200);
+}
+function closePicker(postId) {
+    clearTimeout(_pickerTimers[postId]);
+    _pickerTimers[postId] = setTimeout(function() {
+        var p = document.getElementById('picker-' + postId);
+        if (p) p.classList.remove('open');
+    }, 150);
+}
+function closeAllPickers() {
+    document.querySelectorAll('.reaction-picker.open').forEach(function(p) {
+        p.classList.remove('open');
+    });
+}
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.reaction-wrap')) closeAllPickers();
+});
+function quickReact(postId) {
+    var cur = _userReactions[postId] !== undefined ? _userReactions[postId]
+            : document.getElementById('react-btn-' + postId).classList.contains('liked') ? 'like' : null;
+    sendReaction(postId, cur || 'like');
+}
+function sendReaction(postId, reactionType) {
+    closePicker(postId);
+    var fd = new FormData();
+    fd.append('post_id', postId);
+    fd.append('reaction', reactionType);
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fetch(_REACT_URL, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        _userReactions[postId] = data.user_reaction;
+        var btn   = document.getElementById('react-btn-'   + postId);
+        var icon  = document.getElementById('react-icon-'  + postId);
+        var label = document.getElementById('react-label-' + postId);
+        if (btn) btn.classList.toggle('liked', !!data.user_reaction);
+        if (icon) {
+            if (data.user_reaction && _REACT_EMOJIS[data.user_reaction]) {
+                icon.textContent = _REACT_EMOJIS[data.user_reaction];
+                icon.style.fontSize = '1.05rem';
+            } else {
+                icon.innerHTML = '<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>';
+            }
+        }
+        if (label) label.textContent = data.user_reaction ? (_REACT_LABELS[data.user_reaction] || _REACT_LABELS.like) : _REACT_LABELS.like;
+        var picker = document.getElementById('picker-' + postId);
+        if (picker) {
+            picker.querySelectorAll('.reaction-emoji-btn').forEach(function(b) { b.classList.remove('selected'); });
+            if (data.user_reaction) {
+                var sel = picker.querySelector('[onclick*="' + data.user_reaction + '"]');
+                if (sel) sel.classList.add('selected');
+            }
+        }
+        var bar     = document.getElementById('reaction-bar-'     + postId);
+        var summary = document.getElementById('reaction-summary-' + postId);
+        var total   = document.getElementById('reaction-total-'   + postId);
+        if (total)   total.textContent = data.total;
+        if (bar)     bar.style.display = data.total > 0 ? '' : 'none';
+        if (summary) {
+            var html = '';
+            Object.keys(data.counts).forEach(function(rt) {
+                if (_REACT_EMOJIS[rt]) html += '<span class="rc-emoji" data-type="' + rt + '">' + _REACT_EMOJIS[rt] + '</span>';
+            });
+            summary.innerHTML = html;
+        }
+    })
+    .catch(function(e) { console.error('Reaction error:', e); });
+}
+function toggleLike(postId) { sendReaction(postId, 'like'); }
+
+/* ══════════════════════════════════════
+   COMMENTS
+   ══════════════════════════════════════ */
+function toggleComments(postId) {
+    var panel = document.getElementById('comment-panel-' + postId);
+    var btn   = document.getElementById('comment-btn-'   + postId);
+    if (!panel) return;
+    var isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    if (btn) btn.classList.toggle('active', !isOpen);
+    if (!isOpen) {
+        var ta = document.getElementById('comment-input-' + postId);
+        if (ta) setTimeout(function(){ ta.focus(); }, 50);
+    }
+}
+function handleCommentKey(evt, postId, url) {
+    if (evt.key === 'Enter' && !evt.shiftKey) { evt.preventDefault(); submitComment(postId, url); }
+}
+function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function submitComment(postId, url) {
+    var ta  = document.getElementById('comment-input-' + postId);
+    var btn = document.getElementById('comment-send-'  + postId);
+    if (!ta) return;
+    var body = ta.value.trim();
+    if (!body) return;
+    btn.disabled = true;
+    var fd = new FormData();
+    fd.append('body', body);
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        btn.disabled = false;
+        if (!data.ok) return;
+        ta.value = ''; ta.style.height = 'auto';
+        var delBtn = data.can_delete
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            : '';
+        var html = '<div class="pc-comment-item" id="comment-item-' + data.id + '">'
+            + '<a href="/account/' + data.author_id + '/view/"><img class="cmt-avatar" src="' + data.avatar + '" alt=""></a>'
+            + '<div class="pc-comment-right">'
+            +   '<div class="pc-comment-bubble">'
+            +     '<a class="pc-comment-author" href="/account/' + data.author_id + '/view/">' + escHtml(data.author) + '</a>'
+            +     '<p class="pc-comment-body">' + escHtml(data.body) + '</p>'
+            +   '</div>'
+            +   '<div class="pc-comment-footer">'
+            +     '<span class="pc-comment-time">' + data.created_at + '</span>'
+            +     '<button class="pc-comment-reply-btn" onclick="toggleReplyForm(' + data.id + ', ' + postId + ', \'' + url + '\')">Répondre</button>'
+            +     delBtn
+            +   '</div>'
+            +   '<div class="pc-comment-replies" id="replies-' + data.id + '" style="display:none;"></div>'
+            +   '<div class="pc-reply-form-wrap" id="reply-form-' + data.id + '">'
+            +     '<img class="reply-form-avatar" src="' + data.avatar + '">'
+            +     '<div class="pc-reply-input-wrap">'
+            +       '<textarea class="pc-reply-textarea" id="reply-input-' + data.id + '" placeholder="Écrire une réponse…" rows="1" maxlength="1000"'
+            +       ' onkeydown="handleReplyKey(event,' + data.id + ',' + postId + ',\'' + url + '\')"'
+            +       ' oninput="autoResize(this)"></textarea>'
+            +     '</div>'
+            +     '<button class="pc-comment-send" onclick="submitReply(' + data.id + ',' + postId + ',\'' + url + '\')" title="Répondre">'
+            +       '<span class="material-icons">send</span></button>'
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+        var list = document.getElementById('comment-list-' + postId);
+        if (list) { list.insertAdjacentHTML('beforeend', html); list.scrollTop = list.scrollHeight; }
+        updateCommentCount(postId, 1);
+    })
+    .catch(function(){ btn.disabled = false; });
+}
+
+/* ══════════════════════════════════════
+   REPLIES
+   ══════════════════════════════════════ */
+function toggleReplyForm(commentId, postId, url) {
+    var form = document.getElementById('reply-form-' + commentId);
+    if (!form) return;
+    var isOpen = form.classList.contains('open');
+    form.classList.toggle('open', !isOpen);
+    if (!isOpen) {
+        var replies = document.getElementById('replies-' + commentId);
+        if (replies) replies.style.display = '';
+        var ta = document.getElementById('reply-input-' + commentId);
+        if (ta) setTimeout(function(){ ta.focus(); }, 50);
+    }
+}
+function handleReplyKey(evt, parentId, postId, url) {
+    if (evt.key === 'Enter' && !evt.shiftKey) { evt.preventDefault(); submitReply(parentId, postId, url); }
+}
+function submitReply(parentCommentId, postId, url) {
+    var ta = document.getElementById('reply-input-' + parentCommentId);
+    if (!ta) return;
+    var body = ta.value.trim();
+    if (!body) return;
+    var fd = new FormData();
+    fd.append('body', body);
+    fd.append('parent_id', parentCommentId);
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        if (!data.ok) return;
+        ta.value = ''; ta.style.height = 'auto';
+        var form = document.getElementById('reply-form-' + parentCommentId);
+        if (form) form.classList.remove('open');
+        var delBtn = data.can_delete
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            : '';
+        var html = '<div class="pc-comment-reply-item" id="comment-item-' + data.id + '">'
+            + '<a href="/account/' + data.author_id + '/view/"><img class="reply-avatar" src="' + data.avatar + '" alt=""></a>'
+            + '<div class="pc-comment-right">'
+            +   '<div class="pc-comment-bubble">'
+            +     '<a class="pc-comment-author" href="/account/' + data.author_id + '/view/">' + escHtml(data.author) + '</a>'
+            +     '<p class="pc-comment-body">' + escHtml(data.body) + '</p>'
+            +   '</div>'
+            +   '<div class="pc-comment-footer">'
+            +     '<span class="pc-comment-time">' + data.created_at + '</span>'
+            +     delBtn
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+        var repliesContainer = document.getElementById('replies-' + parentCommentId);
+        if (repliesContainer) { repliesContainer.style.display = ''; repliesContainer.insertAdjacentHTML('beforeend', html); }
+        updateCommentCount(postId, 1);
+    })
+    .catch(function(e) { console.error('Reply error:', e); });
+}
+
+/* ══════════════════════════════════════
+   DELETE COMMENT
+   ══════════════════════════════════════ */
+var _delUrlTpl = "{% url 'post:delete-comment' 999999 %}";
+function commentDeleteUrl(id) { return _delUrlTpl.replace('999999', id); }
+function deleteComment(commentId, url) {
+    if (!confirm('Supprimer ce commentaire ?')) return;
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+        if (!data.ok) return;
+        var el = document.getElementById('comment-item-' + commentId);
+        if (el) {
+            var panel = el.closest('[id^="comment-panel-"]');
+            el.remove();
+            if (panel) updateCommentCount(panel.id.replace('comment-panel-', ''), -1);
+        }
+    });
+}
+function updateCommentCount(postId, delta) {
+    var badge = document.getElementById('comment-count-' + postId);
+    if (!badge) return;
+    var list = document.getElementById('comment-list-' + postId);
+    var cnt  = list ? list.querySelectorAll('.pc-comment-item, .pc-comment-reply-item').length : 0;
+    if (cnt > 0) { badge.textContent = '(' + cnt + ')'; badge.style.display = ''; }
+    else           badge.style.display = 'none';
+}
+
+/* ══════════════════════════════════════
+   SHARE
+   ══════════════════════════════════════ */
+var _shareTimer = null;
+function sharePost(postId) {
+    var url = window.location.origin + window.location.pathname + '#post-' + postId;
+    /* ZootShare : feuille native (iOS/Android) ou bottom-sheet WhatsApp/FB */
+    if (window.ZootShare) { ZootShare.open(url, document.title || 'Vazimba'); return; }
+    /* Fallback clipboard si ZootShare non disponible */
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(showShareToast);
+    } else {
+        var tmp = document.createElement('textarea');
+        tmp.value = url; tmp.style.cssText = 'position:fixed;opacity:0';
+        document.body.appendChild(tmp); tmp.select();
+        try { document.execCommand('copy'); } catch(e){}
+        document.body.removeChild(tmp);
+        showShareToast();
+    }
+}
+function showShareToast() {
+    var t = document.getElementById('share-toast');
+    if (!t) return;
+    t.classList.add('show');
+    clearTimeout(_shareTimer);
+    _shareTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+/* ══════════════════════════════════════
+   HELPERS
+   ══════════════════════════════════════ */
+function getCookie(name) {
+    var val = null;
+    if (document.cookie) {
+        document.cookie.split(';').forEach(function(c) {
+            c = c.trim();
+            if (c.startsWith(name + '=')) val = decodeURIComponent(c.slice(name.length + 1));
+        });
+    }
+    return val;
+}
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ── Hashtags + Mentions ── */
+function processHashtagsAndMentions(container) {
+    if (!container) return;
+    var SKIP = new Set(['A', 'SCRIPT', 'STYLE', 'CODE', 'PRE', 'TEXTAREA', 'INPUT']);
+    var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+        acceptNode: function(n) {
+            var p = n.parentElement;
+            while (p) { if (SKIP.has(p.tagName)) return NodeFilter.FILTER_REJECT; p = p.parentElement; }
+            return NodeFilter.FILTER_ACCEPT;
+        }
+    }, false);
+    var nodes = [], node;
+    while (node = walker.nextNode()) nodes.push(node);
+    nodes.forEach(function(n) {
+        var text = n.textContent;
+        if (!/#[a-zA-ZÀ-ÿ0-9_]{2,}|@[a-zA-Z0-9_]{2,}/.test(text)) return;
+        var html = text
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/#([a-zA-ZÀ-ÿ0-9_]{2,30})/g, function(m, tag) {
+                return '<a href="/post/hashtag/' + tag.toLowerCase() + '/" class="zf-hashtag">' + m + '</a>';
+            })
+            .replace(/@([a-zA-Z0-9_]{2,30})/g, function(m, user) {
+                return '<a href="/account/search/?q=' + encodeURIComponent(user) + '" class="zf-mention">' + m + '</a>';
+            });
+        var span = document.createElement('span');
+        span.innerHTML = html;
+        n.parentNode.replaceChild(span, n);
+    });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.pc-body, .pc-title').forEach(function(el) {
+        if (!el.dataset.htagDone) { el.dataset.htagDone = '1'; processHashtagsAndMentions(el); }
+    });
+    processAllPostBodies();
+});
+function processAllPostBodies() {
+    document.querySelectorAll('.pc-body').forEach(function(el) {
+        var btn = el.nextElementSibling;
+        if (!btn || !btn.classList.contains('pc-read-more')) return;
+        if (el.scrollHeight <= el.clientHeight + 4) {
+            btn.classList.add('hidden');
+            el.style.cursor = 'default';
+            el.onclick = null;
+        }
+    });
+}
+function expandBody(el) {
+    if (el.classList.contains('expanded')) { collapseBody(el); return; }
+    el.classList.add('expanded');
+    var btn = el.nextElementSibling;
+    if (btn && btn.classList.contains('pc-read-more')) btn.textContent = btn.dataset.less;
+}
+function collapseBody(el) {
+    el.classList.remove('expanded');
+    var btn = el.nextElementSibling;
+    if (btn && btn.classList.contains('pc-read-more')) btn.textContent = btn.dataset.more;
+    var card = el.closest('.post-card');
+    if (card) {
+        setTimeout(function() {
+            var headerH = (document.getElementById('header') || {}).offsetHeight || 64;
+            var top = card.getBoundingClientRect().top + window.scrollY - headerH - 8;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+        }, 0);
+    }
+}
+function expandBodyBtn(el) {
+    var body = el.previousElementSibling;
+    if (!body || !body.classList.contains('pc-body')) return;
+    if (body.classList.contains('expanded')) collapseBody(body);
+    else expandBody(body);
+}
+
+/* ── Stories des amis sur la page profil ─────────────────────── */
+document.addEventListener('zootStoriesLoaded', function(e) {
+    var wrap = document.getElementById('pf-friends-stories-wrap');
+    if (!wrap) return;
+    var groups = (e.detail && e.detail.groups) || [];
+    /* Afficher seulement s'il y a des stories d'amis (autres que moi) */
+    var friendGroups = groups.filter(function(g) {
+        return g.user_id !== {{ request.user.id|default:"null" }};
+    });
+    wrap.style.display = friendGroups.length ? 'block' : 'none';
+});
+</script>
+
+{% include 'friend/snippets/send_friend_request.html' %}
+{% include 'friend/snippets/accept_friend_request.html' %}
+{% include 'friend/snippets/decline_friend_request.html' %}
+{% include 'friend/snippets/cancel_friend_request.html' %}
+{% include 'friend/snippets/remove_friend.html' %}
+{% include 'chat/snippets/create_or_return_private_chat.html' %}
+
+<script>
+(function() {
+    var PROFILE_USER_ID = {{ id }};
+    var IS_SELF = {{ is_self|yesno:"true,false" }};
+    var STORY_PROFILE_URL = '{% url "stories:profile" user_id=id %}';
+    var STORY_MINE_URL    = '{% url "stories:mine" %}';
+
+    var GRAD_MAP = {
+        grad_cyan:   'linear-gradient(135deg,#00cfff,#0066ff)',
+        grad_purple: 'linear-gradient(135deg,#bf5fff,#ff4da6)',
+        grad_sunset: 'linear-gradient(135deg,#ff6b35,#ff4da6)',
+        grad_forest: 'linear-gradient(135deg,#00c851,#00cfff)',
+        grad_night:  'linear-gradient(135deg,#07080f,#bf5fff)',
+        grad_gold:   'linear-gradient(135deg,#ffd700,#ff6b35)',
+    };
+
+    function loadProfileStories() {
+        var url = IS_SELF ? STORY_MINE_URL : STORY_PROFILE_URL;
+        fetch(url, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                var stories = data.stories || [];
+                renderProfileStories(stories);
+                updateAvatarRing(stories);
+            });
+    }
+
+    function renderProfileStories(stories) {
+        var section = document.getElementById('profile-stories-section');
+        var grid    = document.getElementById('profile-stories-grid');
+        if (!section || !grid) return;
+        if (!stories.length) { section.style.display = 'none'; return; }
+        section.style.display = 'block';
+        grid.innerHTML = '';
+
+        stories.forEach(function(s, idx) {
+            var thumb = document.createElement('div');
+            thumb.className = 'profile-story-thumb';
+            thumb.onclick = function() { openProfileStoryAt(idx); };
+
+            var inner = document.createElement('div');
+            inner.className = 'profile-story-thumb-inner';
+
+            if (s.story_type === 'text') {
+                inner.style.background = GRAD_MAP[s.bg_gradient] || GRAD_MAP.grad_cyan;
+                inner.innerHTML = '<div class="profile-story-thumb-text"><p>' + (s.caption || '') + '</p></div>';
+            } else if (s.story_type === 'video' && s.media_url) {
+                inner.innerHTML = '<video src="' + s.media_url + '" muted preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>';
+            } else if (s.media_url) {
+                inner.innerHTML = '<img src="' + s.media_url + '" alt="" loading="lazy">';
+            } else {
+                inner.style.background = GRAD_MAP.grad_cyan;
+                inner.innerHTML = '<div class="profile-story-thumb-text"><p>' + (s.caption || '') + '</p></div>';
+            }
+
+            if (s.seen && !IS_SELF) {
+                var seen = document.createElement('div');
+                seen.className = 'profile-story-thumb-seen';
+                seen.innerHTML = '<span class="material-icons">done_all</span>';
+                thumb.appendChild(seen);
+            }
+
+            var label = document.createElement('div');
+            label.className = 'profile-story-thumb-label';
+            var h = Math.floor(s.time_left / 3600);
+            label.textContent = h > 0 ? h + 'h' : Math.floor(s.time_left / 60) + 'min';
+
+            thumb.appendChild(inner);
+            thumb.appendChild(label);
+            grid.appendChild(thumb);
+        });
+
+        window._profileStoryGroup = {
+            user_id: PROFILE_USER_ID,
+            username: '{{ username|escapejs }}',
+            avatar: '{{ profile_image|escapejs }}',
+            is_me: IS_SELF,
+            stories: stories,
+            all_seen: stories.every(function(s){ return s.seen; }),
+        };
+    }
+
+    function updateAvatarRing(stories) {
+        var ringEl = document.getElementById('profile-story-ring-el');
+        var wrap   = document.getElementById('profile-avatar-wrap');
+        if (!ringEl || !wrap) return;
+
+        if (!stories.length) {
+            ringEl.innerHTML = '';
+            /* Sans story : cliquer sur la photo ouvre le lightbox (géré par le <img> lui-même).
+               Le badge caméra gère la modification. Aucun handler supplémentaire sur le wrapper. */
+            wrap.onclick = null;
+            return;
+        }
+
+        var allSeen = stories.every(function(s){ return s.seen; });
+        ringEl.style.cssText =
+            'position:absolute;inset:-5px;border-radius:50%;z-index:0;' +
+            (allSeen
+                ? 'background:conic-gradient(var(--text-muted) 0deg,var(--border) 360deg);'
+                : 'background:conic-gradient(var(--accent) 0deg,var(--accent2) 120deg,var(--accent3) 240deg,var(--accent) 360deg);animation:ringRotate 4s linear infinite;');
+
+        if (!allSeen && !document.getElementById('ring-keyframe')) {
+            var s = document.createElement('style');
+            s.id = 'ring-keyframe';
+            s.textContent = '@keyframes ringRotate{to{transform:rotate(360deg)}}';
+            document.head.appendChild(s);
+        }
+        var inner = document.createElement('span');
+        inner.style.cssText = 'position:absolute;inset:3px;border-radius:50%;background:var(--bg-card);z-index:0;display:block;';
+        ringEl.appendChild(inner);
+
+        /* Avec stories : cliquer sur le wrapper (zone ring) ouvre les stories.
+           La photo elle-même a stopPropagation → ouvre le lightbox. */
+        wrap.onclick = function() {
+            openProfileStoryAt(0);
+        };
+    }
+
+    window.openProfileStoryAt = function(idx) {
+        if (!window._profileStoryGroup) return;
+        if (window.zootStories) {
+            var groups = window.zootStories.groups();
+            var found = -1;
+            for (var i = 0; i < groups.length; i++) {
+                if (groups[i].user_id === PROFILE_USER_ID) { found = i; break; }
+            }
+            if (found === -1) { groups.unshift(window._profileStoryGroup); found = 0; }
+            window.openStoryViewer(found);
+        }
+    };
+    window.openProfileStory = function() { openProfileStoryAt(0); };
+
+    document.addEventListener('DOMContentLoaded', loadProfileStories);
+
+    var origClose = window.closeStoryCreator;
+    window.closeStoryCreator = function() {
+        if (origClose) origClose();
+        setTimeout(loadProfileStories, 500);
+    };
+})();
+</script>
+
+<!-- ── Lightbox modal ── -->
+<div id="pf-lightbox" role="dialog" aria-modal="true" onclick="lbBgClick(event)">
+    <button class="lb-close" onclick="closeLightbox()" aria-label="Fermer">
+        <span class="material-icons">close</span>
+    </button>
+    <span class="lb-counter" id="lb-counter"></span>
+    <button class="lb-arrow lb-prev" onclick="lbNav(-1)" aria-label="Précédent">
+        <span class="material-icons">chevron_left</span>
+    </button>
+    <div class="lb-img-wrap">
+        <img id="lb-img" src="" alt="">
+    </div>
+    <p class="lb-caption" id="lb-caption"></p>
+    <button class="lb-arrow lb-next" onclick="lbNav(1)" aria-label="Suivant">
+        <span class="material-icons">chevron_right</span>
+    </button>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   LIGHTBOX
+   ══════════════════════════════════════ */
+var _lbPhotos = [
+    {% for photo in photos %}
+    { src: '{{ photo.url }}', caption: '{{ photo.title|escapejs }}' }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+var _lbIdx = 0;
+
+function openLightbox(src, caption, idx) {
+    _lbIdx = idx || 0;
+    _lbShow();
+    document.addEventListener('keydown', lbKeyHandler);
+}
+function _lbShow() {
+    var lb  = document.getElementById('pf-lightbox');
+    var img = document.getElementById('lb-img');
+    var cap = document.getElementById('lb-caption');
+    var ctr = document.getElementById('lb-counter');
+    var p   = _lbPhotos[_lbIdx];
+    img.style.opacity = '0';
+    img.onload = function() { img.style.opacity = '1'; };
+    img.src     = p.src;
+    img.alt     = p.caption;
+    if (cap) cap.textContent = p.caption;
+    if (ctr) { ctr.style.display = ''; ctr.textContent = (_lbIdx + 1) + ' / ' + _lbPhotos.length; }
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+    document.getElementById('pf-lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', lbKeyHandler);
+}
+/* Ouvre n'importe quelle image directement (photo de profil, couverture) */
+function openPhotoDirectLb(src, caption) {
+    var lb  = document.getElementById('pf-lightbox');
+    var img = document.getElementById('lb-img');
+    var cap = document.getElementById('lb-caption');
+    var ctr = document.getElementById('lb-counter');
+    img.style.opacity = '0';
+    img.onload = function() { img.style.opacity = '1'; };
+    img.src = src;
+    img.alt = caption || '';
+    if (cap) cap.textContent = caption || '';
+    if (ctr) ctr.style.display = 'none';
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', lbKeyHandler);
+}
+function lbNav(dir) {
+    _lbIdx = (_lbIdx + dir + _lbPhotos.length) % _lbPhotos.length;
+    _lbShow();
+}
+function lbBgClick(e) {
+    if (e.target === document.getElementById('pf-lightbox')) closeLightbox();
+}
+function lbKeyHandler(e) {
+    if (e.key === 'Escape')      closeLightbox();
+    if (e.key === 'ArrowRight')  lbNav(1);
+    if (e.key === 'ArrowLeft')   lbNav(-1);
+}
+// Swipe support (mobile)
+(function() {
+    var lb = document.getElementById('pf-lightbox');
+    var sx = null;
+    lb.addEventListener('touchstart', function(e) { sx = e.touches[0].clientX; }, {passive:true});
+    lb.addEventListener('touchend', function(e) {
+        if (sx === null) return;
+        var dx = e.changedTouches[0].clientX - sx;
+        if (Math.abs(dx) > 50) lbNav(dx < 0 ? 1 : -1);
+        sx = null;
+    }, {passive:true});
+})();
+
+/* ══════════════════════════════════════
+   PROFILE — INFINITE SCROLL
+   ══════════════════════════════════════ */
+(function() {
+    var sentinel = document.getElementById('profile-posts-sentinel');
+    var loader   = document.getElementById('profile-posts-loader');
+    var container = document.getElementById('profile-posts-container');
+    if (!sentinel || !container) return;
+
+    var loading = false;
+
+    var observer = new IntersectionObserver(function(entries) {
+        if (!entries[0].isIntersecting || loading) return;
+        var nextPage = sentinel.dataset.next;
+        var url      = sentinel.dataset.url;
+        if (!nextPage || !url) { observer.disconnect(); return; }
+
+        loading = true;
+        if (loader) loader.style.display = 'block';
+
+        fetch(url + '?page=' + nextPage, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            loading = false;
+            if (loader) loader.style.display = 'none';
+
+            if (data.posts_html) {
+                var tmp = document.createElement('div');
+                tmp.innerHTML = data.posts_html;
+                while (tmp.firstChild) { container.appendChild(tmp.firstChild); }
+                // Apply hashtag/mention highlighting to newly inserted cards
+                if (typeof processHashtagsAndMentions === 'function') {
+                    container.querySelectorAll('.pc-body:not([data-htag-done]), .pc-title:not([data-htag-done])').forEach(function(el) {
+                        el.setAttribute('data-htag-done', '1');
+                        processHashtagsAndMentions(el);
+                    });
+                }
+                // Apply read-more truncation to newly inserted cards
+                if (typeof processAllPostBodies === 'function') { setTimeout(processAllPostBodies, 50); }
+            }
+
+            if (data.has_next && data.next_page) {
+                sentinel.dataset.next = data.next_page;
+            } else {
+                observer.disconnect();
+                sentinel.style.display = 'none';
+            }
+        })
+        .catch(function(e) {
+            loading = false;
+            if (loader) loader.style.display = 'none';
+            console.error('Profile infinite scroll error:', e);
+        });
+    }, { rootMargin: '200px' });
+
+    observer.observe(sentinel);
+})();
+
+/* ── Photo de couverture ── */
+function uploadCoverImage(input) {
+    var rawFile = input.files && input.files[0];
+    if (!rawFile) return;
+
+    var wrap = document.getElementById('profile-cover-wrap');
+    var btn  = wrap ? wrap.querySelector('.cover-edit-btn') : null;
+    if (btn) { btn.disabled = true; btn.style.opacity = '.5'; }
+
+    /* Convertir HEIC / images lourdes → WebP avant upload */
+    var convPromise = (window.ZootMediaConverter && !rawFile.type.startsWith('video/'))
+        ? ZootMediaConverter.processFiles([rawFile]).then(function(a){ return a[0] || rawFile; })
+        : Promise.resolve(rawFile);
+
+    convPromise.then(function(file) {
+        // Prévisualisation immédiate
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var img = document.getElementById('cover-img');
+            if (img) {
+                img.src = e.target.result;
+            } else {
+                // Pas encore d'image — créer + supprimer le dégradé
+                var bg    = wrap.querySelector('.profile-cover-bg');
+                var noise = wrap.querySelector('.profile-cover-noise');
+                if (bg)    bg.remove();
+                if (noise) noise.remove();
+                img = document.createElement('img');
+                img.id        = 'cover-img';
+                img.className = 'profile-cover-img';
+                img.alt       = 'Couverture';
+                img.src       = e.target.result;
+                wrap.insertBefore(img, wrap.firstChild);
+            }
+        };
+        reader.readAsDataURL(file);
+
+    var fd = new FormData();
+    fd.append('cover', file);
+    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "account:update-cover" %}', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+        if (!data.ok) {
+            alert(data.error || 'Erreur lors de l\'upload.');
+        }
+        input.value = '';
+    })
+    .catch(function(e) {
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+        console.error('Cover upload error:', e);
+        input.value = '';
+    });
+    }); // fin convPromise.then
+}
+</script>
+
+{% endblock content %}

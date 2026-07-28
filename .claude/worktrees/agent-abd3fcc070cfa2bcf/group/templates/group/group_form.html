@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+.gp-form-wrapper { max-width: 600px; margin: 82px auto 3rem; padding: 0 1rem; }
+.gp-form-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.6rem 1.6rem 1.8rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,.06);
+}
+.gp-form-title { font-size: 1.35rem; font-weight: 800; color: var(--text); margin-bottom: 1.4rem; }
+.gp-field { margin-bottom: 1.2rem; }
+.gp-field label {
+    display: block; font-size: .85rem; font-weight: 700;
+    color: var(--text); margin-bottom: .4rem;
+}
+.gp-input {
+    width: 100%; background: var(--btn-bg);
+    border: 1.5px solid var(--border); border-radius: 12px;
+    padding: .6rem .9rem; font-size: .92rem; color: var(--text);
+    font-family: inherit; outline: none; transition: border-color .15s;
+    box-sizing: border-box;
+}
+.gp-input:focus { border-color: var(--accent); }
+textarea.gp-input { resize: vertical; }
+.gp-help { font-size: .76rem; color: var(--text-muted); margin-top: .3rem; }
+.gp-errors { color: #e53935; font-size: .8rem; margin-top: .3rem; }
+.gp-actions { display: flex; gap: .7rem; margin-top: 1.6rem; }
+.gp-submit {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    padding: .65rem 1.1rem; border-radius: 12px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-weight: 700; font-size: .92rem; transition: opacity .15s;
+}
+.gp-submit:hover { opacity: .9; }
+.gp-cancel {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: .65rem 1.2rem; border-radius: 12px;
+    border: 1.5px solid var(--border); background: var(--btn-bg);
+    color: var(--text-muted); font-weight: 700; font-size: .92rem;
+    text-decoration: none; transition: background .15s;
+}
+.gp-cancel:hover { background: var(--btn-hover); color: var(--text); text-decoration: none; }
+</style>
+
+<div class="gp-form-wrapper">
+    <div class="gp-form-card">
+        <h1 class="gp-form-title">
+            {% if is_create %}{% trans "Create a group" %}{% else %}{% trans "Edit group" %}{% endif %}
+        </h1>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="gp-errors">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            {% for field in form %}
+            <div class="gp-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="gp-help">{{ field.help_text }}</div>{% endif %}
+                {% if field.errors %}<div class="gp-errors">{{ field.errors }}</div>{% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="gp-actions">
+                <button type="submit" class="gp-submit">
+                    <span class="material-icons">{% if is_create %}add{% else %}save{% endif %}</span>
+                    {% if is_create %}{% trans "Create" %}{% else %}{% trans "Save" %}{% endif %}
+                </button>
+                <a class="gp-cancel" href="{% if is_create %}{% url 'group:list' %}{% else %}{% url 'group:detail' group.slug %}{% endif %}">
+                    {% trans "Cancel" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

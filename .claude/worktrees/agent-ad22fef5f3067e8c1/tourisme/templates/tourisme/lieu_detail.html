@@ -1,0 +1,430 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block extra_head %}
+<style>
+/* ============================================================
+   TOURISME — DÉTAIL LIEU
+   ============================================================ */
+.lieu-detail-wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+}
+
+/* ── Breadcrumb ── */
+.tour-breadcrumb {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .8rem; color: var(--text-muted);
+    margin-bottom: 1.2rem; flex-wrap: wrap;
+}
+.tour-breadcrumb a {
+    color: var(--accent); text-decoration: none; font-weight: 600;
+}
+.tour-breadcrumb a:hover { text-decoration: underline; }
+.tour-breadcrumb .material-icons { font-size: .9rem; }
+
+/* ── Galerie ── */
+.lieu-gallery {
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+}
+.lieu-main-img {
+    height: 340px;
+    background: linear-gradient(135deg, #1a7a4a, #0d6633);
+    position: relative;
+    overflow: hidden;
+}
+.lieu-main-img img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.lieu-main-img-ph {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: .5rem;
+    color: rgba(255,255,255,.45);
+}
+.lieu-main-img-ph .material-icons { font-size: 3.5rem; }
+.lieu-thumbs {
+    display: flex; gap: 0;
+    overflow-x: auto; scrollbar-width: none;
+    border-top: 1px solid var(--border);
+}
+.lieu-thumbs::-webkit-scrollbar { display: none; }
+.lieu-thumb {
+    flex-shrink: 0;
+    width: 100px; height: 70px;
+    overflow: hidden; cursor: pointer;
+    border-right: 1px solid var(--border);
+    transition: opacity .18s;
+}
+.lieu-thumb:last-child { border-right: none; }
+.lieu-thumb img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform .22s;
+}
+.lieu-thumb:hover img { transform: scale(1.08); }
+.lieu-thumb.active { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* ── Header du lieu ── */
+.lieu-header {
+    display: flex; align-items: flex-start; gap: 1rem;
+    flex-wrap: wrap; margin-bottom: 1.2rem;
+}
+.lieu-header-main { flex: 1; min-width: 0; }
+.lieu-name {
+    font-size: 1.9rem; font-weight: 800;
+    letter-spacing: -.04em; color: var(--text);
+    margin: 0 0 .4rem;
+}
+.lieu-meta-row {
+    display: flex; align-items: center; gap: .8rem; flex-wrap: wrap;
+    margin-bottom: .6rem;
+}
+.lieu-cat-pill {
+    background: var(--accent-glow);
+    color: var(--accent);
+    border-radius: 50px;
+    padding: .25rem .9rem;
+    font-size: .78rem; font-weight: 700; letter-spacing: .03em;
+}
+.lieu-region-tag {
+    display: inline-flex; align-items: center; gap: .2rem;
+    font-size: .82rem; color: var(--text-muted);
+}
+.lieu-region-tag .material-icons { font-size: .95rem; color: var(--accent); }
+.lieu-views {
+    display: inline-flex; align-items: center; gap: .2rem;
+    font-size: .78rem; color: var(--text-subtle);
+}
+.lieu-views .material-icons { font-size: .9rem; }
+
+/* ── Description ── */
+.lieu-description {
+    font-size: .95rem; line-height: 1.7; color: var(--text);
+    background: var(--bg-card); border-radius: 14px;
+    padding: 1.3rem 1.4rem; border: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+}
+
+/* ── Info grid ── */
+.lieu-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: .9rem;
+    margin-bottom: 1.5rem;
+}
+.lieu-info-card {
+    background: var(--bg-card); border-radius: 12px;
+    padding: 1rem 1.1rem; border: 1px solid var(--border);
+}
+.lieu-info-label {
+    font-size: .72rem; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .06em;
+    display: flex; align-items: center; gap: .3rem; margin-bottom: .35rem;
+}
+.lieu-info-label .material-icons { font-size: .9rem; color: var(--accent); }
+.lieu-info-value {
+    font-size: .9rem; font-weight: 600; color: var(--text);
+    line-height: 1.4;
+}
+
+/* ── Conseils ── */
+.lieu-tips {
+    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    border-left: 4px solid #2e7d32;
+    border-radius: 0 12px 12px 0;
+    padding: 1rem 1.2rem; margin-bottom: 1.5rem;
+}
+[data-theme="dark"] .lieu-tips {
+    background: linear-gradient(135deg, #0a2e0f, #112d0f);
+    border-left-color: #4caf50;
+}
+.lieu-tips-title {
+    font-size: .8rem; font-weight: 700; color: #2e7d32;
+    text-transform: uppercase; letter-spacing: .06em;
+    display: flex; align-items: center; gap: .3rem; margin-bottom: .5rem;
+}
+[data-theme="dark"] .lieu-tips-title { color: #81c784; }
+.lieu-tips-title .material-icons { font-size: .95rem; }
+.lieu-tips-text { font-size: .9rem; color: var(--text); line-height: 1.6; }
+
+/* ── Section ── */
+.lieu-section-title {
+    font-size: 1.15rem; font-weight: 800;
+    display: flex; align-items: center; gap: .4rem;
+    color: var(--text); margin: 0 0 1rem;
+    letter-spacing: -.02em;
+}
+.lieu-section-title .material-icons { color: var(--accent); }
+
+/* ── Guides ── */
+.lieu-guides-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: .9rem; margin-bottom: 2rem;
+}
+.lieu-guide-card {
+    background: var(--bg-card); border-radius: 12px;
+    padding: 1rem; border: 1px solid var(--border);
+    display: flex; gap: .8rem; align-items: flex-start;
+    text-decoration: none; color: var(--text);
+    transition: box-shadow .2s, transform .2s;
+}
+.lieu-guide-card:hover {
+    box-shadow: var(--shadow-lg); transform: translateY(-2px);
+    text-decoration: none; color: var(--text);
+}
+.lieu-guide-av {
+    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 800; color: #fff; overflow: hidden;
+}
+.lieu-guide-av img { width: 100%; height: 100%; object-fit: cover; }
+.lieu-guide-name { font-size: .88rem; font-weight: 700; margin-bottom: .15rem; }
+.lieu-guide-spec { font-size: .76rem; color: var(--text-muted); }
+
+/* ── Similaires ── */
+.similaires-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: .9rem;
+}
+.sim-card {
+    background: var(--bg-card); border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--border); text-decoration: none; color: var(--text);
+    transition: transform .2s, box-shadow .2s; display: block;
+}
+.sim-card:hover {
+    transform: translateY(-3px); box-shadow: var(--shadow-lg);
+    text-decoration: none; color: var(--text);
+}
+.sim-card-img {
+    height: 120px; background: linear-gradient(135deg, #1a7a4a, #0a4a2e);
+    overflow: hidden; position: relative;
+}
+.sim-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.sim-card-img-ph {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+}
+.sim-card-img-ph .material-icons { font-size: 2rem; color: rgba(255,255,255,.4); }
+.sim-card-body { padding: .7rem .8rem; }
+.sim-card-name { font-size: .88rem; font-weight: 700; }
+.sim-card-cat { font-size: .72rem; color: var(--text-muted); margin-top: .15rem; }
+
+@media (max-width: 575px) {
+    .lieu-main-img { height: 220px; }
+    .lieu-name { font-size: 1.4rem; }
+    .lieu-info-grid { grid-template-columns: 1fr 1fr; }
+    .lieu-guides-grid { grid-template-columns: 1fr; }
+    .similaires-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+<div class="lieu-detail-wrap">
+
+    <!-- Breadcrumb -->
+    <nav class="tour-breadcrumb">
+        <a href="{% url 'tourisme:home' %}">Tourisme</a>
+        <span class="material-icons">chevron_right</span>
+        <a href="{% url 'tourisme:lieux_list' %}">Lieux</a>
+        <span class="material-icons">chevron_right</span>
+        <span>{{ lieu.name }}</span>
+    </nav>
+
+    <!-- ── Galerie ── -->
+    <div class="lieu-gallery">
+        <div class="lieu-main-img" id="mainImgWrap">
+            {% if images %}
+                {% with img=images|first %}
+                <img src="{{ img.image.url }}" alt="{{ lieu.name }}" id="mainImg">
+                {% endwith %}
+            {% else %}
+                <div class="lieu-main-img-ph">
+                    <span class="material-icons">landscape</span>
+                    <span style="font-size:.85rem;">Pas d'image disponible</span>
+                </div>
+            {% endif %}
+        </div>
+        {% if images|length > 1 %}
+        <div class="lieu-thumbs">
+            {% for img in images %}
+            <div class="lieu-thumb {% if forloop.first %}active{% endif %}"
+                 onclick="switchImg(this, '{{ img.image.url }}')">
+                <img src="{{ img.image.url }}" alt="{{ img.caption|default:lieu.name }}">
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ── Header ── -->
+    <div class="lieu-header">
+        <div class="lieu-header-main">
+            <h1 class="lieu-name">{{ lieu.name }}</h1>
+            <div class="lieu-meta-row">
+                <span class="lieu-cat-pill">{{ lieu.get_category_display }}</span>
+                {% if lieu.region %}
+                <span class="lieu-region-tag">
+                    <span class="material-icons">place</span>
+                    {{ lieu.get_region_display }}
+                </span>
+                {% endif %}
+                <span class="lieu-views">
+                    <span class="material-icons">visibility</span>
+                    {{ lieu.views_count }} vue{{ lieu.views_count|pluralize }}
+                </span>
+            </div>
+        </div>
+        <a href="{% url 'tourisme:lieux_list' %}?cat={{ lieu.category }}"
+           style="color:var(--accent);font-size:.82rem;font-weight:600;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:.2rem;">
+            <span class="material-icons" style="font-size:1rem">filter_list</span>
+            Plus de {{ lieu.get_category_display|lower }}
+        </a>
+    </div>
+
+    <!-- ── Description ── -->
+    <div class="lieu-description">
+        {{ lieu.description|linebreaksbr }}
+    </div>
+
+    <!-- ── Infos pratiques ── -->
+    {% if lieu.best_period or lieu.entry_fee or lieu.address %}
+    <div class="lieu-info-grid">
+        {% if lieu.best_period %}
+        <div class="lieu-info-card">
+            <div class="lieu-info-label">
+                <span class="material-icons">calendar_today</span>
+                Meilleure période
+            </div>
+            <div class="lieu-info-value">{{ lieu.best_period }}</div>
+        </div>
+        {% endif %}
+        {% if lieu.entry_fee %}
+        <div class="lieu-info-card">
+            <div class="lieu-info-label">
+                <span class="material-icons">paid</span>
+                Tarif d'entrée
+            </div>
+            <div class="lieu-info-value">{{ lieu.entry_fee }}</div>
+        </div>
+        {% endif %}
+        {% if lieu.address %}
+        <div class="lieu-info-card">
+            <div class="lieu-info-label">
+                <span class="material-icons">location_on</span>
+                Adresse / GPS
+            </div>
+            <div class="lieu-info-value">{{ lieu.address }}</div>
+        </div>
+        {% endif %}
+        {% if lieu.region %}
+        <div class="lieu-info-card">
+            <div class="lieu-info-label">
+                <span class="material-icons">map</span>
+                Région
+            </div>
+            <div class="lieu-info-value">{{ lieu.get_region_display }}</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- ── Conseils pratiques ── -->
+    {% if lieu.tips %}
+    <div class="lieu-tips">
+        <div class="lieu-tips-title">
+            <span class="material-icons">tips_and_updates</span>
+            Conseils pratiques
+        </div>
+        <div class="lieu-tips-text">{{ lieu.tips|linebreaksbr }}</div>
+    </div>
+    {% endif %}
+
+    <!-- ── Guides associés ── -->
+    {% if guides %}
+    <section style="margin-bottom:2rem;">
+        <h2 class="lieu-section-title">
+            <span class="material-icons">person_pin</span>
+            Guides pour ce lieu
+        </h2>
+        <div class="lieu-guides-grid">
+            {% for guide in guides %}
+            <a href="{% url 'tourisme:guide_profile' guide.pk %}" class="lieu-guide-card">
+                <div class="lieu-guide-av">
+                    {% if guide.photo %}
+                        <img src="{{ guide.photo.url }}" alt="{{ guide.display_name }}">
+                    {% elif guide.user.profile_image %}
+                        <img src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}">
+                    {% else %}
+                        {{ guide.display_name|first|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="lieu-guide-name">{{ guide.display_name }}</div>
+                    {% if guide.specialities %}
+                    <div class="lieu-guide-spec">{{ guide.specialities|truncatechars:50 }}</div>
+                    {% endif %}
+                    {% if guide.prix_jour %}
+                    <div style="font-size:.75rem;color:var(--accent);font-weight:700;margin-top:.2rem;">
+                        {{ guide.prix_jour|floatformat:0 }} Ar/jour
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- ── Lieux similaires ── -->
+    {% if similaires %}
+    <section>
+        <h2 class="lieu-section-title">
+            <span class="material-icons">grid_view</span>
+            Lieux similaires
+        </h2>
+        <div class="similaires-grid">
+            {% for sim in similaires %}
+            <a href="{% url 'tourisme:lieu_detail' sim.slug %}" class="sim-card">
+                <div class="sim-card-img">
+                    {% with img=sim.get_primary_image %}
+                    {% if img %}
+                        <img src="{{ img.image.url }}" alt="{{ sim.name }}" loading="lazy">
+                    {% else %}
+                        <div class="sim-card-img-ph">
+                            <span class="material-icons">landscape</span>
+                        </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="sim-card-body">
+                    <div class="sim-card-name">{{ sim.name }}</div>
+                    <div class="sim-card-cat">{{ sim.get_category_display }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+</main>
+
+<script>
+function switchImg(thumb, url) {
+    var mainImg = document.getElementById('mainImg');
+    if (mainImg) {
+        mainImg.src = url;
+        document.querySelectorAll('.lieu-thumb').forEach(function(t) { t.classList.remove('active'); });
+        thumb.classList.add('active');
+    }
+}
+</script>
+{% endblock %}

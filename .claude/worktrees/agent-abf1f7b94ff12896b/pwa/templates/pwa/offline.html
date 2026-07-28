@@ -1,0 +1,175 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vazimba — Hors ligne</title>
+    <link rel="icon" type="image/png" href="{% static 'logo/vazimba_icon.png' %}">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <script>
+        (function() {
+            var t = localStorage.getItem('zoot-theme');
+            document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+        })();
+    </script>
+    <style>
+        :root {
+            --accent: #6366f1;
+            --accent2: #a855f7;
+            --bg: #f5f5f7;
+            --bg-card: #fff;
+            --text: #111;
+            --text-muted: #666;
+            --border: #e5e7eb;
+        }
+        [data-theme="dark"] {
+            --bg: #0f0f12;
+            --bg-card: #1a1a2e;
+            --text: #f1f1f3;
+            --text-muted: #9ca3af;
+            --border: #2d2d3d;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 2rem 1rem; text-align: center;
+        }
+
+        /* ── Logo animé ── */
+        .offline-logo {
+            width: 80px; height: 80px; border-radius: 22px;
+            object-fit: cover; margin-bottom: 1.5rem;
+            box-shadow: 0 8px 32px rgba(99,102,241,.3);
+            animation: floatLogo 3s ease-in-out infinite;
+        }
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-8px); }
+        }
+
+        /* ── Icône signal ── */
+        .offline-signal {
+            font-size: 3.5rem; margin-bottom: 1rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; } 50% { opacity: .4; }
+        }
+
+        /* ── Carte ── */
+        .offline-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 24px; padding: 2.5rem 2rem;
+            max-width: 400px; width: 100%;
+            box-shadow: 0 8px 40px rgba(0,0,0,.08);
+        }
+        h1 {
+            font-size: 1.5rem; font-weight: 800;
+            margin-bottom: .6rem;
+        }
+        .subtitle {
+            color: var(--text-muted); font-size: .95rem;
+            line-height: 1.6; margin-bottom: 1.8rem;
+        }
+
+        /* ── Boutons ── */
+        .btn-retry {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .65rem 1.5rem; border-radius: 14px;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: #fff; font-size: .95rem; font-weight: 700;
+            border: none; cursor: pointer; text-decoration: none;
+            transition: opacity .15s, transform .1s;
+            width: 100%; justify-content: center; margin-bottom: .8rem;
+        }
+        .btn-retry:hover { opacity: .88; transform: translateY(-1px); }
+        .btn-retry .icon { font-size: 1.1rem; }
+
+        .btn-home {
+            display: inline-flex; align-items: center; gap: .4rem;
+            padding: .6rem 1.5rem; border-radius: 14px;
+            background: var(--bg); color: var(--text-muted);
+            font-size: .9rem; font-weight: 600;
+            border: 1.5px solid var(--border); cursor: pointer;
+            text-decoration: none; width: 100%; justify-content: center;
+            transition: border-color .15s, color .15s;
+        }
+        .btn-home:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+        /* ── Tips ── */
+        .offline-tips {
+            margin-top: 2rem; max-width: 400px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 1.2rem 1.5rem;
+        }
+        .offline-tips h3 {
+            font-size: .85rem; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: .05em; margin-bottom: .8rem;
+        }
+        .tip { display: flex; align-items: flex-start; gap: .6rem; margin-bottom: .6rem; font-size: .88rem; }
+        .tip-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: .05rem; }
+        .tip:last-child { margin-bottom: 0; }
+
+        /* ── Status en ligne détecté ── */
+        #back-online {
+            display: none;
+            position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+            background: #22c55e; color: #fff; font-weight: 700; font-size: .9rem;
+            padding: .6rem 1.4rem; border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(34,197,94,.35);
+            animation: slideUp .3s ease;
+        }
+        @keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity:0; } to { transform: translateX(-50%) translateY(0); opacity:1; } }
+    </style>
+</head>
+<body>
+
+    <div class="offline-card">
+        <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="Vazimba" class="offline-logo">
+        <div class="offline-signal">📡</div>
+        <h1>Vous êtes hors ligne</h1>
+        <p class="subtitle">
+            Pas de connexion internet détectée.<br>
+            Les pages déjà visitées restent accessibles.
+        </p>
+        <button class="btn-retry" onclick="retryConnection()">
+            <span class="icon">↻</span> Réessayer la connexion
+        </button>
+        <a class="btn-home" href="/">← Retour à l'accueil</a>
+    </div>
+
+    <div class="offline-tips">
+        <h3>Disponible hors ligne</h3>
+        <div class="tip"><span class="tip-icon">📰</span><span>Le fil d'actualité déjà chargé</span></div>
+        <div class="tip"><span class="tip-icon">👤</span><span>Les profils déjà consultés</span></div>
+        <div class="tip"><span class="tip-icon">👥</span><span>Les groupes déjà visités</span></div>
+        <div class="tip"><span class="tip-icon">✍️</span><span>Vos posts en attente seront envoyés à la reconnexion</span></div>
+    </div>
+
+    <div id="back-online">✓ Connexion rétablie — rechargement…</div>
+
+    <script>
+        function retryConnection() {
+            window.location.reload();
+        }
+
+        // Détecter le retour de connexion
+        window.addEventListener('online', function() {
+            document.getElementById('back-online').style.display = 'block';
+            setTimeout(function() {
+                // Retourner à la page précédente ou au feed
+                if (document.referrer && !document.referrer.includes('/offline/')) {
+                    window.location.href = document.referrer;
+                } else {
+                    window.location.href = '/feed/';
+                }
+            }, 1200);
+        });
+    </script>
+</body>
+</html>

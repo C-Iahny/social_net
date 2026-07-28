@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<style>
+body { background: var(--bg); }
+.saved-wrapper {
+    max-width: 700px;
+    margin: 80px auto 3rem;
+    padding: 0 .75rem;
+}
+.saved-hero {
+    background: linear-gradient(135deg,#f59e0b,#fbbf24);
+    border-radius:16px;
+    padding:1.5rem;
+    margin-bottom:1.5rem;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    gap:1rem;
+}
+.saved-hero .material-icons { font-size:2.5rem; opacity:.9; }
+.saved-hero h1 { font-size:1.4rem;font-weight:800;margin:0 0 .2rem; }
+.saved-hero p  { margin:0;font-size:.88rem;opacity:.85; }
+.saved-card {
+    background:var(--bg-card);
+    border-radius:14px;
+    border:1px solid var(--border);
+    padding:.85rem 1.1rem;
+    margin-bottom:.7rem;
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    transition:box-shadow .15s;
+    text-decoration:none;
+    color:inherit;
+}
+.saved-card:hover { box-shadow:0 4px 18px rgba(0,0,0,.1); color:inherit; text-decoration:none; }
+.saved-avatar { width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0; }
+.saved-body { flex:1;min-width:0; }
+.saved-title { font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text); }
+.saved-meta  { font-size:.78rem;color:var(--text-muted);margin-top:.1rem; }
+.saved-unbookmark {
+    background:none;border:none;cursor:pointer;
+    color:var(--text-muted);padding:.3rem;border-radius:8px;
+    flex-shrink:0;
+}
+.saved-unbookmark:hover { color:#ef4444;background:var(--btn-bg); }
+.saved-empty { text-align:center;padding:3rem 1rem;color:var(--text-muted); }
+.saved-empty .material-icons { font-size:3rem;display:block;margin-bottom:.75rem;opacity:.4; }
+</style>
+
+<div class="saved-wrapper">
+    <div class="saved-hero">
+        <span class="material-icons">bookmarks</span>
+        <div>
+            <h1>{% trans "Posts sauvegardés" %}</h1>
+            <p>{% blocktrans count count=bookmarks|length %}{{ count }} post{% plural %}{{ count }} posts{% endblocktrans %}</p>
+        </div>
+    </div>
+
+    {% if bookmarks %}
+        {% for bk in bookmarks %}
+        <div class="saved-card" id="saved-row-{{ bk.post_id }}">
+            <a href="{% url 'post:post-detail' bk.post_id %}" style="display:contents;text-decoration:none;">
+                <img class="saved-avatar" src="{{ bk.post.author.profile_image.url }}"
+                     alt="{{ bk.post.author.username }}">
+                <div class="saved-body">
+                    <div class="saved-title">{{ bk.post.title }}</div>
+                    <div class="saved-meta">
+                        {{ bk.post.author.username }} · {{ bk.created_at|date:"d/m/Y" }}
+                    </div>
+                </div>
+            </a>
+            <button class="saved-unbookmark"
+                    onclick="unsavePost({{ bk.post_id }}, this)"
+                    title="{% trans 'Retirer des sauvegardes' %}">
+                <span class="material-icons">bookmark_remove</span>
+            </button>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="saved-empty">
+        <span class="material-icons">bookmarks</span>
+        <p>{% trans "Aucun post sauvegardé pour l'instant." %}</p>
+        <p style="font-size:.88rem;">{% trans "Clique sur l'icône 🔖 d'un post pour le retrouver ici." %}</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+var _BK_URL = "{% url 'post:bookmark' %}";
+function unsavePost(postId, btn) {
+    var fd = new FormData();
+    fd.append('post_id', postId);
+    fd.append('csrfmiddlewaretoken', getCsrfToken());
+    fetch(_BK_URL, { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.ok && !d.saved) {
+            var row = document.getElementById('saved-row-' + postId);
+            if (row) row.style.transition = 'opacity .3s';
+            if (row) { row.style.opacity = '0'; setTimeout(function(){ row.remove(); }, 300); }
+        }
+    });
+}
+function getCsrfToken() {
+    var v = null;
+    document.cookie.split(';').forEach(function(c) {
+        c = c.trim();
+        if (c.startsWith('csrftoken=')) v = decodeURIComponent(c.slice(10));
+    });
+    return v;
+}
+</script>
+{% endblock content %}

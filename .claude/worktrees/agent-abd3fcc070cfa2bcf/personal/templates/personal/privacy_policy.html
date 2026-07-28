@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div style="max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7;">
+
+<h1 style="font-size:1.8rem;margin-bottom:8px;">Politique de confidentialité — Vazimba</h1>
+<p style="color:var(--text-secondary);margin-bottom:32px;">
+    Dernière mise à jour : juillet 2025
+</p>
+
+<section style="margin-bottom:28px;">
+    <h2 style="font-size:1.2rem;margin-bottom:10px;">1. Qui sommes-nous ?</h2>
+    <p>
+        Vazimba est un réseau social malgache. L'application est accessible via le site
+        <a href="https://socialnet-production-06b9.up.railway.app" target="_blank" rel="noopener">Vazimba</a>
+        et via l'application Android disponible sur Google Play.
+        Pour toute question : <a href="mailto:miarisoa00@gmail.com">miarisoa00@gmail.com</a>
+    </p>
+</section>
+
+<section style="margin-bottom:28px;">
+    <h2 style="font-size:1.2rem;margin-bottom:10px;">2. Données collectées</h2>
+    <p>Nous collectons uniquement les données nécessaires au bon fonctionnement du service :</p>
+    <ul style="padding-left:20px;margin-top:8px;">
+        <li><strong>Compte</strong> : nom d'utilisateur, adresse e-mail, photo de profil (facultative)</li>
+        <li><strong>Contenu publié</strong> : posts, commentaires, stories, annonces bazar</li>
+        <li><strong>Messagerie</strong> : messages privés entre utilisateurs</li>
+        <li><strong>Données techniques</strong> : logs de connexion, adresses IP (à des fins de sécurité)</li>
+        <li><strong>Notifications push</strong> : jeton d'appareil pour l'envoi de notifications (Android)</li>
+    </ul>
+    <p style="margin-top:10px;">Nous ne collectons <strong>pas</strong> de données de localisation, de contacts téléphoniques, ou d'informations bancaires.</p>
+</section>
+
+<section style="margin-bottom:28px;">
+    <h2 style="font-size:1.2rem;margin-bottom:10px;">3. Utilisation des données</h2>
+    <p>Vos données sont utilisées pour :</p>
+    <ul style="padding-left:20px;margin-top:8px;">
+        <li>Faire fonctionner le réseau social (profils, publications, messagerie)</li>
+        <li>Envoyer des notifications liées à votre activité</li>
+        <li>Assurer la sécurité de la plateforme</li>
+        <li>Améliorer l'application</li>
+    </ul>
+    <p style="margin-top:10px;">Nous ne vendons <strong>jamais</strong> vos données à des tiers. Nous n'affichons pas de publicité ciblée.</p>
+</section>
+
+<section style="margin-bottom:28px;">
+    <h2 style="font-size:1.2rem;margin-bottom:10px;">4. Partage des données</h2>
+    <p>
+        Vos données publiques (profil, posts publics) sont visibles par tous les utilisateurs connectés.
+        Vos messages privés ne sont visibles que par votre interlocuteur.
+        Nous utilisons <strong>Railway.app</strong> (hébergement) et <strong>Cloudflare R2</strong>
+        (stockage des médias) — ces prestataires traitent vos données dans leurs infrastructures sécurisées.
+    </p>
+</section>
+
+<section style="margin-bottom:28px;">
+    <h2 style="font-size:1.2rem;margin-bottom:10px;">5. Conservation des données</h2>
+    <p>
+        Vos données sont conservées tant que votre compte est actif.
+        Vous pouvez demander la suppression de votre compte et de toutes vos données
+        en envoyant un e-mail à <a href="mailto:miarisoa00@gmail.com">miarisoa00@gmail.com</a>.
+        La suppression est effectuée sous 30 jours.
+    </p>
+</section>
+
+<section style="margin-bottom:28px;">
+    <h2 style="font-size:1.2rem;margin-bottom:10px;">6. Sécurité</h2>
+    <p>
+        Toutes les communications sont chiffrées via HTTPS.
+        Les mots de passe sont stockés sous forme hachée (Django bcrypt).
+        L'accès aux données est strictement limité.
+    </p>
+</section>
+
+<section style="margin-bottom:28px;">
+    <h2 style="font-size:1.2rem;margin-bottom:10px;">7. Vos droits</h2>
+    <p>Vous avez le droit de :</p>
+    <ul style="padding-left:20px;margin-top:8px;">
+        <li>Accéder à vos données personnelles</li>
+        <li>Corriger des informations incorrectes</li>
+        <li>Demander la suppression de votre compte et de vos données</li>
+        <li>Vous opposer au traitement de vos données</li>
+    </ul>
+    <p style="margin-top:10px;">Contactez-nous : <a href="mailto:miarisoa00@gmail.com">miarisoa00@gmail.com</a></p>
+</section>
+
+<section style="margin-bottom:28px;">
+    <h2 style="font-size:1.2rem;margin-bottom:10px;">8. Enfants</h2>
+    <p>
+        Vazimba n'est pas destiné aux personnes de moins de 13 ans.
+        Si vous pensez qu'un enfant a créé un compte, contactez-nous pour le supprimer.
+    </p>
+</section>
+
+<section style="margin-bottom:28px;">
+    <h2 style="font-size:1.2rem;margin-bottom:10px;">9. Modifications</h2>
+    <p>
+        Cette politique peut être mise à jour. Les modifications importantes seront
+        communiquées via l'application. La date de dernière mise à jour figure en haut de cette page.
+    </p>
+</section>
+
+<div style="padding:16px;background:var(--surface);border-radius:8px;margin-top:32px;font-size:0.9rem;color:var(--text-secondary);">
+    <strong>Contact :</strong> miarisoa00@gmail.com<br>
+    URL de cette page : <code>{{ request.build_absolute_uri }}</code>
+</div>
+
+</div>
+{% endblock %}
