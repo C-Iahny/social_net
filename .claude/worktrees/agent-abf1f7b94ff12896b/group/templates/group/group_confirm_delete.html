@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<style>
+.gd-del-wrapper { max-width: 480px; margin: 110px auto 3rem; padding: 0 1rem; }
+.gd-del-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.8rem 1.6rem; text-align: center;
+    box-shadow: 0 2px 16px rgba(0,0,0,.06);
+}
+.gd-del-icon { font-size: 3rem; color: #e53935; display: block; margin-bottom: .8rem; }
+.gd-del-card h1 { font-size: 1.25rem; font-weight: 800; color: var(--text); margin-bottom: .6rem; }
+.gd-del-card p { font-size: .9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.6rem; }
+.gd-del-actions { display: flex; gap: .7rem; }
+.gd-del-confirm {
+    flex: 1; padding: .65rem; border-radius: 12px; border: none; cursor: pointer;
+    background: #e53935; color: #fff; font-weight: 700; font-size: .92rem;
+    display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: opacity .15s;
+}
+.gd-del-confirm:hover { opacity: .9; }
+.gd-del-cancel {
+    flex: 1; padding: .65rem; border-radius: 12px;
+    border: 1.5px solid var(--border); background: var(--btn-bg);
+    color: var(--text-muted); font-weight: 700; font-size: .92rem;
+    text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+    transition: background .15s;
+}
+.gd-del-cancel:hover { background: var(--btn-hover); color: var(--text); text-decoration: none; }
+</style>
+
+<div class="gd-del-wrapper">
+    <div class="gd-del-card">
+        <span class="material-icons gd-del-icon">warning</span>
+        <h1>{% trans "Delete this group?" %}</h1>
+        <p>
+            {% blocktrans with name=group.name %}"{{ name }}" and all its memberships will be permanently deleted. This action cannot be undone.{% endblocktrans %}
+        </p>
+        <form method="post" action="{% url 'group:delete' group.slug %}">
+            {% csrf_token %}
+            <div class="gd-del-actions">
+                <a class="gd-del-cancel" href="{% url 'group:detail' group.slug %}">{% trans "Cancel" %}</a>
+                <button type="submit" class="gd-del-confirm">
+                    <span class="material-icons">delete_outline</span> {% trans "Delete" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

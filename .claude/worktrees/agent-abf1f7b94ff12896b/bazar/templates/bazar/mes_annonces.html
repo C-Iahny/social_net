@@ -1,0 +1,436 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block content %}
+<style>
+.bazar-mes-wrap {
+    max-width: 860px;
+    margin: 2rem auto 4rem;
+    padding: 0 1rem;
+}
+.bazar-mes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+.bazar-mes-title { font-size: 1.5rem; font-weight: 800; }
+.bazar-new-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: .55rem 1.2rem;
+    font-weight: 700;
+    font-size: .88rem;
+    text-decoration: none;
+    transition: opacity .2s;
+}
+[data-theme="dark"] .bazar-new-btn { color: #1a0a02; }
+.bazar-new-btn:hover { opacity:.85; text-decoration:none; color:#fff; }
+[data-theme="dark"] .bazar-new-btn:hover { color:#1a0a02; }
+
+/* Stats pills */
+.bazar-stats {
+    display: flex;
+    gap: .75rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.bazar-stat-pill {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: .45rem 1.1rem;
+    font-size: .85rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+.bazar-stat-pill .num { color: var(--accent); font-size: 1.05rem; }
+
+/* Tableau annonces */
+.bazar-annonce-row {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .9rem 1rem;
+    margin-bottom: .75rem;
+    transition: border-color .2s;
+}
+.bazar-annonce-row:hover { border-color: var(--accent); }
+.bazar-annonce-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-secondary, #f5ebe0);
+}
+.bazar-annonce-no-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    background: var(--bg-secondary, #f5ebe0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    color: var(--text-muted);
+}
+.bazar-annonce-info { flex: 1; min-width: 0; }
+.bazar-annonce-title {
+    font-weight: 700;
+    font-size: .95rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+.bazar-annonce-title:hover { color: var(--accent); text-decoration: none; }
+.bazar-annonce-meta {
+    font-size: .78rem;
+    color: var(--text-muted);
+    margin-top: .2rem;
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+}
+.bazar-annonce-price {
+    font-weight: 800;
+    font-size: .95rem;
+    color: var(--accent);
+    margin-top: .25rem;
+}
+
+/* Status badge */
+.bazar-row-status {
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .2rem .65rem;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.status-active { background: #dcfce7; color: #166534; }
+.status-vendue { background: #fee2e2; color: #991b1b; }
+.status-pause  { background: #fef9c3; color: #854d0e; }
+[data-theme="dark"] .status-active { background: rgba(22,101,52,.25); color: #86efac; }
+[data-theme="dark"] .status-vendue { background: rgba(153,27,27,.25); color: #fca5a5; }
+[data-theme="dark"] .status-pause  { background: rgba(133,77,14,.25); color: #fde68a; }
+
+/* Actions */
+.bazar-row-actions {
+    display: flex;
+    gap: .4rem;
+    flex-shrink: 0;
+}
+.bazar-action-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .18s;
+    position: relative;
+}
+.bazar-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.bazar-action-del:hover { border-color: #dc3545; color: #dc3545; }
+/* Tooltip sur les boutons actions */
+.bazar-action-btn[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,.75);
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 600;
+    padding: .2rem .55rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+/* Statut badge cliquable */
+.bazar-row-status { cursor: default; }
+.bazar-row-status.toggleable { cursor: pointer; }
+.bazar-row-status.toggleable:hover { opacity: .8; }
+
+/* Empty */
+.bazar-mes-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-muted);
+}
+.bazar-mes-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .5; }
+
+@media (max-width: 575px) {
+    .bazar-annonce-row { padding: .75rem; gap: .75rem; }
+    .bazar-annonce-thumb, .bazar-annonce-no-thumb { width: 58px; height: 58px; }
+    .bazar-annonce-title { font-size: .88rem; }
+    .bazar-row-actions { display: none; } /* Accès via page détail sur mobile */
+}
+</style>
+
+<div class="bazar-mes-wrap">
+    <div class="bazar-mes-header">
+        <div>
+            <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.4rem;">
+                <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
+                <span> › </span>{% trans "Mes annonces" %}
+            </nav>
+            <h1 class="bazar-mes-title">🗂️ {% trans "Mes annonces" %}</h1>
+        </div>
+        <a href="{% url 'bazar:create' %}" class="bazar-new-btn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            {% trans "Nouvelle annonce" %}
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="bazar-stats">
+        <div class="bazar-stat-pill">
+            <span class="num">{{ annonces|length }}</span>
+            {% trans "au total" %}
+        </div>
+        <div class="bazar-stat-pill">
+            <span class="num" style="color:#166534;">{{ count_active }}</span>
+            {% trans "active" %}{{ count_active|pluralize }}
+        </div>
+        <div class="bazar-stat-pill">
+            <span class="num" style="color:#991b1b;">{{ count_sold }}</span>
+            {% trans "vendue" %}{{ count_sold|pluralize }}
+        </div>
+    </div>
+
+    <!-- Bannière vérification vendeur -->
+    {% if not verification %}
+    <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fcd34d;border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <span style="font-size:1.6rem;flex-shrink:0;">🛡️</span>
+        <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:.92rem;color:#78350f;">{% trans "Devenez Vendeur Vérifié ou Boutique Pro" %}</div>
+            <div style="font-size:.8rem;color:#92400e;margin-top:.15rem;">{% trans "Badge, priorité dans les résultats, plus de photos — et une page boutique dédiée pour les pros." %}</div>
+        </div>
+        <a href="{% url 'bazar:request_verification' %}" style="background:#d97706;color:#fff;font-weight:700;font-size:.82rem;border-radius:8px;padding:.5rem 1rem;text-decoration:none;white-space:nowrap;flex-shrink:0;">
+            {% trans "Faire une demande →" %}
+        </a>
+    </div>
+    {% elif verification.status == 'pending' %}
+    <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:14px;padding:.85rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#92400e;">
+        <span style="font-size:1.4rem;">⏳</span>
+        <span><strong>{% trans "Demande de vérification en attente" %}</strong> — {% trans "l'admin examinera votre compte prochainement." %}</span>
+        <a href="{% url 'bazar:request_verification' %}" style="margin-left:auto;font-size:.78rem;color:#92400e;font-weight:600;text-decoration:underline;flex-shrink:0;">{% trans "Voir" %}</a>
+    </div>
+    {% elif verification.status == 'approved' %}
+    {% if verification.seller_type == 'pro' %}
+    <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fcd34d;border-radius:14px;padding:.85rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#78350f;flex-wrap:wrap;">
+        <span style="font-size:1.4rem;">⭐</span>
+        <span style="flex:1;"><strong>{% trans "Boutique Pro active" %}</strong> — {% trans "badge doré ⭐, page boutique publique, 20 photos par annonce." %}</span>
+        <a href="{% url 'bazar:boutique' username=request.user.username %}"
+           style="background:#d97706;color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:.4rem .9rem;text-decoration:none;white-space:nowrap;flex-shrink:0;">
+            🏪 {% trans "Ma boutique" %}
+        </a>
+    </div>
+    {% else %}
+    <div style="background:#ecfdf5;border:1.5px solid #6ee7b7;border-radius:14px;padding:.85rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#065f46;">
+        <span style="font-size:1.4rem;">✅</span>
+        <span><strong>{% trans "Vendeur vérifié" %}</strong> — {% trans "badge ✓ actif sur toutes vos annonces, 12 photos autorisées." %}</span>
+    </div>
+    {% endif %}
+    {% elif verification.status == 'rejected' %}
+    <div style="background:#fff1f2;border:1.5px solid #fca5a5;border-radius:14px;padding:.85rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#9f1239;flex-wrap:wrap;">
+        <span style="font-size:1.4rem;">❌</span>
+        <span style="flex:1;"><strong>{% trans "Demande refusée." %}</strong>{% if verification.admin_notes %} {% trans "Motif :" %} {{ verification.admin_notes }}{% endif %}</span>
+        <a href="{% url 'bazar:request_verification' %}" style="background:#ef4444;color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:.4rem .9rem;text-decoration:none;flex-shrink:0;">
+            {% trans "Réessayer" %}
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Messages -->
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }} mb-3" style="border-radius:10px;">{{ msg }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Liste -->
+    {% if annonces %}
+    {% for annonce in annonces %}
+    <div class="bazar-annonce-row">
+        <!-- Miniature -->
+        <a href="{% url 'bazar:detail' annonce.pk %}">
+            {% with img=annonce.get_primary_image %}
+            {% if img %}
+            <img class="bazar-annonce-thumb" src="{{ img.image.url }}" alt="{{ annonce.title }}">
+            {% else %}
+            <div class="bazar-annonce-no-thumb">🏷️</div>
+            {% endif %}
+            {% endwith %}
+        </a>
+
+        <!-- Infos -->
+        <div class="bazar-annonce-info">
+            <a class="bazar-annonce-title" href="{% url 'bazar:detail' annonce.pk %}">{{ annonce.title }}</a>
+            <div class="bazar-annonce-meta">
+                <span>{{ annonce.get_category_display }}</span>
+                <span>📍 {{ annonce.location }}</span>
+                <span>{{ annonce.created_at|date:"d/m/Y" }}</span>
+                <span>👁 {{ annonce.views_count }} {% trans "vue" %}{{ annonce.views_count|pluralize }}</span>
+            </div>
+            <div class="bazar-annonce-price">{{ annonce.formatted_price }}</div>
+        </div>
+
+        <!-- Badge statut (cliquable pour toggle active↔pause) -->
+        {% if annonce.status != 'vendue' %}
+        <span class="bazar-row-status status-{{ annonce.status }} toggleable"
+              id="status-badge-{{ annonce.pk }}"
+              onclick="toggleStatus({{ annonce.pk }}, this)"
+              title="{% if annonce.status == 'active' %}Cliquer pour mettre en pause{% else %}Cliquer pour réactiver{% endif %}">
+            {% if annonce.status == 'active' %}✓ {% trans "Active" %}
+            {% else %}⏸ {% trans "En pause" %}{% endif %}
+        </span>
+        {% else %}
+        <span class="bazar-row-status status-vendue">✕ {% trans "Vendue" %}</span>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="bazar-row-actions">
+            <a href="{% url 'bazar:detail' annonce.pk %}" class="bazar-action-btn" title="{% trans 'Voir' %}">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </a>
+            <a href="{% url 'bazar:edit' annonce.pk %}" class="bazar-action-btn" title="{% trans 'Modifier' %}">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </a>
+            {% if annonce.status == 'active' %}
+            <!-- Bump / Rafraîchir -->
+            <button type="button"
+                    class="bazar-action-btn"
+                    title="{% trans '🔝 Remonter en tête (1×/24h)' %}"
+                    onclick="bumpAnnonce({{ annonce.pk }}, this)"
+                    style="color:var(--accent);border-color:var(--accent);">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
+            </button>
+            <!-- Marquer vendue -->
+            <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" onsubmit="return confirm('Marquer comme vendue ?')">
+                {% csrf_token %}
+                <button type="submit" class="bazar-action-btn" title="{% trans 'Marquer vendue' %}" style="color:#166534;border-color:#166534;">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+            </form>
+            {% endif %}
+            <form method="post" action="{% url 'bazar:delete' annonce.pk %}" onsubmit="return confirm('Supprimer définitivement ?')">
+                {% csrf_token %}
+                <button type="submit" class="bazar-action-btn bazar-action-del" title="{% trans 'Supprimer' %}">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <div class="bazar-mes-empty">
+        <div class="bazar-mes-empty-icon">📦</div>
+        <h4 style="color:var(--text-primary);font-weight:700;">{% trans "Vous n'avez aucune annonce" %}</h4>
+        <p style="font-size:.9rem;">{% trans "Publiez votre première annonce et touchez des milliers de Malgaches." %}</p>
+        <a href="{% url 'bazar:create' %}" class="bazar-new-btn" style="margin:0 auto;display:inline-flex;margin-top:.5rem;">
+            {% trans "Publier maintenant" %}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+const CSRF_TOKEN = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+// ── Toggle statut active ↔ pause ──────────────────────────────────────────────
+function toggleStatus(pk, badgeEl) {
+    fetch(`/bazar/${pk}/toggle-statut/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) { alert(data.error || 'Erreur'); return; }
+        badgeEl.className = 'bazar-row-status toggleable ' +
+            (data.new_status === 'active' ? 'status-active' : 'status-pause');
+        badgeEl.innerHTML = data.new_status === 'active' ? '✓ Active' : '⏸ En pause';
+        badgeEl.title = data.new_status === 'active'
+            ? 'Cliquer pour mettre en pause'
+            : 'Cliquer pour réactiver';
+        // Afficher/masquer les boutons Bump et Marquer-vendue
+        _refreshRowActions(pk, data.new_status);
+    })
+    .catch(() => alert('Erreur réseau.'));
+}
+
+function _refreshRowActions(pk, newStatus) {
+    // Recharge la page pour simplifier (les boutons Bump et Vendue dépendent du statut)
+    location.reload();
+}
+
+// ── Bump — remonter en tête ───────────────────────────────────────────────────
+function bumpAnnonce(pk, btn) {
+    btn.disabled = true;
+    btn.style.opacity = '.5';
+    fetch(`/bazar/${pk}/bump/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF_TOKEN, 'Content-Type': 'application/json' },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.cooldown) {
+            alert(`Vous pouvez rafraîchir à nouveau dans ${data.remaining_h}h.`);
+            btn.disabled = false;
+            btn.style.opacity = '';
+            return;
+        }
+        if (!data.success) {
+            alert(data.error || 'Erreur');
+            btn.disabled = false;
+            btn.style.opacity = '';
+            return;
+        }
+        // Succès : changer l'apparence du bouton
+        btn.title = '✓ Remontée !';
+        btn.style.color = '#10b981';
+        btn.style.borderColor = '#10b981';
+        btn.style.opacity = '1';
+        btn.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+        setTimeout(() => {
+            btn.title = '🔝 Remonter en tête (1×/24h)';
+            btn.style.color = 'var(--accent)';
+            btn.style.borderColor = 'var(--accent)';
+            btn.innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>';
+            // Désactiver pendant 24h (pas de reload pour l'UX)
+            btn.disabled = true;
+            btn.style.opacity = '.35';
+            btn.title = 'Rafraîchi — disponible dans 24h';
+        }, 1200);
+    })
+    .catch(() => {
+        alert('Erreur réseau.');
+        btn.disabled = false;
+        btn.style.opacity = '';
+    });
+}
+</script>
+{% endblock %}

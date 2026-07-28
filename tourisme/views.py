@@ -247,18 +247,61 @@ def lieu_submit(request):
     })
 
 
-def lieu_autocomplete(request):
-    """API JSON — recherche rapide de lieux pour le create-box."""
+def guides_autocomplete(request):
+    """API JSON — recherche rapide de guides touristiques."""
     from django.http import JsonResponse as _JR
-    q = request.GET.get('q', '').strip()
+    q      = request.GET.get('q', '').strip()
+    region = request.GET.get('region', '').strip()
+    if len(q) < 2 and not region:
+        return _JR({'results': []})
+    try:
+        qs = GuideTouristique.objects.filter(is_active=True).select_related('user')
+        if q:
+            qs = qs.filter(
+                Q(user__username__icontains=q) |
+                Q(bio__icontains=q) |
+                Q(specialities__icontains=q) |
+                Q(languages__icontains=q)
+            )
+        if region:
+            qs = qs.filter(regions_covered__icontains=region)
+        qs = qs.order_by('-is_verified', '-created_at')[:8]
+        results = []
+        for g in qs:
+            try:
+                avatar = g.photo.url if g.photo else g.user.profile_image.url
+            except Exception:
+                avatar = '/static/images/default_profile_image.png'
+            results.append({
+                'id':          g.pk,
+                'name':        g.display_name,
+                'is_verified': g.is_verified,
+                'specialities': (g.specialities or '')[:60],
+                'avatar':      avatar,
+                'prix_jour':   str(g.prix_jour) if g.prix_jour else None,
+            })
+        return _JR({'results': results})
+    except Exception as exc:
+        logger.exception('guides_autocomplete error: %s', exc)
+        return _JR({'results': [], 'error': str(exc)}, status=500)
+
+
+def lieu_autocomplete(request):
+    """API JSON — recherche rapide de lieux (create-box + lieux_list)."""
+    from django.http import JsonResponse as _JR
+    q      = request.GET.get('q', '').strip()
+    region = request.GET.get('region', '').strip()
+    cat    = request.GET.get('cat', '').strip()
     if len(q) < 2:
         return _JR({'results': []})
-    qs = (
-        LieuTouristique.objects.filter(is_approved=True)
-        .filter(Q(name__icontains=q) | Q(region__icontains=q))
-        .values('id', 'name', 'region', 'category', 'slug')[:8]
+    qs = LieuTouristique.objects.filter(is_approved=True).filter(
+        Q(name__icontains=q) | Q(description__icontains=q)
     )
-    return _JR({'results': list(qs)})
+    if region:
+        qs = qs.filter(region=region)
+    if cat:
+        qs = qs.filter(category=cat)
+    return _JR({'results': list(qs.values('id', 'name', 'region', 'category', 'slug')[:8])})
 
 
 def guides_list(request):
@@ -273,7 +316,7 @@ def guides_list(request):
         qs = qs.filter(is_verified=True)
     if q:
         qs = qs.filter(
-            Q(user__first_name__icontains=q) | Q(user__last_name__icontains=q) |
+            Q(user__username__icontains=q) |
             Q(bio__icontains=q) | Q(specialities__icontains=q) |
             Q(languages__icontains=q)
         )

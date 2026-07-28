@@ -1,0 +1,58 @@
+{% load static %}{
+    "name": "Vazimba",
+    "short_name": "Vazimba",
+    "description": "Le réseau social malgache — vaomiera, miresaka, mizara",
+    "start_url": "/feed/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "background_color": "#ffffff",
+    "theme_color": "#6366f1",
+    "lang": "fr",
+    "categories": ["social", "communication"],
+    "icons": [
+        {
+            "src": "{% static 'logo/vazimba_v2_icon.png' %}",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "{% static 'logo/vazimba_v2_icon.png' %}",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "{% static 'logo/Vazimba.png' %}",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Fil d'actualité",
+            "short_name": "Feed",
+            "description": "Voir les dernières publications",
+            "url": "/feed/",
+            "icons": [{"src": "{% static 'logo/vazimba_icon.png' %}", "sizes": "96x96"}]
+        },
+        {
+            "name": "Groupes",
+            "short_name": "Groupes",
+            "description": "Rejoindre des groupes thématiques",
+            "url": "/groups/",
+            "icons": [{"src": "{% static 'logo/vazimba_icon.png' %}", "sizes": "96x96"}]
+        },
+        {
+            "name": "Stories",
+            "short_name": "Stories",
+            "description": "Annonces des commerçants",
+            "url": "/stories/",
+            "icons": [{"src": "{% static 'logo/vazimba_icon.png' %}", "sizes": "96x96"}]
+        }
+    ],
+    "screenshots": [],
+    "prefer_related_applications": false
+}

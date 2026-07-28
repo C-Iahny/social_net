@@ -1,0 +1,337 @@
+{% load static %}
+{% load i18n %}
+{% for post in posts_of_the_page %}
+<article class="post-card{% if post.post_type == 'kabary' %} post-card-kabary{% endif %}{% if post.post_type == 'vintana' %} post-card-vintana{% endif %}" id="post-{{ post.id }}">
+    {% if post.post_type == 'kabary' %}
+    <div class="pc-kabary-badge">
+        <span class="material-icons">record_voice_over</span> Kabary
+    </div>
+    {% endif %}
+    {% if post.post_type == 'vintana' %}
+    <div class="pc-vintana-badge">
+        <span class="material-icons">lock_clock</span> Capsule Vintana
+    </div>
+    {% endif %}
+
+    {% if post.is_locked %}
+    <!-- ══ CAPSULE VERROUILLÉE ══ -->
+    <div class="pc-header">
+        <a class="pc-avatar-ring" href="{% url 'account:view' user_id=post.author.id %}">
+            <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy" decoding="async">
+        </a>
+        <div class="pc-meta">
+            <a class="pc-author" href="{% url 'account:view' user_id=post.author.id %}">
+                {{ post.author.username }}
+            </a>
+            <span class="pc-sub">
+                <span class="material-icons">schedule</span>
+                {{ post.post_date|date:"d M Y" }}
+            </span>
+        </div>
+        {% if request.user.id == post.author.id %}
+        <div class="pc-owner-menu">
+            <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="Supprimer">
+                <span class="material-icons">delete_outline</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="pc-vintana-locked">
+        <div class="pc-vintana-lock-icon">
+            <img src="{% static 'logo/vazimba_icon.png' %}" alt="Vazimba"
+                 style="width:52px;height:52px;border-radius:13px;object-fit:contain;
+                        box-shadow:0 0 0 2px rgba(191,95,255,.3),0 4px 16px rgba(191,95,255,.2);
+                        background:var(--bg-card);padding:3px;">
+        </div>
+        <div class="pc-vintana-lock-title">{{ post.title|default:"Capsule Vintana" }}</div>
+        <p class="pc-vintana-lock-sub">
+            Ce message est scellé et sera révélé le<br>
+            <strong>{{ post.reveal_date|date:"d F Y à H\hi" }}</strong>.
+        </p>
+    </div>
+    <div class="pc-vintana-lock-band">
+        <span class="material-icons">hourglass_top</span>
+        <span>Révélation dans : <strong id="vt-cntdwn-{{ post.id }}">…</strong></span>
+    </div>
+    <script>
+    (function() {
+        var target = new Date('{{ post.reveal_date|date:"c" }}');
+        function tick() {
+            var diff = target - new Date();
+            if (diff <= 0) { document.getElementById('vt-cntdwn-{{ post.id }}').textContent = 'maintenant !'; return; }
+            var d = Math.floor(diff/86400000);
+            var h = Math.floor((diff%86400000)/3600000);
+            var m = Math.floor((diff%3600000)/60000);
+            var s = Math.floor((diff%60000)/1000);
+            document.getElementById('vt-cntdwn-{{ post.id }}').textContent =
+                (d > 0 ? d + 'j ' : '') + (h > 0 ? h + 'h ' : '') + (m > 0 ? m + 'min ' : '') + s + 's';
+        }
+        tick(); setInterval(tick, 1000);
+    })();
+    </script>
+
+    {% else %}
+    <!-- ══ CONTENU NORMAL ══ -->
+
+    <!-- Header -->
+    {% if post.group and not in_group %}
+    {# ── Post de groupe dans le feed global : cover groupe + badge utilisateur ── #}
+    <div class="pc-header">
+        <div class="pc-gp-avatar-wrap">
+            {# Cover du groupe (avatar principal) #}
+            <a href="{% url 'group:detail' post.group.slug %}" class="pc-gp-cover-link" title="{{ post.group.name }}">
+                {% if post.group.cover_url %}
+                <img class="pc-gp-cover" src="{{ post.group.cover_url }}" alt="{{ post.group.name }}" loading="lazy">
+                {% else %}
+                <span class="pc-gp-cover pc-gp-cover-fallback">
+                    <span class="material-icons">groups</span>
+                </span>
+                {% endif %}
+            </a>
+            {# Avatar utilisateur en badge #}
+            <a href="{% url 'account:view' user_id=post.author.id %}" class="pc-gp-user-badge-link" title="{{ post.author.username }}">
+                <img class="pc-gp-user-badge" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy">
+            </a>
+        </div>
+        <div class="pc-meta">
+            <a class="pc-author" href="{% url 'group:detail' post.group.slug %}">
+                {{ post.group.name }}
+            </a>
+            <span class="pc-sub">
+                <a class="pc-sub-user-link" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
+                <span class="pc-dot">·</span>
+                <span class="material-icons">schedule</span>
+                {{ post.post_date|date:"d M Y" }}
+            </span>
+        </div>
+        {% if request.user.id == post.author.id %}
+        <div class="pc-owner-menu">
+            <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="{% trans 'Edit' %}">
+                <span class="material-icons">edit</span>
+            </a>
+            <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="{% trans 'Delete' %}">
+                <span class="material-icons">delete_outline</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    {# ── Post normal : avatar utilisateur ── #}
+    <div class="pc-header">
+        <a class="pc-avatar-ring" href="{% url 'account:view' user_id=post.author.id %}">
+            <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy" decoding="async">
+        </a>
+        <div class="pc-meta">
+            <a class="pc-author" href="{% url 'account:view' user_id=post.author.id %}">
+                {{ post.author.username }}
+            </a>
+            <span class="pc-sub">
+                <span class="material-icons">schedule</span>
+                {{ post.post_date|date:"d M Y" }}
+                {% if post.category and post.category != 'Category' %}
+                <span class="pc-dot">·</span>
+                <span class="pc-category-tag">{{ post.category }}</span>
+                {% endif %}
+            </span>
+        </div>
+        {% if request.user.id == post.author.id %}
+        <div class="pc-owner-menu">
+            <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="{% trans 'Edit' %}">
+                <span class="material-icons">edit</span>
+            </a>
+            <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="{% trans 'Delete' %}">
+                <span class="material-icons">delete_outline</span>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if post.title %}
+    <div class="pc-title">
+        <a href="{% url 'post:post-detail' post.id %}" class="pc-title-link">{{ post.title }}</a>
+    </div>
+    {% endif %}
+
+    {% if post.body %}
+    <div class="pc-body" onclick="expandBody(this)">{{ post.body|safe }}</div>
+    <span class="pc-read-more"
+          data-more="{% trans 'See more'|escapejs %}"
+          data-less="{% trans 'See less'|escapejs %}"
+          onclick="expandBodyBtn(this)">{% trans "See more" %}</span>
+    {% endif %}
+
+    {% include 'post/_post_media.html' %}
+
+    <!-- Reaction summary bar -->
+    <div class="pc-reaction-bar" id="reaction-bar-{{ post.id }}"
+         {% if not post.total_reactions %}style="display:none"{% endif %}>
+        <div class="rc-emoji-group" id="reaction-summary-{{ post.id }}">
+            {% for rtype, cnt in post.reaction_counts.items %}
+            <span class="rc-emoji" data-type="{{ rtype }}">
+                {% if rtype == 'like' %}👍{% elif rtype == 'heart' %}❤️{% elif rtype == 'laugh' %}😂{% elif rtype == 'wow' %}😮{% elif rtype == 'sad' %}😢{% endif %}
+            </span>
+            {% endfor %}
+        </div>
+        <span class="rc-count" id="reaction-total-{{ post.id }}">{{ post.total_reactions }}</span>
+    </div>
+
+    <!-- Action bar -->
+    <div class="pc-footer">
+        <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}"
+             onmouseenter="openPicker({{ post.id }})"
+             onmouseleave="closePicker({{ post.id }})">
+            <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
+                    id="react-btn-{{ post.id }}"
+                    onclick="quickReact({{ post.id }})"
+                    title="Réagir">
+                <span id="react-icon-{{ post.id }}" style="font-size:1.05rem;line-height:1;">
+                    {% if post.user_reaction == 'like' %}👍
+                    {% elif post.user_reaction == 'heart' %}❤️
+                    {% elif post.user_reaction == 'laugh' %}😂
+                    {% elif post.user_reaction == 'wow' %}😮
+                    {% elif post.user_reaction == 'sad' %}😢
+                    {% else %}<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>
+                    {% endif %}
+                </span>
+                <span id="react-label-{{ post.id }}">
+                    {% if post.user_reaction == 'like' %}{% trans "Like" %}
+                    {% elif post.user_reaction == 'heart' %}{% trans "Love" %}
+                    {% elif post.user_reaction == 'laugh' %}{% trans "Haha" %}
+                    {% elif post.user_reaction == 'wow' %}{% trans "Wow" %}
+                    {% elif post.user_reaction == 'sad' %}{% trans "Sad" %}
+                    {% else %}{% trans "Like" %}{% endif %}
+                </span>
+            </button>
+            <div class="reaction-picker" id="picker-{{ post.id }}">
+                <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
+                        onclick="sendReaction({{ post.id }}, 'like')" title="{% trans "J'aime" %}">👍</button>
+                <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
+                        onclick="sendReaction({{ post.id }}, 'heart')" title="{% trans "J'adore" %}">❤️</button>
+                <button class="reaction-emoji-btn {% if post.user_reaction == 'laugh' %}selected{% endif %}"
+                        onclick="sendReaction({{ post.id }}, 'laugh')" title="{% trans "Haha" %}">😂</button>
+                <button class="reaction-emoji-btn {% if post.user_reaction == 'wow' %}selected{% endif %}"
+                        onclick="sendReaction({{ post.id }}, 'wow')" title="{% trans "Wow" %}">😮</button>
+                <button class="reaction-emoji-btn {% if post.user_reaction == 'sad' %}selected{% endif %}"
+                        onclick="sendReaction({{ post.id }}, 'sad')" title="{% trans "Triste" %}">😢</button>
+            </div>
+        </div>
+
+        <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
+                onclick="toggleComments({{ post.id }})" style="flex:1;">
+            <span class="material-icons">chat_bubble_outline</span>
+            <span id="comment-count-{{ post.id }}"
+                  style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.total_comments %}display:none{% endif %}">
+                {% if post.total_comments %}({{ post.total_comments }}){% endif %}
+            </span>
+        </button>
+
+        <button class="pc-footer-btn" onclick="sharePost({{ post.id }}, '{{ post.title|escapejs }}')" style="flex:1;"
+                data-post-id="{{ post.id }}" data-reposted="{{ post.user_reposted|yesno:'true,false' }}">
+            <span class="material-icons" style="{% if post.user_reposted %}color:var(--accent){% endif %}">repeat</span>
+            <span id="repost-count-{{ post.id }}"
+                  style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.repost_count %}display:none{% endif %}">
+                {% if post.repost_count %}{{ post.repost_count }}{% endif %}
+            </span>
+        </button>
+    </div>
+
+    <!-- Comment panel -->
+    <div class="pc-comment-panel" id="comment-panel-{{ post.id }}">
+        <div class="pc-comment-list" id="comment-list-{{ post.id }}">
+            {% for c in post.page_comments %}
+            <div class="pc-comment-item" id="comment-item-{{ c.id }}">
+                <a href="{% url 'account:view' user_id=c.author.id %}">
+                    <img class="cmt-avatar" src="{{ c.author.profile_image.url }}" alt="{{ c.author.username }}">
+                </a>
+                <div class="pc-comment-right">
+                    <div class="pc-comment-bubble">
+                        <a class="pc-comment-author" href="{% url 'account:view' user_id=c.author.id %}">{{ c.author.username }}</a>
+                        <p class="pc-comment-body">{{ c.body }}</p>
+                    </div>
+                    <div class="pc-comment-footer">
+                        <span class="pc-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
+                        <button class="pc-comment-reply-btn"
+                                onclick="toggleReplyForm({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')">
+                            {% trans "Reply" %}
+                        </button>
+                        {% if request.user == c.author or request.user == post.author %}
+                        <button class="pc-comment-del"
+                                onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">
+                            {% trans "Delete" %}
+                        </button>
+                        {% endif %}
+                    </div>
+
+                    {% if c.reply_list %}
+                    <div class="pc-comment-replies" id="replies-{{ c.id }}">
+                        {% for reply in c.reply_list %}
+                        <div class="pc-comment-reply-item" id="comment-item-{{ reply.id }}">
+                            <a href="{% url 'account:view' user_id=reply.author.id %}">
+                                <img class="reply-avatar" src="{{ reply.author.profile_image.url }}" alt="{{ reply.author.username }}">
+                            </a>
+                            <div class="pc-comment-right">
+                                <div class="pc-comment-bubble">
+                                    <a class="pc-comment-author" href="{% url 'account:view' user_id=reply.author.id %}">{{ reply.author.username }}</a>
+                                    <p class="pc-comment-body">{{ reply.body }}</p>
+                                </div>
+                                <div class="pc-comment-footer">
+                                    <span class="pc-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
+                                    {% if request.user == reply.author or request.user == post.author %}
+                                    <button class="pc-comment-del"
+                                            onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')">
+                                        {% trans "Delete" %}
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="pc-comment-replies" id="replies-{{ c.id }}" style="display:none;"></div>
+                    {% endif %}
+
+                    <div class="pc-reply-form-wrap" id="reply-form-{{ c.id }}">
+                        <img class="reply-form-avatar" src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+                        <div class="pc-reply-input-wrap">
+                            <textarea class="pc-reply-textarea"
+                                      id="reply-input-{{ c.id }}"
+                                      placeholder="{% trans 'Reply to' %} {{ c.author.username }}…"
+                                      rows="1" maxlength="1000"
+                                      onkeydown="handleReplyKey(event, {{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                                      oninput="autoResize(this)"></textarea>
+                        </div>
+                        <button class="pc-comment-send"
+                                onclick="submitReply({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                                title="{% trans 'Reply' %}">
+                            <span class="material-icons">send</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="pc-comment-form">
+            <img class="cmt-form-avatar" src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
+            <div class="pc-comment-input-wrap">
+                <textarea class="pc-comment-textarea"
+                          id="comment-input-{{ post.id }}"
+                          placeholder="Écrire un commentaire…"
+                          rows="1" maxlength="1000"
+                          onkeydown="handleCommentKey(event, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                          oninput="autoResize(this)"
+                          onclick="this.focus()"></textarea>
+            </div>
+            <button class="pc-comment-send" id="comment-send-{{ post.id }}"
+                    onclick="submitComment({{ post.id }}, '{% url 'post:add-comment' post.id %}')"
+                    title="{% trans 'Send' %}">
+                <span class="material-icons">send</span>
+            </button>
+        </div>
+    </div>
+
+    {% endif %}{# end is_locked #}
+</article>
+{% endfor %}

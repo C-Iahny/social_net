@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.legal-page { max-width:820px; margin:3rem auto; padding:0 1.25rem 4rem; font-family:var(--font-primary,'Space Grotesk',sans-serif); }
+.legal-logo { display:flex; align-items:center; gap:1rem; margin-bottom:2.5rem; text-decoration:none; }
+.legal-logo img { height:52px; width:auto; }
+[data-theme="dark"] .legal-logo img { filter:brightness(0) invert(1); }
+.legal-hero { background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%); border-radius:18px; padding:2.5rem 2rem; color:#fff; margin-bottom:2.5rem; position:relative; overflow:hidden; }
+.legal-hero::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Ccircle cx='20' cy='20' r='2'/%3E%3C/g%3E%3C/svg%3E"); pointer-events:none; }
+.legal-hero h1 { font-size:clamp(1.6rem,4vw,2.2rem); font-weight:900; margin:0 0 .5rem; position:relative; }
+.legal-hero p { opacity:.88; font-size:.95rem; margin:0; position:relative; }
+.legal-meta { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:2rem; font-size:.8rem; color:var(--text-muted); }
+.legal-meta-chip { background:var(--btn-bg); border:1px solid var(--border); border-radius:20px; padding:.25rem .75rem; display:flex; align-items:center; gap:.3rem; }
+.legal-meta-chip .material-icons { font-size:.9rem; color:var(--accent); }
+.legal-section { background:var(--bg-card); border:1px solid var(--border); border-radius:14px; padding:1.75rem 1.75rem 1.25rem; margin-bottom:1.25rem; box-shadow:var(--shadow); }
+.legal-section h2 { font-size:1.08rem; font-weight:800; color:var(--text); margin:0 0 1rem; display:flex; align-items:center; gap:.5rem; }
+.legal-section h2 .material-icons { font-size:1.15rem; color:var(--accent); flex-shrink:0; }
+.legal-section p,.legal-section li { font-size:.9rem; line-height:1.75; color:var(--text-muted); margin-bottom:.65rem; }
+.legal-section ul { padding-left:1.25rem; margin:.5rem 0; }
+.legal-section li { margin-bottom:.35rem; }
+.legal-warn { background:rgba(220,53,69,.07); border-left:4px solid #dc3545; border-radius:0 10px 10px 0; padding:.85rem 1.1rem; margin:.75rem 0; font-size:.88rem; color:var(--text); }
+[data-theme="dark"] .legal-warn { background:rgba(255,77,77,.07); }
+.legal-warn strong { color:#dc3545; }
+.legal-positive { background:rgba(40,167,69,.07); border-left:4px solid #28a745; border-radius:0 10px 10px 0; padding:.85rem 1.1rem; margin:.75rem 0; font-size:.88rem; color:var(--text); }
+[data-theme="dark"] .legal-positive { background:rgba(40,200,80,.07); }
+.legal-positive strong { color:#28a745; }
+.legal-back { display:inline-flex; align-items:center; gap:.4rem; color:var(--accent); font-weight:700; text-decoration:none; font-size:.9rem; margin-bottom:2rem; transition:opacity .2s; }
+.legal-back:hover { opacity:.75; text-decoration:none; }
+.legal-back .material-icons { font-size:1rem; }
+@media(max-width:575px){ .legal-page{padding:0 .75rem 5rem;margin-top:1.5rem;} .legal-section{padding:1.25rem 1rem .85rem;} .legal-hero{padding:1.75rem 1.25rem;} }
+</style>
+
+<div class="legal-page">
+    <a href="{% url 'landing' %}" class="legal-logo">
+        <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="Vazimba">
+    </a>
+    <a href="javascript:history.back()" class="legal-back"><span class="material-icons">arrow_back</span> Back</a>
+
+    <div class="legal-hero">
+        <h1>Terms of Service</h1>
+        <p>Please read these terms carefully before using the Vazimba platform.</p>
+    </div>
+
+    <div class="legal-meta">
+        <span class="legal-meta-chip"><span class="material-icons">event</span> Last updated: June 2026</span>
+        <span class="legal-meta-chip"><span class="material-icons">language</span> www.vazimba.io</span>
+        <span class="legal-meta-chip"><span class="material-icons">place</span> Madagascar</span>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">info_outline</span> 1. About Vazimba</h2>
+        <p>Vazimba is a social network designed for the Malagasy community, accessible at <strong>www.vazimba.io</strong>. Our mission is to give Madagascar an authentic voice — a space where Malagasy culture, language and values are respected and celebrated.</p>
+        <p>Vazimba actively contributes to the <strong>education and empowerment</strong> of the Malagasy population. The platform encourages knowledge sharing, constructive exchanges, and showcasing local talents and initiatives.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">people_outline</span> 2. Access and Registration</h2>
+        <p>Use of Vazimba is open to anyone aged <strong>16 years or older</strong>. By creating an account, you confirm that:</p>
+        <ul>
+            <li>You meet the minimum age requirement.</li>
+            <li>You provide accurate information during registration.</li>
+            <li>You are responsible for the security and confidentiality of your password.</li>
+            <li>You will not create multiple accounts or impersonate another person.</li>
+        </ul>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">block</span> 3. Prohibited Content</h2>
+        <p>In the interest of the community and the dignity of the Malagasy people, the following content is <strong>strictly forbidden</strong> on Vazimba.</p>
+
+        <div class="legal-warn">
+            <strong>🚫 Sexual or degrading content</strong><br>
+            Publishing photos, videos or text of a sexual, erotic or pornographic nature is prohibited. This includes content displaying intimate body parts (excessive cleavage, buttocks, etc.) intended to attract attention through provocation rather than through intelligence or talent.<br><br>
+            Vazimba believes that a person's true value lies in their intelligence, creativity and accomplishments — not in staging their body. Such content will be removed and accounts will be suspended.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Violence and cruelty</strong><br>
+            Any publication showing acts of physical violence, torture or cruelty towards people or animals is strictly forbidden. These images traumatise community members and will not be tolerated.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Mob justice and calls for vigilante action</strong><br>
+            Publishing content aimed at publicly identifying, humiliating, judging or punishing a person (thieves, alleged offenders, etc.) is prohibited. Such posts encourage violence and violate the presumption of innocence. The Vazimba team will immediately remove any content of this type.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Political, judicial or punitive declarations</strong><br>
+            Publications intended to make partisan political statements, judicial rulings, or demands for sanctions or punishment against individuals or groups are not permitted. Vazimba is not a court or political platform.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Harassment, discrimination and hate speech</strong><br>
+            Any form of harassment, intimidation or discrimination based on origin, religion, gender, orientation or social status is prohibited.
+        </div>
+
+        <div class="legal-warn">
+            <strong>🚫 Misinformation and fake news</strong><br>
+            Spreading rumours, unverified information presented as fact, and content designed to manipulate public opinion is prohibited.
+        </div>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">star_outline</span> 4. Encouraged Content</h2>
+        <div class="legal-positive">
+            <strong>✅ What Vazimba encourages</strong><br>
+            Knowledge sharing, educational and professional advice · Showcasing Malagasy culture, art and traditions · Sharing job opportunities, training and entrepreneurship · Positive news, community initiatives and solidarity projects · Respectful and constructive exchanges.
+        </div>
+        <p>We believe that an informed, educated youth — valued for their skills — is the key to Madagascar's development. Vazimba is designed to be that space.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">gavel</span> 5. Moderation and Sanctions</h2>
+        <p>The Vazimba team reserves the right to:</p>
+        <ul>
+            <li>Remove any content that violates these Terms, without prior notice.</li>
+            <li>Temporarily or permanently suspend an account for repeated violations.</li>
+            <li>Report any illegal content to the competent authorities.</li>
+        </ul>
+        <p>Moderation decisions are made with respect for human dignity and in the interest of the community. A user whose content has been removed may contact the team for an explanation.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">copyright</span> 6. Intellectual Property</h2>
+        <p>You retain ownership of the content you publish. By publishing it on Vazimba, you grant the platform a non-exclusive licence to display and distribute it for non-commercial purposes, within the operation of the network.</p>
+        <p>Vazimba, its logos, visual identity and features are the exclusive property of their creators. Any reproduction without authorisation is prohibited.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">update</span> 7. Changes to the Terms</h2>
+        <p>Vazimba reserves the right to modify these terms at any time. Users will be notified via the platform. Continued use of the service after notification constitutes acceptance of the new terms.</p>
+    </div>
+
+    <div class="legal-section">
+        <h2><span class="material-icons">mail_outline</span> 8. Contact</h2>
+        <p>For any questions regarding these Terms or to report an abuse: <strong>contact@vazimba.io</strong></p>
+    </div>
+
+    <p style="text-align:center;font-size:.78rem;color:var(--text-muted);margin-top:2rem;">
+        © 2026 VAZIMBA · Social Network Madagascar · All rights reserved
+    </p>
+</div>
+{% endblock content %}

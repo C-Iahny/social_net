@@ -1,0 +1,3860 @@
+<!-- PrivateChatRoom — compact redesign + file upload -->
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+
+<style>
+/* ── Reset & layout full-height ─────────────────────────────── */
+/* Desktop uniquement : bloquer le scroll page — seul #id_chat_log doit défiler */
+@media (min-width: 769px) {
+    html, body { overflow: hidden !important; }
+    main {
+        padding: 0 !important;
+        margin-top: 62px;
+        overflow: hidden !important;
+        min-height: 0 !important;        /* neutralise base.html min-height:100vh */
+        height: calc(100vh - 62px) !important;
+    }
+    #pied { display: none !important; }
+}
+/* Mobile : position:fixed ancre le layout au viewport visuel.
+   - L'ajustement au clavier virtuel se fait via JS (visualViewport.resize)
+   - Plus besoin de dvh / calc : le JS met à jour bottom dynamiquement */
+@media (max-width: 768px) {
+    html, body { overflow: hidden !important; }
+    main {
+        position: fixed !important;   /* ancré au viewport visuel — clé du fix clavier */
+        top: 62px !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;         /* 0 car #pied est caché sur la page chat */
+        height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        min-height: 0 !important;
+    }
+    /* Cacher le footer et la bottom nav sur la page chat */
+    #pied, #zoot-bottom-nav { display: none !important; }
+}
+
+.chat-page {
+    display: flex;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+}
+
+/* ── Sidebar sombre ────────────────────────────────────────────── */
+.chat-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: #2a0e03;
+    overflow: hidden;
+}
+[data-theme="dark"] .chat-sidebar { background: #0d0603; }
+
+.chat-sidebar-header {
+    padding: 14px 14px 12px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
+}
+.chat-sidebar-header h2 {
+    margin: 0 0 10px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -.2px;
+}
+.sb-search {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,.09);
+    border-radius: 20px;
+    padding: 6px 12px;
+}
+.sb-search input {
+    background: none;
+    border: none;
+    outline: none;
+    color: rgba(255,255,255,.8);
+    font-size: .82rem;
+    width: 100%;
+    font-family: inherit;
+}
+.sb-search input::placeholder { color: rgba(255,255,255,.32); }
+.sb-search .material-icons { font-size: 1rem; color: rgba(255,255,255,.38); flex-shrink: 0; }
+
+.friends-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+.friends-list-container::-webkit-scrollbar { width: 3px; }
+.friends-list-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 4px; }
+
+.friend-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background .15s;
+    position: relative;
+}
+.friend-container:hover { background: rgba(255,255,255,.05); }
+.friend-container.active { background: rgba(212,175,55,.1); }
+.friend-container.active::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 8px; bottom: 8px;
+    width: 3px;
+    background: #D4AF37;
+    border-radius: 0 3px 3px 0;
+}
+
+.friend-avatar-wrap { position: relative; flex-shrink: 0; }
+.friend-avatar-wrap img {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 2px solid rgba(255,255,255,.08);
+}
+.friend-container.active .friend-avatar-wrap img { border-color: rgba(212,175,55,.4); }
+.friend-online-dot {
+    position: absolute;
+    bottom: 1px; right: 1px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 2px solid #2a0e03;
+    display: none;
+}
+.friend-container.online .friend-online-dot { display: block; }
+[data-theme="dark"] .friend-online-dot { border-color: #0d0603; }
+
+.friend-info { flex: 1; min-width: 0; }
+.friend-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2px;
+}
+.friend-name {
+    font-weight: 600;
+    font-size: .84rem;
+    color: rgba(255,255,255,.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
+}
+.friend-time {
+    font-size: .7rem;
+    color: rgba(255,255,255,.28);
+    flex-shrink: 0;
+}
+.friend-preview {
+    font-size: .75rem;
+    color: rgba(255,255,255,.36);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.friend-container.active .friend-name { color: #D4AF37; }
+.friend-container.active .friend-time { color: rgba(212,175,55,.55); }
+.friend-container.active .friend-preview { color: rgba(212,175,55,.5); }
+
+/* Unread badge */
+.friend-unread {
+    background: #8B4513;
+    color: #fff;
+    font-size: .68rem;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 2px 7px;
+    flex-shrink: 0;
+    min-width: 20px;
+    text-align: center;
+    display: none;
+}
+.friend-unread.has-unread {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile sidebar toggle */
+.chat-sidebar-toggle {
+    display: none;
+    position: fixed;
+    bottom: 90px; left: 12px;
+    z-index: 500;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: #2a0e03;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 18px rgba(42,14,3,.55);
+}
+
+/* ── Main chat area ───────────────────────────────────────────── */
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden !important;
+    background: #f0e8df;
+    min-width: 0;
+    max-height: 100%;
+}
+[data-theme="dark"] .chat-main { background: var(--bg); }
+
+/* Chat header — toujours visible, ne scroll jamais */
+#id_room_title {
+    height: 58px;
+    padding: 0 1rem;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0 !important;
+    gap: .65rem;
+    box-shadow: 0 1px 0 var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+#id_user_info_container {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    text-decoration: none !important;
+}
+#id_other_user_profile_image {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--accent);
+}
+#id_other_username {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+    line-height: 1;
+}
+.chat-header-status {
+    font-size: .72rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+.status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4caf7d;
+    margin-right: 3px;
+    vertical-align: middle;
+}
+
+.chat-header-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+.chat-header-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    opacity: .65;
+    transition: background .15s, opacity .15s;
+}
+.chat-header-btn:hover { background: var(--btn-bg); opacity: 1; }
+.chat-header-btn .material-icons { font-size: 1.2rem; }
+
+/* ── Chat log ─────────────────────────────────────────────────── */
+#id_chat_log_container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Fond opaque pour couvrir toute animation de fond de page */
+    background: #f0e8df;
+}
+[data-theme="dark"] #id_chat_log_container { background: var(--bg); }
+#id_chat_log {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    /*
+     * Centre la colonne de messages à ~600px (même largeur que le feed).
+     * calc((100% - 600px) / 2) = padding symétrique pour centrer 600px.
+     * max(1rem, ...) = fallback sur petit écran.
+     * L'élément reste 100% large → scrollbar au bord droit, pas au milieu.
+     */
+    padding-top: .75rem;
+    padding-bottom: .6rem;
+    padding-left:  max(1rem, calc((100% - 600px) / 2));
+    padding-right: max(1rem, calc((100% - 600px) / 2));
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 3px;
+    background: var(--bg);
+    scroll-behavior: smooth;
+}
+#id_chat_log::-webkit-scrollbar { width: 4px; }
+#id_chat_log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── Message rows ─────────────────────────────────────────────── */
+.message-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 7px;
+    max-width: 100%;
+    animation: msgFadeIn .18s ease;
+    margin-bottom: 2px;
+}
+@keyframes msgFadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.message-container.own-msg { flex-direction: row-reverse; }
+
+.profile-image {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+    cursor: pointer;
+    align-self: flex-end;
+}
+.own-msg .profile-image { display: none; }
+
+.msg-content-wrap {
+    display: flex;
+    flex-direction: column;
+    max-width: 75%;
+    gap: 2px;
+}
+.own-msg .msg-content-wrap { align-items: flex-end; }
+
+.msg-meta {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    margin-bottom: 2px;
+}
+.own-msg .msg-meta { flex-direction: row-reverse; }
+.username-span {
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+.username-span:hover { color: var(--accent); }
+.timestamp-span {
+    font-size: .67rem;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity .15s;
+    display: block;
+    margin-top: 2px;
+}
+.message-container:hover .timestamp-span { opacity: 1; }
+
+/* Date separator — pill centré */
+.date-separator {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0 4px;
+}
+.date-sep-inner {
+    background: rgba(139,69,19,.1);
+    color: #7a4a25;
+    font-size: .7rem;
+    font-weight: 600;
+    padding: 3px 14px;
+    border-radius: 20px;
+    letter-spacing: .02em;
+}
+[data-theme="dark"] .date-sep-inner {
+    background: rgba(212,175,55,.1);
+    color: rgba(212,175,55,.6);
+}
+
+/* Bubble */
+.msg-p {
+    margin: 0;
+    padding: .52rem .9rem .38rem;
+    font-size: .88rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+.msg-p p { margin: 0; padding: 0; }
+.msg-p p + p { margin-top: .25rem; }
+.msg-p ul, .msg-p ol { margin: .25rem 0; padding-left: 1.4rem; }
+.msg-p pre { margin: .3rem 0; }
+
+/* Received bubble */
+.message-container:not(.own-msg) .msg-p {
+    background: #fff;
+    color: #1a0a02;
+    border: 1px solid #e8d5c2;
+    border-radius: 4px 18px 18px 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+}
+[data-theme="dark"] .message-container:not(.own-msg) .msg-p {
+    background: var(--bg-card);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+/* Sent bubble */
+.message-container.own-msg .msg-p {
+    background: #8B4513;
+    color: #fff;
+    border-radius: 18px 4px 18px 18px;
+}
+[data-theme="dark"] .message-container.own-msg .msg-p {
+    background: #c49a28;
+    color: #1a0a02;
+}
+
+/* Timestamp + check à l'intérieur de la bulle */
+.bubble-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    margin-top: 5px;
+}
+.bubble-time {
+    font-size: .65rem;
+    line-height: 1;
+}
+.message-container:not(.own-msg) .bubble-time { color: rgba(122,74,37,.55); }
+.message-container.own-msg .bubble-time       { color: rgba(255,255,255,.65); }
+[data-theme="dark"] .message-container.own-msg .bubble-time { color: rgba(26,10,2,.55); }
+.bubble-check {
+    font-size: .8rem !important;
+    color: rgba(255,255,255,.65);
+}
+[data-theme="dark"] .bubble-check { color: rgba(26,10,2,.55); }
+
+/* username au-dessus n'est plus affiché (1-à-1 chat) */
+.msg-meta { display: none; }
+/* Timestamp externe (hover) — gardé pour compatibilité mais caché */
+.timestamp-span { display: none !important; }
+
+/* ── Reply citation dans la bulle ─────────────────────────────── */
+.msg-quote {
+    border-left: 3px solid var(--accent,#6366f1);
+    padding: 3px 8px 3px 7px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    background: rgba(0,0,0,.07);
+    cursor: pointer;
+}
+[data-theme="dark"] .msg-quote { background: rgba(255,255,255,.08); }
+.own-msg .msg-quote { background: rgba(255,255,255,.15); border-color: rgba(255,255,255,.6); }
+[data-theme="dark"] .own-msg .msg-quote { background: rgba(0,0,0,.18); }
+.msg-quote-author {
+    font-size: .7rem; font-weight: 700;
+    color: var(--accent,#6366f1); display: block; margin-bottom: 1px;
+}
+.own-msg .msg-quote-author { color: rgba(255,255,255,.9); }
+.msg-quote-body {
+    font-size: .76rem; opacity: .75;
+    display: -webkit-box; -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ── Barre de prévisualisation reply (au-dessus du textarea) ───── */
+#reply-preview {
+    display: none; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    border-top: 1px solid var(--border,rgba(0,0,0,.1));
+    border-left: 3px solid var(--accent,#6366f1);
+    background: var(--surface,#fff);
+    font-size: .82rem; min-width: 0;
+}
+#reply-preview.active { display: flex; }
+#reply-preview-inner { flex:1; min-width:0; overflow:hidden; }
+#reply-preview-author { font-weight:700; color:var(--accent,#6366f1); font-size:.73rem; display:block; }
+#reply-preview-body { opacity:.7; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#reply-cancel-btn {
+    flex-shrink:0; background:none; border:none; cursor:pointer;
+    color:var(--text-muted,#888); font-size:1.1rem; padding:0 2px; line-height:1;
+}
+
+/* ── Bouton reply sur chaque bulle ─────────────────────────────── */
+.msg-reply-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted,#888); padding: 3px 5px;
+    opacity: 0; transition: opacity .15s; flex-shrink: 0;
+    align-self: center; border-radius: 50%;
+    display: flex; align-items: center;
+}
+.message-container:hover .msg-reply-btn { opacity: 1; }
+/* Sur mobile, toujours visible */
+@media (hover: none) { .msg-reply-btn { opacity: .55; } }
+/* own-msg : bouton reply passe à GAUCHE de la bulle (côté intérieur) */
+.message-container.own-msg .msg-reply-btn { order: 1; }
+
+/* ── Bouton réaction sur chaque bulle ─────────────────────────── */
+.msg-react-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted,#888); padding: 3px 5px;
+    opacity: 0; transition: opacity .15s; flex-shrink: 0;
+    align-self: center; border-radius: 50%;
+    display: flex; align-items: center;
+    font-size: .85rem;
+}
+.message-container:hover .msg-react-btn { opacity: 1; }
+@media (hover: none) { .msg-react-btn { opacity: .45; } }
+/* own-msg : bouton react passe à GAUCHE aussi (côté intérieur, près de la bulle) */
+.message-container.own-msg .msg-react-btn { order: 1; }
+
+/* ── Wrapper bulle — ancre de positionnement pour les badges ──────── */
+.msg-bubble-wrap {
+    align-self: flex-start;   /* reçus : ne pas étirer dans la colonne flex */
+    display: block;
+    position: relative;       /* ancre pour les badges en position:absolute */
+    width: fit-content;       /* CRITIQUE : se réduit à la largeur de la bulle,
+                                 sinon right:/left: se calcule sur la largeur
+                                 du conteneur parent (toute la zone de message) */
+}
+.own-msg .msg-bubble-wrap {
+    align-self: flex-end;
+    margin-left: auto;        /* pousse le wrapper à droite dans le flex */
+}
+/* Espace sous la bulle quand un badge est présent */
+.msg-bubble-wrap.has-reactions {
+    margin-bottom: 14px;
+}
+
+/* ── Badges de réaction — positionnement absolu au coin intérieur-bas ─ */
+.msg-reactions {
+    position: absolute;
+    bottom: -13px;            /* sort de la bulle par le bas */
+    right: 6px;               /* reçus : coin DROIT = côté intérieur (centre écran) */
+    left: auto;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 3px;
+    z-index: 3;
+}
+.own-msg .msg-reactions {
+    right: auto;
+    left: 6px;                /* envoyés : coin GAUCHE = côté intérieur (centre écran) */
+}
+.reaction-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    font-size: 1.1rem;        /* emoji légèrement plus grand */
+    line-height: 1;
+    cursor: pointer;
+    transition: transform .1s;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    /* Pas de bordure, pas de fond, pas de contour — juste l'emoji flottant */
+}
+.reaction-chip:active { transform: scale(.82); }
+/* Réaction choisie par soi-même : légère lueur pour la distinguer */
+.reaction-chip.mine {
+    filter: drop-shadow(0 0 4px rgba(139,69,19,.55));
+}
+[data-theme="dark"] .reaction-chip.mine {
+    filter: drop-shadow(0 0 4px rgba(212,175,55,.65));
+}
+.rc-count {
+    font-size: .60rem;
+    font-weight: 700;
+    color: #555;
+    text-shadow: 0 0 3px rgba(255,255,255,.9); /* lisible sur fond clair ou sombre */
+}
+
+/* ── Messages vocaux — bouton micro ───────────────────────────── */
+.chat-mic-btn {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    transition: background .15s, color .15s;
+}
+.chat-mic-btn:hover { background: rgba(0,0,0,.06); color: var(--accent); }
+.chat-mic-btn.recording {
+    background: #e53935;
+    color: #fff;
+    animation: mic-pulse 1s ease-in-out infinite;
+}
+@keyframes mic-pulse {
+    0%, 100% { box-shadow: 0 0 0 0   rgba(229,57,53,.45); }
+    50%       { box-shadow: 0 0 0 9px rgba(229,57,53,0);   }
+}
+
+/* Indicateur d'enregistrement en cours */
+#rec-indicator {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #e53935;
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+    z-index: 20;
+    pointer-events: none;
+}
+#rec-indicator.visible { display: flex; }
+#rec-indicator::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    animation: rec-blink .8s step-end infinite;
+}
+@keyframes rec-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ── Messages vocaux — player dans la bulle ────────────────────── */
+.voice-player {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 2px;
+    min-width: 190px;
+    max-width: 250px;
+}
+.vp-play-btn {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity .12s;
+    padding: 0;
+}
+.vp-play-btn:active { opacity: .7; }
+.own-msg .vp-play-btn { background: rgba(255,255,255,.3); }
+.vp-progress {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.vp-bar {
+    height: 4px;
+    background: rgba(0,0,0,.18);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+}
+.own-msg .vp-bar { background: rgba(255,255,255,.3); }
+.vp-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    width: 0%;
+    transition: width .1s linear;
+}
+.own-msg .vp-bar-fill { background: rgba(255,255,255,.9); }
+.vp-time {
+    font-size: .68rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .02em;
+}
+.own-msg .vp-time { color: rgba(255,255,255,.75); }
+
+/* ── Emoji picker flottant ─────────────────────────────────────── */
+#emoji-picker {
+    display: none;
+    position: fixed;
+    z-index: 5000;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 32px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.22);
+    padding: 5px 7px;
+    align-items: center;
+    gap: 1px;
+    animation: epIn .15s ease;
+}
+#emoji-picker.open { display: flex; }
+@keyframes epIn {
+    from { opacity:0; transform:scale(.75) translateY(6px); }
+    to   { opacity:1; transform:scale(1)   translateY(0); }
+}
+.ep-emoji {
+    font-size: 1.5rem;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background .1s, transform .12s;
+    flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+.ep-emoji:hover  { background: var(--btn-bg); transform: scale(1.22); }
+.ep-emoji:active { transform: scale(.88); }
+
+/* ── File message bubbles ──────────────────────────────────────── */
+.msg-file-bubble {
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 260px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.own-msg .msg-file-bubble {
+    border-color: rgba(255,255,255,.2);
+    background: rgba(24,119,242,.12);
+}
+/* Image attachment */
+.msg-file-bubble img.chat-img {
+    display: block;
+    width: 100%;
+    max-width: 240px;
+    max-height: 220px;
+    object-fit: cover;
+    cursor: pointer;
+    border-radius: 14px;
+}
+/* Video attachment */
+.msg-file-bubble video {
+    display: block;
+    width: 100%;
+    max-width: 240px;
+    max-height: 200px;
+    border-radius: 14px;
+    background: #000;
+}
+/* Document / other file */
+.msg-file-doc {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .65rem .9rem;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text);
+    transition: background .15s;
+    border-radius: 14px;
+}
+.msg-file-doc:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.msg-file-doc .file-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.3rem;
+}
+.file-icon.icon-pdf  { background: #fdecea; color: #e53935; }
+.file-icon.icon-word { background: #e3f2fd; color: #1565c0; }
+.file-icon.icon-ppt  { background: #fff3e0; color: #e65100; }
+.file-icon.icon-img  { background: #f3e5f5; color: #7b1fa2; }
+.file-icon.icon-vid  { background: #e8f5e9; color: #2e7d32; }
+.file-icon.icon-zip  { background: #fafafa; color: #616161; }
+.file-icon.icon-gen  { background: #e8eaf6; color: #3949ab; }
+[data-theme="dark"] .file-icon.icon-pdf  { background: #3b1010; color: #ff6b6b; }
+[data-theme="dark"] .file-icon.icon-word { background: #0d1e30; color: #64b5f6; }
+[data-theme="dark"] .file-icon.icon-ppt  { background: #2a1800; color: #ffa040; }
+[data-theme="dark"] .file-icon.icon-img  { background: #1e0a2a; color: #ce93d8; }
+[data-theme="dark"] .file-icon.icon-vid  { background: #0a2010; color: #66bb6a; }
+[data-theme="dark"] .file-icon.icon-zip  { background: #1a1a1a; color: #9e9e9e; }
+[data-theme="dark"] .file-icon.icon-gen  { background: #0d1030; color: #7986cb; }
+.msg-file-doc .file-info { flex: 1; min-width: 0; }
+.msg-file-doc .file-name {
+    font-size: .83rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.msg-file-doc .file-dl { font-size: .72rem; color: var(--accent); margin-top: 2px; }
+
+/* ── Upload progress overlay ──────────────────────────────────── */
+#chat-upload-progress {
+    display: none;
+    align-items: center;
+    gap: .5rem;
+    padding: .4rem .9rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    font-size: .82rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+#chat-upload-progress .progress {
+    flex: 1;
+    height: 5px;
+    border-radius: 5px;
+    background: var(--border);
+    overflow: hidden;
+}
+#chat-upload-bar {
+    height: 100%;
+    width: 0;
+    background: var(--accent);
+    border-radius: 5px;
+    transition: width .2s;
+}
+
+/* File preview before sending */
+#file-preview-container {
+    display: none;
+    align-items: center;
+    gap: .5rem;
+    padding: .4rem .9rem .25rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.file-preview-item {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    background: var(--btn-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .3rem .65rem;
+    font-size: .8rem;
+    color: var(--text);
+    max-width: 240px;
+}
+.file-preview-item .material-icons { font-size: 1rem; color: var(--accent); flex-shrink: 0; }
+.file-preview-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+.file-preview-remove {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); padding: 0; line-height: 1;
+    margin-left: 2px;
+}
+.file-preview-remove:hover { color: #e53935; }
+
+/* System message */
+.system-message {
+    display: flex;
+    justify-content: center;
+    margin: .4rem 0;
+}
+.system-message .username-span {
+    background: var(--btn-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: .18rem .8rem;
+    font-size: .72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* ── Spinner ──────────────────────────────────────────────────── */
+#id_chatroom_loading_spinner_container { padding: .4rem 0; }
+#id_chatroom_loading_spinner { color: var(--accent) !important; }
+
+/* ── Bazar annonce mini-card ───────────────────────────────────── */
+#bazar-annonce-ref {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+    padding: .55rem max(1rem, calc((100% - 600px) / 2));
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.bazar-ref-thumb {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+}
+.bazar-ref-no-img {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; flex-shrink: 0;
+}
+.bazar-ref-info { flex: 1; min-width: 0; }
+.bazar-ref-title {
+    font-size: .8rem; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+.bazar-ref-title:hover { color: var(--accent); }
+.bazar-ref-price {
+    font-size: .75rem; color: var(--accent); font-weight: 700;
+}
+.bazar-ref-close {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); padding: 0; line-height: 1;
+    flex-shrink: 0;
+}
+.bazar-ref-close:hover { color: var(--text-primary); }
+
+/* ── Typing indicator ──────────────────────────────────────────── */
+#chat-typing-indicator {
+    display: none;
+    align-items: center;
+    gap: .45rem;
+    padding: .1rem .25rem .3rem;
+    font-size: .75rem;
+    color: var(--text-muted);
+}
+#chat-typing-indicator.visible { display: flex; }
+.typing-dots {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+}
+.typing-dots span {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: typingBounce 1.2s infinite ease-in-out;
+}
+.typing-dots span:nth-child(2) { animation-delay: .2s; }
+.typing-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+    30%            { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ── Input bar ────────────────────────────────────────────────── */
+.chat-input-bar {
+    padding-top: .55rem;
+    padding-bottom: .55rem;
+    padding-left:  max(.85rem, calc((100% - 600px) / 2));
+    padding-right: max(.85rem, calc((100% - 600px) / 2));
+    background: var(--bg-nav);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+/* Pill sombre teinté — même esprit que la hero search, couleurs du thème Vazimba */
+.chat-input-inner {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    /* Brun sienna très sombre — cohérent avec --accent:#8B4513 (light) / D4AF37 (dark) */
+    background: rgba(42,14,3,.86);
+    border: none;
+    border-radius: 50px;
+    padding: .38rem .38rem .38rem 1.05rem;
+    transition: box-shadow .18s;
+}
+[data-theme="dark"] .chat-input-inner {
+    /* Mode nuit : teinte chaude profonde accordée à l'or */
+    background: rgba(25,8,2,.88);
+}
+.chat-input-inner:hover,
+.chat-input-inner:focus-within {
+    box-shadow: none;
+    outline: none;
+}
+
+#id_chat_message_input {
+    flex: 1;
+    background: transparent;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    resize: none;
+    font-size: .92rem;
+    color: #fff;
+    max-height: 100px;
+    min-height: 22px;
+    height: 22px;
+    line-height: 1.45;
+    overflow-y: auto;
+    padding: 2px 0;
+    font-family: inherit;
+    vertical-align: middle;
+    display: block;
+}
+/* Placeholder : blanc chaud, légèrement teinté de l'accent */
+#id_chat_message_input::placeholder      { color: rgba(235,200,170,.55); opacity: 1; }
+#id_chat_message_input::-moz-placeholder { color: rgba(235,200,170,.55); opacity: 1; }
+
+/* Attach — icône crème doux sur fond sombre */
+.chat-attach-btn {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: transparent;
+    color: rgba(235,200,170,.6);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color .15s;
+}
+.chat-attach-btn:hover  { color: rgba(235,200,170,1); }
+.chat-attach-btn:active { transform: scale(.9); }
+.chat-attach-btn .material-icons { font-size: 1.1rem; }
+
+/* Bouton envoyer — pill crème/blanc avec couleur accent (même logique que "Rechercher") */
+.chat-send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .25rem;
+    background: #fff;
+    color: var(--accent);
+    border: none;
+    border-radius: 40px;
+    padding: .42rem .95rem;
+    font-weight: 700;
+    font-size: .82rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    white-space: nowrap;
+}
+.chat-send-btn:hover  { transform: scale(1.04); box-shadow: 0 4px 14px rgba(0,0,0,.22); }
+.chat-send-btn:active { transform: scale(.96); opacity: .9; }
+.chat-send-btn .material-icons { font-size: 1rem; }
+
+.input-hint {
+    font-size: .69rem;
+    color: var(--text-muted);
+    margin-top: .28rem;
+    padding-left: .4rem;
+}
+
+/* ── Empty state ──────────────────────────────────────────────── */
+.chat-empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .65rem;
+    color: var(--text-muted);
+    padding: 2rem;
+    text-align: center;
+}
+.chat-empty-icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--btn-bg);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: .4rem;
+}
+.chat-empty-icon .material-icons { font-size: 2rem; color: var(--text-muted); }
+.chat-empty-state h4 { font-size: 1rem; font-weight: 700; color: var(--text); margin: 0; }
+.chat-empty-state p  { font-size: .82rem; margin: 0; }
+
+/* ── WebRTC Call Overlays ─────────────────────────────────────── */
+/* Les 3 overlays couvrent .chat-main via position:absolute */
+.chat-main { position: relative; }
+
+.call-overlay {
+    /* absolute positionné par rapport à .chat-main { position:relative }
+       position:fixed cassait la barre de saisie sur iOS Safari */
+    position: absolute;
+    inset: 0;
+    z-index: 9999;
+    display: none; /* affiché via JS */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    background: rgba(10,4,1,.93);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+/* Anneau pulsant autour de l'avatar */
+.call-avatar-ring {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.18);
+    display: flex; align-items: center; justify-content: center;
+    animation: callRingPulse 1.8s ease-in-out infinite;
+}
+@keyframes callRingPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(212,175,55,.22); }
+    50%      { box-shadow: 0 0 0 18px rgba(212,175,55,.0); }
+}
+.call-avatar-circle {
+    width: 78px; height: 78px;
+    border-radius: 50%;
+    background: #8B4513;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; font-weight: 800; color: #fff;
+    overflow: hidden;
+}
+.call-avatar-circle img {
+    width: 100%; height: 100%;
+    object-fit: cover; border-radius: 50%;
+}
+.call-name  { font-size: 1.15rem; font-weight: 700; color: #fff; }
+.call-status{ font-size: .8rem; color: rgba(255,255,255,.46); }
+
+/* Bouton rond (raccrocher / accepter / refuser) */
+.call-btn {
+    width: 66px; height: 66px;
+    border-radius: 50%; border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .15s, filter .15s;
+}
+.call-btn:active { transform: scale(.9); }
+.call-btn .material-icons { font-size: 1.7rem; color: #fff; }
+.call-btn-red   { background: #e53935; }
+.call-btn-green { background: #22c55e; }
+.call-btn-red:hover   { filter: brightness(1.12); }
+.call-btn-green:hover { filter: brightness(1.12); }
+
+/* Vidéo locale (prévisualisation pendant l'appel sortant) */
+.call-local-preview {
+    width: 130px; height: 96px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: #1a0a02;
+    box-shadow: 0 4px 20px rgba(0,0,0,.55);
+}
+
+/* Entrant : ligne de 2 boutons */
+.call-inc-row { display: flex; gap: 48px; align-items: center; margin-top: 6px; }
+.call-inc-label { font-size: .74rem; color: rgba(255,255,255,.36); text-align: center; margin-top: 2px; }
+
+/* ── Appel actif ──────────────────────────────────────────────── */
+.call-remote-video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    background: #0d0603;
+}
+/* Mode audio : pas de vidéo distante, on affiche un avatar centré */
+.call-audio-bg {
+    position: absolute; inset: 0;
+    display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px;
+}
+.call-audio-bg .call-avatar-ring { width: 120px; height: 120px; }
+.call-audio-bg .call-avatar-circle { width: 100px; height: 100px; font-size: 38px; }
+
+/* Fenêtre locale (coin sup. droit) — dans overlay fixed */
+.call-local-video {
+    position: absolute;
+    /* top = dessous de la barre notch/status bar iOS */
+    top: max(14px, env(safe-area-inset-top, 14px));
+    right: 14px;
+    width: 88px; height: 124px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: #1a0a02;
+    border: 2px solid rgba(255,255,255,.22);
+    z-index: 10;
+    box-shadow: 0 4px 16px rgba(0,0,0,.5);
+}
+/* Contrôles en bas de l'overlay plein-écran */
+.call-controls-wrap {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 30;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 16px;
+    background: linear-gradient(to top, rgba(0,0,0,.9) 0%, rgba(0,0,0,.6) 60%, transparent 100%);
+    padding-top: 60px;
+    padding-bottom: 40px; /* fallback */
+    padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); /* safe area iOS */
+}
+.call-timer {
+    font-size: .9rem; font-weight: 700;
+    color: rgba(255,255,255,.92);
+    background: rgba(0,0,0,.55);
+    padding: 3px 16px; border-radius: 20px;
+    letter-spacing: .06em;
+}
+.call-ice-status {
+    font-size: .72rem; font-weight: 600;
+    color: #ff9800;
+    min-height: 1.1em;
+    text-shadow: 0 1px 4px rgba(0,0,0,.8);
+    letter-spacing: .02em;
+}
+.call-ctrl-row { display: flex; gap: 24px; align-items: center; }
+.call-ctrl-btn {
+    width: 62px; height: 62px;
+    border-radius: 50%; border: 2px solid rgba(255,255,255,.5);
+    background: rgba(80,80,80,.95);  /* solide, clairement visible */
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+    box-shadow: 0 4px 20px rgba(0,0,0,.7);
+    -webkit-tap-highlight-color: transparent;
+}
+.call-ctrl-btn:active { background: rgba(120,120,120,.95); }
+.call-ctrl-btn.active { background: rgba(220,50,50,.9); border-color: rgba(255,100,100,.6); }
+.call-ctrl-btn .material-icons { font-size: 1.6rem; color: #fff; }
+.call-ctrl-hangup {
+    width: 72px; height: 72px;
+    background: #d32f2f !important;
+    border-color: rgba(255,150,150,.5) !important;
+}
+.call-ctrl-hangup:active { background: #b71c1c !important; }
+.call-ctrl-hangup .material-icons { font-size: 1.8rem; }
+
+/* Label sous chaque bouton de contrôle */
+.call-ctrl-lbl {
+    font-size: .64rem;
+    color: rgba(255,255,255,.46);
+    text-align: center;
+    margin-top: -8px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+
+/* ── Bouton retour (mobile) — caché sur desktop ────────────── */
+.chat-back-btn { display: none; }
+
+@media (max-width: 768px) {
+    /* Slider à deux panneaux style Messenger :
+       - panneau 1 (sidebar) : visible par défaut, plein écran
+       - panneau 2 (chat)    : caché à droite, glisse quand chat-in-convo */
+    .chat-page {
+        position: relative;   /* ancre les deux panneaux absolus */
+        overflow: hidden;
+    }
+    .chat-sidebar {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        transform: translateX(0);
+        transition: transform .28s cubic-bezier(.4,0,.2,1);
+        box-shadow: none;
+        z-index: 2;
+    }
+    .chat-main {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        transform: translateX(100%);
+        transition: transform .28s cubic-bezier(.4,0,.2,1);
+        z-index: 1;
+    }
+    /* Quand une convo est sélectionnée : sidebar part à gauche, chat arrive */
+    .chat-page.chat-in-convo .chat-sidebar {
+        transform: translateX(-100%);
+        z-index: 1;
+    }
+    .chat-page.chat-in-convo .chat-main {
+        transform: translateX(0);
+        z-index: 2;
+    }
+    /* FAB toggle plus nécessaire */
+    .chat-sidebar-toggle { display: none !important; }
+    /* Bouton retour visible */
+    .chat-back-btn { display: flex !important; }
+
+    /* ── Sidebar mobile : fond clair pour meilleure lisibilité ── */
+    .chat-sidebar {
+        background: var(--bg-card);
+    }
+    [data-theme="dark"] .chat-sidebar {
+        background: #1a0a02;
+    }
+    /* Header de la sidebar : garde la couleur de la marque (brun) */
+    .chat-sidebar-header {
+        background: #2a0e03;
+    }
+    /* Noms et aperçus : couleur du texte adapte au thème */
+    .chat-sidebar .friend-name    { color: var(--text); }
+    .chat-sidebar .friend-preview { color: var(--text-muted); }
+    .chat-sidebar .friend-time    { color: var(--text-muted); }
+    .chat-sidebar .friend-container:hover  { background: var(--btn-bg, rgba(0,0,0,.05)); }
+    .chat-sidebar .friend-container.active { background: rgba(139,69,19,.1); }
+    .chat-sidebar .friend-container.active .friend-name    { color: #8B4513; }
+    .chat-sidebar .friend-container.active .friend-preview { color: rgba(139,69,19,.65); }
+    .chat-sidebar .friend-container.active .friend-time    { color: rgba(139,69,19,.5); }
+    [data-theme="dark"] .chat-sidebar .friend-container.active .friend-name { color: #D4AF37; }
+    /* Séparateur entre items */
+    .chat-sidebar .friend-container { border-bottom: 1px solid var(--border, rgba(0,0,0,.06)); }
+
+    /* Bulles légèrement plus larges sur petit écran */
+    .msg-content-wrap { max-width: 85%; }
+
+    /* ── Input bar mobile ──────────────────────────────── */
+    .chat-input-bar {
+        padding: .5rem .75rem max(.6rem, env(safe-area-inset-bottom, .6rem));
+        /* Pas de sticky : body:fixed empêche tout scroll iOS,
+           l'input reste naturellement en bas du flex column */
+        position: relative;
+        z-index: 10;
+    }
+    .chat-input-inner {
+        border-radius: 50px;
+        padding: .5rem .42rem .5rem 1rem;
+    }
+    /* Sur mobile pas de ring focus — le clavier suffit comme signal */
+    .chat-input-inner:focus-within {
+        box-shadow: none;
+    }
+    #id_chat_message_input {
+        font-size: 1rem;   /* évite le zoom auto sur iOS (≥16px) */
+        min-height: 26px;
+        max-height: 120px;
+    }
+    .chat-attach-btn {
+        width: 32px; height: 32px;
+    }
+    .chat-send-btn {
+        padding: .44rem .82rem;
+        font-size: .78rem;
+    }
+    /* Cacher le texte "Envoyer" sur mobile — garder juste l'icône */
+    .send-btn-label { display: none; }
+    /* Le hint clavier est inutile sur mobile */
+    .input-hint { display: none; }
+}
+</style>
+
+<!-- ── Page layout ───────────────────────────────────────────── -->
+<div class="chat-page">
+
+    <!-- Friends sidebar -->
+    <aside class="chat-sidebar" id="chat-sidebar">
+        <div class="chat-sidebar-header">
+            <h2>{% trans "Messages" %}</h2>
+            <div class="sb-search">
+                <span class="material-icons">search</span>
+                <input type="text" placeholder="{% trans 'Rechercher…' %}" id="sb-search-input">
+            </div>
+        </div>
+        <div class="friends-list-container" id="friends-list-container">
+            {% for x in m_and_f %}
+            <div class="friend-container"
+                 onclick="onSelectFriend('{{ x.friend.id }}')"
+                 id="id_friend_container_{{ x.friend.id }}">
+                <div class="friend-avatar-wrap">
+                    <img id="id_friend_img_{{ x.friend.id }}"
+                         src="{{ x.friend.profile_image.url }}"
+                         alt="{{ x.friend.username }}"
+                         onerror="this.src='{% static 'images/profile_pic.png' %}'">
+                    <span class="friend-online-dot"></span>
+                </div>
+                <div class="friend-info">
+                    <div class="friend-top">
+                        <span class="friend-name">{{ x.friend.username }}</span>
+                        <span class="friend-time"></span>
+                    </div>
+                    <div class="friend-preview">{{ x.message|truncatechars:30 }}</div>
+                </div>
+                <span class="friend-unread{% if x.unread %} has-unread{% endif %}">{% if x.unread %}{{ x.unread }}{% endif %}</span>
+            </div>
+            {% empty %}
+            <div style="padding:1.2rem .8rem;text-align:center;color:var(--text-muted);font-size:.82rem;">
+                <span class="material-icons" style="font-size:1.8rem;display:block;margin-bottom:.4rem;opacity:.35">people_outline</span>
+                {% trans "Aucun ami pour l'instant" %}
+            </div>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <!-- Main chat -->
+    <div class="chat-main">
+
+        <!-- Header -->
+        <div id="id_room_title">
+            <!-- Bouton retour vers la liste (mobile uniquement) -->
+            <button class="chat-header-btn chat-back-btn" id="chat-back-btn" title="{% trans 'Conversations' %}">
+                <span class="material-icons">arrow_back</span>
+            </button>
+            <a class="d-flex align-items-center" style="gap:.65rem;" id="id_user_info_container" target="_blank">
+                <img class="d-none" id="id_other_user_profile_image"
+                     src="{% static 'images/profile_pic.png' %}"
+                     alt="avatar">
+                <div>
+                    <h3 id="id_other_username" style="margin:0;font-size:.95rem;font-weight:700;color:var(--text);"></h3>
+                    <div class="chat-header-status" id="chat-header-sub" style="display:none;">
+                        <span class="status-dot"></span>{% trans "En ligne" %}
+                    </div>
+                </div>
+            </a>
+
+            <!-- Actions + WS dot -->
+            <div class="chat-header-actions">
+                <!-- Appel audio -->
+                <button class="chat-header-btn" id="btn-call-audio" title="{% trans 'Appel audio' %}" onclick="startCall('audio')" style="display:none;">
+                    <span class="material-icons">call</span>
+                </button>
+                <!-- Appel vidéo -->
+                <button class="chat-header-btn" id="btn-call-video" title="{% trans 'Appel vidéo' %}" onclick="startCall('video')" style="display:none;">
+                    <span class="material-icons">videocam</span>
+                </button>
+                <button class="chat-header-btn" title="{% trans 'Infos' %}" id="chat-header-info-btn" style="display:none;" onclick="if(typeof selectUser==='function'){selectUser(currentFriendId);}">
+                    <span class="material-icons">info_outline</span>
+                </button>
+                <span id="ws-status-dot"
+                      style="width:8px;height:8px;border-radius:50%;background:#aaa;display:inline-block;margin-left:4px;flex-shrink:0;align-self:center;"
+                      title="En attente de connexion…"></span>
+            </div>
+
+            <!-- No conversation selected placeholder -->
+            <div id="chat-no-selection" style="color:var(--text-muted);font-size:.87rem;position:absolute;right:1rem;">
+                <span class="material-icons" style="vertical-align:middle;font-size:1.05rem;margin-right:5px;">touch_app</span>
+                {% trans "Sélectionnez une conversation" %}
+            </div>
+        </div>
+
+        <!-- Messages + input wrapper -->
+        <div class="d-flex flex-column" id="id_chat_log_container" style="flex:1;overflow:hidden;">
+
+            <!-- Loading spinner -->
+            <div class="d-flex justify-content-center" id="id_chatroom_loading_spinner_container">
+                <div class="spinner-border" id="id_chatroom_loading_spinner"
+                     role="status" style="display:none;">
+                    <span class="sr-only">{% trans "Chargement…" %}</span>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div id="id_chat_log"></div>
+
+            <!-- Page number (hidden) -->
+            <span class="{% if not debug %}d-none{% endif %} page-number"
+                  id="id_page_number" style="display:none !important;">1</span>
+
+            <!-- File preview bar (shown when a file is selected) -->
+            <div id="file-preview-container">
+                <div class="file-preview-item" id="file-preview-item">
+                    <span class="material-icons">attach_file</span>
+                    <span class="file-preview-name" id="file-preview-name"></span>
+                    <button class="file-preview-remove" onclick="clearFileSelection()" title="Supprimer">
+                        <span class="material-icons" style="font-size:.9rem;">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upload progress bar -->
+            <div id="chat-upload-progress">
+                <span class="material-icons" style="font-size:1rem;">upload</span>
+                <span id="upload-progress-label">Envoi…</span>
+                <div class="progress"><div id="chat-upload-bar"></div></div>
+                <span id="upload-progress-pct" style="font-size:.78rem;min-width:32px;">0%</span>
+            </div>
+
+            <!-- Référence annonce bazar (si venu depuis une fiche bazar) -->
+            {% if bazar_annonce %}
+            <div id="bazar-annonce-ref">
+                {% with img=bazar_annonce.get_primary_image %}
+                {% if img %}
+                <img class="bazar-ref-thumb" src="{{ img.image.url }}" alt="{{ bazar_annonce.title }}">
+                {% else %}
+                <div class="bazar-ref-no-img">🏷️</div>
+                {% endif %}
+                {% endwith %}
+                <div class="bazar-ref-info">
+                    <a class="bazar-ref-title" href="{% url 'bazar:detail' bazar_annonce.pk %}" target="_blank">
+                        {{ bazar_annonce.title }}
+                    </a>
+                    {% if bazar_annonce.price %}
+                    <div class="bazar-ref-price">{{ bazar_annonce.formatted_price }}</div>
+                    {% endif %}
+                </div>
+                <button class="bazar-ref-close" onclick="closeBazarRef()" title="Fermer">
+                    <span class="material-icons" style="font-size:1.1rem;">close</span>
+                </button>
+            </div>
+            {% endif %}
+
+            <!-- Input bar -->
+            <div class="chat-input-bar">
+                <!-- Typing indicator — à l'intérieur de la barre pour suivre le sticky -->
+                <div id="chat-typing-indicator">
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span id="chat-typing-text">est en train d'écrire…</span>
+                </div>
+                <!-- ── Barre reply (citation) ──────────────────────────── -->
+                <div id="reply-preview">
+                    <div id="reply-preview-inner">
+                        <span id="reply-preview-author"></span>
+                        <div id="reply-preview-body"></div>
+                    </div>
+                    <button id="reply-cancel-btn" onclick="cancelReply()" title="Annuler">✕</button>
+                </div>
+                <div class="chat-input-inner" style="position:relative;">
+                    <!-- Indicateur enregistrement vocal -->
+                    <div id="rec-indicator"><span id="rec-duration">0:00</span></div>
+                    <!-- Hidden file input -->
+                    <input type="file" id="chat-file-input" style="display:none;"
+                           accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.7z,.txt,.csv">
+                    <!-- Attach button -->
+                    <button type="button" class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="{% trans 'Joindre un fichier' %}">
+                        <span class="material-icons">attach_file</span>
+                    </button>
+                    <textarea id="id_chat_message_input"
+                              placeholder="{% trans 'Écrire un message…' %}"
+                              rows="1"
+                              inputmode="text"
+                              enterkeyhint="send"></textarea>
+                    <!-- Bouton annuler enregistrement (caché par défaut) -->
+                    <button type="button" id="rec-cancel-btn" class="chat-mic-btn" title="{% trans 'Annuler' %}" style="display:none;color:#e53935;">
+                        <span class="material-icons">delete</span>
+                    </button>
+                    <!-- Bouton micro (visible quand input vide ET pas en train d'enregistrer) -->
+                    <button type="button" id="chat-mic-btn" class="chat-mic-btn" title="{% trans 'Message vocal' %}">
+                        <span class="material-icons">mic</span>
+                    </button>
+                    <!-- Bouton ENVOYER le message vocal (visible UNIQUEMENT pendant l'enregistrement) -->
+                    <button type="button" id="voice-send-btn" class="chat-send-btn" title="{% trans 'Envoyer le message vocal' %}" style="display:none;">
+                        <span class="material-icons">send</span>
+                    </button>
+                    <!-- Bouton envoyer texte (visible quand textarea non vide) -->
+                    <button type="button" id="id_chat_message_submit" class="chat-send-btn" title="{% trans 'Envoyer (Entrée)' %}" style="display:none;">
+                        <span class="material-icons">send</span>
+                        <span class="send-btn-label">{% trans "Envoyer" %}</span>
+                    </button>
+                </div>
+                <div class="input-hint">{% trans "Entrée pour envoyer · Maj+Entrée pour aller à la ligne" %}</div>
+            </div>
+        </div>
+
+        <!-- ── Overlay appel SORTANT ───────────────────────────── -->
+        <div class="call-overlay" id="call-out-overlay">
+            <div class="call-avatar-ring">
+                <div class="call-avatar-circle" id="call-out-avatar-circle">
+                    <img id="call-out-avatar-img" src="" alt="">
+                </div>
+            </div>
+            <div class="call-name" id="call-out-name">…</div>
+            <div class="call-status" id="call-out-status">{% trans "Appel en cours…" %}</div>
+            <!-- Prévisualisation caméra locale (masquée en mode audio) -->
+            <video id="call-out-local-vid" autoplay muted playsinline
+                   class="call-local-preview" style="display:none;"></video>
+            <button class="call-btn call-btn-red" onclick="hangUp()" title="{% trans 'Annuler' %}">
+                <span class="material-icons">call_end</span>
+            </button>
+        </div>
+
+        <!-- ── Overlay appel ENTRANT ───────────────────────────── -->
+        <div class="call-overlay" id="call-inc-overlay">
+            <div class="call-avatar-ring">
+                <div class="call-avatar-circle" id="call-inc-avatar-circle">
+                    <img id="call-inc-avatar-img" src="" alt="">
+                </div>
+            </div>
+            <div class="call-name" id="call-inc-name">…</div>
+            <div class="call-status" id="call-inc-type">{% trans "Appel vidéo entrant" %}</div>
+            <div class="call-inc-row">
+                <div>
+                    <button class="call-btn call-btn-red" onclick="rejectCall()" title="{% trans 'Refuser' %}">
+                        <span class="material-icons">call_end</span>
+                    </button>
+                    <div class="call-inc-label">{% trans "Refuser" %}</div>
+                </div>
+                <div>
+                    <button class="call-btn call-btn-green" onclick="acceptCall()" title="{% trans 'Accepter' %}">
+                        <span class="material-icons" id="call-inc-accept-icon">videocam</span>
+                    </button>
+                    <div class="call-inc-label">{% trans "Accepter" %}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Overlay appel ACTIF ─────────────────────────────── -->
+        <div class="call-overlay" id="call-active-overlay">
+            <!-- Vidéo distante (plein fond) — masquée en mode audio -->
+            <!-- autoplay muted : le navigateur démarre dès que srcObject est assigné (muted autoplay
+                 est toujours autorisé, même sans geste, sur Chrome/WebView/Safari). Le JS unmute
+                 après via rv.muted=false. Cela évite le blocage de play() en contexte async.   -->
+            <video id="call-remote-video" playsinline autoplay muted class="call-remote-video"></video>
+            <!-- Audio dédié pour les appels audio (video display:none bloque l'audio sur iOS) -->
+            <audio id="call-remote-audio" playsinline style="display:none;"></audio>
+            <!-- Fond audio : avatar centré (affiché à la place de la vidéo) -->
+            <div class="call-audio-bg" id="call-audio-bg">
+                <div class="call-avatar-ring">
+                    <div class="call-avatar-circle" id="call-active-avatar-circle">
+                        <img id="call-active-avatar-img" src="" alt="">
+                    </div>
+                </div>
+                <div class="call-name" id="call-active-name">…</div>
+            </div>
+            <!-- Vidéo locale (coin sup. droit) — masquée en mode audio -->
+            <video id="call-local-video" autoplay muted playsinline class="call-local-video" style="display:none;"></video>
+            <!-- Contrôles -->
+            <div class="call-controls-wrap">
+                <div id="call-timer" class="call-timer">00:00</div>
+                <!-- Indicateur état ICE (connexion réseau) — utile pour diagnostiquer -->
+                <div id="call-ice-status" class="call-ice-status"></div>
+                <!-- Indicateur candidats ICE — affiché pendant la connexion pour diagnostic -->
+                <div id="call-ice-debug" style="font-size:10px;color:#aaa;letter-spacing:1px;min-height:14px;text-align:center;"></div>
+                <div class="call-ctrl-row">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                        <button class="call-ctrl-btn" id="call-btn-mic" onclick="toggleMic()" title="{% trans 'Micro' %}">
+                            <span class="material-icons" id="call-mic-icon">mic</span>
+                        </button>
+                        <span class="call-ctrl-lbl">{% trans "Micro" %}</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                        <button class="call-ctrl-btn call-ctrl-hangup" onclick="hangUp()" title="{% trans 'Raccrocher' %}">
+                            <span class="material-icons">call_end</span>
+                        </button>
+                        <span class="call-ctrl-lbl">{% trans "Fin" %}</span>
+                    </div>
+                    <div id="call-cam-wrap" style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                        <button class="call-ctrl-btn" id="call-btn-cam" onclick="toggleCam()" title="{% trans 'Caméra' %}">
+                            <span class="material-icons" id="call-cam-icon">videocam</span>
+                        </button>
+                        <span class="call-ctrl-lbl">{% trans "Caméra" %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /chat-main -->
+</div><!-- /chat-page -->
+
+<!-- ── Emoji picker (partagé, hors flux) ──────────────────── -->
+<div id="emoji-picker" role="dialog" aria-label="Choisir une réaction">
+    <span class="ep-emoji" data-emoji="👍">👍</span>
+    <span class="ep-emoji" data-emoji="❤️">❤️</span>
+    <span class="ep-emoji" data-emoji="😂">😂</span>
+    <span class="ep-emoji" data-emoji="😮">😮</span>
+    <span class="ep-emoji" data-emoji="😢">😢</span>
+    <span class="ep-emoji" data-emoji="😡">😡</span>
+    <span class="ep-emoji" data-emoji="🙏">🙏</span>
+</div>
+
+<!-- Mobile sidebar toggle -->
+<button class="chat-sidebar-toggle" id="sidebar-toggle-btn" title="{% trans 'Conversations' %}">
+    <span class="material-icons">chat</span>
+</button>
+
+<!-- Client Error Modal -->
+<button type="button" id="id_trigger_client_error_modal"
+        class="d-none" data-toggle="modal" data-target="#id_client_error_modal"></button>
+<div class="modal fade" id="id_client_error_modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Erreur</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p id="id_client_error_modal_body">Une erreur est survenue.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal"
+                        id="id_client_error_modal_close_btn">{% trans "Fermer" %}</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Lightbox pour images agrandies ────────────────────────── -->
+<div id="chat-lightbox"
+     style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);
+            align-items:center;justify-content:center;cursor:zoom-out;"
+     onclick="this.style.display='none'">
+    <img id="chat-lightbox-img" style="max-width:92vw;max-height:90vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6);" src="" alt="">
+</div>
+
+<!-- Auto-resize textarea + misc init -->
+<script>
+(function(){
+    var ta = document.getElementById('id_chat_message_input');
+    if(ta){
+        ta.addEventListener('input', function(){
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+    }
+    // ── Pré-remplissage depuis une fiche Bazar ────────────────────
+    {% if bazar_annonce %}
+    if(ta && ta.value.trim() === ''){
+        ta.value = "{% trans 'Bonjour, je suis intéressé(e) par votre annonce : ' %}{{ bazar_annonce.title }}";
+        ta.style.height = 'auto';
+        ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
+        /* Afficher le bouton Envoyer */
+        var sbtn = document.getElementById('id_chat_message_submit');
+        if(sbtn) sbtn.style.display = 'flex';
+        /* Focus + curseur à la fin */
+        setTimeout(function(){
+            ta.focus();
+            ta.selectionStart = ta.selectionEnd = ta.value.length;
+        }, 400);
+    }
+    {% endif %}
+
+    // Mobile sidebar toggle
+    var toggleBtn = document.getElementById('sidebar-toggle-btn');
+    var sidebar   = document.getElementById('chat-sidebar');
+    if(toggleBtn && sidebar){
+        toggleBtn.addEventListener('click', function(){
+            sidebar.classList.toggle('open');
+        });
+        document.addEventListener('click', function(e){
+            if(window.innerWidth <= 768 && sidebar.classList.contains('open')){
+                if(!sidebar.contains(e.target) && e.target !== toggleBtn){
+                    sidebar.classList.remove('open');
+                }
+            }
+        });
+    }
+})();
+</script>
+
+<!-- ── File selection handling ───────────────────────────────── -->
+<script>
+var _selectedFile = null;
+
+document.getElementById('chat-file-input').addEventListener('change', function(){
+    var rawFile = this.files[0];
+    if (!rawFile) return;
+
+    function setFile(f) {
+        _selectedFile = f;
+        document.getElementById('file-preview-name').textContent = f.name;
+        document.getElementById('file-preview-container').style.display = 'flex';
+        document.getElementById('id_chat_message_input').focus();
+    }
+
+    // Compresser les images avant envoi (économise la data mobile)
+    if (rawFile.type.startsWith('image/') && window.ZootMediaConverter) {
+        ZootMediaConverter.processFiles([rawFile])
+            .then(function(arr) { setFile(arr[0] || rawFile); })
+            .catch(function()   { setFile(rawFile); });
+    } else {
+        setFile(rawFile);
+    }
+});
+
+function clearFileSelection(){
+    _selectedFile = null;
+    document.getElementById('chat-file-input').value = '';
+    document.getElementById('file-preview-container').style.display = 'none';
+}
+
+/* ── Determine icon for file type ─────────────────────────── */
+function fileIconClass(fname, ftype){
+    if(ftype === 'image') return 'icon-img';
+    if(ftype === 'video') return 'icon-vid';
+    var ext = (fname || '').split('.').pop().toLowerCase();
+    if(ext === 'pdf')  return 'icon-pdf';
+    if(['doc','docx'].includes(ext))  return 'icon-word';
+    if(['ppt','pptx'].includes(ext))  return 'icon-ppt';
+    if(['zip','rar','7z'].includes(ext)) return 'icon-zip';
+    return 'icon-gen';
+}
+function fileIconEmoji(fname, ftype){
+    if(ftype === 'image') return '🖼️';
+    if(ftype === 'video') return '🎬';
+    var ext = (fname || '').split('.').pop().toLowerCase();
+    if(ext === 'pdf')  return '📄';
+    if(['doc','docx'].includes(ext))  return '📝';
+    if(['ppt','pptx'].includes(ext))  return '📊';
+    if(['zip','rar','7z'].includes(ext)) return '🗜️';
+    return '📎';
+}
+
+/* ── Upload + broadcast ────────────────────────────────────── */
+function uploadAndSendFile(f){
+    if(!roomId){
+        alert("Ouvrez d'abord une conversation.");
+        return;
+    }
+    var formData = new FormData();
+    formData.append('file', f);
+    formData.append('room_id', roomId);
+
+    var uploadBar   = document.getElementById('chat-upload-bar');
+    var uploadProg  = document.getElementById('chat-upload-progress');
+    var uploadPct   = document.getElementById('upload-progress-pct');
+    uploadBar.style.width = '0';
+    uploadProg.style.display = 'flex';
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '{% url "chat:upload-chat-file" %}', true);
+    xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+
+    xhr.upload.onprogress = function(e){
+        if(e.lengthComputable){
+            var pct = Math.round(e.loaded / e.total * 100);
+            uploadBar.style.width = pct + '%';
+            uploadPct.textContent = pct + '%';
+        }
+    };
+
+    xhr.onload = function(){
+        uploadProg.style.display = 'none';
+        if(xhr.status === 200){
+            var data = JSON.parse(xhr.responseText);
+            if(data.ok){
+                /* Le serveur a broadcasté via channel layer — pas de 2ème aller-retour WS.
+                   Fallback WS uniquement si broadcast a échoué côté serveur. */
+                if(!data.broadcast && chatSocket && chatSocket.readyState === WebSocket.OPEN){
+                    chatSocket.send(JSON.stringify({
+                        "command":   "send_file",
+                        "room":      roomId,
+                        "msg_id":    data.msg_id,
+                        "file_url":  data.file_url,
+                        "file_name": data.file_name,
+                        "file_type": data.file_type,
+                    }));
+                }
+                clearFileSelection();
+            } else {
+                alert(data.error || 'Échec de l\'envoi.');
+            }
+        } else {
+            try {
+                var err = JSON.parse(xhr.responseText);
+                alert(err.error || 'Erreur serveur.');
+            } catch(e){ alert('Erreur serveur.'); }
+        }
+    };
+    xhr.onerror = function(){
+        uploadProg.style.display = 'none';
+        alert('Erreur réseau.');
+    };
+    xhr.send(formData);
+}
+</script>
+
+<!-- ── Traductions JS (injectées par Django) ──────────────────── -->
+<script>
+{% trans "Appel audio en cours…" as ct_calling_audio %}
+{% trans "Appel vidéo en cours…" as ct_calling_video %}
+{% trans "Appel audio entrant" as ct_inc_audio %}
+{% trans "Appel vidéo entrant" as ct_inc_video %}
+{% trans "Appel refusé." as ct_call_rejected %}
+{% trans "Appel terminé —" as ct_call_ended %}
+{% trans "Appel manqué." as ct_call_missed %}
+{% trans "Appel interrompu." as ct_call_interrupt %}
+{% trans "Un appel est déjà en cours." as ct_call_busy %}
+{% trans "Ouvrez d'abord une conversation." as ct_call_no_room %}
+{% trans "Impossible d'accéder au micro." as ct_no_mic %}
+{% trans "Impossible d'accéder au micro / caméra." as ct_no_mic_cam %}
+{% trans "Aujourd'hui" as ct_today %}
+{% trans "Hier" as ct_yesterday %}
+{% trans "est en train d'écrire…" as ct_typing_sfx %}
+{% trans "Quelqu'un" as ct_typing_who %}
+{% trans "Télécharger" as ct_dl %}
+{% trans "Connexion perdue. Rechargement…" as ct_conn_lost %}
+window._CT = {
+  calling_audio:  "{{ ct_calling_audio|escapejs }}",
+  calling_video:  "{{ ct_calling_video|escapejs }}",
+  inc_audio:      "{{ ct_inc_audio|escapejs }}",
+  inc_video:      "{{ ct_inc_video|escapejs }}",
+  call_rejected:  "{{ ct_call_rejected|escapejs }}",
+  call_ended:     "{{ ct_call_ended|escapejs }}",
+  call_missed:    "{{ ct_call_missed|escapejs }}",
+  call_interrupt: "{{ ct_call_interrupt|escapejs }}",
+  call_busy:      "{{ ct_call_busy|escapejs }}",
+  call_no_room:   "{{ ct_call_no_room|escapejs }}",
+  no_mic:         "{{ ct_no_mic|escapejs }}",
+  no_mic_cam:     "{{ ct_no_mic_cam|escapejs }}",
+  today:          "{{ ct_today|escapejs }}",
+  yesterday:      "{{ ct_yesterday|escapejs }}",
+  typing_sfx:     "{{ ct_typing_sfx|escapejs }}",
+  typing_who:     "{{ ct_typing_who|escapejs }}",
+  dl:             "{{ ct_dl|escapejs }}",
+  conn_lost:      "{{ ct_conn_lost|escapejs }}",
+};
+</script>
+
+<!-- ── webrtc-adapter : normalise l'API WebRTC (Safari, Opera, anciens navigateurs) ── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/8.2.3/adapter.min.js" crossorigin="anonymous"></script>
+
+<!-- ── Main chat JS ───────────────────────────────────────────── -->
+<script type="text/javascript">
+
+    var chatSocket = null;
+    var roomId = null;
+    var currentUserId   = "{{ request.user.id }}";
+    var currentUsername = "{{ request.user.username|escapejs }}";
+
+    function onStart(){
+        var isMobile = window.innerWidth <= 768;
+
+        {% if room %}
+            /* URL contient room_id ou user_id (ex: vient d'une notification) */
+            if("{{ room.user1 }}" == "{{ request.user }}"){
+                if(isMobile){
+                    /* Mobile : surligner dans la liste mais ne pas glisser vers le chat */
+                    clearHighlightedFriend(); highlightFriend("{{ room.user2.id }}");
+                    _scrollToFriendInList("{{ room.user2.id }}");
+                } else {
+                    onSelectFriend("{{ room.user2.id }}")
+                }
+            } else {
+                if(isMobile){
+                    clearHighlightedFriend(); highlightFriend("{{ room.user1.id }}");
+                    _scrollToFriendInList("{{ room.user1.id }}");
+                } else {
+                    onSelectFriend("{{ room.user1.id }}")
+                }
+            }
+        {% elif m_and_f %}
+            /* Aucune room spécifiée : desktop → ouvrir la première conv ; mobile → liste seule */
+            if(!isMobile){ onSelectFriend("{{ m_and_f.0.friend.id }}"); }
+        {% endif %}
+
+        {% for x in m_and_f %}
+            preloadImage("{{ x.friend.profile_image.url|safe }}", "id_friend_img_{{ x.friend.id }}")
+        {% endfor %}
+    }
+
+    /* Scroller la liste pour rendre visible l'ami mis en surbrillance */
+    function _scrollToFriendInList(userId){
+        var el = document.getElementById('id_friend_container_' + userId);
+        if(el){ el.scrollIntoView({block:'nearest', behavior:'smooth'}); }
+    }
+
+    function onSelectFriend(userId){
+        createOrReturnPrivateChat(userId)
+        clearHighlightedFriend()
+        highlightFriend(userId)
+        document.getElementById('chat-no-selection').style.display = 'none';
+        document.getElementById('id_other_user_profile_image').classList.remove('d-none');
+        var sub = document.getElementById('chat-header-sub');
+        if(sub) sub.style.display = '';
+        // Afficher les boutons d'appel immédiatement sans attendre handleUserInfoPayload
+        var btnA = document.getElementById('btn-call-audio');
+        var btnV = document.getElementById('btn-call-video');
+        var infoBtn = document.getElementById('chat-header-info-btn');
+        if(btnA) btnA.style.display = '';
+        if(btnV) btnV.style.display = '';
+        if(infoBtn) infoBtn.style.display = '';
+        // Mobile : glisser vers le panneau chat (style Messenger)
+        if(window.innerWidth <= 768){
+            document.querySelector('.chat-page').classList.add('chat-in-convo');
+        }
+    }
+
+    // Bouton retour (mobile) — revenir à la liste de conversations
+    (function(){
+        var backBtn = document.getElementById('chat-back-btn');
+        if(backBtn){
+            backBtn.addEventListener('click', function(){
+                document.querySelector('.chat-page').classList.remove('chat-in-convo');
+            });
+        }
+    })();
+
+    function setWsIndicator(connected){
+        var dot = document.getElementById('ws-status-dot');
+        if(!dot) return;
+        dot.style.background = connected ? '#4caf7d' : '#e53935';
+        dot.title = connected ? 'Chat connecté' : 'Chat déconnecté';
+    }
+
+    function closeWebSocket(){
+        if(chatSocket != null){
+            chatSocket.close()
+            chatSocket = null
+            clearChatLog()
+            setPageNumber("1")
+            disableChatLogScrollListener()
+        }
+    }
+
+    /* ── Send text message ─────────────────────────────────────── */
+    /* ── État reply ───────────────────────────────────────────────── */
+    var _replyToId       = null;
+    var _replyToUsername = null;
+    var _replyToContent  = null;
+
+    function startReply(msgId, username, content) {
+        _replyToId       = msgId;
+        _replyToUsername = username;
+        _replyToContent  = content;
+        document.getElementById('reply-preview-author').textContent = username;
+        document.getElementById('reply-preview-body').textContent   = content.substring(0, 80);
+        document.getElementById('reply-preview').classList.add('active');
+        var ta = document.getElementById('id_chat_message_input');
+        if(ta) ta.focus();
+    }
+
+    function cancelReply() {
+        _replyToId = null; _replyToUsername = null; _replyToContent = null;
+        document.getElementById('reply-preview').classList.remove('active');
+    }
+
+    function sendMessage(){
+        // If a file is selected, upload it first
+        if(_selectedFile){
+            uploadAndSendFile(_selectedFile);
+            // Also send text if any
+            var inputEl = document.getElementById('id_chat_message_input');
+            var msg = inputEl ? inputEl.value.trim() : '';
+            if(msg){
+                if(chatSocket && chatSocket.readyState === WebSocket.OPEN){
+                    var payload = { "command": "send", "message": msg, "room": roomId };
+                    if(_replyToId) payload.reply_to_id = _replyToId;
+                    chatSocket.send(JSON.stringify(payload));
+                    inputEl.value = '';
+                    inputEl.style.height = 'auto';
+                    cancelReply();
+                }
+            }
+            return;
+        }
+        var inputEl = document.getElementById('id_chat_message_input');
+        var msg = inputEl ? inputEl.value.trim() : '';
+        if(!msg) return;
+        if(!chatSocket || chatSocket.readyState !== WebSocket.OPEN){
+            var chatLog = document.getElementById('id_chat_log');
+            if(chatLog){
+                var errDiv = document.createElement('div');
+                errDiv.style.cssText = 'text-align:center;color:#e53935;font-size:.78rem;padding:.3rem;';
+                errDiv.textContent = '⚠ ' + (_CT ? _CT.conn_lost : 'Connexion perdue. Rechargement…');
+                chatLog.insertBefore(errDiv, chatLog.firstChild);
+            }
+            if(roomId && (!chatSocket || chatSocket.readyState === WebSocket.CLOSED)){
+                setTimeout(function(){ setupWebSocket(roomId); }, 500);
+            }
+            return;
+        }
+        var payload = { "command": "send", "message": msg, "room": roomId };
+        if(_replyToId) payload.reply_to_id = _replyToId;
+        chatSocket.send(JSON.stringify(payload));
+        cancelReply();
+        inputEl.value = '';
+        if(inputEl.style) inputEl.style.height = 'auto';
+        inputEl.focus();
+    }
+
+    /* ── Typing indicator ──────────────────────────────────────── */
+    var _typingHideTimer = null;
+    function showTypingIndicator(username){
+        var el   = document.getElementById('chat-typing-indicator');
+        var txt  = document.getElementById('chat-typing-text');
+        if(!el) return;
+        if(txt) txt.textContent = (username || (_CT ? _CT.typing_who : 'Quelqu\'un')) + ' ' + (_CT ? _CT.typing_sfx : 'est en train d\'écrire…');
+        el.classList.add('visible');
+        // Auto-masquer après 3 secondes d'inactivité
+        clearTimeout(_typingHideTimer);
+        _typingHideTimer = setTimeout(function(){
+            el.classList.remove('visible');
+        }, 3000);
+    }
+
+    /* ── Event listeners ───────────────────────────────────────── */
+    document.addEventListener("DOMContentLoaded", function(){
+        var submitBtn = document.getElementById('id_chat_message_submit');
+        var micBtn    = document.getElementById('chat-mic-btn');
+        var inputEl   = document.getElementById('id_chat_message_input');
+
+        /* ── Toggle mic ↔ send selon présence de texte ─────────────── */
+        function _syncMicSend(){
+            var hasText = inputEl && inputEl.value.trim().length > 0;
+            if(submitBtn) submitBtn.style.display = hasText ? '' : 'none';
+            if(micBtn)    micBtn.style.display    = hasText ? 'none' : '';
+        }
+        _syncMicSend(); // état initial
+
+        if(submitBtn){
+            submitBtn.addEventListener('click', function(e){
+                e.preventDefault();
+                sendMessage();
+            });
+        }
+        if(inputEl){
+            inputEl.addEventListener('keydown', function(e){
+                if(e.key === 'Enter' && !e.shiftKey){
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            // Typing indicator — envoi throttlé (max 1 fois / 2s)
+            var _typingThrottle = null;
+            inputEl.addEventListener('input', function(){
+                _syncMicSend();
+                if(_typingThrottle) return;
+                if(chatSocket && chatSocket.readyState === WebSocket.OPEN && roomId){
+                    chatSocket.send(JSON.stringify({ "command": "typing", "room": roomId }));
+                }
+                _typingThrottle = setTimeout(function(){ _typingThrottle = null; }, 2000);
+            });
+        }
+        // Initialisation : connecter automatiquement si une room est déjà connue
+        onStart();
+
+        /* ── Fix clavier virtuel mobile ─────────────────────────────────
+           Comportement selon le navigateur :
+           • iOS Safari  : position:fixed est ancré au VISUAL viewport.
+             bottom:0 = dessus du clavier automatiquement — aucun JS nécessaire.
+           • Android Chrome : position:fixed est ancré au LAYOUT viewport.
+             Quand le clavier s'ouvre, il faut pousser main.style.bottom = kbH
+             pour que l'input reste visible.
+        ─────────────────────────────────────────────────────────────── */
+        if (window.innerWidth <= 768 && window.visualViewport) {
+            var _main    = document.querySelector('main');
+            var _kbTimer = null;
+            /* Détection iOS (iPhone / iPad / iPod + Macs avec touch — iPad en mode desktop) */
+            var _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+            function _applyKbFix() {
+                if (!_main) return;
+                if (_isIOS) {
+                    /* iOS : position:fixed bottom:0 = dessus du clavier,
+                       pas besoin d'ajustement JS */
+                    _main.style.bottom = '0px';
+                } else {
+                    /* Android : ajuster manuellement */
+                    var vvH = Math.round(window.visualViewport.height);
+                    var kbH = Math.max(0, Math.round(window.innerHeight) - vvH);
+                    _main.style.bottom = kbH + 'px';
+                }
+            }
+
+            window.visualViewport.addEventListener('resize', function() {
+                clearTimeout(_kbTimer);
+                _kbTimer = setTimeout(_applyKbFix, 30);
+            }, { passive: true });
+
+            /* Empêcher le scroll de page (iOS) */
+            window.addEventListener('scroll', function() {
+                window.scrollTo(0, 0);
+            }, { passive: true });
+
+            /* Dimensionnement initial */
+            _applyKbFix();
+        }
+
+        // Pré-remplir le message si on vient d'une fiche bazar
+        {% if bazar_annonce %}
+        (function(){
+            var ta = document.getElementById('id_chat_message_input');
+            if(ta && !ta.value.trim()){
+                ta.value = "Bonjour, je suis intéressé(e) par votre annonce « {{ bazar_annonce.title|escapejs }} » (réf. #{{ bazar_annonce.pk }}). Est-elle toujours disponible ?";
+                // Auto-resize + déclenche l'event input (sync mic/send)
+                ta.style.height = 'auto';
+                ta.style.height = ta.scrollHeight + 'px';
+                ta.dispatchEvent(new Event('input'));
+                ta.focus();
+                ta.setSelectionRange(ta.value.length, ta.value.length);
+            }
+        })();
+        {% endif %}
+    });
+
+    /* ════════════════════════════════════════════════════════════════
+       MESSAGES VOCAUX
+       ════════════════════════════════════════════════════════════════ */
+    /* Helper : formate des secondes en "m:ss" */
+    function fmtAudioTime(sec){
+        if(isNaN(sec) || !isFinite(sec) || sec < 0) return '0:00';
+        sec = Math.round(sec);
+        return Math.floor(sec / 60) + ':' + ('0' + (sec % 60)).slice(-2);
+    }
+
+    /* Crée le player HTML pour un message vocal et l'attache à fileBubble */
+    function buildVoicePlayer(fileBubble, furl){
+        var vp      = document.createElement('div');
+        vp.className = 'voice-player';
+
+        /* Bouton play / pause */
+        var playBtn = document.createElement('button');
+        playBtn.className = 'vp-play-btn';
+        playBtn.type = 'button';
+        playBtn.innerHTML = '<span class="material-icons">play_arrow</span>';
+
+        /* Barre de progression */
+        var prog = document.createElement('div');
+        prog.className = 'vp-progress';
+
+        var bar  = document.createElement('div');
+        bar.className = 'vp-bar';
+        var fill = document.createElement('div');
+        fill.className = 'vp-bar-fill';
+        bar.appendChild(fill);
+
+        var timeEl = document.createElement('span');
+        timeEl.className = 'vp-time';
+        timeEl.textContent = '0:00';
+
+        prog.appendChild(bar);
+        prog.appendChild(timeEl);
+        vp.appendChild(playBtn);
+        vp.appendChild(prog);
+        fileBubble.appendChild(vp);
+
+        /* ── Élément audio — chargé immédiatement pour récupérer les métadonnées ── */
+        var aud = new Audio(furl);
+        aud.preload = 'metadata';
+        var _fixingSeeked = false; /* true pendant le workaround WebM Infinity */
+
+        aud.addEventListener('loadedmetadata', function(){
+            if(isFinite(aud.duration) && aud.duration > 0){
+                /* Durée valide (ex. m4a/Safari) → on l'affiche directement */
+                timeEl.textContent = fmtAudioTime(aud.duration);
+            } else {
+                /* WebM produit par MediaRecorder : durée = Infinity.
+                   Workaround : on cherche à la fin, le navigateur calcule
+                   alors la vraie durée et déclenche durationchange. */
+                _fixingSeeked = true;
+                aud.currentTime = 1e10;
+            }
+        });
+
+        aud.addEventListener('durationchange', function(){
+            if(_fixingSeeked && isFinite(aud.duration) && aud.duration > 0){
+                timeEl.textContent = fmtAudioTime(aud.duration);
+            }
+        });
+
+        aud.addEventListener('seeked', function(){
+            if(_fixingSeeked){
+                _fixingSeeked = false;
+                aud.currentTime = 0; /* revenir au début */
+            }
+        });
+
+        aud.addEventListener('timeupdate', function(){
+            if(_fixingSeeked || aud.paused) return; /* ignorer seek trick + état pausé */
+            var pct = (aud.duration && isFinite(aud.duration))
+                      ? (aud.currentTime / aud.duration * 100) : 0;
+            fill.style.width = pct + '%';
+            timeEl.textContent = fmtAudioTime(aud.currentTime);
+        });
+
+        aud.addEventListener('ended', function(){
+            playBtn.innerHTML = '<span class="material-icons">play_arrow</span>';
+            fill.style.width = '0%';
+            timeEl.textContent = fmtAudioTime(
+                isFinite(aud.duration) ? aud.duration : 0
+            );
+        });
+
+        aud.addEventListener('error', function(){
+            timeEl.textContent = '—';
+        });
+
+        /* Clic play/pause */
+        playBtn.addEventListener('click', function(){
+            if(aud.paused){
+                /* Pauser tous les autres players ouverts */
+                document.querySelectorAll('.vp-play-btn').forEach(function(b){
+                    if(b !== playBtn) b.innerHTML = '<span class="material-icons">play_arrow</span>';
+                });
+                document.querySelectorAll('audio._vp').forEach(function(x){ x.pause(); });
+                aud.className = '_vp';
+                aud.play().catch(function(){});
+                playBtn.innerHTML = '<span class="material-icons">pause</span>';
+            } else {
+                aud.pause();
+                playBtn.innerHTML = '<span class="material-icons">play_arrow</span>';
+            }
+        });
+
+        /* Clic sur la barre pour chercher une position */
+        bar.addEventListener('click', function(e){
+            if(!aud.duration || !isFinite(aud.duration)) return;
+            var rect = bar.getBoundingClientRect();
+            var pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            aud.currentTime = pct * aud.duration;
+        });
+    }
+
+    /* ── Logique d'enregistrement vocal ─────────────────────────── */
+    (function(){
+        var micBtn      = document.getElementById('chat-mic-btn');
+        var voiceSndBtn = document.getElementById('voice-send-btn'); /* bouton DÉDIÉ */
+        var cancelBtn   = document.getElementById('rec-cancel-btn');
+        var recInd      = document.getElementById('rec-indicator');
+        var recDurEl    = document.getElementById('rec-duration');
+        if(!micBtn || !window.MediaRecorder || !navigator.mediaDevices) return;
+
+        var _rec     = null;
+        var _chunks  = [];
+        var _stream  = null;
+        var _start   = 0;
+        var _timerID = null;
+        var _doSend  = false;
+
+        /* Passe l'UI en mode "enregistrement" */
+        function _enterRecUI(){
+            micBtn.classList.add('recording');
+            micBtn.querySelector('.material-icons').textContent = 'stop';
+            /* Bouton d'envoi VOCAL dédié — aucun conflit avec le bouton texte */
+            if(voiceSndBtn) voiceSndBtn.style.display = '';
+            if(cancelBtn)   cancelBtn.style.display   = '';
+            if(recInd)      recInd.classList.add('visible');
+            if(recDurEl)    recDurEl.textContent = '0:00';
+        }
+
+        /* Restaure l'UI normale */
+        function _exitRecUI(){
+            micBtn.classList.remove('recording');
+            micBtn.querySelector('.material-icons').textContent = 'mic';
+            if(voiceSndBtn) voiceSndBtn.style.display = 'none';
+            if(cancelBtn)   cancelBtn.style.display   = 'none';
+            if(recInd)      recInd.classList.remove('visible');
+            clearInterval(_timerID);
+        }
+
+        function _startRec(){
+            if(_rec && _rec.state !== 'inactive') return;
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then(function(stream){
+                _stream = stream;
+                _chunks = [];
+                _doSend = false;
+
+                var mime = '';
+                if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))
+                    mime = 'audio/webm;codecs=opus';
+                else if(MediaRecorder.isTypeSupported('audio/mp4'))
+                    mime = 'audio/mp4';
+
+                _rec = new MediaRecorder(stream, mime ? { mimeType: mime } : {});
+                _rec.ondataavailable = function(e){
+                    if(e.data && e.data.size > 0) _chunks.push(e.data);
+                };
+                _rec.onstop = function(){
+                    if(_doSend) _sendVoice();
+                    else        _chunks = []; // annulé, on jette
+                };
+                _rec.start();
+
+                _start = Date.now();
+                _enterRecUI();
+                _timerID = setInterval(function(){
+                    if(recDurEl) recDurEl.textContent = fmtAudioTime((Date.now()-_start)/1000);
+                }, 500);
+            })
+            .catch(function(err){
+                console.warn('Micro inaccessible :', err);
+                alert('Impossible d\'accéder au microphone. Vérifiez les permissions.');
+            });
+        }
+
+        function _stopRec(send){
+            if(!_rec || _rec.state === 'inactive') return;
+            _doSend = !!send;
+            _exitRecUI();
+            _rec.stop();
+            if(_stream){ _stream.getTracks().forEach(function(t){ t.stop(); }); _stream = null; }
+        }
+
+        function _sendVoice(){
+            if(!_chunks.length) return;
+            var mtype = (_rec && _rec.mimeType) || 'audio/webm';
+            var ext   = mtype.indexOf('mp4') >= 0 ? 'm4a' : 'webm';
+            var blob  = new Blob(_chunks, { type: mtype });
+            var fname = 'vocal_' + Date.now() + '.' + ext;
+            _chunks   = [];
+
+            /* roomId est la variable globale définie dans ce template */
+            var rid = roomId;
+            if(!rid){ console.warn('room_id introuvable'); return; }
+
+            var fd = new FormData();
+            fd.append('room_id', rid);
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            fd.append('file', blob, fname);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '{% url "chat:upload-chat-file" %}', true);
+            xhr.onload = function(){
+                if(xhr.status !== 200) return;
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    if(!data.ok) return;
+                    /* Le serveur a broadcasté via channel layer dès l'upload terminé.
+                       Fallback WS uniquement si broadcast a échoué (data.broadcast = false). */
+                    if(!data.broadcast && chatSocket && chatSocket.readyState === WebSocket.OPEN){
+                        chatSocket.send(JSON.stringify({
+                            'command':   'send_file',
+                            'room':      rid,   /* 'room' et non 'room_id' — cf. consumer */
+                            'msg_id':    data.msg_id,
+                            'file_url':  data.file_url,
+                            'file_name': data.file_name,
+                            'file_type': 'voice',
+                        }));
+                    }
+                } catch(e){ console.error('Voice send error', e); }
+            };
+            xhr.send(fd);
+        }
+
+        /* Micro : démarrer l'enregistrement (ou annuler si rouge = re-tap) */
+        micBtn.addEventListener('click', function(){
+            if(_rec && _rec.state === 'recording') _stopRec(false);
+            else _startRec();
+        });
+
+        /* Bouton envoi VOCAL dédié → stop + envoi (aucun conflit possible) */
+        if(voiceSndBtn){
+            voiceSndBtn.addEventListener('click', function(){
+                _stopRec(true);
+            });
+        }
+
+        /* Bouton annuler (🗑) → stop + jeter */
+        if(cancelBtn){
+            cancelBtn.addEventListener('click', function(){
+                _stopRec(false);
+            });
+        }
+    })();
+
+    function closeBazarRef(){
+        var el = document.getElementById('bazar-annonce-ref');
+        if(el){ el.style.display = 'none'; }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RÉACTIONS EMOJI
+       ═══════════════════════════════════════════════════════ */
+    var _epMsgId = null;
+    var _epOpen  = false;
+
+    /* Initialisation du picker (run once) */
+    (function(){
+        var picker = document.getElementById('emoji-picker');
+        if(!picker) return;
+        picker.querySelectorAll('.ep-emoji').forEach(function(el){
+            el.addEventListener('click', function(e){
+                e.stopPropagation();
+                if(_epMsgId) sendReaction(_epMsgId, el.dataset.emoji);
+                closeEmojiPicker();
+            });
+        });
+        /* Clic hors picker → ferme */
+        document.addEventListener('click', function(){
+            if(_epOpen) closeEmojiPicker();
+        });
+        document.addEventListener('touchstart', function(e){
+            if(_epOpen && !picker.contains(e.target)) closeEmojiPicker();
+        }, { passive: true });
+    })();
+
+    function openEmojiPicker(msgId, triggerEl, e) {
+        if(e){ e.preventDefault(); e.stopPropagation(); }
+        _epMsgId = msgId;
+        _epOpen  = true;
+        var picker = document.getElementById('emoji-picker');
+        if(!picker) return;
+        picker.classList.add('open');
+        /* Positionnement après rendu (rAF pour avoir offsetWidth réel) */
+        requestAnimationFrame(function(){
+            var pw   = picker.offsetWidth  || 310;
+            var ph   = picker.offsetHeight || 52;
+            var rect = triggerEl.getBoundingClientRect();
+            var top  = rect.top - ph - 8;
+            if(top < 8) top = rect.bottom + 8;
+            var left = rect.left + rect.width / 2 - pw / 2;
+            if(left < 8) left = 8;
+            if(left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+            picker.style.top  = top  + 'px';
+            picker.style.left = left + 'px';
+        });
+    }
+
+    function closeEmojiPicker(){
+        var picker = document.getElementById('emoji-picker');
+        if(picker) picker.classList.remove('open');
+        _epMsgId = null;
+        _epOpen  = false;
+    }
+
+    function sendReaction(msgId, emoji){
+        if(chatSocket && chatSocket.readyState === WebSocket.OPEN && roomId){
+            chatSocket.send(JSON.stringify({
+                "command": "react",
+                "msg_id":  String(msgId),
+                "emoji":   emoji,
+            }));
+        }
+    }
+
+    /* Appelé depuis le WS (msg_type 11) — met à jour les badges de la bulle */
+    function applyReactions(msgId, reactions){
+        var row = document.querySelector('.message-container[data-msg-id="' + msgId + '"]');
+        if(!row) return;
+        /* Les badges vivent dans .msg-bubble-wrap, pas dans .msg-content-wrap */
+        var bWrap = row.querySelector('.msg-bubble-wrap');
+        if(!bWrap) return;
+        var old = bWrap.querySelector('.msg-reactions');
+        if(old) old.remove();
+        if(reactions && reactions.length){
+            _renderReactionChips(bWrap, msgId, reactions);
+        } else {
+            bWrap.classList.remove('has-reactions');
+        }
+    }
+
+    /* Construit les badges et les insère dans bWrap (coin inférieur de la bulle) */
+    function _renderReactionChips(bWrap, msgId, reactions){
+        var div = document.createElement('div');
+        div.className = 'msg-reactions';
+        reactions.forEach(function(r){
+            var chip = document.createElement('span');
+            chip.className = 'reaction-chip';
+            var mine = r.users && r.users.indexOf(currentUsername) >= 0;
+            if(mine) chip.classList.add('mine');
+            chip.title = r.users ? r.users.join(', ') : '';
+            chip.appendChild(document.createTextNode(r.emoji));
+            if(r.count > 1){
+                var cnt = document.createElement('span');
+                cnt.className = 'rc-count';
+                cnt.textContent = r.count;
+                chip.appendChild(cnt);
+            }
+            (function(em){ chip.addEventListener('click', function(){ sendReaction(msgId, em); }); })(r.emoji);
+            div.appendChild(chip);
+        });
+        bWrap.classList.add('has-reactions');
+        bWrap.appendChild(div);
+    }
+
+    function setupWebSocket(room_id){
+        roomId = room_id
+        closeWebSocket()
+
+        var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+        var ws_path = ws_scheme + '://' + window.location.host + "/chat/" + roomId + "/";
+        chatSocket = new WebSocket(ws_path);
+
+        chatSocket.onmessage = function(message) {
+            var data = JSON.parse(message.data);
+            displayChatroomLoadingSpinner(data.display_progress_bar)
+            if (data.error) { console.error("WS error:", data.error, data.message); return; }
+            if (data.join)  { getUserInfo(); getRoomChatMessages(); enableChatLogScrollListener(); }
+            if (data.leave) { console.log("Leaving room " + data.leave); }
+            if (data.user_info) { handleUserInfoPayload(data.user_info) }
+            if (data.msg_type == 0) {
+                appendChatMessage(data, false, true);
+                // Mettre à jour le sidebar : preview du dernier message
+                updateSidebarPreview(data.user_id, data.message);
+            }
+            if (data.msg_type == 1 || data.msg_type == 2) {
+                // MSG_TYPE_ENTER : si on est caller en attente et que le peer vient de rejoindre
+                // → re-envoyer l'offre (le callee a navigué depuis l'overlay global)
+                if(data.msg_type == 1 && _callState === 'calling' && _peerConn && _peerConn.localDescription){
+                    setTimeout(function(){
+                        if(_callState === 'calling' && _peerConn && _peerConn.localDescription &&
+                           chatSocket && chatSocket.readyState === WebSocket.OPEN){
+                            console.log('[CALL] re-offer → callee vient de rejoindre');
+                            chatSocket.send(JSON.stringify({
+                                command:   'call_offer',
+                                room:      roomId,
+                                sdp:       _peerConn.localDescription,
+                                call_mode: _callMode,
+                            }));
+                        }
+                    }, 600); // légère attente pour que le callee soit bien en place
+                }
+            }
+            if (data.msg_type == 3) { appendFileMessage(data, false, true) }  // file
+            if (data.msg_type == 4) { showTypingIndicator(data.username) }   // typing
+            if (data.msg_type == 5) { console.log('[CALL] offer reçu', data); handleCallOffer(data); }
+            if (data.msg_type == 6) { console.log('[CALL] answer reçu', data); handleCallAnswer(data); }
+            if (data.msg_type == 7) { handleCallIce(data); }
+            if (data.msg_type == 8) { console.log('[CALL] rejeté'); handleCallReject(); }
+            if (data.msg_type == 9) { console.log('[CALL] terminé'); handleCallEnd(); }
+            if (data.msg_type == 10){ updateUnreadBadge(data.from_user_id, data.count); }
+            if (data.msg_type == 11){ applyReactions(data.msg_id, data.reactions); }   // réaction emoji
+            if (data.messages_payload) { handleMessagesPayload(data.messages, data.new_page_number) }
+        };
+
+        chatSocket.addEventListener("open", function(e){
+            setWsIndicator(true);
+            if("{{ request.user.is_authenticated }}"){
+                chatSocket.send(JSON.stringify({ "command": "join", "room": roomId }))
+            }
+        })
+        chatSocket.onclose = function(e){
+            setWsIndicator(false);
+        };
+        chatSocket.onerror = function(e){
+            setWsIndicator(false);
+        };
+    }
+
+    function getUserInfo(){
+        chatSocket.send(JSON.stringify({ "command": "get_user_info", "room_id": roomId }));
+    }
+
+    function handleUserInfoPayload(user_info){
+        document.getElementById("id_other_username").innerHTML = user_info['username']
+        document.getElementById("id_other_user_profile_image").classList.remove("d-none")
+        document.getElementById("id_user_info_container").href =
+            "{% url 'account:view' user_id=53252646545223623632623 %}".replace("53252646545223623632623", user_info['id'])
+        preloadImage(user_info['profile_image'], "id_other_user_profile_image")
+        // Stocker infos de l'interlocuteur pour les overlays d'appel
+        _callPeerInfo = { name: user_info['username'], img: user_info['profile_image'] };
+        // Afficher les boutons d'appel
+        var btnA = document.getElementById('btn-call-audio');
+        var btnV = document.getElementById('btn-call-video');
+        if(btnA) btnA.style.display = '';
+        if(btnV) btnV.style.display = '';
+        // Infos bouton header-info
+        var infoBtn = document.getElementById('chat-header-info-btn');
+        if(infoBtn) infoBtn.style.display = '';
+    }
+
+    function displayChatroomLoadingSpinner(isDisplayed){
+        var spinner = document.getElementById("id_chatroom_loading_spinner")
+        if(spinner){ spinner.style.display = isDisplayed ? "block" : "none"; }
+    }
+
+    function showClientErrorModal(message){
+        document.getElementById("id_client_error_modal_body").innerHTML = message
+        document.getElementById("id_trigger_client_error_modal").click()
+    }
+
+    /* ── Date separator ─────────────────────────────────────────── */
+    var _lastSeenDate = null;
+
+    /* Convertit la partie "date" du timestamp en label lisible en français */
+    function _formatDateLabel(raw){
+        if(!raw) return '';
+        var r = raw.trim().toLowerCase();
+        if(r === "aujourd'hui" || r === 'today')     return (_CT ? _CT.today : "Aujourd'hui");
+        if(r === 'hier'        || r === 'yesterday') return (_CT ? _CT.yesterday : 'Hier');
+        // Format JJ/MM/AAAA → "15 juin 2026"
+        var m = r.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if(m){
+            var MOIS = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+            return m[1] + ' ' + (MOIS[parseInt(m[2],10)-1]||m[2]) + ' ' + m[3];
+        }
+        return raw;
+    }
+
+    /* Extrait la partie DATE (avant " at ") du timestamp naturel */
+    function _extractDate(timestamp){
+        if(!timestamp) return '';
+        var idx = timestamp.indexOf(' at ');
+        return (idx !== -1) ? timestamp.substring(0, idx).trim() : timestamp.trim();
+    }
+
+    /* Extrait la partie HEURE (après " at ") du timestamp naturel */
+    function _extractTime(timestamp){
+        if(!timestamp) return '';
+        var idx = timestamp.indexOf(' at ');
+        return (idx !== -1) ? timestamp.substring(idx + 4).trim() : timestamp.trim();
+    }
+
+    function _makeDateSeparator(label){
+        var sep = document.createElement("div");
+        sep.classList.add("date-separator");
+        var inner = document.createElement("span");
+        inner.classList.add("date-sep-inner");
+        inner.textContent = _formatDateLabel(label);
+        sep.appendChild(inner);
+        return sep;
+    }
+
+    function _insertDateSeparatorIfNeeded(chatLog, timestamp, isNewMessage){
+        var dateLabel = _extractDate(timestamp);
+        if(dateLabel && dateLabel !== _lastSeenDate){
+            var sep = _makeDateSeparator(dateLabel);
+            if(isNewMessage) chatLog.insertBefore(sep, chatLog.firstChild);
+            else             chatLog.appendChild(sep);
+            _lastSeenDate = dateLabel;
+        }
+    }
+
+    /* ── Build a text chat bubble ───────────────────────────────── */
+    function appendChatMessage(data, maintainPosition, isNewMessage){
+        var messageType  = data.msg_type;
+        var msg_id       = data.msg_id;
+        var message      = data.message;
+        var uName        = data.username;
+        var user_id      = data.user_id;
+        var profile_image = data.profile_image;
+        var timestamp    = data.natural_timestamp;
+
+        switch (messageType) {
+            case 0:
+                createChatMessageElement(message + '\n', msg_id, uName + ": ", profile_image, user_id, timestamp, maintainPosition, isNewMessage, data)
+                break;
+            case 1:
+            case 2:
+                // Messages connexion/déconnexion masqués (trop de bruit dans le chat)
+                break;
+            default:
+                return;
+        }
+
+        var input = document.getElementById('id_chat_message_input');
+        if(input) input.focus();
+    }
+
+    function createChatMessageElement(msg, msg_id, username, profile_image, user_id, timestamp, maintainPosition, isNewMessage, data){
+        data = data || {};
+        var chatLog = document.getElementById("id_chat_log");
+        var isOwn   = (String(user_id) === String(currentUserId));
+        var cleanName = (username || '').replace(/:\s*$/, '');
+
+        var row = document.createElement("div");
+        row.classList.add("message-container");
+        row.classList.add(isOwn ? "own-msg" : "friend-msg");
+        if(msg_id) row.setAttribute("data-msg-id", String(msg_id));
+
+        var avatar = document.createElement("img");
+        avatar.classList.add("profile-image", "rounded-circle");
+        avatar.src = profile_image || "{% static 'images/profile_pic.png' %}";
+        avatar.id  = "id_profile_image_" + msg_id;
+        avatar.addEventListener("click", function(){ selectUser(user_id); });
+        row.appendChild(avatar);
+
+        var wrap = document.createElement("div");
+        wrap.classList.add("msg-content-wrap");
+
+        if(!isOwn){
+            var meta = document.createElement("div");
+            meta.classList.add("msg-meta");
+            var uSpan = document.createElement("span");
+            uSpan.classList.add("username-span");
+            uSpan.textContent = cleanName;
+            uSpan.addEventListener("click", function(){ selectUser(user_id); });
+            meta.appendChild(uSpan);
+            wrap.appendChild(meta);
+        }
+
+        var bubble = document.createElement("div");
+        bubble.classList.add("msg-p");
+        /* Long-press mobile → emoji picker */
+        if(msg_id){
+            (function(id){
+                var _lpt = null;
+                bubble.addEventListener('touchstart', function(){ _lpt = setTimeout(function(){ openEmojiPicker(id, bubble); }, 500); }, { passive:true });
+                bubble.addEventListener('touchend',  function(){ clearTimeout(_lpt); }, { passive:true });
+                bubble.addEventListener('touchmove', function(){ clearTimeout(_lpt); }, { passive:true });
+            })(msg_id);
+        }
+
+        /* ── Citation (reply) ─────────────────────────────────── */
+        if (data.reply_to_id) {
+            var quote = document.createElement("div");
+            quote.classList.add("msg-quote");
+            var qAuthor = document.createElement("span");
+            qAuthor.classList.add("msg-quote-author");
+            qAuthor.textContent = data.reply_to_username || '';
+            var qBody = document.createElement("div");
+            qBody.classList.add("msg-quote-body");
+            qBody.textContent = data.reply_to_content || '';
+            quote.appendChild(qAuthor);
+            quote.appendChild(qBody);
+            bubble.appendChild(quote);
+        }
+
+        try { bubble.innerHTML += validateText(msg); }
+        catch(e) { bubble.textContent += msg; }
+
+        /* Timestamp intégré DANS la bulle — heure seulement */
+        var timeStr = _extractTime(timestamp);
+        var bFooter = document.createElement("div");
+        bFooter.classList.add("bubble-footer");
+        var bTime = document.createElement("span");
+        bTime.classList.add("bubble-time");
+        bTime.textContent = timeStr;
+        bFooter.appendChild(bTime);
+        if(isOwn){
+            var bCheck = document.createElement("span");
+            bCheck.classList.add("bubble-check", "material-icons");
+            bCheck.textContent = "done";
+            bFooter.appendChild(bCheck);
+        }
+        bubble.appendChild(bFooter);
+
+        /* ── Wrapper bulle — ancre pour les badges de réaction ── */
+        var bWrap = document.createElement("div");
+        bWrap.classList.add("msg-bubble-wrap");
+        bWrap.appendChild(bubble);
+
+        /* ── Réactions existantes (badges au coin de la bulle) ── */
+        if(data.reactions && data.reactions.length){
+            _renderReactionChips(bWrap, msg_id, data.reactions);
+        }
+
+        wrap.appendChild(bWrap);
+        row.appendChild(wrap);
+
+        /* ── Bouton react ─────────────────────────────────────── */
+        if(msg_id){
+            var reactBtn = document.createElement("button");
+            reactBtn.classList.add("msg-react-btn");
+            reactBtn.title = "Réagir";
+            reactBtn.innerHTML = '😊';
+            (function(id){ reactBtn.addEventListener("click", function(e){ e.stopPropagation(); openEmojiPicker(id, reactBtn, e); }); })(msg_id);
+            row.appendChild(reactBtn);
+        }
+
+        /* ── Bouton reply ─────────────────────────────────────── */
+        var replyBtn = document.createElement("button");
+        replyBtn.classList.add("msg-reply-btn");
+        replyBtn.title = "Répondre";
+        replyBtn.innerHTML = '<span class="material-icons" style="font-size:.9rem;">reply</span>';
+        (function(id, name, txt){
+            replyBtn.addEventListener("click", function(e){
+                e.stopPropagation();
+                startReply(id, name, txt);
+            });
+        })(msg_id, cleanName, msg.trim().substring(0, 100));
+        row.appendChild(replyBtn);
+
+        _insertDateSeparatorIfNeeded(chatLog, timestamp, isNewMessage);
+
+        if(isNewMessage) chatLog.insertBefore(row, chatLog.firstChild);
+        else chatLog.appendChild(row);
+
+        if(!maintainPosition) chatLog.scrollTop = 0;
+    }
+
+    /* ── Build a file message bubble ────────────────────────────── */
+    function appendFileMessage(data, maintainPosition, isNewMessage){
+        var chatLog = document.getElementById("id_chat_log");
+        var isOwn   = (String(data.user_id) === String(currentUserId));
+
+        var row = document.createElement("div");
+        row.classList.add("message-container");
+        row.classList.add(isOwn ? "own-msg" : "friend-msg");
+
+        // Avatar
+        var avatar = document.createElement("img");
+        avatar.classList.add("profile-image", "rounded-circle");
+        avatar.src = data.profile_image || "{% static 'images/profile_pic.png' %}";
+        avatar.addEventListener("click", function(){ selectUser(data.user_id); });
+        row.appendChild(avatar);
+
+        var wrap = document.createElement("div");
+        wrap.classList.add("msg-content-wrap");
+
+        // Meta (sender name for friend messages)
+        if(!isOwn){
+            var meta = document.createElement("div");
+            meta.classList.add("msg-meta");
+            var uSpan = document.createElement("span");
+            uSpan.classList.add("username-span");
+            uSpan.textContent = (data.username || '').replace(/:\s*$/, '');
+            uSpan.addEventListener("click", function(){ selectUser(data.user_id); });
+            meta.appendChild(uSpan);
+            wrap.appendChild(meta);
+        }
+
+        // File bubble
+        var fileBubble = document.createElement("div");
+        fileBubble.classList.add("msg-file-bubble");
+
+        var ftype = data.file_type || 'document';
+        var fname = data.file_name || 'fichier';
+        var furl  = data.file_url  || '#';
+
+        if(ftype === 'image'){
+            var img = document.createElement("img");
+            img.classList.add("chat-img");
+            img.src = furl;
+            img.alt = fname;
+            img.title = fname;
+            img.addEventListener("click", function(){
+                var lb = document.getElementById('chat-lightbox');
+                document.getElementById('chat-lightbox-img').src = furl;
+                lb.style.display = 'flex';
+            });
+            fileBubble.appendChild(img);
+        } else if(ftype === 'video'){
+            var video = document.createElement("video");
+            video.src = furl;
+            video.controls = true;
+            video.preload = "metadata";
+            fileBubble.appendChild(video);
+        } else if(ftype === 'voice'){
+            /* Message vocal — player inline */
+            buildVoicePlayer(fileBubble, furl);
+        } else {
+            var link = document.createElement("a");
+            link.classList.add("msg-file-doc");
+            link.href = furl;
+            link.target = "_blank";
+            link.download = fname;
+
+            var iconWrap = document.createElement("div");
+            iconWrap.classList.add("file-icon", fileIconClass(fname, ftype));
+            iconWrap.textContent = fileIconEmoji(fname, ftype);
+            link.appendChild(iconWrap);
+
+            var info = document.createElement("div");
+            info.classList.add("file-info");
+
+            var nameEl = document.createElement("div");
+            nameEl.classList.add("file-name");
+            nameEl.textContent = fname;
+            info.appendChild(nameEl);
+
+            var dlEl = document.createElement("div");
+            dlEl.classList.add("file-dl");
+            dlEl.textContent = (_CT ? _CT.dl : 'Télécharger');
+            info.appendChild(dlEl);
+
+            link.appendChild(info);
+
+            // Download icon
+            var dlIcon = document.createElement("span");
+            dlIcon.classList.add("material-icons");
+            dlIcon.style.cssText = "font-size:.95rem;color:var(--text-muted);margin-left:auto;";
+            dlIcon.textContent = "download";
+            link.appendChild(dlIcon);
+
+            fileBubble.appendChild(link);
+        }
+
+        wrap.appendChild(fileBubble);
+
+        // Timestamp
+        var tSpan = document.createElement("span");
+        tSpan.classList.add("timestamp-span");
+        tSpan.textContent = data.natural_timestamp || '';
+        wrap.appendChild(tSpan);
+
+        row.appendChild(wrap);
+
+        _insertDateSeparatorIfNeeded(chatLog, data.natural_timestamp, isNewMessage);
+
+        if(isNewMessage) chatLog.insertBefore(row, chatLog.firstChild);
+        else chatLog.appendChild(row);
+
+        if(!maintainPosition) chatLog.scrollTop = 0;
+    }
+
+    function clearChatLog(){
+        document.getElementById("id_chat_log").innerHTML = "";
+        _lastSeenDate = null;
+    }
+
+    function setPageNumber(pageNumber){
+        document.getElementById("id_page_number").innerHTML = pageNumber
+    }
+    function setPaginationExhausted(){ setPageNumber("-1") }
+
+    function getRoomChatMessages(){
+        var pageNumber = document.getElementById("id_page_number").innerHTML
+        if(pageNumber != "-1"){
+            setPageNumber("-1")
+            chatSocket.send(JSON.stringify({
+                "command": "get_room_chat_messages",
+                "room_id": roomId,
+                "page_number": pageNumber,
+            }))
+        }
+    }
+
+    function handleMessagesPayload(messages, new_page_number){
+        if(messages != null && messages != "undefined" && messages != "None"){
+            setPageNumber(new_page_number)
+            messages.forEach(function(message){
+                if(message.msg_type == 3) appendFileMessage(message, true, false);
+                else appendChatMessage(message, true, false);
+            })
+        } else {
+            setPaginationExhausted()
+        }
+    }
+
+    function selectUser(user_id){
+        var url = "{% url 'account:view' user_id=532526456223623632623 %}".replace("532526456223623632623", user_id)
+        var win = window.open(url, "_blank")
+        win.focus()
+    }
+
+    function chatLogScrollListener(e) {
+        var chatLog = document.getElementById("id_chat_log")
+        if ((Math.abs(chatLog.scrollTop) + 2) >= (chatLog.scrollHeight - chatLog.offsetHeight)){
+            getRoomChatMessages()
+        }
+    }
+    function enableChatLogScrollListener(){
+        document.getElementById("id_chat_log").addEventListener("scroll", chatLogScrollListener);
+    }
+    function disableChatLogScrollListener(){
+        document.getElementById("id_chat_log").removeEventListener("scroll", chatLogScrollListener)
+    }
+
+    /* ── Sidebar : badge non-lu + aperçu dernier message ─── */
+
+    /* Met à jour l'aperçu et ajoute (ou incrémente) le badge non-lu
+       pour un ami dont on reçoit un message dans la conv active.
+       user_id : expéditeur du message */
+    function updateSidebarPreview(msgUserId, msgText){
+        // Trouver le conteneur ami dont l'user correspond à l'expéditeur
+        // (le message reçu vient d'une autre personne, donc msgUserId ≠ currentUserId)
+        if(String(msgUserId) === String(currentUserId)) return; // propre message
+        // Dans une 1-à-1, l'expéditeur = l'ami actif
+        var activeEl = document.querySelector('.friend-container.active');
+        if(!activeEl) return;
+        // aperçu
+        var prev = activeEl.querySelector('.friend-preview');
+        if(prev && msgText) prev.textContent = (msgText||'').substring(0,30);
+        // Pas de badge si la conv est active (utilisateur est en train de lire)
+    }
+
+    /* Met à jour le badge d'un ami en temps-réel (msg_type 10) */
+    function updateUnreadBadge(fromUserId, count){
+        // Ne pas afficher le badge si c'est la conv active
+        var activeEl = document.querySelector('.friend-container.active');
+        if(activeEl && activeEl.id === 'id_friend_container_' + fromUserId) return;
+        var el = document.getElementById('id_friend_container_' + fromUserId);
+        if(!el) return;
+        var badge = el.querySelector('.friend-unread');
+        if(!badge) return;
+        if(count > 0){
+            badge.textContent = count;
+            badge.classList.add('has-unread');
+        } else {
+            badge.textContent = '';
+            badge.classList.remove('has-unread');
+        }
+    }
+
+    /* Effacer le badge quand l'utilisateur sélectionne un ami */
+    function clearUnreadBadge(userId){
+        var el = document.getElementById("id_friend_container_" + userId);
+        if(!el) return;
+        var badge = el.querySelector('.friend-unread');
+        if(badge){ badge.textContent = ''; badge.classList.remove('has-unread'); }
+    }
+
+    function highlightFriend(userId){
+        document.querySelectorAll('.friend-container').forEach(function(c){ c.classList.remove('active'); });
+        var el = document.getElementById("id_friend_container_" + userId);
+        if(el) el.classList.add('active');
+        clearUnreadBadge(userId);
+    }
+
+    function clearHighlightedFriend(){
+        document.querySelectorAll('.friend-container').forEach(function(c){ c.classList.remove('active'); });
+        document.getElementById("id_other_user_profile_image").classList.add("d-none")
+        document.getElementById("id_other_user_profile_image").src = "{% static 'images/profile_pic.png' %}"
+        document.getElementById("id_other_username").innerHTML = ""
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       WebRTC — Appels Audio & Vidéo
+       ═══════════════════════════════════════════════════════════════ */
+    // Signale à l'overlay global (header.html) que cette page gère elle-même les appels
+    window._zootIsInChatRoom = true;
+
+    var _callState   = 'idle';   // idle | calling | ringing | active
+    // Auto-réponse : si l'URL contient ?auto_answer=1 (navigué depuis l'overlay global)
+    var _autoAnswer  = (new URLSearchParams(window.location.search)).get('auto_answer') === '1';
+    var _autoCallMode = (new URLSearchParams(window.location.search)).get('call_mode') || 'video';
+    var _callMode    = 'video';  // 'audio' | 'video'
+    var _peerConn    = null;
+    var _localStream = null;
+    var _pendOffer   = null;     // SDP offer stockée en attendant Accept
+    var _callTimerId = null;
+    var _callSecs    = 0;
+    var _micMuted    = false;
+    var _camOff      = false;
+    var _callPeerInfo = { name: '', img: '' };  // infos de l'interlocuteur
+    var _ringPeerId  = null;     // user_id de l'appelant en cours (ringing/actif)
+    var _iceCandidateQueue = [];  // candidats ICE reçus avant que _peerConn soit prêt
+
+    // Serveurs ICE — chargés dynamiquement depuis le serveur Django (/chat/ice-servers/)
+    // → permet d'activer des TURN fiables (Metered.ca) via variable d'env METERED_API_KEY
+    // sans redeployer le code. Fallback statique si le fetch échoue.
+    var _ICE = {
+        iceCandidatePoolSize: 5,   // pré-récolte les candidats avant l'appel → ICE plus rapide
+        iceServers: [
+            // Fallback statique (remplacé par le fetch /chat/ice-servers/ au chargement)
+            { urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] },
+            // freestun.net = serveur européen, plus accessible depuis Madagascar
+            { urls: ['turn:freestun.net:3479', 'turns:freestun.net:5350'], username: 'free', credential: 'free' },
+            { urls: ['turn:openrelay.metered.ca:443', 'turns:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }
+        ]
+    };
+
+    /* Fetch des serveurs ICE depuis Django au chargement — async, non bloquant.
+       Si Metered.ca est configuré (METERED_API_KEY en env), on obtient des TURN
+       fiables avec credentials temporaires. Sinon, le fallback statique ci-dessus
+       reste en place. L'appel démarre avec les bons servers si le fetch finit avant. */
+    (function(){
+        try {
+            fetch('{% url "chat:ice-servers" %}', { credentials: 'same-origin' })
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(data){
+                if(data && Array.isArray(data.iceServers) && data.iceServers.length){
+                    _ICE.iceServers = data.iceServers;
+                    console.log('[ICE] Servers chargés depuis Django (' + (data.source||'?') + ') :', data.iceServers.length, 'serveurs');
+                }
+            })
+            .catch(function(){ /* conserver le fallback statique */ });
+        } catch(e){}
+    })();
+
+    function _callEl(id){ return document.getElementById(id); }
+
+    /* Remplir les avatars dans les overlays */
+    function _callFillPeer(name, img){
+        var circles = ['call-out-avatar-circle','call-inc-avatar-circle','call-active-avatar-circle'];
+        var imgs    = ['call-out-avatar-img','call-inc-avatar-img','call-active-avatar-img'];
+        circles.forEach(function(cid, i){
+            var imgEl = _callEl(imgs[i]);
+            if(imgEl){
+                if(img){ imgEl.src = img; imgEl.style.display = 'block'; }
+                else    { imgEl.style.display = 'none'; }
+            }
+            // initiale si pas d'image
+            var circ = _callEl(cid);
+            if(circ && !img) circ.childNodes[0].textContent = (name || '?')[0].toUpperCase();
+        });
+        var names = ['call-out-name','call-inc-name','call-active-name'];
+        names.forEach(function(nid){ var el=_callEl(nid); if(el) el.textContent = name||'Contact'; });
+    }
+
+    /* Démarrer / arrêter chronomètre */
+    function _startTimer(){
+        _callSecs = 0;
+        _callTimerId = setInterval(function(){
+            _callSecs++;
+            var m = String(Math.floor(_callSecs/60)).padStart(2,'0');
+            var s = String(_callSecs%60).padStart(2,'0');
+            var el = _callEl('call-timer');
+            if(el) el.textContent = m+':'+s;
+        }, 1000);
+    }
+    function _stopTimer(){ clearInterval(_callTimerId); _callTimerId = null; }
+
+    /* ── Pré-déverrouillage multiplateforme (à appeler pendant le clic) ──────
+       Problème : Safari et Opera bloquent play() depuis les callbacks async
+       (ontrack, WebSocket) si l'élément n'a pas été "activé" pendant un geste.
+       play(srcObject=null) ne compte PAS comme activation dans Safari — la
+       source doit être valide.
+
+       Fix en 2 étapes :
+       1. AudioContext.resume() — active le sous-système audio Safari/WebKit.
+       2. srcObject = new MediaStream() vide + play(muted) — active l'élément
+          vidéo lui-même avec une source valide (même si vide).
+          Quand ontrack arrive, on remplace srcObject → l'élément reste activé.
+    ──────────────────────────────────────────────────────────────────────── */
+    function _preUnlockMedia(){
+        /* AudioContext.resume() — déverrouille le sous-système audio Safari/iOS/WebKit.
+           On NE fait plus de play() sur l'élément <video> ici car l'élément est dans
+           call-active-overlay qui a display:none — Android WebView/Chrome bloque play()
+           sur un élément non-rendu même pendant un geste utilisateur → bouton play parasite.
+           La lecture est gérée par l'attribut autoplay muted (HTML) + rv.play() dans
+           onRemoteStream une fois le stream WebRTC réel disponible.                         */
+        try {
+            var _tmpCtx = new (window.AudioContext || window.webkitAudioContext)();
+            _tmpCtx.resume().catch(function(){});
+            setTimeout(function(){ try{ _tmpCtx.close(); }catch(e){} }, 4000);
+        } catch(e){}
+    }
+
+    /* Afficher / masquer un overlay */
+    function _showOverlay(id){
+        ['call-out-overlay','call-inc-overlay','call-active-overlay'].forEach(function(oid){
+            var el = _callEl(oid);
+            if(el) el.style.display = (oid === id) ? 'flex' : 'none';
+        });
+    }
+    function _hideAllOverlays(){
+        ['call-out-overlay','call-inc-overlay','call-active-overlay'].forEach(function(oid){
+            var el = _callEl(oid); if(el) el.style.display = 'none';
+        });
+    }
+
+    /* Réinitialise les styles inline appliqués par le mode audio (astuce 1px).
+       Sans ça, un appel VIDÉO qui suit un appel AUDIO garde la vidéo distante
+       en 1px/transparente → écran noir. */
+    function _resetRemoteVideoStyle(rv){
+        if(!rv) return;
+        rv.style.position      = '';
+        rv.style.width         = '';
+        rv.style.height        = '';
+        rv.style.opacity       = '';
+        rv.style.pointerEvents = '';
+    }
+
+    /* Libérer toutes les ressources */
+    function _callCleanup(sendEnd){
+        if(sendEnd && chatSocket && chatSocket.readyState===WebSocket.OPEN && roomId){
+            chatSocket.send(JSON.stringify({ command:'call_end', room:roomId }));
+        }
+        if(_peerConn){ _peerConn.close(); _peerConn = null; }
+        if(_localStream){ _localStream.getTracks().forEach(function(t){ t.stop(); }); _localStream = null; }
+        var rv  = _callEl('call-remote-video'); if(rv){ rv.pause(); rv.srcObject = null; rv.muted = true; _resetRemoteVideoStyle(rv); rv.style.display = 'none'; }
+        var ra  = _callEl('call-remote-audio'); if(ra){ ra.srcObject = null; ra.pause(); }
+        var lv  = _callEl('call-local-video');  if(lv){ lv.srcObject = null; lv.style.display = 'none'; }
+        var lop = _callEl('call-out-local-vid'); if(lop){ lop.srcObject = null; lop.style.display = 'none'; }
+        var _dbgEl = document.getElementById('call-ice-debug'); if(_dbgEl) _dbgEl.textContent = '';
+        _removeCallUnmuteBtn();
+        _iceCandidateQueue = [];
+        _stopTimer();
+        _callState = 'idle';
+        _ringPeerId = null;
+        _pendOffer  = null;
+        _micMuted   = false;
+        _camOff     = false;
+        _hideAllOverlays();
+    }
+
+    /* Créer RTCPeerConnection + handlers communs */
+    function _buildPeer(onRemoteStream){
+        _peerConn = new RTCPeerConnection(_ICE);
+        var _hasRelayCandidate = false;
+        _peerConn.onicecandidate = function(e){
+            if(e.candidate){
+                if(chatSocket && chatSocket.readyState===WebSocket.OPEN){
+                    chatSocket.send(JSON.stringify({ command:'call_ice', room:roomId, candidate:e.candidate }));
+                }
+                /* Diagnostic visuel : afficher type de candidat (H=local, S=STUN, R=TURN relay) */
+                var _dbg = document.getElementById('call-ice-debug');
+                if(_dbg){
+                    var t = e.candidate.type;
+                    if(t === 'relay'){ _hasRelayCandidate = true; _dbg.textContent += 'R'; }
+                    else if(t === 'srflx'){ _dbg.textContent += 'S'; }
+                    else { _dbg.textContent += 'H'; }
+                }
+            } else {
+                /* Fin du gathering — si pas de candidat TURN (R), signaler */
+                var _dbg2 = document.getElementById('call-ice-debug');
+                if(_dbg2) _dbg2.textContent += _hasRelayCandidate ? ' ✓TURN' : ' ⚠no-TURN';
+            }
+        };
+        /* ── ontrack : accumuler les pistes dans UN seul MediaStream ──────────────
+           Problème : ontrack peut tirer UNE FOIS PAR PISTE (audio d'abord, vidéo
+           ensuite). Si on appelait onRemoteStream à chaque event :
+             • 1er event (audio) → rv.srcObject = stream1 (1 piste), play() OK
+             • 2e event (vidéo)  → guard "getTracks().length === 0" → FAUX → bloqué
+                                   → la piste vidéo n'est jamais affichée.
+           Solution : on crée UN MediaStream partagé, on y ajoute chaque piste au
+           fur et à mesure, et on appelle onRemoteStream UNE SEULE FOIS.
+           Les pistes suivantes sont ajoutées à l'objet MediaStream déjà associé
+           au srcObject → le <video> se met à jour automatiquement.              */
+        var _pcRemoteStream = new MediaStream();
+        var _remoteStreamStarted = false;
+        _peerConn.ontrack = function(e){
+            _pcRemoteStream.addTrack(e.track);
+            console.log('[CALL] ontrack:', e.track.kind, '— total:', _pcRemoteStream.getTracks().length);
+            if(!_remoteStreamStarted){
+                _remoteStreamStarted = true;
+                onRemoteStream(_pcRemoteStream);
+            } else {
+                /* Piste supplémentaire (ex : vidéo arrivée après audio).
+                   _pcRemoteStream est déjà le srcObject → le navigateur devrait
+                   mettre à jour automatiquement. Si l'élément est quand même
+                   en pause (autoplay pas encore déclenché), forcer play(). */
+                var _rv2 = document.getElementById('call-remote-video');
+                if(_rv2 && _rv2.paused && _rv2.srcObject){
+                    _rv2.play().catch(function(){ _rv2.muted = true; _rv2.play().catch(function(){}); });
+                }
+            }
+        };
+        _peerConn.oniceconnectionstatechange = function(){
+            var state = _peerConn && _peerConn.iceConnectionState;
+            console.log('[CALL] ICE state:', state);
+            // Mettre à jour l'indicateur visible dans l'overlay
+            var iceEl = document.getElementById('call-ice-status');
+            if(iceEl){
+                var _iceLabels = {
+                    'new':          '',
+                    'checking':     'Connexion en cours…',
+                    'connected':    '✓ Connecté',
+                    'completed':    '✓ Connecté',
+                    'disconnected': '⟳ Reconnexion…',
+                    'failed':       '✗ Échec réseau',
+                    'closed':       ''
+                };
+                iceEl.textContent = _iceLabels[state] || state;
+                iceEl.style.color = (state==='connected'||state==='completed') ? '#4caf50'
+                                  : (state==='failed')                          ? '#f44336'
+                                  : '#ff9800';
+            }
+            if(state === 'failed'){
+                // Court délai pour ne pas raccrocher sur un échec transitoire
+                var pc = _peerConn;
+                setTimeout(function(){
+                    if(pc && pc.iceConnectionState === 'failed'){
+                        _appendSysMsg('Échec de connexion réseau. Vérifiez votre connexion et réessayez.');
+                        _callCleanup(false);
+                    }
+                }, 3000);
+            }
+        };
+        _peerConn.onconnectionstatechange = function(){
+            var state = _peerConn && _peerConn.connectionState;
+            console.log('[CALL] Connection state:', state);
+            /* IMPORTANT : 'disconnected' est un état TEMPORAIRE (perte de paquets sur mobile 4G).
+               Le navigateur tente de se reconnecter automatiquement — NE PAS couper l'appel ici.
+               On ne coupe que sur 'failed' (défaillance permanente), avec un délai de sécurité. */
+            if(state === 'disconnected'){
+                var iceEl = document.getElementById('call-ice-status');
+                if(iceEl){ iceEl.textContent = '⟳ Reconnexion…'; iceEl.style.color = '#ff9800'; }
+            } else if(_peerConn && state === 'failed'){
+                var _pc = _peerConn;
+                setTimeout(function(){
+                    if(_pc && _pc.connectionState === 'failed'){
+                        _callCleanup(false);
+                        _appendSysMsg(_CT ? _CT.call_interrupt : 'Appel interrompu.');
+                    }
+                }, 3000);
+            }
+        };
+    }
+
+    /* ── Lecture du flux distant garantie (Opera/Safari/WebView) ─────────────
+       Chrome autorise l'autoplay sonore quand le micro est capturé, mais
+       Opera (et parfois Safari) bloquent le play() non-muet déclenché depuis
+       un callback async → l'appel semble "connecté mais silencieux".
+       Stratégie : tenter non-muet ; si bloqué, lire en muet ET afficher un
+       bouton "Activer le son" (un vrai clic = geste utilisateur = autorisé). */
+    function _showCallUnmuteBtn(rv){
+        if(document.getElementById('call-unmute-btn')) return;
+        var overlay = _callEl('call-active-overlay');
+        if(!overlay) return;
+        var btn = document.createElement('button');
+        btn.id = 'call-unmute-btn';
+        btn.innerHTML = '<span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">volume_off</span>&nbsp;' +
+                        'Son coupé — appuyez pour activer';
+        btn.style.cssText = 'position:absolute;top:18%;left:50%;transform:translateX(-50%);' +
+            'padding:.6rem 1.2rem;background:rgba(229,57,53,.92);color:#fff;border:none;' +
+            'border-radius:22px;font-size:.85rem;font-weight:700;cursor:pointer;z-index:60;' +
+            'display:flex;align-items:center;white-space:nowrap;font-family:inherit;';
+        btn.onclick = function(){
+            btn.remove();
+            rv.muted = false;
+            rv.play().catch(function(){});
+        };
+        overlay.appendChild(btn);
+    }
+    function _removeCallUnmuteBtn(){
+        var b = document.getElementById('call-unmute-btn');
+        if(b) b.remove();
+    }
+    function _ensureRemotePlayback(rv){
+        rv.muted = false;
+        var p = rv.play();
+        if(p && p.catch){
+            p.catch(function(e){
+                console.warn('[CALL] play() non-muet bloqué (' + (e && e.name) + ') — fallback muet + bouton son');
+                rv.muted = true;
+                rv.play().catch(function(e2){ console.error('[CALL] play() muet aussi bloqué:', e2); });
+                _showCallUnmuteBtn(rv);
+            });
+        }
+        /* Filet de sécurité : certains navigateurs re-mutent ou re-pausent
+           silencieusement après coup — revérifier peu après. */
+        setTimeout(function(){
+            if(!rv.srcObject) return;
+            if(rv.paused){ rv.muted = true; rv.play().catch(function(){}); }
+            if(rv.muted) _showCallUnmuteBtn(rv);
+        }, 800);
+    }
+
+    /* ── Diagnostic : vérifier que le média circule vraiment ─────────────────
+       ICE peut être "connecté" alors qu'aucun octet audio/vidéo n'arrive
+       (pare-feu, VPN, TURN saturé). On vérifie via getStats après 6 s et on
+       l'affiche clairement au lieu de laisser un appel silencieux mystère.  */
+    function _checkMediaFlow(){
+        if(!_peerConn || _callState !== 'active') return;
+        try {
+            _peerConn.getStats(null).then(function(stats){
+                var rx = 0;
+                stats.forEach(function(r){
+                    if(r.type === 'inbound-rtp') rx += (r.bytesReceived || 0);
+                });
+                console.log('[CALL] diagnostic flux — bytesReceived:', rx);
+                if(rx === 0){
+                    var iceEl = document.getElementById('call-ice-status');
+                    if(iceEl){
+                        iceEl.textContent = '⚠ Aucun média reçu — réseau/VPN/pare-feu bloque le flux';
+                        iceEl.style.color = '#f44336';
+                    }
+                }
+            }).catch(function(){});
+        } catch(e){}
+    }
+
+    /* Configurer l'overlay appel actif selon le mode.
+       NOTE : on ne rappelle PAS play() ici — c'est le callback onRemoteStream
+       qui appelle play() avec le pattern muted→play→unmute pour éviter les
+       blocages autoplay iOS. */
+    function _activateCallUI(){
+        _showOverlay('call-active-overlay');
+        _startTimer();
+        /* Diagnostic après 6 s : le média circule-t-il vraiment ? */
+        setTimeout(_checkMediaFlow, 6000);
+        // Initialiser le statut ICE — sauf si déjà connecté (évite de réinitialiser après ontrack)
+        var iceEl = document.getElementById('call-ice-status');
+        if(iceEl){
+            var _curState = _peerConn && _peerConn.iceConnectionState;
+            if(_curState === 'connected' || _curState === 'completed'){
+                iceEl.textContent = '✓ Connecté'; iceEl.style.color = '#4caf50';
+            } else {
+                iceEl.textContent = 'Connexion en cours…'; iceEl.style.color = '#ff9800';
+            }
+        }
+        var rv  = _callEl('call-remote-video');
+        var lv  = _callEl('call-local-video');
+        var bg  = _callEl('call-audio-bg');
+        var cw  = _callEl('call-cam-wrap');
+        if(_callMode === 'audio'){
+            /* Mode audio : rv rendu invisible (mais PAS display:none) —
+               Sur Safari iOS, un <video> display:none ne joue pas l'audio WebRTC.
+               On le garde dans le flux de rendu, minuscule et transparent.        */
+            if(rv){
+                rv.style.position      = 'absolute';
+                rv.style.width         = '1px';
+                rv.style.height       = '1px';
+                rv.style.opacity       = '0';
+                rv.style.pointerEvents = 'none';
+            }
+            if(lv) lv.style.display = 'none';
+            if(bg) bg.style.display = 'flex';
+            if(cw) cw.style.display = 'none';
+        } else {
+            /* Mode vidéo : display:block pour les deux vidéos
+               play() sera appelé par onRemoteStream quand le stream arrive.
+               IMPORTANT : purger d'abord l'astuce 1px d'un éventuel appel audio précédent. */
+            if(rv){ _resetRemoteVideoStyle(rv); rv.style.display = 'block'; }
+            if(lv) lv.style.display = 'block';
+            if(bg) bg.style.display = 'none';
+            if(cw) cw.style.display = 'flex';
+        }
+    }
+
+    /* Message système dans le chat log */
+    function _appendSysMsg(text){
+        var chatLog = _callEl('id_chat_log'); if(!chatLog) return;
+        var wrap = document.createElement('div'); wrap.classList.add('system-message');
+        var sp = document.createElement('span'); sp.classList.add('username-span');
+        sp.textContent = text; wrap.appendChild(sp);
+        chatLog.insertBefore(wrap, chatLog.firstChild);
+    }
+
+    /* ── Support WebRTC : détection + message d'erreur clair ─────────────────
+       Safari/Opera/Chrome exposent navigator.mediaDevices UNIQUEMENT en
+       contexte sécurisé (https ou localhost). Sur http://, l'API est absente
+       → l'ancien code plantait avec un TypeError silencieux.                 */
+    function _webrtcSupported(){
+        return !!(window.RTCPeerConnection && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    }
+    function _webrtcUnsupportedMsg(){
+        if(window.isSecureContext === false)
+            return 'Les appels nécessitent une connexion sécurisée (https). Rechargez le site en https.';
+        return 'Ce navigateur ne prend pas en charge les appels audio/vidéo. Essayez de le mettre à jour ou utilisez Chrome, Firefox, Safari ou Opera récents.';
+    }
+
+    /* Message d'erreur précis selon la cause du refus getUserMedia */
+    function _gumErrorMsg(err, wantVideo){
+        var n = (err && err.name) || '';
+        var dev = wantVideo ? 'micro / caméra' : 'micro';
+        if(n === 'NotAllowedError' || n === 'PermissionDeniedError' || n === 'SecurityError')
+            return 'Accès au ' + dev + ' refusé. Autorisez-le dans les réglages du navigateur (icône 🔒 dans la barre d\'adresse), puis réessayez.';
+        if(n === 'NotFoundError' || n === 'DevicesNotFoundError')
+            return 'Aucun micro détecté sur cet appareil.';
+        if(n === 'NotReadableError' || n === 'TrackStartError' || n === 'AbortError')
+            return 'Le ' + dev + ' est déjà utilisé par une autre application. Fermez-la puis réessayez.';
+        if(n === 'InsecureContextError' || n === 'NotSupportedError')
+            return _webrtcUnsupportedMsg();
+        return 'Impossible d\'accéder au ' + dev + '.' + (n ? ' (' + n + ')' : '');
+    }
+
+    /* ── getUserMedia avec fallbacks multiplateforme ─────────────────────────
+       1. Contraintes détaillées (ideal:1280…) refusées → retente {audio, video:true}.
+       2. Pas de caméra du tout (PC de bureau, Opera/Safari sans webcam) →
+          retente en AUDIO SEUL au lieu d'échouer : l'appel continue sans vidéo.
+          Le stream est alors marqué _zootAudioOnly pour que l'appelant bascule
+          l'appel en mode audio.                                               */
+    function _getUserMedia(constraints){
+        if(!_webrtcSupported()){
+            var e = new Error('WebRTC unsupported');
+            e.name = (window.isSecureContext === false) ? 'InsecureContextError' : 'NotSupportedError';
+            return Promise.reject(e);
+        }
+        return navigator.mediaDevices.getUserMedia(constraints).catch(function(err){
+            if(constraints.video && constraints.video !== true &&
+               (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError' ||
+                err.name === 'NotReadableError' || err.name === 'AbortError')){
+                console.warn('[CALL] getUserMedia contraintes détaillées refusées, fallback simple:', err.name);
+                return navigator.mediaDevices.getUserMedia({ audio: constraints.audio, video: true });
+            }
+            throw err;
+        })
+        .catch(function(err){
+            /* Caméra absente / occupée → continuer l'appel en audio seul */
+            if(constraints.video &&
+               (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError' ||
+                err.name === 'NotReadableError' || err.name === 'TrackStartError' ||
+                err.name === 'OverconstrainedError' || err.name === 'AbortError')){
+                console.warn('[CALL] caméra indisponible, fallback audio seul:', err.name);
+                return navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                    .then(function(stream){ stream._zootAudioOnly = true; return stream; });
+            }
+            throw err;
+        });
+    }
+
+    /* ── Démarrer un appel (sortant) ─────────────────────────── */
+    function startCall(mode){
+        if(_callState !== 'idle'){
+            alert(_CT ? _CT.call_busy : 'Un appel est déjà en cours.');
+            return;
+        }
+        if(!roomId || !chatSocket || chatSocket.readyState !== WebSocket.OPEN){
+            alert(_CT ? _CT.call_no_room : 'Ouvrez d\'abord une conversation.');
+            return;
+        }
+        if(!_webrtcSupported()){
+            alert(_webrtcUnsupportedMsg());
+            return;
+        }
+        _callMode  = mode || 'video';
+        _callState = 'calling';
+
+        /* Pré-déverrouillage Safari/Opera — voir _preUnlockMedia() */
+        _preUnlockMedia();
+        _callFillPeer(_callPeerInfo.name, _callPeerInfo.img);
+        var statusEl = _callEl('call-out-status');
+        if(statusEl) statusEl.textContent = (_callMode==='audio') ? (_CT ? _CT.calling_audio : 'Appel audio en cours…') : (_CT ? _CT.calling_video : 'Appel vidéo en cours…');
+        _showOverlay('call-out-overlay'); // switch vers l'overlay sortant
+
+        var constraints = (_callMode === 'audio')
+            ? { audio: true, video: false }
+            : { audio: true, video: { width:{ideal:1280}, height:{ideal:720}, facingMode:'user' } };
+
+        _getUserMedia(constraints)
+        .then(function(stream){
+            _localStream = stream;
+            /* Caméra indisponible → l'appel bascule en AUDIO avant l'envoi de
+               l'offre (l'offre SDP ne contiendra qu'une ligne audio, donc le
+               mode doit être cohérent des deux côtés). */
+            if(_callMode === 'video' && (stream._zootAudioOnly || stream.getVideoTracks().length === 0)){
+                _callMode = 'audio';
+                _appendSysMsg('Caméra indisponible — appel converti en audio.');
+                if(statusEl) statusEl.textContent = (_CT ? _CT.calling_audio : 'Appel audio en cours…');
+            }
+            // Mode vidéo : afficher préview locale
+            if(_callMode === 'video'){
+                var lop = _callEl('call-out-local-vid');
+                if(lop){ lop.srcObject = stream; lop.style.display = 'block'; }
+            }
+            _buildPeer(function(remoteStream){
+                /* CALLER : ontrack arrive AVANT _activateCallUI → activer l'UI d'abord */
+                if(_callState !== 'active'){
+                    _callState = 'active';
+                    _activateCallUI();
+                }
+                /* onRemoteStream n'est appelé qu'UNE SEULE FOIS (1ère piste).
+                   Les pistes suivantes sont ajoutées à remoteStream automatiquement. */
+                var rv = _callEl('call-remote-video');
+                if(rv){
+                    var _ao = document.getElementById('call-active-overlay');
+                    if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
+                    rv.srcObject = remoteStream;
+                    rv.style.display = 'block';
+                    /* Lecture garantie : non-muet si possible, sinon muet +
+                       bouton "Activer le son" (Opera bloque l'unmute async). */
+                    _ensureRemotePlayback(rv);
+                }
+                var lv = _callEl('call-local-video');
+                if(lv && !lv.srcObject){
+                    lv.style.display = 'block';
+                    lv.srcObject = _localStream;
+                    lv.play().catch(function(){});
+                }
+            });
+            _localStream.getTracks().forEach(function(t){ _peerConn.addTrack(t, _localStream); });
+            return _peerConn.createOffer();
+        })
+        .then(function(offer){ return _peerConn.setLocalDescription(offer).then(function(){ return offer; }); })
+        .then(function(offer){
+            chatSocket.send(JSON.stringify({
+                command:'call_offer', room:roomId,
+                sdp: offer, call_mode: _callMode
+            }));
+        })
+        .catch(function(err){
+            console.error('startCall:', err);
+            var wantVideo = (_callMode === 'video');
+            _callCleanup(false);
+            alert(_gumErrorMsg(err, wantVideo));
+        });
+    }
+
+    /* ── Recevoir une offre (appel entrant) ──────────────────── */
+    function handleCallOffer(data){
+        var fromId = (data.user_id != null) ? String(data.user_id) : null;
+        if(_callState !== 'idle'){
+            /* Re-offer du MÊME appelant (mécanisme re-offer sur join, reconnexion
+               WS mobile, double onglet…) : ne JAMAIS rejeter — l'ancien code
+               envoyait call_reject, ce qui tuait l'appel en cours des deux côtés. */
+            if(fromId && _ringPeerId && fromId === String(_ringPeerId)){
+                if(_callState === 'ringing'){
+                    /* Rafraîchir l'offre : la ré-offre contient plus de candidats ICE */
+                    _pendOffer = data.sdp;
+                    _callMode  = data.call_mode || _callMode;
+                }
+                return; // déjà en ringing/actif avec ce peer → ignorer
+            }
+            // Occupé avec quelqu'un d'autre → refus explicite vers CE peer
+            if(chatSocket && chatSocket.readyState===WebSocket.OPEN && roomId){
+                var rej = { command:'call_reject', room:roomId };
+                if(fromId) rej.peer_id = fromId;   // cibler l'appelant, pas le peer actuel
+                chatSocket.send(JSON.stringify(rej));
+            }
+            return;
+        }
+        _callState = 'ringing';
+        _ringPeerId = fromId;
+        _callMode  = data.call_mode || _autoCallMode || 'video';
+        _pendOffer = data.sdp;
+        _callFillPeer(data.username||_callPeerInfo.name, _callPeerInfo.img);
+
+        // Auto-réponse si on a été redirigé depuis l'overlay global (header.html)
+        if(_autoAnswer){
+            _autoAnswer = false;  // n'accepter qu'une seule fois
+            setTimeout(function(){ acceptCall(); }, 400);
+            return;
+        }
+
+        var typeEl = _callEl('call-inc-type');
+        if(typeEl) typeEl.textContent = (_callMode==='audio') ? (_CT ? _CT.inc_audio : 'Appel audio entrant') : (_CT ? _CT.inc_video : 'Appel vidéo entrant');
+        var iconEl = _callEl('call-inc-accept-icon');
+        if(iconEl) iconEl.textContent = (_callMode==='audio') ? 'call' : 'videocam';
+        _showOverlay('call-inc-overlay');
+    }
+
+    /* ── Accepter l'appel entrant ────────────────────────────── */
+    function acceptCall(){
+        if(_callState !== 'ringing' || !_pendOffer) return;
+        _callState = 'active';
+        var offerSdp = _pendOffer; _pendOffer = null;
+
+        /* Pré-déverrouillage Safari/Opera — voir _preUnlockMedia() */
+        _preUnlockMedia();
+        _showOverlay('call-inc-overlay'); /* revenir à l'overlay entrant pendant la négociation */
+
+        var constraints = (_callMode === 'audio')
+            ? { audio: true, video: false }
+            : { audio: true, video: { width:{ideal:1280}, height:{ideal:720}, facingMode:'user' } };
+
+        _getUserMedia(constraints)
+        .then(function(stream){
+            _localStream = stream;
+            /* Caméra indisponible côté appelé : on répond en audio seul,
+               mais on garde le mode vidéo pour AFFICHER la vidéo de l'appelant. */
+            if(_callMode === 'video' && (stream._zootAudioOnly || stream.getVideoTracks().length === 0)){
+                _appendSysMsg('Caméra indisponible — votre vidéo ne sera pas envoyée.');
+            }
+            /* Vidéo locale — display:block avant play() (seulement si on a une piste vidéo) */
+            var lv = _callEl('call-local-video');
+            if(lv && _callMode === 'video' && stream.getVideoTracks().length > 0){
+                lv.style.display = 'block';
+                lv.srcObject = stream;
+                lv.play().catch(function(){});
+            }
+            _buildPeer(function(remoteStream){
+                var rv = _callEl('call-remote-video');
+                /* Toujours router via <video> — audio ET vidéo (iOS → haut-parleur).
+                   CALLEE : forcer overlay visible si ontrack arrive avant _activateCallUI. */
+                if(rv){
+                    var _ao = document.getElementById('call-active-overlay');
+                    if(_ao && _ao.style.display !== 'flex') _ao.style.display = 'flex';
+                    rv.srcObject = remoteStream;
+                    rv.style.display = 'block';
+                    /* Lecture garantie : non-muet si possible, sinon muet +
+                       bouton "Activer le son" (Opera bloque l'unmute async). */
+                    _ensureRemotePlayback(rv);
+                }
+            });
+            /* ── Safari / WebKit / WebView : setRemoteDescription AVANT addTrack ──
+               Ajouter des pistes AVANT setRemoteDescription confond la négociation SDP
+               sur Safari et Android WebView → ICE connecte mais aucun média ne passe.
+               L'ordre correct pour le callee est :
+                 1. setRemoteDescription(offer)
+                 2. addTrack(...)
+                 3. createAnswer()                                                    */
+            return _peerConn.setRemoteDescription({ type: offerSdp.type, sdp: offerSdp.sdp });
+        })
+        .then(function(){
+            /* addTrack ICI — après setRemoteDescription (fix Safari/Opera/WebView) */
+            _localStream.getTracks().forEach(function(t){ _peerConn.addTrack(t, _localStream); });
+            // Vider la file des candidats ICE qui sont arrivés pendant le ringing
+            _iceCandidateQueue.forEach(function(c){
+                _peerConn.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+            });
+            _iceCandidateQueue = [];
+            return _peerConn.createAnswer();
+        })
+        .then(function(answer){ return _peerConn.setLocalDescription(answer).then(function(){ return answer; }); })
+        .then(function(answer){
+            chatSocket.send(JSON.stringify({ command:'call_answer', room:roomId, sdp:answer }));
+            _activateCallUI();
+        })
+        .catch(function(err){
+            console.error('acceptCall:', err);
+            var wantVideo = (_callMode === 'video');
+            _callCleanup(true);
+            alert(_gumErrorMsg(err, wantVideo));
+        });
+    }
+
+    /* ── Refuser l'appel entrant ─────────────────────────────── */
+    function rejectCall(){
+        if(chatSocket && chatSocket.readyState===WebSocket.OPEN && roomId)
+            chatSocket.send(JSON.stringify({ command:'call_reject', room:roomId }));
+        _callCleanup(false);
+    }
+
+    /* ── Raccrocher ──────────────────────────────────────────── */
+    function hangUp(){
+        var dur = _callSecs;
+        _callCleanup(true);
+        if(dur > 0){
+            var m = String(Math.floor(dur/60)).padStart(2,'0');
+            var s = String(dur%60).padStart(2,'0');
+            _appendSysMsg((_CT ? _CT.call_ended : 'Appel terminé —') + ' ' + m + ':' + s);
+        }
+    }
+
+    /* ── Réception réponse SDP ───────────────────────────────── */
+    function handleCallAnswer(data){
+        if(!_peerConn || _callState !== 'calling') return;
+        /* Plain object — évite la dépréciation de RTCSessionDescription() sur Safari */
+        _peerConn.setRemoteDescription({ type: data.sdp.type, sdp: data.sdp.sdp })
+        .then(function(){
+            /* Vider la file des candidats ICE de l'appelé
+               qui sont arrivés avant la réponse SDP */
+            _iceCandidateQueue.forEach(function(c){
+                _peerConn.addIceCandidate(new RTCIceCandidate(c)).catch(function(){});
+            });
+            _iceCandidateQueue = [];
+        })
+        .catch(function(e){
+            console.error('handleCallAnswer:', e);
+        });
+    }
+
+    /* ── Réception candidat ICE ──────────────────────────────── */
+    function handleCallIce(data){
+        if(!data.candidate) return;
+        /* Mettre en file si :
+           - _peerConn n'existe pas encore (callee avant acceptCall)
+           - ou remoteDescription pas encore définie (caller avant handleCallAnswer) */
+        if(!_peerConn || !_peerConn.remoteDescription){
+            _iceCandidateQueue.push(data.candidate);
+            return;
+        }
+        _peerConn.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(function(){});
+    }
+
+    /* ── Appel refusé par l'autre ────────────────────────────── */
+    function handleCallReject(){
+        _callCleanup(false);
+        _appendSysMsg(_CT ? _CT.call_rejected : 'Appel refusé.');
+    }
+
+    /* ── Appel terminé par l'autre ───────────────────────────── */
+    function handleCallEnd(){
+        var wasActive = (_callState === 'active');
+        var dur = _callSecs;
+        _callCleanup(false);
+        if(wasActive && dur > 0){
+            var m = String(Math.floor(dur/60)).padStart(2,'0');
+            var s = String(dur%60).padStart(2,'0');
+            _appendSysMsg((_CT ? _CT.call_ended : 'Appel terminé —') + ' ' + m + ':' + s);
+        } else if(!wasActive){
+            _appendSysMsg(_CT ? _CT.call_missed : 'Appel manqué.');
+        }
+    }
+
+    /* ── Mute micro ──────────────────────────────────────────── */
+    function toggleMic(){
+        _micMuted = !_micMuted;
+        if(_localStream) _localStream.getAudioTracks().forEach(function(t){ t.enabled = !_micMuted; });
+        var btn = _callEl('call-btn-mic');
+        var ico = _callEl('call-mic-icon');
+        if(ico) ico.textContent = _micMuted ? 'mic_off' : 'mic';
+        if(btn) btn.classList.toggle('active', _micMuted);
+    }
+
+    /* ── Toggle caméra ───────────────────────────────────────── */
+    function toggleCam(){
+        _camOff = !_camOff;
+        if(_localStream) _localStream.getVideoTracks().forEach(function(t){ t.enabled = !_camOff; });
+        var btn = _callEl('call-btn-cam');
+        var ico = _callEl('call-cam-icon');
+        if(ico) ico.textContent = _camOff ? 'videocam_off' : 'videocam';
+        if(btn) btn.classList.toggle('active', _camOff);
+    }
+
+    function createOrReturnPrivateChat(id){
+        var formData = new FormData();
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        formData.append('user2_id', id);
+        fetch("{% url 'chat:create-or-return-private-chat' %}", {
+            method: 'POST',
+            body: formData,
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+            if(data['response'] == "Successfully got the chat."){
+                setupWebSocket(data['chatroom_id']);
+            } else if(data['response'] != null){
+                alert(data['response']);
+            }
+        })
+        .catch(function(){ alert("Something went wrong."); });
+    }
+</script>
+
+{% endblock content %}
