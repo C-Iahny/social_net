@@ -3,12 +3,13 @@
 	"appName": "Vazimba",
 	"webDir": "www",
 	"server": {
-		"url": "https://socialnet-production-06b9.up.railway.app",
+		"url": "https://www.vazimba.io",
 		"cleartext": false,
 		"androidScheme": "https",
 		"iosScheme": "https",
 		"allowNavigation": [
-			"socialnet-production-06b9.up.railway.app"
+			"www.vazimba.io",
+			"vazimba.io"
 		]
 	},
 	"android": {
