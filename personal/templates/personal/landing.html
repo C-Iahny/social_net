@@ -1,5 +1,6 @@
 {% load static %}
 {% load i18n %}
+{% load personal_tags %}
 <!DOCTYPE html>
 <html lang="fr" data-theme="light">
 <head>
@@ -13,8 +14,6 @@
   <link rel="apple-touch-icon" href="{% static 'logo/vazimba_v2_icon.png' %}">
   <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{% url 'landing' %}">
 
-  <!-- Partage sur les réseaux (Open Graph / Twitter) — absent auparavant :
-       un lien vers Vazimba s'affichait sans titre, sans image ni description. -->
   <meta property="og:type"        content="website">
   <meta property="og:site_name"   content="Vazimba">
   <meta property="og:locale"      content="fr_FR">
@@ -26,8 +25,6 @@
   <meta name="twitter:title"       content="{{ page_title }}">
   <meta name="twitter:description" content="{{ meta_description }}">
 
-  <!-- Thème appliqué avant tout rendu (anti-FOUC), même clé que le reste
-       de l'application pour que le choix suive l'utilisateur. -->
   <script>
     (function () {
       try {
@@ -42,56 +39,52 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Material+Icons&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Material+Icons&display=swap" rel="stylesheet">
 
   <style>
     /* ════════════════════════════════════════════════════════════════════
-       Jetons de thème — identiques à snippets/base_css.html.
-       La page dupliquait auparavant une palette légèrement différente
-       (fond, police), d'où une rupture visuelle en passant de la landing
-       à l'application.
+       Direction éditoriale — jetons alignés sur snippets/base_css.html
+       (#8B4513, #e8d5c2, #2d1a0e, Space Grotesk), avec Instrument Serif
+       en italique pour les accents typographiques.
        ════════════════════════════════════════════════════════════════════ */
     :root {
-      --bg:          #f8f4ef;
-      --bg-card:     #ffffff;
-      --bg-nav:      rgba(255,255,255,.88);
-      --bg-hover:    #f2e9df;
-      --bg-subtle:   #fdfaf7;
-      --text:        #2d1a0e;
-      --text-muted:  #6b4c35;
-      --text-subtle: #9a7060;
-      --border:      #e8d5c2;
-      --accent:      #8B4513;
-      --accent2:     #A0522D;
-      --accent3:     #C1440E;
-      --accent-dark: #6b3410;
-      --accent-soft: rgba(139,69,19,.08);
-      --on-accent:   #ffffff;
-      --shadow:      0 1px 4px rgba(80,40,10,.07), 0 6px 24px rgba(80,40,10,.09);
-      --shadow-lg:   0 8px 40px rgba(80,40,10,.14);
-      --font:        'Space Grotesk', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-      --radius:      16px;
-      --maxw:        1140px;
+      --lp-bg:        #faf7f2;
+      --lp-card:      #ffffff;
+      --lp-band:      #f2e9df;
+      --lp-ink:       #1c1208;
+      --lp-body:      #55402f;
+      --lp-muted:     #6b4c35;
+      --lp-subtle:    #9a7060;
+      --lp-line:      #e8d5c2;
+      --lp-line-firm: #e0cdb8;
+      --lp-accent:    #8B4513;
+      --lp-accent-d:  #6b3410;
+      --lp-on-accent: #faf7f2;
+      --lp-dark:      #1c1208;
+      --lp-on-dark:   #f7efe4;
+      --lp-on-dark-m: #c9b6a2;
+      --lp-dark-kick: #d9a066;
+      --lp-shadow:    0 1px 4px rgba(80,40,10,.07), 0 6px 24px rgba(80,40,10,.09);
+      --lp-font:      'Space Grotesk', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      --lp-serif:     'Instrument Serif', Georgia, serif;
+      --lp-maxw:      1296px;
     }
 
     [data-theme="dark"] {
-      --bg:          #16100c;
-      --bg-card:     #1f1510;
-      --bg-nav:      rgba(31,21,16,.88);
-      --bg-hover:    #2a1e16;
-      --bg-subtle:   #1a120d;
-      --text:        #f0e6da;
-      --text-muted:  #b0906f;
-      --text-subtle: #8a6f57;
-      --border:      #3a2a1e;
-      --accent:      #D4AF37;
-      --accent2:     #C19A2E;
-      --accent3:     #E0B84A;
-      --accent-dark: #b8941f;
-      --accent-soft: rgba(212,175,55,.12);
-      --on-accent:   #16100c;
-      --shadow:      0 2px 12px rgba(0,0,0,.45);
-      --shadow-lg:   0 8px 40px rgba(0,0,0,.55);
+      --lp-bg:        #16100c;
+      --lp-card:      #1f1510;
+      --lp-band:      #1a120d;
+      --lp-ink:       #f0e6da;
+      --lp-body:      #bfa287;
+      --lp-muted:     #b0906f;
+      --lp-subtle:    #8a6f57;
+      --lp-line:      #3a2a1e;
+      --lp-line-firm: #4a3826;
+      --lp-accent:    #D4AF37;
+      --lp-accent-d:  #b8941f;
+      --lp-on-accent: #16100c;
+      --lp-dark:      #0f0b07;
+      --lp-shadow:    0 2px 12px rgba(0,0,0,.45);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -101,214 +94,168 @@
       *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
     body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
+      font-family: var(--lp-font);
+      background: var(--lp-bg);
+      color: var(--lp-ink);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
     }
     img { max-width: 100%; display: block; }
-    a { color: inherit; }
+    a { color: inherit; text-decoration: none; }
 
-    /* Lien d'évitement — permet d'atteindre le contenu au clavier. */
     .skip-link {
       position: absolute; left: -9999px; top: 0; z-index: 999;
-      background: var(--accent); color: var(--on-accent);
+      background: var(--lp-accent); color: var(--lp-on-accent);
       padding: .7rem 1.2rem; border-radius: 0 0 10px 0; font-weight: 600;
-      text-decoration: none;
     }
     .skip-link:focus { left: 0; }
+    :focus-visible { outline: 3px solid var(--lp-accent); outline-offset: 3px; border-radius: 6px; }
 
-    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+    .wrap { max-width: var(--lp-maxw); margin-inline: auto; padding-inline: 4.5rem; }
 
-    .wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: 1.25rem; }
-
-    /* ───────────────────────── Barre de navigation ───────────────────── */
+    /* ───────────────────────── Navigation ───────────────────────── */
     .lp-nav {
       position: sticky; top: 0; z-index: 100;
-      background: var(--bg-nav);
+      background: color-mix(in srgb, var(--lp-bg) 88%, transparent);
       backdrop-filter: saturate(180%) blur(14px);
       -webkit-backdrop-filter: saturate(180%) blur(14px);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--lp-line);
     }
     .lp-nav-inner {
-      max-width: var(--maxw); margin-inline: auto;
-      padding: 0 1.25rem; height: 64px;
-      display: flex; align-items: center; gap: 1rem;
+      max-width: var(--lp-maxw); margin-inline: auto;
+      padding-inline: 4.5rem; height: 76px;
+      display: flex; align-items: center; gap: 2.5rem;
     }
-    .lp-brand { display: flex; align-items: center; gap: .55rem; text-decoration: none; margin-right: auto; }
-    .lp-brand img { height: 36px; width: auto; object-fit: contain; }
-    /* Repli textuel : il était écrit en blanc sur une barre blanche, donc
-       invisible dès que le logo ne se chargeait pas. */
-    .lp-brand .lp-wordmark {
-      font-weight: 700; font-size: 1.15rem; letter-spacing: .5px;
-      color: var(--text);
+    .lp-brand { display: flex; align-items: center; gap: .625rem; margin-right: auto; }
+    .lp-brand-mark {
+      width: 30px; height: 30px; border-radius: 9px; background: var(--lp-accent);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .lp-nav-links { display: flex; align-items: center; gap: .15rem; }
-    .lp-nav-links a {
-      color: var(--text-muted); text-decoration: none;
-      font-weight: 500; font-size: .93rem;
-      padding: .5rem .8rem; border-radius: 10px;
-      transition: background .18s, color .18s;
-    }
-    .lp-nav-links a:hover { background: var(--bg-hover); color: var(--text); }
-    .lp-actions { display: flex; align-items: center; gap: .5rem; }
+    .lp-brand-mark svg { width: 17px; height: 17px; }
+    .lp-brand-name { font-size: 1.1875rem; font-weight: 700; letter-spacing: -.4px; }
+    .lp-nav-links { display: flex; align-items: center; gap: 1.875rem; font-size: .9375rem; color: var(--lp-muted); }
+    .lp-nav-links a:hover { color: var(--lp-ink); }
+    .lp-nav-actions { display: flex; align-items: center; gap: .75rem; }
 
     .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
-      font-family: var(--font); font-weight: 600; font-size: .95rem;
-      padding: .62rem 1.25rem; border-radius: 12px;
-      text-decoration: none; border: 1.5px solid transparent; cursor: pointer;
-      transition: background .18s, border-color .18s, transform .18s, box-shadow .18s;
-      white-space: nowrap;
+      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+      font-family: var(--lp-font); font-weight: 600; white-space: nowrap;
+      border: 1.5px solid transparent; cursor: pointer;
+      transition: background .18s, border-color .18s, transform .18s;
     }
-    .btn-primary { background: var(--accent); color: var(--on-accent); }
-    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: var(--shadow); }
-    .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
-    .btn-ghost:hover { background: var(--bg-hover); }
-    .btn-lg { padding: .85rem 1.7rem; font-size: 1rem; border-radius: 14px; }
-    .btn-on-hero { background: #fff; color: #6b3410; }
-    .btn-on-hero:hover { background: #f5efe9; transform: translateY(-1px); }
-    .btn-on-hero-ghost { background: rgba(255,255,255,.10); color: #fff; border-color: rgba(255,255,255,.55); }
-    .btn-on-hero-ghost:hover { background: rgba(255,255,255,.20); }
-
+    .btn-primary { background: var(--lp-accent); color: var(--lp-on-accent); }
+    .btn-primary:hover { background: var(--lp-accent-d); transform: translateY(-1px); }
+    .btn-ghost { border-color: var(--lp-line-firm); color: var(--lp-ink); }
+    .btn-ghost:hover { background: var(--lp-band); }
+    .btn-pale { background: var(--lp-on-dark); color: var(--lp-dark); }
+    .btn-pale:hover { transform: translateY(-1px); }
+    .btn-nav { height: 44px; padding-inline: 1.375rem; border-radius: 11px; font-size: .9375rem; }
+    .btn-lg  { height: 58px; padding-inline: 2rem;     border-radius: 13px; font-size: 1.0625rem; }
+    .btn-md  { height: 52px; padding-inline: 1.5rem;   border-radius: 13px; font-size: 1rem; }
+    .lp-textlink {
+      font-size: 1rem; color: var(--lp-muted);
+      text-decoration: underline; text-underline-offset: 4px;
+    }
+    .lp-textlink:hover { color: var(--lp-ink); }
     .icon-btn {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: transparent; border: 1.5px solid var(--border); color: var(--text);
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1.5px solid var(--lp-line-firm); background: transparent; color: var(--lp-ink);
       display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
-      transition: background .18s;
     }
-    .icon-btn:hover { background: var(--bg-hover); }
+    .icon-btn:hover { background: var(--lp-band); }
     .icon-btn .material-icons { font-size: 1.25rem; }
 
-    /* ───────────────────────────── Hero ──────────────────────────────── */
-    .hero {
-      position: relative; overflow: hidden;
-      color: #fff;
-      padding: clamp(3.5rem, 9vw, 6.5rem) 0 clamp(3rem, 7vw, 5rem);
-      background: linear-gradient(135deg, var(--hero-from, #5c2a08) 0%, var(--hero-to, #A0522D) 100%);
-    }
-    .hero::before {
-      content: ''; position: absolute; inset: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 70% 55% at 15% 0%, rgba(255,255,255,.14), transparent 60%),
-        radial-gradient(ellipse 60% 50% at 90% 100%, rgba(255,255,255,.10), transparent 60%);
-    }
-    .hero.has-bg::after {
-      content: ''; position: absolute; inset: 0;
-      background: rgba(0,0,0,.35); pointer-events: none;
-    }
-    .hero-inner { position: relative; z-index: 2; max-width: 780px; }
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: .45rem;
-      background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25);
-      padding: .35rem .85rem; border-radius: 999px;
-      font-size: .82rem; font-weight: 600; margin-bottom: 1.25rem;
-      backdrop-filter: blur(6px);
-    }
+    /* ───────────────────────────── Hero ─────────────────────────── */
+    .hero { padding-block: 8rem 7rem; }
+    .hero-stack { display: flex; flex-direction: column; gap: 2.125rem; align-items: flex-start; }
     .hero h1 {
-      font-size: clamp(2.1rem, 6vw, 3.6rem);
-      font-weight: 700; line-height: 1.1; letter-spacing: -1px;
-      margin-bottom: 1.1rem;
-      text-shadow: 0 2px 20px rgba(0,0,0,.22);
+      max-width: 1000px;
+      font-size: clamp(2.75rem, 6.6vw, 6rem);
+      line-height: .94; letter-spacing: -.042em; font-weight: 700;
     }
-    .hero-sub {
-      font-size: clamp(1rem, 2.2vw, 1.18rem);
-      opacity: .93; max-width: 620px; margin-bottom: 2rem;
-    }
-    .hero-cta { display: flex; gap: .8rem; flex-wrap: wrap; }
-    .hero-note {
-      margin-top: 1.4rem; font-size: .87rem; opacity: .8;
-      display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
-    }
+    .hero-sub { max-width: 560px; font-size: clamp(1.0625rem, 1.5vw, 1.25rem); line-height: 1.55; color: var(--lp-body); }
+    .hero-cta { display: flex; align-items: center; gap: 1.625rem; flex-wrap: wrap; }
+    .hero-note { font-size: .875rem; color: var(--lp-subtle); }
 
-    /* ────────────────────── Chiffres réels ───────────────────────────── */
+    /* Variante avec image de fond (HeroSettings) — le dégradé revient en calque */
+    .hero.has-bg {
+      color: #fff;
+      background-size: cover; background-position: center;
+      border-bottom: 1px solid var(--lp-line);
+    }
+    .hero.has-bg h1, .hero.has-bg .hero-sub, .hero.has-bg .hero-note { color: #fff; }
+    .hero.has-bg .hero-sub, .hero.has-bg .hero-note { opacity: .92; }
+    .hero.has-bg .lp-textlink { color: #fff; }
+
+    /* ────────────────────── Chiffres réels ──────────────────────── */
     .stats {
-      display: grid; gap: 1px;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: var(--radius); overflow: hidden;
-      margin-top: -2.5rem; position: relative; z-index: 5;
-      box-shadow: var(--shadow-lg);
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-top: 1px solid var(--lp-line-firm); border-bottom: 1px solid var(--lp-line-firm);
     }
-    .stat { background: var(--bg-card); padding: 1.4rem 1rem; text-align: center; }
-    .stat-value {
-      font-size: clamp(1.5rem, 3.5vw, 2.1rem); font-weight: 700;
-      color: var(--accent); line-height: 1.1;
-    }
-    .stat-label { font-size: .82rem; color: var(--text-muted); margin-top: .25rem; }
+    .stat { padding: 1.875rem 1.625rem; display: flex; flex-direction: column; gap: .3125rem; }
+    .stat + .stat { border-left: 1px solid var(--lp-line); }
+    .stat:first-child { padding-left: 0; }
+    .stat:last-child  { padding-right: 0; }
+    .stat-value { font-size: clamp(2rem, 3.4vw, 2.875rem); font-weight: 700; letter-spacing: -.045em; line-height: 1; }
+    .stat-label { font-size: .875rem; color: var(--lp-subtle); }
 
-    /* ───────────────────────── Sections ──────────────────────────────── */
-    section.block { padding: clamp(3rem, 7vw, 4.5rem) 0; }
-    .section-head { max-width: 640px; margin-bottom: 2.25rem; }
-    .section-kicker {
-      font-size: .8rem; font-weight: 700; letter-spacing: 1.2px;
-      text-transform: uppercase; color: var(--accent); margin-bottom: .5rem;
+    /* ─────────────────────────── Sections ───────────────────────── */
+    .block { padding-block: 6.5rem; }
+    .block-tight { padding-block: 0 6.5rem; }
+    h2.section-title {
+      max-width: 620px; font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+      line-height: 1.08; letter-spacing: -.036em; font-weight: 700;
     }
-    .section-head h2 {
-      font-size: clamp(1.5rem, 3.6vw, 2.1rem); font-weight: 700;
-      letter-spacing: -.5px; line-height: 1.2; margin-bottom: .6rem;
-    }
-    .section-head p { color: var(--text-muted); font-size: 1.02rem; }
+    .serif-it { font-family: var(--lp-serif); font-weight: 400; font-style: italic; letter-spacing: -.012em; }
 
-    /* ─────────────────── Piliers (ex-« fonctionnalités ») ────────────── */
-    /* Douze cartes identiques ne hiérarchisaient rien. Quatre piliers,
-       chacun renvoyant vers la section réelle du site. */
-    .pillars { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    /* ────────────────────────── Piliers ─────────────────────────── */
+    .pillars { display: flex; flex-direction: column; gap: 2.25rem; }
+    .pillar-lead {
+      background: var(--lp-dark); color: var(--lp-on-dark);
+      border-radius: 20px; padding: 2.75rem;
+      display: flex; align-items: center; gap: 3rem; flex-wrap: wrap;
+    }
+    .pillar-lead-body { display: flex; flex-direction: column; gap: 1rem; flex: 1 1 420px; }
+    .pillar-kicker {
+      display: flex; align-items: center; gap: .625rem;
+      font-size: .75rem; font-weight: 600; letter-spacing: .09em;
+      text-transform: uppercase; color: var(--lp-dark-kick);
+    }
+    .pillar-lead h3 {
+      max-width: 520px; font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+      line-height: 1.1; letter-spacing: -.036em; font-weight: 700;
+    }
+    .pillar-lead p { max-width: 520px; font-size: 1rem; line-height: 1.6; color: var(--lp-on-dark-m); }
+
+    .pillar-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
     .pillar {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 1.6rem;
-      text-decoration: none; color: inherit; display: block;
+      background: var(--lp-card); border: 1px solid var(--lp-line);
+      border-radius: 20px; padding: 2rem;
+      display: flex; flex-direction: column; gap: .875rem;
       transition: transform .2s, box-shadow .2s, border-color .2s;
     }
-    .pillar:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--accent); }
+    .pillar:hover { transform: translateY(-3px); box-shadow: var(--lp-shadow); border-color: var(--lp-accent); }
     .pillar-icon {
-      width: 46px; height: 46px; border-radius: 13px;
-      background: var(--accent-soft); color: var(--accent);
-      display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+      width: 44px; height: 44px; border-radius: 13px; background: var(--lp-band);
+      display: flex; align-items: center; justify-content: center; color: var(--lp-accent);
     }
-    .pillar-icon .material-icons { font-size: 1.5rem; }
-    .pillar h3 { font-size: 1.08rem; font-weight: 600; margin-bottom: .45rem; }
-    .pillar p { font-size: .92rem; color: var(--text-muted); }
-    .pillar-more {
-      display: inline-flex; align-items: center; gap: .25rem;
-      margin-top: .9rem; font-size: .88rem; font-weight: 600; color: var(--accent);
-    }
-    .pillar-more .material-icons { font-size: 1rem; transition: transform .2s; }
-    .pillar:hover .pillar-more .material-icons { transform: translateX(3px); }
+    .pillar-icon svg { width: 21px; height: 21px; }
+    .pillar h3 { font-size: 1.3125rem; line-height: 1.2; letter-spacing: -.028em; font-weight: 700; }
+    .pillar p  { font-size: .9375rem; line-height: 1.55; color: var(--lp-muted); }
 
-    /* ─────────────────── Aperçu réel du Bazar ────────────────────────── */
-    .peek-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-    .cards { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); margin-top: 1.75rem; }
-    .card {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit;
-      transition: transform .2s, box-shadow .2s;
-      display: flex; flex-direction: column;
-    }
-    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-    .card-media {
-      aspect-ratio: 4 / 3; background: var(--bg-hover);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-subtle); overflow: hidden;
-    }
-    .card-media img { width: 100%; height: 100%; object-fit: cover; }
-    .card-media .material-icons { font-size: 2rem; }
-    .card-body { padding: .85rem .95rem 1rem; flex: 1; display: flex; flex-direction: column; gap: .3rem; }
-    .card-title {
-      font-size: .95rem; font-weight: 600; line-height: 1.35;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    }
-    .card-meta { font-size: .82rem; color: var(--text-muted); margin-top: auto; }
-    .card-price { font-weight: 700; color: var(--accent); font-size: .95rem; }
+    /* ─────────────────────── Bande Madagascar ───────────────────── */
+    .band { background: var(--lp-band); padding-block: 5.25rem; }
+    .band-inner { max-width: 780px; display: flex; flex-direction: column; gap: 1.125rem; }
+    .band h2 { font-size: clamp(1.625rem, 3vw, 2.5rem); line-height: 1.12; letter-spacing: -.035em; font-weight: 700; }
+    .band p  { font-size: clamp(1rem, 1.4vw, 1.125rem); line-height: 1.65; color: var(--lp-body); }
 
-    /* ─────────────────────────── Annonces ────────────────────────────── */
+    /* ───────────────────────── Actualités ───────────────────────── */
+    .news { display: flex; flex-direction: column; gap: .875rem; max-width: 820px; }
     .ann {
-      background: var(--bg-card); border: 1px solid var(--border);
-      border-left: 4px solid var(--accent);
-      border-radius: 12px; padding: 1.1rem 1.3rem; margin-bottom: .85rem;
-      display: flex; gap: .9rem; align-items: flex-start;
+      background: var(--lp-card); border: 1px solid var(--lp-line);
+      border-left: 4px solid var(--lp-accent);
+      border-radius: 12px; padding: 1.125rem 1.375rem;
+      display: flex; gap: .875rem; align-items: flex-start;
     }
     .ann-info    { border-left-color: #2563eb; }
     .ann-success { border-left-color: #1a7f37; }
@@ -320,69 +267,84 @@
     .ann-warning .ann-dot { color: #b45309; }
     .ann-danger .ann-dot { color: #d93025; }
     .ann-title { font-weight: 600; margin-bottom: .2rem; }
-    .ann-text { color: var(--text-muted); font-size: .93rem; }
-    .ann-date { font-size: .78rem; color: var(--text-subtle); margin-top: .45rem; }
-    .empty {
-      text-align: center; padding: 2.5rem 1rem; color: var(--text-subtle);
-      border: 1px dashed var(--border); border-radius: var(--radius);
-    }
+    .ann-text  { color: var(--lp-muted); font-size: .9375rem; }
+    .ann-date  { font-size: .78rem; color: var(--lp-subtle); margin-top: .45rem; }
 
-    /* ─────────────────────── Appel à l'action ────────────────────────── */
-    .cta {
-      background: linear-gradient(135deg, var(--hero-from, #5c2a08), var(--hero-to, #A0522D));
-      color: #fff; border-radius: 22px; padding: clamp(2.2rem, 5vw, 3.2rem);
-      text-align: center; position: relative; overflow: hidden;
-    }
-    .cta::before {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(ellipse 60% 70% at 50% 0%, rgba(255,255,255,.16), transparent 65%);
-    }
-    .cta > * { position: relative; z-index: 1; }
-    .cta h2 { font-size: clamp(1.5rem, 3.6vw, 2.1rem); font-weight: 700; margin-bottom: .6rem; }
-    .cta p { opacity: .9; margin-bottom: 1.6rem; max-width: 460px; margin-inline: auto; }
-    .cta-btns { display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; }
+    /* ─────────────────────── Action finale ──────────────────────── */
+    .final { padding-block: 6.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.625rem; text-align: center; }
+    .final h2 { max-width: 720px; font-size: clamp(1.875rem, 3.8vw, 3.25rem); line-height: 1.08; letter-spacing: -.04em; font-weight: 700; }
+    .final p  { max-width: 440px; font-size: 1.125rem; line-height: 1.55; color: var(--lp-muted); }
 
-    /* ──────────────────────────── Mobile ─────────────────────────────── */
-    @media (max-width: 860px) {
+    /* ──────────────────────────── Pied ──────────────────────────── */
+    .lp-foot {
+      border-top: 1px solid var(--lp-line);
+      padding-block: 2.125rem;
+      display: flex; align-items: center; gap: 1.625rem; flex-wrap: wrap;
+    }
+    .lp-foot-name { font-size: .9375rem; font-weight: 700; letter-spacing: -.3px; margin-right: auto; }
+    .lp-foot a, .lp-foot span:not(.lp-foot-name) { font-size: .875rem; color: var(--lp-subtle); }
+    .lp-foot a:hover { color: var(--lp-ink); }
+
+    /* ─────────────────────────── Mobile ─────────────────────────── */
+    @media (max-width: 1023px) {
+      .wrap, .lp-nav-inner { padding-inline: 2rem; }
+      .pillar-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 767px) {
+      .wrap, .lp-nav-inner { padding-inline: 1.375rem; }
+      .lp-nav-inner { height: 60px; gap: .625rem; }
       .lp-nav-links { display: none; }
+      .hero { padding-block: 3.5rem 3rem; }
+      .hero-stack { gap: 1.5rem; }
+      .hero-cta { flex-direction: column; align-items: stretch; gap: 1rem; width: 100%; }
+      .hero-cta .btn { width: 100%; }
+      .hero-cta .lp-textlink { text-align: center; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--lp-line); border-radius: 16px; overflow: hidden; }
+      .stat { padding: 1.25rem 1.125rem; border-left: 1px solid var(--lp-line); border-top: 1px solid var(--lp-line); }
+      .stat:nth-child(-n+2) { border-top: 0; }
+      .stat:nth-child(odd)  { border-left: 0; }
+      .stat:first-child, .stat:last-child { padding-inline: 1.125rem; }
+      .block { padding-block: 2.75rem; }
+      .block-tight { padding-block: 0 2.75rem; }
+      .pillar-grid { grid-template-columns: minmax(0, 1fr); }
+      .pillar-lead { padding: 1.625rem; gap: 1rem; }
+      .band { padding-block: 2.75rem; }
+      .final { padding-block: 3rem; }
+      .final .btn { width: 100%; }
     }
-    @media (max-width: 480px) {
-      .lp-nav-inner { height: 58px; gap: .5rem; }
-      .lp-brand img { height: 30px; }
-      .lp-brand .lp-wordmark { font-size: 1rem; }
-      .btn { padding: .55rem 1rem; font-size: .9rem; }
-      .stats { margin-top: -1.5rem; }
-      .hero-cta .btn { flex: 1 1 100%; }
+    @media (max-width: 400px) {
+      .lp-brand-name { font-size: 1rem; }
+      .btn-nav { padding-inline: 1rem; font-size: .875rem; }
     }
   </style>
 </head>
 
 <body>
-  <a href="#contenu" class="skip-link">Aller au contenu</a>
+  <a href="#contenu" class="skip-link">{% trans "Aller au contenu" %}</a>
 
   <!-- ══════════════════════ Navigation ══════════════════════ -->
   <nav class="lp-nav">
     <div class="lp-nav-inner">
       <a href="{% url 'landing' %}" class="lp-brand" aria-label="Vazimba — accueil">
-        <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="" onerror="this.remove()">
-        <span class="lp-wordmark">VAZIMBA</span>
+        <span class="lp-brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="var(--lp-on-accent)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 9v11h16V9z"></path><path d="M9 20v-6h6v6"></path></svg>
+        </span>
+        <span class="lp-brand-name">Vazimba</span>
       </a>
 
       <div class="lp-nav-links">
-        <a href="#decouvrir">Découvrir</a>
         <a href="{% url 'bazar:index' %}">Bazar</a>
-        <a href="{% url 'tourisme:home' %}">Tourisme</a>
-        <a href="{% url 'group:list' %}">Groupes</a>
-        {% if announcements %}<a href="#actualites">Actualités</a>{% endif %}
+        <a href="{% url 'tourisme:home' %}">{% trans "Tourisme" %}</a>
+        <a href="{% url 'group:list' %}">{% trans "Groupes" %}</a>
       </div>
 
-      <div class="lp-actions">
+      <div class="lp-nav-actions">
         <button id="theme-toggle" class="icon-btn" type="button"
-                title="Changer de thème" aria-label="Changer de thème">
+                title="{% trans 'Changer de thème' %}" aria-label="{% trans 'Changer de thème' %}">
           <span class="material-icons" id="theme-icon">dark_mode</span>
         </button>
-        <a href="{% url 'login' %}" class="btn btn-ghost">Connexion</a>
-        <a href="{% url 'register' %}" class="btn btn-primary">S'inscrire</a>
+        <a href="{% url 'login' %}" class="btn btn-ghost btn-nav">{% trans "Connexion" %}</a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-nav">{% trans "S'inscrire" %}</a>
       </div>
     </div>
   </nav>
@@ -390,22 +352,24 @@
   <main id="contenu">
 
   <!-- ══════════════════════════ Hero ══════════════════════════ -->
+  {% comment %}
+    La syntaxe {# … #} de Django est monoligne : écrite sur deux lignes, elle
+    n'est pas reconnue comme un commentaire et s'affiche telle quelle en haut
+    de la page. D'où {% comment %} ici.
+
+    Sans image de fond : hero typographique. Avec : l'image passe derrière et
+    le dégradé configurable en admin revient en calque semi-transparent.
+  {% endcomment %}
   <section class="hero {% if hero.background_image %}has-bg{% endif %}"
-           style="--hero-from: {{ hero.gradient_from|default:'#5c2a08' }};
-                  --hero-to: {{ hero.gradient_to|default:'#A0522D' }};
-                  {% if hero.background_image %}background-image: linear-gradient(135deg, {{ hero.gradient_from|default:'#5c2a08' }}cc, {{ hero.gradient_to|default:'#A0522D' }}cc), url('{{ hero.background_image.url }}'); background-size: cover; background-position: center;{% endif %}">
-    <div class="wrap hero-inner">
-      <span class="hero-eyebrow">🇲🇬 Fait à Madagascar, pour les Malgaches</span>
-      <h1>{{ hero.title|linebreaksbr }}</h1>
+           {% if hero.background_image %}style="background-image: linear-gradient(135deg, {{ hero.gradient_from|default:'#5c2a08' }}d9, {{ hero.gradient_to|default:'#A0522D' }}d9), url('{{ hero.background_image.url }}');"{% endif %}>
+    <div class="wrap hero-stack">
+      <h1>{{ hero.title|hero_accent }}</h1>
       <p class="hero-sub">{{ hero.subtitle }}</p>
       <div class="hero-cta">
-        <a href="{% url 'register' %}" class="btn btn-lg btn-on-hero">Créer un compte gratuit</a>
-        <a href="{% url 'login' %}" class="btn btn-lg btn-on-hero-ghost">J'ai déjà un compte</a>
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg">{% trans "Créer un compte gratuit" %}</a>
+        <a href="{% url 'login' %}" class="lp-textlink">{% trans "J'ai déjà un compte" %}</a>
       </div>
-      <p class="hero-note">
-        <span class="material-icons" style="font-size:1.05rem">check_circle</span>
-        Gratuit, sans publicité imposée · Français, Malagasy, English
-      </p>
+      <p class="hero-note">{% trans "Gratuit" %} · Français, Malagasy, English</p>
     </div>
   </section>
 
@@ -415,173 +379,118 @@
     <div class="stats">
       {% for s in stats %}
       <div class="stat">
-        <div class="stat-value">{{ s.valeur }}</div>
-        <div class="stat-label">{{ s.label }}</div>
+        <span class="stat-value">{{ s.valeur }}</span>
+        <span class="stat-label">{{ s.label }}</span>
       </div>
       {% endfor %}
     </div>
   </div>
   {% endif %}
 
-  <!-- ═══════════════════════ Les 4 piliers ═══════════════════════ -->
+  <!-- ═══════════════════════ Les piliers ═══════════════════════ -->
   <section class="block" id="decouvrir">
-    <div class="wrap">
-      <div class="section-head">
-        <p class="section-kicker">Ce que vous y trouverez</p>
-        <h2>Quatre raisons d'ouvrir Vazimba chaque jour</h2>
-        <p>Un réseau social, une place de marché et un guide du pays — au même endroit.</p>
-      </div>
+    <div class="wrap pillars">
+      <h2 class="section-title">
+        {% trans "Quatre raisons d'ouvrir Vazimba" %}
+        <span class="serif-it">{% trans "chaque jour" %}</span>
+      </h2>
 
-      <div class="pillars">
+      <a class="pillar-lead" href="{% url 'bazar:index' %}">
+        <div class="pillar-lead-body">
+          <span class="pillar-kicker">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11h-15z"></path><path d="M8 9V6a4 4 0 0 1 8 0v3"></path></svg>
+            Bazar
+          </span>
+          <h3>{% trans "Vendez à vos voisins, pas à des inconnus." %}</h3>
+          <p>{% trans "Une annonce en quelques minutes, filtrée par catégorie et par région. Les commerçants sérieux portent un badge vérifié." %}</p>
+        </div>
+        <span class="btn btn-pale btn-md">
+          {% trans "Voir les annonces" %}
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+        </span>
+      </a>
+
+      <div class="pillar-grid">
         <a class="pillar" href="{% url 'register' %}">
-          <div class="pillar-icon"><span class="material-icons">forum</span></div>
-          <h3>Votre fil, vos gens</h3>
-          <p>Publiez textes, photos et vidéos. Stories éphémères de 24 h, réactions,
-             commentaires et messages privés en temps réel.</p>
-          <span class="pillar-more">Rejoindre <span class="material-icons">arrow_forward</span></span>
-        </a>
-
-        <a class="pillar" href="{% url 'bazar:index' %}">
-          <div class="pillar-icon"><span class="material-icons">storefront</span></div>
-          <h3>Bazar — acheter &amp; vendre</h3>
-          <p>Déposez une annonce en quelques minutes, filtrez par catégorie et par région,
-             et contactez le vendeur directement. Badge « vendeur vérifié ».</p>
-          <span class="pillar-more">Voir les annonces <span class="material-icons">arrow_forward</span></span>
+          <span class="pillar-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.4 8.4 0 0 1-3.8-.9L3 20.5l1.5-4.4A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"></path></svg>
+          </span>
+          <h3>{% trans "Votre fil, vos gens" %}</h3>
+          <p>{% trans "Textes, photos, vidéos. Stories qui disparaissent en 24 h, réactions et messages privés en temps réel." %}</p>
         </a>
 
         <a class="pillar" href="{% url 'tourisme:home' %}">
-          <div class="pillar-icon"><span class="material-icons">map</span></div>
-          <h3>Découvrir Madagascar</h3>
-          <p>Lieux à visiter région par région, avis de voyageurs et guides
-             touristiques locaux à contacter.</p>
-          <span class="pillar-more">Explorer le pays <span class="material-icons">arrow_forward</span></span>
+          <span class="pillar-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path><path d="M9 3v15M15 6v15"></path></svg>
+          </span>
+          <h3>{% trans "Découvrir Madagascar" %}</h3>
+          <p>{% trans "Les lieux région par région, les avis de ceux qui y sont allés, et des guides locaux à contacter." %}</p>
         </a>
 
         <a class="pillar" href="{% url 'group:list' %}">
-          <div class="pillar-icon"><span class="material-icons">groups</span></div>
-          <h3>Groupes &amp; directs</h3>
-          <p>Communautés par passion ou par région, événements, et diffusion
-             en direct depuis votre navigateur.</p>
-          <span class="pillar-more">Voir les groupes <span class="material-icons">arrow_forward</span></span>
+          <span class="pillar-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20a6 6 0 0 1 12 0"></path><path d="M16 5.5a3.2 3.2 0 0 1 0 5M18.5 20a6 6 0 0 0-2.2-4.6"></path></svg>
+          </span>
+          <h3>{% trans "Groupes & directs" %}</h3>
+          <p>{% trans "Des communautés par passion ou par région, et le direct depuis le navigateur — sans rien installer." %}</p>
         </a>
       </div>
     </div>
   </section>
 
-  <!-- ═════════════ Aperçu réel : dernières annonces ═════════════ -->
-  {% if annonces_recentes %}
-  <section class="block" style="background: var(--bg-subtle); border-block: 1px solid var(--border);">
+  <!-- ═══════════════════ Bande Madagascar ═══════════════════ -->
+  {# .band-inner limite la largeur du texte ; il doit être IMBRIQUÉ dans .wrap #}
+  {# et non cumulé avec lui, sinon son max-width écrase celui de .wrap et le  #}
+  {# bloc se recentre au lieu de s'aligner sur le reste de la page.           #}
+  <section class="band">
     <div class="wrap">
-      <div class="peek-head">
-        <div class="section-head" style="margin-bottom:0">
-          <p class="section-kicker">En ce moment sur le Bazar</p>
-          <h2>Les dernières annonces</h2>
-        </div>
-        <a href="{% url 'bazar:index' %}" class="btn btn-ghost">Tout voir</a>
-      </div>
-
-      <div class="cards">
-        {% for a in annonces_recentes %}
-        <a class="card" href="{% url 'bazar:detail' pk=a.pk %}">
-          <div class="card-media">
-            {% with img=a.images.first %}
-              {% if img %}
-                <img src="{{ img.image.url }}" alt="" loading="lazy" onerror="this.remove()">
-              {% else %}
-                <span class="material-icons">image</span>
-              {% endif %}
-            {% endwith %}
-          </div>
-          <div class="card-body">
-            <span class="card-title">{{ a.title }}</span>
-            {% if a.price %}<span class="card-price">{{ a.formatted_price }}</span>{% endif %}
-            <span class="card-meta">{{ a.get_region_display|default:"Madagascar" }}</span>
-          </div>
-        </a>
-        {% endfor %}
+      <div class="band-inner">
+        <h2>{% trans "Construit pour d'ici, pas adapté depuis ailleurs." %}</h2>
+        <p>{% trans "Les régions de Madagascar structurent la recherche, les prix sont en ariary, et un mode économie charge les médias à la demande pour que le site reste utilisable quand le réseau ne suit pas." %}</p>
       </div>
     </div>
   </section>
-  {% endif %}
-
-  <!-- ═════════════ Aperçu réel : lieux à découvrir ═════════════ -->
-  {% if lieux_vedette %}
-  <section class="block">
-    <div class="wrap">
-      <div class="peek-head">
-        <div class="section-head" style="margin-bottom:0">
-          <p class="section-kicker">Tourisme</p>
-          <h2>Des lieux à découvrir</h2>
-        </div>
-        <a href="{% url 'tourisme:lieux_list' %}" class="btn btn-ghost">Tous les lieux</a>
-      </div>
-
-      <div class="cards">
-        {% for l in lieux_vedette %}
-        <a class="card" href="{% url 'tourisme:lieu_detail' slug=l.slug %}">
-          <div class="card-media">
-            {% with img=l.images.first %}
-              {% if img %}
-                <img src="{{ img.image.url }}" alt="" loading="lazy" onerror="this.remove()">
-              {% else %}
-                <span class="material-icons">landscape</span>
-              {% endif %}
-            {% endwith %}
-          </div>
-          <div class="card-body">
-            <span class="card-title">{{ l.name }}</span>
-            <span class="card-meta">{{ l.get_region_display }}</span>
-          </div>
-        </a>
-        {% endfor %}
-      </div>
-    </div>
-  </section>
-  {% endif %}
 
   <!-- ═══════════════════════ Actualités ═══════════════════════ -->
   {% if announcements %}
-  <section class="block" id="actualites" style="background: var(--bg-subtle); border-block: 1px solid var(--border);">
-    <div class="wrap" style="max-width: 820px;">
-      <div class="section-head">
-        <p class="section-kicker">Annonces</p>
-        <h2>Actualités de la plateforme</h2>
-      </div>
-
-      {% for ann in announcements %}
-      <div class="ann ann-{{ ann.priority }}">
-        <span class="ann-dot" aria-hidden="true"></span>
-        <div>
-          <div class="ann-title">{{ ann.title }}</div>
-          <div class="ann-text">{{ ann.content|linebreaksbr }}</div>
-          <div class="ann-date">
-            {{ ann.start_date|date:"d F Y" }}{% if ann.end_date %} — jusqu'au {{ ann.end_date|date:"d F Y" }}{% endif %}
+  <section class="block" id="actualites">
+    <div class="wrap">
+      <h2 class="section-title" style="margin-bottom: 2rem;">{% trans "Actualités de la plateforme" %}</h2>
+      <div class="news">
+        {% for ann in announcements %}
+        <div class="ann ann-{{ ann.priority }}">
+          <span class="ann-dot" aria-hidden="true"></span>
+          <div>
+            <div class="ann-title">{{ ann.title }}</div>
+            <div class="ann-text">{{ ann.content|linebreaksbr }}</div>
+            <div class="ann-date">
+              {{ ann.start_date|date:"d F Y" }}{% if ann.end_date %} — {% trans "jusqu'au" %} {{ ann.end_date|date:"d F Y" }}{% endif %}
+            </div>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
   </section>
   {% endif %}
 
-  <!-- ═══════════════════ Appel à l'action final ═══════════════════ -->
-  <section class="block">
-    <div class="wrap">
-      <div class="cta">
-        <h2>Rejoignez la communauté</h2>
-        <p>Créez votre compte en une minute. C'est gratuit, et vous pouvez
-           commencer à publier tout de suite.</p>
-        <div class="cta-btns">
-          <a href="{% url 'register' %}" class="btn btn-lg btn-on-hero">Créer mon compte</a>
-          <a href="{% url 'login' %}" class="btn btn-lg btn-on-hero-ghost">Se connecter</a>
-        </div>
-      </div>
-    </div>
+  <!-- ═══════════════════ Action finale ═══════════════════ -->
+  <section class="wrap final">
+    <h2>{% trans "Rejoignez la communauté" %}</h2>
+    <p>{% trans "Créez votre compte en une minute. C'est gratuit, et vous pouvez publier tout de suite." %}</p>
+    <a href="{% url 'register' %}" class="btn btn-primary btn-lg">{% trans "Créer mon compte" %}</a>
   </section>
 
   </main>
 
-  {% include 'snippets/footer.html' %}
+  <div class="wrap">
+    <footer class="lp-foot">
+      <span class="lp-foot-name">Vazimba</span>
+      <a href="{% url 'privacy-policy' %}">{% trans "Confidentialité" %}</a>
+      <a href="{% url 'legal:cgu' %}">CGU</a>
+      <span>vazimba.io</span>
+    </footer>
+  </div>
 
   <script>
     (function () {

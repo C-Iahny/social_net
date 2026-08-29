@@ -8,13 +8,18 @@ from django.utils import timezone
 class HeroSettings(models.Model):
     title         = models.CharField(
         max_length=200,
-        default="Connectez-vous.\nPartagez. Grandissez.",
+        default="Le réseau social qui parle *malagasy*.",
         verbose_name="Titre principal (H1)",
-        help_text="Saut de ligne possible avec \\n — il sera affiché comme <br> dans le navigateur.",
+        help_text=(
+            "Saut de ligne possible avec \\n. "
+            "Un mot entre *astérisques* s'affiche dans le serif italique de la "
+            "charte — par exemple : Le réseau social qui parle *malagasy*."
+        ),
     )
     subtitle      = models.TextField(
-        default="Si vous connaissez ce que c'est Vazimba et que vous en êtes un(e), alors vous êtes au bon endroit car cette plateforme est conçue pour les Vazimba. Pour un partage d'idées, de messages et d'informations en temps réel.",
+        default="Un fil d'actualité, une place de marché et un guide du pays — au même endroit.",
         verbose_name="Texte d'accroche",
+        help_text="Une phrase, affichée sous le titre. Les phrases courtes rendent mieux.",
     )
     # Défauts alignés sur la charte acajou/ambre du reste de l'interface
     # (--accent #8B4513 dans snippets/base_css.html). Les anciens défauts
