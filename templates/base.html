@@ -6,13 +6,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Vazimba</title>
+    <!-- Titre surchargeable par page : toutes les pages s'appelaient
+         « Vazimba », ce qui rend les onglets et l'historique du navigateur
+         indistinguables et dessert le référencement. -->
+    <title>{% block page_title %}Vazimba{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Vazimba — le réseau social malgache : fil d'actualité, stories, Bazar, groupes et découverte de Madagascar.{% endblock %}">
     <link rel="icon" type="image/png" href="{% static 'logo/vazimba_icon.png' %}">
     <link rel="apple-touch-icon" href="{% static 'logo/vazimba_v2_icon.png' %}">
 
     <!-- ── PWA ── -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#6366f1">
+    <!-- theme-color était #6366f1 (indigo), hérité d'une ancienne charte :
+         la barre système du téléphone jurait avec l'interface acajou. -->
+    <meta name="theme-color" content="#8B4513" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#16100c" media="(prefers-color-scheme: dark)">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -199,6 +206,21 @@
     window.addEventListener('load', function() { _done(); });
 })();
 </script>
+
+<!-- Lien d'évitement : premier élément focusable de la page, il permet de
+     sauter la barre de navigation au clavier ou au lecteur d'écran.
+     Visible uniquement au focus. -->
+<a href="#contenu-principal" class="zoot-skip-link">{% trans "Aller au contenu" %}</a>
+<style>
+.zoot-skip-link {
+    position: absolute; left: -9999px; top: 0; z-index: 10000;
+    background: var(--accent); color: #fff;
+    padding: .7rem 1.2rem; border-radius: 0 0 10px 0;
+    font-weight: 700; text-decoration: none;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+.zoot-skip-link:focus { left: 0; }
+</style>
 
 <!---------------HEADER ------------------->
         {% include 'snippets/header.html' %}
@@ -544,7 +566,7 @@
 	</style>
 
 
-	<main>
+	<main id="contenu-principal" tabindex="-1">
         {% if messages %}
         <div id="django-messages" style="position:fixed;top:70px;right:1rem;z-index:9000;display:flex;flex-direction:column;gap:.4rem;max-width:340px;">
             {% for message in messages %}
