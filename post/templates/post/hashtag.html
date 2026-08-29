@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load post_tags %}
 {% load i18n %}
 
 {% block content %}
@@ -141,7 +142,7 @@ body { background: var(--bg); }
             {% endif %}
 
             {% if post.body %}
-            <div class="pc-body ht-body">{{ post.body|safe }}</div>
+            <div class="pc-body ht-body">{{ post.body|safe_html }}</div>
             {% endif %}
 
             {% include 'post/_post_media.html' %}

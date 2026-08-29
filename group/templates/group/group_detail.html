@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load post_tags %}
 {% load i18n %}
 
 {% block content %}
@@ -1036,7 +1037,7 @@
                     </div>
                 </div>
                 {% if post.title %}<p class="gd-pinned-title">{{ post.title }}</p>{% endif %}
-                {% if post.body %}<p class="gd-pinned-body">{{ post.body|safe|truncatewords:40 }}</p>{% endif %}
+                {% if post.body %}<p class="gd-pinned-body">{{ post.body|safe_html|truncatewords_html:40 }}</p>{% endif %}
             </div>
             {% endfor %}
         </div>

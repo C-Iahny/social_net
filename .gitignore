@@ -31,3 +31,11 @@ vazimba-android/android/app/build/
 vazimba-android/android/build/
 vazimba-android/android/.gradle/
 vazimba-android/**/build/
+
+# Certificat de signature Android — ne doit jamais être versionné
+*.pem
+*.jks
+*.keystore
+
+# Copies de travail temporaires des agents Claude Code (jamais à versionner)
+.claude/worktrees/

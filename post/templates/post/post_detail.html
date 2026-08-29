@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load post_tags %}
 {% load i18n %}
 
 {% block extra_head %}
@@ -365,7 +366,7 @@
             <h1 class="pd-title">{{ post.title }}</h1>
             {% endif %}
             {% if post.body %}
-            <div class="pd-content">{{ post.body|safe }}</div>
+            <div class="pd-content">{{ post.body|safe_html }}</div>
             {% endif %}
         </div>
 

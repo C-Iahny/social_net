@@ -6,11 +6,14 @@ from django.core.paginator import Paginator
 from django.template.loader import render_to_string
 
 from django.core.files.storage import default_storage
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST as _require_POST
 from django.core.files.storage import FileSystemStorage
 import os
 from PIL import Image
 import json
 import base64
+import uuid
 import requests
 import logging
 from django.core import files
@@ -28,7 +31,8 @@ from post.models import Post, Follow
 from post.models import Comment as CommentModel, Reaction as ReactionModel, PostMedia
 from post.views import _attach_media
 
-TEMP_PROFILE_IMAGE_NAME = "temp_profile_image.png"
+# Taille maximale acceptée pour un avatar envoyé en base64.
+MAX_AVATAR_BYTES = 10 * 1024 * 1024
 
 
 def register_view(request, *args, **kwargs):
@@ -52,8 +56,14 @@ def register_view(request, *args, **kwargs):
 			email = form.cleaned_data.get('email').lower()
 			raw_password = form.cleaned_data.get('password1')
 			account = authenticate(email=email, password=raw_password)
-			login(request, account)
-			destination = kwargs.get("next")
+			# authenticate() peut renvoyer None (compte désactivé, backend
+			# indisponible) — login(request, None) lèverait une 500.
+			if account is not None:
+				login(request, account)
+			else:
+				logger.warning("register_view : authentification impossible juste après l'inscription de %s", email)
+				return redirect('login')
+			destination = _safe_redirect_target(request, kwargs.get("next"))
 			if destination:
 				return redirect(destination)
 			return redirect('post:post-view')
@@ -97,11 +107,34 @@ def logout_view(request):
 
 
 def get_redirect_if_exists(request):
-	redirect = None
-	if request.GET:
-		if request.GET.get("next"):
-			redirect = str(request.GET.get("next"))
-	return redirect
+	"""Retourne le ?next= de la requête, uniquement s'il pointe vers ce site.
+
+	Sans cette validation, /login/?next=https://evil.example.com redirigeait
+	l'utilisateur vers un site tiers juste après une connexion réussie
+	(redirection ouverte → hameçonnage crédible).
+	"""
+	nxt = request.GET.get("next") if request.GET else None
+	return _safe_redirect_target(request, nxt)
+
+
+def _safe_redirect_target(request, url):
+	"""Ne renvoie `url` que si elle reste sur le domaine courant."""
+	if not url:
+		return None
+	if not url_has_allowed_host_and_scheme(
+		url,
+		allowed_hosts={request.get_host()},
+		require_https=request.is_secure(),
+	):
+		return None
+	return url
+
+
+def _visible_posts_for(viewer, author):
+	"""Posts de `author` visibles par `viewer`, du plus récent au plus ancien."""
+	from post.visibility import visible_posts
+	qs = Post.objects.filter(author=author).select_related('author', 'group').order_by("-id")
+	return visible_posts(qs, viewer, author=author)
 
 
 def account_view(request, *args, **kwargs):
@@ -113,8 +146,8 @@ def account_view(request, *args, **kwargs):
 	except Account.DoesNotExist:
 		return HttpResponse("Utilisateur introuvable.", status=404)
 
-	# Posts (first page)
-	all_posts_qs = Post.objects.filter(author=account).order_by("-id").select_related('author', 'group')
+	# Posts (first page) — seuls les posts réellement visibles par le visiteur.
+	all_posts_qs = _visible_posts_for(request.user, account)
 	paginator   = Paginator(all_posts_qs, 6)
 	first_page  = paginator.get_page(1)
 	posts = list(first_page)
@@ -271,8 +304,11 @@ def account_search_view(request):
 		from post.models import Hashtag
 
 		# Users
+		# Recherche par pseudo uniquement : chercher sur `email` permettait de
+		# confirmer l'existence d'un compte à partir d'une adresse e-mail
+		# (énumération de comptes), y compris pour les profils hide_email=True.
 		accounts_qs = Account.objects.filter(
-			Q(username__icontains=query) | Q(email__icontains=query)
+			Q(username__icontains=query)
 		).exclude(pk=request.user.pk if request.user.is_authenticated else 0)[:20]
 
 		accounts_with_friend = []
@@ -287,10 +323,11 @@ def account_search_view(request):
 		else:
 			accounts_with_friend = [(acc, False) for acc in accounts_qs]
 
-		# Posts
+		# Posts — uniquement les posts publiés : la recherche renvoyait aussi
+		# les brouillons et posts programmés des autres utilisateurs.
 		posts_qs = Post.objects.filter(
 			Q(title__icontains=query) | Q(body__icontains=query)
-		).select_related('author')[:20]
+		).filter(status='published').select_related('author')[:20]
 
 		# Hashtags
 		hashtags_qs = Hashtag.objects.filter(tag__icontains=query)[:10]
@@ -341,28 +378,40 @@ def edit_account_view(request, *args, **kwargs):
 
 
 def save_temp_profile_image_from_base64String(imageString, user):
-	INCORRECT_PADDING_EXCEPTION = "Incorrect padding"
-	try:
-		if not os.path.exists(settings.TEMP):
-			os.makedirs(settings.TEMP)
-		url = os.path.join(settings.TEMP, TEMP_PROFILE_IMAGE_NAME)
-		storage = FileSystemStorage(location=settings.TEMP)
-		image = base64.b64decode(imageString)
-		with open(url, 'wb') as f:
-			f.write(image)
-		return url
-	except Exception as e:
-		raise Exception(str(e))
+	"""Écrit l'image envoyée en base64 dans un fichier temporaire propre à l'utilisateur.
+
+	Le nom de fichier était auparavant une constante partagée
+	(temp_profile_image.png) : deux recadrages simultanés écrivaient dans le
+	même fichier et l'un des utilisateurs se retrouvait avec la photo de
+	l'autre en avatar. Le nom inclut désormais l'identifiant du compte et un
+	suffixe aléatoire.
+	"""
+	os.makedirs(settings.TEMP, exist_ok=True)
+	image = base64.b64decode(imageString, validate=False)
+	if len(image) > MAX_AVATAR_BYTES:
+		raise ValueError("Image trop volumineuse (max 10 Mo).")
+	filename = f'temp_profile_{user.pk}_{uuid.uuid4().hex}.png'
+	url = os.path.join(settings.TEMP, filename)
+	with open(url, 'wb') as f:
+		f.write(image)
+	return url
 
 
+@_require_POST
 def crop_image(request, *args, **kwargs):
-	payload = {}
 	user = request.user
-	if request.POST and user.is_authenticated:
-		try:
-			imageString = request.POST.get("image")
-			url = save_temp_profile_image_from_base64String(imageString, user)
-			img = Image.open(url)
+	if not user.is_authenticated:
+		return JsonResponse({'result': 'error', 'exception': 'Connexion requise.'}, status=401)
+
+	imageString = request.POST.get("image")
+	if not imageString:
+		return JsonResponse({'result': 'error', 'exception': 'Aucune image reçue.'}, status=400)
+
+	url = None
+	try:
+		url = save_temp_profile_image_from_base64String(imageString, user)
+		with Image.open(url) as img:
+			img.load()
 
 			cropX = int(float(str(request.POST.get("cropX"))))
 			cropY = int(float(str(request.POST.get("cropY"))))
@@ -373,23 +422,38 @@ def crop_image(request, *args, **kwargs):
 			if cropY < 0: cropY = 0
 
 			cropped_img = img.crop((cropX, cropY, cropX + cropWidth, cropY + cropHeight))
-			cropped_img = cropped_img.resize((200, 200), Image.LANCZOS)
-			cropped_img.save(url)
+			cropped_img = cropped_img.convert('RGB').resize((200, 200), Image.LANCZOS)
+		cropped_img.save(url, format='PNG')
 
-			user.profile_image.delete(save=False)
+		user.profile_image.delete(save=False)
 
+		# Le fichier était laissé ouvert : sous Windows le descripteur
+		# empêchait ensuite la suppression du fichier temporaire.
+		with open(url, 'rb') as fh:
 			user.profile_image.save(
 				get_profile_image_filepath(user, url),
-				files.File(open(url, 'rb')),
+				files.File(fh),
 			)
-			user.save()
+		user.save()
 
-			payload['result'] = 'success'
-			payload['cropped_profile_image'] = user.profile_image.url
-		except Exception as e:
-			payload['result'] = 'error'
-			payload['exception'] = str(e)
-	return JsonResponse(payload)
+		return JsonResponse({
+			'result': 'success',
+			'cropped_profile_image': user.profile_image.url,
+		})
+	except Exception as e:
+		# Ne pas renvoyer le détail de l'exception au client (chemins serveur,
+		# détails d'implémentation) — il est journalisé côté serveur.
+		logger.exception("crop_image a échoué pour l'utilisateur %s : %s", user.pk, e)
+		return JsonResponse({
+			'result': 'error',
+			'exception': "Le recadrage de l'image a échoué.",
+		}, status=400)
+	finally:
+		if url:
+			try:
+				os.remove(url)
+			except OSError:
+				pass
 
 
 def get_profile_image_filepath(user, filename):
@@ -423,7 +487,7 @@ def global_search_api(request):
 	# Posts
 	posts_qs = Post.objects.filter(
 		Q(title__icontains=query) | Q(body__icontains=query)
-	).select_related('author')[:5]
+	).filter(status='published').select_related('author')[:5]
 	posts = [{'id': p.id, 'title': p.title or p.body[:60], 'author': p.author.username} for p in posts_qs]
 
 	# Annonces bazar
@@ -452,8 +516,12 @@ def profile_posts_more(request, *args, **kwargs):
 	except Account.DoesNotExist:
 		return JsonResponse({'posts_html': '', 'has_next': False})
 
-	page_num = int(request.GET.get('page', 2))
-	all_posts_qs = Post.objects.filter(author=account).order_by("-id").select_related('author', 'group')
+	# ?page=abc levait une ValueError non interceptée (500).
+	try:
+		page_num = int(request.GET.get('page', 2))
+	except (TypeError, ValueError):
+		page_num = 2
+	all_posts_qs = _visible_posts_for(request.user, account)
 	paginator = Paginator(all_posts_qs, 6)
 	page = paginator.get_page(page_num)
 	posts = list(page)
@@ -544,9 +612,18 @@ def update_cover_image(request):
 	if cover_file.size > 10 * 1024 * 1024:
 		return JsonResponse({'error': 'Fichier trop volumineux (max 10 Mo).'}, status=400)
 
+	# L'extension était reprise du nom de fichier envoyé par le client : un
+	# fichier « image/png » nommé payload.html était stocké tel quel sur le
+	# bucket public et servi en text/html (XSS stocké sur le domaine média).
+	# On la déduit désormais du type MIME validé ci-dessus.
+	_EXT_BY_MIME = {
+		'image/jpeg': '.jpg', 'image/jpg': '.jpg', 'image/png': '.png',
+		'image/webp': '.webp', 'image/gif': '.gif', 'image/bmp': '.bmp',
+		'image/tiff': '.tiff', 'image/heic': '.heic', 'image/heif': '.heif',
+	}
 	try:
 		import uuid
-		ext = os.path.splitext(cover_file.name)[-1].lower() or '.jpg'
+		ext = _EXT_BY_MIME.get(mime, '.jpg')
 		filename = f"cover_images/{uuid.uuid4().hex}{ext}"
 		cover_file.seek(0)
 		account = request.user
@@ -560,7 +637,7 @@ def update_cover_image(request):
 		return JsonResponse({'ok': True, 'url': url})
 	except Exception as e:
 		logger.exception("update_cover_image FAILED: %s", e)
-		return JsonResponse({'error': f'Erreur upload : {e}'}, status=500)
+		return JsonResponse({'error': "L'envoi de l'image a échoué."}, status=500)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -570,7 +647,20 @@ def update_cover_image(request):
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 from datetime import timedelta
+import secrets
 from account.sms import normalize_madagascar_phone, send_otp_sms, format_phone_display
+
+
+def _json_body(request):
+	"""Corps JSON de la requête, ou {} s'il est absent/invalide.
+
+	json.loads() sur un corps malformé levait une JSONDecodeError non
+	interceptée : erreur 500 déclenchable par n'importe quel client.
+	"""
+	try:
+		return json.loads(request.body or '{}') or {}
+	except (ValueError, UnicodeDecodeError):
+		return {}
 
 
 @require_POST
@@ -583,10 +673,7 @@ def phone_send_otp(request):
 	if not request.user.is_authenticated:
 		return JsonResponse({'error': 'Connexion requise.'}, status=401)
 
-	raw = (
-		request.POST.get('phone') or
-		json.loads(request.body or '{}').get('phone', '')
-	)
+	raw = request.POST.get('phone') or _json_body(request).get('phone', '')
 
 	# Normaliser le numéro
 	phone_e164 = normalize_madagascar_phone(raw or '')
@@ -648,7 +735,7 @@ def phone_verify_otp(request):
 	if not request.user.is_authenticated:
 		return JsonResponse({'error': 'Connexion requise.'}, status=401)
 
-	data  = request.POST or json.loads(request.body or '{}')
+	data  = request.POST or _json_body(request)
 	raw   = data.get('phone', '')
 	code  = (data.get('code') or '').strip()
 
@@ -685,7 +772,8 @@ def phone_verify_otp(request):
 	otp.attempts += 1
 	otp.save(update_fields=['attempts'])
 
-	if otp.code != code:
+	# compare_digest : comparaison en temps constant (pas de fuite par timing).
+	if not secrets.compare_digest(otp.code, code):
 		remaining = PhoneVerification.MAX_ATTEMPTS - otp.attempts
 		if remaining <= 0:
 			return JsonResponse({'error': 'Trop de tentatives incorrectes. Demandez un nouveau code.'}, status=400)

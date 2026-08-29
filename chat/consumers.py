@@ -15,6 +15,14 @@ from chat.exceptions import ClientError
 from chat.constants import *   # inclut MSG_TYPE_REACTION
 from account.models import Account
 
+import logging
+
+# Les traces de débogage passaient par print() : elles étaient émises sur
+# stdout en production à chaque message WebSocket (bruit dans les logs
+# Railway, identifiants d'utilisateurs inclus) et n'étaient pas filtrables.
+# logger.debug() est silencieux par défaut et se règle via LOGGING.
+logger = logging.getLogger(__name__)
+
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
 
@@ -23,7 +31,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		Called when the websocket is handshaking as part of initial connection.
 		"""
-		print("ChatConsumer: connect: " + str(self.scope["user"]))
+		logger.debug("ChatConsumer: connect: " + str(self.scope["user"]))
 
 		# let everyone connect. But limit read/write to authenticated users
 		await self.accept()
@@ -32,6 +40,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		self.room_id = None
 		# ID de l'interlocuteur en cours d'appel (pour router les signaux WebRTC)
 		self.call_peer_id = None
+		# IDs des utilisateurs nous ayant réellement appelés : seuls ces
+		# destinataires (plus le peer courant) peuvent être ciblés via
+		# `peer_id` dans les signaux d'appel — voir receive_json.
+		self.known_call_peers = set()
 
 		# Groupe personnel — reçoit les appels entrants même sans room active
 		if self.scope["user"].is_authenticated:
@@ -47,11 +59,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		for us and pass it as the first argument.
 		"""
 		# Messages will have a "command" key we can switch on
-		print("ChatConsumer: receive_json")
+		logger.debug("ChatConsumer: receive_json")
 		command = content.get("command", None)
 		try:
+			# connect() accepte tout le monde (cf. commentaire ci-dessus) :
+			# le contrôle d'accès se fait donc ici, à chaque commande.
+			if not self.scope["user"].is_authenticated:
+				raise ClientError(401, "Authentification requise.")
 			if command == "join":
-				print("joining room: " + str(content['room']))
+				logger.debug("joining room: " + str(content['room']))
 				await self.join_room(content["room"])
 			elif command == "leave":
 				# Leave the room
@@ -98,14 +114,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			elif command == "call_offer":
 				# ── Offre WebRTC : envoi via le GROUPE PERSONNEL du callee ──
 				# Fonctionne même si le callee a une autre conv ouverte
-				print(f"[CALL] call_offer reçu de user_{self.scope['user'].id}, self.room_id={self.room_id}")
+				logger.debug(f"[CALL] call_offer reçu de user_{self.scope['user'].id}, self.room_id={self.room_id}")
 				if self.room_id:
 					try:
 						room      = await get_room_or_error(self.room_id, self.scope["user"])
 						other     = await get_other_user(room, self.scope["user"])
 						call_mode = content.get("call_mode", "video")
 						self.call_peer_id = other.id
-						print(f"[CALL] envoi vers groupe user_{other.id}")
+						logger.debug(f"[CALL] envoi vers groupe user_{other.id}")
 						await self.channel_layer.group_send(
 							f"user_{other.id}",
 							{
@@ -119,7 +135,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 								"room_id":       str(self.room_id),
 							}
 						)
-						print(f"[CALL] group_send OK → user_{other.id}")
+						logger.debug(f"[CALL] group_send OK → user_{other.id}")
 
 						# ── Push notification : réveille l'écran même si éteint ──
 						# On lance la push en tâche de fond (fire-and-forget) pour
@@ -129,15 +145,17 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 						await send_call_push(other, caller.username, caller_img, self.room_id, call_mode)
 
 					except Exception as e:
-						print(f"call_offer error: {e}")
+						logger.debug(f"call_offer error: {e}")
 						import traceback; traceback.print_exc()
 				else:
-					print(f"[CALL] IGNORÉ: self.room_id est None — le caller n'a pas joint de room")
+					logger.debug(f"[CALL] IGNORÉ: self.room_id est None — le caller n'a pas joint de room")
 
 			elif command in ("call_answer", "call_ice", "call_reject", "call_end"):
 				# ── Autres signaux : router vers le groupe personnel du peer ──
 				# Le client peut cibler explicitement un peer (ex: refus "occupé"
 				# envoyé à un 2e appelant sans perturber l'appel en cours).
+				if not self.scope["user"].is_authenticated:
+					raise ClientError(401, "Authentification requise.")
 				peer_id = None
 				explicit_peer = content.get("peer_id")
 				if explicit_peer is not None:
@@ -145,6 +163,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 						peer_id = int(explicit_peer)
 					except (TypeError, ValueError):
 						peer_id = None
+				# Un peer explicite n'est accepté que s'il nous a réellement
+				# appelés (cas du refus « occupé » adressé à un 2e appelant).
+				if peer_id is not None and peer_id not in self.known_call_peers and peer_id != self.call_peer_id:
+					peer_id = None
 				if not peer_id:
 					peer_id = self.call_peer_id
 				if not peer_id and self.room_id:
@@ -191,7 +213,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		except ClientError as e:
 			await self.handle_client_error(e)
 		except Exception as e:
-			print("ChatConsumer: receive_json: unhandled exception — " + str(e))
+			logger.debug("ChatConsumer: receive_json: unhandled exception — " + str(e))
 			import traceback; traceback.print_exc()
 			await self.send_json({"error": 500, "message": "Une erreur interne s'est produite."})
 
@@ -201,12 +223,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		Called when the WebSocket closes for any reason.
 		"""
 		# Leave the room
-		print("ChatConsumer: disconnect")
+		logger.debug("ChatConsumer: disconnect")
 		try:
 			if self.room_id != None:
 				await self.leave_room(self.room_id)
 		except Exception as e:
-			print("EXCEPTION: " + str(e))
+			logger.debug("EXCEPTION: " + str(e))
 			pass
 		# Quitter le groupe personnel
 		if self.scope["user"].is_authenticated:
@@ -224,7 +246,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		Called by receive_json when someone sent a join command.
 		"""
 		# The logged-in user is in our scope thanks to the authentication ASGI middleware (AuthMiddlewareStack)
-		print("ChatConsumer: join_room: " + str(room_id))
+		logger.debug("ChatConsumer: join_room: " + str(room_id))
 		try:
 			room = await get_room_or_error(room_id, self.scope["user"])
 		except ClientError as e:
@@ -267,7 +289,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		Called by receive_json when someone sent a leave command.
 		"""
 		# The logged-in user is in our scope thanks to the authentication ASGI middleware
-		print("ChatConsumer: leave_room")
+		logger.debug("ChatConsumer: leave_room")
 
 		room = await get_room_or_error(room_id, self.scope["user"])
 
@@ -304,14 +326,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		Called by receive_json when someone sends a message to a room.
 		"""
-		print("ChatConsumer: send_room")
+		logger.debug("ChatConsumer: send_room")
 		# Check they are in this room
 		if self.room_id != None:
 			if str(room_id) != str(self.room_id):
-				print("CLIENT ERRROR 1")
+				logger.debug("CLIENT ERRROR 1")
 				raise ClientError("ROOM_ACCESS_DENIED", "Room access denied")
 		else:
-			print("CLIENT ERRROR 2")
+			logger.debug("CLIENT ERRROR 2")
 			raise ClientError("ROOM_ACCESS_DENIED", "Room access denied")
 
 		# Get the room and send to the group about it
@@ -426,7 +448,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 				}
 			)
 		except Exception as e:
-			print(f"react_message error: {e}")
+			logger.debug(f"react_message error: {e}")
 
 	# These helper methods are named by the types we send - so chat.join becomes chat_join
 	async def chat_join(self, event):
@@ -434,7 +456,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		Called when someone has joined our chat.
 		"""
 		# Send a message down to the client
-		print("ChatConsumer: chat_join: " + str(self.scope["user"].id))
+		logger.debug("ChatConsumer: chat_join: " + str(self.scope["user"].id))
 		if event["username"]:
 			await self.send_json(
 				{
@@ -452,7 +474,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		Called when someone has left our chat.
 		"""
 		# Send a message down to the client
-		print("ChatConsumer: chat_leave")
+		logger.debug("ChatConsumer: chat_leave")
 		if event["username"]:
 			await self.send_json(
 			{
@@ -471,7 +493,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		Called when someone has messaged our chat.
 		"""
 		# Send a message down to the client
-		print("ChatConsumer: chat_message")
+		logger.debug("ChatConsumer: chat_message")
 
 		timestamp = calculate_timestamp(timezone.now())
 
@@ -507,9 +529,9 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
 	async def chat_call(self, event):
 		"""Relay WebRTC signaling — never echo back to the sender."""
-		print(f"[CALL] chat_call: user={self.scope['user'].id}, event_user_id={event.get('user_id')}, msg_type={event.get('msg_type')}")
+		logger.debug(f"[CALL] chat_call: user={self.scope['user'].id}, event_user_id={event.get('user_id')}, msg_type={event.get('msg_type')}")
 		if event.get("user_id") == self.scope["user"].id:
-			print(f"[CALL] chat_call: filtré (echo propre)")
+			logger.debug(f"[CALL] chat_call: filtré (echo propre)")
 			return
 		# Mémoriser l'appelant pour router les réponses (answer/ice) dans l'autre sens
 		mt = event.get("msg_type")
@@ -519,13 +541,14 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			# seraient routés vers le nouvel appelant).
 			if self.call_peer_id is None or self.call_peer_id == event.get("user_id"):
 				self.call_peer_id = event.get("user_id")
-			print(f"[CALL] chat_call: OFFER → envoi au client (callee), call_peer_id={self.call_peer_id}")
+			if event.get("user_id") is not None:
+				self.known_call_peers.add(event.get("user_id"))
 		elif mt in (MSG_TYPE_CALL_END, MSG_TYPE_CALL_REJECT):
 			# Ne réinitialiser que si le signal vient du peer courant
 			if self.call_peer_id is None or self.call_peer_id == event.get("user_id"):
 				self.call_peer_id = None
 		await self.send_json(event)
-		print(f"[CALL] chat_call: send_json OK")
+		logger.debug(f"[CALL] chat_call: send_json OK")
 
 	async def chat_unread_notif(self, event):
 		"""Notification badge non-lu temps-réel via le groupe personnel."""
@@ -557,7 +580,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		Send a payload of messages to the ui
 		"""
-		print("ChatConsumer: send_messages_payload. ")
+		logger.debug("ChatConsumer: send_messages_payload. ")
 
 		await self.send_json(
 			{
@@ -571,7 +594,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		Send a payload of user information to the ui
 		"""
-		print("ChatConsumer: send_user_info_payload. ")
+		logger.debug("ChatConsumer: send_user_info_payload. ")
 		await self.send_json(
 			{
 				"user_info": user_info,
@@ -585,7 +608,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		2. is_displayed = False
 		- Hide the progress bar on UI
 		"""
-		print("DISPLAY PROGRESS BAR: " + str(is_displayed))
+		logger.debug("DISPLAY PROGRESS BAR: " + str(is_displayed))
 		await self.send_json(
 			{
 				"display_progress_bar": is_displayed
@@ -722,7 +745,7 @@ def get_room_chat_messages(room, page_number):
 		payload['new_page_number'] = new_page_number
 		return json.dumps(payload)
 	except Exception as e:
-		print("EXCEPTION: " + str(e))
+		logger.debug("EXCEPTION: " + str(e))
 	return None
 
 
@@ -769,7 +792,7 @@ def send_call_push(callee, caller_name, caller_image, room_id, call_mode):
             call_mode=call_mode,
         )
     except Exception as e:
-        print(f"[CALL] push notification error: {e}")
+        logger.debug(f"[CALL] push notification error: {e}")
 
 
 @database_sync_to_async

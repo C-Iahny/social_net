@@ -1,4 +1,5 @@
 {% load static %}
+{% load post_tags %}
 {% load i18n %}
 {% for post in posts_of_the_page %}
 <article class="post-card{% if post.post_type == 'kabary' %} post-card-kabary{% endif %}{% if post.post_type == 'vintana' %} post-card-vintana{% endif %}" id="post-{{ post.id }}">
@@ -154,7 +155,7 @@
     {% endif %}
 
     {% if post.body %}
-    <div class="pc-body" onclick="expandBody(this)">{{ post.body|safe }}</div>
+    <div class="pc-body" onclick="expandBody(this)">{{ post.body|safe_html }}</div>
     <span class="pc-read-more"
           data-more="{% trans 'See more'|escapejs %}"
           data-less="{% trans 'See less'|escapejs %}"

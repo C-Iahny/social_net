@@ -16,6 +16,19 @@ from stories.models import Story, StoryView, StoryReaction, StoryReply
 _logger = logging.getLogger(__name__)
 
 
+def _json_body(request):
+    """Corps JSON de la requête, ou {} s'il est absent/invalide.
+
+    json.loads() sur un corps malformé levait une JSONDecodeError non
+    interceptée : erreur 500 déclenchable par n'importe quel client.
+    """
+    import json
+    try:
+        return json.loads(request.body or '{}') or {}
+    except (ValueError, UnicodeDecodeError):
+        return {}
+
+
 # ── MIME helpers ──────────────────────────────────────────────────────────────
 _IMAGE_MIME = {
     'image/jpeg', 'image/jpg', 'image/png', 'image/gif',
@@ -68,17 +81,53 @@ def _audio_url(story):
 # ── Téléchargement audio depuis URL externe ───────────────────────────────────
 _AUDIO_MAX_BYTES = 8 * 1024 * 1024  # 8 Mo
 
+# Hôtes autorisés pour le téléchargement d'un extrait audio.
+# La fonctionnalité ne sert qu'à récupérer les pistes proposées par la
+# recherche Jamendo : toute autre destination est refusée.
+_AUDIO_URL_ALLOWED_HOSTS = (
+    'jamendo.com',
+    'api.jamendo.com',
+    'storage-new.newjamendo.com',
+    'prod-1.storage.jamendo.com',
+    'mp3l.jamendo.com',
+    'mp3d.jamendo.com',
+)
+
+
+def _check_audio_url(url):
+    """Valide l'URL avant téléchargement (protection SSRF).
+
+    Sans ce contrôle, un utilisateur authentifié pouvait faire émettre au
+    serveur une requête HTTP arbitraire — services internes, endpoint de
+    métadonnées du cloud (169.254.169.254), scan de ports — le message
+    d'erreur renvoyé servant d'oracle sur ce qui répond.
+    """
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url or '')
+    if parsed.scheme not in ('http', 'https'):
+        raise ValueError("URL audio invalide.")
+
+    host = (parsed.hostname or '').lower()
+    if not any(host == h or host.endswith('.' + h) for h in _AUDIO_URL_ALLOWED_HOSTS):
+        raise ValueError("Source audio non autorisée (utilisez la recherche musique).")
+    return url
+
+
 def _download_audio_from_url(url):
     """
-    Télécharge un fichier audio depuis une URL externe.
+    Télécharge un fichier audio depuis une URL externe autorisée.
     Retourne (InMemoryUploadedFile, mime_type) ou lève ValueError.
     """
+    _check_audio_url(url)
     try:
         r = http_requests.get(url, timeout=15, stream=True,
+                              allow_redirects=False,   # pas de rebond hors allowlist
                               headers={'User-Agent': 'Vazimba/1.0'})
         r.raise_for_status()
     except Exception as exc:
-        raise ValueError(f"Impossible de télécharger l'audio : {exc}")
+        _logger.warning("Téléchargement audio échoué (%s) : %s", url, exc)
+        raise ValueError("Impossible de télécharger l'audio depuis cette adresse.")
 
     content_type = r.headers.get('Content-Type', '').split(';')[0].strip().lower()
     # Certains serveurs renvoient application/octet-stream pour les MP3
@@ -394,14 +443,22 @@ def get_my_stories(request):
 
 
 # ── RECHERCHE MUSIQUE (proxy Jamendo) ────────────────────────────────────────
+@login_required(login_url='login')
 @require_GET
 def music_search(request):
     """
     Proxy vers l'API Jamendo pour rechercher de la musique libre de droits.
     Paramètres GET : q (recherche), limit (défaut 10)
+
+    Réservé aux utilisateurs connectés : ouvert à tous, l'endpoint permettait
+    de consommer le quota de la clé API Jamendo du projet depuis l'extérieur.
     """
     query = request.GET.get('q', '').strip()
-    limit = min(int(request.GET.get('limit', 10)), 20)
+    # ?limit=abc levait une ValueError non interceptée (500).
+    try:
+        limit = min(max(int(request.GET.get('limit', 10)), 1), 20)
+    except (TypeError, ValueError):
+        limit = 10
     client_id = getattr(settings, 'JAMENDO_CLIENT_ID', 'b6747d04')
 
     if not query:
@@ -573,12 +630,9 @@ def story_reply(request, story_id):
     if story.user == request.user:
         return JsonResponse({'ok': False, 'error': 'Cannot reply to own story'}, status=400)
 
-    import json as _json
-    try:
-        data    = _json.loads(request.body)
-        message = data.get('message', '').strip()[:500]
-    except Exception:
-        message = request.POST.get('message', '').strip()[:500]
+    # Accepte un corps JSON ou un POST classique (formulaire).
+    data    = _json_body(request) or request.POST
+    message = (data.get('message') or '').strip()[:500]
 
     if not message:
         return JsonResponse({'ok': False, 'error': 'Empty message'}, status=400)
@@ -641,13 +695,9 @@ def story_react(request, story_id):
     """
     if request.method != 'POST':
         return JsonResponse({'ok': False}, status=405)
-    import json as _json
     story = get_object_or_404(Story, id=story_id)
-    try:
-        data  = _json.loads(request.body)
-        emoji = data.get('emoji', '').strip()
-    except Exception:
-        emoji = request.POST.get('emoji', '').strip()
+    data  = _json_body(request) or request.POST
+    emoji = (data.get('emoji') or '').strip()
 
     valid_emojis = {'❤️', '😂', '😮', '😢', '🔥'}
     if emoji not in valid_emojis:
