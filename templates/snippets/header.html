@@ -651,6 +651,26 @@
 .lang-option.active { color: var(--accent); }
 .lang-option .lang-flag { font-size: 1.1rem; }
 
+/* Repli textuel de la marque — affiché uniquement si les logos échouent
+   (voir l'attribut onerror sur les <img> de .zoot-brand). */
+.zoot-wordmark {
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: .5px;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+/* Anneau de focus visible au clavier — absent jusqu'ici sur toute la barre. */
+#header a:focus-visible,
+#header button:focus-visible,
+#header input:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+
 /* ── Mobile hamburger ── */
 .zoot-hamburger {
     display: none;
@@ -767,7 +787,15 @@
     /* Masquer : drapeau langue, dark mode, hamburger */
     .zoot-lang-btn    { display: none !important; }
     #theme-toggle-btn { display: none !important; }
+    /* Le hamburger est masqué pour les connectés car la barre de navigation
+       basse (zoot-bottom-nav) prend le relais. Cette barre n'existe QUE pour
+       les connectés : sans l'exception ci-dessous, un visiteur sur téléphone
+       n'avait plus aucun moyen de naviguer. */
     .zoot-hamburger   { display: none !important; }
+    #header.zoot-anon .zoot-hamburger { display: flex !important; }
+    /* « Connexion » est repris dans le menu déroulant : on garde le seul
+       bouton « S'inscrire » pour ne pas surcharger la barre. */
+    #header.zoot-anon .zoot-anon-login { display: none !important; }
     /* Masquer le chevron de l'avatar (économise de l'espace) */
     .zoot-avatar-caret { display: none !important; }
     /* Espacements réduits */
@@ -786,32 +814,39 @@
 </style>
 
 <!-- ── Header HTML ─────────────────────────────────────────────────── -->
-<nav id="header">
+<nav id="header" class="{% if not request.user.is_authenticated %}zoot-anon{% endif %}">
 <div class="zoot-nav-inner">
 
     <!-- Brand -->
-    <a href="{% url 'landing' %}" class="zoot-brand">
+    <!-- Les deux logos ont un onerror qui les masque : sans repli, la barre
+         se retrouvait sans aucune identité si les images ne chargeaient pas
+         (R2 indisponible, mode économie de données, connexion lente).
+         Le mot-symbole ci-dessous n'apparaît que dans ce cas. -->
+    <a href="{% url 'landing' %}" class="zoot-brand" aria-label="Vazimba — accueil">
         <!-- Logo desktop -->
-        <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="VAZIMBA"
+        <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="Vazimba"
              class="zoot-logo-desktop"
              onmouseover="this.style.transform='scale(1.05)';this.style.opacity='.88'"
              onmouseout="this.style.transform='';this.style.opacity='1'"
-             onerror="this.style.display='none'">
+             onerror="this.remove();document.getElementById('zoot-wordmark').style.display='inline'">
         <!-- Logo mobile (compact) -->
-        <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="VAZIMBA"
+        <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="Vazimba"
              class="zoot-logo-mobile"
-             onerror="this.style.display='none'">
+             onerror="this.remove();document.getElementById('zoot-wordmark').style.display='inline'">
+        <span id="zoot-wordmark" class="zoot-wordmark" style="display:none;">VAZIMBA</span>
     </a>
 
     <!-- Center nav links (desktop) -->
     <div class="zoot-nav-center d-none d-lg-flex">
 
+        {% if request.user.is_authenticated %}
         <!-- Feed -->
         <a href="{% url 'post:post-view' %}"
            class="zoot-nav-link {% if request.resolver_match.url_name == 'post-view' %}active{% endif %}">
             <span class="material-icons">home</span>
             <span>{% trans "Feed" %}</span>
         </a>
+        {% endif %}
 
         <!-- Bazar (lien direct) -->
         <a href="{% url 'bazar:index' %}"
@@ -820,7 +855,27 @@
             <span>{% trans "Bazar" %}</span>
         </a>
 
-        <!-- Plus — dropdown toutes les autres sections -->
+        {% if not request.user.is_authenticated %}
+        <!-- Visiteur non connecté : on n'affiche que les sections réellement
+             accessibles sans compte. Auparavant la barre proposait Feed,
+             Kabary, Vintana, Live et Tendances, qui renvoyaient tous vers la
+             page de connexion — une impasse à chaque clic. -->
+        <a href="{% url 'tourisme:home' %}"
+           class="zoot-nav-link {% if request.resolver_match.namespace == 'tourisme' %}active{% endif %}">
+            <span class="material-icons">map</span>
+            <span>{% trans "Tourisme" %}</span>
+        </a>
+        <a href="{% url 'group:list' %}"
+           class="zoot-nav-link {% if request.resolver_match.namespace == 'group' %}active{% endif %}">
+            <span class="material-icons">groups</span>
+            <span>{% trans "Groupes" %}</span>
+        </a>
+        {% endif %}
+
+        <!-- Plus — dropdown toutes les autres sections.
+             Réservé aux connectés : son contenu (Tendances, Live, Kabary,
+             Vintana) exige un compte. -->
+        {% if request.user.is_authenticated %}
         <div class="zoot-nav-more dropdown">
             <button class="zoot-nav-link zoot-nav-more-btn
                 {% if request.resolver_match.namespace == 'tourisme' or request.resolver_match.namespace == 'group' or request.resolver_match.namespace == 'video' or request.resolver_match.url_name == 'index' or request.resolver_match.url_name == 'tendances' or request.resolver_match.url_name == 'kabary-create' or request.resolver_match.url_name == 'vintana-create' or request.resolver_match.url_name == 'live-list' %}active{% endif %}"
@@ -871,6 +926,7 @@
 
             </div>
         </div>
+        {% endif %}{# /dropdown « Plus » réservé aux connectés #}
 
     </div>
 
@@ -1143,14 +1199,22 @@
         </button>
 
         {% else %}
-        <!-- Not authenticated -->
-        <a class="zoot-nav-link" href="{% url 'login' %}" style="text-transform:none;font-size:.9rem;min-width:auto;">
+        <!-- Visiteur non connecté -->
+        <a class="zoot-nav-link zoot-anon-login" href="{% url 'login' %}" style="text-transform:none;font-size:.9rem;min-width:auto;">
             {% trans "Connexion" %}
         </a>
-        <a href="{% url 'register' %}"
+        <a href="{% url 'register' %}" class="zoot-anon-signup"
            style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:22px;padding:.45rem 1.2rem;font-size:.9rem;font-weight:700;text-decoration:none;white-space:nowrap;transition:opacity .2s,box-shadow .2s;font-family:var(--font-primary,'Space Grotesk',sans-serif);">
             {% trans "S'inscrire" %}
         </a>
+
+        <!-- Le hamburger et le menu déroulant n'existaient que pour les
+             comptes connectés : sur téléphone, un visiteur n'avait aucun
+             accès au Bazar, au Tourisme ni aux Groupes, pourtant publics. -->
+        <button class="zoot-hamburger" id="zoot-mobile-toggle" aria-label="Menu"
+                aria-expanded="false" aria-controls="zoot-mobile-menu">
+            <span class="material-icons">menu</span>
+        </button>
         {% endif %}
 
     </div><!-- /zoot-nav-right -->
@@ -1210,6 +1274,29 @@
         <span class="material-icons" style="color:#e0245e;">logout</span> {% trans "Logout" %}
     </a>
 </div>
+{% else %}
+<!-- Menu mobile du visiteur : uniquement les sections publiques, plus les
+     deux actions de compte. -->
+<div class="zoot-mobile-menu" id="zoot-mobile-menu">
+    <a href="{% url 'bazar:index' %}" class="zoot-mobile-link">
+        <span class="material-icons">storefront</span> Bazar
+    </a>
+    <a href="{% url 'tourisme:home' %}" class="zoot-mobile-link">
+        <span class="material-icons">map</span> {% trans "Tourisme" %}
+    </a>
+    <a href="{% url 'group:list' %}" class="zoot-mobile-link">
+        <span class="material-icons">groups</span> {% trans "Groupes" %}
+    </a>
+
+    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
+
+    <a href="{% url 'login' %}" class="zoot-mobile-link">
+        <span class="material-icons">login</span> {% trans "Connexion" %}
+    </a>
+    <a href="{% url 'register' %}" class="zoot-mobile-link" style="color:var(--accent);font-weight:700;">
+        <span class="material-icons" style="color:var(--accent);">person_add</span> {% trans "S'inscrire" %}
+    </a>
+</div>
 {% endif %}
 </nav>
 
@@ -1223,10 +1310,31 @@
     var btn  = document.getElementById('zoot-mobile-toggle');
     var menu = document.getElementById('zoot-mobile-menu');
     if (btn && menu) {
-        btn.addEventListener('click', function() {
-            menu.classList.toggle('open');
-            var icon = btn.querySelector('.material-icons');
-            icon.textContent = menu.classList.contains('open') ? 'close' : 'menu';
+        function setOpen(open) {
+            menu.classList.toggle('open', open);
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            btn.querySelector('.material-icons').textContent = open ? 'close' : 'menu';
+        }
+
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            setOpen(!menu.classList.contains('open'));
+        });
+
+        // Refermer en cliquant hors du menu : il restait ouvert et masquait
+        // le contenu tant qu'on ne rappuyait pas exactement sur le bouton.
+        document.addEventListener('click', function (e) {
+            if (menu.classList.contains('open') && !menu.contains(e.target) && e.target !== btn) {
+                setOpen(false);
+            }
+        });
+
+        // Échap referme le menu (navigation au clavier).
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && menu.classList.contains('open')) {
+                setOpen(false);
+                btn.focus();
+            }
         });
     }
 })();

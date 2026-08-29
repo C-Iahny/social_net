@@ -5,562 +5,605 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZOOT — Réseau Social</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <title>{{ page_title }}</title>
+  <meta name="description" content="{{ meta_description }}">
+
+  <link rel="icon" type="image/png" href="{% static 'logo/vazimba_icon.png' %}">
+  <link rel="apple-touch-icon" href="{% static 'logo/vazimba_v2_icon.png' %}">
+  <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{% url 'landing' %}">
+
+  <!-- Partage sur les réseaux (Open Graph / Twitter) — absent auparavant :
+       un lien vers Vazimba s'affichait sans titre, sans image ni description. -->
+  <meta property="og:type"        content="website">
+  <meta property="og:site_name"   content="Vazimba">
+  <meta property="og:locale"      content="fr_FR">
+  <meta property="og:title"       content="{{ page_title }}">
+  <meta property="og:description" content="{{ meta_description }}">
+  <meta property="og:url"         content="{{ request.scheme }}://{{ request.get_host }}{% url 'landing' %}">
+  <meta property="og:image"       content="{{ request.scheme }}://{{ request.get_host }}{% static 'logo/vazimba_horizontal.png' %}">
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="{{ page_title }}">
+  <meta name="twitter:description" content="{{ meta_description }}">
+
+  <!-- Thème appliqué avant tout rendu (anti-FOUC), même clé que le reste
+       de l'application pour que le choix suive l'utilisateur. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('zoot-theme');
+        document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+      } catch (e) {}
+    })();
+  </script>
+
+  <meta name="theme-color" content="#8B4513" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#16100c" media="(prefers-color-scheme: dark)">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Material+Icons&display=swap" rel="stylesheet">
+
   <style>
-    /* ===== VARIABLES THÈME — Palette Noble Acajou / Nuit Ambre ===== */
+    /* ════════════════════════════════════════════════════════════════════
+       Jetons de thème — identiques à snippets/base_css.html.
+       La page dupliquait auparavant une palette légèrement différente
+       (fond, police), d'où une rupture visuelle en passant de la landing
+       à l'application.
+       ════════════════════════════════════════════════════════════════════ */
     :root {
-      --bg:          #faf7f4;
+      --bg:          #f8f4ef;
       --bg-card:     #ffffff;
-      --bg-nav:      #ffffff;
-      --text:        #1a0e08;
-      --text-muted:  #6b5344;
-      --border:      #e8ddd6;
+      --bg-nav:      rgba(255,255,255,.88);
+      --bg-hover:    #f2e9df;
+      --bg-subtle:   #fdfaf7;
+      --text:        #2d1a0e;
+      --text-muted:  #6b4c35;
+      --text-subtle: #9a7060;
+      --border:      #e8d5c2;
       --accent:      #8B4513;
-      --accent-dark: #6b340f;
       --accent2:     #A0522D;
-      --hero-from:   #5c2a08;
-      --hero-to:     #A0522D;
-      --shadow:      0 2px 12px rgba(139,69,19,.10);
-      --badge-info:    #fdf0e8;
-      --badge-info-t:  #8B4513;
-      --badge-success: #e6f4ea;
-      --badge-success-t:#1a7f37;
-      --badge-warning: #fff8e1;
-      --badge-warning-t:#b45309;
-      --badge-danger:  #fdecea;
-      --badge-danger-t:#d93025;
-      --accent-glow:   rgba(139,69,19,.20);
-      --btn-bg:        rgba(139,69,19,.06);
-      --btn-hover:     rgba(139,69,19,.11);
-      --font-primary:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --accent3:     #C1440E;
+      --accent-dark: #6b3410;
+      --accent-soft: rgba(139,69,19,.08);
+      --on-accent:   #ffffff;
+      --shadow:      0 1px 4px rgba(80,40,10,.07), 0 6px 24px rgba(80,40,10,.09);
+      --shadow-lg:   0 8px 40px rgba(80,40,10,.14);
+      --font:        'Space Grotesk', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      --radius:      16px;
+      --maxw:        1140px;
     }
 
     [data-theme="dark"] {
       --bg:          #16100c;
       --bg-card:     #1f1510;
-      --bg-nav:      #1f1510;
+      --bg-nav:      rgba(31,21,16,.88);
+      --bg-hover:    #2a1e16;
+      --bg-subtle:   #1a120d;
       --text:        #f0e6da;
-      --text-muted:  #b09070;
+      --text-muted:  #b0906f;
+      --text-subtle: #8a6f57;
       --border:      #3a2a1e;
       --accent:      #D4AF37;
-      --accent-dark: #b8941f;
       --accent2:     #C19A2E;
-      --hero-from:   #2a1205;
-      --hero-to:     #5c2a08;
+      --accent3:     #E0B84A;
+      --accent-dark: #b8941f;
+      --accent-soft: rgba(212,175,55,.12);
+      --on-accent:   #16100c;
       --shadow:      0 2px 12px rgba(0,0,0,.45);
-      --badge-info:    #2a1e10;
-      --badge-info-t:  #D4AF37;
-      --badge-success: #1a3326;
-      --badge-success-t:#4caf7d;
-      --badge-warning: #332b00;
-      --badge-warning-t:#ffd54f;
-      --badge-danger:  #3b1212;
-      --badge-danger-t:#f28b82;
-      --accent-glow:   rgba(212,175,55,.20);
-      --btn-bg:        rgba(255,255,255,.06);
-      --btn-hover:     rgba(255,255,255,.10);
-      --font-primary:  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --shadow-lg:   0 8px 40px rgba(0,0,0,.55);
     }
 
-    /* ===== RESET & BASE ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: var(--font);
       background: var(--bg);
       color: var(--text);
-      transition: background .3s, color .3s;
       line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
 
-    /* ===== NAV ===== */
-    nav {
+    /* Lien d'évitement — permet d'atteindre le contenu au clavier. */
+    .skip-link {
+      position: absolute; left: -9999px; top: 0; z-index: 999;
+      background: var(--accent); color: var(--on-accent);
+      padding: .7rem 1.2rem; border-radius: 0 0 10px 0; font-weight: 600;
+      text-decoration: none;
+    }
+    .skip-link:focus { left: 0; }
+
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+    .wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: 1.25rem; }
+
+    /* ───────────────────────── Barre de navigation ───────────────────── */
+    .lp-nav {
       position: sticky; top: 0; z-index: 100;
       background: var(--bg-nav);
+      backdrop-filter: saturate(180%) blur(14px);
+      -webkit-backdrop-filter: saturate(180%) blur(14px);
       border-bottom: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      padding: 0 2rem;
-      display: flex; align-items: center; justify-content: space-between;
-      height: 60px;
-      transition: background .3s, border-color .3s;
     }
-    .nav-logo {
-      text-decoration: none;
-      display: flex; align-items: center; flex-shrink: 0;
+    .lp-nav-inner {
+      max-width: var(--maxw); margin-inline: auto;
+      padding: 0 1.25rem; height: 64px;
+      display: flex; align-items: center; gap: 1rem;
     }
-    .nav-logo img.logo-desktop {
-      height: 46px; width: auto; max-width: 200px;
-      object-fit: contain; object-position: left center;
-      display: block;
-      filter: brightness(0);
-      transition: transform .2s, opacity .2s;
+    .lp-brand { display: flex; align-items: center; gap: .55rem; text-decoration: none; margin-right: auto; }
+    .lp-brand img { height: 36px; width: auto; object-fit: contain; }
+    /* Repli textuel : il était écrit en blanc sur une barre blanche, donc
+       invisible dès que le logo ne se chargeait pas. */
+    .lp-brand .lp-wordmark {
+      font-weight: 700; font-size: 1.15rem; letter-spacing: .5px;
+      color: var(--text);
     }
-    .nav-logo img.logo-mobile {
-      height: 38px; width: auto; max-width: 42px;
-      object-fit: contain; object-position: center;
-      display: none;
-      filter: brightness(0);
-      transition: transform .2s, opacity .2s;
+    .lp-nav-links { display: flex; align-items: center; gap: .15rem; }
+    .lp-nav-links a {
+      color: var(--text-muted); text-decoration: none;
+      font-weight: 500; font-size: .93rem;
+      padding: .5rem .8rem; border-radius: 10px;
+      transition: background .18s, color .18s;
     }
-    [data-theme="dark"] .nav-logo img.logo-desktop,
-    [data-theme="dark"] .nav-logo img.logo-mobile {
-      filter: brightness(0) invert(1);
-    }
-    .nav-logo img:hover { transform: scale(1.05); opacity: .88; }
-    @media (max-width: 480px) {
-      .nav-logo img.logo-desktop { display: none; }
-      .nav-logo img.logo-mobile  { display: block; }
-    }
-    .nav-links { display: flex; align-items: center; gap: 1rem; }
-    .nav-links a {
-      color: var(--text); text-decoration: none;
-      font-weight: 500; font-size: .95rem;
-      padding: .4rem .9rem; border-radius: 8px;
-      transition: background .2s;
-    }
-    .nav-links a:hover { background: var(--border); }
-    .btn-primary {
-      background: var(--accent); color: #fff !important;
-      border-radius: 8px; padding: .45rem 1.1rem !important;
-      font-weight: 600 !important;
-      transition: background .2s, transform .15s !important;
-    }
-    .btn-primary:hover { background: var(--accent-dark) !important; transform: translateY(-1px); }
+    .lp-nav-links a:hover { background: var(--bg-hover); color: var(--text); }
+    .lp-actions { display: flex; align-items: center; gap: .5rem; }
 
-    /* Toggle dark/light */
-    #theme-toggle {
-      background: none; border: 1.5px solid var(--border);
-      color: var(--text); cursor: pointer;
-      width: 38px; height: 38px; border-radius: 50%;
-      font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
-      transition: background .2s, border-color .2s;
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+      font-family: var(--font); font-weight: 600; font-size: .95rem;
+      padding: .62rem 1.25rem; border-radius: 12px;
+      text-decoration: none; border: 1.5px solid transparent; cursor: pointer;
+      transition: background .18s, border-color .18s, transform .18s, box-shadow .18s;
+      white-space: nowrap;
     }
-    #theme-toggle:hover { background: var(--border); }
+    .btn-primary { background: var(--accent); color: var(--on-accent); }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: var(--shadow); }
+    .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
+    .btn-ghost:hover { background: var(--bg-hover); }
+    .btn-lg { padding: .85rem 1.7rem; font-size: 1rem; border-radius: 14px; }
+    .btn-on-hero { background: #fff; color: #6b3410; }
+    .btn-on-hero:hover { background: #f5efe9; transform: translateY(-1px); }
+    .btn-on-hero-ghost { background: rgba(255,255,255,.10); color: #fff; border-color: rgba(255,255,255,.55); }
+    .btn-on-hero-ghost:hover { background: rgba(255,255,255,.20); }
 
-    /* ===== HERO ===== */
+    .icon-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: transparent; border: 1.5px solid var(--border); color: var(--text);
+      display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: background .18s;
+    }
+    .icon-btn:hover { background: var(--bg-hover); }
+    .icon-btn .material-icons { font-size: 1.25rem; }
+
+    /* ───────────────────────────── Hero ──────────────────────────────── */
     .hero {
-      color: #fff;
-      padding: 5rem 2rem 4rem;
-      text-align: center;
       position: relative; overflow: hidden;
-      background-size: cover;
-      background-position: center;
+      color: #fff;
+      padding: clamp(3.5rem, 9vw, 6.5rem) 0 clamp(3rem, 7vw, 5rem);
+      background: linear-gradient(135deg, var(--hero-from, #5c2a08) 0%, var(--hero-to, #A0522D) 100%);
     }
-    /* Calque motif croisillon semi-transparent */
     .hero::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      pointer-events: none;
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 55% at 15% 0%, rgba(255,255,255,.14), transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 100%, rgba(255,255,255,.10), transparent 60%);
     }
-    /* Quand une image de fond est présente, assombrir légèrement pour garder le texte lisible */
-    .hero.has-bg-image::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,.25);
-      pointer-events: none;
+    .hero.has-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: rgba(0,0,0,.35); pointer-events: none;
     }
-    .hero-content { position: relative; max-width: 700px; margin: 0 auto; }
+    .hero-inner { position: relative; z-index: 2; max-width: 780px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: .45rem;
+      background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25);
+      padding: .35rem .85rem; border-radius: 999px;
+      font-size: .82rem; font-weight: 600; margin-bottom: 1.25rem;
+      backdrop-filter: blur(6px);
+    }
     .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 900; line-height: 1.1;
-      margin-bottom: 1.2rem;
-      text-shadow: 0 2px 16px rgba(0,0,0,.25);
+      font-size: clamp(2.1rem, 6vw, 3.6rem);
+      font-weight: 700; line-height: 1.1; letter-spacing: -1px;
+      margin-bottom: 1.1rem;
+      text-shadow: 0 2px 20px rgba(0,0,0,.22);
     }
-    .hero p {
-      font-size: clamp(1rem, 2.5vw, 1.25rem);
-      opacity: .9; margin-bottom: 2rem; max-width: 540px; margin-inline: auto;
+    .hero-sub {
+      font-size: clamp(1rem, 2.2vw, 1.18rem);
+      opacity: .93; max-width: 620px; margin-bottom: 2rem;
     }
-    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-    .hero-btns a {
-      padding: .85rem 2rem; border-radius: 10px; font-weight: 700;
-      text-decoration: none; font-size: 1rem;
-      transition: transform .2s, box-shadow .2s;
-    }
-    .hero-btns a:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
-    .btn-white { background: #fff; color: var(--accent); }
-    .btn-outline-white { background: transparent; color: #fff; border: 2px solid rgba(255,255,255,.7); }
-
-    /* ===== ANNONCES ===== */
-    .section-announcements {
-      max-width: 860px; margin: 3rem auto; padding: 0 1.5rem;
-    }
-    .section-title {
-      font-size: 1.4rem; font-weight: 800; margin-bottom: 1.2rem;
-      display: flex; align-items: center; gap: .6rem; color: var(--text);
-    }
-    .section-title i { color: var(--accent); }
-
-    .announcement-card {
-      background: var(--bg-card);
-      border-radius: 14px;
-      border-left: 5px solid var(--accent);
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1rem;
-      box-shadow: var(--shadow);
-      display: flex; gap: 1rem; align-items: flex-start;
-      transition: transform .2s, box-shadow .2s;
-      animation: slideIn .4s ease;
-    }
-    .announcement-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .hero-cta { display: flex; gap: .8rem; flex-wrap: wrap; }
+    .hero-note {
+      margin-top: 1.4rem; font-size: .87rem; opacity: .8;
+      display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
     }
 
-    .ann-info    { border-color: var(--badge-info-t); }
-    .ann-success { border-color: var(--badge-success-t); }
-    .ann-warning { border-color: var(--badge-warning-t); }
-    .ann-danger  { border-color: var(--badge-danger-t); }
-
-    .ann-badge {
-      padding: .25rem .7rem; border-radius: 20px;
-      font-size: .75rem; font-weight: 700; white-space: nowrap;
-    }
-    .badge-info    { background: var(--badge-info);    color: var(--badge-info-t); }
-    .badge-success { background: var(--badge-success); color: var(--badge-success-t); }
-    .badge-warning { background: var(--badge-warning); color: var(--badge-warning-t); }
-    .badge-danger  { background: var(--badge-danger);  color: var(--badge-danger-t); }
-
-    .ann-icon { font-size: 1.6rem; flex-shrink: 0; margin-top: .1rem; }
-    .ann-body { flex: 1; }
-    .ann-header { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; margin-bottom: .4rem; }
-    .ann-title { font-weight: 700; font-size: 1rem; color: var(--text); }
-    .ann-content { color: var(--text-muted); font-size: .95rem; line-height: 1.55; }
-    .ann-date {
-      font-size: .78rem; color: var(--text-muted);
-      margin-top: .5rem; display: flex; align-items: center; gap: .3rem;
-    }
-
-    .no-announcement {
-      text-align: center; padding: 2rem;
-      color: var(--text-muted); font-style: italic;
-    }
-
-    /* ===== FEATURES ===== */
-    .section-features {
-      max-width: 1100px; margin: 3rem auto; padding: 0 1.5rem;
-    }
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.25rem;
-    }
-    .feature-card {
-      background: var(--bg-card);
-      border-radius: 14px;
-      padding: 1.75rem 1.5rem;
-      box-shadow: var(--shadow);
-      text-align: center;
-      transition: transform .2s, box-shadow .2s;
+    /* ────────────────────── Chiffres réels ───────────────────────────── */
+    .stats {
+      display: grid; gap: 1px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      background: var(--border);
       border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      margin-top: -2.5rem; position: relative; z-index: 5;
+      box-shadow: var(--shadow-lg);
     }
-    .feature-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
-    .feature-icon {
-      width: 60px; height: 60px; border-radius: 16px;
-      background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
+    .stat { background: var(--bg-card); padding: 1.4rem 1rem; text-align: center; }
+    .stat-value {
+      font-size: clamp(1.5rem, 3.5vw, 2.1rem); font-weight: 700;
+      color: var(--accent); line-height: 1.1;
+    }
+    .stat-label { font-size: .82rem; color: var(--text-muted); margin-top: .25rem; }
+
+    /* ───────────────────────── Sections ──────────────────────────────── */
+    section.block { padding: clamp(3rem, 7vw, 4.5rem) 0; }
+    .section-head { max-width: 640px; margin-bottom: 2.25rem; }
+    .section-kicker {
+      font-size: .8rem; font-weight: 700; letter-spacing: 1.2px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: .5rem;
+    }
+    .section-head h2 {
+      font-size: clamp(1.5rem, 3.6vw, 2.1rem); font-weight: 700;
+      letter-spacing: -.5px; line-height: 1.2; margin-bottom: .6rem;
+    }
+    .section-head p { color: var(--text-muted); font-size: 1.02rem; }
+
+    /* ─────────────────── Piliers (ex-« fonctionnalités ») ────────────── */
+    /* Douze cartes identiques ne hiérarchisaient rien. Quatre piliers,
+       chacun renvoyant vers la section réelle du site. */
+    .pillars { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .pillar {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.6rem;
+      text-decoration: none; color: inherit; display: block;
+      transition: transform .2s, box-shadow .2s, border-color .2s;
+    }
+    .pillar:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--accent); }
+    .pillar-icon {
+      width: 46px; height: 46px; border-radius: 13px;
+      background: var(--accent-soft); color: var(--accent);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+    }
+    .pillar-icon .material-icons { font-size: 1.5rem; }
+    .pillar h3 { font-size: 1.08rem; font-weight: 600; margin-bottom: .45rem; }
+    .pillar p { font-size: .92rem; color: var(--text-muted); }
+    .pillar-more {
+      display: inline-flex; align-items: center; gap: .25rem;
+      margin-top: .9rem; font-size: .88rem; font-weight: 600; color: var(--accent);
+    }
+    .pillar-more .material-icons { font-size: 1rem; transition: transform .2s; }
+    .pillar:hover .pillar-more .material-icons { transform: translateX(3px); }
+
+    /* ─────────────────── Aperçu réel du Bazar ────────────────────────── */
+    .peek-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .cards { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); margin-top: 1.75rem; }
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit;
+      transition: transform .2s, box-shadow .2s;
+      display: flex; flex-direction: column;
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .card-media {
+      aspect-ratio: 4 / 3; background: var(--bg-hover);
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 1rem;
-      font-size: 1.6rem; color: #fff;
+      color: var(--text-subtle); overflow: hidden;
     }
-    .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .5rem; }
-    .feature-card p  { font-size: .9rem; color: var(--text-muted); }
+    .card-media img { width: 100%; height: 100%; object-fit: cover; }
+    .card-media .material-icons { font-size: 2rem; }
+    .card-body { padding: .85rem .95rem 1rem; flex: 1; display: flex; flex-direction: column; gap: .3rem; }
+    .card-title {
+      font-size: .95rem; font-weight: 600; line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .card-meta { font-size: .82rem; color: var(--text-muted); margin-top: auto; }
+    .card-price { font-weight: 700; color: var(--accent); font-size: .95rem; }
 
-    /* ===== STATS ===== */
-    .section-stats {
-      background: linear-gradient(135deg, var(--hero-from), var(--hero-to));
-      color: #fff; padding: 3rem 1.5rem; text-align: center;
+    /* ─────────────────────────── Annonces ────────────────────────────── */
+    .ann {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 12px; padding: 1.1rem 1.3rem; margin-bottom: .85rem;
+      display: flex; gap: .9rem; align-items: flex-start;
     }
-    .stats-grid {
-      display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap;
-      max-width: 700px; margin: 0 auto;
-    }
-    .stat-item h2 { font-size: 2.5rem; font-weight: 900; }
-    .stat-item p  { font-size: .95rem; opacity: .85; }
-
-    /* ===== CTA ===== */
-    .section-cta {
-      max-width: 660px; margin: 4rem auto; padding: 3rem 2rem;
-      text-align: center;
-      background: var(--bg-card);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--border);
-    }
-    .section-cta h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: .75rem; }
-    .section-cta p  { color: var(--text-muted); margin-bottom: 1.5rem; }
-    .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-    .cta-btns a {
-      padding: .8rem 1.8rem; border-radius: 10px; font-weight: 700;
-      text-decoration: none; font-size: 1rem;
-      transition: transform .2s, box-shadow .2s;
-    }
-    .cta-btns a:hover { transform: translateY(-2px); }
-    .btn-cta-main { background: var(--accent); color: #fff; }
-    .btn-cta-main:hover { background: var(--accent-dark); }
-    .btn-cta-secondary {
-      background: var(--bg); color: var(--text);
-      border: 1.5px solid var(--border);
+    .ann-info    { border-left-color: #2563eb; }
+    .ann-success { border-left-color: #1a7f37; }
+    .ann-warning { border-left-color: #b45309; }
+    .ann-danger  { border-left-color: #d93025; }
+    .ann-dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; margin-top: .55rem; flex-shrink: 0; }
+    .ann-info .ann-dot { color: #2563eb; }
+    .ann-success .ann-dot { color: #1a7f37; }
+    .ann-warning .ann-dot { color: #b45309; }
+    .ann-danger .ann-dot { color: #d93025; }
+    .ann-title { font-weight: 600; margin-bottom: .2rem; }
+    .ann-text { color: var(--text-muted); font-size: .93rem; }
+    .ann-date { font-size: .78rem; color: var(--text-subtle); margin-top: .45rem; }
+    .empty {
+      text-align: center; padding: 2.5rem 1rem; color: var(--text-subtle);
+      border: 1px dashed var(--border); border-radius: var(--radius);
     }
 
-    /* ===== FOOTER — géré par snippets/footer.html ===== */
+    /* ─────────────────────── Appel à l'action ────────────────────────── */
+    .cta {
+      background: linear-gradient(135deg, var(--hero-from, #5c2a08), var(--hero-to, #A0522D));
+      color: #fff; border-radius: 22px; padding: clamp(2.2rem, 5vw, 3.2rem);
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .cta::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 70% at 50% 0%, rgba(255,255,255,.16), transparent 65%);
+    }
+    .cta > * { position: relative; z-index: 1; }
+    .cta h2 { font-size: clamp(1.5rem, 3.6vw, 2.1rem); font-weight: 700; margin-bottom: .6rem; }
+    .cta p { opacity: .9; margin-bottom: 1.6rem; max-width: 460px; margin-inline: auto; }
+    .cta-btns { display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 600px) {
-      .nav-links .hide-mobile { display: none; }
-      .hero { padding: 3.5rem 1.2rem 3rem; }
-      .stats-grid { gap: 2rem; }
+    /* ──────────────────────────── Mobile ─────────────────────────────── */
+    @media (max-width: 860px) {
+      .lp-nav-links { display: none; }
+    }
+    @media (max-width: 480px) {
+      .lp-nav-inner { height: 58px; gap: .5rem; }
+      .lp-brand img { height: 30px; }
+      .lp-brand .lp-wordmark { font-size: 1rem; }
+      .btn { padding: .55rem 1rem; font-size: .9rem; }
+      .stats { margin-top: -1.5rem; }
+      .hero-cta .btn { flex: 1 1 100%; }
     }
   </style>
 </head>
 
 <body>
-  <!-- ===== NAV ===== -->
-  <nav>
-    <a href="{% url 'landing' %}" class="nav-logo">
-      <!-- Images masquées par défaut — affichées SEULEMENT si elles se chargent (jamais de placeholder cassé) -->
-      <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="" class="logo-desktop"
-           style="display:none;"
-           onload="this.style.display='';document.getElementById('nav-logo-txt').style.display='none'">
-      <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="" class="logo-mobile"
-           style="display:none;"
-           onload="this.style.display='';document.getElementById('nav-logo-txt').style.display='none'">
-      <!-- Texte visible par défaut (fallback permanent si les images ne chargent pas) -->
-      <span id="nav-logo-txt" style="font-weight:900;font-size:1.1rem;
-            letter-spacing:1px;color:#fff;">VAZIMBA</span>
-    </a>
-    <div class="nav-links">
-      <a href="#features" class="hide-mobile">Fonctionnalités</a>
-      <a href="{% url 'bazar:index' %}" class="hide-mobile">Bazar</a>
-      <a href="{% url 'post:tendances' %}" class="hide-mobile">Tendances</a>
-      <a href="#announcements" class="hide-mobile">Actualités</a>
-      {% if user.is_authenticated %}
-        <a href="{% url 'post:post-view' %}">Mon fil</a>
-        <a href="{% url 'account:view' user_id=user.id %}">Mon profil</a>
-      {% else %}
-        <a href="{% url 'login' %}">Connexion</a>
-        <a href="{% url 'register' %}" class="btn-primary">S'inscrire</a>
-      {% endif %}
-      <button id="theme-toggle" title="Changer le thème" aria-label="Changer le thème">
-        <i class="fa-solid fa-moon" id="theme-icon"></i>
-      </button>
+  <a href="#contenu" class="skip-link">Aller au contenu</a>
+
+  <!-- ══════════════════════ Navigation ══════════════════════ -->
+  <nav class="lp-nav">
+    <div class="lp-nav-inner">
+      <a href="{% url 'landing' %}" class="lp-brand" aria-label="Vazimba — accueil">
+        <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="" onerror="this.remove()">
+        <span class="lp-wordmark">VAZIMBA</span>
+      </a>
+
+      <div class="lp-nav-links">
+        <a href="#decouvrir">Découvrir</a>
+        <a href="{% url 'bazar:index' %}">Bazar</a>
+        <a href="{% url 'tourisme:home' %}">Tourisme</a>
+        <a href="{% url 'group:list' %}">Groupes</a>
+        {% if announcements %}<a href="#actualites">Actualités</a>{% endif %}
+      </div>
+
+      <div class="lp-actions">
+        <button id="theme-toggle" class="icon-btn" type="button"
+                title="Changer de thème" aria-label="Changer de thème">
+          <span class="material-icons" id="theme-icon">dark_mode</span>
+        </button>
+        <a href="{% url 'login' %}" class="btn btn-ghost">Connexion</a>
+        <a href="{% url 'register' %}" class="btn btn-primary">S'inscrire</a>
+      </div>
     </div>
   </nav>
 
-  <!-- ===== HERO ===== -->
-  {% if hero.background_image %}
-  <section class="hero has-bg-image" style="
-      background-image:
-          linear-gradient(135deg, #5c2a08cc 0%, #A0522Dcc 100%),
-          url('{{ hero.background_image.url }}');
-  ">
-  {% else %}
-  <section class="hero" style="
-      background: linear-gradient(135deg, #5c2a08 0%, #8B4513 55%, #A0522D 100%);
-  ">
-  {% endif %}
-    <div class="hero-content" style="position:relative;z-index:1;">
+  <main id="contenu">
+
+  <!-- ══════════════════════════ Hero ══════════════════════════ -->
+  <section class="hero {% if hero.background_image %}has-bg{% endif %}"
+           style="--hero-from: {{ hero.gradient_from|default:'#5c2a08' }};
+                  --hero-to: {{ hero.gradient_to|default:'#A0522D' }};
+                  {% if hero.background_image %}background-image: linear-gradient(135deg, {{ hero.gradient_from|default:'#5c2a08' }}cc, {{ hero.gradient_to|default:'#A0522D' }}cc), url('{{ hero.background_image.url }}'); background-size: cover; background-position: center;{% endif %}">
+    <div class="wrap hero-inner">
+      <span class="hero-eyebrow">🇲🇬 Fait à Madagascar, pour les Malgaches</span>
       <h1>{{ hero.title|linebreaksbr }}</h1>
-      <p>{{ hero.subtitle }}</p>
-      <div class="hero-btns">
-        {% if user.is_authenticated %}
-          <a href="{% url 'post:post-view' %}" class="btn-white">Voir mon fil d'actualité</a>
-          <a href="{% url 'account:view' user_id=user.id %}" class="btn-outline-white">Mon profil</a>
-        {% else %}
-          <a href="{% url 'register' %}" class="btn-white">Créer un compte gratuit</a>
-          <a href="{% url 'login' %}" class="btn-outline-white">Se connecter</a>
-        {% endif %}
+      <p class="hero-sub">{{ hero.subtitle }}</p>
+      <div class="hero-cta">
+        <a href="{% url 'register' %}" class="btn btn-lg btn-on-hero">Créer un compte gratuit</a>
+        <a href="{% url 'login' %}" class="btn btn-lg btn-on-hero-ghost">J'ai déjà un compte</a>
+      </div>
+      <p class="hero-note">
+        <span class="material-icons" style="font-size:1.05rem">check_circle</span>
+        Gratuit, sans publicité imposée · Français, Malagasy, English
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ Chiffres réels de la plateforme ═══════════════ -->
+  {% if stats %}
+  <div class="wrap">
+    <div class="stats">
+      {% for s in stats %}
+      <div class="stat">
+        <div class="stat-value">{{ s.valeur }}</div>
+        <div class="stat-label">{{ s.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ═══════════════════════ Les 4 piliers ═══════════════════════ -->
+  <section class="block" id="decouvrir">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="section-kicker">Ce que vous y trouverez</p>
+        <h2>Quatre raisons d'ouvrir Vazimba chaque jour</h2>
+        <p>Un réseau social, une place de marché et un guide du pays — au même endroit.</p>
+      </div>
+
+      <div class="pillars">
+        <a class="pillar" href="{% url 'register' %}">
+          <div class="pillar-icon"><span class="material-icons">forum</span></div>
+          <h3>Votre fil, vos gens</h3>
+          <p>Publiez textes, photos et vidéos. Stories éphémères de 24 h, réactions,
+             commentaires et messages privés en temps réel.</p>
+          <span class="pillar-more">Rejoindre <span class="material-icons">arrow_forward</span></span>
+        </a>
+
+        <a class="pillar" href="{% url 'bazar:index' %}">
+          <div class="pillar-icon"><span class="material-icons">storefront</span></div>
+          <h3>Bazar — acheter &amp; vendre</h3>
+          <p>Déposez une annonce en quelques minutes, filtrez par catégorie et par région,
+             et contactez le vendeur directement. Badge « vendeur vérifié ».</p>
+          <span class="pillar-more">Voir les annonces <span class="material-icons">arrow_forward</span></span>
+        </a>
+
+        <a class="pillar" href="{% url 'tourisme:home' %}">
+          <div class="pillar-icon"><span class="material-icons">map</span></div>
+          <h3>Découvrir Madagascar</h3>
+          <p>Lieux à visiter région par région, avis de voyageurs et guides
+             touristiques locaux à contacter.</p>
+          <span class="pillar-more">Explorer le pays <span class="material-icons">arrow_forward</span></span>
+        </a>
+
+        <a class="pillar" href="{% url 'group:list' %}">
+          <div class="pillar-icon"><span class="material-icons">groups</span></div>
+          <h3>Groupes &amp; directs</h3>
+          <p>Communautés par passion ou par région, événements, et diffusion
+             en direct depuis votre navigateur.</p>
+          <span class="pillar-more">Voir les groupes <span class="material-icons">arrow_forward</span></span>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- ===== ANNONCES ===== -->
-  <section class="section-announcements" id="announcements">
-    <div class="section-title">
-      <i class="fa-solid fa-bullhorn"></i>
-      Annonces &amp; Actualités
-    </div>
+  <!-- ═════════════ Aperçu réel : dernières annonces ═════════════ -->
+  {% if annonces_recentes %}
+  <section class="block" style="background: var(--bg-subtle); border-block: 1px solid var(--border);">
+    <div class="wrap">
+      <div class="peek-head">
+        <div class="section-head" style="margin-bottom:0">
+          <p class="section-kicker">En ce moment sur le Bazar</p>
+          <h2>Les dernières annonces</h2>
+        </div>
+        <a href="{% url 'bazar:index' %}" class="btn btn-ghost">Tout voir</a>
+      </div>
 
-    {% if announcements %}
-      {% for ann in announcements %}
-        <div class="announcement-card ann-{{ ann.priority }}">
-          <div class="ann-icon">
-            {% if ann.priority == 'info' %}🔵
-            {% elif ann.priority == 'success' %}🟢
-            {% elif ann.priority == 'warning' %}🟡
-            {% elif ann.priority == 'danger' %}🔴
-            {% endif %}
+      <div class="cards">
+        {% for a in annonces_recentes %}
+        <a class="card" href="{% url 'bazar:detail' pk=a.pk %}">
+          <div class="card-media">
+            {% with img=a.images.first %}
+              {% if img %}
+                <img src="{{ img.image.url }}" alt="" loading="lazy" onerror="this.remove()">
+              {% else %}
+                <span class="material-icons">image</span>
+              {% endif %}
+            {% endwith %}
           </div>
-          <div class="ann-body">
-            <div class="ann-header">
-              <span class="ann-title">{{ ann.title }}</span>
-              <span class="ann-badge badge-{{ ann.priority }}">{{ ann.get_priority_display }}</span>
-            </div>
-            <div class="ann-content">{{ ann.content|linebreaksbr }}</div>
-            <div class="ann-date">
-              <i class="fa-regular fa-clock"></i>
-              Publié le {{ ann.start_date|date:"d F Y" }}
-              {% if ann.end_date %} · jusqu'au {{ ann.end_date|date:"d F Y" }}{% endif %}
-            </div>
+          <div class="card-body">
+            <span class="card-title">{{ a.title }}</span>
+            {% if a.price %}<span class="card-price">{{ a.formatted_price }}</span>{% endif %}
+            <span class="card-meta">{{ a.get_region_display|default:"Madagascar" }}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ═════════════ Aperçu réel : lieux à découvrir ═════════════ -->
+  {% if lieux_vedette %}
+  <section class="block">
+    <div class="wrap">
+      <div class="peek-head">
+        <div class="section-head" style="margin-bottom:0">
+          <p class="section-kicker">Tourisme</p>
+          <h2>Des lieux à découvrir</h2>
+        </div>
+        <a href="{% url 'tourisme:lieux_list' %}" class="btn btn-ghost">Tous les lieux</a>
+      </div>
+
+      <div class="cards">
+        {% for l in lieux_vedette %}
+        <a class="card" href="{% url 'tourisme:lieu_detail' slug=l.slug %}">
+          <div class="card-media">
+            {% with img=l.images.first %}
+              {% if img %}
+                <img src="{{ img.image.url }}" alt="" loading="lazy" onerror="this.remove()">
+              {% else %}
+                <span class="material-icons">landscape</span>
+              {% endif %}
+            {% endwith %}
+          </div>
+          <div class="card-body">
+            <span class="card-title">{{ l.name }}</span>
+            <span class="card-meta">{{ l.get_region_display }}</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ═══════════════════════ Actualités ═══════════════════════ -->
+  {% if announcements %}
+  <section class="block" id="actualites" style="background: var(--bg-subtle); border-block: 1px solid var(--border);">
+    <div class="wrap" style="max-width: 820px;">
+      <div class="section-head">
+        <p class="section-kicker">Annonces</p>
+        <h2>Actualités de la plateforme</h2>
+      </div>
+
+      {% for ann in announcements %}
+      <div class="ann ann-{{ ann.priority }}">
+        <span class="ann-dot" aria-hidden="true"></span>
+        <div>
+          <div class="ann-title">{{ ann.title }}</div>
+          <div class="ann-text">{{ ann.content|linebreaksbr }}</div>
+          <div class="ann-date">
+            {{ ann.start_date|date:"d F Y" }}{% if ann.end_date %} — jusqu'au {{ ann.end_date|date:"d F Y" }}{% endif %}
           </div>
         </div>
+      </div>
       {% endfor %}
-    {% else %}
-      <div class="no-announcement">
-        <i class="fa-regular fa-bell-slash" style="font-size:2rem; margin-bottom:.5rem; display:block;"></i>
-        Aucune annonce en ce moment. Revenez bientôt !
-      </div>
-    {% endif %}
-  </section>
-
-  <!-- ===== FEATURES ===== -->
-  <section class="section-features" id="features">
-    <div class="section-title">
-      <i class="fa-solid fa-star"></i>
-      Ce que vous pouvez faire sur Vazimba
-    </div>
-    <div class="features-grid">
-
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-pen-to-square"></i></div>
-        <h3>Publiez du contenu</h3>
-        <p>Partagez textes, images et vidéos. Réagissez, commentez et repostez les publications de votre réseau.</p>
-      </div>
-
-      <div class="feature-card">
-        <a href="{% url 'stories:page' %}" style="text-decoration:none;color:inherit;">
-          <div class="feature-icon"><i class="fa-solid fa-camera-retro"></i></div>
-          <h3>Stories éphémères</h3>
-          <p>Publiez des photos et vidéos qui disparaissent en 24 h — avec musique, texte sur la photo, et lien promo.</p>
-        </a>
-      </div>
-
-      <div class="feature-card">
-        <a href="{% url 'bazar:index' %}" style="text-decoration:none;color:inherit;">
-          <div class="feature-icon"><i class="fa-solid fa-store"></i></div>
-          <h3>Bazar — Acheter &amp; Vendre</h3>
-          <p>Déposez une annonce, parcourez les articles par catégorie et région. Contactez directement les vendeurs.</p>
-        </a>
-      </div>
-
-      <div class="feature-card">
-        <a href="{% url 'post:tendances' %}" style="text-decoration:none;color:inherit;">
-          <div class="feature-icon"><i class="fa-solid fa-fire"></i></div>
-          <h3>Tendances</h3>
-          <p>Découvrez les hashtags et sujets qui buzzent en ce moment dans toute la communauté Vazimba.</p>
-        </a>
-      </div>
-
-      <div class="feature-card">
-        <a href="{% url 'group:list' %}" style="text-decoration:none;color:inherit;">
-          <div class="feature-icon"><i class="fa-solid fa-people-group"></i></div>
-          <h3>Groupes thématiques</h3>
-          <p>Rejoignez ou créez des communautés autour de vos passions : culture, sport, tech, cuisine et bien plus.</p>
-        </a>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-circle-play"></i></div>
-        <h3>Diffusion en direct</h3>
-        <p>Diffusez en direct depuis votre navigateur. Vos abonnés peuvent vous regarder en temps réel, où qu'ils soient.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-message"></i></div>
-        <h3>Chat en temps réel</h3>
-        <p>Discutez en privé avec vos amis ou rejoignez le chat public de la communauté.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-circle-check"></i></div>
-        <h3>Vendeurs vérifiés</h3>
-        <p>Obtenez un badge de confiance pour vos annonces du Bazar. Les acheteurs savent qu'ils traitent avec un vrai commerçant.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-users"></i></div>
-        <h3>Ajoutez des amis</h3>
-        <p>Envoyez des demandes d'amitié, acceptez ou refusez, et gérez votre réseau en toute simplicité.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-bell"></i></div>
-        <h3>Notifications live</h3>
-        <p>Recevez des notifications instantanées pour les demandes d'amis, les messages et les interactions.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-circle-user"></i></div>
-        <h3>Profil personnalisé</h3>
-        <p>Personnalisez votre photo de profil, votre bio et vos informations de contact. Vérifiez votre numéro de téléphone.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon"><i class="fa-solid fa-signal"></i></div>
-        <h3>Mode économie de données</h3>
-        <p>Naviguez confortablement même avec une connexion lente — les médias se chargent uniquement à la demande.</p>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ===== STATS ===== -->
-  <section class="section-stats">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <h2>12+</h2>
-        <p>Fonctionnalités</p>
-      </div>
-      <div class="stat-item">
-        <h2>100%</h2>
-        <p>Gratuit</p>
-      </div>
-      <div class="stat-item">
-        <h2>24/7</h2>
-        <p>Disponible</p>
-      </div>
-      <div class="stat-item">
-        <h2>🇲🇬</h2>
-        <p>Fait pour Madagascar</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== CTA FINAL ===== -->
-  {% if not user.is_authenticated %}
-  <section class="section-cta">
-    <h2>Prêt à devenir un(e) Vazimba ?</h2>
-    <p>Créez votre compte gratuitement et rejoignez la communauté dès aujourd'hui.</p>
-    <div class="cta-btns">
-      <a href="{% url 'register' %}" class="btn-cta-main">Créer mon compte</a>
-      <a href="{% url 'login' %}" class="btn-cta-secondary">J'ai déjà un compte</a>
     </div>
   </section>
   {% endif %}
 
-  <!-- ===== FOOTER ===== -->
+  <!-- ═══════════════════ Appel à l'action final ═══════════════════ -->
+  <section class="block">
+    <div class="wrap">
+      <div class="cta">
+        <h2>Rejoignez la communauté</h2>
+        <p>Créez votre compte en une minute. C'est gratuit, et vous pouvez
+           commencer à publier tout de suite.</p>
+        <div class="cta-btns">
+          <a href="{% url 'register' %}" class="btn btn-lg btn-on-hero">Créer mon compte</a>
+          <a href="{% url 'login' %}" class="btn btn-lg btn-on-hero-ghost">Se connecter</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
   {% include 'snippets/footer.html' %}
 
-  <!-- ===== DARK/LIGHT TOGGLE JS ===== -->
   <script>
-    const toggle = document.getElementById('theme-toggle');
-    const icon   = document.getElementById('theme-icon');
-    const html   = document.documentElement;
+    (function () {
+      var toggle = document.getElementById('theme-toggle');
+      var icon   = document.getElementById('theme-icon');
+      var root   = document.documentElement;
 
-    // Charge le thème sauvegardé
-    const saved = localStorage.getItem('zoot-theme') || 'light';
-    html.setAttribute('data-theme', saved);
-    icon.className = saved === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      function paint(theme) {
+        root.setAttribute('data-theme', theme);
+        icon.textContent = theme === 'dark' ? 'light_mode' : 'dark_mode';
+      }
 
-    toggle.addEventListener('click', () => {
-      const current = html.getAttribute('data-theme');
-      const next    = current === 'dark' ? 'light' : 'dark';
-      html.setAttribute('data-theme', next);
-      icon.className = next === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
-      localStorage.setItem('zoot-theme', next);
-    });
+      var saved = 'light';
+      try { saved = localStorage.getItem('zoot-theme') || 'light'; } catch (e) {}
+      paint(saved);
+
+      toggle.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        paint(next);
+        try { localStorage.setItem('zoot-theme', next); } catch (e) {}
+      });
+    })();
   </script>
 </body>
 </html>
