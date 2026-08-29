@@ -13,6 +13,14 @@ from public_chat.constants import *
 from chat.exceptions import ClientError
 from chat.utils import calculate_timestamp
 
+import logging
+
+# Les traces de débogage passaient par print() : elles étaient émises sur
+# stdout en production à chaque message WebSocket (bruit dans les logs
+# Railway, identifiants d'utilisateurs inclus) et n'étaient pas filtrables.
+# logger.debug() est silencieux par défaut et se règle via LOGGING.
+logger = logging.getLogger(__name__)
+
 User = get_user_model()
 
 MSG_TYPE_MESSAGE = 0  # For standard messages
@@ -27,7 +35,7 @@ class PublicChatConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		Called when the websocket is handshaking as part of initial connection.
 		"""
-		print("PublicChatConsumer: connect: " + str(self.scope["user"]))
+		logger.debug("PublicChatConsumer: connect: " + str(self.scope["user"]))
 		# let everyone connect. But limit read/write to authenticated users
 		await self.accept()
 		self.room_id = None
@@ -38,7 +46,7 @@ class PublicChatConsumer(AsyncJsonWebsocketConsumer):
 		Called when the WebSocket closes for any reason.
 		"""
 		# leave the room
-		print("PublicChatConsumer: disconnect")
+		logger.debug("PublicChatConsumer: disconnect")
 		try:
 			if self.room_id != None:
 				await self.leave_room(self.room_id)
@@ -53,7 +61,7 @@ class PublicChatConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		# Messages will have a "command" key we can switch on
 		command = content.get("command", None)
-		print("PublicChatConsumer: receive_json: " + str(command))
+		logger.debug("PublicChatConsumer: receive_json: " + str(command))
 		try:
 			if command == "send":
 				if len(content["message"].lstrip()) != 0:
@@ -85,7 +93,7 @@ class PublicChatConsumer(AsyncJsonWebsocketConsumer):
 		Called by receive_json when someone sends a message to a room.
 		"""
 		# Check they are in this room
-		print("PublicChatConsumer: send_room")
+		logger.debug("PublicChatConsumer: send_room")
 		if self.room_id != None:
 			if str(room_id) != str(self.room_id):
 				raise ClientError("ROOM_ACCESS_DENIED", "Room access denied")
@@ -114,7 +122,7 @@ class PublicChatConsumer(AsyncJsonWebsocketConsumer):
 		Called when someone has messaged our chat.
 		"""
 		# Send a message down to the client
-		print("PublicChatConsumer: chat_message from user #" + str(event["user_id"]))
+		logger.debug("PublicChatConsumer: chat_message from user #" + str(event["user_id"]))
 		timestamp = calculate_timestamp(timezone.now())
 		await self.send_json(
 			{
@@ -131,7 +139,7 @@ class PublicChatConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		Called by receive_json when someone sent a join command.
 		"""
-		print("PublicChatConsumer: join_room")
+		logger.debug("PublicChatConsumer: join_room")
 		is_auth = is_authenticated(self.scope["user"])
 		try:
 			room = await get_room_or_error(room_id)
@@ -169,7 +177,7 @@ class PublicChatConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		Called by receive_json when someone sent a leave command.
 		"""
-		print("PublicChatConsumer: leave_room")
+		logger.debug("PublicChatConsumer: leave_room")
 		is_auth = is_authenticated(self.scope["user"])
 		room = await get_room_or_error(room_id)
 
@@ -209,7 +217,7 @@ class PublicChatConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		Send a payload of messages to the ui
 		"""
-		print("PublicChatConsumer: send_messages_payload. ")
+		logger.debug("PublicChatConsumer: send_messages_payload. ")
 
 		await self.send_json(
 			{
@@ -226,7 +234,7 @@ class PublicChatConsumer(AsyncJsonWebsocketConsumer):
 		2. is_displayed = False
 		- Hide the progress bar on UI
 		"""
-		print("DISPLAY PROGRESS BAR: " + str(is_displayed))
+		logger.debug("DISPLAY PROGRESS BAR: " + str(is_displayed))
 		await self.send_json(
 			{
 				"display_progress_bar": is_displayed
@@ -240,7 +248,7 @@ class PublicChatConsumer(AsyncJsonWebsocketConsumer):
 		many users are connected to the chat.
 
 		"""
-		print("PublicChatConsumer: connected_user_count: count: " + str(event["connected_user_count"]))
+		logger.debug("PublicChatConsumer: connected_user_count: count: " + str(event["connected_user_count"]))
 		await self.send_json({
 			"msg_type": MSG_TYPE_CONNECTED_USER_COUNT,
 			"connected_user_count": event['connected_user_count']
@@ -318,5 +326,5 @@ def get_room_chat_messages(room, page_number):
 		payload['new_page_number'] = new_page_number
 		return json.dumps(payload)
 	except Exception as e:
-		print("EXCEPTION: " + str(e))
+		logger.debug("EXCEPTION: " + str(e))
 		return None

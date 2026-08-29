@@ -7,7 +7,6 @@ from django.conf import settings
 import os
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib.auth.models import User
 import uuid
 
 from friend.models import FriendList
@@ -84,7 +83,9 @@ class Account(AbstractBaseUser):
 	email 					= models.EmailField(verbose_name="email", max_length=60, unique=True)
 	username 				= models.CharField(max_length=30, unique=True)
 	date_joined				= models.DateTimeField(verbose_name='date joined', auto_now_add=True)
-	last_login				= models.DateTimeField(verbose_name='last login', auto_now=True)
+	# Renseigné par django.contrib.auth au moment du login (signal user_logged_in).
+	# NE PAS remettre auto_now=True : le champ serait réécrit à chaque save().
+	last_login				= models.DateTimeField(verbose_name='last login', blank=True, null=True)
 	is_admin				= models.BooleanField(default=False)
 	is_active				= models.BooleanField(default=True)
 	is_staff				= models.BooleanField(default=False)
@@ -143,7 +144,10 @@ class Account(AbstractBaseUser):
 		return self.is_admin
 
 	def has_module_perms(self, app_label):
-		return True
+		# Retournait True pour TOUT compte : un utilisateur passé is_staff
+		# voyait alors l'ensemble des applications dans l'admin Django.
+		# On aligne sur has_perm().
+		return self.is_admin
 
 	@cached_property
 	def score_fihavanana(self):
@@ -211,14 +215,16 @@ class Account(AbstractBaseUser):
 
 
 @receiver(post_save, sender=Account)
-def user_save(sender, instance, **kwargs):
-    FriendList.objects.get_or_create(user=instance)
+def user_save(sender, instance, created, **kwargs):
+    # Uniquement à la création : évite une requête inutile à chaque save().
+    if created:
+        FriendList.objects.get_or_create(user=instance)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Vérification OTP par SMS
 # ─────────────────────────────────────────────────────────────────────────────
-import random
+import secrets
 import string
 
 class PhoneVerification(models.Model):
@@ -260,7 +266,8 @@ class PhoneVerification(models.Model):
 
     @classmethod
     def generate_code(cls):
-        return ''.join(random.choices(string.digits, k=6))
+        # secrets (et non random) : un OTP doit être imprévisible.
+        return ''.join(secrets.choice(string.digits) for _ in range(6))
 
     @property
     def is_expired(self):

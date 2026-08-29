@@ -26,7 +26,6 @@ SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
-DJANGO_DEBUG=True
 
 # ── Email ─────────────────────────────────────────────────────────────────────
 # En développement : affiche les e-mails dans la console (pas d'envoi réel)
@@ -55,8 +54,11 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/login/'
 
+# CaseInsensitiveModelBackend hérite de ModelBackend : il refuse les comptes
+# désactivés (is_active=False) via user_can_authenticate().
+# NE PAS ajouter AllowAllUsersModelBackend ici — il laisse se connecter les
+# comptes bannis et rend la désactivation inopérante.
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.AllowAllUsersModelBackend',
     'account.backends.CaseInsensitiveModelBackend',
 )
 
@@ -261,7 +263,6 @@ LANGUAGE_COOKIE_AGE  = 365 * 24 * 3600   # 1 an
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
-USE_L10N = True
 
 USE_TZ = True
 
@@ -432,3 +433,32 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE   = True
     CSRF_COOKIE_SECURE      = True
+
+    # Redirection HTTP→HTTPS applicative — DÉSACTIVÉE par défaut.
+    # Le health check Railway interroge le conteneur en direct : s'il n'envoie
+    # pas X-Forwarded-Proto: https, Django lui répond 301 au lieu de 200, le
+    # health check échoue et le déploiement boucle sur des redémarrages
+    # (railway.toml : healthcheckPath = "/", restartPolicyMaxRetries = 3).
+    # L'edge Railway force déjà HTTPS et HSTS ci-dessous couvre les visiteurs
+    # récurrents. À passer à True une fois le health check vérifié :
+    #     railway variables --set "SECURE_SSL_REDIRECT=True"
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+
+    # HSTS — le navigateur refuse le HTTP sur ce domaine pendant 1 an.
+    # Prudence : à n'activer que si TOUS les sous-domaines sont en HTTPS.
+    SECURE_HSTS_SECONDS           = 31536000   # 1 an
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD            = True
+
+    # Le cookie de langue est posé par notre middleware : lui aussi en HTTPS seul.
+    LANGUAGE_COOKIE_SECURE = True
+
+    # Empêche le vol de cookie de session via JavaScript et limite le CSRF.
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE    = 'Lax'
+
+    # Ne pas laisser le navigateur deviner le type MIME des fichiers servis
+    # (un upload "image" contenant du HTML ne sera pas interprété comme tel).
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY      = 'same-origin'

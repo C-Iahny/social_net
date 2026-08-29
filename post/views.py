@@ -2,6 +2,8 @@ import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.views.generic import DeleteView, UpdateView, CreateView
@@ -23,6 +25,7 @@ from .forms import PostForm, EditForm, CommentForm
 from .models import Post, Repost, Continent, Country, Follow, Comment, Reaction, PostMedia
 from friend.models import FriendList
 from personal.models import HeroSettings
+from .visibility import visible_posts
 
 # Import différé pour éviter les imports circulaires
 try:
@@ -230,21 +233,21 @@ def post_feed_view(request):
     tab = request.GET.get('tab', 'feed')
     user_region = getattr(user, 'region', '')
 
-    from django.utils import timezone as _tz
-    from django.db.models import Q as _Q
-    _now = _tz.now()
-    _visible = _Q(status='published') | _Q(status='scheduled', scheduled_at__lte=_now)
-
     if tab == 'region' and user_region:
-        # Posts de la région de l'utilisateur (tous auteurs, tous publics)
-        feed_posts = Post.objects.filter(
-            region=user_region
-        ).filter(_visible).select_related('author', 'group').order_by("-id")
+        # Posts de la région de l'utilisateur (tous auteurs, tous publics).
+        # visible_posts() exclut les groupes privés dont l'utilisateur n'est
+        # pas membre — ils apparaissaient auparavant dans cet onglet.
+        feed_posts = visible_posts(
+            Post.objects.filter(region=user_region).select_related('author', 'group').order_by("-id"),
+            user,
+        )
     else:
         # Posts : les siens (publiés) + ceux de ses amis
-        feed_posts = Post.objects.filter(
-            author__in=list(friends) + [user]
-        ).filter(_visible).select_related('author', 'group').order_by("-id")
+        feed_posts = visible_posts(
+            Post.objects.filter(author__in=list(friends) + [user])
+            .select_related('author', 'group').order_by("-id"),
+            user,
+        )
         tab = 'feed'  # normalise si region vide
 
     # Pagination (5 posts par page)
@@ -445,7 +448,10 @@ def post_feed_more(request):
 # Add Post
 # ──────────────────────────────────────────────
 @method_decorator(login_required(login_url="login"), name="dispatch")
-class AddPostView(CreateView):
+class AddPostView(LoginRequiredMixin, CreateView):
+    # Sans LoginRequiredMixin, un visiteur anonyme accédait au formulaire puis
+    # provoquait une 500 à la soumission (author = AnonymousUser).
+    login_url = 'login'
     model = Post
     form_class = PostForm
     template_name = "post/add_post.html"
@@ -605,7 +611,8 @@ class AddPostView(CreateView):
 # Edit Post
 # ──────────────────────────────────────────────
 @method_decorator(login_required(login_url="login"), name="dispatch")
-class UpdatePostView(UpdateView):
+class UpdatePostView(LoginRequiredMixin, UpdateView):
+    login_url = 'login'
     model = Post
     form_class = EditForm
     template_name = "post/update_post.html"
@@ -663,7 +670,8 @@ class UpdatePostView(UpdateView):
 # Delete Post
 # ──────────────────────────────────────────────
 @method_decorator(login_required(login_url="login"), name="dispatch")
-class DeletePostView(DeleteView):
+class DeletePostView(LoginRequiredMixin, DeleteView):
+    login_url = 'login'
     model = Post
     template_name = "post/delete_post.html"
     success_url = reverse_lazy("post:post-view")
@@ -679,8 +687,15 @@ class DeletePostView(DeleteView):
 # Like / Unlike
 # ──────────────────────────────────────────────
 @login_required(login_url="login")
+@require_POST
 def like_post(request):
-    post_id = request.GET.get("post_id")
+    """Ajoute/retire un like. POST uniquement.
+
+    La vue acceptait le GET : un simple <img src="/feed/like/?post_id=1">
+    sur un site tiers faisait liker le post par tout visiteur connecté
+    (le middleware CSRF ne protège pas les requêtes GET).
+    """
+    post_id = request.POST.get("post_id") or request.GET.get("post_id")
     post    = get_object_or_404(Post, id=post_id)
 
     if post.likes.filter(id=request.user.id).exists():
@@ -698,8 +713,14 @@ def like_post(request):
         })
 
     # ── Requête classique (fallback sans JS) → redirection ────────────────────
-    next_url = request.GET.get("next") or request.META.get("HTTP_REFERER") or "post:post-view"
-    return redirect(next_url)
+    # Redirection ouverte : ?next= (ou le Referer) était suivi sans contrôle,
+    # ce qui permettait d'envoyer l'utilisateur vers un domaine tiers.
+    next_url = request.POST.get("next") or request.GET.get("next") or request.META.get("HTTP_REFERER")
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        return redirect(next_url)
+    return redirect("post:post-view")
 
 
 # ──────────────────────────────────────────────
@@ -961,8 +982,13 @@ def new_comments(request, post_id):
 
 
 @login_required(login_url="login")
+@require_POST
 def delete_comment(request, comment_id):
-    """Supprime un commentaire (auteur ou auteur du post uniquement)."""
+    """Supprime un commentaire (auteur ou auteur du post uniquement).
+
+    POST obligatoire : en GET, la suppression était déclenchable depuis un
+    site tiers sans jeton CSRF.
+    """
     comment = get_object_or_404(Comment, id=comment_id)
     if request.user != comment.author and request.user != comment.post.author:
         return JsonResponse({"error": "Non autorisé."}, status=403)
@@ -1090,9 +1116,12 @@ def hashtag_view(request, tag):
     """Affiche les posts contenant un hashtag donné."""
     from django.db.models import Q
     tag_clean = tag.lstrip('#').lower()
-    posts = Post.objects.filter(
-        Q(body__icontains='#' + tag_clean) | Q(title__icontains='#' + tag_clean)
-    ).select_related('author', 'group').order_by('-id')
+    posts = visible_posts(
+        Post.objects.filter(
+            Q(body__icontains='#' + tag_clean) | Q(title__icontains='#' + tag_clean)
+        ).select_related('author', 'group').order_by('-id'),
+        request.user,
+    )
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -1483,10 +1512,14 @@ def global_search_view(request):
         else:
             accounts_with_friend = [(acc, False) for acc in accounts_qs]
 
-        # Posts
-        posts_qs = Post.objects.filter(
-            Q(title__icontains=query) | Q(body__icontains=query)
-        ).select_related('author')[:20]
+        # Posts — visible_posts() écarte brouillons, posts programmés non
+        # échus et posts de groupes privés dont l'utilisateur n'est pas membre.
+        posts_qs = visible_posts(
+            Post.objects.filter(
+                Q(title__icontains=query) | Q(body__icontains=query)
+            ).select_related('author', 'group'),
+            request.user,
+        )[:20]
 
         # Hashtags
         hashtags_qs = Hashtag.objects.filter(tag__icontains=query)[:10]

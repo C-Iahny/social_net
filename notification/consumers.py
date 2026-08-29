@@ -15,6 +15,14 @@ from notification.utils import LazyNotificationEncoder
 from notification.constants import *
 from chat.exceptions import ClientError
 
+import logging
+
+# Les traces de débogage passaient par print() : elles étaient émises sur
+# stdout en production à chaque message WebSocket (bruit dans les logs
+# Railway, identifiants d'utilisateurs inclus) et n'étaient pas filtrables.
+# logger.debug() est silencieux par défaut et se règle via LOGGING.
+logger = logging.getLogger(__name__)
+
 
 class NotificationConsumer(AsyncJsonWebsocketConsumer):
 	"""
@@ -32,7 +40,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 		Called when the websocket is handshaking as part of initial connection.
 		Join a personal channel group so server-side code can push messages to this user.
 		"""
-		print("NotificationConsumer: connect: " + str(self.scope["user"]))
+		logger.debug("NotificationConsumer: connect: " + str(self.scope["user"]))
 		user = self.scope["user"]
 		# Accept first so the socket is alive even if channel layer (Redis) is unavailable
 		await self.accept()
@@ -41,20 +49,20 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 			try:
 				await self.channel_layer.group_add(self.room_group_name, self.channel_name)
 			except Exception as e:
-				print(f"NotificationConsumer: channel_layer.group_add failed (Redis?): {e}")
+				logger.debug(f"NotificationConsumer: channel_layer.group_add failed (Redis?): {e}")
 
 
 	async def disconnect(self, code):
 		"""
 		Called when the WebSocket closes for any reason.
 		"""
-		print("NotificationConsumer: disconnect")
+		logger.debug("NotificationConsumer: disconnect")
 		user = self.scope["user"]
 		if user.is_authenticated:
 			try:
 				await self.channel_layer.group_discard(f"user_{user.id}", self.channel_name)
 			except Exception as e:
-				print(f"NotificationConsumer: channel_layer.group_discard failed: {e}")
+				logger.debug(f"NotificationConsumer: channel_layer.group_discard failed: {e}")
 
 
 	async def receive_json(self, content):
@@ -63,7 +71,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 		for us and pass it as the first argument.
 		"""
 		command = content.get("command", None)
-		print(f"NotificationConsumer: receive_json. Command: {command}")
+		logger.debug(f"NotificationConsumer: receive_json. Command: {command}")
 		try:
 			if command == "get_general_notifications":
 				payload = await get_general_notifications(self.scope["user"], content.get("page_number", None))
@@ -131,7 +139,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 						payload = json.loads(payload)
 						await self.send_unread_chat_notification_count(payload['count'])
 				except Exception as e:
-					print("UNREAD CHAT MESSAGE COUNT EXCEPTION: " + str(e))
+					logger.debug("UNREAD CHAT MESSAGE COUNT EXCEPTION: " + str(e))
 					pass
 
 				# ── Rejet d'appel depuis n'importe quelle page ─────────────────────
@@ -151,18 +159,18 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 							}
 						)
 					except Exception as e:
-						print(f"call_reject_global error: {e}")
+						logger.debug(f"call_reject_global error: {e}")
 
 		except ClientError as e:
-			print("EXCEPTION: receive_json ClientError: " + str(e))
+			logger.debug("EXCEPTION: receive_json ClientError: " + str(e))
 			pass
 		except Exception as e:
 			# Catch-all: never let a random ValueError / KeyError close the WebSocket
-			print("EXCEPTION: receive_json unhandled: " + str(e))
+			logger.debug("EXCEPTION: receive_json unhandled: " + str(e))
 			pass
 
 	async def display_progress_bar(self, shouldDisplay):
-		print("NotificationConsumer: display_progress_bar: " + str(shouldDisplay)) 
+		logger.debug("NotificationConsumer: display_progress_bar: " + str(shouldDisplay))
 		await self.send_json(
 			{
 				"progress_bar": shouldDisplay,
@@ -269,7 +277,7 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 		"""
 		Called by receive_json when pagination is exhausted for chat notifications
 		"""
-		print("Chat Pagination DONE... No more notifications.")
+		logger.debug("Chat Pagination DONE... No more notifications.")
 		await self.send_json(
 			{
 				"chat_msg_type": CHAT_MSG_TYPE_PAGINATION_EXHAUSTED,
@@ -562,7 +570,7 @@ def get_chat_notifications(user, page_number):
 
 		# sleep 1s for testing
 		# sleep(1)  
-		print("PAGES: " + str(p.num_pages))
+		logger.debug("PAGES: " + str(p.num_pages))
 		payload = {}
 		if len(notifications) > 0:
 			if int(page_number) <= p.num_pages:
