@@ -16,17 +16,21 @@ class HeroSettings(models.Model):
         default="Si vous connaissez ce que c'est Vazimba et que vous en êtes un(e), alors vous êtes au bon endroit car cette plateforme est conçue pour les Vazimba. Pour un partage d'idées, de messages et d'informations en temps réel.",
         verbose_name="Texte d'accroche",
     )
+    # Défauts alignés sur la charte acajou/ambre du reste de l'interface
+    # (--accent #8B4513 dans snippets/base_css.html). Les anciens défauts
+    # étaient l'indigo/violet #1877f2 → #6c2bd9, hérités d'une charte
+    # abandonnée : le hero jurait avec la page qui l'entoure.
     gradient_from = models.CharField(
         max_length=20,
-        default="#1877f2",
+        default="#5c2a08",
         verbose_name="Couleur de début (dégradé)",
-        help_text="Code couleur hexadécimal, ex. #1877f2",
+        help_text="Code couleur hexadécimal, ex. #5c2a08",
     )
     gradient_to   = models.CharField(
         max_length=20,
-        default="#6c2bd9",
+        default="#A0522D",
         verbose_name="Couleur de fin (dégradé)",
-        help_text="Code couleur hexadécimal, ex. #6c2bd9",
+        help_text="Code couleur hexadécimal, ex. #A0522D",
     )
     background_image = models.ImageField(
         upload_to="hero_bg/",
