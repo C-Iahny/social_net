@@ -1,0 +1,180 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #8B4513; text-decoration: none; }
+    a:hover { color: #6b3410; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; background: #faf7f2; color: #1c1208; font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;">
+
+  <!-- ============ Barre de navigation ============ -->
+  <div style="display: flex; align-items: center; gap: 40px; padding: 0 72px; height: 76px; border-bottom: 1px solid #e8d5c2;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-right: auto;">
+      <div style="width: 30px; height: 30px; border-radius: 9px; background: {{accent}}; display: flex; align-items: center; justify-content: center;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#faf7f2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 9v11h16V9z"></path><path d="M9 20v-6h6v6"></path></svg>
+      </div>
+      <span style="font-size: 19px; font-weight: 700; letter-spacing: -0.4px;">Vazimba</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 30px; font-size: 15px; color: #6b4c35;">
+      <span>Bazar</span>
+      <span>Tourisme</span>
+      <span>Groupes</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="height: 44px; display: flex; align-items: center; padding: 0 18px; font-size: 15px; font-weight: 500; color: #1c1208;">Connexion</div>
+      <div style="height: 44px; display: flex; align-items: center; padding: 0 22px; border-radius: 11px; background: {{accent}}; color: #faf7f2; font-size: 15px; font-weight: 600;">Créer un compte</div>
+    </div>
+  </div>
+
+  <!-- ============ Hero ============ -->
+  <div style="padding: 128px 72px 112px; display: flex; flex-direction: column; gap: 34px;">
+    <h1 style="margin: 0; max-width: 1000px; font-size: 96px; line-height: 0.94; letter-spacing: -4px; font-weight: 700;">
+      Le réseau social qui parle
+      <span style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-style: italic; letter-spacing: -1.5px; color: {{accent}};">malagasy</span>.
+    </h1>
+
+    <p style="margin: 0; max-width: 560px; font-size: 20px; line-height: 1.55; color: #55402f;">
+      Un fil d'actualité, une place de marché et un guide du pays — au même endroit.
+    </p>
+
+    <div style="display: flex; align-items: center; gap: 26px;">
+      <div style="height: 58px; display: flex; align-items: center; padding: 0 32px; border-radius: 13px; background: {{accent}}; color: #faf7f2; font-size: 17px; font-weight: 600;">Créer un compte gratuit</div>
+      <span style="font-size: 16px; color: #6b4c35; text-decoration: underline; text-underline-offset: 4px;">J'ai déjà un compte</span>
+    </div>
+
+    <div style="font-size: 14px; color: #9a7060;">
+      Gratuit · Français, Malagasy, English
+    </div>
+  </div>
+
+  <!-- ============ Chiffres réels ============ -->
+  <div style="padding: 0 72px 100px;">
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border-top: 1px solid #e0cdb8; border-bottom: 1px solid #e0cdb8;">
+      <div style="padding: 30px 26px 30px 0; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 46px; font-weight: 700; letter-spacing: -2px; line-height: 1;">21</span>
+        <span style="font-size: 14px; color: #7d6350;">Membres</span>
+      </div>
+      <div style="padding: 30px 26px; border-left: 1px solid #e8d5c2; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 46px; font-weight: 700; letter-spacing: -2px; line-height: 1;">39</span>
+        <span style="font-size: 14px; color: #7d6350;">Publications</span>
+      </div>
+      <div style="padding: 30px 26px; border-left: 1px solid #e8d5c2; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 46px; font-weight: 700; letter-spacing: -2px; line-height: 1;">7</span>
+        <span style="font-size: 14px; color: #7d6350;">Annonces au Bazar</span>
+      </div>
+      <div style="padding: 30px 0 30px 26px; border-left: 1px solid #e8d5c2; display: flex; flex-direction: column; gap: 5px;">
+        <span style="font-size: 46px; font-weight: 700; letter-spacing: -2px; line-height: 1;">3</span>
+        <span style="font-size: 14px; color: #7d6350;">Groupes</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Piliers ============ -->
+  <div style="padding: 0 72px 104px; display: flex; flex-direction: column; gap: 36px;">
+    <h2 style="margin: 0; max-width: 620px; font-size: 44px; line-height: 1.08; letter-spacing: -1.6px; font-weight: 700;">
+      Quatre raisons d'ouvrir Vazimba
+      <span style="font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-style: italic; letter-spacing: -0.5px;">chaque jour</span>
+    </h2>
+
+    <!-- Le Bazar domine, puis trois cartes égales -->
+    <div style="background: #1c1208; color: #f7efe4; border-radius: 20px; padding: 44px; display: flex; align-items: center; gap: 48px;">
+      <div style="display: flex; flex-direction: column; gap: 16px; flex-grow: 1;">
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; letter-spacing: 1.1px; text-transform: uppercase; color: #d9a066;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d9a066" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11h-15z"></path><path d="M8 9V6a4 4 0 0 1 8 0v3"></path></svg>
+          Bazar
+        </div>
+        <h3 style="margin: 0; font-size: 36px; line-height: 1.1; letter-spacing: -1.3px; font-weight: 700; max-width: 520px;">Vendez à vos voisins, pas à des inconnus.</h3>
+        <p style="margin: 0; max-width: 520px; font-size: 16px; line-height: 1.6; color: #c9b6a2;">
+          Une annonce en quelques minutes, filtrée par catégorie et par région.
+          Les commerçants sérieux portent un badge vérifié.
+        </p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 9px; padding: 0 24px; height: 52px; border-radius: 13px; background: #f7efe4; color: #1c1208; font-size: 16px; font-weight: 600; white-space: nowrap;">
+        Voir les annonces
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1c1208" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px;">
+      <div style="background: #ffffff; border: 1px solid #e8d5c2; border-radius: 20px; padding: 32px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="width: 44px; height: 44px; border-radius: 13px; background: #f4ece2; display: flex; align-items: center; justify-content: center;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.4 8.4 0 0 1-3.8-.9L3 20.5l1.5-4.4A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"></path></svg>
+        </div>
+        <h3 style="margin: 0; font-size: 21px; line-height: 1.2; letter-spacing: -0.6px; font-weight: 700;">Votre fil, vos gens</h3>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #6b4c35;">Textes, photos, vidéos. Stories qui disparaissent en 24 h, réactions et messages privés en temps réel.</p>
+      </div>
+
+      <div style="background: #ffffff; border: 1px solid #e8d5c2; border-radius: 20px; padding: 32px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="width: 44px; height: 44px; border-radius: 13px; background: #f4ece2; display: flex; align-items: center; justify-content: center;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path><path d="M9 3v15M15 6v15"></path></svg>
+        </div>
+        <h3 style="margin: 0; font-size: 21px; line-height: 1.2; letter-spacing: -0.6px; font-weight: 700;">Découvrir Madagascar</h3>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #6b4c35;">Les lieux région par région, les avis de ceux qui y sont allés, et des guides locaux à contacter.</p>
+      </div>
+
+      <div style="background: #ffffff; border: 1px solid #e8d5c2; border-radius: 20px; padding: 32px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="width: 44px; height: 44px; border-radius: 13px; background: #f4ece2; display: flex; align-items: center; justify-content: center;">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20a6 6 0 0 1 12 0"></path><path d="M16 5.5a3.2 3.2 0 0 1 0 5M18.5 20a6 6 0 0 0-2.2-4.6"></path></svg>
+        </div>
+        <h3 style="margin: 0; font-size: 21px; line-height: 1.2; letter-spacing: -0.6px; font-weight: 700;">Groupes &amp; directs</h3>
+        <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #6b4c35;">Des communautés par passion ou par région, et le direct depuis le navigateur — sans rien installer.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Bande Madagascar ============ -->
+  <div style="background: #f2e9df; padding: 84px 72px;">
+    <div style="max-width: 780px;">
+      <h2 style="margin: 0 0 18px; font-size: 40px; line-height: 1.12; letter-spacing: -1.4px; font-weight: 700;">
+        Construit pour d'ici, pas adapté depuis ailleurs.
+      </h2>
+      <p style="margin: 0; font-size: 18px; line-height: 1.65; color: #55402f;">
+        Les régions de Madagascar structurent la recherche, les prix sont en ariary,
+        et un mode économie charge les médias à la demande pour que le site reste
+        utilisable quand le réseau ne suit pas.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============ Appel à l'action final ============ -->
+  <div style="padding: 104px 72px; display: flex; flex-direction: column; align-items: center; gap: 26px; text-align: center;">
+    <h2 style="margin: 0; max-width: 720px; font-size: 52px; line-height: 1.08; letter-spacing: -2px; font-weight: 700;">
+      Rejoignez la communauté
+    </h2>
+    <p style="margin: 0; max-width: 440px; font-size: 18px; line-height: 1.55; color: #6b4c35;">
+      Créez votre compte en une minute. C'est gratuit, et vous pouvez publier tout de suite.
+    </p>
+    <div style="height: 56px; display: flex; align-items: center; padding: 0 32px; border-radius: 13px; background: {{accent}}; color: #faf7f2; font-size: 17px; font-weight: 600; margin-top: 6px;">Créer mon compte</div>
+  </div>
+
+  <!-- ============ Pied ============ -->
+  <div style="border-top: 1px solid #e8d5c2; padding: 34px 72px; display: flex; align-items: center; gap: 26px;">
+    <span style="font-size: 15px; font-weight: 700; letter-spacing: -0.3px; margin-right: auto;">Vazimba</span>
+    <span style="font-size: 14px; color: #7d6350;">Confidentialité</span>
+    <span style="font-size: 14px; color: #7d6350;">CGU</span>
+    <span style="font-size: 14px; color: #9a7060;">vazimba.io</span>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"accent":{"editor":"color","default":"#8B4513","options":["#8B4513","#A0522D","#C1440E","#D4AF37"],"section":"Couleurs"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#8B4513' };
+  }
+}
+</script>
+</body>
+</html>

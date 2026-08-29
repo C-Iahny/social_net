@@ -1,0 +1,47 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 2650,
+      "title": "Landing desktop"
+    },
+    {
+      "file": "Mobile.dc.html",
+      "x": 1560,
+      "y": 0,
+      "w": 390,
+      "h": 2340,
+      "title": "Landing mobile"
+    },
+    {
+      "file": "Nav.dc.html",
+      "x": 0,
+      "y": 2770,
+      "w": 1440,
+      "h": 730,
+      "title": "Barre de navigation — visiteur / connecté"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "simplifie",
+      "x": 0,
+      "y": -160,
+      "w": 620,
+      "text": "DIRECTION A — allégée\n\nHero : plus de cartes d'aperçu (elles montraient des données inventées), une seule action principale, le lien de connexion en texte. Le titre gagne toute la largeur.\n\nAilleurs : badge redondant, double ligne de réassurance, puce « en direct » et trois encadrés de langues retirés. La grille des piliers ne zigzague plus — le Bazar domine, puis trois cartes égales."
+    },
+    {
+      "id": "navbar-note",
+      "x": 1560,
+      "y": 2770,
+      "w": 460,
+      "text": "BARRE DE NAVIGATION\n\nLes deux états corrigent ce que l'audit avait trouvé : un visiteur ne voit que Bazar, Tourisme et Groupes — les sections réellement ouvertes sans compte — et garde un menu sur téléphone.\n\nLe connecté a le fil, la recherche, les notifications et « Plus », plus la barre basse sur mobile."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}
