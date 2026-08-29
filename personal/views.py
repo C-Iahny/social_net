@@ -93,24 +93,11 @@ def landing_view(request):
 
 	hero = HeroSettings.get()
 
-	# Aperçu concret de l'activité : quelques annonces réelles valent mieux
-	# qu'une liste de fonctionnalités décrites en toutes lettres.
-	try:
-		from bazar.models import Annonce
-		annonces_recentes = list(
-			Annonce.objects.filter(status='active')
-			.select_related('seller')
-			.prefetch_related('images')
-			.order_by('-created_at')[:4]
-		)
-	except Exception:
-		annonces_recentes = []
-
-	try:
-		from tourisme.models import LieuTouristique
-		lieux_vedette = list(LieuTouristique.objects.order_by('-id')[:3])
-	except Exception:
-		lieux_vedette = []
+	# NOTE : les aperçus « dernières annonces » et « lieux à découvrir » ont été
+	# retirés avec la refonte de la page — la maquette retenue les remplace par
+	# les quatre piliers, qui renvoient vers les sections elles-mêmes. Les
+	# requêtes correspondantes ont disparu avec eux plutôt que de rester
+	# exécutées pour rien à chaque visite.
 
 	context = {
 		'announcements': announcements,
@@ -122,8 +109,6 @@ def landing_view(request):
 		),
 		'hero': hero,
 		'stats': _landing_stats(),
-		'annonces_recentes': annonces_recentes,
-		'lieux_vedette': lieux_vedette,
 	}
 	return render(request, "personal/landing.html", context)
 

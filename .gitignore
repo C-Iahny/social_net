@@ -44,3 +44,5 @@ vazimba-android/**/build/
 design/vazimba-landing.html
 design/preview-*.html
 design/shot-*.png
+design/render-*.html
+design/render-*.png
