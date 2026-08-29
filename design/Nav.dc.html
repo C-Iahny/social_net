@@ -1,0 +1,198 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #8B4513; text-decoration: none; }
+    a:hover { color: #6b3410; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; background: #faf7f2; color: #1c1208; font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif; padding: 40px 48px; display: flex; flex-direction: column; gap: 38px;">
+
+  <!-- ══ Visiteur — desktop ══ -->
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #8B4513;">Visiteur</span>
+      <span style="font-size: 13px; color: #7d6350;">— uniquement les sections réellement accessibles sans compte</span>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #e8d5c2; border-radius: 14px; display: flex; align-items: center; gap: 36px; padding: 0 26px; height: 68px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 28px; height: 28px; border-radius: 8px; background: #8B4513; display: flex; align-items: center; justify-content: center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#faf7f2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 9v11h16V9z"></path><path d="M9 20v-6h6v6"></path></svg>
+        </div>
+        <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.4px;">Vazimba</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 10px; background: #f4ece2; font-size: 15px; font-weight: 500;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11h-15z"></path><path d="M8 9V6a4 4 0 0 1 8 0v3"></path></svg>
+          Bazar
+        </div>
+        <div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 10px; font-size: 15px; color: #6b4c35;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9a7060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path><path d="M9 3v15M15 6v15"></path></svg>
+          Tourisme
+        </div>
+        <div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 10px; font-size: 15px; color: #6b4c35;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9a7060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20a6 6 0 0 1 12 0"></path><path d="M16 5.5a3.2 3.2 0 0 1 0 5M18.5 20a6 6 0 0 0-2.2-4.6"></path></svg>
+          Groupes
+        </div>
+      </div>
+
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid #e0cdb8; display: flex; align-items: center; justify-content: center;">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6b4c35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"></path></svg>
+        </div>
+        <div style="height: 44px; display: flex; align-items: center; padding: 0 18px; border-radius: 11px; border: 1.5px solid #e0cdb8; font-size: 15px; font-weight: 500;">Connexion</div>
+        <div style="height: 44px; display: flex; align-items: center; padding: 0 20px; border-radius: 11px; background: #8B4513; color: #faf7f2; font-size: 15px; font-weight: 600;">S'inscrire</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Connecté — desktop ══ -->
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #8B4513;">Connecté</span>
+      <span style="font-size: 13px; color: #7d6350;">— fil, recherche, notifications, et le reste sous « Plus »</span>
+    </div>
+
+    <div style="background: #ffffff; border: 1px solid #e8d5c2; border-radius: 14px; display: flex; align-items: center; gap: 26px; padding: 0 26px; height: 68px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 28px; height: 28px; border-radius: 8px; background: #8B4513; display: flex; align-items: center; justify-content: center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#faf7f2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 9v11h16V9z"></path><path d="M9 20v-6h6v6"></path></svg>
+        </div>
+        <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.4px;">Vazimba</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 10px; background: #8B4513; color: #faf7f2; font-size: 15px; font-weight: 600;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#faf7f2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 9v11h16V9z"></path><path d="M9 20v-6h6v6"></path></svg>
+          Fil
+        </div>
+        <div style="height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 10px; font-size: 15px; color: #6b4c35;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9a7060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11h-15z"></path><path d="M8 9V6a4 4 0 0 1 8 0v3"></path></svg>
+          Bazar
+        </div>
+        <div style="height: 40px; display: flex; align-items: center; gap: 7px; padding: 0 14px; border-radius: 10px; font-size: 15px; color: #6b4c35;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9a7060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.4"></rect><rect x="14" y="3" width="7" height="7" rx="1.4"></rect><rect x="3" y="14" width="7" height="7" rx="1.4"></rect><rect x="14" y="14" width="7" height="7" rx="1.4"></rect></svg>
+          Plus
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9a7060" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+        </div>
+      </div>
+
+      <!-- Recherche -->
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 10px; height: 44px; width: 300px; padding: 0 16px; border-radius: 11px; background: #f7f1e9; border: 1.5px solid #ece0d1;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a7060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+        <span style="font-size: 15px; color: #a68a74;">Rechercher…</span>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="position: relative; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b4c35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.5a6 6 0 1 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 14.5 18 8.5z"></path><path d="M10.3 20a2 2 0 0 0 3.4 0"></path></svg>
+          <span style="position: absolute; top: 7px; right: 6px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: #C1440E; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #ffffff;">3</span>
+        </div>
+        <div style="position: relative; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b4c35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.4 8.4 0 0 1-3.8-.9L3 20.5l1.5-4.4A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"></path></svg>
+        </div>
+        <div style="width: 40px; height: 40px; border-radius: 50%; background: #e8d5c2; border: 2px solid #8B4513;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Mobile — les deux états ══ -->
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #8B4513;">Mobile</span>
+      <span style="font-size: 13px; color: #7d6350;">— le visiteur garde un menu ; le connecté a la barre basse</span>
+    </div>
+
+    <div style="display: flex; gap: 26px; align-items: flex-start;">
+
+      <!-- Visiteur mobile -->
+      <div style="width: 390px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="background: #ffffff; border: 1px solid #e8d5c2; border-radius: 14px; display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 60px;">
+          <div style="width: 26px; height: 26px; border-radius: 8px; background: #8B4513;"></div>
+          <span style="font-size: 16px; font-weight: 700; margin-right: auto;">Vazimba</span>
+          <div style="height: 40px; display: flex; align-items: center; padding: 0 14px; border-radius: 10px; background: #8B4513; color: #faf7f2; font-size: 14px; font-weight: 600;">S'inscrire</div>
+          <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#1c1208" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+          </div>
+        </div>
+        <div style="background: #ffffff; border: 1px solid #e8d5c2; border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 2px;">
+          <div style="height: 46px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-radius: 10px; font-size: 15px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11h-15z"></path><path d="M8 9V6a4 4 0 0 1 8 0v3"></path></svg>
+            Bazar
+          </div>
+          <div style="height: 46px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-radius: 10px; font-size: 15px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3z"></path><path d="M9 3v15M15 6v15"></path></svg>
+            Tourisme
+          </div>
+          <div style="height: 46px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-radius: 10px; font-size: 15px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3 20a6 6 0 0 1 12 0"></path></svg>
+            Groupes
+          </div>
+          <div style="height: 1px; background: #efe4d7; margin: 5px 12px;"></div>
+          <div style="height: 46px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-radius: 10px; font-size: 15px; color: #6b4c35;">Connexion</div>
+        </div>
+      </div>
+
+      <!-- Connecté mobile -->
+      <div style="width: 390px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="background: #ffffff; border: 1px solid #e8d5c2; border-radius: 14px; display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 60px;">
+          <div style="width: 26px; height: 26px; border-radius: 8px; background: #8B4513;"></div>
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+            <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6b4c35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+            </div>
+            <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#6b4c35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8.5a6 6 0 1 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 14.5 18 8.5z"></path><path d="M10.3 20a2 2 0 0 0 3.4 0"></path></svg>
+              <span style="position: absolute; top: 5px; right: 4px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: #C1440E; color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid #ffffff;">3</span>
+            </div>
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: #e8d5c2; border: 2px solid #8B4513;"></div>
+          </div>
+        </div>
+
+        <!-- Barre basse -->
+        <div style="background: #ffffff; border: 1px solid #e8d5c2; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; height: 66px;">
+          <div style="width: 56px; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#8B4513" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 9v11h16V9z"></path><path d="M9 20v-6h6v6"></path></svg>
+            <span style="font-size: 10px; font-weight: 600; color: #8B4513;">Fil</span>
+          </div>
+          <div style="width: 56px; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9a7060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 9 11l4 4 8-8"></path><path d="M21 3h-5M21 3v5"></path></svg>
+            <span style="font-size: 10px; color: #9a7060;">Tendances</span>
+          </div>
+          <div style="width: 52px; height: 52px; border-radius: 17px; background: #8B4513; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#faf7f2" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+          </div>
+          <div style="width: 56px; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9a7060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18l-1.5 11h-15z"></path><path d="M8 9V6a4 4 0 0 1 8 0v3"></path></svg>
+            <span style="font-size: 10px; color: #9a7060;">Bazar</span>
+          </div>
+          <div style="width: 56px; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9a7060" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"></circle><path d="M5 20a7 7 0 0 1 14 0"></path></svg>
+            <span style="font-size: 10px; color: #9a7060;">Profil</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script>
+class Component extends DCLogic {}
+</script>
+</body>
+</html>

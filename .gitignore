@@ -39,3 +39,8 @@ vazimba-android/**/build/
 
 # Copies de travail temporaires des agents Claude Code (jamais à versionner)
 .claude/worktrees/
+
+# Design canvas — sources versionnées (*.dc.html, canvas.json) ; le reste est généré
+design/vazimba-landing.html
+design/preview-*.html
+design/shot-*.png
