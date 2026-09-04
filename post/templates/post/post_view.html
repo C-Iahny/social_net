@@ -815,8 +815,8 @@ body { background: var(--bg); }
     animation: reactionPop .2s cubic-bezier(.34,1.56,.64,1) both;
 }
 @keyframes reactionPop {
-    from { opacity: 0; transform: translateX(-50%) scale(.6) translateY(10px); }
-    to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+    from { opacity: 0; transform: scale(.6) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 @keyframes emojiIn {
     from { opacity: 0; transform: scale(.35) translateY(8px); }
@@ -2583,19 +2583,22 @@ function _positionPicker(picker, wrapEl) {
     /* Mesure des dimensions réelles en affichant invisiblement */
     picker.style.visibility = 'hidden';
     picker.style.display    = 'flex';
+    picker.style.transform  = 'none';
     var ph = picker.offsetHeight || 56;
-    var pw = picker.offsetWidth  || 250;
+    var pw = picker.offsetWidth  || 200;
     picker.style.display    = '';
     picker.style.visibility = '';
     /* Position verticale : au-dessus par défaut, en-dessous si trop près du haut */
     var top = rect.top - ph - 10;
     if (top < 8) top = rect.bottom + 8;
-    /* Position horizontale : centré sur le bouton, contraint aux bords d'écran */
+    /* Position horizontale : centré sur le bouton, sans translateX */
     var cx   = rect.left + rect.width / 2;
-    var left = Math.max(pw / 2 + 8, Math.min(window.innerWidth - pw / 2 - 8, cx));
+    var left = cx - pw / 2;
+    if (left < 8) left = 8;
+    if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
     picker.style.top       = top + 'px';
     picker.style.left      = left + 'px';
-    picker.style.transform = 'translateX(-50%)';
+    picker.style.transform = 'none';
     picker.style.bottom    = 'auto';
 }
 
