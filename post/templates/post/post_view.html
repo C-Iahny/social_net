@@ -776,6 +776,19 @@ body { background: var(--bg); }
 
 .reaction-wrap { flex: 1; position: relative; }
 
+/* Mobile web : l'appui long sur "J'aime" ouvre le picker de réactions.
+   Sans ça, le navigateur interprète le long-press comme une sélection de
+   texte (loupe / poignées / menu contextuel) sur le libellé du bouton. */
+.reaction-wrap, .reaction-wrap * ,
+.pc-footer-btn, .reaction-picker, .reaction-emoji-btn {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.reaction-wrap, .pc-footer-btn, .reaction-emoji-btn { touch-action: manipulation; }
+
 .pc-footer-btn {
     width: 100%;
     display: flex; align-items: center; justify-content: center; gap: .38rem;
@@ -2667,6 +2680,9 @@ document.addEventListener('click', function(e) {
                 wrap._longPressed = true;
             }, 450);
         }, { passive: true });
+
+        /* Android : le long-press déclenche aussi un contextmenu natif */
+        wrap.addEventListener('contextmenu', function(e) { e.preventDefault(); });
 
         wrap.addEventListener('touchmove', function() {
             // Si le doigt bouge, annuler le long-press
