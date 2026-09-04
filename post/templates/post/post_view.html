@@ -456,11 +456,15 @@ body { background: var(--bg); }
         0 1px 3px rgba(0,0,0,.05),
         0 4px 14px rgba(0,0,0,.06),
         0 0 0 .5px rgba(0,0,0,.05);
-    transition: transform .22s ease, box-shadow .22s ease;
+    /* NB: pas de `transform` ici — un ancetre transforme deviendrait le bloc
+       conteneur du .reaction-picker (position:fixed) et le decalerait.
+       Le leger soulevement au survol se fait donc via `top`. */
+    transition: top .22s ease, box-shadow .22s ease;
     position: relative;
+    top: 0;
 }
 .post-card:hover {
-    transform: translateY(-1px);
+    top: -1px;
     box-shadow:
         0 2px 5px rgba(0,0,0,.05),
         0 10px 28px rgba(0,0,0,.1),
@@ -2580,24 +2584,34 @@ var _userReactions = {};
 function _positionPicker(picker, wrapEl) {
     if (!picker || !wrapEl) return;
     var rect = wrapEl.getBoundingClientRect();
-    /* Mesure des dimensions réelles en affichant invisiblement */
+    /* Mesure des dimensions réelles en affichant invisiblement.
+       On pose left/top à 0 puis on lit le rect obtenu : cela donne l'origine
+       réelle du bloc conteneur. Si un ancêtre est transformé (transform,
+       filter, backdrop-filter...), le position:fixed n'est plus relatif au
+       viewport mais à cet ancêtre — la différence compense le décalage. */
     picker.style.visibility = 'hidden';
     picker.style.display    = 'flex';
     picker.style.transform  = 'none';
-    var ph = picker.offsetHeight || 56;
-    var pw = picker.offsetWidth  || 200;
+    picker.style.bottom     = 'auto';
+    picker.style.right      = 'auto';
+    picker.style.left       = '0px';
+    picker.style.top        = '0px';
+    var ph     = picker.offsetHeight || 56;
+    var pw     = picker.offsetWidth  || 200;
+    var origin = picker.getBoundingClientRect();
     picker.style.display    = '';
     picker.style.visibility = '';
-    /* Position verticale : au-dessus par défaut, en-dessous si trop près du haut */
+    /* Position verticale (viewport) : au-dessus par défaut, en-dessous si trop près du haut */
     var top = rect.top - ph - 10;
     if (top < 8) top = rect.bottom + 8;
-    /* Position horizontale : centré sur le bouton, sans translateX */
+    /* Position horizontale (viewport) : centré sur le bouton, sans translateX */
     var cx   = rect.left + rect.width / 2;
     var left = cx - pw / 2;
     if (left < 8) left = 8;
     if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
-    picker.style.top       = top + 'px';
-    picker.style.left      = left + 'px';
+    /* Conversion viewport -> coordonnées du bloc conteneur */
+    picker.style.top       = (top  - origin.top)  + 'px';
+    picker.style.left      = (left - origin.left) + 'px';
     picker.style.transform = 'none';
     picker.style.bottom    = 'auto';
 }
