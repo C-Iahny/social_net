@@ -176,6 +176,18 @@
 
 /* Reaction picker (same as feed) */
 .reaction-wrap { position: relative; }
+
+/* Mobile web : pas de sélection de texte / menu natif sur les boutons de
+   réaction — l'appui long doit ouvrir le picker, pas la loupe de sélection. */
+.reaction-wrap, .reaction-wrap *,
+.reaction-picker, .reaction-emoji-btn {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
 /* ── Reaction picker — redesign moderne ── */
 .reaction-picker {
     display: none;

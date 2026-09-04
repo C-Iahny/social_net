@@ -302,6 +302,18 @@
     border-top: 1px solid rgba(0,0,0,.05); }
 [data-theme="dark"] .pc-footer { border-top-color: rgba(255,255,255,.05); }
 .reaction-wrap { flex: 1; position: relative; }
+
+/* Mobile web : pas de sélection de texte / menu natif sur les boutons de
+   réaction — l'appui long doit ouvrir le picker, pas la loupe de sélection. */
+.reaction-wrap, .reaction-wrap *,
+.reaction-picker, .reaction-emoji-btn {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
 .pc-footer-btn {
     width: 100%; display: flex; align-items: center; justify-content: center; gap: .38rem;
     padding: .5rem; border-radius: 11px; border: none; background: none;
