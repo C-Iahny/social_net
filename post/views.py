@@ -213,6 +213,81 @@ def _attach_reposts(posts, post_ids, user):
             post.repost_count  = 0
             post.user_reposted = False
 
+# ──────────────────────────────────────────────────────────────
+# Suggestions de profils (carrousel du fil d'actualité)
+# ──────────────────────────────────────────────────────────────
+def get_profile_suggestions(user, limit=12):
+    """Profils à suggérer dans le fil.
+
+    Priorité aux amis d'amis (triés par nombre d'amis en commun), puis
+    complément avec des comptes de la même région, puis les plus récents.
+    Exclut soi-même, ses amis et toute demande d'ami déjà en cours.
+    """
+    from django.db.models import Count, Q
+    from friend.models import FriendRequest
+
+    try:
+        friend_ids = set(
+            FriendList.objects.get(user=user).friends.values_list('id', flat=True)
+        )
+    except FriendList.DoesNotExist:
+        friend_ids = set()
+
+    pending = (
+        FriendRequest.objects.filter(is_active=True)
+        .filter(Q(sender=user) | Q(receiver=user))
+        .values_list('sender_id', 'receiver_id')
+    )
+    excluded = {user.id} | friend_ids | {uid for pair in pending for uid in pair}
+
+    suggestions = []
+
+    # 1. Amis d'amis, triés par amis en commun
+    if friend_ids:
+        # `friends` est la relation inverse Account → FriendList : filtrer sur
+        # friends__user_id, c'est « figure dans la liste d'amis de X ».
+        suggestions = list(
+            Account.objects.filter(is_active=True, friends__user_id__in=friend_ids)
+            .exclude(id__in=excluded)
+            .annotate(mutuals=Count('friends__user_id', distinct=True))
+            .order_by('-mutuals', '-date_joined')[:limit]
+        )
+
+    # 2. Complément : même région, puis comptes les plus récents
+    if len(suggestions) < limit:
+        taken = excluded | {a.id for a in suggestions}
+        region = getattr(user, 'region', '')
+        if region:
+            fill = (
+                Account.objects.filter(is_active=True, region=region)
+                .exclude(id__in=taken)
+                .order_by('-date_joined')[:limit - len(suggestions)]
+            )
+            for account in fill:
+                account.mutuals = 0
+                suggestions.append(account)
+                taken.add(account.id)
+
+    if len(suggestions) < limit:
+        taken = excluded | {a.id for a in suggestions}
+        fill = (
+            Account.objects.filter(is_active=True)
+            .exclude(id__in=taken)
+            .order_by('-date_joined')[:limit - len(suggestions)]
+        )
+        for account in fill:
+            account.mutuals = 0
+            suggestions.append(account)
+
+    from regions import REGION_LABELS
+    for account in suggestions:
+        if not hasattr(account, 'mutuals'):
+            account.mutuals = 0
+        account.region_label = REGION_LABELS.get(account.region, '')
+
+    return suggestions
+
+
 # Feed
 # ──────────────────────────────────────────────
 @login_required(login_url="login")
@@ -356,6 +431,8 @@ def post_feed_view(request):
         "user_region_label":  REGION_LABELS.get(user_region, ''),
         # lives actifs des amis/soi
         "active_lives":       active_lives,
+        # carrousel « Suggestions pour vous »
+        "profile_suggestions": get_profile_suggestions(user),
     }
     return render(request, "post/post_view.html", context)
 

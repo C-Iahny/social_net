@@ -1,0 +1,278 @@
+{% load i18n %}
+{% if profile_suggestions %}
+<section class="sugg-card" id="sugg-card">
+    <div class="sugg-head">
+        <span class="sugg-title">
+            <span class="material-icons">person_add</span>
+            {% trans "Suggested for you" %}
+        </span>
+        <div class="sugg-nav-group">
+            <button type="button" class="sugg-nav" data-dir="-1" aria-label="{% trans 'Previous' %}">
+                <span class="material-icons">chevron_left</span>
+            </button>
+            <button type="button" class="sugg-nav" data-dir="1" aria-label="{% trans 'Next' %}">
+                <span class="material-icons">chevron_right</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="sugg-scroller" id="sugg-scroller">
+        {% for account in profile_suggestions %}
+        <article class="sugg-item" id="sugg-item-{{ account.id }}">
+            <button type="button" class="sugg-dismiss"
+                    data-sugg-dismiss="{{ account.id }}"
+                    title="{% trans 'Remove this suggestion' %}"
+                    aria-label="{% trans 'Remove this suggestion' %}">
+                <span class="material-icons">close</span>
+            </button>
+
+            <a class="sugg-avatar" href="{% url 'account:view' user_id=account.id %}">
+                <img src="{{ account.profile_image.url }}" alt="{{ account.username }}" loading="lazy">
+            </a>
+
+            <a class="sugg-name" href="{% url 'account:view' user_id=account.id %}">{{ account.username }}</a>
+
+            <span class="sugg-meta">
+                {% if account.mutuals %}
+                    {% blocktrans count nb=account.mutuals %}{{ nb }} mutual friend{% plural %}{{ nb }} mutual friends{% endblocktrans %}
+                {% elif account.region_label %}
+                    📍 {{ account.region_label }}
+                {% else %}
+                    {% trans "Suggested profile" %}
+                {% endif %}
+            </span>
+
+            <button type="button" class="sugg-add"
+                    data-sugg-add="{{ account.id }}"
+                    data-label-sent="{% trans 'Sent' %}">
+                <span class="material-icons">person_add_alt</span>
+                <span class="sugg-add-label">{% trans "Add" %}</span>
+            </button>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+<style>
+/* ════ Suggestions de profils — carrousel horizontal swipable ════ */
+.sugg-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    margin-bottom: 1.1rem;
+    padding: .85rem 0 .9rem;
+    box-shadow:
+        0 1px 3px rgba(0,0,0,.05),
+        0 4px 14px rgba(0,0,0,.06),
+        0 0 0 .5px rgba(0,0,0,.05);
+    overflow: hidden;
+}
+[data-theme="dark"] .sugg-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+}
+.sugg-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: .5rem; padding: 0 1rem .7rem;
+}
+.sugg-title {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .88rem; font-weight: 700; color: var(--text); letter-spacing: .01em;
+}
+.sugg-title .material-icons { font-size: 1.05rem; color: var(--accent); }
+.sugg-nav-group { display: flex; gap: .3rem; }
+.sugg-nav {
+    width: 28px; height: 28px; padding: 0;
+    border: none; border-radius: 50%;
+    background: var(--btn-bg); color: var(--text-muted);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .15s, color .15s, opacity .15s;
+}
+.sugg-nav:hover { background: var(--btn-hover); color: var(--text); }
+.sugg-nav:disabled { opacity: .3; cursor: default; }
+.sugg-nav .material-icons { font-size: 1.1rem; }
+/* Sur mobile on swipe : les fleches ne servent a rien */
+@media (hover: none) { .sugg-nav-group { display: none; } }
+
+.sugg-scroller {
+    display: flex; gap: .6rem;
+    padding: .2rem 1rem .3rem;
+    overflow-x: auto; overflow-y: hidden;
+    scroll-behavior: smooth;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+}
+.sugg-scroller::-webkit-scrollbar { display: none; }
+/* Drag souris en cours : pas de snap ni de clic parasite */
+.sugg-scroller.dragging { scroll-behavior: auto; scroll-snap-type: none; cursor: grabbing; }
+.sugg-scroller.dragging .sugg-item { pointer-events: none; }
+
+.sugg-item {
+    position: relative; flex: 0 0 auto; width: 134px;
+    scroll-snap-align: start;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: .9rem .55rem .65rem;
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--bg);
+    transition: border-color .15s, opacity .25s, transform .25s;
+}
+.sugg-item:hover { border-color: var(--accent); }
+.sugg-item.removing { opacity: 0; transform: scale(.88); }
+.sugg-avatar { display: block; line-height: 0; }
+.sugg-avatar img {
+    width: 72px; height: 72px; border-radius: 50%;
+    object-fit: cover; border: 2px solid var(--border);
+}
+.sugg-item:hover .sugg-avatar img { border-color: var(--accent); }
+.sugg-name {
+    display: block; max-width: 100%; margin-top: .5rem;
+    font-size: .81rem; font-weight: 700; color: var(--text); text-decoration: none;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sugg-name:hover { color: var(--accent); text-decoration: none; }
+.sugg-meta {
+    margin-top: .12rem; font-size: .67rem; line-height: 1.3;
+    color: var(--text-muted); min-height: 2.6em;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.sugg-add {
+    width: 100%; margin-top: .35rem;
+    display: inline-flex; align-items: center; justify-content: center; gap: .22rem;
+    padding: .38rem .3rem;
+    border: none; border-radius: 9px;
+    background: var(--accent); color: #fff;
+    font-family: inherit; font-size: .73rem; font-weight: 700;
+    cursor: pointer; transition: opacity .15s, background .15s, color .15s;
+}
+.sugg-add:hover { opacity: .88; }
+.sugg-add.sent { background: var(--btn-bg); color: var(--text-muted); cursor: default; }
+.sugg-add:disabled { cursor: default; }
+.sugg-add .material-icons { font-size: .88rem; }
+.sugg-dismiss {
+    position: absolute; top: .25rem; right: .25rem;
+    width: 22px; height: 22px; padding: 0;
+    border: none; border-radius: 50%; background: transparent;
+    color: var(--text-muted); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity .15s, background .15s, color .15s;
+}
+.sugg-item:hover .sugg-dismiss { opacity: 1; }
+@media (hover: none) { .sugg-dismiss { opacity: .5; } }
+.sugg-dismiss:hover { background: var(--btn-bg); color: var(--text); }
+.sugg-dismiss .material-icons { font-size: .85rem; }
+/* Pas de selection de texte pendant le swipe / drag */
+.sugg-scroller, .sugg-item, .sugg-name, .sugg-add, .sugg-meta {
+    -webkit-user-select: none; -moz-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+.sugg-add, .sugg-dismiss, .sugg-nav { touch-action: manipulation; }
+@media (max-width: 480px) {
+    .sugg-item { width: 122px; }
+    .sugg-avatar img { width: 64px; height: 64px; }
+    .sugg-scroller { padding-left: .75rem; padding-right: .75rem; }
+    .sugg-head { padding-left: .85rem; padding-right: .85rem; }
+}
+</style>
+
+<script>
+(function() {
+    var card = document.getElementById('sugg-card');
+    if (!card || card.dataset.bound) return;
+    card.dataset.bound = '1';
+
+    var scroller = document.getElementById('sugg-scroller');
+    var navs     = Array.prototype.slice.call(card.querySelectorAll('.sugg-nav'));
+    var FR_URL   = "{% url 'friend:friend-request' %}";
+    var CSRF     = "{{ csrf_token }}";
+
+    /* ── Fleches (desktop) ── */
+    function step() {
+        var item = scroller.querySelector('.sugg-item');
+        var w    = item ? item.offsetWidth + 10 : 144;
+        return Math.max(w, Math.floor(scroller.clientWidth * 0.8 / w) * w);
+    }
+    function syncNav() {
+        var max = scroller.scrollWidth - scroller.clientWidth - 2;
+        navs.forEach(function(b) {
+            b.disabled = (b.dataset.dir === '-1') ? scroller.scrollLeft <= 2
+                                                  : scroller.scrollLeft >= max;
+        });
+    }
+    navs.forEach(function(b) {
+        b.addEventListener('click', function() {
+            scroller.scrollBy({ left: parseInt(b.dataset.dir, 10) * step(), behavior: 'smooth' });
+        });
+    });
+    scroller.addEventListener('scroll', syncNav, { passive: true });
+    window.addEventListener('resize', syncNav);
+    syncNav();
+
+    /* ── Drag a la souris (le tactile utilise le scroll natif) ── */
+    var dragging = false, startX = 0, startScroll = 0, moved = false;
+    scroller.addEventListener('pointerdown', function(e) {
+        if (e.pointerType !== 'mouse' || e.button !== 0) return;
+        dragging = true; moved = false;
+        startX = e.clientX; startScroll = scroller.scrollLeft;
+    });
+    scroller.addEventListener('pointermove', function(e) {
+        if (!dragging) return;
+        var dx = e.clientX - startX;
+        if (!moved && Math.abs(dx) < 4) return;   /* tolerance avant de bloquer le clic */
+        moved = true;
+        scroller.classList.add('dragging');
+        scroller.scrollLeft = startScroll - dx;
+    });
+    function endDrag() {
+        if (!dragging) return;
+        dragging = false;
+        scroller.classList.remove('dragging');
+        syncNav();
+    }
+    scroller.addEventListener('pointerup', endDrag);
+    scroller.addEventListener('pointercancel', endDrag);
+    scroller.addEventListener('pointerleave', endDrag);
+    scroller.addEventListener('dragstart', function(e) { e.preventDefault(); });
+
+    /* ── Retirer une suggestion ── */
+    function removeItem(id) {
+        var item = document.getElementById('sugg-item-' + id);
+        if (!item) return;
+        item.classList.add('removing');
+        setTimeout(function() {
+            item.remove();
+            if (!scroller.querySelector('.sugg-item')) card.remove();
+            else syncNav();
+        }, 260);
+    }
+
+    /* ── Demande d'ami / retrait, en delegation ── */
+    card.addEventListener('click', function(e) {
+        var dismiss = e.target.closest('[data-sugg-dismiss]');
+        if (dismiss) { removeItem(dismiss.dataset.suggDismiss); return; }
+
+        var add = e.target.closest('[data-sugg-add]');
+        if (!add || add.disabled) return;
+
+        add.disabled = true;
+        var fd = new FormData();
+        fd.append('receiver_user_id', add.dataset.suggAdd);
+        fetch(FR_URL, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF, 'X-Requested-With': 'XMLHttpRequest' },
+            body: fd,
+            credentials: 'same-origin',
+        })
+        .then(function(r) { return r.json(); })
+        .then(function() {
+            add.classList.add('sent');
+            add.innerHTML = '<span class="material-icons">check</span>'
+                          + '<span class="sugg-add-label">' + add.dataset.labelSent + '</span>';
+        })
+        .catch(function(err) {
+            console.error('sugg-add:', err);
+            add.disabled = false;
+        });
+    });
+})();
+</script>
+{% endif %}
