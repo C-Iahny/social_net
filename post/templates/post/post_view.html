@@ -2204,6 +2204,12 @@ body { background: var(--bg); }
                 </div>
 
             </article>
+
+            {# Carrousel « Suggestions pour vous » : intercale apres le 2e post
+               (ou apres le dernier si le feed en compte moins). #}
+            {% if forloop.counter == 2 or forloop.last and forloop.counter < 2 %}
+                {% include 'post/_suggested_profiles.html' %}
+            {% endif %}
             {% endfor %}
 
             <!-- Infinite scroll sentinel -->
@@ -2247,6 +2253,7 @@ body { background: var(--bg); }
                     <span class="material-icons">add</span> {% trans "My first post" %}
                 </a>
             </div>
+            {% include 'post/_suggested_profiles.html' %}
         {% endif %}
 
         </div><!-- /cb-post-list-anchor -->
