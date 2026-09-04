@@ -63,6 +63,10 @@ class ProfileSuggestionTests(TestCase):
         second_post = Post.objects.order_by('-id')[1]
         self.assertLess(html.index('post-%d' % second_post.id),
                         html.index('id="sugg-scroller"'))
+        # Un commentaire {# #} sur plusieurs lignes n'est pas reconnu par Django
+        # et finit affiche tel quel dans le fil.
+        self.assertNotIn('{#', html)
+        self.assertNotIn('{%', html)
 
     def test_carousel_rendered_when_feed_has_a_single_post(self):
         Post.objects.create(author=self.me, title='solo', body='x')

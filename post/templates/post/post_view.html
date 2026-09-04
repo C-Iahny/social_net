@@ -2205,8 +2205,10 @@ body { background: var(--bg); }
 
             </article>
 
-            {# Carrousel « Suggestions pour vous » : intercale apres le 2e post
-               (ou apres le dernier si le feed en compte moins). #}
+            {% comment %}
+                Carrousel « Suggestions pour vous » : intercale apres le 2e post
+                (ou apres le dernier si le feed en compte moins).
+            {% endcomment %}
             {% if forloop.counter == 2 or forloop.last and forloop.counter < 2 %}
                 {% include 'post/_suggested_profiles.html' %}
             {% endif %}
