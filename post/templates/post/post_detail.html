@@ -176,30 +176,83 @@
 
 /* Reaction picker (same as feed) */
 .reaction-wrap { position: relative; }
+/* ── Reaction picker — redesign moderne ── */
 .reaction-picker {
     display: none;
     position: absolute;
-    bottom: calc(100% + 8px);
+    bottom: calc(100% + 10px);
     left: 50%; transform: translateX(-50%);
     background: var(--bg-card);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
     border: 1px solid var(--border);
-    border-radius: 30px;
-    padding: .35rem .5rem;
-    gap: .15rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,.15);
+    border-radius: 50px;
+    padding: .48rem .65rem;
+    gap: .05rem;
+    box-shadow: 0 16px 48px rgba(0,0,0,.2), 0 2px 8px rgba(0,0,0,.1);
     z-index: 200;
     white-space: nowrap;
+    overflow: visible;
+    align-items: center;
 }
-.reaction-picker.open { display: flex; }
+.reaction-picker.open {
+    display: flex;
+    animation: reactionPop .2s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes reactionPop {
+    from { opacity: 0; transform: translateX(-50%) scale(.6) translateY(10px); }
+    to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+}
+@keyframes emojiIn {
+    from { opacity: 0; transform: scale(.35) translateY(8px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
 .reaction-emoji-btn {
+    position: relative;
     background: none; border: none; cursor: pointer;
-    font-size: 1.4rem; padding: .1rem .25rem;
+    font-size: 1.75rem; padding: .22rem .18rem;
     border-radius: 50%;
-    transition: transform .15s, background .15s;
+    transition: transform .2s cubic-bezier(.34,1.56,.64,1);
     line-height: 1;
 }
-.reaction-emoji-btn:hover { transform: scale(1.35); background: var(--btn-bg); }
-.reaction-emoji-btn.selected { background: var(--btn-bg); }
+.reaction-picker.open .reaction-emoji-btn {
+    animation: emojiIn .22s cubic-bezier(.34,1.56,.64,1) both;
+}
+.reaction-picker.open .reaction-emoji-btn:nth-child(1) { animation-delay:  0ms; }
+.reaction-picker.open .reaction-emoji-btn:nth-child(2) { animation-delay: 45ms; }
+.reaction-picker.open .reaction-emoji-btn:nth-child(3) { animation-delay: 90ms; }
+.reaction-picker.open .reaction-emoji-btn:nth-child(4) { animation-delay:135ms; }
+.reaction-picker.open .reaction-emoji-btn:nth-child(5) { animation-delay:180ms; }
+.reaction-emoji-btn::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px) scale(.85);
+    background: rgba(0,0,0,.82);
+    color: #fff;
+    font-size: .6rem; font-weight: 700;
+    border-radius: 20px; padding: .12rem .5rem;
+    white-space: nowrap;
+    opacity: 0; pointer-events: none;
+    transition: opacity .14s, transform .14s;
+    font-family: var(--font-primary,'Space Grotesk',sans-serif);
+    letter-spacing: .02em;
+}
+.reaction-emoji-btn:hover { transform: scale(1.45) translateY(-6px); }
+.reaction-emoji-btn:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(.69);
+}
+@media (hover: none) {
+    .reaction-picker.open .reaction-emoji-btn::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(.75);
+        bottom: calc(100% + 6px);
+    }
+}
+.reaction-emoji-btn.selected { outline: 2.5px solid var(--accent); outline-offset: 3px; border-radius: 50%; }
+.reaction-emoji-btn:active { transform: scale(1.15); }
 
 /* ── Comments section ── */
 .pd-comments {
@@ -417,15 +470,15 @@
                 </button>
                 <div class="reaction-picker" id="picker-{{ post.id }}" onmouseleave="closePicker({{ post.id }})">
                     <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
-                            onclick="sendReaction({{ post.id }}, 'like')" title="{% trans "J'aime" %}">👍</button>
+                            onclick="sendReaction({{ post.id }}, 'like')" data-label="{% trans "J'aime" %}">👍</button>
                     <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
-                            onclick="sendReaction({{ post.id }}, 'heart')" title="{% trans "J'adore" %}">❤️</button>
+                            onclick="sendReaction({{ post.id }}, 'heart')" data-label="{% trans "J'adore" %}">❤️</button>
                     <button class="reaction-emoji-btn {% if post.user_reaction == 'laugh' %}selected{% endif %}"
-                            onclick="sendReaction({{ post.id }}, 'laugh')" title="{% trans "Haha" %}">😂</button>
+                            onclick="sendReaction({{ post.id }}, 'laugh')" data-label="{% trans "Haha" %}">😂</button>
                     <button class="reaction-emoji-btn {% if post.user_reaction == 'wow' %}selected{% endif %}"
-                            onclick="sendReaction({{ post.id }}, 'wow')" title="{% trans "Wow" %}">😮</button>
+                            onclick="sendReaction({{ post.id }}, 'wow')" data-label="{% trans "Wow" %}">😮</button>
                     <button class="reaction-emoji-btn {% if post.user_reaction == 'sad' %}selected{% endif %}"
-                            onclick="sendReaction({{ post.id }}, 'sad')" title="{% trans "Triste" %}">😢</button>
+                            onclick="sendReaction({{ post.id }}, 'sad')" data-label="{% trans "Triste" %}">😢</button>
                 </div>
             </div>
 
