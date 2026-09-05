@@ -3078,3 +3078,40 @@ msgstr "Fanampiny, raha tianao"
 msgid "Listez les ingrédients du plat, un par un. Le client verra la liste et cochera ce qu'il ne veut pas (« sans œuf »). « Coché par défaut » = dans le plat ; décoché = proposé en plus (avec un prix si supplément). Décochez « au choix du client » pour un ingrédient qu'on ne peut pas enlever."
 msgstr "Lazao tsirairay ny akora ao amin'ny sakafo. Hahita ny lisitra ny mpanjifa ary hanamarika izay tsy tiany (« tsy misy atody »). « Voamarika mialoha » = ao anatin'ny sakafo ; tsy voamarika = atolotra ho fanampiny (misy vidiny raha fanampiny). Esory ny marika « safidin'ny mpanjifa » ho an'ny akora tsy azo esorina."
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Confirmer : la commande a bien été remise ?"
+msgstr "Hamarino : voatolotra tsara ve ny kaomandy ?"
+
+msgid "J'ai bien reçu ma commande"
+msgstr "Voaraiko tsara ny kaomandiko"
+
+msgid "Une fois la commande remise et payée, appuyez sur « Commande remise au client » : le client pourra ensuite vous noter."
+msgstr "Rehefa voatolotra sy voaloa ny kaomandy, tsindrio ny « Voatolotra ny mpanjifa » : afaka manome naoty anao ny mpanjifa avy eo."
+
+msgid "✅ Accepter la commande"
+msgstr "✅ Ekena ny kaomandy"
+
+msgid "✕ Refuser"
+msgstr "✕ Lavina"
+
+msgid "👩‍🍳 Lancer la préparation"
+msgstr "👩‍🍳 Atomboka ny fanomanana"
+
+msgid "📦 Commande prête"
+msgstr "📦 Vonona ny kaomandy"
+
+msgid "📦 J'ai récupéré la commande"
+msgstr "📦 Nalaiko ny kaomandy"
+
+msgid "🛵 Je pars livrer"
+msgstr "🛵 Lasa manatitra aho"
+
+msgid "✅ Commande remise au client"
+msgstr "✅ Voatolotra ny mpanjifa"
+
+msgid "Réception confirmée par le client"
+msgstr "Nohamarinin'ny mpanjifa ny fandraisana"
+
+msgid "Commande %(n)s : réception confirmée par le client"
+msgstr "Kaomandy %(n)s : nohamarinin'ny mpanjifa ny fandraisana"
+

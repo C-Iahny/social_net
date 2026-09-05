@@ -263,6 +263,49 @@ class RestoFlowTests(TestCase):
         c.refresh_from_db()
         self.assertFalse(c.cin_verified)
 
+    def test_owner_who_is_also_courier_can_finish_delivery(self):
+        """Le propriétaire du restaurant livre lui-même : il doit voir et pouvoir faire toutes les étapes."""
+        self.client.login(email='client@test.mg', password='pass12345')
+        self._add([self.sauce_a.pk])
+        self.client.post(reverse('resto:checkout'), {
+            'mode': 'delivery', 'customer_name': 'T', 'customer_phone': '034', 'delivery_address': 'Isoraka', 'payment_method': 'cash'})
+        order = Order.objects.get(customer=self.client_user)
+        Courier.objects.create(user=self.owner, restaurant=self.resto, phone='034', is_approved=True, is_available=True)
+        self.client.login(email='owner@test.mg', password='pass12345')
+        for st in ('accepted', 'preparing', 'ready'):
+            self.assertEqual(self._status(order, st).status_code, 200)
+        self.client.post(reverse('resto:courier_take', args=[order.number]))
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.STATUS_PICKED_UP)
+        # La page commande propose bien l'action livreur au propriétaire-livreur
+        r = self.client.get(reverse('resto:order', args=[order.number]))
+        self.assertContains(r, 'value="delivered"')
+        self.assertContains(r, 'value="delivering"')
+        # « Récupérée » → « Livrée » directement, sans passer par « en cours de livraison »
+        self.assertEqual(self._status(order, 'delivered').status_code, 200)
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.STATUS_DELIVERED)
+
+    def test_customer_can_confirm_reception(self):
+        self.client.login(email='client@test.mg', password='pass12345')
+        self._add([self.sauce_a.pk])
+        self.client.post(reverse('resto:checkout'), {
+            'mode': 'delivery', 'customer_name': 'T', 'customer_phone': '034', 'delivery_address': 'Isoraka', 'payment_method': 'cash'})
+        order = Order.objects.get(customer=self.client_user)
+        courier = Courier.objects.create(user=self.courier_user, restaurant=self.resto, phone='034', is_approved=True)
+        self.client.login(email='owner@test.mg', password='pass12345')
+        for st in ('accepted', 'preparing', 'ready'):
+            self._status(order, st)
+        self.client.login(email='livreur@test.mg', password='pass12345')
+        self.client.post(reverse('resto:courier_take', args=[order.number]))
+        # Le client ne peut pas sauter d'étape (ex : « prête »), mais peut confirmer la réception
+        self.client.login(email='client@test.mg', password='pass12345')
+        self.assertEqual(self._status(order, 'ready').status_code, 403)
+        self.assertEqual(self._status(order, 'delivered').status_code, 200)
+        order.refresh_from_db()
+        self.assertEqual(order.status, Order.STATUS_DELIVERED)
+        self.assertIn('client', order.events.last().note)
+
     def test_no_review_before_delivery(self):
         self.client.login(email='client@test.mg', password='pass12345')
         self._add([self.sauce_a.pk])

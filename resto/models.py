@@ -698,6 +698,18 @@ class Order(models.Model):
     def formatted_delivery_fee(self):
         return _('Gratuite') if not self.delivery_fee else _fmt_ar(self.delivery_fee)
 
+    # Libellés d'ACTION des boutons (différents des libellés d'état) : « Je pars livrer » plutôt que « En cours de livraison »
+    ACTION_LABELS = {
+        STATUS_ACCEPTED:   _('✅ Accepter la commande'),
+        STATUS_REFUSED:    _('✕ Refuser'),
+        STATUS_PREPARING:  _('👩‍🍳 Lancer la préparation'),
+        STATUS_READY:      _('📦 Commande prête'),
+        STATUS_PICKED_UP:  _('📦 J\'ai récupéré la commande'),
+        STATUS_DELIVERING: _('🛵 Je pars livrer'),
+        STATUS_DELIVERED:  _('✅ Commande remise au client'),
+        STATUS_CANCELLED:  _('Annuler la commande'),
+    }
+
     def allowed_transitions(self, actor):
         """
         Statuts vers lesquels `actor` peut faire passer la commande.
@@ -715,15 +727,28 @@ class Order(models.Model):
         elif actor == 'courier':
             table = {
                 self.STATUS_READY:      [self.STATUS_PICKED_UP],
-                self.STATUS_PICKED_UP:  [self.STATUS_DELIVERING],
+                # Depuis « récupérée », le livreur peut partir livrer OU marquer livrée directement
+                self.STATUS_PICKED_UP:  [self.STATUS_DELIVERING, self.STATUS_DELIVERED],
                 self.STATUS_DELIVERING: [self.STATUS_DELIVERED],
             }
-        else:  # customer
+        else:  # customer : annuler tant que ce n'est pas en cuisine, confirmer la réception à la fin
             table = {
-                self.STATUS_PENDING:  [self.STATUS_CANCELLED],
-                self.STATUS_ACCEPTED: [self.STATUS_CANCELLED],
+                self.STATUS_PENDING:    [self.STATUS_CANCELLED],
+                self.STATUS_ACCEPTED:   [self.STATUS_CANCELLED],
+                self.STATUS_PICKED_UP:  [self.STATUS_DELIVERED],
+                self.STATUS_DELIVERING: [self.STATUS_DELIVERED],
             }
         return table.get(s, [])
+
+    def actions_for(self, roles):
+        """[(statut, libellé d'action)] cumulés pour tous les rôles de l'utilisateur, sans doublon."""
+        seen, out = set(), []
+        for role in roles:
+            for code in self.allowed_transitions(role):
+                if code not in seen:
+                    seen.add(code)
+                    out.append((code, str(self.ACTION_LABELS.get(code, dict(self.STATUS_CHOICES)[code]))))
+        return out
 
     def set_status(self, new_status, by=None, note=''):
         """Change le statut, horodate, journalise. Ne vérifie PAS les droits (voir vues)."""
