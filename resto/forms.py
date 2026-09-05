@@ -60,12 +60,13 @@ class MenuCategoryForm(forms.ModelForm):
 class MenuItemForm(forms.ModelForm):
     class Meta:
         model = MenuItem
-        fields = ['category', 'name', 'description', 'ingredients', 'price', 'image', 'is_available', 'order']
+        fields = ['category', 'name', 'description', 'ingredients', 'preparation', 'price', 'image', 'is_available', 'order']
         widgets = {
             'category':    forms.Select(attrs=_INPUT),
             'name':        forms.TextInput(attrs={**_INPUT, 'placeholder': _('Ex : Ravitoto sy henakisoa')}),
             'description': forms.Textarea(attrs={**_INPUT, 'rows': 2, 'placeholder': _('Portion, accompagnement, particularités')}),
             'ingredients': forms.Textarea(attrs={**_INPUT, 'rows': 4, 'placeholder': _('Un ingrédient par ligne : Oignons, Piment, !Riz (obligatoire)')}),
+            'preparation': forms.Textarea(attrs={**_INPUT, 'rows': 3, 'placeholder': _('Ex : Porc mijoté 2 h avec les feuilles de manioc pilées, servi avec du riz blanc')}),
             'price':       forms.NumberInput(attrs={**_INPUT, 'min': 0, 'step': 100}),
             'image':       forms.ClearableFileInput(attrs={'accept': 'image/*,.heic,.heif'}),
             'is_available': forms.CheckboxInput(attrs=_CHECK),

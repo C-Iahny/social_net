@@ -50,10 +50,10 @@
             <div style="flex:1;min-width:0;">
                 <strong>{{ it.name }}</strong> <span class="rs-price">{{ it.formatted_price }}</span>
                 {% if not it.is_available %}<span class="rs-badge closed">{% trans "Indisponible" %}</span>{% endif %}
-                <div class="rs-muted">{{ it.category.name|default:_("Sans rubrique") }} · {{ it.option_groups.all|length }} {% trans "groupe(s) d'options" %}{% if it.ingredients %} · 🥗 {{ it.ingredient_list|length }} {% trans "ingrédient(s)" %}{% endif %}</div>
+                <div class="rs-muted">{{ it.category.name|default:_("Sans rubrique") }} · {{ it.option_groups.all|length }} {% trans "groupe(s) d'options" %}{% if it.ingredients %} · 🥗 {{ it.ingredient_names }}{% endif %}</div>
             </div>
             <div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:flex-end;">
-                <button class="rs-btn sm secondary" type="button" onclick="rsEditItem({{ it.pk }}, {{ it.category_id|default:'null' }}, '{{ it.name|escapejs }}', '{{ it.description|escapejs }}', {{ it.price|floatformat:0 }}, {{ it.is_available|yesno:'true,false' }}, {{ it.order }}, '{{ it.ingredients|escapejs }}')">✏️</button>
+                <button class="rs-btn sm secondary" type="button" onclick="rsEditItem({{ it.pk }}, {{ it.category_id|default:'null' }}, '{{ it.name|escapejs }}', '{{ it.description|escapejs }}', {{ it.price|floatformat:0 }}, {{ it.is_available|yesno:'true,false' }}, {{ it.order }}, '{{ it.ingredients|escapejs }}', '{{ it.preparation|escapejs }}')">✏️</button>
                 <button class="rs-btn sm secondary" type="button" onclick="rsEditOptions({{ it.pk }}, '{{ it.name|escapejs }}')">🧩 {% trans "Options" %}</button>
                 <form method="post" action="{% url 'resto:item_delete' restaurant.slug it.pk %}" onsubmit="return confirm('{% trans "Supprimer ce plat ?" %}')">{% csrf_token %}<button class="rs-btn sm ghost" type="submit">🗑</button></form>
             </div>
@@ -77,8 +77,18 @@
             </div>
             <div style="margin-top:.6rem;"><label>{% trans "Description" %}</label>{{ item_form.description }}</div>
             <div style="margin-top:.6rem;">
-                <label>🥗 {% trans "Ingrédients" %}</label>{{ item_form.ingredients }}
-                <p class="help" style="margin:.2rem 0 0;">{{ item_form.ingredients.help_text }}</p>
+                <label>🥗 {% trans "Ingrédients" %}</label>
+                <p class="help" style="margin:0 0 .4rem;">{% trans "Ajoutez-les un par un. Le client verra chaque ingrédient coché et pourra décocher ceux qu'il ne veut pas (« sans oignons »). Décochez « retirable » pour un ingrédient indispensable." %}</p>
+                <div id="rs-ing-rows"></div>
+                <div style="display:flex;gap:.4rem;align-items:center;margin-top:.3rem;">
+                    <input class="form-control" id="rs-ing-new" placeholder="{% trans "Nom de l'ingrédient (ex : Oignons)" %}" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();rsAddIng();}">
+                    <button class="rs-btn sm secondary" type="button" onclick="rsAddIng()">+ {% trans "Ajouter l'ingrédient" %}</button>
+                </div>
+                <textarea name="ingredients" id="id_ingredients" hidden></textarea>
+            </div>
+            <div style="margin-top:.6rem;">
+                <label>👩‍🍳 {% trans "Préparation" %}</label>{{ item_form.preparation }}
+                <p class="help" style="margin:.2rem 0 0;">{{ item_form.preparation.help_text }}</p>
             </div>
             <div class="rs-row" style="margin-top:.6rem;align-items:center;">
                 <div><label>{% trans "Photo" %}</label>{{ item_form.image }}</div>
@@ -113,14 +123,46 @@ const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
 const SLUG = "{{ restaurant.slug }}";
 const I18N = {group:"{% trans 'Titre du groupe (ex : Sauce, Suppléments)' %}", opt:"{% trans 'Option (ex : Fromage)' %}", extra:"{% trans 'Suppl. Ar' %}",
               min:"{% trans 'Min' %}", max:"{% trans 'Max' %}", addopt:"{% trans '+ option' %}", del:"{% trans 'Supprimer le groupe' %}",
-              saved:"{% trans 'Options enregistrées' %}", edit:"{% trans 'Modifier le plat' %}", add:"{% trans 'Ajouter un plat' %}"};
+              saved:"{% trans 'Options enregistrées' %}", edit:"{% trans 'Modifier le plat' %}", add:"{% trans 'Ajouter un plat' %}",
+              removable:"{% trans 'retirable' %}"};
 let curItem = null;
 
-function rsEditItem(pk, cat, name, desc, price, avail, order, ingredients){
+// ── Éditeur d'ingrédients : une ligne = un ingrédient + case « retirable par le client » ──
+// Sérialisé dans le textarea caché « ingredients » (un par ligne, « ! » devant les non retirables).
+function rsAddIng(name, removable){
+  const input = document.getElementById('rs-ing-new');
+  if(name === undefined){ name = input.value.trim(); if(!name) return; input.value = ''; }
+  const row = document.createElement('div'); row.className = 'rs-ing-row';
+  row.style.cssText = 'display:flex;gap:.4rem;align-items:center;margin-bottom:.3rem;';
+  row.innerHTML = `<input class="form-control ing-name" value="${esc(name)}" style="flex:1;">
+    <label style="display:flex;align-items:center;gap:.3rem;margin:0;font-size:.8rem;white-space:nowrap;"><input type="checkbox" class="ing-rem" ${removable === false ? '' : 'checked'}> ${I18N.removable}</label>
+    <button class="rs-btn sm ghost" type="button" onclick="this.parentNode.remove();rsSyncIng()">✕</button>`;
+  document.getElementById('rs-ing-rows').appendChild(row);
+  rsSyncIng();
+  if(name === input.value) input.focus();
+}
+function rsSyncIng(){
+  const lines = [...document.querySelectorAll('#rs-ing-rows .rs-ing-row')].map(r => {
+    const n = r.querySelector('.ing-name').value.trim(); if(!n) return '';
+    return (r.querySelector('.ing-rem').checked ? '' : '!') + n.replace(/^!+/, '');
+  }).filter(Boolean);
+  document.getElementById('id_ingredients').value = lines.join('\n');
+}
+function rsLoadIng(text){
+  document.getElementById('rs-ing-rows').innerHTML = '';
+  (text || '').split(/\r?\n|,/).map(x => x.trim()).filter(Boolean).forEach(x => rsAddIng(x.replace(/^!+/, ''), !x.startsWith('!')));
+  rsSyncIng();
+}
+document.getElementById('rs-item-form').addEventListener('submit', () => { const v = document.getElementById('rs-ing-new').value.trim(); if(v) rsAddIng(); rsSyncIng(); });
+document.getElementById('rs-ing-rows').addEventListener('input', rsSyncIng);
+document.getElementById('rs-ing-rows').addEventListener('change', rsSyncIng);
+
+function rsEditItem(pk, cat, name, desc, price, avail, order, ingredients, preparation){
   const f = document.getElementById('rs-item-form');
   f.action = `/resto/vendeur/${SLUG}/menu/plat/${pk}/`;
   f.querySelector('[name=name]').value = name; f.querySelector('[name=description]').value = desc;
-  f.querySelector('[name=ingredients]').value = ingredients || '';
+  f.querySelector('[name=preparation]').value = preparation || '';
+  rsLoadIng(ingredients || '');
   f.querySelector('[name=price]').value = price; f.querySelector('[name=order]').value = order;
   f.querySelector('[name=category]').value = cat === null ? '' : cat; f.querySelector('[name=is_available]').checked = avail;
   document.getElementById('rs-item-form-title').textContent = '✏️ ' + I18N.edit + ' : ' + name;
@@ -129,6 +171,7 @@ function rsEditItem(pk, cat, name, desc, price, avail, order, ingredients){
 }
 function rsResetItem(){
   const f = document.getElementById('rs-item-form'); f.reset(); f.action = `/resto/vendeur/${SLUG}/menu/plat/`;
+  rsLoadIng('');
   document.getElementById('rs-item-form-title').textContent = '+ ' + I18N.add;
   document.getElementById('rs-item-cancel').style.display = 'none';
 }

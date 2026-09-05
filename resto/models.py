@@ -193,6 +193,11 @@ class MenuItem(models.Model):
         blank=True, default='', verbose_name=_('Ingrédients'),
         help_text=_("Un par ligne. Le client pourra les décocher. Mettez « ! » devant ceux qu'on ne peut pas retirer (ex : !Riz)."),
     )
+    # Comment le plat est préparé (cuisson, mode de préparation, temps…) — affiché au client
+    preparation = models.TextField(
+        blank=True, default='', verbose_name=_('Préparation'),
+        help_text=_('Comment le plat est préparé : cuisson, mode de préparation, temps, particularités.'),
+    )
     is_available = models.BooleanField(default=True, verbose_name=_('Disponible'), db_index=True)
     order = models.PositiveSmallIntegerField(default=0, verbose_name=_('Ordre'))
     created_at = models.DateTimeField(auto_now_add=True)

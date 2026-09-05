@@ -107,6 +107,7 @@
             <button class="rs-btn sm ghost" type="button" onclick="rsCloseItem()">✕</button>
         </div>
         <img id="rs-m-img" alt="" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:.6rem;display:none;">
+        <div id="rs-m-prep" class="rs-opt-group" style="display:none;"><h4>👩‍🍳 {% trans "Préparation" %}</h4><p class="rs-muted" id="rs-m-prep-text" style="margin:0;white-space:pre-line;"></p></div>
         <div id="rs-m-ingredients"></div>
         <div id="rs-m-groups"></div>
         <div class="rs-opt-group">
@@ -153,6 +154,9 @@
     if(item.image){ img.src = item.image; img.style.display='block'; } else { img.style.display='none'; }
     document.getElementById('rs-m-note').value = '';
     document.getElementById('rs-m-err').textContent = '';
+    const prep = document.getElementById('rs-m-prep');
+    prep.style.display = item.preparation ? '' : 'none';
+    document.getElementById('rs-m-prep-text').textContent = item.preparation || '';
     // Ingrédients : tous cochés par défaut, le client décoche ceux qu'il ne veut pas
     const ing = document.getElementById('rs-m-ingredients'); ing.innerHTML = '';
     if(item.ingredients && item.ingredients.length){
