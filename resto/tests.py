@@ -32,7 +32,8 @@ class RestoFlowTests(TestCase):
         self.extras = OptionGroup.objects.create(item=self.item, name='Suppléments', min_select=0, max_select=2)
         self.egg = Option.objects.create(group=self.extras, name='Œuf', extra_price=1000)
         self.rice = Option.objects.create(group=self.extras, name='Riz en plus', extra_price=500)
-        self.item.ingredients = 'Oignons' + chr(10) + 'Piment' + chr(10) + '!Riz'
+        # Oignons : compris, coché ; Piment : compris, coché ; Riz : toujours inclus ; Œuf : +1000, décoché par défaut
+        self.item.ingredients = chr(10).join(['Oignons|0|1|1', 'Piment', '!Riz', 'Oeuf frit|1000|0|1'])
         self.item.preparation = 'Mijoté 2 h'
         self.item.save()
 
@@ -62,9 +63,10 @@ class RestoFlowTests(TestCase):
         data = r.json()
         self.assertEqual(data['price'], 8000)
         self.assertEqual(data['preparation'], 'Mijoté 2 h')
-        self.assertEqual(data['ingredients'], [{'name': 'Oignons', 'removable': True},
-                                               {'name': 'Piment', 'removable': True},
-                                               {'name': 'Riz', 'removable': False}])
+        self.assertTrue(data['composable'])
+        names = [(i['name'], i['price'], i['default_on'], i['locked']) for i in data['ingredients']]
+        self.assertEqual(names, [('Oignons', 0, True, False), ('Piment', 0, True, False),
+                                 ('Riz', 0, True, True), ('Oeuf frit', 1000, False, False)])
         self.assertEqual([g['name'] for g in data['groups']], ['Sauce', 'Suppléments'])
         self.assertTrue(data['groups'][0]['required'])
 
@@ -88,21 +90,27 @@ class RestoFlowTests(TestCase):
         self.assertEqual(Cart.objects.get(user=self.client_user).lines.count(), 1)
         self.assertEqual(Cart.objects.get(user=self.client_user).lines.first().quantity, 3)
 
-    def test_removed_ingredients_follow_the_order(self):
+    def test_composed_dish_ingredients_follow_the_order(self):
         self.client.login(email='client@test.mg', password='pass12345')
-        # « Riz » n'est pas retirable : ignoré ; « Oignons » l'est
-        r = self._add([self.sauce_a.pk], removed=['Oignons', 'Riz', 'Inconnu'])
+        # Le client compose : Piment (Avec), Œuf frit (Avec, +1000), Oignons (Sans) ; Riz toujours inclus
+        r = self.client.post(reverse('resto:cart_add', args=[self.item.pk]),
+                             data=json.dumps({'quantity': 1, 'options': [self.sauce_a.pk], 'ingredients': ['Piment', 'Oeuf frit', 'Inconnu']}),
+                             content_type='application/json')
         self.assertEqual(r.status_code, 200, r.content)
-        self.assertEqual(r.json()['cart']['lines'][0]['removed'], 'Oignons')
-        # Même plat sans rien retirer → ligne distincte
-        self._add([self.sauce_a.pk])
-        self.assertEqual(Cart.objects.get(user=self.client_user).lines.count(), 2)
+        line = r.json()['cart']['lines'][0]
+        self.assertEqual(line['included'], 'Piment, Oeuf frit')
+        self.assertEqual(line['removed'], 'Oignons')
+        self.assertEqual(line['unit_price'], 9000)   # 8000 + œuf 1000
+        # Même plat avec les ingrédients par défaut (ancien format « removed ») → ligne distincte à 8000
+        self._add([self.sauce_a.pk], removed=[])
+        cart = Cart.objects.get(user=self.client_user)
+        self.assertEqual(cart.lines.count(), 2)
         self.client.post(reverse('resto:checkout'), {
             'mode': 'pickup', 'customer_name': 'Tiana', 'customer_phone': '034', 'payment_method': 'cash',
         })
         order = Order.objects.get(customer=self.client_user)
-        self.assertEqual(sorted(l.removed_ingredients for l in order.items.all()), ['', 'Oignons'])
-        self.assertEqual(int(order.subtotal), 16000)   # le prix ne change pas quand on retire un ingrédient
+        self.assertEqual(sorted(l.included_ingredients for l in order.items.all()), ['Oignons|Piment', 'Piment|Oeuf frit'])
+        self.assertEqual(int(order.subtotal), 17000)   # 9000 + 8000
 
     def test_cart_is_single_restaurant(self):
         self.client.login(email='client@test.mg', password='pass12345')

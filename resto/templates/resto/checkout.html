@@ -55,7 +55,7 @@
         <div class="rs-card" style="padding:1rem;">
             <p style="margin:0 0 .5rem;font-weight:700;">{{ restaurant.name }}</p>
             {% for l in cart_summary.lines %}
-            <div class="rs-order-line"><div>{{ l.quantity }} × {{ l.name }}{% if l.options %}<small>{{ l.options }}</small>{% endif %}{% if l.removed %}<small>🚫 {% trans "Sans" %} : {{ l.removed }}</small>{% endif %}{% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}</div><div>{{ l.line_total }} Ar</div></div>
+            <div class="rs-order-line"><div>{{ l.quantity }} × {{ l.name }}{% if l.options %}<small>{{ l.options }}</small>{% endif %}{% if l.included %}<small>✅ {% trans "Avec" %} : {{ l.included }}</small>{% endif %}{% if l.removed %}<small>🚫 {% trans "Sans" %} : {{ l.removed }}</small>{% endif %}{% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}</div><div>{{ l.line_total }} Ar</div></div>
             {% endfor %}
             <div style="display:flex;justify-content:space-between;margin-top:.6rem;"><span>{% trans "Sous-total" %}</span><span>{{ cart_summary.subtotal }} Ar</span></div>
             <div style="display:flex;justify-content:space-between;" class="rs-muted" id="rs-fee-row"><span>{% trans "Livraison" %}</span><span>{{ restaurant.formatted_delivery_fee }}</span></div>

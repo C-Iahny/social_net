@@ -78,7 +78,7 @@
             <div class="rs-item-body">
                 <p class="rs-item-name">{{ it.name }}</p>
                 {% if it.description %}<p class="rs-item-desc">{{ it.description }}</p>{% endif %}
-                {% if it.ingredients %}<p class="rs-item-desc" style="-webkit-line-clamp:1;">🥗 {{ it.ingredient_names }}</p>{% endif %}
+                {% if it.ingredients %}<p class="rs-item-desc" style="-webkit-line-clamp:1;">🥗 {% if it.is_composable %}<strong>{% trans "À composer" %}</strong> · {% endif %}{{ it.ingredient_names }}</p>{% endif %}
                 <span class="rs-price">{{ it.formatted_price }}</span>
                 {% if it.option_groups.all %}<span class="rs-muted" style="font-size:.75rem;"> · {% trans "personnalisable" %}</span>{% endif %}
             </div>
@@ -145,7 +145,8 @@
   const I18N = {
     required: "{% trans 'obligatoire' %}", choose: "{% trans 'choisissez' %}", max: "{% trans 'max' %}",
     login: "{% trans 'Connectez-vous pour commander.' %}", closed: "{% trans 'Ce restaurant est fermé pour le moment.' %}",
-    ingredients: "{% trans 'Ingrédients' %}", ingHint: "{% trans 'décochez ce que vous ne voulez pas' %}", fixed: "{% trans 'obligatoire' %}",
+    ingredients: "{% trans 'Ingrédients' %}", ingHint: "{% trans 'choisissez ce que vous voulez dans votre plat' %}", fixed: "{% trans 'inclus' %}",
+    compose: "{% trans 'Composez votre plat' %}", with_: "{% trans 'Avec' %}", without: "{% trans 'Sans' %}",
     replace: "{% trans 'Votre panier contient des plats de' %}", replace2: "{% trans 'Le vider et ajouter ce plat ?' %}",
     added: "{% trans 'Ajouté au panier' %}", articles: "{% trans 'article(s)' %}",
   };
@@ -167,16 +168,26 @@
     const prep = document.getElementById('rs-m-prep');
     prep.style.display = item.preparation ? '' : 'none';
     document.getElementById('rs-m-prep-text').textContent = item.preparation || '';
-    // Ingrédients : tous cochés par défaut, le client décoche ceux qu'il ne veut pas
+    // Ingrédients : un bouton radio Avec / Sans par ingrédient, le client compose son plat.
+    // Les ingrédients « toujours inclus » sont affichés sans choix ; les payants ajoutent leur prix.
     const ing = document.getElementById('rs-m-ingredients'); ing.innerHTML = '';
     if(item.ingredients && item.ingredients.length){
-      let h = `<div class="rs-opt-group"><h4>🥗 ${I18N.ingredients} <span class="rs-muted">${I18N.ingHint}</span></h4>`;
-      item.ingredients.forEach(i => {
-        h += `<label class="rs-opt" ${i.removable ? '' : 'style="opacity:.7;cursor:default;"'}>
-                <input type="checkbox" class="ing" value="${esc(i.name)}" checked ${i.removable ? '' : 'disabled'}>
-                <span>${esc(i.name)}</span>${i.removable ? '' : `<span class="extra">${I18N.fixed}</span>`}</label>`;
+      let h = `<div class="rs-opt-group"><h4>🥗 ${item.composable ? I18N.compose : I18N.ingredients} <span class="rs-muted">${I18N.ingHint}</span></h4>`;
+      item.ingredients.forEach((i, k) => {
+        const price = i.price ? `<span class="extra">+${fmt(i.price)}</span>` : '';
+        if(i.locked){
+          h += `<div class="rs-opt" style="cursor:default;"><span style="width:18px;text-align:center;">✓</span><span>${esc(i.name)}</span><span class="extra">${I18N.fixed}</span></div>`;
+        } else {
+          h += `<div class="rs-opt" style="flex-wrap:wrap;gap:.4rem .8rem;">
+                  <span style="flex:1 1 120px;">${esc(i.name)}</span>${price}
+                  <span style="display:inline-flex;gap:.8rem;">
+                    <label style="margin:0;display:flex;align-items:center;gap:.25rem;font-weight:400;"><input type="radio" name="ing-${k}" class="ing" value="${esc(i.name)}" data-price="${i.price}" ${i.default_on ? 'checked' : ''}> ${I18N.with_}</label>
+                    <label style="margin:0;display:flex;align-items:center;gap:.25rem;font-weight:400;"><input type="radio" name="ing-${k}" value="" ${i.default_on ? '' : 'checked'}> ${I18N.without}</label>
+                  </span></div>`;
+        }
       });
       ing.innerHTML = h + '</div>';
+      ing.querySelectorAll('input').forEach(el => el.addEventListener('change', rsRefresh));
     }
     const box = document.getElementById('rs-m-groups'); box.innerHTML = '';
     item.groups.forEach((g, gi) => {
@@ -205,6 +216,7 @@
   function rsRefresh(){
     let extra = 0;
     document.querySelectorAll('#rs-m-groups input:checked').forEach(i => extra += parseInt(i.dataset.price||0));
+    document.querySelectorAll('#rs-m-ingredients input.ing:checked').forEach(i => extra += parseInt(i.dataset.price||0));
     document.getElementById('rs-m-qty').textContent = qty;
     document.getElementById('rs-m-total').textContent = fmt((item.price + extra) * qty);
   }
@@ -214,7 +226,7 @@
   window.rsAdd = async function(replace){
     const err = document.getElementById('rs-m-err'); err.textContent = '';
     const options = [...document.querySelectorAll('#rs-m-groups input:checked')].map(i => parseInt(i.value));
-    const removed = [...document.querySelectorAll('#rs-m-ingredients input.ing:not(:checked)')].map(i => i.value);
+    const ingredients = [...document.querySelectorAll('#rs-m-ingredients input.ing:checked')].map(i => i.value);
     for(const [gi, g] of item.groups.entries()){
       const n = document.querySelectorAll(`input[name="g${gi}"]:checked`).length;
       if(n < g.min){ err.textContent = `« ${g.name} » : ${I18N.choose} ${g.min}`; return; }
@@ -223,7 +235,7 @@
     const r = await fetch(`/resto/panier/ajouter/${item.id}/`, {
       method:'POST', credentials:'same-origin',
       headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
-      body: JSON.stringify({quantity: qty, note: document.getElementById('rs-m-note').value, options, removed, replace: !!replace}),
+      body: JSON.stringify({quantity: qty, note: document.getElementById('rs-m-note').value, options, ingredients, replace: !!replace}),
     });
     btn.disabled = false;
     const data = await r.json().catch(()=>({}));
