@@ -2843,3 +2843,181 @@ msgstr "⭐ Sakafo Vazimba"
 msgid "Merci pour votre avis !"
 msgstr "Misaotra tamin'ny hevitrao !"
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Identité vérifiée, 20 livraisons ou plus, note ≥ 4,5, aucun problème de paiement"
+msgstr "Mombamomba voamarina, fanaterana 20 na mihoatra, naoty ≥ 4,5, tsy nisy olana fandoavam-bola"
+
+msgid "Livreur confirmé"
+msgstr "Mpanatitra voamarina tanteraka"
+
+msgid "CIN contrôlée par l'équipe Vazimba"
+msgstr "Karapanondro nomarin'ny ekipa Vazimba"
+
+msgid "Identité vérifiée"
+msgstr "Mombamomba voamarina"
+
+msgid "Identité pas encore contrôlée par Vazimba"
+msgstr "Mbola tsy nomarin'i Vazimba ny mombamomba"
+
+msgid "Nouveau livreur"
+msgstr "Mpanatitra vaovao"
+
+msgid "Profil de confiance"
+msgstr "Mombamomba azo itokisana"
+
+msgid "Compléter mon profil (photo, CIN, garant…) pour être vérifié"
+msgstr "Fenoy ny mombamomba ahy (sary, karapanondro, mpiantoka…) mba hohamarinina"
+
+msgid "Voir mon profil public"
+msgstr "Hijery ny mombamomba ahy ho an'ny rehetra"
+
+msgid "Profil livreur"
+msgstr "Mombamomba ny mpanatitra"
+
+msgid "Téléphone vérifié"
+msgstr "Finday voamarina"
+
+msgid "Rattaché à"
+msgstr "Miankina amin'ny"
+
+msgid "Livraisons effectuées"
+msgstr "Fanaterana vita"
+
+msgid "Dans les délais"
+msgstr "Ara-potoana"
+
+msgid "Ce livreur n'a pas encore fait vérifier son identité par Vazimba. Préférez un livreur vérifié pour les commandes importantes."
+msgstr "Mbola tsy nampanamarina ny mombamomba azy tamin'i Vazimba ity mpanatitra ity. Aleo mpanatitra voamarina ho an'ny kaomandy lehibe."
+
+msgid "Zone"
+msgstr "Faritra"
+
+msgid "Disponibilités"
+msgstr "Fotoana ahafahana"
+
+msgid "Langues"
+msgstr "Fiteny"
+
+msgid "ans d'expérience"
+msgstr "taona traikefa"
+
+msgid "Paiement des frais"
+msgstr "Fandoavana ny sarany"
+
+msgid "Espèces"
+msgstr "Vola madio"
+
+msgid "Identité"
+msgstr "Mombamomba"
+
+msgid "Garant"
+msgstr "Mpiantoka"
+
+msgid "Le numéro de téléphone est visible par les clients et restaurants de ses commandes."
+msgstr "Hitan'ny mpanjifa sy ny hotelin'ny kaomandiny ny nomerao finday."
+
+msgid "Modifier mon profil"
+msgstr "Ovay ny mombamomba ahy"
+
+msgid "Derniers avis"
+msgstr "Hevitra farany"
+
+msgid "Aucun avis pour le moment."
+msgstr "Mbola tsy misy hevitra."
+
+msgid "Ce qui rend un profil fiable"
+msgstr "Izay mahatonga ny mombamomba ho azo itokisana"
+
+msgid "Ces informations servent à vérifier qui vous êtes. Le numéro et les photos de CIN ne sont jamais publiés : seule l'équipe Vazimba les voit."
+msgstr "Ampiasaina hanamarinana hoe iza ianao ireto. Tsy avoaka mihitsy ny laharana sy ny sarin'ny karapanondro : ny ekipa Vazimba ihany no mahita azy."
+
+msgid "Identité vérifiée par Vazimba"
+msgstr "Mombamomba voamarin'i Vazimba"
+
+msgid "Zone & disponibilités"
+msgstr "Faritra & fotoana ahafahana"
+
+msgid "Paiement des frais de livraison"
+msgstr "Fandoavana ny saran'ny fanaterana"
+
+msgid "Le garant est une pratique de confiance courante à Madagascar : une personne joignable qui répond de vous en cas de problème."
+msgstr "Fomba fitokisana mahazatra eto Madagasikara ny mpiantoka : olona azo antsoina izay miantoka anao raha misy olana."
+
+msgid "Enregistrer mon profil"
+msgstr "Tehirizo ny mombamomba ahy"
+
+msgid "Ex : RAKOTO Jean Mamy"
+msgstr "Ohatra : RAKOTO Jean Mamy"
+
+msgid "Ex : 1234 TAB"
+msgstr "Ohatra : 1234 TAB"
+
+msgid "La CIN malgache comporte 12 chiffres."
+msgstr "Isa 12 ny laharan'ny karapanondro malagasy."
+
+msgid "Indiquez le numéro mobile money."
+msgstr "Lazao ny nomerao mobile money."
+
+msgid "Indiquez l'immatriculation du véhicule."
+msgstr "Lazao ny nomeraon'ny fiara."
+
+msgid "Nom complet (comme sur la CIN)"
+msgstr "Anarana feno (toy ny ao amin'ny karapanondro)"
+
+msgid "Photo (visage bien visible)"
+msgstr "Sary (hita tsara ny tarehy)"
+
+msgid "Présentation"
+msgstr "Fampahafantarana"
+
+msgid "Quelques mots sur vous : expérience, ponctualité, ce que les clients peuvent attendre."
+msgstr "Teny vitsivitsy momba anao : traikefa, fahatongavana ara-potoana, izay azon'ny mpanjifa andrasana."
+
+msgid "N° de CIN (12 chiffres)"
+msgstr "Laharan'ny karapanondro (isa 12)"
+
+msgid "CIN recto"
+msgstr "Karapanondro anoloana"
+
+msgid "CIN verso"
+msgstr "Karapanondro ambadika"
+
+msgid "Notes admin"
+msgstr "Fanamarihan'ny admin"
+
+msgid "Immatriculation"
+msgstr "Nomerao fiara"
+
+msgid "Photo du véhicule"
+msgstr "Sarin'ny fiara"
+
+msgid "Quartiers couverts"
+msgstr "Fokontany aterina"
+
+msgid "Ex : Analakely, Isoraka, Ankorondrano, 67 Ha"
+msgstr "Ohatra : Analakely, Isoraka, Ankorondrano, 67 Ha"
+
+msgid "Langues parlées"
+msgstr "Fiteny hainao"
+
+msgid "Années d'expérience en livraison"
+msgstr "Taona niasana tamin'ny fanaterana"
+
+msgid "Espèces uniquement"
+msgstr "Vola madio ihany"
+
+msgid "Numéro mobile money"
+msgstr "Nomerao mobile money"
+
+msgid "Nom du garant"
+msgstr "Anaran'ny mpiantoka"
+
+msgid "Une personne de confiance (famille, employeur, fokontany) qui répond de vous."
+msgstr "Olona azo itokisana (fianakaviana, mpampiasa, fokontany) miantoka anao."
+
+msgid "Téléphone du garant"
+msgstr "Findain'ny mpiantoka"
+
+msgid "Vérifiez les champs signalés."
+msgstr "Jereo ny saha voamarika."
+

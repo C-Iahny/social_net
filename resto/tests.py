@@ -213,6 +213,48 @@ class RestoFlowTests(TestCase):
         r = self.client.get(reverse('resto:restaurant', args=[self.resto.slug]))
         self.assertContains(r, 'Très bon')
 
+    def test_courier_profile_and_trust(self):
+        self.client.login(email='livreur@test.mg', password='pass12345')
+        # CIN invalide → refusée ; sans plaque pour une moto → refusée
+        r = self.client.post(reverse('resto:courier_signup'), {
+            'full_name': 'RABE Koto', 'phone': '034', 'vehicle': 'moto', 'region': 'analamanga',
+            'cin_number': '1234', 'languages': 'Malagasy', 'years_experience': 2, 'mm_provider': 'mvola', 'mm_number': '',
+        })
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, '12 chiffres')
+        r = self.client.post(reverse('resto:courier_signup'), {
+            'full_name': 'RABE Koto', 'phone': '034', 'vehicle': 'moto', 'vehicle_plate': '1234 TAB', 'region': 'analamanga',
+            'cin_number': '101 011 234 567', 'zones': 'Analakely, Isoraka', 'hours': 'Lun–Sam', 'languages': 'Malagasy',
+            'years_experience': 2, 'mm_provider': 'mvola', 'mm_number': '034 00 000 00',
+            'guarantor_name': 'RABE Papa', 'guarantor_phone': '033', 'bio': 'Ponctuel',
+        })
+        self.assertEqual(r.status_code, 302)
+        c = Courier.objects.get(user=self.courier_user)
+        self.assertEqual(c.cin_number, '101011234567')
+        self.assertEqual(c.display_name, 'RABE Koto')
+        self.assertEqual(c.trust_level()[0], 'new')
+        self.assertFalse(c.is_approved)
+        # Profil public invisible tant que non approuvé (sauf pour lui-même)
+        self.assertEqual(self.client.get(reverse('resto:courier_profile', args=['livreur'])).status_code, 200)
+        self.client.login(email='client@test.mg', password='pass12345')
+        self.assertEqual(self.client.get(reverse('resto:courier_profile', args=['livreur'])).status_code, 404)
+        # Vérification admin → approuvé + badge, profil public visible, sans téléphone ni CIN pour un inconnu
+        c.cin_verified = True; c.is_approved = True; c.save()
+        self.assertEqual(c.trust_level()[0], 'verified')
+        r = self.client.get(reverse('resto:courier_profile', args=['livreur']))
+        self.assertContains(r, 'RABE Koto')
+        self.assertContains(r, 'Identité vérifiée')
+        self.assertNotContains(r, '101011234567')
+        self.assertNotContains(r, 'tel:034')
+        # Modifier la CIN annule la vérification
+        self.client.login(email='livreur@test.mg', password='pass12345')
+        self.client.post(reverse('resto:courier_signup'), {
+            'full_name': 'RABE Koto', 'phone': '034', 'vehicle': 'moto', 'vehicle_plate': '1234 TAB', 'region': 'analamanga',
+            'cin_number': '101011234568', 'languages': 'Malagasy', 'years_experience': 2, 'mm_provider': '', 'mm_number': '',
+        })
+        c.refresh_from_db()
+        self.assertFalse(c.cin_verified)
+
     def test_no_review_before_delivery(self):
         self.client.login(email='client@test.mg', password='pass12345')
         self._add([self.sauce_a.pk])

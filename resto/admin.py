@@ -52,14 +52,44 @@ class MenuItemAdmin(admin.ModelAdmin):
 
 @admin.register(Courier)
 class CourierAdmin(admin.ModelAdmin):
-    list_display  = ('user', 'restaurant', 'vehicle', 'region', 'is_approved', 'is_available', 'position_updated_at')
-    list_filter   = ('is_approved', 'is_available', 'vehicle', 'region')
-    search_fields = ('user__username', 'phone')
-    actions = ['approve']
+    list_display  = ('display_name', 'user', 'restaurant', 'vehicle', 'vehicle_plate', 'region',
+                     'is_approved', 'cin_verified', 'is_available', 'position_updated_at')
+    list_filter   = ('is_approved', 'cin_verified', 'is_available', 'vehicle', 'region')
+    search_fields = ('user__username', 'full_name', 'phone', 'cin_number', 'vehicle_plate')
+    readonly_fields = ('verified_at', 'verified_by', 'position_updated_at', 'cin_preview')
+    fieldsets = (
+        ('Compte', {'fields': ('user', 'restaurant', 'is_approved', 'is_available', 'admin_notes')}),
+        ('Identité (confidentiel)', {'fields': ('full_name', 'photo', 'phone', 'bio', 'cin_number', 'cin_front', 'cin_back',
+                                                'cin_preview', 'cin_verified', 'verified_at', 'verified_by')}),
+        ('Véhicule', {'fields': ('vehicle', 'vehicle_plate', 'vehicle_photo')}),
+        ('Zone & disponibilités', {'fields': ('region', 'zones', 'hours', 'languages', 'years_experience')}),
+        ('Paiement', {'fields': ('mm_provider', 'mm_number')}),
+        ('Garant', {'fields': ('guarantor_name', 'guarantor_phone')}),
+        ('Position', {'fields': ('latitude', 'longitude', 'position_updated_at')}),
+    )
+    actions = ['approve', 'verify_identity', 'unverify_identity']
+
+    @admin.display(description='CIN')
+    def cin_preview(self, obj):
+        from django.utils.html import format_html
+        parts = []
+        for f in (obj.cin_front, obj.cin_back):
+            if f:
+                parts.append(format_html('<a href="{0}" target="_blank"><img src="{0}" style="max-height:160px;margin-right:8px;border-radius:6px;"></a>', f.url))
+        return format_html(''.join(parts)) if parts else '—'
 
     @admin.action(description='Approuver les livreurs sélectionnés')
     def approve(self, request, queryset):
         queryset.update(is_approved=True)
+
+    @admin.action(description='Marquer l\'identité (CIN) comme vérifiée')
+    def verify_identity(self, request, queryset):
+        from django.utils import timezone
+        queryset.update(cin_verified=True, is_approved=True, verified_at=timezone.now(), verified_by=request.user)
+
+    @admin.action(description='Retirer la vérification d\'identité')
+    def unverify_identity(self, request, queryset):
+        queryset.update(cin_verified=False, verified_at=None, verified_by=None)
 
 
 class OrderItemOptionInline(admin.TabularInline):

@@ -13,10 +13,18 @@
     <div class="rs-card" style="padding:1rem;margin-bottom:1rem;">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
             <div>
-                <strong>{{ courier.display_name }}</strong> {% include 'resto/_rating.html' with r=rating show_empty=1 %} · {{ courier.get_vehicle_display }}
+                <strong>{{ courier.display_name }}</strong> {% include 'resto/_courier_badge.html' with level=level %} {% include 'resto/_rating.html' with r=rating show_empty=1 %} · {{ courier.get_vehicle_display }}
                 {% if courier.restaurant %}· 🏪 {{ courier.restaurant.name }}{% else %}· {% trans "Indépendant" %}{% endif %}
                 {% if not courier.is_approved %}<span class="rs-badge pending">{% trans "En attente de validation" %}</span>{% endif %}
                 <div class="rs-muted" id="rs-gps-status">📍 {% trans "GPS inactif" %}</div>
+                {% if courier.profile_completion < 100 %}
+                <div style="margin-top:.4rem;font-size:.82rem;">
+                    <span class="rs-muted">{% trans "Profil de confiance" %} : <strong>{{ courier.profile_completion }} %</strong></span>
+                    <div style="height:6px;background:var(--border);border-radius:4px;margin-top:.2rem;max-width:260px;"><div style="height:6px;width:{{ courier.profile_completion }}%;background:var(--accent);border-radius:4px;"></div></div>
+                    <a href="{% url 'resto:courier_signup' %}" style="color:var(--accent);">{% trans "Compléter mon profil (photo, CIN, garant…) pour être vérifié" %} →</a>
+                </div>
+                {% endif %}
+                <a href="{% url 'resto:courier_profile' courier.user.username %}" class="rs-muted" style="display:inline-block;margin-top:.3rem;text-decoration:underline;">👁 {% trans "Voir mon profil public" %}</a>
             </div>
             <form method="post" action="{% url 'resto:courier_toggle' %}">{% csrf_token %}
                 <button class="rs-btn {% if courier.is_available %}ghost{% endif %}" type="submit">{% if courier.is_available %}⏸ {% trans "Me mettre indisponible" %}{% else %}▶ {% trans "Je suis disponible" %}{% endif %}</button>

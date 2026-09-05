@@ -113,8 +113,11 @@ def _order_payload(order):
     courier = None
     if order.courier:
         c = order.courier
+        level, level_label = c.trust_level()
         courier = {
             'name': c.display_name, 'phone': c.phone, 'vehicle': c.get_vehicle_display(),
+            'plate': c.vehicle_plate, 'photo': c.photo.url if c.photo else '',
+            'level': level, 'level_label': str(level_label), 'username': c.user.username,
             'lat': c.latitude, 'lng': c.longitude,
             'updated_at': c.position_updated_at.isoformat() if c.position_updated_at else None,
         }
@@ -837,20 +840,62 @@ def _courier(user):
 def courier_signup(request):
     courier = _courier(request.user)
     if request.method == 'POST':
-        form = CourierForm(request.POST, instance=courier)
+        form = CourierForm(request.POST, request.FILES, instance=courier)
         if form.is_valid():
             c = form.save(commit=False)
             c.user = request.user
+            for f in ('photo', 'cin_front', 'cin_back', 'vehicle_photo'):
+                if request.FILES.get(f):
+                    setattr(c, f, _heic(request.FILES[f]))
+            # Toute modification de la CIN annule la vérification (à revalider par l'admin)
+            if courier and courier.cin_verified and (
+                    'cin_number' in form.changed_data or 'cin_front' in form.changed_data or 'cin_back' in form.changed_data):
+                c.cin_verified = False
+                c.verified_at = None
             c.save()
             messages.success(request, _('Profil livreur enregistré.') if courier else
                              _('Demande envoyée. Un restaurant peut vous rattacher, ou Vazimba validera votre profil.'))
             return redirect('resto:courier_dashboard')
+        messages.error(request, _('Vérifiez les champs signalés.'))
     else:
         form = CourierForm(instance=courier, initial=None if courier else {
             'phone': getattr(request.user, 'phone_number', '') or '',
             'region': getattr(request.user, 'region', '') or '',
         })
     return render(request, 'resto/courier/signup.html', {'form': form, 'courier': courier})
+
+
+def courier_profile(request, username):
+    """Page publique du livreur : identité vérifiée, véhicule, zone, réputation, avis."""
+    courier = get_object_or_404(Courier.objects.select_related('user', 'restaurant'), user__username__iexact=username)
+    is_me = request.user.is_authenticated and courier.user_id == request.user.pk
+    if not (courier.is_approved or is_me or request.user.is_staff):
+        raise Http404
+    level, level_label = courier.trust_level()
+    reviews = (OrderReview.objects.filter(target_courier=courier).select_related('author', 'order')
+               .order_by('-created_at')[:15])
+    # Le téléphone n'est montré qu'aux personnes qui ont affaire à lui (client / resto d'une de ses commandes)
+    show_phone = is_me or request.user.is_staff
+    if request.user.is_authenticated and not show_phone:
+        show_phone = Order.objects.filter(courier=courier).filter(
+            Q(customer=request.user) | Q(restaurant__owner=request.user)).exists()
+    return render(request, 'resto/courier/profile.html', {
+        'courier': courier, 'is_me': is_me, 'level': level, 'level_label': level_label,
+        'rating': OrderReview.for_courier(courier), 'reviews': reviews,
+        'deliveries': courier.deliveries_count, 'show_phone': show_phone,
+        'on_time_pct': _on_time_pct(courier),
+    })
+
+
+def _on_time_pct(courier):
+    """% de livraisons faites dans le délai annoncé (None si pas assez de données)."""
+    done = list(Order.objects.filter(courier=courier, status=Order.STATUS_DELIVERED,
+                                     delivered_at__isnull=False, estimated_minutes__isnull=False)
+                .values_list('created_at', 'delivered_at', 'estimated_minutes')[:100])
+    if len(done) < 3:
+        return None
+    ok = sum(1 for c, d, m in done if (d - c).total_seconds() <= m * 60 + 600)   # 10 min de tolérance
+    return int(100 * ok / len(done))
 
 
 @login_required
@@ -880,9 +925,10 @@ def courier_dashboard(request):
     available = list(available)
     for o in available:
         o.customer_rating = OrderReview.for_customer(o.customer)
+    level, level_label = courier.trust_level()
     return render(request, 'resto/courier/dashboard.html', {
         'courier': courier, 'orders': orders, 'available': available, 'history': history,
-        'rating': OrderReview.for_courier(courier),
+        'rating': OrderReview.for_courier(courier), 'level': level, 'level_label': level_label,
     })
 
 

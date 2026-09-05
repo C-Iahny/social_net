@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{{ courier.display_name }} — {% trans "Profil livreur" %} · Resto Vazimba{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<style>
+.rs-cp-head { display: flex; gap: 1rem; align-items: center; }
+.rs-cp-photo { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; background: var(--btn-bg); flex: none;
+               display: flex; align-items: center; justify-content: center; font-size: 2.4rem; border: 3px solid var(--bg-card); box-shadow: var(--shadow); }
+.rs-cp-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: .6rem; margin-top: 1rem; }
+.rs-cp-stat { background: var(--btn-bg); border-radius: 10px; padding: .6rem; text-align: center; }
+.rs-cp-stat b { display: block; font-size: 1.25rem; color: var(--accent); }
+.rs-cp-stat span { font-size: .72rem; color: var(--text-muted); }
+.rs-cp-row { display: flex; gap: .6rem; padding: .45rem 0; border-top: 1px dashed var(--border); font-size: .9rem; }
+.rs-cp-row .k { color: var(--text-muted); min-width: 120px; flex: none; }
+.rs-check { color: #10b981; font-weight: 700; } .rs-cross { color: var(--text-subtle); }
+</style>
+<div class="rs-wrap" style="max-width:760px;">
+    <div class="rs-card" style="padding:1.1rem;">
+        <div class="rs-cp-head">
+            <div class="rs-cp-photo">{% if courier.photo %}<img src="{{ courier.photo.url }}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">{% else %}🛵{% endif %}</div>
+            <div style="flex:1;min-width:0;">
+                <h1 style="font-size:1.35rem;font-weight:800;margin:0;">{{ courier.display_name }}</h1>
+                <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center;margin-top:.3rem;">
+                    {% include 'resto/_courier_badge.html' with level=level %}
+                    {% include 'resto/_rating.html' with r=rating show_empty=1 %}
+                    {% if courier.phone_verified %}<span class="rs-badge ok">📱 {% trans "Téléphone vérifié" %}</span>{% endif %}
+                    {% if courier.is_available %}<span class="rs-badge open">{% trans "Disponible" %}</span>{% endif %}
+                </div>
+                <div class="rs-muted" style="margin-top:.3rem;">
+                    {% if courier.restaurant %}{% trans "Rattaché à" %} <a href="{% url 'resto:restaurant' courier.restaurant.slug %}" style="color:var(--accent);">{{ courier.restaurant.name }}</a>{% else %}{% trans "Indépendant" %}{% endif %}
+                    · {% trans "Membre depuis" %} {{ courier.created_at|date:"M Y" }}
+                </div>
+            </div>
+        </div>
+        {% if courier.bio %}<p style="margin:.8rem 0 0;font-size:.92rem;">{{ courier.bio }}</p>{% endif %}
+
+        <div class="rs-cp-stats">
+            <div class="rs-cp-stat"><b>{{ deliveries }}</b><span>{% trans "Livraisons effectuées" %}</span></div>
+            <div class="rs-cp-stat"><b>{% if rating.count %}★ {{ rating.avg }}{% else %}—{% endif %}</b><span>{{ rating.count }} {% trans "avis" %}</span></div>
+            <div class="rs-cp-stat"><b>{% if on_time_pct is not None %}{{ on_time_pct }} %{% else %}—{% endif %}</b><span>{% trans "Dans les délais" %}</span></div>
+            <div class="rs-cp-stat"><b style="{% if rating.payment_issues %}color:#c0392b;{% endif %}">{{ rating.payment_issues }}</b><span>{% trans "Problème de paiement" %}</span></div>
+        </div>
+        {% if level == 'new' %}
+        <p class="rs-form err" style="margin:.8rem 0 0;font-size:.82rem;">⚠️ {% trans "Ce livreur n'a pas encore fait vérifier son identité par Vazimba. Préférez un livreur vérifié pour les commandes importantes." %}</p>
+        {% endif %}
+    </div>
+
+    <div class="rs-card" style="padding:1rem;margin-top:1rem;">
+        <div class="rs-cp-row" style="border-top:none;"><span class="k">🛵 {% trans "Véhicule" %}</span><span>{{ courier.get_vehicle_display }}{% if courier.vehicle_plate %} · <strong>{{ courier.vehicle_plate }}</strong>{% endif %}</span></div>
+        {% if courier.vehicle_photo %}<img src="{{ courier.vehicle_photo.url }}" alt="" style="max-height:180px;border-radius:10px;margin:.2rem 0 .4rem;">{% endif %}
+        <div class="rs-cp-row"><span class="k">📍 {% trans "Zone" %}</span><span>{{ courier.get_region_display|default:"—" }}{% if courier.zone_list %}<br>{% for z in courier.zone_list %}<span class="rs-chip" style="margin:.15rem .15rem 0 0;">{{ z }}</span>{% endfor %}{% endif %}</span></div>
+        {% if courier.hours %}<div class="rs-cp-row"><span class="k">🕒 {% trans "Disponibilités" %}</span><span>{{ courier.hours }}</span></div>{% endif %}
+        <div class="rs-cp-row"><span class="k">🗣 {% trans "Langues" %}</span><span>{{ courier.languages|default:"—" }}{% if courier.years_experience %} · {{ courier.years_experience }} {% trans "ans d'expérience" %}{% endif %}</span></div>
+        <div class="rs-cp-row"><span class="k">💳 {% trans "Paiement des frais" %}</span><span>{% if courier.mm_provider %}{{ courier.get_mm_provider_display }}{% if show_phone and courier.mm_number %} · {{ courier.mm_number }}{% endif %} · {% endif %}{% trans "Espèces" %}</span></div>
+        <div class="rs-cp-row"><span class="k">🪪 {% trans "Identité" %}</span>
+            <span>
+                {% if courier.cin_verified %}<span class="rs-check">✓ {% trans "CIN contrôlée par l'équipe Vazimba" %}</span>{% else %}<span class="rs-cross">✗ {% trans "Identité pas encore contrôlée par Vazimba" %}</span>{% endif %}<br>
+                {% if courier.phone_verified %}<span class="rs-check">✓ {% trans "Téléphone vérifié" %}</span>{% else %}<span class="rs-cross">✗ {% trans "Téléphone vérifié" %}</span>{% endif %}<br>
+                {% if courier.guarantor_name %}<span class="rs-check">✓ {% trans "Garant" %}</span>{% else %}<span class="rs-cross">✗ {% trans "Garant" %}</span>{% endif %}
+            </span>
+        </div>
+        {% if show_phone %}
+        <div class="rs-cp-row"><span class="k">📞 {% trans "Téléphone" %}</span><span><a href="tel:{{ courier.phone }}">{{ courier.phone }}</a></span></div>
+        {% else %}
+        <p class="rs-muted" style="margin:.5rem 0 0;font-size:.78rem;">{% trans "Le numéro de téléphone est visible par les clients et restaurants de ses commandes." %}</p>
+        {% endif %}
+        {% if is_me %}<a class="rs-btn sm secondary" href="{% url 'resto:courier_signup' %}" style="margin-top:.8rem;">✏️ {% trans "Modifier mon profil" %}</a>{% endif %}
+    </div>
+
+    <div class="rs-card" style="padding:1rem;margin-top:1rem;">
+        <p style="font-weight:700;margin:0 0 .3rem;">⭐ {% trans "Derniers avis" %}</p>
+        {% for r in reviews %}
+        <div class="rs-review"><span class="rs-rating">{{ r.stars }}</span> <span class="who">{{ r.get_author_role_display }}</span> <span class="rs-muted">· {{ r.created_at|date:"d/m/Y" }}</span>
+            {% if r.payment_ok == False %}<span class="rs-badge ko">💳 {% trans "Problème de paiement" %}</span>{% endif %}
+            {% if r.comment %}<div>{{ r.comment }}</div>{% endif %}</div>
+        {% empty %}
+        <p class="rs-muted" style="margin:0;">{% trans "Aucun avis pour le moment." %}</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
