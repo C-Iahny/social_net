@@ -145,8 +145,8 @@
   const I18N = {
     required: "{% trans 'obligatoire' %}", choose: "{% trans 'choisissez' %}", max: "{% trans 'max' %}",
     login: "{% trans 'Connectez-vous pour commander.' %}", closed: "{% trans 'Ce restaurant est fermé pour le moment.' %}",
-    ingredients: "{% trans 'Ingrédients' %}", ingHint: "{% trans 'choisissez ce que vous voulez dans votre plat' %}", fixed: "{% trans 'inclus' %}",
-    compose: "{% trans 'Composez votre plat' %}", with_: "{% trans 'Avec' %}", without: "{% trans 'Sans' %}",
+    ingredients: "{% trans 'Ingrédients' %}", ingHint: "{% trans 'cochez ce que vous ne voulez pas' %}", fixed: "{% trans 'inclus' %}",
+    remove: "{% trans 'Enlever' %}", addIt: "{% trans 'Ajouter' %}", extras: "{% trans 'En plus, si vous voulez' %}",
     replace: "{% trans 'Votre panier contient des plats de' %}", replace2: "{% trans 'Le vider et ajouter ce plat ?' %}",
     added: "{% trans 'Ajouté au panier' %}", articles: "{% trans 'article(s)' %}",
   };
@@ -168,24 +168,27 @@
     const prep = document.getElementById('rs-m-prep');
     prep.style.display = item.preparation ? '' : 'none';
     document.getElementById('rs-m-prep-text').textContent = item.preparation || '';
-    // Ingrédients : un bouton radio Avec / Sans par ingrédient, le client compose son plat.
-    // Les ingrédients « toujours inclus » sont affichés sans choix ; les payants ajoutent leur prix.
+    // Ingrédients du plat, tels que le restaurant les prépare. Le client coche ce qu'il
+    // NE veut PAS (case « Enlever »). Les ingrédients « toujours inclus » n'ont pas de case.
+    // Les ingrédients proposés en plus (décochés par défaut, souvent payants) ont une case « Ajouter ».
     const ing = document.getElementById('rs-m-ingredients'); ing.innerHTML = '';
     if(item.ingredients && item.ingredients.length){
-      let h = `<div class="rs-opt-group"><h4>🥗 ${item.composable ? I18N.compose : I18N.ingredients} <span class="rs-muted">${I18N.ingHint}</span></h4>`;
-      item.ingredients.forEach((i, k) => {
-        const price = i.price ? `<span class="extra">+${fmt(i.price)}</span>` : '';
+      const base = item.ingredients.filter(i => i.default_on), extras = item.ingredients.filter(i => !i.default_on);
+      let h = `<div class="rs-opt-group"><h4>🥗 ${I18N.ingredients} <span class="rs-muted">${I18N.ingHint}</span></h4>`;
+      base.forEach(i => {
         if(i.locked){
           h += `<div class="rs-opt" style="cursor:default;"><span style="width:18px;text-align:center;">✓</span><span>${esc(i.name)}</span><span class="extra">${I18N.fixed}</span></div>`;
         } else {
-          h += `<div class="rs-opt" style="flex-wrap:wrap;gap:.4rem .8rem;">
-                  <span style="flex:1 1 120px;">${esc(i.name)}</span>${price}
-                  <span style="display:inline-flex;gap:.8rem;">
-                    <label style="margin:0;display:flex;align-items:center;gap:.25rem;font-weight:400;"><input type="radio" name="ing-${k}" class="ing" value="${esc(i.name)}" data-price="${i.price}" ${i.default_on ? 'checked' : ''}> ${I18N.with_}</label>
-                    <label style="margin:0;display:flex;align-items:center;gap:.25rem;font-weight:400;"><input type="radio" name="ing-${k}" value="" ${i.default_on ? '' : 'checked'}> ${I18N.without}</label>
-                  </span></div>`;
+          // case « Enlever » : décochée = l'ingrédient reste dans le plat
+          h += `<label class="rs-opt"><input type="checkbox" class="ing-rm" value="${esc(i.name)}" data-price="${i.price}"><span>${esc(i.name)}</span><span class="extra">${I18N.remove}</span></label>`;
         }
       });
+      if(extras.length){
+        h += `<div class="rs-muted" style="margin:.5rem 0 .2rem;font-size:.8rem;">➕ ${I18N.extras}</div>`;
+        extras.forEach(i => {
+          h += `<label class="rs-opt"><input type="checkbox" class="ing-add" value="${esc(i.name)}" data-price="${i.price}"><span>${esc(i.name)}</span><span class="extra">${I18N.addIt}${i.price ? ' · +' + fmt(i.price) : ''}</span></label>`;
+        });
+      }
       ing.innerHTML = h + '</div>';
       ing.querySelectorAll('input').forEach(el => el.addEventListener('change', rsRefresh));
     }
@@ -216,7 +219,9 @@
   function rsRefresh(){
     let extra = 0;
     document.querySelectorAll('#rs-m-groups input:checked').forEach(i => extra += parseInt(i.dataset.price||0));
-    document.querySelectorAll('#rs-m-ingredients input.ing:checked').forEach(i => extra += parseInt(i.dataset.price||0));
+    // ingrédients du plat gardés (payants éventuels) + suppléments ajoutés
+    document.querySelectorAll('#rs-m-ingredients input.ing-rm:not(:checked)').forEach(i => extra += parseInt(i.dataset.price||0));
+    document.querySelectorAll('#rs-m-ingredients input.ing-add:checked').forEach(i => extra += parseInt(i.dataset.price||0));
     document.getElementById('rs-m-qty').textContent = qty;
     document.getElementById('rs-m-total').textContent = fmt((item.price + extra) * qty);
   }
@@ -226,7 +231,7 @@
   window.rsAdd = async function(replace){
     const err = document.getElementById('rs-m-err'); err.textContent = '';
     const options = [...document.querySelectorAll('#rs-m-groups input:checked')].map(i => parseInt(i.value));
-    const ingredients = [...document.querySelectorAll('#rs-m-ingredients input.ing:checked')].map(i => i.value);
+    const ingredients = [...document.querySelectorAll('#rs-m-ingredients input.ing-rm:not(:checked), #rs-m-ingredients input.ing-add:checked')].map(i => i.value);
     for(const [gi, g] of item.groups.entries()){
       const n = document.querySelectorAll(`input[name="g${gi}"]:checked`).length;
       if(n < g.min){ err.textContent = `« ${g.name} » : ${I18N.choose} ${g.min}`; return; }
