@@ -323,6 +323,48 @@ class Courier(models.Model):
     is_available = models.BooleanField(default=False, verbose_name=_('Disponible'), db_index=True)
     is_approved  = models.BooleanField(default=False, verbose_name=_('Approuvé'), db_index=True)
 
+    # ── Identité (confiance) ──────────────────────────────────────────────────
+    full_name = models.CharField(max_length=120, blank=True, default='', verbose_name=_('Nom complet (comme sur la CIN)'))
+    photo = models.ImageField(upload_to='resto/couriers/%Y/%m/', null=True, blank=True, verbose_name=_('Photo (visage bien visible)'))
+    bio = models.TextField(blank=True, default='', verbose_name=_('Présentation'),
+                           help_text=_('Quelques mots sur vous : expérience, ponctualité, ce que les clients peuvent attendre.'))
+    # CIN malgache : 12 chiffres. Numéro et scans visibles uniquement par l'équipe Vazimba (admin).
+    cin_number = models.CharField(max_length=20, blank=True, default='', verbose_name=_('N° de CIN (12 chiffres)'))
+    cin_front = models.ImageField(upload_to='resto/cin/%Y/%m/', null=True, blank=True, verbose_name=_('CIN recto'))
+    cin_back  = models.ImageField(upload_to='resto/cin/%Y/%m/', null=True, blank=True, verbose_name=_('CIN verso'))
+    cin_verified = models.BooleanField(default=False, verbose_name=_('Identité vérifiée par Vazimba'), db_index=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    verified_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='couriers_verified')
+    admin_notes = models.TextField(blank=True, default='', verbose_name=_('Notes admin'))
+
+    # ── Véhicule ──────────────────────────────────────────────────────────────
+    vehicle_plate = models.CharField(max_length=20, blank=True, default='', verbose_name=_('Immatriculation'))
+    vehicle_photo = models.ImageField(upload_to='resto/vehicles/%Y/%m/', null=True, blank=True, verbose_name=_('Photo du véhicule'))
+
+    # ── Zone & disponibilités ─────────────────────────────────────────────────
+    zones = models.CharField(max_length=250, blank=True, default='', verbose_name=_('Quartiers couverts'),
+                             help_text=_('Ex : Analakely, Isoraka, Ankorondrano, 67 Ha'))
+    hours = models.CharField(max_length=120, blank=True, default='', verbose_name=_('Disponibilités'),
+                             help_text=_('Ex : Lun–Sam 10h–22h'))
+    languages = models.CharField(max_length=120, blank=True, default='Malagasy, Français', verbose_name=_('Langues parlées'))
+    years_experience = models.PositiveSmallIntegerField(default=0, verbose_name=_('Années d\'expérience en livraison'))
+
+    # ── Paiement des frais de livraison ───────────────────────────────────────
+    MM_CHOICES = [
+        ('',       _('Espèces uniquement')),
+        ('mvola',  'MVola'),
+        ('orange', 'Orange Money'),
+        ('airtel', 'Airtel Money'),
+    ]
+    mm_provider = models.CharField(max_length=10, choices=MM_CHOICES, blank=True, default='', verbose_name=_('Mobile money'))
+    mm_number   = models.CharField(max_length=30, blank=True, default='', verbose_name=_('Numéro mobile money'))
+
+    # ── Garant (personne de confiance joignable) ──────────────────────────────
+    guarantor_name  = models.CharField(max_length=120, blank=True, default='', verbose_name=_('Nom du garant'),
+                                       help_text=_('Une personne de confiance (famille, employeur, fokontany) qui répond de vous.'))
+    guarantor_phone = models.CharField(max_length=30, blank=True, default='', verbose_name=_('Téléphone du garant'))
+
     # Dernière position connue (mise à jour par le navigateur du livreur)
     latitude  = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
@@ -339,7 +381,37 @@ class Courier(models.Model):
 
     @property
     def display_name(self):
-        return self.user.username
+        return self.full_name or self.user.username
+
+    # ── Confiance ─────────────────────────────────────────────────────────────
+    @property
+    def phone_verified(self):
+        return bool(getattr(self.user, 'phone_verified', False))
+
+    @property
+    def profile_completion(self):
+        """Pourcentage de champs de confiance renseignés (guide le livreur)."""
+        checks = [self.full_name, self.photo, self.phone, self.cin_number, self.cin_front, self.cin_back,
+                  self.vehicle_plate or self.vehicle == 'pied', self.zones, self.hours, self.guarantor_name,
+                  self.guarantor_phone, self.bio]
+        return int(100 * sum(1 for c in checks if c) / len(checks))
+
+    @property
+    def deliveries_count(self):
+        return self.orders.filter(status=Order.STATUS_DELIVERED).count()
+
+    def trust_level(self):
+        """('new' | 'verified' | 'confirmed', libellé). Confirmé = vérifié + 20 livraisons + note ≥ 4.5."""
+        if self.cin_verified:
+            stats = OrderReview.for_courier(self)
+            if self.deliveries_count >= 20 and stats['avg'] >= 4.5 and stats['payment_issues'] == 0:
+                return 'confirmed', _('Livreur confirmé')
+            return 'verified', _('Identité vérifiée')
+        return 'new', _('Nouveau livreur')
+
+    @property
+    def zone_list(self):
+        return [z.strip() for z in self.zones.split(',') if z.strip()]
 
     @property
     def has_position(self):

@@ -47,8 +47,15 @@
             <div id="rs-courier-box">
                 <div class="rs-muted">🛵 {% trans "Livreur" %}</div>
                 {% if order.courier %}
-                <strong>{{ order.courier.display_name }}</strong> · {{ order.courier.get_vehicle_display }}
-                <div>📞 <a href="tel:{{ order.courier.phone }}">{{ order.courier.phone }}</a></div>
+                <div style="display:flex;gap:.6rem;align-items:center;">
+                    {% if order.courier.photo %}<img src="{{ order.courier.photo.url }}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">{% endif %}
+                    <div>
+                        <a href="{% url 'resto:courier_profile' order.courier.user.username %}" style="font-weight:700;color:var(--accent);">{{ order.courier.display_name }}</a>
+                        {% with lv=order.courier.trust_level %}{% include 'resto/_courier_badge.html' with level=lv.0 %}{% endwith %}
+                        <div class="rs-muted">{{ order.courier.get_vehicle_display }}{% if order.courier.vehicle_plate %} · {{ order.courier.vehicle_plate }}{% endif %}</div>
+                        <div>📞 <a href="tel:{{ order.courier.phone }}">{{ order.courier.phone }}</a></div>
+                    </div>
+                </div>
                 {% else %}<span class="rs-muted">{% trans "Pas encore attribué" %}</span>{% endif %}
             </div>
             {% else %}
@@ -189,7 +196,7 @@
     const eta = document.getElementById('rs-eta'); if(eta && (s.is_final || !s.estimated_minutes)) eta.textContent = '';
     const box = document.getElementById('rs-courier-box');
     if(box){
-      if(s.courier) box.innerHTML = `<div class="rs-muted">🛵 ${I18N.courier}</div><strong>${esc(s.courier.name)}</strong> · ${esc(s.courier.vehicle)}<div>📞 <a href="tel:${esc(s.courier.phone)}">${esc(s.courier.phone)}</a></div>`;
+      if(s.courier) box.innerHTML = `<div class="rs-muted">🛵 ${I18N.courier}</div><div style="display:flex;gap:.6rem;align-items:center;">${s.courier.photo ? `<img src="${esc(s.courier.photo)}" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">` : ''}<div><a href="/resto/livreur/profil/${esc(s.courier.username)}/" style="font-weight:700;color:var(--accent);">${esc(s.courier.name)}</a> <span class="rs-badge ${s.courier.level === 'new' ? 'pending' : 'ok'}">${esc(s.courier.level_label)}</span><div class="rs-muted">${esc(s.courier.vehicle)}${s.courier.plate ? ' · ' + esc(s.courier.plate) : ''}</div><div>📞 <a href="tel:${esc(s.courier.phone)}">${esc(s.courier.phone)}</a></div></div></div>`;
       else box.innerHTML = `<div class="rs-muted">🛵 ${I18N.courier}</div><span class="rs-muted">${I18N.noassign}</span>`;
     }
     if(map){

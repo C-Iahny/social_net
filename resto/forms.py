@@ -123,11 +123,47 @@ class CheckoutForm(forms.ModelForm):
 
 
 class CourierForm(forms.ModelForm):
+    """Profil livreur complet : identité, véhicule, zone, paiement, garant."""
     class Meta:
         model = Courier
-        fields = ['phone', 'vehicle', 'region']
+        fields = ['full_name', 'photo', 'phone', 'bio',
+                  'cin_number', 'cin_front', 'cin_back',
+                  'vehicle', 'vehicle_plate', 'vehicle_photo',
+                  'region', 'zones', 'hours', 'languages', 'years_experience',
+                  'mm_provider', 'mm_number',
+                  'guarantor_name', 'guarantor_phone']
         widgets = {
-            'phone':   forms.TextInput(attrs={**_INPUT, 'placeholder': '+261 34 XX XXX XX'}),
-            'vehicle': forms.Select(attrs=_INPUT),
-            'region':  forms.Select(attrs=_INPUT, choices=REGION_CHOICES),
+            'full_name':     forms.TextInput(attrs={**_INPUT, 'placeholder': _('Ex : RAKOTO Jean Mamy')}),
+            'photo':         forms.ClearableFileInput(attrs={'accept': 'image/*,.heic,.heif', 'capture': 'user'}),
+            'phone':         forms.TextInput(attrs={**_INPUT, 'placeholder': '+261 34 XX XXX XX'}),
+            'bio':           forms.Textarea(attrs={**_INPUT, 'rows': 2}),
+            'cin_number':    forms.TextInput(attrs={**_INPUT, 'placeholder': '101 011 234 567', 'inputmode': 'numeric'}),
+            'cin_front':     forms.ClearableFileInput(attrs={'accept': 'image/*,.heic,.heif', 'capture': 'environment'}),
+            'cin_back':      forms.ClearableFileInput(attrs={'accept': 'image/*,.heic,.heif', 'capture': 'environment'}),
+            'vehicle':       forms.Select(attrs=_INPUT),
+            'vehicle_plate': forms.TextInput(attrs={**_INPUT, 'placeholder': _('Ex : 1234 TAB')}),
+            'vehicle_photo': forms.ClearableFileInput(attrs={'accept': 'image/*,.heic,.heif'}),
+            'region':        forms.Select(attrs=_INPUT, choices=REGION_CHOICES),
+            'zones':         forms.TextInput(attrs=_INPUT),
+            'hours':         forms.TextInput(attrs=_INPUT),
+            'languages':     forms.TextInput(attrs=_INPUT),
+            'years_experience': forms.NumberInput(attrs={**_INPUT, 'min': 0, 'max': 50}),
+            'mm_provider':   forms.Select(attrs=_INPUT),
+            'mm_number':     forms.TextInput(attrs={**_INPUT, 'placeholder': '034 XX XXX XX'}),
+            'guarantor_name':  forms.TextInput(attrs=_INPUT),
+            'guarantor_phone': forms.TextInput(attrs={**_INPUT, 'placeholder': '+261 3X XX XXX XX'}),
         }
+
+    def clean_cin_number(self):
+        raw = (self.cleaned_data.get('cin_number') or '').replace(' ', '')
+        if raw and (not raw.isdigit() or len(raw) != 12):
+            raise forms.ValidationError(_('La CIN malgache comporte 12 chiffres.'))
+        return raw
+
+    def clean(self):
+        data = super().clean()
+        if data.get('mm_provider') and not (data.get('mm_number') or '').strip():
+            self.add_error('mm_number', _('Indiquez le numéro mobile money.'))
+        if data.get('vehicle') != 'pied' and not data.get('vehicle_plate') and data.get('vehicle') != 'velo':
+            self.add_error('vehicle_plate', _('Indiquez l\'immatriculation du véhicule.'))
+        return data

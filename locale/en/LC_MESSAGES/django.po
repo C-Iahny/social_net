@@ -2698,3 +2698,181 @@ msgstr "⭐ Vazimba Food"
 msgid "Merci pour votre avis !"
 msgstr "Thank you for your review!"
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Identité vérifiée, 20 livraisons ou plus, note ≥ 4,5, aucun problème de paiement"
+msgstr "Identity verified, 20+ deliveries, rating ≥ 4.5, no payment issue"
+
+msgid "Livreur confirmé"
+msgstr "Confirmed courier"
+
+msgid "CIN contrôlée par l'équipe Vazimba"
+msgstr "ID card checked by the Vazimba team"
+
+msgid "Identité vérifiée"
+msgstr "Identity verified"
+
+msgid "Identité pas encore contrôlée par Vazimba"
+msgstr "Identity not yet checked by Vazimba"
+
+msgid "Nouveau livreur"
+msgstr "New courier"
+
+msgid "Profil de confiance"
+msgstr "Trust profile"
+
+msgid "Compléter mon profil (photo, CIN, garant…) pour être vérifié"
+msgstr "Complete my profile (photo, ID, guarantor…) to get verified"
+
+msgid "Voir mon profil public"
+msgstr "View my public profile"
+
+msgid "Profil livreur"
+msgstr "Courier profile"
+
+msgid "Téléphone vérifié"
+msgstr "Phone verified"
+
+msgid "Rattaché à"
+msgstr "Attached to"
+
+msgid "Livraisons effectuées"
+msgstr "Deliveries completed"
+
+msgid "Dans les délais"
+msgstr "On time"
+
+msgid "Ce livreur n'a pas encore fait vérifier son identité par Vazimba. Préférez un livreur vérifié pour les commandes importantes."
+msgstr "This courier has not had their identity verified by Vazimba yet. Prefer a verified courier for large orders."
+
+msgid "Zone"
+msgstr "Area"
+
+msgid "Disponibilités"
+msgstr "Availability"
+
+msgid "Langues"
+msgstr "Languages"
+
+msgid "ans d'expérience"
+msgstr "years of experience"
+
+msgid "Paiement des frais"
+msgstr "Fee payment"
+
+msgid "Espèces"
+msgstr "Cash"
+
+msgid "Identité"
+msgstr "Identity"
+
+msgid "Garant"
+msgstr "Guarantor"
+
+msgid "Le numéro de téléphone est visible par les clients et restaurants de ses commandes."
+msgstr "The phone number is visible to the customers and restaurants of his orders."
+
+msgid "Modifier mon profil"
+msgstr "Edit my profile"
+
+msgid "Derniers avis"
+msgstr "Latest reviews"
+
+msgid "Aucun avis pour le moment."
+msgstr "No reviews yet."
+
+msgid "Ce qui rend un profil fiable"
+msgstr "What makes a profile trustworthy"
+
+msgid "Ces informations servent à vérifier qui vous êtes. Le numéro et les photos de CIN ne sont jamais publiés : seule l'équipe Vazimba les voit."
+msgstr "This information is used to verify who you are. The ID number and photos are never published: only the Vazimba team sees them."
+
+msgid "Identité vérifiée par Vazimba"
+msgstr "Identity verified by Vazimba"
+
+msgid "Zone & disponibilités"
+msgstr "Area & availability"
+
+msgid "Paiement des frais de livraison"
+msgstr "Delivery fee payment"
+
+msgid "Le garant est une pratique de confiance courante à Madagascar : une personne joignable qui répond de vous en cas de problème."
+msgstr "A guarantor is a common trust practice in Madagascar: a reachable person who vouches for you if there is a problem."
+
+msgid "Enregistrer mon profil"
+msgstr "Save my profile"
+
+msgid "Ex : RAKOTO Jean Mamy"
+msgstr "E.g. RAKOTO Jean Mamy"
+
+msgid "Ex : 1234 TAB"
+msgstr "E.g. 1234 TAB"
+
+msgid "La CIN malgache comporte 12 chiffres."
+msgstr "The Malagasy ID number has 12 digits."
+
+msgid "Indiquez le numéro mobile money."
+msgstr "Enter the mobile money number."
+
+msgid "Indiquez l'immatriculation du véhicule."
+msgstr "Enter the vehicle licence plate."
+
+msgid "Nom complet (comme sur la CIN)"
+msgstr "Full name (as on your ID card)"
+
+msgid "Photo (visage bien visible)"
+msgstr "Photo (face clearly visible)"
+
+msgid "Présentation"
+msgstr "About you"
+
+msgid "Quelques mots sur vous : expérience, ponctualité, ce que les clients peuvent attendre."
+msgstr "A few words about you: experience, punctuality, what customers can expect."
+
+msgid "N° de CIN (12 chiffres)"
+msgstr "National ID number (12 digits)"
+
+msgid "CIN recto"
+msgstr "ID card front"
+
+msgid "CIN verso"
+msgstr "ID card back"
+
+msgid "Notes admin"
+msgstr "Admin notes"
+
+msgid "Immatriculation"
+msgstr "Licence plate"
+
+msgid "Photo du véhicule"
+msgstr "Vehicle photo"
+
+msgid "Quartiers couverts"
+msgstr "Neighbourhoods covered"
+
+msgid "Ex : Analakely, Isoraka, Ankorondrano, 67 Ha"
+msgstr "E.g. Analakely, Isoraka, Ankorondrano, 67 Ha"
+
+msgid "Langues parlées"
+msgstr "Languages spoken"
+
+msgid "Années d'expérience en livraison"
+msgstr "Years of delivery experience"
+
+msgid "Espèces uniquement"
+msgstr "Cash only"
+
+msgid "Numéro mobile money"
+msgstr "Mobile money number"
+
+msgid "Nom du garant"
+msgstr "Guarantor name"
+
+msgid "Une personne de confiance (famille, employeur, fokontany) qui répond de vous."
+msgstr "A trusted person (family, employer, fokontany) who vouches for you."
+
+msgid "Téléphone du garant"
+msgstr "Guarantor phone"
+
+msgid "Vérifiez les champs signalés."
+msgstr "Check the highlighted fields."
+

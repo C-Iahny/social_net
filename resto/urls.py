@@ -36,6 +36,7 @@ urlpatterns = [
     # ── Livreur ────────────────────────────────────────────────────────────────
     path('livreur/',                                     views.courier_dashboard, name='courier_dashboard'),
     path('livreur/inscription/',                         views.courier_signup,    name='courier_signup'),
+    path('livreur/profil/<str:username>/',               views.courier_profile,   name='courier_profile'),
     path('livreur/position/',                            views.courier_position,  name='courier_position'), # AJAX POST
     path('livreur/disponible/',                          views.courier_toggle,    name='courier_toggle'),   # POST
     path('livreur/commande/<str:number>/prendre/',       views.courier_take,      name='courier_take'),     # POST
