@@ -47,7 +47,7 @@
         <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
             {% if o.delivery_latitude %}<a class="rs-btn sm secondary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination={{ o.delivery_latitude }},{{ o.delivery_longitude }}">🧭 {% trans "Itinéraire" %}</a>{% endif %}
             {% for code, label in o.next_steps %}
-            <form method="post" action="{% url 'resto:order_set_status' o.number %}">{% csrf_token %}<input type="hidden" name="status" value="{{ code }}"><input type="hidden" name="next" value="{% url 'resto:courier_dashboard' %}"><button class="rs-btn sm" type="submit">{{ label }}</button></form>
+            <form method="post" action="{% url 'resto:order_set_status' o.number %}" {% if code == 'delivered' %}onsubmit="return confirm('{% trans "Confirmer : la commande a bien été remise ?" %}')"{% endif %}>{% csrf_token %}<input type="hidden" name="status" value="{{ code }}"><input type="hidden" name="next" value="{% url 'resto:courier_dashboard' %}"><button class="rs-btn {% if code == 'delivering' %}secondary{% endif %}" type="submit">{{ label }}</button></form>
             {% endfor %}
         </div>
     </div>

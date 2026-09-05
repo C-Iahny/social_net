@@ -2933,3 +2933,40 @@ msgstr "Extras, if you like"
 msgid "Listez les ingrédients du plat, un par un. Le client verra la liste et cochera ce qu'il ne veut pas (« sans œuf »). « Coché par défaut » = dans le plat ; décoché = proposé en plus (avec un prix si supplément). Décochez « au choix du client » pour un ingrédient qu'on ne peut pas enlever."
 msgstr "List the dish ingredients one by one. Customers will see the list and tick what they do not want (\"no egg\"). \"Ticked by default\" = in the dish; unticked = offered as an extra (with a price if charged). Untick \"customer's choice\" for an ingredient that cannot be removed."
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Confirmer : la commande a bien été remise ?"
+msgstr "Confirm: the order has been handed over?"
+
+msgid "J'ai bien reçu ma commande"
+msgstr "I received my order"
+
+msgid "Une fois la commande remise et payée, appuyez sur « Commande remise au client » : le client pourra ensuite vous noter."
+msgstr "Once the order is handed over and paid, tap \"Handed to the customer\": the customer can then rate you."
+
+msgid "✅ Accepter la commande"
+msgstr "✅ Accept the order"
+
+msgid "✕ Refuser"
+msgstr "✕ Refuse"
+
+msgid "👩‍🍳 Lancer la préparation"
+msgstr "👩‍🍳 Start cooking"
+
+msgid "📦 Commande prête"
+msgstr "📦 Order ready"
+
+msgid "📦 J'ai récupéré la commande"
+msgstr "📦 I picked up the order"
+
+msgid "🛵 Je pars livrer"
+msgstr "🛵 On my way to deliver"
+
+msgid "✅ Commande remise au client"
+msgstr "✅ Handed to the customer"
+
+msgid "Réception confirmée par le client"
+msgstr "Receipt confirmed by the customer"
+
+msgid "Commande %(n)s : réception confirmée par le client"
+msgstr "Order %(n)s: receipt confirmed by the customer"
+

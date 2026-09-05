@@ -97,15 +97,25 @@ def _owner_restaurant(request, slug):
     return get_object_or_404(Restaurant, slug=slug, owner=request.user)
 
 
-def _order_actor(order, user):
-    """Rôle de `user` vis-à-vis de la commande : customer / restaurant / courier / None."""
+def _order_roles(order, user):
+    """
+    Tous les rôles de `user` sur cette commande, dans l'ordre d'affichage.
+    Un même compte peut cumuler (ex : propriétaire du restaurant qui livre lui-même).
+    """
+    roles = []
     if order.customer_id == user.pk:
-        return 'customer'
+        roles.append('customer')
     if order.restaurant.owner_id == user.pk:
-        return 'restaurant'
+        roles.append('restaurant')
     if order.courier_id and order.courier.user_id == user.pk:
-        return 'courier'
-    return None
+        roles.append('courier')
+    return roles
+
+
+def _order_actor(order, user):
+    """Rôle principal de `user` (customer / restaurant / courier) ou None."""
+    roles = _order_roles(order, user)
+    return roles[0] if roles else None
 
 
 def _order_payload(order):
@@ -469,9 +479,10 @@ def order_detail(request, number):
     items = order.items.prefetch_related('options')
     reviews = list(order.reviews.select_related('author'))
     mine = {r.target_role: r for r in reviews if actor and r.author_role == actor}
+    roles = _order_roles(order, request.user)
     return render(request, 'resto/order.html', {
-        'order': order, 'items': items, 'actor': actor,
-        'transitions': [(s, dict(Order.STATUS_CHOICES)[s]) for s in order.allowed_transitions(actor)] if actor else [],
+        'order': order, 'items': items, 'actor': actor, 'roles': roles,
+        'transitions': order.actions_for(roles) if roles else [],
         'state_json': json.dumps(_order_payload(order)),
         'review_targets': [(t, dict(OrderReview.ROLE_CHOICES)[t], mine.get(t)) for t in _review_targets(order, actor)],
         'reviews': reviews,
@@ -565,12 +576,13 @@ def order_review(request, number):
 def order_set_status(request, number):
     """POST {status, note?} — restaurant ou livreur fait avancer la commande."""
     order = get_object_or_404(Order.objects.select_related('restaurant', 'courier', 'customer'), number=number)
-    actor = _order_actor(order, request.user)
     body = _json_body(request) if request.content_type == 'application/json' else request.POST
     new_status = body.get('status', '')
     note = (body.get('note') or '')[:200]
 
-    if actor not in ('restaurant', 'courier') or new_status not in order.allowed_transitions(actor):
+    # Rôle qui autorise cette transition (un compte peut cumuler restaurant + livreur, ou être le client)
+    actor = next((r for r in _order_roles(order, request.user) if new_status in order.allowed_transitions(r)), None)
+    if actor is None:
         msg = _('Transition non autorisée.')
         if request.content_type == 'application/json':
             return JsonResponse({'error': msg}, status=403)
@@ -584,13 +596,25 @@ def order_set_status(request, number):
                 order.estimated_minutes = min(est, 240)
         except (TypeError, ValueError):
             pass
+    if actor == 'customer' and new_status == Order.STATUS_DELIVERED and not note:
+        note = _('Réception confirmée par le client')
     order.set_status(new_status, by=request.user, note=note)
 
     # ── Notifier le client (et les livreurs quand c'est prêt) ─────────────────
     url = reverse('resto:order', kwargs={'number': order.number})
-    _notify(order.customer, request.user,
-            _('Commande %(n)s : %(s)s') % {'n': order.number, 's': order.get_status_display()},
-            url, order, push_title=_('🍽️ %(r)s') % {'r': order.restaurant.name})
+    if actor != 'customer':
+        _notify(order.customer, request.user,
+                _('Commande %(n)s : %(s)s') % {'n': order.number, 's': order.get_status_display()},
+                url, order, push_title=_('🍽️ %(r)s') % {'r': order.restaurant.name})
+    else:
+        # Le client confirme la réception : prévenir le restaurant et le livreur
+        _notify(order.restaurant.owner, request.user,
+                _('Commande %(n)s : réception confirmée par le client') % {'n': order.number},
+                reverse('resto:vendor_orders', kwargs={'slug': order.restaurant.slug}), order)
+        if order.courier:
+            _notify(order.courier.user, request.user,
+                    _('Commande %(n)s : réception confirmée par le client') % {'n': order.number},
+                    reverse('resto:courier_dashboard'), order)
     if new_status == Order.STATUS_READY and order.is_delivery and order.courier is None:
         for c in Courier.objects.filter(restaurant=order.restaurant, is_approved=True, is_available=True).select_related('user'):
             _notify(c.user, request.user,
@@ -796,7 +820,7 @@ def vendor_orders(request, slug):
 
     orders = list(qs)
     for o in orders:
-        o.next_steps = [(s, dict(Order.STATUS_CHOICES)[s]) for s in o.allowed_transitions('restaurant')]
+        o.next_steps = o.actions_for(['restaurant'])
         o.customer_rating = OrderReview.for_customer(o.customer)
     return render(request, 'resto/vendor/orders.html', {
         'restaurant': restaurant, 'orders': orders, 'tab': tab,
@@ -934,7 +958,7 @@ def courier_dashboard(request):
 
     orders = list(mine)
     for o in orders:
-        o.next_steps = [(s, dict(Order.STATUS_CHOICES)[s]) for s in o.allowed_transitions('courier')]
+        o.next_steps = o.actions_for(['courier'])
         o.customer_rating = OrderReview.for_customer(o.customer)
     available = list(available)
     for o in available:

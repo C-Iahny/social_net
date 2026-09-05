@@ -72,22 +72,30 @@
     <!-- ── Actions selon le rôle ── -->
     {% if transitions %}
     <div class="rs-card" style="padding:1rem;margin-top:1rem;">
-        <p style="font-weight:700;margin:0 0 .5rem;">{% if actor == 'customer' %}{% trans "Votre commande" %}{% elif actor == 'restaurant' %}{% trans "Espace restaurant" %}{% else %}{% trans "Espace livreur" %}{% endif %}</p>
+        <p style="font-weight:700;margin:0 0 .5rem;">
+            {% if 'courier' in roles %}🛵 {% trans "Espace livreur" %}{% if 'restaurant' in roles %} · 🏪 {% trans "Espace restaurant" %}{% endif %}
+            {% elif 'restaurant' in roles %}🏪 {% trans "Espace restaurant" %}
+            {% else %}{% trans "Votre commande" %}{% endif %}
+        </p>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
             {% for code, label in transitions %}
-            {% if actor == 'customer' %}
+            {% if code == 'cancelled' %}
             <form method="post" action="{% url 'resto:order_cancel' order.number %}" onsubmit="return confirm('{% trans "Annuler cette commande ?" %}')">{% csrf_token %}
-                <button class="rs-btn danger" type="submit">{% trans "Annuler la commande" %}</button></form>
+                <button class="rs-btn danger" type="submit">{{ label }}</button></form>
             {% else %}
-            <form method="post" action="{% url 'resto:order_set_status' order.number %}" style="display:flex;gap:.4rem;align-items:center;">{% csrf_token %}
+            <form method="post" action="{% url 'resto:order_set_status' order.number %}" style="display:flex;gap:.4rem;align-items:center;"
+                  {% if code == 'delivered' %}onsubmit="return confirm('{% trans "Confirmer : la commande a bien été remise ?" %}')"{% endif %}>{% csrf_token %}
                 <input type="hidden" name="status" value="{{ code }}">
                 {% if code == 'accepted' %}<input class="form-control" name="estimated_minutes" type="number" min="5" max="240" value="{{ order.estimated_minutes|default:30 }}" style="width:90px;" title="{% trans 'Délai (min)' %}">{% endif %}
                 {% if code == 'refused' %}<input class="form-control" name="note" placeholder="{% trans 'Motif' %}" style="width:160px;">{% endif %}
-                <button class="rs-btn {% if code == 'refused' %}danger{% elif code == 'delivered' %}{% else %}secondary{% endif %}" type="submit">{{ label }}</button>
+                <button class="rs-btn {% if code == 'refused' %}danger{% elif code == 'delivered' or code == 'delivering' or code == 'accepted' %}{% else %}secondary{% endif %}" type="submit">{% if actor == 'customer' and code == 'delivered' %}✅ {% trans "J'ai bien reçu ma commande" %}{% else %}{{ label }}{% endif %}</button>
             </form>
             {% endif %}
             {% endfor %}
         </div>
+        {% if 'courier' in roles and order.status == 'picked_up' or 'courier' in roles and order.status == 'delivering' %}
+        <p class="rs-muted" style="margin:.6rem 0 0;font-size:.8rem;">{% trans "Une fois la commande remise et payée, appuyez sur « Commande remise au client » : le client pourra ensuite vous noter." %}</p>
+        {% endif %}
     </div>
     {% endif %}
 
@@ -221,7 +229,7 @@
       if(r.ok){ const s = await r.json(); render(s);
         if(s.status !== prevStatus){ prevStatus = s.status; if(navigator.vibrate) navigator.vibrate(120);
           // Les boutons d'action dépendent du statut : on recharge la page pour les rafraîchir
-          {% if actor != 'customer' %}window.location.reload(); return;{% else %}if(s.is_final){ setTimeout(() => window.location.reload(), 1500); return; }{% endif %}
+          window.location.reload(); return;
         } }
     }catch(e){}
     setTimeout(poll, ['picked_up','delivering'].includes(state.status) ? 5000 : 12000);
