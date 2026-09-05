@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Commander" %} — Resto Vazimba{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<style>
+.rs-radio { display: flex; gap: .5rem; flex-wrap: wrap; }
+.rs-radio label { flex: 1; min-width: 140px; border: 1.5px solid var(--border); border-radius: 10px; padding: .6rem .8rem; cursor: pointer; font-size: .9rem; display: flex; gap: .5rem; align-items: center; }
+.rs-radio input { accent-color: var(--accent); }
+.rs-radio label:has(input:checked) { border-color: var(--accent); background: var(--accent-glow); }
+#rs-pickmap { height: 240px; border-radius: 12px; border: 1px solid var(--border); margin-top: .5rem; }
+</style>
+<div class="rs-wrap" style="max-width:760px;">
+    <h1 style="font-size:1.4rem;font-weight:800;margin:.5rem 0 1rem;">✅ {% trans "Finaliser la commande" %}</h1>
+
+    <form method="post" class="rs-form" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}<p class="err">{{ form.non_field_errors|join:" " }}</p>{% endif %}
+
+        <div class="rs-card" style="padding:1rem;margin-bottom:1rem;">
+            <label>{% trans "Comment recevoir la commande ?" %}</label>
+            <div class="rs-radio" id="rs-modes">
+                {% for radio in form.mode %}<label>{{ radio.tag }} {% if radio.choice_value == 'delivery' %}🛵{% else %}🏪{% endif %} {{ radio.choice_label }}</label>{% endfor %}
+            </div>
+            {% if form.mode.errors %}<p class="err">{{ form.mode.errors|join:" " }}</p>{% endif %}
+
+            <div class="rs-row" style="margin-top:.9rem;">
+                <div><label>{% trans "Votre nom" %}</label>{{ form.customer_name }}{% if form.customer_name.errors %}<p class="err">{{ form.customer_name.errors|join:" " }}</p>{% endif %}</div>
+                <div><label>{% trans "Téléphone (le livreur vous appellera)" %}</label>{{ form.customer_phone }}{% if form.customer_phone.errors %}<p class="err">{{ form.customer_phone.errors|join:" " }}</p>{% endif %}</div>
+            </div>
+
+            <div id="rs-delivery-block" style="margin-top:.9rem;">
+                <label>{% trans "Adresse de livraison" %}</label>
+                {{ form.delivery_address }}
+                {% if form.delivery_address.errors %}<p class="err">{{ form.delivery_address.errors|join:" " }}</p>{% endif %}
+                <p class="help" style="margin:.3rem 0 0;">{% trans "Placez le repère sur la carte pour guider le livreur (touchez la carte ou utilisez « Ma position »)." %}</p>
+                <button type="button" class="rs-btn sm secondary" style="margin-top:.4rem;" onclick="rsLocate()">📍 {% trans "Ma position" %}</button>
+                <div id="rs-pickmap"></div>
+                {{ form.delivery_latitude }}{{ form.delivery_longitude }}
+            </div>
+
+            <div style="margin-top:.9rem;">
+                <label>{% trans "Paiement" %}</label>
+                <div class="rs-radio">{% for radio in form.payment_method %}<label>{{ radio.tag }} {{ radio.choice_label }}</label>{% endfor %}</div>
+                <p class="help" style="margin:.3rem 0 0;">{% trans "Le paiement se fait directement avec le restaurant ou le livreur. Vazimba ne prélève rien." %}</p>
+            </div>
+
+            <div style="margin-top:.9rem;"><label>{% trans "Message au restaurant" %}</label>{{ form.note }}</div>
+        </div>
+
+        <div class="rs-card" style="padding:1rem;">
+            <p style="margin:0 0 .5rem;font-weight:700;">{{ restaurant.name }}</p>
+            {% for l in cart_summary.lines %}
+            <div class="rs-order-line"><div>{{ l.quantity }} × {{ l.name }}{% if l.options %}<small>{{ l.options }}</small>{% endif %}</div><div>{{ l.line_total }} Ar</div></div>
+            {% endfor %}
+            <div style="display:flex;justify-content:space-between;margin-top:.6rem;"><span>{% trans "Sous-total" %}</span><span>{{ cart_summary.subtotal }} Ar</span></div>
+            <div style="display:flex;justify-content:space-between;" class="rs-muted" id="rs-fee-row"><span>{% trans "Livraison" %}</span><span>{{ restaurant.formatted_delivery_fee }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;margin-top:.3rem;"><span>{% trans "Total" %}</span><span id="rs-total">{{ cart_summary.total }} Ar</span></div>
+            <p class="rs-muted" style="margin:.4rem 0 0;">⏱ {% trans "Délai estimé" %} : ~{{ restaurant.avg_prep_minutes }} min {% trans "de préparation" %}</p>
+            <button class="rs-btn" type="submit" style="width:100%;margin-top:1rem;">{% trans "Envoyer la commande" %} 🍽️</button>
+        </div>
+    </form>
+</div>
+
+<script>
+(function(){
+  const SUB = {{ cart_summary.subtotal }}, FEE = {{ restaurant.delivery_fee|floatformat:0 }};
+  const latEl = document.getElementById('id_delivery_latitude'), lngEl = document.getElementById('id_delivery_longitude');
+  const RESTO = [{{ restaurant.latitude|default_if_none:'null' }}, {{ restaurant.longitude|default_if_none:'null' }}];
+  function modeChanged(){
+    const m = document.querySelector('input[name="mode"]:checked')?.value || 'delivery';
+    document.getElementById('rs-delivery-block').style.display = m === 'delivery' ? '' : 'none';
+    document.getElementById('rs-fee-row').style.display = m === 'delivery' ? '' : 'none';
+    document.getElementById('rs-total').textContent = (m === 'delivery' ? SUB + FEE : SUB) + ' Ar';
+    if(m === 'delivery' && map) setTimeout(() => map.invalidateSize(), 50);
+  }
+  document.querySelectorAll('input[name="mode"]').forEach(i => i.addEventListener('change', modeChanged));
+
+  let map = null, marker = null;
+  if(window.L){
+    const start = (latEl.value && lngEl.value) ? [parseFloat(latEl.value), parseFloat(lngEl.value)]
+                : (RESTO[0] !== null ? RESTO : [-18.8792, 47.5079]);   // Antananarivo par défaut
+    map = L.map('rs-pickmap').setView(start, 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '© OpenStreetMap'}).addTo(map);
+    if(RESTO[0] !== null) L.marker(RESTO, {opacity:.7}).addTo(map).bindTooltip('{{ restaurant.name|escapejs }}');
+    function setPoint(ll){
+      if(marker) marker.setLatLng(ll); else marker = L.marker(ll, {draggable:true}).addTo(map).on('dragend', e => setPoint(e.target.getLatLng()));
+      latEl.value = ll.lat.toFixed(6); lngEl.value = ll.lng.toFixed(6);
+    }
+    if(latEl.value && lngEl.value) setPoint(L.latLng(start));
+    map.on('click', e => setPoint(e.latlng));
+    window.rsLocate = () => navigator.geolocation?.getCurrentPosition(p => { const ll = L.latLng(p.coords.latitude, p.coords.longitude); map.setView(ll, 16); setPoint(ll); },
+                                                                      () => alert('{% trans "Position indisponible" %}'), {enableHighAccuracy:true, timeout:8000});
+  } else { window.rsLocate = () => {}; }
+  modeChanged();
+})();
+</script>
+{% endblock %}

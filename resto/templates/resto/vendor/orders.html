@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Commandes" %} — {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<div class="rs-wrap" style="max-width:860px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0 .4rem;">
+        <h1 style="font-size:1.4rem;font-weight:800;margin:0;">📋 {% trans "Commandes" %} · {{ restaurant.name }}</h1>
+        <div style="display:flex;gap:.4rem;align-items:center;">
+            <span class="rs-badge {% if restaurant.is_open %}open{% else %}closed{% endif %}">{% if restaurant.is_open %}{% trans "Ouvert" %}{% else %}{% trans "Fermé" %}{% endif %}</span>
+            <a class="rs-btn sm secondary" href="{% url 'resto:vendor_dashboard' %}">← {% trans "Mes restaurants" %}</a>
+        </div>
+    </div>
+    <div class="rs-tabs">
+        <a href="?tab=pending" class="{% if tab == 'pending' %}active{% endif %}">🆕 {% trans "Nouvelles" %} {% if pending_count %}({{ pending_count }}){% endif %}</a>
+        <a href="?tab=active" class="{% if tab == 'active' %}active{% endif %}">🔥 {% trans "En cours" %}</a>
+        <a href="?tab=done" class="{% if tab == 'done' %}active{% endif %}">✅ {% trans "Terminées" %}</a>
+    </div>
+    <p class="rs-muted" id="rs-refresh-hint" style="margin:0 0 .6rem;font-size:.78rem;">🔄 {% trans "Cette page se rafraîchit automatiquement à chaque nouvelle commande." %}</p>
+
+    {% for o in orders %}
+    <div class="rs-card" style="padding:.9rem;margin-bottom:.7rem;{% if o.status == 'pending' %}border-color:var(--accent);{% endif %}">
+        <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;align-items:center;">
+            <div>
+                <a href="{% url 'resto:order' o.number %}" style="font-weight:800;color:var(--accent);">{{ o.number }}</a>
+                <span class="rs-badge {% if o.status == 'pending' %}pending{% elif o.is_cancelled %}ko{% elif o.status == 'delivered' %}ok{% else %}status{% endif %}">{{ o.get_status_display }}</span>
+                <span class="rs-muted"> · {{ o.created_at|date:"d/m H:i" }} · {% if o.is_delivery %}🛵 {% trans "Livraison" %}{% else %}🏪 {% trans "Retrait" %}{% endif %} · {{ o.get_payment_method_display }}</span>
+            </div>
+            <strong class="rs-price">{{ o.formatted_total }}</strong>
+        </div>
+        <div style="font-size:.88rem;margin:.4rem 0;">
+            {% for l in o.items.all %}<div>{{ l.quantity }} × <strong>{{ l.name }}</strong>{% if l.options.all %} <span class="rs-muted">({{ l.options_label }})</span>{% endif %}{% if l.note %} <span class="rs-muted">📝 {{ l.note }}</span>{% endif %}</div>{% endfor %}
+            {% if o.note %}<div class="rs-muted">💬 {{ o.note }}</div>{% endif %}
+        </div>
+        <div class="rs-muted" style="font-size:.85rem;">
+            👤 {{ o.customer_name }} · 📞 <a href="tel:{{ o.customer_phone }}">{{ o.customer_phone }}</a>
+            {% if o.is_delivery %} · 🏠 {{ o.delivery_address }}{% endif %}
+            {% if o.courier %} · 🛵 {{ o.courier.display_name }} ({{ o.courier.phone }}){% elif o.status == 'ready' and o.is_delivery %} · ⏳ {% trans "en attente d'un livreur" %}{% endif %}
+        </div>
+        {% if o.next_steps %}
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem;">
+            {% for code, label in o.next_steps %}
+            <form method="post" action="{% url 'resto:order_set_status' o.number %}" style="display:flex;gap:.3rem;align-items:center;">{% csrf_token %}
+                <input type="hidden" name="status" value="{{ code }}"><input type="hidden" name="next" value="{% url 'resto:vendor_orders' restaurant.slug %}?tab={{ tab }}">
+                {% if code == 'accepted' %}<input class="form-control" name="estimated_minutes" type="number" min="5" max="240" value="{{ o.estimated_minutes|default:30 }}" style="width:80px;padding:.3rem;" title="{% trans 'Délai (min)' %}">{% endif %}
+                {% if code == 'refused' %}<input class="form-control" name="note" placeholder="{% trans 'Motif' %}" style="width:140px;padding:.3rem;">{% endif %}
+                <button class="rs-btn sm {% if code == 'refused' %}danger{% elif code == 'accepted' or code == 'delivered' %}{% else %}secondary{% endif %}" type="submit">{{ label }}</button>
+            </form>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="rs-empty"><div class="ico">📭</div><p>{% trans "Aucune commande dans cet onglet." %}</p></div>
+    {% endfor %}
+</div>
+
+<script>
+(function(){
+  // Rafraîchit la page quand le nombre de commandes nouvelles / en cours change (toutes les 10 s)
+  let snap = null;
+  async function tick(){
+    try{
+      const r = await fetch(`{% url 'resto:vendor_orders' restaurant.slug %}?json=1`, {credentials:'same-origin', cache:'no-store'});
+      if(r.ok){ const d = await r.json(); const key = d.pending + '|' + d.active + '|' + d.latest.map(x => x.number + x.status).join(',');
+        if(snap !== null && key !== snap){ if(d.pending > 0 && navigator.vibrate) navigator.vibrate([150,80,150]); window.location.reload(); return; }
+        snap = key; }
+    }catch(e){}
+    setTimeout(tick, 10000);
+  }
+  setTimeout(tick, 3000);
+})();
+</script>
+{% endblock %}

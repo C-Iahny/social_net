@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Livreurs" %} — {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<div class="rs-wrap" style="max-width:760px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0 1rem;">
+        <h1 style="font-size:1.4rem;font-weight:800;margin:0;">🛵 {% trans "Livreurs" %} · {{ restaurant.name }}</h1>
+        <a class="rs-btn sm secondary" href="{% url 'resto:vendor_dashboard' %}">← {% trans "Mes restaurants" %}</a>
+    </div>
+
+    <div class="rs-card rs-form" style="padding:1rem;margin-bottom:1rem;">
+        <p style="margin:0 0 .5rem;">{% trans "Ajoutez vos livreurs par leur nom d'utilisateur Vazimba. Ils recevront vos commandes prêtes et partageront leur position avec le client." %}</p>
+        <form method="post" style="display:flex;gap:.4rem;flex-wrap:wrap;">{% csrf_token %}
+            <input class="form-control" name="username" placeholder="{% trans "Nom d'utilisateur" %}" required style="flex:1;min-width:200px;">
+            <button class="rs-btn" type="submit">+ {% trans "Ajouter" %}</button>
+        </form>
+    </div>
+
+    <div class="rs-card">
+        {% for c in couriers %}
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.8rem;{% if not forloop.first %}border-top:1px solid var(--border);{% endif %}">
+            <div>
+                <strong>{{ c.display_name }}</strong>
+                <span class="rs-badge {% if c.is_available %}open{% else %}closed{% endif %}">{% if c.is_available %}{% trans "Disponible" %}{% else %}{% trans "Indisponible" %}{% endif %}</span>
+                <div class="rs-muted">{{ c.get_vehicle_display }} · 📞 {{ c.phone|default:"—" }}{% if c.position_updated_at %} · 📍 {{ c.position_updated_at|date:"d/m H:i" }}{% endif %}</div>
+            </div>
+            <form method="post" onsubmit="return confirm('{% trans "Retirer ce livreur ?" %}')">{% csrf_token %}<input type="hidden" name="remove" value="{{ c.pk }}"><button class="rs-btn sm ghost" type="submit">✕</button></form>
+        </div>
+        {% empty %}
+        <p class="rs-muted" style="padding:1rem;margin:0;">{% trans "Aucun livreur rattaché. Sans livreur, vos commandes « prêtes » sont proposées aux livreurs indépendants de votre région." %}</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

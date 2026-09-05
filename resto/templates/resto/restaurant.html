@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{{ restaurant.name }} — {% trans "Resto" %} Vazimba{% endblock %}
+{% block meta_description %}{{ restaurant.description|default:restaurant.name|truncatechars:150 }}{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<style>
+.rs-rhead { position: relative; height: 200px; background: linear-gradient(135deg,#5c2a08,#A0522D); }
+.rs-rhead img { width: 100%; height: 100%; object-fit: cover; }
+.rs-rinfo { max-width: 1100px; margin: -40px auto 0; padding: 0 1rem; position: relative; }
+.rs-rinfo .rs-card { padding: 1rem; display: flex; gap: 1rem; align-items: flex-start; }
+.rs-rlogo { width: 72px; height: 72px; border-radius: 14px; background: var(--btn-bg); object-fit: cover; flex: none;
+            display: flex; align-items: center; justify-content: center; font-size: 2rem; overflow: hidden; }
+.rs-rlogo img { width: 100%; height: 100%; object-fit: cover; }
+.rs-menu-nav { display: flex; gap: .4rem; overflow-x: auto; padding: .6rem 0; position: sticky; top: 58px;
+               background: var(--bg); z-index: 80; }
+.rs-menu-nav a { white-space: nowrap; }
+.rs-item { display: flex; gap: .8rem; padding: .8rem; cursor: pointer; align-items: center; }
+.rs-item + .rs-item { border-top: 1px solid var(--border); }
+.rs-item:hover { background: var(--bg-hover); }
+.rs-item-body { flex: 1; min-width: 0; }
+.rs-item-name { font-weight: 700; margin: 0; }
+.rs-item-desc { color: var(--text-muted); font-size: .82rem; margin: .15rem 0 .3rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rs-item-img { width: 84px; height: 84px; border-radius: 10px; object-fit: cover; flex: none; background: var(--btn-bg); }
+.rs-item-add { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff; border: none;
+               display: flex; align-items: center; justify-content: center; flex: none; font-size: 1.3rem; line-height: 1; }
+</style>
+
+<div class="rs-rhead">{% if restaurant.banner %}<img src="{{ restaurant.banner.url }}" alt="">{% endif %}</div>
+<div class="rs-rinfo">
+    <div class="rs-card">
+        <div class="rs-rlogo">{% if restaurant.logo %}<img src="{{ restaurant.logo.url }}" alt="">{% else %}🍲{% endif %}</div>
+        <div style="flex:1;min-width:0;">
+            <h1 style="font-size:1.35rem;font-weight:800;margin:0;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+                {{ restaurant.name }}
+                <span class="rs-badge {% if restaurant.is_open %}open{% else %}closed{% endif %}">{% if restaurant.is_open %}{% trans "Ouvert" %}{% else %}{% trans "Fermé" %}{% endif %}</span>
+                {% if not restaurant.is_approved %}<span class="rs-badge pending">{% trans "En attente de validation" %}</span>{% endif %}
+            </h1>
+            <p class="rs-muted" style="margin:.2rem 0 0;">{{ restaurant.get_category_display }} · 📍 {{ restaurant.address }}{% if restaurant.opening_hours %} · 🕒 {{ restaurant.opening_hours }}{% endif %}</p>
+            {% if restaurant.description %}<p style="margin:.4rem 0 0;font-size:.9rem;">{{ restaurant.description }}</p>{% endif %}
+            <p class="rs-muted" style="margin:.4rem 0 0;">
+                {% if restaurant.offers_delivery %}🛵 {{ restaurant.formatted_delivery_fee }} · {% endif %}
+                {% if restaurant.offers_pickup %}🏪 {% trans "Retrait sur place" %} · {% endif %}
+                ⏱ ~{{ restaurant.avg_prep_minutes }} min
+                {% if restaurant.min_order %} · {% trans "Commande min." %} {{ restaurant.min_order|floatformat:0 }} Ar{% endif %}
+                {% if restaurant.phone %} · 📞 <a href="tel:{{ restaurant.phone }}" style="color:var(--accent);">{{ restaurant.phone }}</a>{% endif %}
+            </p>
+            {% if is_owner %}
+            <div style="margin-top:.6rem;display:flex;gap:.4rem;flex-wrap:wrap;">
+                <a class="rs-btn sm secondary" href="{% url 'resto:menu_manage' restaurant.slug %}">✏️ {% trans "Gérer le menu" %}</a>
+                <a class="rs-btn sm secondary" href="{% url 'resto:vendor_orders' restaurant.slug %}">📋 {% trans "Commandes" %}</a>
+                <a class="rs-btn sm secondary" href="{% url 'resto:restaurant_edit' restaurant.slug %}">⚙️ {% trans "Infos" %}</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="rs-wrap">
+    {% if other_cart %}
+    <div class="rs-card" style="padding:.7rem .9rem;margin:.8rem 0;font-size:.85rem;border-color:var(--accent);">
+        🧺 {% blocktrans with r=other_cart.restaurant.name %}Votre panier contient déjà des plats de <strong>{{ r }}</strong>. Ajouter un plat d'ici le videra.{% endblocktrans %}
+        <a href="{% url 'resto:cart' %}" style="color:var(--accent);font-weight:700;">{% trans "Voir le panier" %}</a>
+    </div>
+    {% endif %}
+
+    {% if sections %}
+    <div class="rs-menu-nav">
+        {% for s in sections %}<a class="rs-chip" href="#sec-{{ forloop.counter }}">{{ s.name }}</a>{% endfor %}
+    </div>
+    {% for s in sections %}
+    <h2 class="rs-section-title" id="sec-{{ forloop.counter }}">{{ s.name }}</h2>
+    <div class="rs-card">
+        {% for it in s.items %}
+        <div class="rs-item" onclick="rsOpenItem({{ it.pk }})">
+            <div class="rs-item-body">
+                <p class="rs-item-name">{{ it.name }}</p>
+                {% if it.description %}<p class="rs-item-desc">{{ it.description }}</p>{% endif %}
+                <span class="rs-price">{{ it.formatted_price }}</span>
+                {% if it.option_groups.all %}<span class="rs-muted" style="font-size:.75rem;"> · {% trans "personnalisable" %}</span>{% endif %}
+            </div>
+            {% if it.image %}<img class="rs-item-img" src="{{ it.image.url }}" alt="{{ it.name }}" loading="lazy">{% endif %}
+            <button class="rs-item-add" type="button" aria-label="{% trans 'Ajouter' %}">+</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="rs-empty"><div class="ico">🍛</div><p>{% trans "Le menu n'est pas encore publié." %}</p></div>
+    {% endif %}
+</div>
+
+<!-- ── Barre panier ── -->
+<a href="{% url 'resto:cart' %}" class="rs-cartbar {% if cart_summary.count %}show{% endif %}" id="rs-cartbar">
+    <span class="material-icons">shopping_basket</span>
+    <span id="rs-cartbar-count">{{ cart_summary.count }} {% trans "article(s)" %}</span>
+    <span id="rs-cartbar-total">{{ cart_summary.total }} Ar</span> →
+</a>
+
+<!-- ── Modale d'options ── -->
+<div class="rs-modal-bg" id="rs-modal-bg" onclick="if(event.target===this)rsCloseItem()">
+    <div class="rs-modal" role="dialog" aria-modal="true">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;">
+            <div><h3 id="rs-m-name"></h3><p class="rs-muted" id="rs-m-desc" style="margin:.2rem 0 0;"></p></div>
+            <button class="rs-btn sm ghost" type="button" onclick="rsCloseItem()">✕</button>
+        </div>
+        <img id="rs-m-img" alt="" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:.6rem;display:none;">
+        <div id="rs-m-groups"></div>
+        <div class="rs-opt-group">
+            <h4>{% trans "Instructions" %} <span class="rs-muted">{% trans "facultatif" %}</span></h4>
+            <input id="rs-m-note" class="form-control" maxlength="200" placeholder="{% trans 'Ex : sans oignons, bien cuit…' %}">
+        </div>
+        <p class="rs-form err" id="rs-m-err" style="margin:.6rem 0 0;"></p>
+        <div style="display:flex;align-items:center;gap:.8rem;margin-top:1rem;">
+            <div class="rs-qty">
+                <button type="button" onclick="rsQty(-1)">−</button><span id="rs-m-qty">1</span><button type="button" onclick="rsQty(1)">+</button>
+            </div>
+            <button class="rs-btn" id="rs-m-add" type="button" style="flex:1;" onclick="rsAdd()">
+                {% trans "Ajouter" %} · <span id="rs-m-total"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function(){
+  const SLUG = "{{ restaurant.slug }}";
+  const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+  const LOGGED = {{ request.user.is_authenticated|yesno:"true,false" }};
+  const CAN_ORDER = {{ restaurant.can_order|yesno:"true,false" }};
+  const I18N = {
+    required: "{% trans 'obligatoire' %}", choose: "{% trans 'choisissez' %}", max: "{% trans 'max' %}",
+    login: "{% trans 'Connectez-vous pour commander.' %}", closed: "{% trans 'Ce restaurant est fermé pour le moment.' %}",
+    replace: "{% trans 'Votre panier contient des plats de' %}", replace2: "{% trans 'Le vider et ajouter ce plat ?' %}",
+    added: "{% trans 'Ajouté au panier' %}", articles: "{% trans 'article(s)' %}",
+  };
+  let item = null, qty = 1;
+  const fmt = n => n.toLocaleString('fr-FR').replace(/ | /g, ' ') + ' Ar';
+
+  window.rsOpenItem = async function(pk){
+    if(!LOGGED){ window.location = "{% url 'login' %}?next=" + encodeURIComponent(window.location.pathname); return; }
+    if(!CAN_ORDER){ alert(I18N.closed); return; }
+    const r = await fetch(`/resto/r/${SLUG}/plat/${pk}/`, {credentials:'same-origin'});
+    if(!r.ok) return;
+    item = await r.json(); qty = 1;
+    document.getElementById('rs-m-name').textContent = item.name;
+    document.getElementById('rs-m-desc').textContent = item.description || '';
+    const img = document.getElementById('rs-m-img');
+    if(item.image){ img.src = item.image; img.style.display='block'; } else { img.style.display='none'; }
+    document.getElementById('rs-m-note').value = '';
+    document.getElementById('rs-m-err').textContent = '';
+    const box = document.getElementById('rs-m-groups'); box.innerHTML = '';
+    item.groups.forEach((g, gi) => {
+      const rule = g.required ? I18N.required : (g.max === 1 ? I18N.choose + ' 1' : (g.max ? I18N.max + ' ' + g.max : ''));
+      let html = `<div class="rs-opt-group"><h4>${esc(g.name)} <span class="rs-muted">${rule}</span></h4>`;
+      g.options.forEach(o => {
+        const type = g.single ? 'radio' : 'checkbox';
+        html += `<label class="rs-opt"><input type="${type}" name="g${gi}" value="${o.id}" data-price="${o.extra_price}" data-g="${gi}">
+                 <span>${esc(o.name)}</span><span class="extra">${o.extra_price ? '+' + fmt(o.extra_price) : ''}</span></label>`;
+      });
+      box.innerHTML += html + '</div>';
+    });
+    box.querySelectorAll('input').forEach(i => i.addEventListener('change', onChange));
+    rsRefresh();
+    document.getElementById('rs-modal-bg').classList.add('show');
+  };
+  function onChange(e){
+    // Limite le nombre de cases cochées par groupe
+    const gi = e.target.dataset.g, g = item.groups[gi];
+    if(!g.single && g.max){
+      const checked = document.querySelectorAll(`input[name="g${gi}"]:checked`);
+      if(checked.length > g.max){ e.target.checked = false; }
+    }
+    rsRefresh();
+  }
+  function rsRefresh(){
+    let extra = 0;
+    document.querySelectorAll('#rs-m-groups input:checked').forEach(i => extra += parseInt(i.dataset.price||0));
+    document.getElementById('rs-m-qty').textContent = qty;
+    document.getElementById('rs-m-total').textContent = fmt((item.price + extra) * qty);
+  }
+  window.rsQty = d => { qty = Math.max(1, Math.min(20, qty + d)); rsRefresh(); };
+  window.rsCloseItem = () => document.getElementById('rs-modal-bg').classList.remove('show');
+
+  window.rsAdd = async function(replace){
+    const err = document.getElementById('rs-m-err'); err.textContent = '';
+    const options = [...document.querySelectorAll('#rs-m-groups input:checked')].map(i => parseInt(i.value));
+    for(const [gi, g] of item.groups.entries()){
+      const n = document.querySelectorAll(`input[name="g${gi}"]:checked`).length;
+      if(n < g.min){ err.textContent = `« ${g.name} » : ${I18N.choose} ${g.min}`; return; }
+    }
+    const btn = document.getElementById('rs-m-add'); btn.disabled = true;
+    const r = await fetch(`/resto/panier/ajouter/${item.id}/`, {
+      method:'POST', credentials:'same-origin',
+      headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
+      body: JSON.stringify({quantity: qty, note: document.getElementById('rs-m-note').value, options, replace: !!replace}),
+    });
+    btn.disabled = false;
+    const data = await r.json().catch(()=>({}));
+    if(r.status === 409){
+      if(confirm(`${I18N.replace} ${data.current_restaurant}. ${I18N.replace2}`)) return rsAdd(true);
+      return;
+    }
+    if(!r.ok){ err.textContent = data.error || 'Erreur'; return; }
+    rsCloseItem();
+    const bar = document.getElementById('rs-cartbar');
+    document.getElementById('rs-cartbar-count').textContent = `${data.cart.count} ${I18N.articles}`;
+    document.getElementById('rs-cartbar-total').textContent = fmt(data.cart.total);
+    bar.classList.add('show');
+    bar.animate([{transform:'translateX(-50%) scale(1.06)'},{transform:'translateX(-50%) scale(1)'}], {duration:220});
+  };
+  function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+})();
+</script>
+{% endblock %}

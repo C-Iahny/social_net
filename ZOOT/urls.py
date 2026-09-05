@@ -53,6 +53,7 @@ urlpatterns = [
     path('legal/',  include('legal.urls', namespace='legal')),
     path('bazar/',    include('bazar.urls', namespace='bazar')),
     path('tourisme/', include('tourisme.urls', namespace='tourisme')),
+    path('resto/',    include('resto.urls', namespace='resto')),
     path('',          include('pwa.urls')),  # /sw.js, /manifest.json, /offline/
 
     path('register/', register_view, name="register"),

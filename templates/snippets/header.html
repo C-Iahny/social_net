@@ -855,6 +855,13 @@
             <span>{% trans "Bazar" %}</span>
         </a>
 
+        <!-- Resto (commande & livraison de repas) -->
+        <a href="{% url 'resto:index' %}"
+           class="zoot-nav-link {% if request.resolver_match.namespace == 'resto' %}active{% endif %}">
+            <span class="material-icons">restaurant</span>
+            <span>{% trans "Resto" %}</span>
+        </a>
+
         {% if not request.user.is_authenticated %}
         <!-- Visiteur non connecté : on n'affiche que les sections réellement
              accessibles sans compte. Auparavant la barre proposait Feed,
@@ -1235,6 +1242,9 @@
     <a href="{% url 'bazar:index' %}" class="zoot-mobile-link">
         <span class="material-icons">storefront</span> Bazar
     </a>
+    <a href="{% url 'resto:index' %}" class="zoot-mobile-link">
+        <span class="material-icons">restaurant</span> Resto
+    </a>
 
     <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
     <p style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.2rem .8rem 0;margin:0;">{% trans "Découvrir" %}</p>
@@ -1280,6 +1290,9 @@
 <div class="zoot-mobile-menu" id="zoot-mobile-menu">
     <a href="{% url 'bazar:index' %}" class="zoot-mobile-link">
         <span class="material-icons">storefront</span> Bazar
+    </a>
+    <a href="{% url 'resto:index' %}" class="zoot-mobile-link">
+        <span class="material-icons">restaurant</span> Resto
     </a>
     <a href="{% url 'tourisme:home' %}" class="zoot-mobile-link">
         <span class="material-icons">map</span> {% trans "Tourisme" %}

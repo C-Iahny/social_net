@@ -1722,3 +1722,838 @@ msgstr "Enter your current password and choose a new one"
 msgid "Old password"
 msgstr "Old password"
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Mon panier"
+msgstr "My basket"
+
+msgid "Ajouter d'autres plats"
+msgstr "Add more dishes"
+
+msgid "Sous-total"
+msgstr "Subtotal"
+
+msgid "Livraison (si livraison)"
+msgstr "Delivery (if delivered)"
+
+msgid "Commander"
+msgstr "Order"
+
+msgid "Vider le panier ?"
+msgstr "Empty the basket?"
+
+msgid "Vider"
+msgstr "Empty"
+
+msgid "Votre panier est vide."
+msgstr "Your basket is empty."
+
+msgid "Voir les restaurants"
+msgstr "See restaurants"
+
+msgid "Commande minimum : %(m)s Ar"
+msgstr "Minimum order: %(m)s Ar"
+
+msgid "Finaliser la commande"
+msgstr "Complete your order"
+
+msgid "Comment recevoir la commande ?"
+msgstr "How would you like to receive it?"
+
+msgid "Votre nom"
+msgstr "Your name"
+
+msgid "Téléphone (le livreur vous appellera)"
+msgstr "Phone (the courier will call you)"
+
+msgid "Adresse de livraison"
+msgstr "Delivery address"
+
+msgid "Placez le repère sur la carte pour guider le livreur (touchez la carte ou utilisez « Ma position »)."
+msgstr "Drop the pin on the map to guide the courier (tap the map or use \"My location\")."
+
+msgid "Ma position"
+msgstr "My location"
+
+msgid "Paiement"
+msgstr "Payment"
+
+msgid "Le paiement se fait directement avec le restaurant ou le livreur. Vazimba ne prélève rien."
+msgstr "You pay the restaurant or the courier directly. Vazimba takes nothing."
+
+msgid "Message au restaurant"
+msgstr "Message to the restaurant"
+
+msgid "Livraison"
+msgstr "Delivery"
+
+msgid "Délai estimé"
+msgstr "Estimated time"
+
+msgid "de préparation"
+msgstr "preparation"
+
+msgid "Envoyer la commande"
+msgstr "Send the order"
+
+msgid "Resto"
+msgstr "Food"
+
+msgid "Commandez vos plats préférés près de chez vous et suivez la livraison en direct, sans publicité."
+msgstr "Order your favourite dishes nearby and track the delivery live, with no ads."
+
+msgid "Resto Vazimba"
+msgstr "Vazimba Food"
+
+msgid "Commande ton plat, choisis tes suppléments, suis ton livreur sur la carte."
+msgstr "Order your dish, pick your extras, follow your courier on the map."
+
+msgid "Un plat, un restaurant, un quartier…"
+msgstr "A dish, a restaurant, a neighbourhood…"
+
+msgid "Mes commandes"
+msgstr "My orders"
+
+msgid "Mon restaurant"
+msgstr "My restaurant"
+
+msgid "Vendre mes plats"
+msgstr "Sell my dishes"
+
+msgid "Espace livreur"
+msgstr "Courier area"
+
+msgid "Connexion pour commander"
+msgstr "Log in to order"
+
+msgid "Ouverts d'abord"
+msgstr "Open first"
+
+msgid "Populaires"
+msgstr "Popular"
+
+msgid "Nouveaux"
+msgstr "New"
+
+msgid "Livraison la moins chère"
+msgstr "Cheapest delivery"
+
+msgid "Ouvert"
+msgstr "Open"
+
+msgid "Fermé"
+msgstr "Closed"
+
+msgid "Aucun restaurant pour l'instant"
+msgstr "No restaurant yet"
+
+msgid "Sois le premier : crée ta page, ajoute ton menu, et tes clients te retrouveront ici au lieu de chercher ta page Facebook."
+msgstr "Be the first: create your page, add your menu, and your customers will find you here instead of hunting for your Facebook page."
+
+msgid "Créer mon restaurant"
+msgstr "Create my restaurant"
+
+msgid "article"
+msgstr "item"
+
+msgid "En cours"
+msgstr "In progress"
+
+msgid "article(s)"
+msgstr "item(s)"
+
+msgid "Aucune commande en cours."
+msgstr "No order in progress."
+
+msgid "Terminées"
+msgstr "Completed"
+
+msgid "Commande"
+msgstr "Order"
+
+msgid "Délai annoncé"
+msgstr "Announced time"
+
+msgid "Livraison chez"
+msgstr "Deliver to"
+
+msgid "Livreur"
+msgstr "Courier"
+
+msgid "Pas encore attribué"
+msgstr "Not assigned yet"
+
+msgid "Retrait sur place par"
+msgstr "Pickup by"
+
+msgid "Votre commande"
+msgstr "Your order"
+
+msgid "Espace restaurant"
+msgstr "Restaurant area"
+
+msgid "Annuler cette commande ?"
+msgstr "Cancel this order?"
+
+msgid "Annuler la commande"
+msgstr "Cancel the order"
+
+msgid "Délai (min)"
+msgstr "Time (min)"
+
+msgid "Motif"
+msgstr "Reason"
+
+msgid "Détail"
+msgstr "Details"
+
+msgid "Historique"
+msgstr "History"
+
+msgid "Retour"
+msgstr "Back"
+
+msgid "Position du livreur mise à jour à"
+msgstr "Courier location updated at"
+
+msgid "La position du livreur apparaîtra ici dès qu'il partagera son GPS."
+msgstr "The courier's location will appear here as soon as they share their GPS."
+
+msgid "En attente de validation"
+msgstr "Awaiting approval"
+
+msgid "Retrait sur place"
+msgstr "Pickup"
+
+msgid "Commande min."
+msgstr "Min. order"
+
+msgid "Gérer le menu"
+msgstr "Manage the menu"
+
+msgid "Commandes"
+msgstr "Orders"
+
+msgid "Voir le panier"
+msgstr "View basket"
+
+msgid "personnalisable"
+msgstr "customisable"
+
+msgid "Ajouter"
+msgstr "Add"
+
+msgid "Le menu n'est pas encore publié."
+msgstr "The menu is not published yet."
+
+msgid "facultatif"
+msgstr "optional"
+
+msgid "Ex : sans oignons, bien cuit…"
+msgstr "E.g. no onions, well done…"
+
+msgid "obligatoire"
+msgstr "required"
+
+msgid "choisissez"
+msgstr "choose"
+
+msgid "Connectez-vous pour commander."
+msgstr "Log in to order."
+
+msgid "Ce restaurant est fermé pour le moment."
+msgstr "This restaurant is closed right now."
+
+msgid "Votre panier contient des plats de"
+msgstr "Your basket has dishes from"
+
+msgid "Le vider et ajouter ce plat ?"
+msgstr "Empty it and add this dish?"
+
+msgid "Ajouté au panier"
+msgstr "Added to basket"
+
+msgid "Votre panier contient déjà des plats de <strong>%(r)s</strong>. Ajouter un plat d'ici le videra."
+msgstr "Your basket already has dishes from <strong>%(r)s</strong>. Adding a dish from here will empty it."
+
+msgid "Mon profil"
+msgstr "My profile"
+
+msgid "Indépendant"
+msgstr "Independent"
+
+msgid "GPS inactif"
+msgstr "GPS off"
+
+msgid "Me mettre indisponible"
+msgstr "Set me unavailable"
+
+msgid "Je suis disponible"
+msgstr "I am available"
+
+msgid "Mes livraisons en cours"
+msgstr "My deliveries in progress"
+
+msgid "Itinéraire"
+msgstr "Directions"
+
+msgid "Aucune livraison en cours."
+msgstr "No delivery in progress."
+
+msgid "Commandes prêtes à récupérer"
+msgstr "Orders ready for pickup"
+
+msgid "Je prends cette livraison"
+msgstr "I take this delivery"
+
+msgid "Rien à récupérer pour le moment. La page se rafraîchit toute seule."
+msgstr "Nothing to pick up right now. This page refreshes by itself."
+
+msgid "Votre profil doit être validé pour voir les commandes."
+msgstr "Your profile must be approved to see orders."
+
+msgid "Dernières livraisons"
+msgstr "Latest deliveries"
+
+msgid "GPS partagé"
+msgstr "GPS shared"
+
+msgid "GPS refusé ou indisponible"
+msgstr "GPS denied or unavailable"
+
+msgid "Devenir livreur"
+msgstr "Become a courier"
+
+msgid "Mon profil livreur"
+msgstr "My courier profile"
+
+msgid "Un restaurant peut vous rattacher directement (vous êtes alors validé aussitôt). Les livreurs indépendants sont validés par l'équipe Vazimba."
+msgstr "A restaurant can attach you directly (you are then approved at once). Independent couriers are approved by the Vazimba team."
+
+msgid "Livreurs"
+msgstr "Couriers"
+
+msgid "Mes restaurants"
+msgstr "My restaurants"
+
+msgid "Ajoutez vos livreurs par leur nom d'utilisateur Vazimba. Ils recevront vos commandes prêtes et partageront leur position avec le client."
+msgstr "Add your couriers by their Vazimba username. They will receive your ready orders and share their location with the customer."
+
+msgid "Nom d'utilisateur"
+msgstr "Username"
+
+msgid "Disponible"
+msgstr "Available"
+
+msgid "Indisponible"
+msgstr "Unavailable"
+
+msgid "Retirer ce livreur ?"
+msgstr "Remove this courier?"
+
+msgid "Aucun livreur rattaché. Sans livreur, vos commandes « prêtes » sont proposées aux livreurs indépendants de votre région."
+msgstr "No courier attached. Without a courier, your \"ready\" orders are offered to independent couriers in your region."
+
+msgid "Espace vendeur"
+msgstr "Vendor area"
+
+msgid "Nouveau restaurant"
+msgstr "New restaurant"
+
+msgid "En attente de validation Vazimba"
+msgstr "Awaiting Vazimba approval"
+
+msgid "plat(s)"
+msgstr "dish(es)"
+
+msgid "Suspendre les commandes"
+msgstr "Pause orders"
+
+msgid "Ouvrir les commandes"
+msgstr "Open orders"
+
+msgid "nouvelle(s)"
+msgstr "new"
+
+msgid "Voir la page"
+msgstr "View page"
+
+msgid "Vendez vos plats sur Vazimba"
+msgstr "Sell your dishes on Vazimba"
+
+msgid "Créez votre page, ajoutez votre menu avec les suppléments au choix, recevez les commandes et confiez-les à vos livreurs. Vos clients vous retrouvent en un clic, sans chercher votre page Facebook."
+msgstr "Create your page, add your menu with optional extras, receive orders and hand them to your couriers. Customers find you in one tap, without hunting for your Facebook page."
+
+msgid "Aperçu"
+msgstr "Preview"
+
+msgid "Rubriques"
+msgstr "Sections"
+
+msgid "Entrées, Plats, Boissons…"
+msgstr "Starters, Mains, Drinks…"
+
+msgid "Supprimer cette rubrique ?"
+msgstr "Delete this section?"
+
+msgid "Plats"
+msgstr "Dishes"
+
+msgid "groupe(s) d'options"
+msgstr "option group(s)"
+
+msgid "Supprimer ce plat ?"
+msgstr "Delete this dish?"
+
+msgid "Aucun plat. Ajoutez votre premier plat ci-dessous."
+msgstr "No dish yet. Add your first dish below."
+
+msgid "Ajouter un plat"
+msgstr "Add a dish"
+
+msgid "Nom"
+msgstr "Name"
+
+msgid "Prix (Ar)"
+msgstr "Price (Ar)"
+
+msgid "Rubrique"
+msgstr "Section"
+
+msgid "Ordre"
+msgstr "Order"
+
+msgid "Enregistrer le plat"
+msgstr "Save the dish"
+
+msgid "Comme sur Uber Eats : un groupe = une question posée au client (« Sauce ? », « Suppléments ? »). Minimum 1 = choix obligatoire. Maximum 1 = un seul choix, 0 = illimité."
+msgstr "Like Uber Eats: one group = one question asked to the customer (\"Sauce?\", \"Extras?\"). Minimum 1 = required choice. Maximum 1 = single choice, 0 = unlimited."
+
+msgid "Ajouter un groupe"
+msgstr "Add a group"
+
+msgid "Enregistrer les options"
+msgstr "Save options"
+
+msgid "Titre du groupe (ex : Sauce, Suppléments)"
+msgstr "Group title (e.g. Sauce, Extras)"
+
+msgid "Option (ex : Fromage)"
+msgstr "Option (e.g. Cheese)"
+
+msgid "Suppl. Ar"
+msgstr "Extra Ar"
+
+msgid "Supprimer le groupe"
+msgstr "Delete group"
+
+msgid "Options enregistrées"
+msgstr "Options saved"
+
+msgid "Modifier le plat"
+msgstr "Edit dish"
+
+msgid "Nouvelles"
+msgstr "New"
+
+msgid "Cette page se rafraîchit automatiquement à chaque nouvelle commande."
+msgstr "This page refreshes automatically on every new order."
+
+msgid "Retrait"
+msgstr "Pickup"
+
+msgid "en attente d'un livreur"
+msgstr "waiting for a courier"
+
+msgid "Aucune commande dans cet onglet."
+msgstr "No order in this tab."
+
+msgid "Position sur la carte"
+msgstr "Location on the map"
+
+msgid "Touchez la carte pour placer votre restaurant : les livreurs et les clients le verront sur le plan de livraison."
+msgstr "Tap the map to place your restaurant: couriers and customers will see it on the delivery map."
+
+msgid "Créer et passer au menu"
+msgstr "Create and go to the menu"
+
+msgid "Après création, votre page reste invisible au public jusqu'à validation par l'équipe Vazimba. Vous pouvez déjà préparer votre menu."
+msgstr "After creation your page stays hidden until the Vazimba team approves it. You can already prepare your menu."
+
+msgid "Ex : Hotely Mamy, Pizza Tana…"
+msgstr "E.g. Hotely Mamy, Pizza Tana…"
+
+msgid "Spécialités, ambiance, ce qui vous distingue"
+msgstr "Specialities, atmosphere, what makes you different"
+
+msgid "Quartier, rue, repère"
+msgstr "Neighbourhood, street, landmark"
+
+msgid "Ex : Lun–Sam 10h–22h"
+msgstr "E.g. Mon–Sat 10am–10pm"
+
+msgid "Activez au moins la livraison ou le retrait sur place."
+msgstr "Enable at least delivery or pickup."
+
+msgid "Le montant ne peut pas être négatif."
+msgstr "The amount cannot be negative."
+
+msgid "Ex : Plats, Boissons, Desserts"
+msgstr "E.g. Mains, Drinks, Desserts"
+
+msgid "Ex : Ravitoto sy henakisoa"
+msgstr "E.g. Ravitoto sy henakisoa"
+
+msgid "Ingrédients, portion, accompagnement"
+msgstr "Ingredients, portion, side"
+
+msgid "Le prix ne peut pas être négatif."
+msgstr "The price cannot be negative."
+
+msgid "Quartier, rue, porte, repère pour le livreur"
+msgstr "Neighbourhood, street, door, landmark for the courier"
+
+msgid "Message au restaurant (facultatif)"
+msgstr "Message to the restaurant (optional)"
+
+msgid "Indiquez où livrer."
+msgstr "Tell us where to deliver."
+
+msgid "Fast-food & Snack"
+msgstr "Fast food & Snacks"
+
+msgid "Pâtisserie & Boulangerie"
+msgstr "Pastry & Bakery"
+
+msgid "Boissons & Jus"
+msgstr "Drinks & Juices"
+
+msgid "Traiteur & Plats maison"
+msgstr "Catering & Home cooking"
+
+msgid "Épicerie & Courses"
+msgstr "Grocery & Shopping"
+
+msgid "Autre"
+msgstr "Other"
+
+msgid "Propriétaire"
+msgstr "Owner"
+
+msgid "Bannière"
+msgstr "Banner"
+
+msgid "Téléphone / WhatsApp"
+msgstr "Phone / WhatsApp"
+
+msgid "Adresse"
+msgstr "Address"
+
+msgid "Quartier, rue, repère (ex: Analakely, en face de la pharmacie)"
+msgstr "Neighbourhood, street, landmark (e.g. Analakely, opposite the pharmacy)"
+
+msgid "Région"
+msgstr "Region"
+
+msgid "Horaires"
+msgstr "Opening hours"
+
+msgid "Ouvert (accepte les commandes)"
+msgstr "Open (accepting orders)"
+
+msgid "Décochez pour suspendre temporairement les commandes."
+msgstr "Untick to pause orders temporarily."
+
+msgid "Propose la livraison"
+msgstr "Offers delivery"
+
+msgid "Propose le retrait sur place"
+msgstr "Offers pickup"
+
+msgid "Frais de livraison (Ar)"
+msgstr "Delivery fee (Ar)"
+
+msgid "Commande minimum (Ar)"
+msgstr "Minimum order (Ar)"
+
+msgid "Temps de préparation moyen (min)"
+msgstr "Average preparation time (min)"
+
+msgid "Approuvé par Vazimba"
+msgstr "Approved by Vazimba"
+
+msgid "Actif"
+msgstr "Active"
+
+msgid "Livraison gratuite"
+msgstr "Free delivery"
+
+msgid "Nom de la rubrique"
+msgstr "Section name"
+
+msgid "Rubrique de menu"
+msgstr "Menu section"
+
+msgid "Rubriques de menu"
+msgstr "Menu sections"
+
+msgid "Nom du plat"
+msgstr "Dish name"
+
+msgid "Ingrédients, portion, accompagnement…"
+msgstr "Ingredients, portion, side…"
+
+msgid "Plat"
+msgstr "Dish"
+
+msgid "Titre du groupe"
+msgstr "Group title"
+
+msgid "Ex : Sauce, Cuisson, Suppléments, Boisson"
+msgstr "E.g. Sauce, Cooking, Extras, Drink"
+
+msgid "Choix minimum"
+msgstr "Minimum choices"
+
+msgid "0 = facultatif, 1 = au moins un choix obligatoire"
+msgstr "0 = optional, 1 = at least one choice required"
+
+msgid "Choix maximum"
+msgstr "Maximum choices"
+
+msgid "1 = un seul choix (boutons ronds), >1 = plusieurs cases à cocher, 0 = illimité"
+msgstr "1 = single choice (radio buttons), >1 = several checkboxes, 0 = unlimited"
+
+msgid "Groupe d'options"
+msgstr "Option group"
+
+msgid "Groupes d'options"
+msgstr "Option groups"
+
+msgid "Groupe"
+msgstr "Group"
+
+msgid "Supplément (Ar)"
+msgstr "Extra (Ar)"
+
+msgid "Moto / Scooter"
+msgstr "Motorbike / Scooter"
+
+msgid "Vélo"
+msgstr "Bicycle"
+
+msgid "Voiture"
+msgstr "Car"
+
+msgid "À pied"
+msgstr "On foot"
+
+msgid "Utilisateur"
+msgstr "User"
+
+msgid "Restaurant de rattachement"
+msgstr "Attached restaurant"
+
+msgid "Vide = livreur indépendant"
+msgstr "Empty = independent courier"
+
+msgid "Téléphone"
+msgstr "Phone"
+
+msgid "Véhicule"
+msgstr "Vehicle"
+
+msgid "Panier"
+msgstr "Basket"
+
+msgid "Paniers"
+msgstr "Baskets"
+
+msgid "Ex : sans oignons, bien cuit"
+msgstr "E.g. no onions, well done"
+
+msgid "En attente du restaurant"
+msgstr "Waiting for the restaurant"
+
+msgid "Acceptée"
+msgstr "Accepted"
+
+msgid "En préparation"
+msgstr "Being prepared"
+
+msgid "Prête"
+msgstr "Ready"
+
+msgid "Récupérée par le livreur"
+msgstr "Picked up by the courier"
+
+msgid "En cours de livraison"
+msgstr "Out for delivery"
+
+msgid "Livrée"
+msgstr "Delivered"
+
+msgid "Annulée"
+msgstr "Cancelled"
+
+msgid "Refusée"
+msgstr "Refused"
+
+msgid "Espèces à la livraison"
+msgstr "Cash on delivery"
+
+msgid "N° de commande"
+msgstr "Order no."
+
+msgid "Client"
+msgstr "Customer"
+
+msgid "Statut"
+msgstr "Status"
+
+msgid "Nom du client"
+msgstr "Customer name"
+
+msgid "Téléphone du client"
+msgstr "Customer phone"
+
+msgid "Délai annoncé (min)"
+msgstr "Announced time (min)"
+
+msgid "Gratuite"
+msgstr "Free"
+
+msgid "Événement de commande"
+msgstr "Order event"
+
+msgid "Événements de commande"
+msgstr "Order events"
+
+msgid "Ce restaurant n'accepte pas de commande pour le moment."
+msgstr "This restaurant is not taking orders right now."
+
+msgid "« %(g)s » : choisissez au moins %(n)d option(s)."
+msgstr "\"%(g)s\": choose at least %(n)d option(s)."
+
+msgid "« %(g)s » : %(n)d choix maximum."
+msgstr "\"%(g)s\": %(n)d choice(s) maximum."
+
+msgid "%(r)s n'accepte pas de commande pour le moment."
+msgstr "%(r)s is not taking orders right now."
+
+msgid "Commande minimum : %(m)s Ar."
+msgstr "Minimum order: %(m)s Ar."
+
+msgid "Nouvelle commande %(n)s chez %(r)s (%(t)s)"
+msgstr "New order %(n)s at %(r)s (%(t)s)"
+
+msgid "🍽️ Nouvelle commande"
+msgstr "🍽️ New order"
+
+msgid "Commande %(n)s envoyée ! Le restaurant va la confirmer."
+msgstr "Order %(n)s sent! The restaurant will confirm it."
+
+msgid "Cette commande ne peut plus être annulée."
+msgstr "This order can no longer be cancelled."
+
+msgid "Annulée par le client"
+msgstr "Cancelled by the customer"
+
+msgid "Commande %(n)s annulée par le client"
+msgstr "Order %(n)s cancelled by the customer"
+
+msgid "Commande annulée."
+msgstr "Order cancelled."
+
+msgid "Transition non autorisée."
+msgstr "Transition not allowed."
+
+msgid "Commande %(n)s : %(s)s"
+msgstr "Order %(n)s: %(s)s"
+
+msgid "Commande %(n)s prête à récupérer chez %(r)s"
+msgstr "Order %(n)s ready for pickup at %(r)s"
+
+msgid "🛵 Livraison disponible"
+msgstr "🛵 Delivery available"
+
+msgid "Commande %(n)s → %(s)s"
+msgstr "Order %(n)s → %(s)s"
+
+msgid "Restaurant créé. Ajoutez votre menu, puis Vazimba validera votre page."
+msgstr "Restaurant created. Add your menu, then Vazimba will approve your page."
+
+msgid "Restaurant mis à jour."
+msgstr "Restaurant updated."
+
+msgid "Restaurant ouvert aux commandes."
+msgstr "Restaurant open for orders."
+
+msgid "Commandes suspendues."
+msgstr "Orders paused."
+
+msgid "Rubrique supprimée (les plats sont conservés)."
+msgstr "Section deleted (dishes are kept)."
+
+msgid "Rubrique enregistrée."
+msgstr "Section saved."
+
+msgid "Nom de rubrique invalide."
+msgstr "Invalid section name."
+
+msgid "Plat enregistré : %(n)s"
+msgstr "Dish saved: %(n)s"
+
+msgid "Formulaire invalide : "
+msgstr "Invalid form: "
+
+msgid "Plat supprimé."
+msgstr "Dish deleted."
+
+msgid "Données invalides."
+msgstr "Invalid data."
+
+msgid "Livreur retiré."
+msgstr "Courier removed."
+
+msgid "Utilisateur introuvable : %(u)s"
+msgstr "User not found: %(u)s"
+
+msgid "%(r)s vous a ajouté comme livreur"
+msgstr "%(r)s added you as a courier"
+
+msgid "🛵 Vazimba Resto"
+msgstr "🛵 Vazimba Food"
+
+msgid "%(u)s est maintenant livreur de %(r)s."
+msgstr "%(u)s is now a courier for %(r)s."
+
+msgid "Profil livreur enregistré."
+msgstr "Courier profile saved."
+
+msgid "Demande envoyée. Un restaurant peut vous rattacher, ou Vazimba validera votre profil."
+msgstr "Request sent. A restaurant can attach you, or Vazimba will approve your profile."
+
+msgid "Profil livreur non validé."
+msgstr "Courier profile not approved."
+
+msgid "Cette commande n'est plus disponible."
+msgstr "This order is no longer available."
+
+msgid "Cette commande appartient à un autre restaurant."
+msgstr "This order belongs to another restaurant."
+
+msgid "Prise en charge par %(c)s"
+msgstr "Taken by %(c)s"
+
+msgid "%(c)s a récupéré votre commande %(n)s"
+msgstr "%(c)s picked up your order %(n)s"
+
+msgid "🛵 En route !"
+msgstr "🛵 On the way!"
+
+msgid "Commande %(n)s prise par %(c)s"
+msgstr "Order %(n)s taken by %(c)s"
+
+msgid "Commande %(n)s prise en charge. Bonne route !"
+msgstr "Order %(n)s taken. Safe ride!"
+

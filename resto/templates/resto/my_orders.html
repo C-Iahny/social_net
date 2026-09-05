@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Mes commandes" %} — Resto Vazimba{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<div class="rs-wrap" style="max-width:760px;">
+    <h1 style="font-size:1.4rem;font-weight:800;margin:.5rem 0 1rem;">🧾 {% trans "Mes commandes" %}</h1>
+
+    <h2 class="rs-section-title" style="margin-top:.5rem;">{% trans "En cours" %}</h2>
+    {% for o in active %}
+    <a href="{% url 'resto:order' o.number %}" class="rs-card" style="display:block;padding:.9rem;margin-bottom:.6rem;text-decoration:none;color:inherit;">
+        <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
+            <strong>{{ o.restaurant.name }}</strong>
+            <span class="rs-badge status">{{ o.get_status_display }}</span>
+        </div>
+        <div class="rs-muted" style="margin-top:.2rem;">{{ o.number }} · {{ o.created_at|date:"d/m H:i" }} · {{ o.items.count }} {% trans "article(s)" %} · <span class="rs-price">{{ o.formatted_total }}</span></div>
+    </a>
+    {% empty %}
+    <p class="rs-muted">{% trans "Aucune commande en cours." %} <a href="{% url 'resto:index' %}" style="color:var(--accent);">{% trans "Commander" %} →</a></p>
+    {% endfor %}
+
+    {% if past %}
+    <h2 class="rs-section-title">{% trans "Terminées" %}</h2>
+    {% for o in past %}
+    <a href="{% url 'resto:order' o.number %}" class="rs-card" style="display:block;padding:.8rem;margin-bottom:.5rem;text-decoration:none;color:inherit;opacity:.85;">
+        <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
+            <strong>{{ o.restaurant.name }}</strong>
+            <span class="rs-badge {% if o.is_cancelled %}ko{% else %}ok{% endif %}">{{ o.get_status_display }}</span>
+        </div>
+        <div class="rs-muted" style="margin-top:.2rem;">{{ o.number }} · {{ o.created_at|date:"d/m/Y H:i" }} · {{ o.formatted_total }}</div>
+    </a>
+    {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

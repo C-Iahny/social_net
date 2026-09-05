@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Mon panier" %} — Resto Vazimba{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<div class="rs-wrap" style="max-width:720px;">
+    <h1 style="font-size:1.4rem;font-weight:800;margin:.5rem 0 1rem;">🧺 {% trans "Mon panier" %}</h1>
+
+    {% if cart and cart_summary.count %}
+    <div class="rs-card" style="padding:1rem;">
+        <p style="margin:0 0 .6rem;">
+            <strong>{{ cart.restaurant.name }}</strong>
+            <a href="{% url 'resto:restaurant' cart.restaurant.slug %}" style="color:var(--accent);font-size:.85rem;margin-left:.5rem;">{% trans "Ajouter d'autres plats" %} →</a>
+        </p>
+        <div id="rs-lines">
+        {% for l in cart_summary.lines %}
+            <div class="rs-order-line" data-line="{{ l.id }}">
+                <div style="flex:1;">
+                    <strong>{{ l.name }}</strong>
+                    {% if l.options %}<small>{{ l.options }}</small>{% endif %}
+                    {% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}
+                    <small>{{ l.unit_price }} Ar × <span class="q">{{ l.quantity }}</span></small>
+                </div>
+                <div style="text-align:right;">
+                    <div class="rs-price lt">{{ l.line_total }} Ar</div>
+                    <div class="rs-qty" style="margin-top:.3rem;">
+                        <button type="button" onclick="rsLine({{ l.id }}, -1)">−</button><span class="q">{{ l.quantity }}</span><button type="button" onclick="rsLine({{ l.id }}, 1)">+</button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+        <div style="margin-top:.8rem;font-size:.9rem;">
+            <div style="display:flex;justify-content:space-between;"><span>{% trans "Sous-total" %}</span><span id="rs-sub">{{ cart_summary.subtotal }} Ar</span></div>
+            <div style="display:flex;justify-content:space-between;" class="rs-muted"><span>{% trans "Livraison (si livraison)" %}</span><span>{{ cart.restaurant.formatted_delivery_fee }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;margin-top:.3rem;"><span>{% trans "Total" %}</span><span id="rs-total">{{ cart_summary.total }} Ar</span></div>
+        </div>
+        {% if cart.restaurant.min_order and cart_summary.subtotal < cart.restaurant.min_order %}
+        <p class="rs-form err" style="margin:.6rem 0 0;">{% blocktrans with m=cart.restaurant.min_order|floatformat:0 %}Commande minimum : {{ m }} Ar{% endblocktrans %}</p>
+        {% endif %}
+        <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap;">
+            <a class="rs-btn" href="{% url 'resto:checkout' %}" style="flex:1;">{% trans "Commander" %} →</a>
+            <form method="post" action="{% url 'resto:cart_clear' %}" onsubmit="return confirm('{% trans "Vider le panier ?" %}')">{% csrf_token %}
+                <button class="rs-btn ghost" type="submit">{% trans "Vider" %}</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="rs-empty"><div class="ico">🧺</div><p>{% trans "Votre panier est vide." %}</p>
+        <a class="rs-btn" href="{% url 'resto:index' %}">{% trans "Voir les restaurants" %}</a></div>
+    {% endif %}
+</div>
+
+<script>
+const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+async function rsLine(id, d){
+  const row = document.querySelector(`[data-line="${id}"]`);
+  const q = parseInt(row.querySelector('.q').textContent) + d;
+  const r = await fetch(`/resto/panier/ligne/${id}/`, {method:'POST', credentials:'same-origin',
+    headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({quantity:q})});
+  if(!r.ok) return;
+  const data = await r.json();
+  if(!data.cart.count){ window.location.reload(); return; }
+  const line = data.cart.lines.find(l => l.id === id);
+  if(!line){ row.remove(); } else {
+    row.querySelectorAll('.q').forEach(e => e.textContent = line.quantity);
+    row.querySelector('.lt').textContent = line.line_total + ' Ar';
+  }
+  document.getElementById('rs-sub').textContent = data.cart.subtotal + ' Ar';
+  document.getElementById('rs-total').textContent = data.cart.total + ' Ar';
+}
+</script>
+{% endblock %}
