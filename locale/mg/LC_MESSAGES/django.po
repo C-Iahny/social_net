@@ -3021,3 +3021,22 @@ msgstr "Findain'ny mpiantoka"
 msgid "Vérifiez les champs signalés."
 msgstr "Jereo ny saha voamarika."
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "photo réelle"
+msgstr "sary tena izy"
+
+msgid "CIN contrôlée"
+msgstr "karapanondro voamarina"
+
+msgid "téléphone vérifié"
+msgstr "finday voamarina"
+
+msgid "garant joignable"
+msgstr "mpiantoka azo antsoina"
+
+msgid "avis positifs"
+msgstr "hevitra tsara"
+
+msgid "reçue"
+msgstr "voaray"
+
