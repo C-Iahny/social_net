@@ -30,7 +30,7 @@
             <strong class="rs-price">{{ o.formatted_total }}</strong>
         </div>
         <div style="font-size:.88rem;margin:.4rem 0;">
-            {% for l in o.items.all %}<div>{{ l.quantity }} × <strong>{{ l.name }}</strong>{% if l.options.all %} <span class="rs-muted">({{ l.options_label }})</span>{% endif %}{% if l.note %} <span class="rs-muted">📝 {{ l.note }}</span>{% endif %}</div>{% endfor %}
+            {% for l in o.items.all %}<div>{{ l.quantity }} × <strong>{{ l.name }}</strong>{% if l.options.all %} <span class="rs-muted">({{ l.options_label }})</span>{% endif %}{% if l.removed_ingredients %} <span style="color:#c0392b;font-weight:700;">🚫 {% trans "Sans" %} : {{ l.removed_label }}</span>{% endif %}{% if l.note %} <span class="rs-muted">📝 {{ l.note }}</span>{% endif %}</div>{% endfor %}
             {% if o.note %}<div class="rs-muted">💬 {{ o.note }}</div>{% endif %}
         </div>
         <div class="rs-muted" style="font-size:.85rem;">

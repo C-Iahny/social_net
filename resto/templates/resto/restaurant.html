@@ -77,6 +77,7 @@
             <div class="rs-item-body">
                 <p class="rs-item-name">{{ it.name }}</p>
                 {% if it.description %}<p class="rs-item-desc">{{ it.description }}</p>{% endif %}
+                {% if it.ingredients %}<p class="rs-item-desc" style="-webkit-line-clamp:1;">🥗 {{ it.ingredient_names }}</p>{% endif %}
                 <span class="rs-price">{{ it.formatted_price }}</span>
                 {% if it.option_groups.all %}<span class="rs-muted" style="font-size:.75rem;"> · {% trans "personnalisable" %}</span>{% endif %}
             </div>
@@ -106,6 +107,7 @@
             <button class="rs-btn sm ghost" type="button" onclick="rsCloseItem()">✕</button>
         </div>
         <img id="rs-m-img" alt="" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:.6rem;display:none;">
+        <div id="rs-m-ingredients"></div>
         <div id="rs-m-groups"></div>
         <div class="rs-opt-group">
             <h4>{% trans "Instructions" %} <span class="rs-muted">{% trans "facultatif" %}</span></h4>
@@ -132,6 +134,7 @@
   const I18N = {
     required: "{% trans 'obligatoire' %}", choose: "{% trans 'choisissez' %}", max: "{% trans 'max' %}",
     login: "{% trans 'Connectez-vous pour commander.' %}", closed: "{% trans 'Ce restaurant est fermé pour le moment.' %}",
+    ingredients: "{% trans 'Ingrédients' %}", ingHint: "{% trans 'décochez ce que vous ne voulez pas' %}", fixed: "{% trans 'obligatoire' %}",
     replace: "{% trans 'Votre panier contient des plats de' %}", replace2: "{% trans 'Le vider et ajouter ce plat ?' %}",
     added: "{% trans 'Ajouté au panier' %}", articles: "{% trans 'article(s)' %}",
   };
@@ -150,6 +153,17 @@
     if(item.image){ img.src = item.image; img.style.display='block'; } else { img.style.display='none'; }
     document.getElementById('rs-m-note').value = '';
     document.getElementById('rs-m-err').textContent = '';
+    // Ingrédients : tous cochés par défaut, le client décoche ceux qu'il ne veut pas
+    const ing = document.getElementById('rs-m-ingredients'); ing.innerHTML = '';
+    if(item.ingredients && item.ingredients.length){
+      let h = `<div class="rs-opt-group"><h4>🥗 ${I18N.ingredients} <span class="rs-muted">${I18N.ingHint}</span></h4>`;
+      item.ingredients.forEach(i => {
+        h += `<label class="rs-opt" ${i.removable ? '' : 'style="opacity:.7;cursor:default;"'}>
+                <input type="checkbox" class="ing" value="${esc(i.name)}" checked ${i.removable ? '' : 'disabled'}>
+                <span>${esc(i.name)}</span>${i.removable ? '' : `<span class="extra">${I18N.fixed}</span>`}</label>`;
+      });
+      ing.innerHTML = h + '</div>';
+    }
     const box = document.getElementById('rs-m-groups'); box.innerHTML = '';
     item.groups.forEach((g, gi) => {
       const rule = g.required ? I18N.required : (g.max === 1 ? I18N.choose + ' 1' : (g.max ? I18N.max + ' ' + g.max : ''));
@@ -186,6 +200,7 @@
   window.rsAdd = async function(replace){
     const err = document.getElementById('rs-m-err'); err.textContent = '';
     const options = [...document.querySelectorAll('#rs-m-groups input:checked')].map(i => parseInt(i.value));
+    const removed = [...document.querySelectorAll('#rs-m-ingredients input.ing:not(:checked)')].map(i => i.value);
     for(const [gi, g] of item.groups.entries()){
       const n = document.querySelectorAll(`input[name="g${gi}"]:checked`).length;
       if(n < g.min){ err.textContent = `« ${g.name} » : ${I18N.choose} ${g.min}`; return; }
@@ -194,7 +209,7 @@
     const r = await fetch(`/resto/panier/ajouter/${item.id}/`, {
       method:'POST', credentials:'same-origin',
       headers:{'Content-Type':'application/json','X-CSRFToken':CSRF},
-      body: JSON.stringify({quantity: qty, note: document.getElementById('rs-m-note').value, options, replace: !!replace}),
+      body: JSON.stringify({quantity: qty, note: document.getElementById('rs-m-note').value, options, removed, replace: !!replace}),
     });
     btn.disabled = false;
     const data = await r.json().catch(()=>({}));

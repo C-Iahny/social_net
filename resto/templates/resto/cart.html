@@ -19,6 +19,7 @@
                 <div style="flex:1;">
                     <strong>{{ l.name }}</strong>
                     {% if l.options %}<small>{{ l.options }}</small>{% endif %}
+                    {% if l.removed %}<small>🚫 {% trans "Sans" %} : {{ l.removed }}</small>{% endif %}
                     {% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}
                     <small>{{ l.unit_price }} Ar × <span class="q">{{ l.quantity }}</span></small>
                 </div>

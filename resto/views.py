@@ -73,7 +73,7 @@ def _cart_summary(cart):
         'total': int(sum(l.line_total for l in lines) + cart.delivery_fee),
         'lines': [{
             'id': l.pk, 'name': l.item.name, 'quantity': l.quantity,
-            'options': l.options_label, 'note': l.note,
+            'options': l.options_label, 'removed': l.removed_label, 'note': l.note,
             'unit_price': int(l.unit_price), 'line_total': int(l.line_total),
         } for l in lines],
     }
@@ -237,6 +237,7 @@ def item_options(request, slug, item_pk):
         'id': item.pk, 'name': item.name, 'description': item.description,
         'price': int(item.price), 'image': item.image.url if item.image else '',
         'available': item.is_available and item.restaurant.can_order,
+        'ingredients': item.ingredient_list,
         'groups': groups,
     })
 
@@ -258,7 +259,8 @@ def cart_view(request):
 def cart_add(request, item_pk):
     """
     AJAX : ajoute un plat au panier avec ses options.
-    Corps JSON : {quantity, note, options: [option_id…], replace: bool}
+    Corps JSON : {quantity, note, options: [option_id…], removed: [ingrédient…], replace: bool}
+    `removed` = ingrédients décochés par le client (seulement ceux marqués retirables).
     Si le panier contient un autre restaurant, renvoie 409 sauf si replace=true.
     """
     item = get_object_or_404(MenuItem.objects.select_related('restaurant'), pk=item_pk, is_available=True)
@@ -273,6 +275,10 @@ def cart_add(request, item_pk):
         quantity = 1
     note = (body.get('note') or '')[:200]
     option_ids = {int(x) for x in body.get('options', []) if str(x).isdigit()}
+    # Ingrédients décochés : on ne garde que ceux que le restaurant autorise à retirer
+    removable = {i['name'] for i in item.ingredient_list if i['removable']}
+    removed = [str(x).strip() for x in (body.get('removed') or []) if str(x).strip() in removable]
+    removed_key = '|'.join(sorted(set(removed)))[:300]
 
     # ── Validation des options contre les groupes du plat ─────────────────────
     chosen = []
@@ -296,13 +302,14 @@ def cart_add(request, item_pk):
 
     # Même plat + mêmes options + même note → on incrémente la quantité
     chosen_ids = {o.pk for o in chosen}
-    for line in cart.lines.filter(item=item, note=note).prefetch_related('options'):
+    for line in cart.lines.filter(item=item, note=note, removed_ingredients=removed_key).prefetch_related('options'):
         if {o.pk for o in line.options.all()} == chosen_ids:
             line.quantity = min(20, line.quantity + quantity)
             line.save(update_fields=['quantity'])
             break
     else:
-        line = CartItem.objects.create(cart=cart, item=item, quantity=quantity, note=note)
+        line = CartItem.objects.create(cart=cart, item=item, quantity=quantity, note=note,
+                                       removed_ingredients=removed_key)
         if chosen:
             line.options.set(chosen)
 
@@ -393,6 +400,7 @@ def checkout(request):
                         order=order, item=line.item, name=line.item.name,
                         unit_price=line.unit_price, quantity=line.quantity,
                         line_total=line.line_total, note=line.note,
+                        removed_ingredients=line.removed_ingredients,
                     )
                     OrderItemOption.objects.bulk_create([
                         OrderItemOption(line=oi, group_name=o.group.name, name=o.name, extra_price=o.extra_price)

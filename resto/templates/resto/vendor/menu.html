@@ -50,10 +50,10 @@
             <div style="flex:1;min-width:0;">
                 <strong>{{ it.name }}</strong> <span class="rs-price">{{ it.formatted_price }}</span>
                 {% if not it.is_available %}<span class="rs-badge closed">{% trans "Indisponible" %}</span>{% endif %}
-                <div class="rs-muted">{{ it.category.name|default:_("Sans rubrique") }} · {{ it.option_groups.all|length }} {% trans "groupe(s) d'options" %}</div>
+                <div class="rs-muted">{{ it.category.name|default:_("Sans rubrique") }} · {{ it.option_groups.all|length }} {% trans "groupe(s) d'options" %}{% if it.ingredients %} · 🥗 {{ it.ingredient_list|length }} {% trans "ingrédient(s)" %}{% endif %}</div>
             </div>
             <div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:flex-end;">
-                <button class="rs-btn sm secondary" type="button" onclick="rsEditItem({{ it.pk }}, {{ it.category_id|default:'null' }}, '{{ it.name|escapejs }}', '{{ it.description|escapejs }}', {{ it.price|floatformat:0 }}, {{ it.is_available|yesno:'true,false' }}, {{ it.order }})">✏️</button>
+                <button class="rs-btn sm secondary" type="button" onclick="rsEditItem({{ it.pk }}, {{ it.category_id|default:'null' }}, '{{ it.name|escapejs }}', '{{ it.description|escapejs }}', {{ it.price|floatformat:0 }}, {{ it.is_available|yesno:'true,false' }}, {{ it.order }}, '{{ it.ingredients|escapejs }}')">✏️</button>
                 <button class="rs-btn sm secondary" type="button" onclick="rsEditOptions({{ it.pk }}, '{{ it.name|escapejs }}')">🧩 {% trans "Options" %}</button>
                 <form method="post" action="{% url 'resto:item_delete' restaurant.slug it.pk %}" onsubmit="return confirm('{% trans "Supprimer ce plat ?" %}')">{% csrf_token %}<button class="rs-btn sm ghost" type="submit">🗑</button></form>
             </div>
@@ -76,6 +76,10 @@
                 <div><label>{% trans "Ordre" %}</label>{{ item_form.order }}</div>
             </div>
             <div style="margin-top:.6rem;"><label>{% trans "Description" %}</label>{{ item_form.description }}</div>
+            <div style="margin-top:.6rem;">
+                <label>🥗 {% trans "Ingrédients" %}</label>{{ item_form.ingredients }}
+                <p class="help" style="margin:.2rem 0 0;">{{ item_form.ingredients.help_text }}</p>
+            </div>
             <div class="rs-row" style="margin-top:.6rem;align-items:center;">
                 <div><label>{% trans "Photo" %}</label>{{ item_form.image }}</div>
                 <div style="display:flex;align-items:center;gap:.4rem;">{{ item_form.is_available }} <label style="margin:0;">{% trans "Disponible" %}</label></div>
@@ -112,10 +116,11 @@ const I18N = {group:"{% trans 'Titre du groupe (ex : Sauce, Suppléments)' %}", 
               saved:"{% trans 'Options enregistrées' %}", edit:"{% trans 'Modifier le plat' %}", add:"{% trans 'Ajouter un plat' %}"};
 let curItem = null;
 
-function rsEditItem(pk, cat, name, desc, price, avail, order){
+function rsEditItem(pk, cat, name, desc, price, avail, order, ingredients){
   const f = document.getElementById('rs-item-form');
   f.action = `/resto/vendeur/${SLUG}/menu/plat/${pk}/`;
   f.querySelector('[name=name]').value = name; f.querySelector('[name=description]').value = desc;
+  f.querySelector('[name=ingredients]').value = ingredients || '';
   f.querySelector('[name=price]').value = price; f.querySelector('[name=order]').value = order;
   f.querySelector('[name=category]').value = cat === null ? '' : cat; f.querySelector('[name=is_available]').checked = avail;
   document.getElementById('rs-item-form-title').textContent = '✏️ ' + I18N.edit + ' : ' + name;

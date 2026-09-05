@@ -91,6 +91,7 @@
         <div class="rs-order-line">
             <div>{{ l.quantity }} × {{ l.name }}
                 {% for o in l.options.all %}<small>{{ o.group_name }} : {{ o.name }}{% if o.extra_price %} (+{{ o.extra_price|floatformat:0 }} Ar){% endif %}</small>{% endfor %}
+                {% if l.removed_ingredients %}<small>🚫 {% trans "Sans" %} : {{ l.removed_label }}</small>{% endif %}
                 {% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}
             </div>
             <div>{{ l.formatted_line_total }}</div>
