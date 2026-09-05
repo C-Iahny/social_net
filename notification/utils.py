@@ -102,6 +102,23 @@ class LazyNotificationEncoder(Serializer):
 				}
 			})
 
+		if ctype in ("Order", "Restaurant"):
+			# Resto Vazimba : commande (statut, nouvelle commande) ou restaurant (rattachement livreur)
+			dump_object.update({'notification_type': 'Post'})   # rendu générique (verbe + lien) côté JS
+			dump_object.update({'notification_id': str(obj.pk)})
+			dump_object.update({'verb': obj.verb or ''})
+			dump_object.update({'natural_timestamp': str(naturaltime(obj.timestamp))})
+			dump_object.update({'timestamp': str(obj.timestamp)})
+			dump_object.update({'is_read': str(obj.read)})
+			dump_object.update({
+				'actions': {
+					'redirect_url': str(obj.redirect_url) if obj.redirect_url else '/resto/',
+				},
+				"from": {
+					"image_url": _safe_img_url(obj.from_user),
+				}
+			})
+
 		if ctype == "Live":
 			dump_object.update({'notification_type': 'Live'})
 			dump_object.update({'notification_id': str(obj.pk)})

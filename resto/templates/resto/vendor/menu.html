@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Menu" %} — {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<style>
+.rs-mi { display: flex; gap: .7rem; align-items: center; padding: .7rem; }
+.rs-mi + .rs-mi { border-top: 1px solid var(--border); }
+.rs-mi img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; background: var(--btn-bg); }
+.rs-og { border: 1px dashed var(--border); border-radius: 10px; padding: .6rem; margin-bottom: .6rem; }
+.rs-og input { margin-bottom: .3rem; }
+.rs-og .opt { display: flex; gap: .4rem; margin-bottom: .3rem; }
+.rs-og .opt input:first-child { flex: 2; } .rs-og .opt input:nth-child(2) { flex: 1; }
+</style>
+<div class="rs-wrap" style="max-width:860px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0 1rem;">
+        <h1 style="font-size:1.4rem;font-weight:800;margin:0;">🍛 {% trans "Menu" %} · {{ restaurant.name }}</h1>
+        <div style="display:flex;gap:.4rem;">
+            <a class="rs-btn sm secondary" href="{% url 'resto:vendor_dashboard' %}">← {% trans "Mes restaurants" %}</a>
+            <a class="rs-btn sm ghost" href="{% url 'resto:restaurant' restaurant.slug %}">👁 {% trans "Aperçu" %}</a>
+        </div>
+    </div>
+
+    <!-- ── Rubriques ── -->
+    <div class="rs-card" style="padding:1rem;margin-bottom:1rem;">
+        <p style="font-weight:700;margin:0 0 .5rem;">{% trans "Rubriques" %} <span class="rs-muted">({% trans "Entrées, Plats, Boissons…" %})</span></p>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem;">
+            {% for c in categories %}
+            <form method="post" action="{% url 'resto:category_save' restaurant.slug %}" style="display:inline-flex;gap:.3rem;align-items:center;">{% csrf_token %}
+                <input type="hidden" name="pk" value="{{ c.pk }}"><input type="hidden" name="order" value="{{ c.order }}">
+                <input class="form-control" name="name" value="{{ c.name }}" style="width:150px;padding:.3rem .5rem;font-size:.85rem;">
+                <button class="rs-btn sm secondary" type="submit">💾</button>
+                <button class="rs-btn sm ghost" type="submit" name="delete" value="1" onclick="return confirm('{% trans "Supprimer cette rubrique ?" %}')">✕</button>
+            </form>
+            {% endfor %}
+        </div>
+        <form method="post" action="{% url 'resto:category_save' restaurant.slug %}" class="rs-form" style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;">{% csrf_token %}
+            {{ cat_form.name }} <input type="hidden" name="order" value="{{ categories|length }}">
+            <button class="rs-btn sm" type="submit">+ {% trans "Ajouter" %}</button>
+        </form>
+    </div>
+
+    <!-- ── Plats ── -->
+    <div class="rs-card" style="margin-bottom:1rem;">
+        <p style="font-weight:700;margin:0;padding:.8rem .8rem 0;">{% trans "Plats" %} ({{ items|length }})</p>
+        {% for it in items %}
+        <div class="rs-mi">
+            {% if it.image %}<img src="{{ it.image.url }}" alt="">{% else %}<div style="width:56px;height:56px;border-radius:8px;background:var(--btn-bg);display:flex;align-items:center;justify-content:center;">🍽️</div>{% endif %}
+            <div style="flex:1;min-width:0;">
+                <strong>{{ it.name }}</strong> <span class="rs-price">{{ it.formatted_price }}</span>
+                {% if not it.is_available %}<span class="rs-badge closed">{% trans "Indisponible" %}</span>{% endif %}
+                <div class="rs-muted">{{ it.category.name|default:_("Sans rubrique") }} · {{ it.option_groups.all|length }} {% trans "groupe(s) d'options" %}</div>
+            </div>
+            <div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:flex-end;">
+                <button class="rs-btn sm secondary" type="button" onclick="rsEditItem({{ it.pk }}, {{ it.category_id|default:'null' }}, '{{ it.name|escapejs }}', '{{ it.description|escapejs }}', {{ it.price|floatformat:0 }}, {{ it.is_available|yesno:'true,false' }}, {{ it.order }})">✏️</button>
+                <button class="rs-btn sm secondary" type="button" onclick="rsEditOptions({{ it.pk }}, '{{ it.name|escapejs }}')">🧩 {% trans "Options" %}</button>
+                <form method="post" action="{% url 'resto:item_delete' restaurant.slug it.pk %}" onsubmit="return confirm('{% trans "Supprimer ce plat ?" %}')">{% csrf_token %}<button class="rs-btn sm ghost" type="submit">🗑</button></form>
+            </div>
+        </div>
+        {% empty %}
+        <p class="rs-muted" style="padding:.8rem;">{% trans "Aucun plat. Ajoutez votre premier plat ci-dessous." %}</p>
+        {% endfor %}
+    </div>
+
+    <!-- ── Ajouter / modifier un plat ── -->
+    <div class="rs-card rs-form" style="padding:1rem;" id="rs-item-form-card">
+        <p style="font-weight:700;margin:0 0 .5rem;" id="rs-item-form-title">+ {% trans "Ajouter un plat" %}</p>
+        <form method="post" enctype="multipart/form-data" id="rs-item-form" action="{% url 'resto:item_save' restaurant.slug %}">{% csrf_token %}
+            <div class="rs-row">
+                <div><label>{% trans "Nom" %} *</label>{{ item_form.name }}</div>
+                <div><label>{% trans "Prix (Ar)" %} *</label>{{ item_form.price }}</div>
+            </div>
+            <div class="rs-row" style="margin-top:.6rem;">
+                <div><label>{% trans "Rubrique" %}</label>{{ item_form.category }}</div>
+                <div><label>{% trans "Ordre" %}</label>{{ item_form.order }}</div>
+            </div>
+            <div style="margin-top:.6rem;"><label>{% trans "Description" %}</label>{{ item_form.description }}</div>
+            <div class="rs-row" style="margin-top:.6rem;align-items:center;">
+                <div><label>{% trans "Photo" %}</label>{{ item_form.image }}</div>
+                <div style="display:flex;align-items:center;gap:.4rem;">{{ item_form.is_available }} <label style="margin:0;">{% trans "Disponible" %}</label></div>
+            </div>
+            <div style="display:flex;gap:.5rem;margin-top:.8rem;">
+                <button class="rs-btn" type="submit" id="rs-item-submit">{% trans "Enregistrer le plat" %}</button>
+                <button class="rs-btn ghost" type="button" id="rs-item-cancel" style="display:none;" onclick="rsResetItem()">{% trans "Annuler" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── Éditeur d'options ── -->
+<div class="rs-modal-bg" id="rs-opt-modal" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="rs-modal">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h3>🧩 <span id="rs-opt-title"></span></h3>
+            <button class="rs-btn sm ghost" type="button" onclick="document.getElementById('rs-opt-modal').classList.remove('show')">✕</button>
+        </div>
+        <p class="rs-muted" style="margin:.3rem 0 .8rem;">{% trans "Comme sur Uber Eats : un groupe = une question posée au client (« Sauce ? », « Suppléments ? »). Minimum 1 = choix obligatoire. Maximum 1 = un seul choix, 0 = illimité." %}</p>
+        <div id="rs-og-list"></div>
+        <button class="rs-btn sm secondary" type="button" onclick="rsAddGroup()">+ {% trans "Ajouter un groupe" %}</button>
+        <p class="rs-form err" id="rs-opt-err" style="margin:.5rem 0 0;"></p>
+        <button class="rs-btn" type="button" style="width:100%;margin-top:.8rem;" onclick="rsSaveOptions()">💾 {% trans "Enregistrer les options" %}</button>
+    </div>
+</div>
+
+<script>
+const OPTIONS = {{ options_json|safe }};
+const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+const SLUG = "{{ restaurant.slug }}";
+const I18N = {group:"{% trans 'Titre du groupe (ex : Sauce, Suppléments)' %}", opt:"{% trans 'Option (ex : Fromage)' %}", extra:"{% trans 'Suppl. Ar' %}",
+              min:"{% trans 'Min' %}", max:"{% trans 'Max' %}", addopt:"{% trans '+ option' %}", del:"{% trans 'Supprimer le groupe' %}",
+              saved:"{% trans 'Options enregistrées' %}", edit:"{% trans 'Modifier le plat' %}", add:"{% trans 'Ajouter un plat' %}"};
+let curItem = null;
+
+function rsEditItem(pk, cat, name, desc, price, avail, order){
+  const f = document.getElementById('rs-item-form');
+  f.action = `/resto/vendeur/${SLUG}/menu/plat/${pk}/`;
+  f.querySelector('[name=name]').value = name; f.querySelector('[name=description]').value = desc;
+  f.querySelector('[name=price]').value = price; f.querySelector('[name=order]').value = order;
+  f.querySelector('[name=category]').value = cat === null ? '' : cat; f.querySelector('[name=is_available]').checked = avail;
+  document.getElementById('rs-item-form-title').textContent = '✏️ ' + I18N.edit + ' : ' + name;
+  document.getElementById('rs-item-cancel').style.display = '';
+  document.getElementById('rs-item-form-card').scrollIntoView({behavior:'smooth'});
+}
+function rsResetItem(){
+  const f = document.getElementById('rs-item-form'); f.reset(); f.action = `/resto/vendeur/${SLUG}/menu/plat/`;
+  document.getElementById('rs-item-form-title').textContent = '+ ' + I18N.add;
+  document.getElementById('rs-item-cancel').style.display = 'none';
+}
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function rsEditOptions(pk, name){
+  curItem = pk; document.getElementById('rs-opt-title').textContent = name; document.getElementById('rs-opt-err').textContent = '';
+  const list = document.getElementById('rs-og-list'); list.innerHTML = '';
+  (OPTIONS[pk] || []).forEach(g => rsAddGroup(g));
+  document.getElementById('rs-opt-modal').classList.add('show');
+}
+function rsAddGroup(g){
+  g = g || {name:'', min:0, max:1, options:[{name:'', extra_price:0}]};
+  const div = document.createElement('div'); div.className = 'rs-og';
+  div.innerHTML = `<input class="form-control g-name" placeholder="${I18N.group}" value="${esc(g.name)}">
+    <div style="display:flex;gap:.4rem;margin-bottom:.4rem;">
+      <label style="font-size:.75rem;flex:1;">${I18N.min} <input class="form-control g-min" type="number" min="0" value="${g.min}"></label>
+      <label style="font-size:.75rem;flex:1;">${I18N.max} <input class="form-control g-max" type="number" min="0" value="${g.max}"></label>
+    </div>
+    <div class="opts"></div>
+    <div style="display:flex;gap:.4rem;"><button class="rs-btn sm secondary" type="button" onclick="rsAddOpt(this)">${I18N.addopt}</button>
+    <button class="rs-btn sm ghost" type="button" onclick="this.closest('.rs-og').remove()">🗑 ${I18N.del}</button></div>`;
+  document.getElementById('rs-og-list').appendChild(div);
+  g.options.forEach(o => rsAddOpt(div.querySelector('.opts'), o));
+}
+function rsAddOpt(el, o){
+  o = o || {name:'', extra_price:0};
+  const box = el.classList ? (el.classList.contains('opts') ? el : el.closest('.rs-og').querySelector('.opts')) : el;
+  const row = document.createElement('div'); row.className = 'opt';
+  row.innerHTML = `<input class="form-control o-name" placeholder="${I18N.opt}" value="${esc(o.name)}">
+    <input class="form-control o-price" type="number" min="0" step="100" placeholder="${I18N.extra}" value="${o.extra_price || 0}">
+    <button class="rs-btn sm ghost" type="button" onclick="this.parentNode.remove()">✕</button>`;
+  box.appendChild(row);
+}
+async function rsSaveOptions(){
+  const groups = [...document.querySelectorAll('#rs-og-list .rs-og')].map(g => ({
+    name: g.querySelector('.g-name').value, min: parseInt(g.querySelector('.g-min').value||0), max: parseInt(g.querySelector('.g-max').value||0),
+    options: [...g.querySelectorAll('.opt')].map(o => ({name: o.querySelector('.o-name').value, extra_price: parseInt(o.querySelector('.o-price').value||0)})),
+  }));
+  const r = await fetch(`/resto/vendeur/${SLUG}/menu/plat/${curItem}/options/`, {method:'POST', credentials:'same-origin',
+    headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({groups})});
+  const data = await r.json().catch(()=>({}));
+  if(!r.ok){ document.getElementById('rs-opt-err').textContent = data.error || 'Erreur'; return; }
+  OPTIONS[curItem] = groups.filter(g => g.name.trim() && g.options.some(o => o.name.trim()));
+  document.getElementById('rs-opt-modal').classList.remove('show');
+  window.location.reload();
+}
+</script>
+{% endblock %}

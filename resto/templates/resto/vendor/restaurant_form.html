@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% if restaurant %}{{ restaurant.name }}{% else %}{% trans "Nouveau restaurant" %}{% endif %} — Resto Vazimba{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<style>#rs-pickmap { height: 260px; border-radius: 12px; border: 1px solid var(--border); margin-top: .5rem; } .rs-form > div { margin-bottom: .8rem; }</style>
+<div class="rs-wrap" style="max-width:760px;">
+    <h1 style="font-size:1.4rem;font-weight:800;margin:.5rem 0 1rem;">{% if restaurant %}⚙️ {{ restaurant.name }}{% else %}🏪 {% trans "Créer mon restaurant" %}{% endif %}</h1>
+
+    <form method="post" enctype="multipart/form-data" class="rs-form rs-card" style="padding:1rem;" novalidate>{% csrf_token %}
+        {% if form.non_field_errors %}<p class="err">{{ form.non_field_errors|join:" " }}</p>{% endif %}
+        {% for field in form.visible_fields %}
+        {% if field.name in 'offers_delivery offers_pickup' %}
+        <div style="display:flex;align-items:center;gap:.5rem;">{{ field }} <label style="margin:0;">{{ field.label }}</label></div>
+        {% else %}
+        <div>
+            <label>{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+            {{ field }}
+            {% if field.help_text %}<p class="help" style="margin:.2rem 0 0;">{{ field.help_text }}</p>{% endif %}
+            {% if field.errors %}<p class="err">{{ field.errors|join:" " }}</p>{% endif %}
+        </div>
+        {% if field.name == 'address' %}
+        <div>
+            <label>{% trans "Position sur la carte" %}</label>
+            <p class="help" style="margin:0 0 .3rem;">{% trans "Touchez la carte pour placer votre restaurant : les livreurs et les clients le verront sur le plan de livraison." %}</p>
+            <button type="button" class="rs-btn sm secondary" onclick="rsLocate()">📍 {% trans "Ma position" %}</button>
+            <div id="rs-pickmap"></div>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        {{ form.latitude }}{{ form.longitude }}
+        <button class="rs-btn" type="submit" style="width:100%;">{% if restaurant %}{% trans "Enregistrer" %}{% else %}{% trans "Créer et passer au menu" %} →{% endif %}</button>
+    </form>
+    {% if not restaurant %}
+    <p class="rs-muted" style="margin-top:.8rem;">{% trans "Après création, votre page reste invisible au public jusqu'à validation par l'équipe Vazimba. Vous pouvez déjà préparer votre menu." %}</p>
+    {% endif %}
+</div>
+
+<script>
+(function(){
+  const latEl = document.getElementById('id_latitude'), lngEl = document.getElementById('id_longitude');
+  if(!window.L) { window.rsLocate = () => {}; return; }
+  const start = (latEl.value && lngEl.value) ? [parseFloat(latEl.value), parseFloat(lngEl.value)] : [-18.8792, 47.5079];
+  const map = L.map('rs-pickmap').setView(start, latEl.value ? 15 : 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '© OpenStreetMap'}).addTo(map);
+  let marker = null;
+  function setPoint(ll){
+    if(marker) marker.setLatLng(ll); else marker = L.marker(ll, {draggable:true}).addTo(map).on('dragend', e => setPoint(e.target.getLatLng()));
+    latEl.value = ll.lat.toFixed(6); lngEl.value = ll.lng.toFixed(6);
+  }
+  if(latEl.value && lngEl.value) setPoint(L.latLng(start));
+  map.on('click', e => setPoint(e.latlng));
+  window.rsLocate = () => navigator.geolocation?.getCurrentPosition(p => { const ll = L.latLng(p.coords.latitude, p.coords.longitude); map.setView(ll, 16); setPoint(ll); },
+                                                                    () => alert('{% trans "Position indisponible" %}'), {enableHighAccuracy:true, timeout:8000});
+})();
+</script>
+{% endblock %}

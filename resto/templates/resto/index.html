@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Resto" %} — Vazimba{% endblock %}
+{% block meta_description %}{% trans "Commandez vos plats préférés près de chez vous et suivez la livraison en direct, sans publicité." %}{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<style>
+.rs-resto-card { display: flex; flex-direction: column; text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s; }
+.rs-resto-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); text-decoration: none; color: inherit; }
+.rs-resto-banner { height: 130px; background: var(--btn-bg); position: relative; }
+.rs-resto-banner img { width: 100%; height: 100%; object-fit: cover; }
+.rs-resto-logo { position: absolute; left: 12px; bottom: -22px; width: 54px; height: 54px; border-radius: 12px;
+                 border: 3px solid var(--bg-card); background: var(--bg-card); object-fit: cover; display: flex;
+                 align-items: center; justify-content: center; font-size: 1.5rem; overflow: hidden; }
+.rs-resto-body { padding: 1.6rem .9rem .9rem; }
+.rs-resto-name { font-weight: 800; font-size: 1.02rem; margin: 0; display: flex; justify-content: space-between; gap: .5rem; }
+.rs-resto-meta { color: var(--text-muted); font-size: .8rem; margin: .25rem 0 0; display: flex; gap: .7rem; flex-wrap: wrap; }
+</style>
+
+<!-- ── Hero ── -->
+<div class="rs-hero">
+    <h1>🍽️ {% trans "Resto Vazimba" %}</h1>
+    <p>{% trans "Commande ton plat, choisis tes suppléments, suis ton livreur sur la carte." %}</p>
+    <form class="rs-search" method="get" action="{% url 'resto:index' %}">
+        <input type="text" name="q" value="{{ q }}" placeholder="{% trans 'Un plat, un restaurant, un quartier…' %}">
+        {% if sel_region %}<input type="hidden" name="region" value="{{ sel_region }}">{% endif %}
+        <button type="submit">{% trans "Chercher" %}</button>
+    </form>
+    <div class="rs-hero-links">
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'resto:my_orders' %}"><span class="material-icons" style="font-size:.9rem;vertical-align:-2px;">receipt_long</span> {% trans "Mes commandes" %}</a>
+        <a href="{% url 'resto:vendor_dashboard' %}"><span class="material-icons" style="font-size:.9rem;vertical-align:-2px;">storefront</span> {% if my_restaurants %}{% trans "Mon restaurant" %}{% else %}{% trans "Vendre mes plats" %}{% endif %}</a>
+        <a href="{% url 'resto:courier_dashboard' %}"><span class="material-icons" style="font-size:.9rem;vertical-align:-2px;">two_wheeler</span> {% trans "Espace livreur" %}</a>
+        {% else %}
+        <a href="{% url 'login' %}?next={% url 'resto:index' %}">{% trans "Connexion pour commander" %}</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ── Filtres ── -->
+<div class="rs-filters">
+    <form method="get" action="{% url 'resto:index' %}">
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        <select name="cat" class="rs-select" onchange="this.form.submit()">
+            <option value="">{% trans "Toutes catégories" %}</option>
+            {% for val, label in categories %}
+            <option value="{{ val }}" {% if val == sel_cat %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="region" class="rs-select" id="rs-region" onchange="this.form.submit()">
+            <option value="">{% trans "Toute Madagascar" %}</option>
+            {% for val, label in regions %}
+            <option value="{{ val }}" {% if val == sel_region %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        {% if user_region and not sel_region %}
+        <a class="rs-chip" href="?region={{ user_region }}{% if sel_cat %}&cat={{ sel_cat }}{% endif %}{% if q %}&q={{ q }}{% endif %}">
+            <span class="material-icons" style="font-size:.95rem;">my_location</span> {% trans "Près de moi" %}
+        </a>
+        {% endif %}
+        <select name="sort" class="rs-select" onchange="this.form.submit()">
+            <option value="open"    {% if sort == 'open' %}selected{% endif %}>{% trans "Ouverts d'abord" %}</option>
+            <option value="popular" {% if sort == 'popular' %}selected{% endif %}>{% trans "Populaires" %}</option>
+            <option value="recent"  {% if sort == 'recent' %}selected{% endif %}>{% trans "Nouveaux" %}</option>
+            <option value="fee"     {% if sort == 'fee' %}selected{% endif %}>{% trans "Livraison la moins chère" %}</option>
+        </select>
+        {% if q or sel_cat or sel_region or sort != 'open' %}
+        <a href="{% url 'resto:index' %}" class="rs-chip">✕ {% trans "Réinitialiser" %}</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="rs-wrap">
+    <p class="rs-muted" style="margin:.3rem 0 .8rem;">
+        <strong>{{ total }}</strong> {% trans "restaurant" %}{{ total|pluralize }}
+        {% if sel_region %} · {{ region_labels|default_if_none:'' }}{% for val, label in regions %}{% if val == sel_region %}{{ label }}{% endif %}{% endfor %}{% endif %}
+        {% if q %} · « {{ q }} »{% endif %}
+    </p>
+
+    {% if page_obj.object_list %}
+    <div class="rs-grid">
+        {% for r in page_obj %}
+        <a href="{% url 'resto:restaurant' r.slug %}" class="rs-card rs-resto-card">
+            <div class="rs-resto-banner">
+                {% if r.banner %}<img src="{{ r.banner.url }}" alt="{{ r.name }}" loading="lazy">{% endif %}
+                <div class="rs-resto-logo">{% if r.logo %}<img src="{{ r.logo.url }}" alt="" style="width:100%;height:100%;object-fit:cover;">{% else %}🍲{% endif %}</div>
+                <span class="rs-badge {% if r.is_open %}open{% else %}closed{% endif %}" style="position:absolute;top:8px;right:8px;">
+                    {% if r.is_open %}{% trans "Ouvert" %}{% else %}{% trans "Fermé" %}{% endif %}
+                </span>
+            </div>
+            <div class="rs-resto-body">
+                <p class="rs-resto-name"><span>{{ r.name }}</span></p>
+                <p class="rs-resto-meta">
+                    <span>{{ r.get_category_display }}</span>
+                    <span>📍 {{ r.address|truncatechars:34 }}</span>
+                </p>
+                <p class="rs-resto-meta" style="margin-top:.4rem;">
+                    <span>🛵 {{ r.formatted_delivery_fee }}</span>
+                    <span>⏱ ~{{ r.avg_prep_minutes }} min</span>
+                    {% if r.min_order %}<span>{% trans "min." %} {{ r.min_order|floatformat:0 }} Ar</span>{% endif %}
+                </p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="rs-tabs" style="justify-content:center;margin-top:1.4rem;">
+        {% if page_obj.has_previous %}<a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}sort={{ sort }}&page={{ page_obj.previous_page_number }}">←</a>{% endif %}
+        <a class="active">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</a>
+        {% if page_obj.has_next %}<a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}{% if sel_region %}region={{ sel_region }}&{% endif %}sort={{ sort }}&page={{ page_obj.next_page_number }}">→</a>{% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="rs-empty">
+        <div class="ico">🍽️</div>
+        <h4 style="font-weight:700;color:var(--text);">{% trans "Aucun restaurant pour l'instant" %}</h4>
+        <p>{% trans "Sois le premier : crée ta page, ajoute ton menu, et tes clients te retrouveront ici au lieu de chercher ta page Facebook." %}</p>
+        {% if request.user.is_authenticated %}
+        <a class="rs-btn" href="{% url 'resto:restaurant_create' %}">{% trans "Créer mon restaurant" %}</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% if cart_summary.count %}
+<a href="{% url 'resto:cart' %}" class="rs-cartbar show">
+    <span class="material-icons">shopping_basket</span>
+    <span>{{ cart_summary.count }} {% trans "article" %}{{ cart_summary.count|pluralize }} · {{ cart_summary.restaurant.name }}</span>
+    <span>{{ cart_summary.total }} Ar →</span>
+</a>
+{% endif %}
+{% endblock %}

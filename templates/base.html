@@ -1195,6 +1195,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span class="cs-label">Bazar</span>
                 </a>
 
+                <!-- Resto : commander un repas -->
+                <a class="cs-item" href="{% url 'resto:index' %}" onclick="closeCreateSheet()">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#f97316,#dc2626);">
+                        <span style="color:#fff;" class="material-icons">restaurant</span>
+                    </div>
+                    <span class="cs-label">Resto</span>
+                </a>
+
                 <!-- Groupe -->
                 <a class="cs-item" href="{% url 'group:create' %}" onclick="closeCreateSheet()">
                     <div class="cs-icon" style="background:linear-gradient(135deg,#6366f1,#10b981);">

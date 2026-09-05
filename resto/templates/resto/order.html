@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Commande" %} {{ order.number }} — Resto Vazimba{% endblock %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<div class="rs-wrap" style="max-width:820px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0 .8rem;">
+        <h1 style="font-size:1.35rem;font-weight:800;margin:0;">📦 {% trans "Commande" %} {{ order.number }}</h1>
+        <span class="rs-badge status" id="rs-status-badge" style="font-size:.8rem;padding:.3rem .8rem;">{{ order.get_status_display }}</span>
+    </div>
+
+    <!-- ── Progression ── -->
+    <div class="rs-card" style="padding:1rem;">
+        <div class="rs-steps" id="rs-steps">
+            {% for s in order.progress_steps %}
+            <div class="rs-step {% if s.done %}done{% endif %} {% if s.current %}current{% endif %}"><div class="dot">{% if s.done %}✓{% endif %}</div>{{ s.label }}</div>
+            {% endfor %}
+        </div>
+        {% if order.is_cancelled %}
+        <p class="rs-form err" style="margin:0;">⛔ {{ order.get_status_display }}{% if order.refusal_reason %} — {{ order.refusal_reason }}{% endif %}</p>
+        {% else %}
+        <p class="rs-muted" id="rs-eta" style="margin:0;">
+            {% if order.estimated_minutes and not order.is_final %}⏱ {% trans "Délai annoncé" %} : ~{{ order.estimated_minutes }} min{% endif %}
+        </p>
+        {% endif %}
+
+        <!-- Qui, d'où, vers où -->
+        <div class="rs-row" style="margin-top:.8rem;font-size:.88rem;">
+            <div>
+                <div class="rs-muted">🏪 {% trans "Restaurant" %}</div>
+                <strong><a href="{% url 'resto:restaurant' order.restaurant.slug %}" style="color:var(--accent);">{{ order.restaurant.name }}</a></strong>
+                <div>{{ order.pickup_address }}</div>
+                {% if order.restaurant.phone and actor != 'restaurant' %}<div>📞 <a href="tel:{{ order.restaurant.phone }}">{{ order.restaurant.phone }}</a></div>{% endif %}
+            </div>
+            {% if order.is_delivery %}
+            <div>
+                <div class="rs-muted">🏠 {% trans "Livraison chez" %}</div>
+                <strong>{{ order.customer_name }}</strong>
+                <div>{{ order.delivery_address }}</div>
+                {% if actor != 'customer' %}<div>📞 <a href="tel:{{ order.customer_phone }}">{{ order.customer_phone }}</a></div>{% endif %}
+            </div>
+            <div id="rs-courier-box">
+                <div class="rs-muted">🛵 {% trans "Livreur" %}</div>
+                {% if order.courier %}
+                <strong>{{ order.courier.display_name }}</strong> · {{ order.courier.get_vehicle_display }}
+                <div>📞 <a href="tel:{{ order.courier.phone }}">{{ order.courier.phone }}</a></div>
+                {% else %}<span class="rs-muted">{% trans "Pas encore attribué" %}</span>{% endif %}
+            </div>
+            {% else %}
+            <div><div class="rs-muted">🏪 {% trans "Retrait sur place par" %}</div><strong>{{ order.customer_name }}</strong>{% if actor != 'customer' %}<div>📞 {{ order.customer_phone }}</div>{% endif %}</div>
+            {% endif %}
+        </div>
+
+        {% if order.is_delivery %}
+        <div id="rs-map" style="margin-top:.8rem;"></div>
+        <p class="rs-muted" id="rs-map-hint" style="margin:.3rem 0 0;font-size:.78rem;"></p>
+        {% endif %}
+    </div>
+
+    <!-- ── Actions selon le rôle ── -->
+    {% if transitions %}
+    <div class="rs-card" style="padding:1rem;margin-top:1rem;">
+        <p style="font-weight:700;margin:0 0 .5rem;">{% if actor == 'customer' %}{% trans "Votre commande" %}{% elif actor == 'restaurant' %}{% trans "Espace restaurant" %}{% else %}{% trans "Espace livreur" %}{% endif %}</p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+            {% for code, label in transitions %}
+            {% if actor == 'customer' %}
+            <form method="post" action="{% url 'resto:order_cancel' order.number %}" onsubmit="return confirm('{% trans "Annuler cette commande ?" %}')">{% csrf_token %}
+                <button class="rs-btn danger" type="submit">{% trans "Annuler la commande" %}</button></form>
+            {% else %}
+            <form method="post" action="{% url 'resto:order_set_status' order.number %}" style="display:flex;gap:.4rem;align-items:center;">{% csrf_token %}
+                <input type="hidden" name="status" value="{{ code }}">
+                {% if code == 'accepted' %}<input class="form-control" name="estimated_minutes" type="number" min="5" max="240" value="{{ order.estimated_minutes|default:30 }}" style="width:90px;" title="{% trans 'Délai (min)' %}">{% endif %}
+                {% if code == 'refused' %}<input class="form-control" name="note" placeholder="{% trans 'Motif' %}" style="width:160px;">{% endif %}
+                <button class="rs-btn {% if code == 'refused' %}danger{% elif code == 'delivered' %}{% else %}secondary{% endif %}" type="submit">{{ label }}</button>
+            </form>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Détail ── -->
+    <div class="rs-card" style="padding:1rem;margin-top:1rem;">
+        <p style="font-weight:700;margin:0 0 .4rem;">{% trans "Détail" %}</p>
+        {% for l in items %}
+        <div class="rs-order-line">
+            <div>{{ l.quantity }} × {{ l.name }}
+                {% for o in l.options.all %}<small>{{ o.group_name }} : {{ o.name }}{% if o.extra_price %} (+{{ o.extra_price|floatformat:0 }} Ar){% endif %}</small>{% endfor %}
+                {% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}
+            </div>
+            <div>{{ l.formatted_line_total }}</div>
+        </div>
+        {% endfor %}
+        <div style="display:flex;justify-content:space-between;margin-top:.6rem;"><span>{% trans "Sous-total" %}</span><span>{{ order.formatted_subtotal }}</span></div>
+        {% if order.is_delivery %}<div style="display:flex;justify-content:space-between;" class="rs-muted"><span>{% trans "Livraison" %}</span><span>{{ order.formatted_delivery_fee }}</span></div>{% endif %}
+        <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;margin-top:.3rem;"><span>{% trans "Total" %}</span><span>{{ order.formatted_total }}</span></div>
+        <p class="rs-muted" style="margin:.4rem 0 0;">💳 {{ order.get_payment_method_display }}{% if order.note %} · 📝 {{ order.note }}{% endif %}</p>
+    </div>
+
+    <!-- ── Historique ── -->
+    <div class="rs-card" style="padding:1rem;margin-top:1rem;">
+        <p style="font-weight:700;margin:0 0 .5rem;">{% trans "Historique" %}</p>
+        <ul class="rs-timeline" id="rs-timeline">
+            {% for e in order.events.all %}<li><strong>{{ e.get_status_display }}</strong> <span class="rs-muted">· {{ e.at|date:"H:i" }}{% if e.note %} · {{ e.note }}{% endif %}</span></li>{% endfor %}
+        </ul>
+    </div>
+    <p style="margin-top:1rem;"><a href="{% if actor == 'restaurant' %}{% url 'resto:vendor_orders' order.restaurant.slug %}{% elif actor == 'courier' %}{% url 'resto:courier_dashboard' %}{% else %}{% url 'resto:my_orders' %}{% endif %}" style="color:var(--accent);">← {% trans "Retour" %}</a></p>
+</div>
+
+<script>
+(function(){
+  let state = {{ state_json|safe }};
+  const NUMBER = state.number, IS_DELIVERY = state.mode === 'delivery';
+  const I18N = {courier:"{% trans 'Livreur' %}", resto:"{% trans 'Restaurant' %}", you:"{% trans 'Livraison' %}",
+                pos:"{% trans 'Position du livreur mise à jour à' %}", nopos:"{% trans 'La position du livreur apparaîtra ici dès qu\'il partagera son GPS.' %}",
+                noassign:"{% trans 'Pas encore attribué' %}"};
+  // ── Carte ──
+  let map, mCourier, mPick, mDrop, line;
+  if(IS_DELIVERY && window.L && document.getElementById('rs-map')){
+    map = L.map('rs-map');
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '© OpenStreetMap'}).addTo(map);
+    const icon = (emoji) => L.divIcon({className:'', html:`<div style="font-size:26px;line-height:1;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))">${emoji}</div>`, iconSize:[28,28], iconAnchor:[14,26]});
+    const pts = [];
+    if(state.pickup.lat !== null){ mPick = L.marker([state.pickup.lat, state.pickup.lng], {icon:icon('🏪')}).addTo(map).bindTooltip(I18N.resto + ' · ' + state.pickup.name); pts.push([state.pickup.lat, state.pickup.lng]); }
+    if(state.delivery.lat !== null){ mDrop = L.marker([state.delivery.lat, state.delivery.lng], {icon:icon('🏠')}).addTo(map).bindTooltip(I18N.you); pts.push([state.delivery.lat, state.delivery.lng]); }
+    if(pts.length >= 2) line = L.polyline(pts, {color:'#8B4513', dashArray:'6 8', weight:3}).addTo(map);
+    if(pts.length) map.fitBounds(L.latLngBounds(pts).pad(.3)); else map.setView([-18.8792, 47.5079], 12);
+    window._rsIcon = icon;
+  }
+  function render(s){
+    state = s;
+    document.getElementById('rs-status-badge').textContent = s.status_label;
+    document.getElementById('rs-steps').innerHTML = s.steps.map(st => `<div class="rs-step ${st.done?'done':''} ${st.current?'current':''}"><div class="dot">${st.done?'✓':''}</div>${st.label}</div>`).join('');
+    document.getElementById('rs-timeline').innerHTML = s.events.map(e => { const d = new Date(e.at); return `<li><strong>${e.label}</strong> <span class="rs-muted">· ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}${e.note ? ' · ' + esc(e.note) : ''}</span></li>`; }).join('');
+    const eta = document.getElementById('rs-eta'); if(eta && (s.is_final || !s.estimated_minutes)) eta.textContent = '';
+    const box = document.getElementById('rs-courier-box');
+    if(box){
+      if(s.courier) box.innerHTML = `<div class="rs-muted">🛵 ${I18N.courier}</div><strong>${esc(s.courier.name)}</strong> · ${esc(s.courier.vehicle)}<div>📞 <a href="tel:${esc(s.courier.phone)}">${esc(s.courier.phone)}</a></div>`;
+      else box.innerHTML = `<div class="rs-muted">🛵 ${I18N.courier}</div><span class="rs-muted">${I18N.noassign}</span>`;
+    }
+    if(map){
+      const hint = document.getElementById('rs-map-hint');
+      if(s.courier && s.courier.lat !== null && ['picked_up','delivering','ready'].includes(s.status)){
+        const ll = [s.courier.lat, s.courier.lng];
+        if(mCourier) mCourier.setLatLng(ll); else mCourier = L.marker(ll, {icon:_rsIcon('🛵'), zIndexOffset:1000}).addTo(map).bindTooltip(I18N.courier);
+        const d = new Date(s.courier.updated_at); hint.textContent = `${I18N.pos} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+        const pts = [ll]; if(mPick) pts.push(mPick.getLatLng()); if(mDrop) pts.push(mDrop.getLatLng());
+        map.fitBounds(L.latLngBounds(pts).pad(.25), {animate:true});
+      } else if(!s.is_final) { hint.textContent = s.courier ? I18N.nopos : ''; }
+    }
+  }
+  function esc(x){ return String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  // ── Rafraîchissement : 5 s pendant la livraison, 12 s sinon, stop quand terminée ──
+  let prevStatus = state.status;
+  async function poll(){
+    if(state.is_final) return;
+    try{
+      const r = await fetch(`/resto/commande/${NUMBER}/etat/`, {credentials:'same-origin', cache:'no-store'});
+      if(r.ok){ const s = await r.json(); render(s);
+        if(s.status !== prevStatus){ prevStatus = s.status; if(navigator.vibrate) navigator.vibrate(120);
+          // Les boutons d'action dépendent du statut : on recharge la page pour les rafraîchir
+          {% if actor != 'customer' %}window.location.reload(); return;{% else %}if(s.is_final){ setTimeout(() => window.location.reload(), 1500); return; }{% endif %}
+        } }
+    }catch(e){}
+    setTimeout(poll, ['picked_up','delivering'].includes(state.status) ? 5000 : 12000);
+  }
+  render(state);
+  setTimeout(poll, 5000);
+})();
+</script>
+{% endblock %}

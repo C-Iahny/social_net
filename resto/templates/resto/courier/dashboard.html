@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Espace livreur" %} — Resto Vazimba{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<div class="rs-wrap" style="max-width:820px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0 1rem;">
+        <h1 style="font-size:1.4rem;font-weight:800;margin:0;">🛵 {% trans "Espace livreur" %}</h1>
+        <a class="rs-btn sm ghost" href="{% url 'resto:courier_signup' %}">⚙️ {% trans "Mon profil" %}</a>
+    </div>
+
+    <div class="rs-card" style="padding:1rem;margin-bottom:1rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
+            <div>
+                <strong>{{ courier.display_name }}</strong> · {{ courier.get_vehicle_display }}
+                {% if courier.restaurant %}· 🏪 {{ courier.restaurant.name }}{% else %}· {% trans "Indépendant" %}{% endif %}
+                {% if not courier.is_approved %}<span class="rs-badge pending">{% trans "En attente de validation" %}</span>{% endif %}
+                <div class="rs-muted" id="rs-gps-status">📍 {% trans "GPS inactif" %}</div>
+            </div>
+            <form method="post" action="{% url 'resto:courier_toggle' %}">{% csrf_token %}
+                <button class="rs-btn {% if courier.is_available %}ghost{% endif %}" type="submit">{% if courier.is_available %}⏸ {% trans "Me mettre indisponible" %}{% else %}▶ {% trans "Je suis disponible" %}{% endif %}</button>
+            </form>
+        </div>
+    </div>
+
+    <h2 class="rs-section-title" style="margin-top:.4rem;">🔥 {% trans "Mes livraisons en cours" %}</h2>
+    {% for o in orders %}
+    <div class="rs-card" style="padding:.9rem;margin-bottom:.7rem;border-color:var(--accent);">
+        <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
+            <a href="{% url 'resto:order' o.number %}" style="font-weight:800;color:var(--accent);">{{ o.number }}</a>
+            <span class="rs-badge status">{{ o.get_status_display }}</span>
+        </div>
+        <div style="font-size:.88rem;margin:.4rem 0;">
+            <div>🏪 <strong>{{ o.restaurant.name }}</strong> — {{ o.pickup_address }}{% if o.restaurant.phone %} · 📞 <a href="tel:{{ o.restaurant.phone }}">{{ o.restaurant.phone }}</a>{% endif %}</div>
+            <div>🏠 <strong>{{ o.customer_name }}</strong> — {{ o.delivery_address }} · 📞 <a href="tel:{{ o.customer_phone }}">{{ o.customer_phone }}</a></div>
+            <div class="rs-muted">{{ o.items.count }} {% trans "article(s)" %} · {{ o.formatted_total }} · {{ o.get_payment_method_display }}</div>
+        </div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+            {% if o.delivery_latitude %}<a class="rs-btn sm secondary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination={{ o.delivery_latitude }},{{ o.delivery_longitude }}">🧭 {% trans "Itinéraire" %}</a>{% endif %}
+            {% for code, label in o.next_steps %}
+            <form method="post" action="{% url 'resto:order_set_status' o.number %}">{% csrf_token %}<input type="hidden" name="status" value="{{ code }}"><input type="hidden" name="next" value="{% url 'resto:courier_dashboard' %}"><button class="rs-btn sm" type="submit">{{ label }}</button></form>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <p class="rs-muted">{% trans "Aucune livraison en cours." %}</p>
+    {% endfor %}
+
+    <h2 class="rs-section-title">🆕 {% trans "Commandes prêtes à récupérer" %}</h2>
+    {% for o in available %}
+    <div class="rs-card" style="padding:.9rem;margin-bottom:.7rem;">
+        <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
+            <strong>{{ o.restaurant.name }}</strong><span class="rs-muted">{{ o.ready_at|date:"H:i" }}</span>
+        </div>
+        <div style="font-size:.88rem;margin:.3rem 0;">📍 {{ o.pickup_address }} → 🏠 {{ o.delivery_address }} · {{ o.items.count }} {% trans "article(s)" %} · {{ o.formatted_total }}</div>
+        <form method="post" action="{% url 'resto:courier_take' o.number %}">{% csrf_token %}<button class="rs-btn sm" type="submit">✋ {% trans "Je prends cette livraison" %}</button></form>
+    </div>
+    {% empty %}
+    <p class="rs-muted">{% if courier.is_approved %}{% trans "Rien à récupérer pour le moment. La page se rafraîchit toute seule." %}{% else %}{% trans "Votre profil doit être validé pour voir les commandes." %}{% endif %}</p>
+    {% endfor %}
+
+    {% if history %}
+    <h2 class="rs-section-title">✅ {% trans "Dernières livraisons" %}</h2>
+    {% for o in history %}<div class="rs-muted" style="padding:.3rem 0;border-bottom:1px dashed var(--border);">{{ o.delivered_at|date:"d/m H:i" }} · {{ o.restaurant.name }} · {{ o.number }} · {{ o.formatted_total }}</div>{% endfor %}
+    {% endif %}
+</div>
+
+<script>
+(function(){
+  const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+  const HAS_ACTIVE = {{ orders|length }} > 0;
+  const AVAILABLE = {{ courier.is_available|yesno:"true,false" }};
+  const el = document.getElementById('rs-gps-status');
+  const I18N = {on:"{% trans 'GPS partagé' %}", off:"{% trans 'GPS inactif' %}", err:"{% trans 'GPS refusé ou indisponible' %}"};
+  // Partage de position : seulement quand le livreur est disponible ou a une livraison en cours
+  if((HAS_ACTIVE || AVAILABLE) && navigator.geolocation){
+    let last = 0;
+    navigator.geolocation.watchPosition(async p => {
+      const now = Date.now(); if(now - last < 8000) return; last = now;   // ~1 envoi / 8 s
+      try{
+        const r = await fetch("{% url 'resto:courier_position' %}", {method:'POST', credentials:'same-origin',
+          headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({lat: p.coords.latitude, lng: p.coords.longitude})});
+        el.textContent = '📍 ' + I18N.on + ' · ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+        if(!r.ok) el.textContent = '📍 ' + I18N.err;
+      }catch(e){ el.textContent = '📍 ' + I18N.err; }
+    }, () => { el.textContent = '📍 ' + I18N.err; }, {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
+  }
+  // Nouvelles commandes prêtes : rafraîchissement toutes les 20 s quand disponible
+  if(AVAILABLE) setTimeout(() => window.location.reload(), 20000);
+})();
+</script>
+{% endblock %}

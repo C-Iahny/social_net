@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Espace vendeur" %} — Resto Vazimba{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<div class="rs-wrap" style="max-width:860px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0 1rem;">
+        <h1 style="font-size:1.4rem;font-weight:800;margin:0;">🏪 {% trans "Mes restaurants" %}</h1>
+        <a class="rs-btn sm" href="{% url 'resto:restaurant_create' %}">+ {% trans "Nouveau restaurant" %}</a>
+    </div>
+
+    {% for r in restaurants %}
+    <div class="rs-card" style="padding:1rem;margin-bottom:.8rem;">
+        <div style="display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;align-items:center;">
+            <div>
+                <strong style="font-size:1.05rem;">{{ r.name }}</strong>
+                <span class="rs-badge {% if r.is_open %}open{% else %}closed{% endif %}">{% if r.is_open %}{% trans "Ouvert" %}{% else %}{% trans "Fermé" %}{% endif %}</span>
+                {% if not r.is_approved %}<span class="rs-badge pending">{% trans "En attente de validation Vazimba" %}</span>{% endif %}
+                <div class="rs-muted">{{ r.get_category_display }} · {{ r.address }} · {{ r.items_count }} {% trans "plat(s)" %}</div>
+            </div>
+            <form method="post" action="{% url 'resto:toggle_open' r.slug %}">{% csrf_token %}
+                <button class="rs-btn sm {% if r.is_open %}ghost{% else %}{% endif %}" type="submit">{% if r.is_open %}⏸ {% trans "Suspendre les commandes" %}{% else %}▶ {% trans "Ouvrir les commandes" %}{% endif %}</button>
+            </form>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;">
+            <a class="rs-btn sm {% if r.pending %}{% else %}secondary{% endif %}" href="{% url 'resto:vendor_orders' r.slug %}">📋 {% trans "Commandes" %}{% if r.pending %} <span style="background:#fff;color:var(--accent);border-radius:20px;padding:0 .45rem;margin-left:.2rem;">{{ r.pending }} {% trans "nouvelle(s)" %}</span>{% elif r.active %} ({{ r.active }}){% endif %}</a>
+            <a class="rs-btn sm secondary" href="{% url 'resto:menu_manage' r.slug %}">🍛 {% trans "Menu" %}</a>
+            <a class="rs-btn sm secondary" href="{% url 'resto:vendor_couriers' r.slug %}">🛵 {% trans "Livreurs" %}</a>
+            <a class="rs-btn sm secondary" href="{% url 'resto:restaurant_edit' r.slug %}">⚙️ {% trans "Infos" %}</a>
+            <a class="rs-btn sm ghost" href="{% url 'resto:restaurant' r.slug %}">👁 {% trans "Voir la page" %}</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="rs-empty">
+        <div class="ico">🏪</div>
+        <h4 style="font-weight:700;color:var(--text);">{% trans "Vendez vos plats sur Vazimba" %}</h4>
+        <p>{% trans "Créez votre page, ajoutez votre menu avec les suppléments au choix, recevez les commandes et confiez-les à vos livreurs. Vos clients vous retrouvent en un clic, sans chercher votre page Facebook." %}</p>
+        <a class="rs-btn" href="{% url 'resto:restaurant_create' %}">{% trans "Créer mon restaurant" %}</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

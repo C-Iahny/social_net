@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+{% block page_title %}{% trans "Devenir livreur" %} — Resto Vazimba{% endblock %}
+
+{% block content %}
+{% include 'resto/_style.html' %}
+<div class="rs-wrap" style="max-width:600px;">
+    <h1 style="font-size:1.4rem;font-weight:800;margin:.5rem 0 1rem;">🛵 {% if courier %}{% trans "Mon profil livreur" %}{% else %}{% trans "Devenir livreur" %}{% endif %}</h1>
+    <form method="post" class="rs-card rs-form" style="padding:1rem;" novalidate>{% csrf_token %}
+        {% for field in form.visible_fields %}
+        <div style="margin-bottom:.8rem;"><label>{{ field.label }}</label>{{ field }}{% if field.errors %}<p class="err">{{ field.errors|join:" " }}</p>{% endif %}</div>
+        {% endfor %}
+        <button class="rs-btn" type="submit" style="width:100%;">{% trans "Enregistrer" %}</button>
+    </form>
+    <p class="rs-muted" style="margin-top:.8rem;">{% trans "Un restaurant peut vous rattacher directement (vous êtes alors validé aussitôt). Les livreurs indépendants sont validés par l'équipe Vazimba." %}</p>
+</div>
+{% endblock %}

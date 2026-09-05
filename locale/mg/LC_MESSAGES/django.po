@@ -1834,3 +1834,871 @@ msgstr "Ampidiro ny tenimiafina ankehitriny ary safidio vaovao"
 msgid "Old password"
 msgstr "Tenimiafina taloha"
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Mon panier"
+msgstr "Ny sobikako"
+
+msgid "Ajouter d'autres plats"
+msgstr "Hanampy sakafo hafa"
+
+msgid "Sous-total"
+msgstr "Fitambarany"
+
+msgid "Livraison (si livraison)"
+msgstr "Fanaterana (raha aterina)"
+
+msgid "Total"
+msgstr "Totaly"
+
+msgid "Commander"
+msgstr "Hanao kaomandy"
+
+msgid "Vider le panier ?"
+msgstr "Hofoanana ve ny sobika ?"
+
+msgid "Vider"
+msgstr "Foanana"
+
+msgid "Votre panier est vide."
+msgstr "Tsy misy na inona na inona ao anaty sobikanao."
+
+msgid "Voir les restaurants"
+msgstr "Hijery ny hotely"
+
+msgid "Commande minimum : %(m)s Ar"
+msgstr "Kaomandy farany ambany : %(m)s Ar"
+
+msgid "Finaliser la commande"
+msgstr "Hamarana ny kaomandy"
+
+msgid "Comment recevoir la commande ?"
+msgstr "Ahoana no handraisana ny kaomandy ?"
+
+msgid "Votre nom"
+msgstr "Ny anaranao"
+
+msgid "Téléphone (le livreur vous appellera)"
+msgstr "Finday (hiantso anao ny mpanatitra)"
+
+msgid "Adresse de livraison"
+msgstr "Adiresy hanaterana"
+
+msgid "Placez le repère sur la carte pour guider le livreur (touchez la carte ou utilisez « Ma position »)."
+msgstr "Apetraho eo amin'ny sarintany ny marika mba hitarihana ny mpanatitra (tsindrio ny sarintany na ampiasao ny « Ny toerako »)."
+
+msgid "Ma position"
+msgstr "Ny toerako"
+
+msgid "Paiement"
+msgstr "Fandoavam-bola"
+
+msgid "Le paiement se fait directement avec le restaurant ou le livreur. Vazimba ne prélève rien."
+msgstr "Aloa mivantana amin'ny hotely na ny mpanatitra ny vola. Tsy maka na inona na inona i Vazimba."
+
+msgid "Message au restaurant"
+msgstr "Hafatra ho an'ny hotely"
+
+msgid "Livraison"
+msgstr "Fanaterana"
+
+msgid "Délai estimé"
+msgstr "Fotoana tombanana"
+
+msgid "de préparation"
+msgstr "fanomanana"
+
+msgid "Envoyer la commande"
+msgstr "Alefa ny kaomandy"
+
+msgid "Resto"
+msgstr "Sakafo"
+
+msgid "Commandez vos plats préférés près de chez vous et suivez la livraison en direct, sans publicité."
+msgstr "Manaova kaomandy ny sakafo tianao eo akaikinao ary araho mivantana ny fanaterana, tsy misy dokam-barotra."
+
+msgid "Resto Vazimba"
+msgstr "Sakafo Vazimba"
+
+msgid "Commande ton plat, choisis tes suppléments, suis ton livreur sur la carte."
+msgstr "Manaova kaomandy, fidio ny fanampiny, araho eo amin'ny sarintany ny mpanatitra anao."
+
+msgid "Un plat, un restaurant, un quartier…"
+msgstr "Sakafo, hotely, fokontany…"
+
+msgid "Mes commandes"
+msgstr "Ny kaomandiko"
+
+msgid "Mon restaurant"
+msgstr "Ny hoteliko"
+
+msgid "Vendre mes plats"
+msgstr "Hivarotra ny sakafoko"
+
+msgid "Espace livreur"
+msgstr "Toeran'ny mpanatitra"
+
+msgid "Connexion pour commander"
+msgstr "Midira raha hanao kaomandy"
+
+msgid "Ouverts d'abord"
+msgstr "Misokatra aloha"
+
+msgid "Populaires"
+msgstr "Malaza"
+
+msgid "Nouveaux"
+msgstr "Vaovao"
+
+msgid "Livraison la moins chère"
+msgstr "Fanaterana mora indrindra"
+
+msgid "restaurant"
+msgstr "hotely"
+
+msgid "Ouvert"
+msgstr "Misokatra"
+
+msgid "Fermé"
+msgstr "Mihidy"
+
+msgid "Aucun restaurant pour l'instant"
+msgstr "Mbola tsy misy hotely"
+
+msgid "Sois le premier : crée ta page, ajoute ton menu, et tes clients te retrouveront ici au lieu de chercher ta page Facebook."
+msgstr "Aoka ianao no voalohany : forony ny pejinao, ampidiro ny menu-nao, dia hahita anao eto ny mpanjifanao fa tsy hitady ny pejy Facebook-nao intsony."
+
+msgid "Créer mon restaurant"
+msgstr "Hamorona ny hoteliko"
+
+msgid "article"
+msgstr "entana"
+
+msgid "En cours"
+msgstr "Eo am-pandehanana"
+
+msgid "article(s)"
+msgstr "entana"
+
+msgid "Aucune commande en cours."
+msgstr "Tsy misy kaomandy eo am-pandehanana."
+
+msgid "Terminées"
+msgstr "Vita"
+
+msgid "Commande"
+msgstr "Kaomandy"
+
+msgid "Délai annoncé"
+msgstr "Fotoana nambara"
+
+msgid "Restaurant"
+msgstr "Hotely"
+
+msgid "Livraison chez"
+msgstr "Aterina any amin'i"
+
+msgid "Livreur"
+msgstr "Mpanatitra"
+
+msgid "Pas encore attribué"
+msgstr "Mbola tsy voatendry"
+
+msgid "Retrait sur place par"
+msgstr "Alaina eo an-toerana : "
+
+msgid "Votre commande"
+msgstr "Ny kaomandinao"
+
+msgid "Espace restaurant"
+msgstr "Toeran'ny hotely"
+
+msgid "Annuler cette commande ?"
+msgstr "Hofoanana ve ity kaomandy ity ?"
+
+msgid "Annuler la commande"
+msgstr "Foano ny kaomandy"
+
+msgid "Délai (min)"
+msgstr "Fotoana (min)"
+
+msgid "Motif"
+msgstr "Antony"
+
+msgid "Détail"
+msgstr "Antsipiriany"
+
+msgid "Historique"
+msgstr "Tantara"
+
+msgid "Retour"
+msgstr "Hiverina"
+
+msgid "Position du livreur mise à jour à"
+msgstr "Toeran'ny mpanatitra nohavaozina tamin'ny"
+
+msgid "La position du livreur apparaîtra ici dès qu'il partagera son GPS."
+msgstr "Hiseho eto ny toeran'ny mpanatitra raha vao mizara ny GPS-ny izy."
+
+msgid "En attente de validation"
+msgstr "Miandry fankatoavana"
+
+msgid "Retrait sur place"
+msgstr "Alaina eo an-toerana"
+
+msgid "Commande min."
+msgstr "Kaomandy farany ambany"
+
+msgid "Gérer le menu"
+msgstr "Hitantana ny menu"
+
+msgid "Commandes"
+msgstr "Kaomandy"
+
+msgid "Voir le panier"
+msgstr "Hijery ny sobika"
+
+msgid "personnalisable"
+msgstr "azo ovaina"
+
+msgid "Ajouter"
+msgstr "Ampidiro"
+
+msgid "Le menu n'est pas encore publié."
+msgstr "Mbola tsy navoaka ny menu."
+
+msgid "Instructions"
+msgstr "Toromarika"
+
+msgid "facultatif"
+msgstr "tsy voatery"
+
+msgid "Ex : sans oignons, bien cuit…"
+msgstr "Ohatra : tsy misy tongolo, masaka tsara…"
+
+msgid "obligatoire"
+msgstr "tsy maintsy"
+
+msgid "choisissez"
+msgstr "fidio"
+
+msgid "max"
+msgstr "farany ambony"
+
+msgid "Connectez-vous pour commander."
+msgstr "Midira raha hanao kaomandy."
+
+msgid "Ce restaurant est fermé pour le moment."
+msgstr "Mihidy aloha ity hotely ity."
+
+msgid "Votre panier contient des plats de"
+msgstr "Misy sakafo avy amin'ny"
+
+msgid "Le vider et ajouter ce plat ?"
+msgstr "Foanana ve izany dia ampidirina ity sakafo ity ?"
+
+msgid "Ajouté au panier"
+msgstr "Tafiditra ao anaty sobika"
+
+msgid "Votre panier contient déjà des plats de <strong>%(r)s</strong>. Ajouter un plat d'ici le videra."
+msgstr "Efa misy sakafo avy amin'ny <strong>%(r)s</strong> ao anaty sobikanao. Hofoanana izany raha manampy sakafo avy eto ianao."
+
+msgid "Mon profil"
+msgstr "Ny mombamomba ahy"
+
+msgid "Indépendant"
+msgstr "Mahaleo tena"
+
+msgid "GPS inactif"
+msgstr "Tsy mandeha ny GPS"
+
+msgid "Me mettre indisponible"
+msgstr "Tsy afaka aho"
+
+msgid "Je suis disponible"
+msgstr "Afaka aho"
+
+msgid "Mes livraisons en cours"
+msgstr "Ny fanaterako eo am-pandehanana"
+
+msgid "Itinéraire"
+msgstr "Lalana"
+
+msgid "Aucune livraison en cours."
+msgstr "Tsy misy fanaterana eo am-pandehanana."
+
+msgid "Commandes prêtes à récupérer"
+msgstr "Kaomandy vonona halaina"
+
+msgid "Je prends cette livraison"
+msgstr "Alaiko ity fanaterana ity"
+
+msgid "Rien à récupérer pour le moment. La page se rafraîchit toute seule."
+msgstr "Tsy misy halaina aloha. Mihavao ho azy ity pejy ity."
+
+msgid "Votre profil doit être validé pour voir les commandes."
+msgstr "Tsy maintsy ankatoavina ny mombamomba anao vao mahita ny kaomandy."
+
+msgid "Dernières livraisons"
+msgstr "Fanaterana farany"
+
+msgid "GPS partagé"
+msgstr "GPS zaraina"
+
+msgid "GPS refusé ou indisponible"
+msgstr "GPS nolavina na tsy hita"
+
+msgid "Devenir livreur"
+msgstr "Ho lasa mpanatitra"
+
+msgid "Mon profil livreur"
+msgstr "Ny mombamomba ahy mpanatitra"
+
+msgid "Un restaurant peut vous rattacher directement (vous êtes alors validé aussitôt). Les livreurs indépendants sont validés par l'équipe Vazimba."
+msgstr "Afaka mampiditra anao mivantana ny hotely iray (voankatoa avy hatrany ianao amin'izay). Ny mpanatitra mahaleo tena dia ankatoavin'ny ekipa Vazimba."
+
+msgid "Livreurs"
+msgstr "Mpanatitra"
+
+msgid "Mes restaurants"
+msgstr "Ny hoteliko"
+
+msgid "Ajoutez vos livreurs par leur nom d'utilisateur Vazimba. Ils recevront vos commandes prêtes et partageront leur position avec le client."
+msgstr "Ampidiro ny mpanatitrao amin'ny anaran'ny mpampiasa Vazimba. Handray ny kaomandy vonona izy ireo ary hizara ny toerany amin'ny mpanjifa."
+
+msgid "Nom d'utilisateur"
+msgstr "Anaran'ny mpampiasa"
+
+msgid "Disponible"
+msgstr "Afaka"
+
+msgid "Indisponible"
+msgstr "Tsy afaka"
+
+msgid "Retirer ce livreur ?"
+msgstr "Esorina ve ity mpanatitra ity ?"
+
+msgid "Aucun livreur rattaché. Sans livreur, vos commandes « prêtes » sont proposées aux livreurs indépendants de votre région."
+msgstr "Tsy misy mpanatitra. Raha tsy misy mpanatitra, atolotra ny mpanatitra mahaleo tena ao amin'ny faritrao ny kaomandy « vonona »."
+
+msgid "Espace vendeur"
+msgstr "Toeran'ny mpivarotra"
+
+msgid "Nouveau restaurant"
+msgstr "Hotely vaovao"
+
+msgid "En attente de validation Vazimba"
+msgstr "Miandry ny fankatoavan'i Vazimba"
+
+msgid "plat(s)"
+msgstr "sakafo"
+
+msgid "Suspendre les commandes"
+msgstr "Ajanona aloha ny kaomandy"
+
+msgid "Ouvrir les commandes"
+msgstr "Sokafy ny kaomandy"
+
+msgid "nouvelle(s)"
+msgstr "vaovao"
+
+msgid "Voir la page"
+msgstr "Hijery ny pejy"
+
+msgid "Vendez vos plats sur Vazimba"
+msgstr "Amidio ao amin'i Vazimba ny sakafonao"
+
+msgid "Créez votre page, ajoutez votre menu avec les suppléments au choix, recevez les commandes et confiez-les à vos livreurs. Vos clients vous retrouvent en un clic, sans chercher votre page Facebook."
+msgstr "Forony ny pejinao, ampidiro ny menu-nao miaraka amin'ny fanampiny azo fidiana, raiso ny kaomandy ary ankino amin'ny mpanatitrao. Hahita anao amin'ny tsindry iray ny mpanjifanao, tsy mila mitady ny pejy Facebook-nao."
+
+msgid "Aperçu"
+msgstr "Topimaso"
+
+msgid "Rubriques"
+msgstr "Sokajy"
+
+msgid "Entrées, Plats, Boissons…"
+msgstr "Fanokafana, Sakafo, Zava-pisotro…"
+
+msgid "Supprimer cette rubrique ?"
+msgstr "Fafana ve ity sokajy ity ?"
+
+msgid "Plats"
+msgstr "Sakafo"
+
+msgid "groupe(s) d'options"
+msgstr "vondrona safidy"
+
+msgid "Options"
+msgstr "Safidy"
+
+msgid "Supprimer ce plat ?"
+msgstr "Fafana ve ity sakafo ity ?"
+
+msgid "Aucun plat. Ajoutez votre premier plat ci-dessous."
+msgstr "Tsy misy sakafo. Ampidiro etsy ambany ny sakafonao voalohany."
+
+msgid "Ajouter un plat"
+msgstr "Hanampy sakafo"
+
+msgid "Nom"
+msgstr "Anarana"
+
+msgid "Prix (Ar)"
+msgstr "Vidiny (Ar)"
+
+msgid "Rubrique"
+msgstr "Sokajy"
+
+msgid "Ordre"
+msgstr "Filaharana"
+
+msgid "Enregistrer le plat"
+msgstr "Tehirizo ny sakafo"
+
+msgid "Comme sur Uber Eats : un groupe = une question posée au client (« Sauce ? », « Suppléments ? »). Minimum 1 = choix obligatoire. Maximum 1 = un seul choix, 0 = illimité."
+msgstr "Toy ny ao amin'ny Uber Eats : vondrona iray = fanontaniana iray apetraka amin'ny mpanjifa (« Lasaosy ? », « Fanampiny ? »). Farany ambany 1 = safidy tsy maintsy. Farany ambony 1 = safidy tokana, 0 = tsy voafetra."
+
+msgid "Ajouter un groupe"
+msgstr "Hanampy vondrona"
+
+msgid "Enregistrer les options"
+msgstr "Tehirizo ny safidy"
+
+msgid "Titre du groupe (ex : Sauce, Suppléments)"
+msgstr "Lohatenin'ny vondrona (ohatra : Lasaosy, Fanampiny)"
+
+msgid "Option (ex : Fromage)"
+msgstr "Safidy (ohatra : Fromazy)"
+
+msgid "Suppl. Ar"
+msgstr "Fanampiny Ar"
+
+msgid "Min"
+msgstr "Ambany"
+
+msgid "Max"
+msgstr "Ambony"
+
+msgid "+ option"
+msgstr "+ safidy"
+
+msgid "Supprimer le groupe"
+msgstr "Fafao ny vondrona"
+
+msgid "Options enregistrées"
+msgstr "Voatahiry ny safidy"
+
+msgid "Modifier le plat"
+msgstr "Ovay ny sakafo"
+
+msgid "Nouvelles"
+msgstr "Vaovao"
+
+msgid "Cette page se rafraîchit automatiquement à chaque nouvelle commande."
+msgstr "Mihavao ho azy ity pejy ity isaky ny misy kaomandy vaovao."
+
+msgid "Retrait"
+msgstr "Alaina eo an-toerana"
+
+msgid "en attente d'un livreur"
+msgstr "miandry mpanatitra"
+
+msgid "Aucune commande dans cet onglet."
+msgstr "Tsy misy kaomandy ato."
+
+msgid "Position sur la carte"
+msgstr "Toerana eo amin'ny sarintany"
+
+msgid "Touchez la carte pour placer votre restaurant : les livreurs et les clients le verront sur le plan de livraison."
+msgstr "Tsindrio ny sarintany mba hametrahana ny hotelinao : ho hitan'ny mpanatitra sy ny mpanjifa eo amin'ny sarintanin'ny fanaterana izy."
+
+msgid "Créer et passer au menu"
+msgstr "Forony dia mandroso amin'ny menu"
+
+msgid "Après création, votre page reste invisible au public jusqu'à validation par l'équipe Vazimba. Vous pouvez déjà préparer votre menu."
+msgstr "Rehefa voaforona, tsy hitan'ny besinimaro ny pejinao mandra-pankatoavan'ny ekipa Vazimba azy. Afaka manomana ny menu-nao sahady ianao."
+
+msgid "Ex : Hotely Mamy, Pizza Tana…"
+msgstr "Ohatra : Hotely Mamy, Pizza Tana…"
+
+msgid "Spécialités, ambiance, ce qui vous distingue"
+msgstr "Sakafo manokana, endrika, izay mampiavaka anao"
+
+msgid "Quartier, rue, repère"
+msgstr "Fokontany, lalana, marika"
+
+msgid "Ex : Lun–Sam 10h–22h"
+msgstr "Ohatra : Alatsinainy–Sabotsy 10 ora–22 ora"
+
+msgid "Activez au moins la livraison ou le retrait sur place."
+msgstr "Alefaso farafahakeliny ny fanaterana na ny fakana eo an-toerana."
+
+msgid "Le montant ne peut pas être négatif."
+msgstr "Tsy azo atao latsaky ny aotra ny vola."
+
+msgid "Ex : Plats, Boissons, Desserts"
+msgstr "Ohatra : Sakafo, Zava-pisotro, Mamy"
+
+msgid "Ex : Ravitoto sy henakisoa"
+msgstr "Ohatra : Ravitoto sy henakisoa"
+
+msgid "Ingrédients, portion, accompagnement"
+msgstr "Akora, habetsahana, loka"
+
+msgid "Le prix ne peut pas être négatif."
+msgstr "Tsy azo atao latsaky ny aotra ny vidiny."
+
+msgid "Quartier, rue, porte, repère pour le livreur"
+msgstr "Fokontany, lalana, varavarana, marika ho an'ny mpanatitra"
+
+msgid "Message au restaurant (facultatif)"
+msgstr "Hafatra ho an'ny hotely (tsy voatery)"
+
+msgid "Indiquez où livrer."
+msgstr "Lazao hoe aiza no aterina."
+
+msgid "Pâtisserie & Boulangerie"
+msgstr "Mofomamy & Mofo"
+
+msgid "Boissons & Jus"
+msgstr "Zava-pisotro & Ranom-boankazo"
+
+msgid "Traiteur & Plats maison"
+msgstr "Traiteur & Sakafo an-trano"
+
+msgid "Épicerie & Courses"
+msgstr "Epicerie & Fividianana"
+
+msgid "Autre"
+msgstr "Hafa"
+
+msgid "Propriétaire"
+msgstr "Tompony"
+
+msgid "Bannière"
+msgstr "Sary lehibe"
+
+msgid "Téléphone / WhatsApp"
+msgstr "Finday / WhatsApp"
+
+msgid "Adresse"
+msgstr "Adiresy"
+
+msgid "Quartier, rue, repère (ex: Analakely, en face de la pharmacie)"
+msgstr "Fokontany, lalana, marika (ohatra : Analakely, tandrifin'ny farmasia)"
+
+msgid "Région"
+msgstr "Faritra"
+
+msgid "Horaires"
+msgstr "Ora fisokafana"
+
+msgid "Ouvert (accepte les commandes)"
+msgstr "Misokatra (mandray kaomandy)"
+
+msgid "Décochez pour suspendre temporairement les commandes."
+msgstr "Esory ny marika raha hampiato vetivety ny kaomandy."
+
+msgid "Propose la livraison"
+msgstr "Manolotra fanaterana"
+
+msgid "Propose le retrait sur place"
+msgstr "Azo alaina eo an-toerana"
+
+msgid "Frais de livraison (Ar)"
+msgstr "Saran'ny fanaterana (Ar)"
+
+msgid "Commande minimum (Ar)"
+msgstr "Kaomandy farany ambany (Ar)"
+
+msgid "Temps de préparation moyen (min)"
+msgstr "Fotoana fanomanana antonony (min)"
+
+msgid "Approuvé par Vazimba"
+msgstr "Nankatoavin'i Vazimba"
+
+msgid "Actif"
+msgstr "Mavitrika"
+
+msgid "Restaurants"
+msgstr "Hotely"
+
+msgid "Livraison gratuite"
+msgstr "Fanaterana maimaim-poana"
+
+msgid "Nom de la rubrique"
+msgstr "Anaran'ny sokajy"
+
+msgid "Rubrique de menu"
+msgstr "Sokajin'ny menu"
+
+msgid "Rubriques de menu"
+msgstr "Sokajin'ny menu"
+
+msgid "Nom du plat"
+msgstr "Anaran'ny sakafo"
+
+msgid "Ingrédients, portion, accompagnement…"
+msgstr "Akora, habetsahana, loka…"
+
+msgid "Plat"
+msgstr "Sakafo"
+
+msgid "Titre du groupe"
+msgstr "Lohatenin'ny vondrona"
+
+msgid "Ex : Sauce, Cuisson, Suppléments, Boisson"
+msgstr "Ohatra : Lasaosy, Fahamasahana, Fanampiny, Zava-pisotro"
+
+msgid "Choix minimum"
+msgstr "Safidy farany ambany"
+
+msgid "0 = facultatif, 1 = au moins un choix obligatoire"
+msgstr "0 = tsy voatery, 1 = safidy iray farafahakeliny tsy maintsy"
+
+msgid "Choix maximum"
+msgstr "Safidy farany ambony"
+
+msgid "1 = un seul choix (boutons ronds), >1 = plusieurs cases à cocher, 0 = illimité"
+msgstr "1 = safidy tokana (bokotra boribory), >1 = efajoro maromaro azo marihina, 0 = tsy voafetra"
+
+msgid "Groupe d'options"
+msgstr "Vondrona safidy"
+
+msgid "Groupes d'options"
+msgstr "Vondrona safidy"
+
+msgid "Groupe"
+msgstr "Vondrona"
+
+msgid "Supplément (Ar)"
+msgstr "Fanampiny (Ar)"
+
+msgid "Option"
+msgstr "Safidy"
+
+msgid "Moto / Scooter"
+msgstr "Môtô / Scooter"
+
+msgid "Vélo"
+msgstr "Bisikileta"
+
+msgid "Voiture"
+msgstr "Fiara"
+
+msgid "À pied"
+msgstr "An-tongotra"
+
+msgid "Utilisateur"
+msgstr "Mpampiasa"
+
+msgid "Restaurant de rattachement"
+msgstr "Hotely iandraiketana"
+
+msgid "Vide = livreur indépendant"
+msgstr "Banga = mpanatitra mahaleo tena"
+
+msgid "Téléphone"
+msgstr "Finday"
+
+msgid "Véhicule"
+msgstr "Fiara / Môtô"
+
+msgid "Panier"
+msgstr "Sobika"
+
+msgid "Paniers"
+msgstr "Sobika"
+
+msgid "Ex : sans oignons, bien cuit"
+msgstr "Ohatra : tsy misy tongolo, masaka tsara"
+
+msgid "En attente du restaurant"
+msgstr "Miandry ny hotely"
+
+msgid "Acceptée"
+msgstr "Nekena"
+
+msgid "En préparation"
+msgstr "Omanina"
+
+msgid "Prête"
+msgstr "Vonona"
+
+msgid "Récupérée par le livreur"
+msgstr "Nalain'ny mpanatitra"
+
+msgid "En cours de livraison"
+msgstr "Aterina"
+
+msgid "Livrée"
+msgstr "Tonga"
+
+msgid "Annulée"
+msgstr "Nofoanana"
+
+msgid "Refusée"
+msgstr "Nolavina"
+
+msgid "Espèces à la livraison"
+msgstr "Vola madio rehefa tonga"
+
+msgid "N° de commande"
+msgstr "Laharan'ny kaomandy"
+
+msgid "Client"
+msgstr "Mpanjifa"
+
+msgid "Statut"
+msgstr "Toe-javatra"
+
+msgid "Mode"
+msgstr "Fomba"
+
+msgid "Nom du client"
+msgstr "Anaran'ny mpanjifa"
+
+msgid "Téléphone du client"
+msgstr "Findain'ny mpanjifa"
+
+msgid "Délai annoncé (min)"
+msgstr "Fotoana nambara (min)"
+
+msgid "Gratuite"
+msgstr "Maimaim-poana"
+
+msgid "Événement de commande"
+msgstr "Zava-nitranga tamin'ny kaomandy"
+
+msgid "Événements de commande"
+msgstr "Zava-nitranga tamin'ny kaomandy"
+
+msgid "Ce restaurant n'accepte pas de commande pour le moment."
+msgstr "Tsy mandray kaomandy aloha ity hotely ity."
+
+msgid "« %(g)s » : choisissez au moins %(n)d option(s)."
+msgstr "« %(g)s » : mifidiana safidy %(n)d farafahakeliny."
+
+msgid "« %(g)s » : %(n)d choix maximum."
+msgstr "« %(g)s » : safidy %(n)d farany ambony."
+
+msgid "%(r)s n'accepte pas de commande pour le moment."
+msgstr "Tsy mandray kaomandy aloha i %(r)s."
+
+msgid "Commande minimum : %(m)s Ar."
+msgstr "Kaomandy farany ambany : %(m)s Ar."
+
+msgid "Nouvelle commande %(n)s chez %(r)s (%(t)s)"
+msgstr "Kaomandy vaovao %(n)s ao amin'ny %(r)s (%(t)s)"
+
+msgid "🍽️ Nouvelle commande"
+msgstr "🍽️ Kaomandy vaovao"
+
+msgid "Commande %(n)s envoyée ! Le restaurant va la confirmer."
+msgstr "Lasa ny kaomandy %(n)s ! Hanamarina azy ny hotely."
+
+msgid "Cette commande ne peut plus être annulée."
+msgstr "Tsy azo foanana intsony ity kaomandy ity."
+
+msgid "Annulée par le client"
+msgstr "Nofoanan'ny mpanjifa"
+
+msgid "Commande %(n)s annulée par le client"
+msgstr "Nofoanan'ny mpanjifa ny kaomandy %(n)s"
+
+msgid "Commande annulée."
+msgstr "Nofoanana ny kaomandy."
+
+msgid "Transition non autorisée."
+msgstr "Tsy azo atao izany fiovana izany."
+
+msgid "Commande %(n)s : %(s)s"
+msgstr "Kaomandy %(n)s : %(s)s"
+
+msgid "Commande %(n)s prête à récupérer chez %(r)s"
+msgstr "Vonona halaina ao amin'ny %(r)s ny kaomandy %(n)s"
+
+msgid "🛵 Livraison disponible"
+msgstr "🛵 Misy fanaterana"
+
+msgid "Commande %(n)s → %(s)s"
+msgstr "Kaomandy %(n)s → %(s)s"
+
+msgid "Restaurant créé. Ajoutez votre menu, puis Vazimba validera votre page."
+msgstr "Voaforona ny hotely. Ampidiro ny menu-nao, dia hankatoa ny pejinao i Vazimba."
+
+msgid "Restaurant mis à jour."
+msgstr "Nohavaozina ny hotely."
+
+msgid "Restaurant ouvert aux commandes."
+msgstr "Misokatra amin'ny kaomandy ny hotely."
+
+msgid "Commandes suspendues."
+msgstr "Naato ny kaomandy."
+
+msgid "Rubrique supprimée (les plats sont conservés)."
+msgstr "Voafafa ny sokajy (tazonina ny sakafo)."
+
+msgid "Rubrique enregistrée."
+msgstr "Voatahiry ny sokajy."
+
+msgid "Nom de rubrique invalide."
+msgstr "Tsy mety ny anaran'ny sokajy."
+
+msgid "Plat enregistré : %(n)s"
+msgstr "Voatahiry ny sakafo : %(n)s"
+
+msgid "Formulaire invalide : "
+msgstr "Tsy mety ny fomba fenoina : "
+
+msgid "Plat supprimé."
+msgstr "Voafafa ny sakafo."
+
+msgid "Données invalides."
+msgstr "Tsy mety ny angona."
+
+msgid "Livreur retiré."
+msgstr "Nesorina ny mpanatitra."
+
+msgid "Utilisateur introuvable : %(u)s"
+msgstr "Tsy hita ny mpampiasa : %(u)s"
+
+msgid "%(r)s vous a ajouté comme livreur"
+msgstr "Nampiditra anao ho mpanatitra i %(r)s"
+
+msgid "🛵 Vazimba Resto"
+msgstr "🛵 Sakafo Vazimba"
+
+msgid "%(u)s est maintenant livreur de %(r)s."
+msgstr "Lasa mpanatitr'i %(r)s i %(u)s."
+
+msgid "Profil livreur enregistré."
+msgstr "Voatahiry ny mombamomba ny mpanatitra."
+
+msgid "Demande envoyée. Un restaurant peut vous rattacher, ou Vazimba validera votre profil."
+msgstr "Lasa ny fangatahana. Afaka mampiditra anao ny hotely iray, na hankatoa ny mombamomba anao i Vazimba."
+
+msgid "Profil livreur non validé."
+msgstr "Mbola tsy nankatoavina ny mombamomba ny mpanatitra."
+
+msgid "Cette commande n'est plus disponible."
+msgstr "Tsy misy intsony ity kaomandy ity."
+
+msgid "Cette commande appartient à un autre restaurant."
+msgstr "An'ny hotely hafa ity kaomandy ity."
+
+msgid "Prise en charge par %(c)s"
+msgstr "Nalain'i %(c)s"
+
+msgid "%(c)s a récupéré votre commande %(n)s"
+msgstr "Nalain'i %(c)s ny kaomandinao %(n)s"
+
+msgid "🛵 En route !"
+msgstr "🛵 An-dalana !"
+
+msgid "Commande %(n)s prise par %(c)s"
+msgstr "Nalain'i %(c)s ny kaomandy %(n)s"
+
+msgid "Commande %(n)s prise en charge. Bonne route !"
+msgstr "Voaray ny kaomandy %(n)s. Soava dia !"
+
