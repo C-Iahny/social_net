@@ -216,19 +216,43 @@ class MenuItem(models.Model):
 
     @property
     def ingredient_list(self):
-        """[{'name': 'Oignons', 'removable': True}, {'name': 'Riz', 'removable': False}, …]"""
+        """
+        Un ingrédient par ligne, format « Nom|prix|inclus|choix » :
+            prix   : supplément en Ar (0 = compris dans le prix du plat)
+            inclus : 1 = coché par défaut, 0 = décoché par défaut
+            choix  : 1 = le client choisit (Avec / Sans), 0 = toujours inclus
+        Compatibilité : « Nom » seul = 0|1|1 ; « !Nom » = 0|1|0 (toujours inclus).
+        → [{'name', 'price', 'default_on', 'locked', 'removable'}, …]
+        """
         out = []
-        for raw in self.ingredients.replace(',', chr(10)).splitlines():
-            name = raw.strip()
+        for raw in self.ingredients.splitlines():
+            raw = raw.strip()
+            if not raw:
+                continue
+            parts = [p.strip() for p in raw.split('|')]
+            name = parts[0]
+            locked_legacy = name.startswith('!')
+            name = name.lstrip('!').strip()
             if not name:
                 continue
-            removable = not name.startswith('!')
-            out.append({'name': name.lstrip('!').strip(), 'removable': removable})
+            try:
+                price = max(0, int(parts[1])) if len(parts) > 1 and parts[1] else 0
+            except ValueError:
+                price = 0
+            default_on = (parts[2] != '0') if len(parts) > 2 and parts[2] != '' else True
+            choice = (parts[3] != '0') if len(parts) > 3 and parts[3] != '' else not locked_legacy
+            out.append({'name': name, 'price': price, 'default_on': default_on or not choice,
+                        'locked': not choice, 'removable': choice})
         return out
 
     @property
     def ingredient_names(self):
         return ', '.join(i['name'] for i in self.ingredient_list)
+
+    @property
+    def is_composable(self):
+        """Vrai si au moins un ingrédient est payant ou décoché par défaut : le client compose son plat."""
+        return any(i['price'] or not i['default_on'] for i in self.ingredient_list)
 
 
 class OptionGroup(models.Model):
@@ -463,8 +487,10 @@ class CartItem(models.Model):
     item = models.ForeignKey(MenuItem, on_delete=models.CASCADE, related_name='cart_lines')
     options = models.ManyToManyField(Option, blank=True, related_name='cart_lines')
     quantity = models.PositiveSmallIntegerField(default=1)
-    # Ingrédients décochés par le client, séparés par « | » (ex : « Oignons|Piment »)
-    removed_ingredients = models.CharField(max_length=300, blank=True, default='')
+    # Ingrédients décochés / choisis par le client, séparés par « | » (ex : « Oignons|Piment »)
+    removed_ingredients  = models.CharField(max_length=300, blank=True, default='')
+    included_ingredients = models.CharField(max_length=300, blank=True, default='')
+    ingredients_extra = models.DecimalField(max_digits=12, decimal_places=0, default=0)   # somme des ingrédients payants choisis
     note = models.CharField(max_length=200, blank=True, default='',
                             verbose_name=_('Instructions'), help_text=_('Ex : sans oignons, bien cuit'))
     added_at = models.DateTimeField(auto_now_add=True)
@@ -477,7 +503,7 @@ class CartItem(models.Model):
 
     @property
     def unit_price(self):
-        return self.item.price + sum((o.extra_price for o in self.options.all()), 0)
+        return self.item.price + sum((o.extra_price for o in self.options.all()), 0) + self.ingredients_extra
 
     @property
     def line_total(self):
@@ -494,6 +520,10 @@ class CartItem(models.Model):
     @property
     def removed_label(self):
         return ', '.join(self.removed_list)
+
+    @property
+    def included_label(self):
+        return ', '.join(x for x in self.included_ingredients.split('|') if x)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -725,7 +755,8 @@ class OrderItem(models.Model):
     unit_price = models.DecimalField(max_digits=12, decimal_places=0)   # plat + options
     quantity = models.PositiveSmallIntegerField(default=1)
     line_total = models.DecimalField(max_digits=12, decimal_places=0)
-    removed_ingredients = models.CharField(max_length=300, blank=True, default='')   # « Oignons|Piment »
+    removed_ingredients  = models.CharField(max_length=300, blank=True, default='')   # « Oignons|Piment »
+    included_ingredients = models.CharField(max_length=300, blank=True, default='')   # ingrédients choisis (plat composé)
     note = models.CharField(max_length=200, blank=True, default='')
 
     class Meta:
@@ -745,6 +776,10 @@ class OrderItem(models.Model):
     @property
     def removed_label(self):
         return ', '.join(x for x in self.removed_ingredients.split('|') if x)
+
+    @property
+    def included_label(self):
+        return ', '.join(x for x in self.included_ingredients.split('|') if x)
 
 
 class OrderItemOption(models.Model):

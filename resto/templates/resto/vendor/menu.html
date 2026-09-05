@@ -78,7 +78,8 @@
             <div style="margin-top:.6rem;"><label>{% trans "Description" %}</label>{{ item_form.description }}</div>
             <div style="margin-top:.6rem;">
                 <label>🥗 {% trans "Ingrédients" %}</label>
-                <p class="help" style="margin:0 0 .4rem;">{% trans "Ajoutez-les un par un. Le client verra chaque ingrédient coché et pourra décocher ceux qu'il ne veut pas (« sans oignons »). Décochez « retirable » pour un ingrédient indispensable." %}</p>
+                <p class="help" style="margin:0 0 .4rem;">{% trans "Ajoutez-les un par un. Le client compose son plat : pour chaque ingrédient il choisit Avec ou Sans. Indiquez un prix pour les ingrédients en supplément (0 = compris), cochez « coché par défaut » pour ceux proposés d'office, et décochez « au choix » pour ceux qui sont toujours dans le plat." %}</p>
+                <div style="display:none;" id="rs-ing-head"></div>
                 <div id="rs-ing-rows"></div>
                 <div style="display:flex;gap:.4rem;align-items:center;margin-top:.3rem;">
                     <input class="form-control" id="rs-ing-new" placeholder="{% trans "Nom de l'ingrédient (ex : Oignons)" %}" style="flex:1;" onkeydown="if(event.key==='Enter'){event.preventDefault();rsAddIng();}">
@@ -124,18 +125,25 @@ const SLUG = "{{ restaurant.slug }}";
 const I18N = {group:"{% trans 'Titre du groupe (ex : Sauce, Suppléments)' %}", opt:"{% trans 'Option (ex : Fromage)' %}", extra:"{% trans 'Suppl. Ar' %}",
               min:"{% trans 'Min' %}", max:"{% trans 'Max' %}", addopt:"{% trans '+ option' %}", del:"{% trans 'Supprimer le groupe' %}",
               saved:"{% trans 'Options enregistrées' %}", edit:"{% trans 'Modifier le plat' %}", add:"{% trans 'Ajouter un plat' %}",
-              removable:"{% trans 'retirable' %}"};
+              removable:"{% trans 'retirable' %}", price:"{% trans 'Suppl. Ar' %}", defaultOn:"{% trans 'coché par défaut' %}", choice:"{% trans 'au choix du client' %}"};
 let curItem = null;
 
 // ── Éditeur d'ingrédients : une ligne = un ingrédient + case « retirable par le client » ──
 // Sérialisé dans le textarea caché « ingredients » (un par ligne, « ! » devant les non retirables).
-function rsAddIng(name, removable){
+// Une ligne = un ingrédient : nom, prix (Ar, 0 = compris), coché par défaut, au choix du client.
+// Sérialisé « Nom|prix|defaut|choix » dans le textarea caché « ingredients ».
+function rsAddIng(name, price, defaultOn, choice){
   const input = document.getElementById('rs-ing-new');
   if(name === undefined){ name = input.value.trim(); if(!name) return; input.value = ''; }
+  if(price === undefined) price = 0;
+  if(defaultOn === undefined) defaultOn = true;
+  if(choice === undefined) choice = true;
   const row = document.createElement('div'); row.className = 'rs-ing-row';
-  row.style.cssText = 'display:flex;gap:.4rem;align-items:center;margin-bottom:.3rem;';
-  row.innerHTML = `<input class="form-control ing-name" value="${esc(name)}" style="flex:1;">
-    <label style="display:flex;align-items:center;gap:.3rem;margin:0;font-size:.8rem;white-space:nowrap;"><input type="checkbox" class="ing-rem" ${removable === false ? '' : 'checked'}> ${I18N.removable}</label>
+  row.style.cssText = 'display:flex;gap:.4rem;align-items:center;margin-bottom:.3rem;flex-wrap:wrap;';
+  row.innerHTML = `<input class="form-control ing-name" value="${esc(name)}" style="flex:2 1 140px;">
+    <input class="form-control ing-price" type="number" min="0" step="100" value="${price}" title="${I18N.price}" placeholder="${I18N.price}" style="flex:1 1 90px;max-width:120px;">
+    <label style="display:flex;align-items:center;gap:.3rem;margin:0;font-size:.78rem;white-space:nowrap;"><input type="checkbox" class="ing-def" ${defaultOn ? 'checked' : ''}> ${I18N.defaultOn}</label>
+    <label style="display:flex;align-items:center;gap:.3rem;margin:0;font-size:.78rem;white-space:nowrap;"><input type="checkbox" class="ing-choice" ${choice ? 'checked' : ''}> ${I18N.choice}</label>
     <button class="rs-btn sm ghost" type="button" onclick="this.parentNode.remove();rsSyncIng()">✕</button>`;
   document.getElementById('rs-ing-rows').appendChild(row);
   rsSyncIng();
@@ -143,14 +151,22 @@ function rsAddIng(name, removable){
 }
 function rsSyncIng(){
   const lines = [...document.querySelectorAll('#rs-ing-rows .rs-ing-row')].map(r => {
-    const n = r.querySelector('.ing-name').value.trim(); if(!n) return '';
-    return (r.querySelector('.ing-rem').checked ? '' : '!') + n.replace(/^!+/, '');
+    const n = r.querySelector('.ing-name').value.trim().replace(/[|!]/g, ''); if(!n) return '';
+    const p = Math.max(0, parseInt(r.querySelector('.ing-price').value || 0));
+    return `${n}|${p}|${r.querySelector('.ing-def').checked ? 1 : 0}|${r.querySelector('.ing-choice').checked ? 1 : 0}`;
   }).filter(Boolean);
   document.getElementById('id_ingredients').value = lines.join('\n');
 }
 function rsLoadIng(text){
   document.getElementById('rs-ing-rows').innerHTML = '';
-  (text || '').split(/\r?\n|,/).map(x => x.trim()).filter(Boolean).forEach(x => rsAddIng(x.replace(/^!+/, ''), !x.startsWith('!')));
+  (text || '').split(/\r?\n/).map(x => x.trim()).filter(Boolean).forEach(x => {
+    const parts = x.split('|').map(s => s.trim());
+    let name = parts[0]; const legacyLocked = name.startsWith('!'); name = name.replace(/^!+/, '');
+    const price = parseInt(parts[1] || 0) || 0;
+    const def = parts.length > 2 && parts[2] !== '' ? parts[2] !== '0' : true;
+    const choice = parts.length > 3 && parts[3] !== '' ? parts[3] !== '0' : !legacyLocked;
+    if(name) rsAddIng(name, price, def, choice);
+  });
   rsSyncIng();
 }
 document.getElementById('rs-item-form').addEventListener('submit', () => { const v = document.getElementById('rs-ing-new').value.trim(); if(v) rsAddIng(); rsSyncIng(); });

@@ -2895,3 +2895,28 @@ msgstr "positive reviews"
 msgid "reçue"
 msgstr "received"
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Avec"
+msgstr "With"
+
+msgid "À composer"
+msgstr "Build your own"
+
+msgid "choisissez ce que vous voulez dans votre plat"
+msgstr "choose what you want in your dish"
+
+msgid "inclus"
+msgstr "included"
+
+msgid "Composez votre plat"
+msgstr "Build your dish"
+
+msgid "Ajoutez-les un par un. Le client compose son plat : pour chaque ingrédient il choisit Avec ou Sans. Indiquez un prix pour les ingrédients en supplément (0 = compris), cochez « coché par défaut » pour ceux proposés d'office, et décochez « au choix » pour ceux qui sont toujours dans le plat."
+msgstr "Add them one by one. Customers build their dish: for each ingredient they pick With or Without. Set a price for extra ingredients (0 = included), tick \"ticked by default\" for those offered by default, and untick \"customer's choice\" for those always in the dish."
+
+msgid "coché par défaut"
+msgstr "ticked by default"
+
+msgid "au choix du client"
+msgstr "customer's choice"
+

@@ -3040,3 +3040,28 @@ msgstr "hevitra tsara"
 msgid "reçue"
 msgstr "voaray"
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Avec"
+msgstr "Misy"
+
+msgid "À composer"
+msgstr "Azo amboarina"
+
+msgid "choisissez ce que vous voulez dans votre plat"
+msgstr "fidio izay tianao ao amin'ny sakafonao"
+
+msgid "inclus"
+msgstr "tafiditra"
+
+msgid "Composez votre plat"
+msgstr "Amboary ny sakafonao"
+
+msgid "Ajoutez-les un par un. Le client compose son plat : pour chaque ingrédient il choisit Avec ou Sans. Indiquez un prix pour les ingrédients en supplément (0 = compris), cochez « coché par défaut » pour ceux proposés d'office, et décochez « au choix » pour ceux qui sont toujours dans le plat."
+msgstr "Ampidiro tsirairay. Ny mpanjifa no mamboatra ny sakafony : isaky ny akora dia mifidy Misy na Tsy misy izy. Asio vidiny ny akora fanampiny (0 = efa ao anatiny), marihina ny « voamarika mialoha » ho an'izay atolotra avy hatrany, ary esory ny marika « safidin'ny mpanjifa » ho an'izay ao anatin'ny sakafo foana."
+
+msgid "coché par défaut"
+msgstr "voamarika mialoha"
+
+msgid "au choix du client"
+msgstr "safidin'ny mpanjifa"
+
