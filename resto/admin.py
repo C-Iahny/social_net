@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import (
     Restaurant, MenuCategory, MenuItem, OptionGroup, Option,
-    Courier, Cart, CartItem, Order, OrderItem, OrderItemOption, OrderEvent,
+    Courier, Cart, CartItem, Order, OrderItem, OrderItemOption, OrderEvent, OrderReview,
 )
 
 
@@ -90,3 +90,10 @@ class OrderAdmin(admin.ModelAdmin):
 
 admin.site.register(Cart)
 admin.site.register(CartItem)
+
+
+@admin.register(OrderReview)
+class OrderReviewAdmin(admin.ModelAdmin):
+    list_display  = ('order', 'author', 'author_role', 'target_role', 'rating', 'payment_ok', 'created_at')
+    list_filter   = ('author_role', 'target_role', 'rating', 'payment_ok')
+    search_fields = ('order__number', 'author__username', 'comment', 'payment_note')

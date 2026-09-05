@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
 
-from .models import Cart, Courier, MenuCategory, MenuItem, Option, OptionGroup, Order, Restaurant
+from .models import Cart, Courier, MenuCategory, MenuItem, Option, OptionGroup, Order, OrderReview, Restaurant
 
 User = get_user_model()
 
@@ -181,6 +181,45 @@ class RestoFlowTests(TestCase):
         self.assertIsNotNone(order.delivered_at)
         # pending, accepted, preparing, ready, picked_up, delivering, delivered
         self.assertEqual(order.events.count(), 7)
+
+        # 4. Avis croisés une fois livrée
+        self.client.login(email='client@test.mg', password='pass12345')
+        r = self.client.post(reverse('resto:order_review', args=[order.number]),
+                             {'target_role': 'restaurant', 'rating': 4, 'payment_ok': 'yes', 'comment': 'Très bon'})
+        self.assertEqual(r.status_code, 302)
+        self.client.post(reverse('resto:order_review', args=[order.number]),
+                         {'target_role': 'courier', 'rating': 5, 'payment_ok': 'yes'})
+        # Le client ne peut pas se noter lui-même
+        self.client.post(reverse('resto:order_review', args=[order.number]), {'target_role': 'customer', 'rating': 1})
+        self.assertEqual(OrderReview.objects.filter(order=order).count(), 2)
+        # Le livreur signale un problème de paiement du client
+        self.client.login(email='livreur@test.mg', password='pass12345')
+        self.client.post(reverse('resto:order_review', args=[order.number]),
+                         {'target_role': 'customer', 'rating': 2, 'payment_ok': 'no', 'payment_note': 'A payé 10 000 au lieu de 11 000'})
+        # Modifier son avis ne crée pas de doublon
+        self.client.post(reverse('resto:order_review', args=[order.number]),
+                         {'target_role': 'customer', 'rating': 3, 'payment_ok': 'no', 'payment_note': 'Manque 1 000 Ar'})
+        self.assertEqual(OrderReview.objects.filter(order=order).count(), 3)
+        self.assertEqual(OrderReview.for_restaurant(self.resto), {'count': 1, 'avg': 4.0, 'payment_issues': 0})
+        self.assertEqual(OrderReview.for_courier(courier)['avg'], 5.0)
+        cust = OrderReview.for_customer(self.client_user)
+        self.assertEqual((cust['count'], cust['avg'], cust['payment_issues']), (1, 3.0, 1))
+        # La page commande affiche la section avis pour le restaurant, avec la fiabilité du client
+        self.client.login(email='owner@test.mg', password='pass12345')
+        r = self.client.get(reverse('resto:order', args=[order.number]))
+        self.assertContains(r, 'Manque 1 000 Ar')
+        self.assertContains(r, 'target_role')
+        # La page publique du restaurant montre la note et le commentaire client
+        r = self.client.get(reverse('resto:restaurant', args=[self.resto.slug]))
+        self.assertContains(r, 'Très bon')
+
+    def test_no_review_before_delivery(self):
+        self.client.login(email='client@test.mg', password='pass12345')
+        self._add([self.sauce_a.pk])
+        self.client.post(reverse('resto:checkout'), {'mode': 'pickup', 'customer_name': 'T', 'customer_phone': '034', 'payment_method': 'cash'})
+        order = Order.objects.get(customer=self.client_user)
+        self.client.post(reverse('resto:order_review', args=[order.number]), {'target_role': 'restaurant', 'rating': 5})
+        self.assertEqual(OrderReview.objects.count(), 0)
 
     def test_customer_can_cancel_only_before_preparation(self):
         self.client.login(email='client@test.mg', password='pass12345')

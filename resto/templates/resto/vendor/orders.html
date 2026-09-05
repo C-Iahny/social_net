@@ -8,6 +8,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0 .4rem;">
         <h1 style="font-size:1.4rem;font-weight:800;margin:0;">📋 {% trans "Commandes" %} · {{ restaurant.name }}</h1>
         <div style="display:flex;gap:.4rem;align-items:center;">
+            {% include 'resto/_rating.html' with r=rating %}
             <span class="rs-badge {% if restaurant.is_open %}open{% else %}closed{% endif %}">{% if restaurant.is_open %}{% trans "Ouvert" %}{% else %}{% trans "Fermé" %}{% endif %}</span>
             <a class="rs-btn sm secondary" href="{% url 'resto:vendor_dashboard' %}">← {% trans "Mes restaurants" %}</a>
         </div>
@@ -34,7 +35,7 @@
             {% if o.note %}<div class="rs-muted">💬 {{ o.note }}</div>{% endif %}
         </div>
         <div class="rs-muted" style="font-size:.85rem;">
-            👤 {{ o.customer_name }} · 📞 <a href="tel:{{ o.customer_phone }}">{{ o.customer_phone }}</a>
+            👤 {{ o.customer_name }} {% include 'resto/_rating.html' with r=o.customer_rating %} · 📞 <a href="tel:{{ o.customer_phone }}">{{ o.customer_phone }}</a>
             {% if o.is_delivery %} · 🏠 {{ o.delivery_address }}{% endif %}
             {% if o.courier %} · 🛵 {{ o.courier.display_name }} ({{ o.courier.phone }}){% elif o.status == 'ready' and o.is_delivery %} · ⏳ {% trans "en attente d'un livreur" %}{% endif %}
         </div>

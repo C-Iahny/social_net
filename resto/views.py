@@ -17,7 +17,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Avg, Count, OuterRef, Prefetch, Q, Subquery
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -28,7 +28,7 @@ from django.views.decorators.http import require_POST
 from .forms import CheckoutForm, CourierForm, MenuCategoryForm, MenuItemForm, RestaurantForm
 from .models import (
     Cart, CartItem, Courier, MenuCategory, MenuItem, Option, OptionGroup,
-    Order, OrderEvent, OrderItem, OrderItemOption, Restaurant,
+    Order, OrderEvent, OrderItem, OrderItemOption, OrderReview, Restaurant,
 )
 
 PAGE_SIZE = 12
@@ -168,6 +168,10 @@ def resto_index(request):
     else:  # 'open' : ouverts d'abord
         qs = qs.order_by('-is_open', '-views_count', '-created_at')
 
+    # Note moyenne via sous-requête (une jointure directe fausserait la moyenne quand `q` joint les plats)
+    rev = (OrderReview.objects.filter(target_restaurant=OuterRef('pk')).order_by()
+           .values('target_restaurant').annotate(a=Avg('rating'), c=Count('id')))
+    qs = qs.annotate(avg_rating=Subquery(rev.values('a')[:1]), reviews_count=Subquery(rev.values('c')[:1]))
     paginator = Paginator(qs, PAGE_SIZE)
     page_obj = paginator.get_page(request.GET.get('page'))
 
@@ -215,10 +219,13 @@ def restaurant_detail(request, slug):
     cart = _user_cart(request.user) if request.user.is_authenticated else None
     cart_same = cart if (cart and cart.restaurant_id == restaurant.pk) else None
 
+    reviews = (restaurant.reviews.filter(author_role=OrderReview.ROLE_CUSTOMER)
+               .select_related('author').order_by('-created_at')[:10])
     return render(request, 'resto/restaurant.html', {
         'restaurant': restaurant, 'sections': sections, 'is_owner': is_owner,
         'cart_summary': _cart_summary(cart_same),
         'other_cart': _cart_summary(cart) if (cart and not cart_same) else None,
+        'rating': OrderReview.for_restaurant(restaurant), 'reviews': reviews,
     })
 
 
@@ -443,10 +450,15 @@ def order_detail(request, number):
     if actor is None and not request.user.is_staff:
         raise Http404
     items = order.items.prefetch_related('options')
+    reviews = list(order.reviews.select_related('author'))
+    mine = {r.target_role: r for r in reviews if actor and r.author_role == actor}
     return render(request, 'resto/order.html', {
         'order': order, 'items': items, 'actor': actor,
         'transitions': [(s, dict(Order.STATUS_CHOICES)[s]) for s in order.allowed_transitions(actor)] if actor else [],
         'state_json': json.dumps(_order_payload(order)),
+        'review_targets': [(t, dict(OrderReview.ROLE_CHOICES)[t], mine.get(t)) for t in _review_targets(order, actor)],
+        'reviews': reviews,
+        'customer_rating': OrderReview.for_customer(order.customer) if actor in ('restaurant', 'courier') else None,
     })
 
 
@@ -472,6 +484,59 @@ def order_cancel(request, number):
                 reverse('resto:vendor_orders', kwargs={'slug': order.restaurant.slug}), order)
         messages.success(request, _('Commande annulée.'))
     return redirect('resto:order', number=order.number)
+
+
+def _review_targets(order, actor):
+    """Rôles que `actor` peut noter sur cette commande (seulement une fois livrée)."""
+    if order.status != Order.STATUS_DELIVERED or not actor:
+        return []
+    has_courier = order.is_delivery and order.courier_id is not None
+    if actor == 'customer':
+        return ['restaurant'] + (['courier'] if has_courier else [])
+    if actor == 'restaurant':
+        return ['customer'] + (['courier'] if has_courier else [])
+    if actor == 'courier':
+        return ['customer', 'restaurant']
+    return []
+
+
+@login_required
+@require_POST
+def order_review(request, number):
+    """POST target_role, rating (1-5), payment_ok (yes/no/''), payment_note, comment."""
+    order = get_object_or_404(Order.objects.select_related('restaurant', 'courier', 'customer'), number=number)
+    actor = _order_actor(order, request.user)
+    target = request.POST.get('target_role', '')
+    if target not in _review_targets(order, actor):
+        messages.error(request, _('Avis non autorisé pour cette commande.'))
+        return redirect('resto:order', number=order.number)
+    try:
+        rating = max(1, min(5, int(request.POST.get('rating', 5))))
+    except (TypeError, ValueError):
+        rating = 5
+    pay = request.POST.get('payment_ok', '')
+    payment_ok = True if pay == 'yes' else False if pay == 'no' else None
+    review, _created = OrderReview.objects.update_or_create(
+        order=order, author_role=actor, target_role=target,
+        defaults={
+            'author': request.user, 'rating': rating, 'payment_ok': payment_ok,
+            'payment_note': (request.POST.get('payment_note') or '')[:200],
+            'comment': (request.POST.get('comment') or '')[:1000],
+            'target_user': order.customer if target == 'customer' else None,
+            'target_restaurant': order.restaurant if target == 'restaurant' else None,
+            'target_courier': order.courier if target == 'courier' else None,
+        },
+    )
+    # Prévenir la personne notée
+    url = reverse('resto:order', kwargs={'number': order.number})
+    target_user = {'customer': order.customer, 'restaurant': order.restaurant.owner,
+                   'courier': order.courier.user if order.courier else None}[target]
+    if target_user and target_user != request.user:
+        _notify(target_user, request.user,
+                _('Nouvel avis %(s)s sur la commande %(n)s') % {'s': review.stars, 'n': order.number},
+                url, order, push_title=_('⭐ Vazimba Resto'))
+    messages.success(request, _('Merci pour votre avis !'))
+    return redirect(url)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -715,9 +780,11 @@ def vendor_orders(request, slug):
     orders = list(qs)
     for o in orders:
         o.next_steps = [(s, dict(Order.STATUS_CHOICES)[s]) for s in o.allowed_transitions('restaurant')]
+        o.customer_rating = OrderReview.for_customer(o.customer)
     return render(request, 'resto/vendor/orders.html', {
         'restaurant': restaurant, 'orders': orders, 'tab': tab,
         'pending_count': restaurant.orders.filter(status=Order.STATUS_PENDING).count(),
+        'rating': OrderReview.for_restaurant(restaurant),
     })
 
 
@@ -747,8 +814,11 @@ def vendor_couriers(request, slug):
                         reverse('resto:courier_dashboard'), restaurant, push_title=_('🛵 Vazimba Resto'))
                 messages.success(request, _('%(u)s est maintenant livreur de %(r)s.') % {'u': user.username, 'r': restaurant.name})
         return redirect('resto:vendor_couriers', slug=slug)
+    couriers = list(restaurant.couriers.select_related('user'))
+    for c in couriers:
+        c.rating = OrderReview.for_courier(c)
     return render(request, 'resto/vendor/couriers.html', {
-        'restaurant': restaurant, 'couriers': restaurant.couriers.select_related('user'),
+        'restaurant': restaurant, 'couriers': couriers,
     })
 
 
@@ -806,8 +876,13 @@ def courier_dashboard(request):
     orders = list(mine)
     for o in orders:
         o.next_steps = [(s, dict(Order.STATUS_CHOICES)[s]) for s in o.allowed_transitions('courier')]
+        o.customer_rating = OrderReview.for_customer(o.customer)
+    available = list(available)
+    for o in available:
+        o.customer_rating = OrderReview.for_customer(o.customer)
     return render(request, 'resto/courier/dashboard.html', {
         'courier': courier, 'orders': orders, 'available': available, 'history': history,
+        'rating': OrderReview.for_courier(courier),
     })
 
 

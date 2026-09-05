@@ -22,7 +22,7 @@
         {% for c in couriers %}
         <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.8rem;{% if not forloop.first %}border-top:1px solid var(--border);{% endif %}">
             <div>
-                <strong>{{ c.display_name }}</strong>
+                <strong>{{ c.display_name }}</strong> {% include 'resto/_rating.html' with r=c.rating %}
                 <span class="rs-badge {% if c.is_available %}open{% else %}closed{% endif %}">{% if c.is_available %}{% trans "Disponible" %}{% else %}{% trans "Indisponible" %}{% endif %}</span>
                 <div class="rs-muted">{{ c.get_vehicle_display }} · 📞 {{ c.phone|default:"—" }}{% if c.position_updated_at %} · 📍 {{ c.position_updated_at|date:"d/m H:i" }}{% endif %}</div>
             </div>
