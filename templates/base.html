@@ -1126,9 +1126,11 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="material-icons">home</span>
             <span class="zbn-label">{% trans "Feed" %}</span>
         </a>
-        <a class="zbn-item" href="{% url 'post:tendances' %}" data-page="tendances">
-            <span class="material-icons">trending_up</span>
-            <span class="zbn-label">{% trans "Tendances" %}</span>
+        <!-- Resto remplace Tendances dans la barre du bas (demande utilisateurs) ;
+             Tendances reste accessible via le menu mobile et « Découvrir ». -->
+        <a class="zbn-item" href="{% url 'resto:index' %}" data-page="resto">
+            <span class="material-icons">restaurant</span>
+            <span class="zbn-label">Resto</span>
         </a>
         <button class="zbn-item zbn-new" id="zbn-create-btn" onclick="openCreateSheet()" data-page="new" aria-label="{% trans 'Créer' %}">
             <div class="zbn-new-icon">
@@ -1288,6 +1290,7 @@ document.addEventListener('DOMContentLoaded', function() {
             explore: ['/feed/index/', '/'],
             new:     ['/feed/add-post/'],
             bazar:   ['/bazar/'],
+            resto:   ['/resto/'],
             profile: ['/account/'],
         };
         document.querySelectorAll('.zbn-item').forEach(function(el) {
