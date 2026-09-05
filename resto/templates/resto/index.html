@@ -90,7 +90,7 @@
                 </span>
             </div>
             <div class="rs-resto-body">
-                <p class="rs-resto-name"><span>{{ r.name }}</span></p>
+                <p class="rs-resto-name"><span>{{ r.name }}</span>{% if r.reviews_count %}<span class="rs-rating">★ {{ r.avg_rating|floatformat:1 }} <span class="rs-muted">({{ r.reviews_count }})</span></span>{% endif %}</p>
                 <p class="rs-resto-meta">
                     <span>{{ r.get_category_display }}</span>
                     <span>📍 {{ r.address|truncatechars:34 }}</span>

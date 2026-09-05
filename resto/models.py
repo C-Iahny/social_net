@@ -703,3 +703,75 @@ class OrderEvent(models.Model):
 
     def __str__(self):
         return f'{self.order.number} → {self.get_status_display()} ({self.at:%H:%M})'
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Avis croisés après commande (client ⇄ restaurant ⇄ livreur)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class OrderReview(models.Model):
+    """
+    Un avis laissé par l'un des trois acteurs d'une commande sur un autre :
+    note sur 5, le paiement s'est-il bien passé, commentaire libre.
+    Un seul avis par (commande, auteur, cible) ; il peut être modifié.
+    """
+    ROLE_CUSTOMER   = 'customer'
+    ROLE_RESTAURANT = 'restaurant'
+    ROLE_COURIER    = 'courier'
+    ROLE_CHOICES = [
+        (ROLE_CUSTOMER,   _('Client')),
+        (ROLE_RESTAURANT, _('Restaurant')),
+        (ROLE_COURIER,    _('Livreur')),
+    ]
+    RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
+
+    order  = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='reviews', verbose_name=_('Commande'))
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                               related_name='resto_reviews_given', verbose_name=_('Auteur'))
+    author_role = models.CharField(max_length=12, choices=ROLE_CHOICES, verbose_name=_('Rôle de l\'auteur'))
+    target_role = models.CharField(max_length=12, choices=ROLE_CHOICES, verbose_name=_('Rôle noté'), db_index=True)
+    # Cible dénormalisée pour agréger vite (un seul des trois est renseigné)
+    target_user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True,
+                                          related_name='resto_reviews_received')
+    target_restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, null=True, blank=True, related_name='reviews')
+    target_courier    = models.ForeignKey(Courier, on_delete=models.CASCADE, null=True, blank=True, related_name='reviews')
+
+    rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=5, verbose_name=_('Note (1-5)'))
+    payment_ok = models.BooleanField(null=True, blank=True, verbose_name=_('Paiement sans problème'))
+    payment_note = models.CharField(max_length=200, blank=True, default='', verbose_name=_('Précision sur le paiement'))
+    comment = models.TextField(blank=True, default='', verbose_name=_('Commentaire'))
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [('order', 'author_role', 'target_role')]
+        ordering = ['-created_at']
+        verbose_name = _('Avis')
+        verbose_name_plural = _('Avis')
+
+    def __str__(self):
+        return f'{self.order.number} {self.author_role}→{self.target_role} {self.rating}★'
+
+    @property
+    def stars(self):
+        return '★' * self.rating + '☆' * (5 - self.rating)
+
+    # ── Agrégats ──────────────────────────────────────────────────────────────
+    @staticmethod
+    def summary(qs):
+        """{'count': n, 'avg': 4.6, 'payment_issues': k} sur un queryset d'avis."""
+        agg = qs.aggregate(count=models.Count('id'), avg=models.Avg('rating'),
+                           issues=models.Count('id', filter=models.Q(payment_ok=False)))
+        return {'count': agg['count'] or 0, 'avg': round(agg['avg'] or 0, 1), 'payment_issues': agg['issues'] or 0}
+
+    @classmethod
+    def for_restaurant(cls, restaurant):
+        return cls.summary(cls.objects.filter(target_restaurant=restaurant))
+
+    @classmethod
+    def for_courier(cls, courier):
+        return cls.summary(cls.objects.filter(target_courier=courier))
+
+    @classmethod
+    def for_customer(cls, user):
+        return cls.summary(cls.objects.filter(target_user=user, target_role=cls.ROLE_CUSTOMER))

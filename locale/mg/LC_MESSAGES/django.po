@@ -2746,3 +2746,100 @@ msgstr "Ohatra : Henakisoa nandrahoina 2 ora miaraka amin'ny ravitoto, aroso mia
 msgid "Comment le plat est préparé : cuisson, mode de préparation, temps, particularités."
 msgstr "Ahoana no fanomanana ny sakafo : fandrahoana, fomba, fotoana, mampiavaka."
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Avis sur cette commande"
+msgstr "Hevitra momba ity kaomandy ity"
+
+msgid "Fiabilité du client"
+msgstr "Fahamendreham-pitokisan'ny mpanjifa"
+
+msgid "Votre avis sur"
+msgstr "Ny hevitrao momba"
+
+msgid "Noter"
+msgstr "Hanome naoty"
+
+msgid "Note"
+msgstr "Naoty"
+
+msgid "Le paiement s'est-il bien passé ?"
+msgstr "Nandeha tsara ve ny fandoavam-bola ?"
+
+msgid "Oui"
+msgstr "Eny"
+
+msgid "Non"
+msgstr "Tsia"
+
+msgid "Pas concerné"
+msgstr "Tsy voakasika"
+
+msgid "Si problème : lequel ? (montant, retard, refus…)"
+msgstr "Raha nisy olana : inona ? (vola, fahatarana, fandavana…)"
+
+msgid "Qualité du plat, respect de la commande, délai…"
+msgstr "Kalitaon'ny sakafo, fanajana ny kaomandy, fotoana…"
+
+msgid "Ponctualité, soin, communication…"
+msgstr "Fahatongavana ara-potoana, fikarakarana, fifandraisana…"
+
+msgid "Communication, disponibilité à la livraison, paiement…"
+msgstr "Fifandraisana, fisiana rehefa aterina, fandoavam-bola…"
+
+msgid "Modifier mon avis"
+msgstr "Ovay ny hevitro"
+
+msgid "Envoyer mon avis"
+msgstr "Alefa ny hevitro"
+
+msgid "Problème de paiement"
+msgstr "Olana tamin'ny fandoavam-bola"
+
+msgid "Paiement OK"
+msgstr "Fandoavam-bola OK"
+
+msgid "Avis des clients"
+msgstr "Hevitry ny mpanjifa"
+
+msgid "avis"
+msgstr "hevitra"
+
+msgid "Problèmes de paiement signalés"
+msgstr "Olana tamin'ny fandoavam-bola voalaza"
+
+msgid "Pas encore d'avis"
+msgstr "Mbola tsy misy hevitra"
+
+msgid "Auteur"
+msgstr "Mpanoratra"
+
+msgid "Rôle de l'auteur"
+msgstr "Anjara asan'ny mpanoratra"
+
+msgid "Rôle noté"
+msgstr "Anjara asa nomena naoty"
+
+msgid "Note (1-5)"
+msgstr "Naoty (1-5)"
+
+msgid "Paiement sans problème"
+msgstr "Fandoavam-bola tsy nisy olana"
+
+msgid "Précision sur le paiement"
+msgstr "Fanazavana momba ny fandoavam-bola"
+
+msgid "Avis"
+msgstr "Hevitra"
+
+msgid "Avis non autorisé pour cette commande."
+msgstr "Tsy azo atao ny hevitra amin'ity kaomandy ity."
+
+msgid "Nouvel avis %(s)s sur la commande %(n)s"
+msgstr "Hevitra vaovao %(s)s momba ny kaomandy %(n)s"
+
+msgid "⭐ Vazimba Resto"
+msgstr "⭐ Sakafo Vazimba"
+
+msgid "Merci pour votre avis !"
+msgstr "Misaotra tamin'ny hevitrao !"
+

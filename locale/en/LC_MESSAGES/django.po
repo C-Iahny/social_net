@@ -2601,3 +2601,100 @@ msgstr "E.g. Pork simmered 2 h with pounded cassava leaves, served with white ri
 msgid "Comment le plat est préparé : cuisson, mode de préparation, temps, particularités."
 msgstr "How the dish is prepared: cooking, method, time, specifics."
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Avis sur cette commande"
+msgstr "Reviews for this order"
+
+msgid "Fiabilité du client"
+msgstr "Customer reliability"
+
+msgid "Votre avis sur"
+msgstr "Your review of"
+
+msgid "Noter"
+msgstr "Rate"
+
+msgid "Note"
+msgstr "Rating"
+
+msgid "Le paiement s'est-il bien passé ?"
+msgstr "Did the payment go smoothly?"
+
+msgid "Oui"
+msgstr "Yes"
+
+msgid "Non"
+msgstr "No"
+
+msgid "Pas concerné"
+msgstr "Not applicable"
+
+msgid "Si problème : lequel ? (montant, retard, refus…)"
+msgstr "If there was a problem: which one? (amount, delay, refusal…)"
+
+msgid "Qualité du plat, respect de la commande, délai…"
+msgstr "Food quality, order accuracy, timing…"
+
+msgid "Ponctualité, soin, communication…"
+msgstr "Punctuality, care, communication…"
+
+msgid "Communication, disponibilité à la livraison, paiement…"
+msgstr "Communication, availability at delivery, payment…"
+
+msgid "Modifier mon avis"
+msgstr "Edit my review"
+
+msgid "Envoyer mon avis"
+msgstr "Send my review"
+
+msgid "Problème de paiement"
+msgstr "Payment problem"
+
+msgid "Paiement OK"
+msgstr "Payment OK"
+
+msgid "Avis des clients"
+msgstr "Customer reviews"
+
+msgid "avis"
+msgstr "review(s)"
+
+msgid "Problèmes de paiement signalés"
+msgstr "Payment issues reported"
+
+msgid "Pas encore d'avis"
+msgstr "No reviews yet"
+
+msgid "Auteur"
+msgstr "Author"
+
+msgid "Rôle de l'auteur"
+msgstr "Author role"
+
+msgid "Rôle noté"
+msgstr "Rated role"
+
+msgid "Note (1-5)"
+msgstr "Rating (1-5)"
+
+msgid "Paiement sans problème"
+msgstr "Payment without issue"
+
+msgid "Précision sur le paiement"
+msgstr "Payment details"
+
+msgid "Avis"
+msgstr "Reviews"
+
+msgid "Avis non autorisé pour cette commande."
+msgstr "Review not allowed for this order."
+
+msgid "Nouvel avis %(s)s sur la commande %(n)s"
+msgstr "New review %(s)s on order %(n)s"
+
+msgid "⭐ Vazimba Resto"
+msgstr "⭐ Vazimba Food"
+
+msgid "Merci pour votre avis !"
+msgstr "Thank you for your review!"
+

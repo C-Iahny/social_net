@@ -57,6 +57,13 @@
 .rs-badge.ok     { background: #d1fae5; color: #065f46; }
 .rs-badge.ko     { background: #fee2e2; color: #991b1b; }
 .rs-price { font-weight: 800; color: var(--accent); }
+.rs-rating { font-weight: 700; color: #d97706; font-size: .85rem; white-space: nowrap; }
+.rs-stars { display: inline-flex; flex-direction: row-reverse; gap: .15rem; }
+.rs-stars input { display: none; }
+.rs-stars label { font-size: 1.7rem; color: var(--border); cursor: pointer; line-height: 1; }
+.rs-stars input:checked ~ label, .rs-stars label:hover, .rs-stars label:hover ~ label { color: #f59e0b; }
+.rs-review { padding: .6rem 0; border-top: 1px dashed var(--border); font-size: .88rem; }
+.rs-review .who { font-weight: 700; }
 .rs-section-title { font-weight: 800; font-size: 1.15rem; margin: 1.4rem 0 .6rem; color: var(--text); }
 .rs-empty { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
 .rs-empty .ico { font-size: 3rem; }

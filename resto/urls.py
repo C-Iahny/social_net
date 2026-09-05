@@ -17,6 +17,7 @@ urlpatterns = [
     path('commande/<str:number>/',            views.order_detail,     name='order'),
     path('commande/<str:number>/etat/',       views.order_state,      name='order_state'),    # AJAX (JSON) polling
     path('commande/<str:number>/annuler/',    views.order_cancel,     name='order_cancel'),   # POST
+    path('commande/<str:number>/avis/',       views.order_review,     name='order_review'),   # POST
 
     # ── Vendeur ────────────────────────────────────────────────────────────────
     path('vendeur/',                                     views.vendor_dashboard,  name='vendor_dashboard'),
