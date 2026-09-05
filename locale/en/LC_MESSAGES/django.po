@@ -2876,3 +2876,22 @@ msgstr "Guarantor phone"
 msgid "Vérifiez les champs signalés."
 msgstr "Check the highlighted fields."
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "photo réelle"
+msgstr "real photo"
+
+msgid "CIN contrôlée"
+msgstr "ID card checked"
+
+msgid "téléphone vérifié"
+msgstr "verified phone"
+
+msgid "garant joignable"
+msgstr "reachable guarantor"
+
+msgid "avis positifs"
+msgstr "positive reviews"
+
+msgid "reçue"
+msgstr "received"
+
