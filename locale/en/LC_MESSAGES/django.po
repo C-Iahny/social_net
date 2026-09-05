@@ -2557,3 +2557,25 @@ msgstr "Order %(n)s taken by %(c)s"
 msgid "Commande %(n)s prise en charge. Bonne route !"
 msgstr "Order %(n)s taken. Safe ride!"
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Sans"
+msgstr "Without"
+
+msgid "Ingrédients"
+msgstr "Ingredients"
+
+msgid "décochez ce que vous ne voulez pas"
+msgstr "untick what you don't want"
+
+msgid "ingrédient(s)"
+msgstr "ingredient(s)"
+
+msgid "Portion, accompagnement, particularités"
+msgstr "Portion, side, specifics"
+
+msgid "Un ingrédient par ligne : Oignons, Piment, !Riz (obligatoire)"
+msgstr "One ingredient per line: Onions, Chili, !Rice (required)"
+
+msgid "Un par ligne. Le client pourra les décocher. Mettez « ! » devant ceux qu'on ne peut pas retirer (ex : !Riz)."
+msgstr "One per line. Customers can untick them. Put \"!\" before those that cannot be removed (e.g. !Rice)."
+

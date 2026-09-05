@@ -2702,3 +2702,25 @@ msgstr "Nalain'i %(c)s ny kaomandy %(n)s"
 msgid "Commande %(n)s prise en charge. Bonne route !"
 msgstr "Voaray ny kaomandy %(n)s. Soava dia !"
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Sans"
+msgstr "Tsy misy"
+
+msgid "Ingrédients"
+msgstr "Akora"
+
+msgid "décochez ce que vous ne voulez pas"
+msgstr "esory ny marika amin'izay tsy tianao"
+
+msgid "ingrédient(s)"
+msgstr "akora"
+
+msgid "Portion, accompagnement, particularités"
+msgstr "Habetsahana, loka, mampiavaka"
+
+msgid "Un ingrédient par ligne : Oignons, Piment, !Riz (obligatoire)"
+msgstr "Akora iray isaky ny andalana : Tongolo, Sakay, !Vary (tsy maintsy)"
+
+msgid "Un par ligne. Le client pourra les décocher. Mettez « ! » devant ceux qu'on ne peut pas retirer (ex : !Riz)."
+msgstr "Iray isaky ny andalana. Afaka manala ny marika ny mpanjifa. Asio « ! » eo alohan'izay tsy azo esorina (ohatra : !Vary)."
+

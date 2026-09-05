@@ -32,12 +32,15 @@ class RestoFlowTests(TestCase):
         self.extras = OptionGroup.objects.create(item=self.item, name='Suppléments', min_select=0, max_select=2)
         self.egg = Option.objects.create(group=self.extras, name='Œuf', extra_price=1000)
         self.rice = Option.objects.create(group=self.extras, name='Riz en plus', extra_price=500)
+        self.item.ingredients = 'Oignons' + chr(10) + 'Piment' + chr(10) + '!Riz'
+        self.item.save()
 
     # ── Helpers ───────────────────────────────────────────────────────────────
-    def _add(self, options, quantity=1, replace=False, note=''):
+    def _add(self, options, quantity=1, replace=False, note='', removed=None):
         return self.client.post(
             reverse('resto:cart_add', args=[self.item.pk]),
-            data=json.dumps({'quantity': quantity, 'options': options, 'replace': replace, 'note': note}),
+            data=json.dumps({'quantity': quantity, 'options': options, 'replace': replace, 'note': note,
+                             'removed': removed or []}),
             content_type='application/json',
         )
 
@@ -57,6 +60,9 @@ class RestoFlowTests(TestCase):
         r = self.client.get(reverse('resto:item_options', args=[self.resto.slug, self.item.pk]))
         data = r.json()
         self.assertEqual(data['price'], 8000)
+        self.assertEqual(data['ingredients'], [{'name': 'Oignons', 'removable': True},
+                                               {'name': 'Piment', 'removable': True},
+                                               {'name': 'Riz', 'removable': False}])
         self.assertEqual([g['name'] for g in data['groups']], ['Sauce', 'Suppléments'])
         self.assertTrue(data['groups'][0]['required'])
 
@@ -79,6 +85,22 @@ class RestoFlowTests(TestCase):
         self._add([self.sauce_a.pk, self.egg.pk, self.rice.pk])
         self.assertEqual(Cart.objects.get(user=self.client_user).lines.count(), 1)
         self.assertEqual(Cart.objects.get(user=self.client_user).lines.first().quantity, 3)
+
+    def test_removed_ingredients_follow_the_order(self):
+        self.client.login(email='client@test.mg', password='pass12345')
+        # « Riz » n'est pas retirable : ignoré ; « Oignons » l'est
+        r = self._add([self.sauce_a.pk], removed=['Oignons', 'Riz', 'Inconnu'])
+        self.assertEqual(r.status_code, 200, r.content)
+        self.assertEqual(r.json()['cart']['lines'][0]['removed'], 'Oignons')
+        # Même plat sans rien retirer → ligne distincte
+        self._add([self.sauce_a.pk])
+        self.assertEqual(Cart.objects.get(user=self.client_user).lines.count(), 2)
+        self.client.post(reverse('resto:checkout'), {
+            'mode': 'pickup', 'customer_name': 'Tiana', 'customer_phone': '034', 'payment_method': 'cash',
+        })
+        order = Order.objects.get(customer=self.client_user)
+        self.assertEqual(sorted(l.removed_ingredients for l in order.items.all()), ['', 'Oignons'])
+        self.assertEqual(int(order.subtotal), 16000)   # le prix ne change pas quand on retire un ingrédient
 
     def test_cart_is_single_restaurant(self):
         self.client.login(email='client@test.mg', password='pass12345')

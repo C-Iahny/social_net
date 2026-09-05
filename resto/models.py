@@ -187,6 +187,12 @@ class MenuItem(models.Model):
                                    help_text=_('Ingrédients, portion, accompagnement…'))
     price = models.DecimalField(max_digits=12, decimal_places=0, verbose_name=_('Prix (Ar)'))
     image = models.ImageField(upload_to='resto/items/%Y/%m/', null=True, blank=True, verbose_name=_('Photo'))
+    # Ingrédients, un par ligne. Le client peut en décocher (« sans oignons ») ;
+    # un « ! » devant un ingrédient le rend obligatoire (non retirable) : « !Riz ».
+    ingredients = models.TextField(
+        blank=True, default='', verbose_name=_('Ingrédients'),
+        help_text=_("Un par ligne. Le client pourra les décocher. Mettez « ! » devant ceux qu'on ne peut pas retirer (ex : !Riz)."),
+    )
     is_available = models.BooleanField(default=True, verbose_name=_('Disponible'), db_index=True)
     order = models.PositiveSmallIntegerField(default=0, verbose_name=_('Ordre'))
     created_at = models.DateTimeField(auto_now_add=True)
@@ -202,6 +208,22 @@ class MenuItem(models.Model):
     @property
     def formatted_price(self):
         return _fmt_ar(self.price)
+
+    @property
+    def ingredient_list(self):
+        """[{'name': 'Oignons', 'removable': True}, {'name': 'Riz', 'removable': False}, …]"""
+        out = []
+        for raw in self.ingredients.replace(',', chr(10)).splitlines():
+            name = raw.strip()
+            if not name:
+                continue
+            removable = not name.startswith('!')
+            out.append({'name': name.lstrip('!').strip(), 'removable': removable})
+        return out
+
+    @property
+    def ingredient_names(self):
+        return ', '.join(i['name'] for i in self.ingredient_list)
 
 
 class OptionGroup(models.Model):
@@ -364,6 +386,8 @@ class CartItem(models.Model):
     item = models.ForeignKey(MenuItem, on_delete=models.CASCADE, related_name='cart_lines')
     options = models.ManyToManyField(Option, blank=True, related_name='cart_lines')
     quantity = models.PositiveSmallIntegerField(default=1)
+    # Ingrédients décochés par le client, séparés par « | » (ex : « Oignons|Piment »)
+    removed_ingredients = models.CharField(max_length=300, blank=True, default='')
     note = models.CharField(max_length=200, blank=True, default='',
                             verbose_name=_('Instructions'), help_text=_('Ex : sans oignons, bien cuit'))
     added_at = models.DateTimeField(auto_now_add=True)
@@ -385,6 +409,14 @@ class CartItem(models.Model):
     @property
     def options_label(self):
         return ', '.join(o.name for o in self.options.all())
+
+    @property
+    def removed_list(self):
+        return [x for x in self.removed_ingredients.split('|') if x]
+
+    @property
+    def removed_label(self):
+        return ', '.join(self.removed_list)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -616,6 +648,7 @@ class OrderItem(models.Model):
     unit_price = models.DecimalField(max_digits=12, decimal_places=0)   # plat + options
     quantity = models.PositiveSmallIntegerField(default=1)
     line_total = models.DecimalField(max_digits=12, decimal_places=0)
+    removed_ingredients = models.CharField(max_length=300, blank=True, default='')   # « Oignons|Piment »
     note = models.CharField(max_length=200, blank=True, default='')
 
     class Meta:
@@ -631,6 +664,10 @@ class OrderItem(models.Model):
     @property
     def options_label(self):
         return ', '.join(o.name for o in self.options.all())
+
+    @property
+    def removed_label(self):
+        return ', '.join(x for x in self.removed_ingredients.split('|') if x)
 
 
 class OrderItemOption(models.Model):
