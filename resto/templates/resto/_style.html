@@ -72,7 +72,7 @@
 .rs-row > * { flex: 1 1 200px; }
 
 /* Panier flottant (bas de page) */
-.rs-cartbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 72px; z-index: 120;
+.rs-cartbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(72px + env(safe-area-inset-bottom, 0px)); z-index: 1001;
               background: var(--accent); color: #fff; border-radius: 40px; padding: .7rem 1.2rem;
               display: none; align-items: center; gap: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,.3);
               text-decoration: none; font-weight: 700; max-width: 92vw; }
@@ -81,11 +81,14 @@
 @media (min-width: 992px) { .rs-cartbar { bottom: 24px; } }
 
 /* Fenêtre modale (options de plat) */
-.rs-modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 1000; display: none;
+/* z-index 10050 : au-dessus de l'en-tête et de la barre de navigation mobile (1000),
+   sous les toasts Django (99999). Sur mobile la barre du bas masquait le bouton « Ajouter ». */
+.rs-modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 10050; display: none;
                align-items: flex-end; justify-content: center; }
 .rs-modal-bg.show { display: flex; }
 .rs-modal { background: var(--bg-card); color: var(--text); width: 100%; max-width: 520px; max-height: 92vh;
-            overflow-y: auto; border-radius: 18px 18px 0 0; padding: 1rem 1.1rem 1.2rem; }
+            overflow-y: auto; border-radius: 18px 18px 0 0;
+            padding: 1rem 1.1rem calc(1.2rem + env(safe-area-inset-bottom, 0px)); }
 @media (min-width: 768px) { .rs-modal-bg { align-items: center; } .rs-modal { border-radius: 18px; } }
 .rs-modal h3 { font-weight: 800; font-size: 1.15rem; margin: 0; }
 .rs-opt-group { margin-top: .9rem; border-top: 1px solid var(--border); padding-top: .7rem; }
