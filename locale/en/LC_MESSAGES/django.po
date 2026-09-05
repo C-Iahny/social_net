@@ -2920,3 +2920,16 @@ msgstr "ticked by default"
 msgid "au choix du client"
 msgstr "customer's choice"
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "cochez ce que vous ne voulez pas"
+msgstr "tick what you don't want"
+
+msgid "Enlever"
+msgstr "Remove"
+
+msgid "En plus, si vous voulez"
+msgstr "Extras, if you like"
+
+msgid "Listez les ingrédients du plat, un par un. Le client verra la liste et cochera ce qu'il ne veut pas (« sans œuf »). « Coché par défaut » = dans le plat ; décoché = proposé en plus (avec un prix si supplément). Décochez « au choix du client » pour un ingrédient qu'on ne peut pas enlever."
+msgstr "List the dish ingredients one by one. Customers will see the list and tick what they do not want (\"no egg\"). \"Ticked by default\" = in the dish; unticked = offered as an extra (with a price if charged). Untick \"customer's choice\" for an ingredient that cannot be removed."
+

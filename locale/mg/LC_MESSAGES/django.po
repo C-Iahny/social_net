@@ -3065,3 +3065,16 @@ msgstr "voamarika mialoha"
 msgid "au choix du client"
 msgstr "safidin'ny mpanjifa"
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "cochez ce que vous ne voulez pas"
+msgstr "marihina izay tsy tianao"
+
+msgid "Enlever"
+msgstr "Esorina"
+
+msgid "En plus, si vous voulez"
+msgstr "Fanampiny, raha tianao"
+
+msgid "Listez les ingrédients du plat, un par un. Le client verra la liste et cochera ce qu'il ne veut pas (« sans œuf »). « Coché par défaut » = dans le plat ; décoché = proposé en plus (avec un prix si supplément). Décochez « au choix du client » pour un ingrédient qu'on ne peut pas enlever."
+msgstr "Lazao tsirairay ny akora ao amin'ny sakafo. Hahita ny lisitra ny mpanjifa ary hanamarika izay tsy tiany (« tsy misy atody »). « Voamarika mialoha » = ao anatin'ny sakafo ; tsy voamarika = atolotra ho fanampiny (misy vidiny raha fanampiny). Esory ny marika « safidin'ny mpanjifa » ho an'ny akora tsy azo esorina."
+
