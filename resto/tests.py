@@ -33,6 +33,7 @@ class RestoFlowTests(TestCase):
         self.egg = Option.objects.create(group=self.extras, name='Œuf', extra_price=1000)
         self.rice = Option.objects.create(group=self.extras, name='Riz en plus', extra_price=500)
         self.item.ingredients = 'Oignons' + chr(10) + 'Piment' + chr(10) + '!Riz'
+        self.item.preparation = 'Mijoté 2 h'
         self.item.save()
 
     # ── Helpers ───────────────────────────────────────────────────────────────
@@ -60,6 +61,7 @@ class RestoFlowTests(TestCase):
         r = self.client.get(reverse('resto:item_options', args=[self.resto.slug, self.item.pk]))
         data = r.json()
         self.assertEqual(data['price'], 8000)
+        self.assertEqual(data['preparation'], 'Mijoté 2 h')
         self.assertEqual(data['ingredients'], [{'name': 'Oignons', 'removable': True},
                                                {'name': 'Piment', 'removable': True},
                                                {'name': 'Riz', 'removable': False}])

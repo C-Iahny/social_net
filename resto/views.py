@@ -238,6 +238,7 @@ def item_options(request, slug, item_pk):
         'price': int(item.price), 'image': item.image.url if item.image else '',
         'available': item.is_available and item.restaurant.can_order,
         'ingredients': item.ingredient_list,
+        'preparation': item.preparation,
         'groups': groups,
     })
 

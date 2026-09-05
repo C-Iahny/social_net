@@ -2579,3 +2579,25 @@ msgstr "One ingredient per line: Onions, Chili, !Rice (required)"
 msgid "Un par ligne. Le client pourra les décocher. Mettez « ! » devant ceux qu'on ne peut pas retirer (ex : !Riz)."
 msgstr "One per line. Customers can untick them. Put \"!\" before those that cannot be removed (e.g. !Rice)."
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Préparation"
+msgstr "Preparation"
+
+msgid "Ajoutez-les un par un. Le client verra chaque ingrédient coché et pourra décocher ceux qu'il ne veut pas (« sans oignons »). Décochez « retirable » pour un ingrédient indispensable."
+msgstr "Add them one by one. Customers will see each ingredient ticked and can untick the ones they do not want (\"no onions\"). Untick \"removable\" for an essential ingredient."
+
+msgid "Nom de l'ingrédient (ex : Oignons)"
+msgstr "Ingredient name (e.g. Onions)"
+
+msgid "Ajouter l'ingrédient"
+msgstr "Add ingredient"
+
+msgid "retirable"
+msgstr "removable"
+
+msgid "Ex : Porc mijoté 2 h avec les feuilles de manioc pilées, servi avec du riz blanc"
+msgstr "E.g. Pork simmered 2 h with pounded cassava leaves, served with white rice"
+
+msgid "Comment le plat est préparé : cuisson, mode de préparation, temps, particularités."
+msgstr "How the dish is prepared: cooking, method, time, specifics."
+

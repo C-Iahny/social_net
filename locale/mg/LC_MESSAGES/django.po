@@ -2724,3 +2724,25 @@ msgstr "Akora iray isaky ny andalana : Tongolo, Sakay, !Vary (tsy maintsy)"
 msgid "Un par ligne. Le client pourra les décocher. Mettez « ! » devant ceux qu'on ne peut pas retirer (ex : !Riz)."
 msgstr "Iray isaky ny andalana. Afaka manala ny marika ny mpanjifa. Asio « ! » eo alohan'izay tsy azo esorina (ohatra : !Vary)."
 
+# ── Resto Vazimba (commande & livraison de repas) ──
+msgid "Préparation"
+msgstr "Fomba fanomanana"
+
+msgid "Ajoutez-les un par un. Le client verra chaque ingrédient coché et pourra décocher ceux qu'il ne veut pas (« sans oignons »). Décochez « retirable » pour un ingrédient indispensable."
+msgstr "Ampidiro tsirairay. Hahita ny akora tsirairay voamarika ny mpanjifa ary afaka manala ny marika amin'izay tsy tiany (« tsy misy tongolo »). Esory ny marika « azo esorina » raha akora tsy maintsy misy."
+
+msgid "Nom de l'ingrédient (ex : Oignons)"
+msgstr "Anaran'ny akora (ohatra : Tongolo)"
+
+msgid "Ajouter l'ingrédient"
+msgstr "Ampidiro ny akora"
+
+msgid "retirable"
+msgstr "azo esorina"
+
+msgid "Ex : Porc mijoté 2 h avec les feuilles de manioc pilées, servi avec du riz blanc"
+msgstr "Ohatra : Henakisoa nandrahoina 2 ora miaraka amin'ny ravitoto, aroso miaraka amin'ny vary fotsy"
+
+msgid "Comment le plat est préparé : cuisson, mode de préparation, temps, particularités."
+msgstr "Ahoana no fanomanana ny sakafo : fandrahoana, fomba, fotoana, mampiavaka."
+
