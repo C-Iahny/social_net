@@ -151,3 +151,60 @@ def compress_media(django_file):
         return compress_video(django_file), 'video'
     else:
         return compress_image(django_file), 'image'
+
+
+def ffmpeg_available():
+    import shutil
+    return shutil.which('ffmpeg') is not None
+
+
+def recompress_video_media(media_id):
+    """Recompresse en arrière-plan la vidéo d'un PostMedia déjà enregistré.
+
+    L'original est servi tout de suite ; dès que ffmpeg a fini, le fichier
+    est remplacé par la version 720p H.264 (beaucoup plus légère en 3G/4G).
+    """
+    from django.core.files.base import File
+    from .models import PostMedia
+
+    if not ffmpeg_available():
+        return
+    try:
+        media = PostMedia.objects.get(pk=media_id)
+    except PostMedia.DoesNotExist:
+        return
+    if media.media_type != 'video' or not media.file:
+        return
+
+    media.file.open('rb')
+    try:
+        original = File(media.file, name=os.path.basename(media.file.name))
+        compressed = compress_video(original)
+    finally:
+        media.file.close()
+    if compressed is original:
+        return  # échec de ffmpeg : on garde l'original
+    old_name = media.file.name
+    media.file.save(compressed.name, compressed, save=True)
+    if old_name != media.file.name:
+        try:
+            media.file.storage.delete(old_name)
+        except Exception:
+            logger.warning("Impossible de supprimer l'original %s", old_name)
+
+
+def store_post_media(post, django_file, order):
+    """Crée le PostMedia d'un fichier uploadé, compressé.
+
+    Image : redimensionnée et convertie en WebP tout de suite (quelques
+    dizaines de ms). Vidéo : enregistrée telle quelle puis recompressée en
+    tâche de fond, pour ne pas bloquer la publication.
+    """
+    from ZOOT.background import run_in_background
+    from .models import PostMedia
+
+    if _ext(getattr(django_file, 'name', '')) in VIDEO_EXTS:
+        media = PostMedia.objects.create(post=post, file=django_file, media_type='video', order=order)
+        run_in_background(recompress_video_media, media.pk)
+        return media
+    return PostMedia.objects.create(post=post, file=compress_image(django_file), media_type='image', order=order)

@@ -30,6 +30,9 @@ class Notification(models.Model):
 	object_id 					= models.CharField(max_length=255)  # CharField pour supporter UUID (LiveRoom) et integer PKs
 	content_object 				= GenericForeignKey()
 
+	class Meta:
+		indexes = [models.Index(fields=['target', '-timestamp'], name='notif_target_recent_idx')]
+
 	def __str__(self):
 		return self.verb
 
@@ -66,68 +69,67 @@ class PushSubscription(models.Model):
             }
         }
 
+    # ── Envoi ────────────────────────────────────────────────────────────────
+    # L'appel HTTP vers le service push (Google, Mozilla, Apple…) prend
+    # facilement 200 ms à 2 s par appareil. Il est fait dans un thread de fond
+    # pour ne pas faire attendre l'utilisateur qui vient de commenter ou
+    # d'envoyer un message. PUSH_ASYNC=False (tests) rend l'envoi synchrone.
+
     @classmethod
-    def send_notification(cls, user, title, body, url='/', icon='/static/icon-192.png'):
-        """Envoie une push notification à tous les appareils de l'utilisateur."""
-        import json
+    def _deliver(cls, user_id, payload):
         from django.conf import settings as cfg
-
-        if not cfg.VAPID_PUBLIC_KEY or not cfg.VAPID_PRIVATE_KEY:
-            return  # Push non configuré
-
+        from django.db import close_old_connections
         try:
-            from pywebpush import webpush, WebPushException
+            from pywebpush import webpush
         except ImportError:
             return
-
-        payload = json.dumps({'title': title, 'body': body, 'url': url, 'icon': icon})
         vapid_claims = {'sub': f"mailto:{cfg.VAPID_CLAIMS_EMAIL}"}
+        close_old_connections()
+        try:
+            for sub in cls.objects.filter(user_id=user_id):
+                try:
+                    webpush(
+                        subscription_info=sub.as_subscription_info(),
+                        data=payload,
+                        vapid_private_key=cfg.VAPID_PRIVATE_KEY,
+                        vapid_claims=vapid_claims,
+                        timeout=10,
+                    )
+                except Exception:
+                    # Abonnement expiré ou invalide → le supprimer
+                    sub.delete()
+        finally:
+            close_old_connections()
 
-        for sub in cls.objects.filter(user=user):
-            try:
-                webpush(
-                    subscription_info=sub.as_subscription_info(),
-                    data=payload,
-                    vapid_private_key=cfg.VAPID_PRIVATE_KEY,
-                    vapid_claims=vapid_claims,
-                )
-            except Exception:
-                # Subscription expirée ou invalide → la supprimer
-                sub.delete()
+    @classmethod
+    def _send(cls, user, data):
+        import json
+        from django.conf import settings as cfg
+        if not cfg.VAPID_PUBLIC_KEY or not cfg.VAPID_PRIVATE_KEY:
+            return  # Push non configuré
+        user_id = getattr(user, 'pk', user)
+        payload = json.dumps(data)
+        if getattr(cfg, 'PUSH_ASYNC', True):
+            from ZOOT.background import run_in_background
+            run_in_background(cls._deliver, user_id, payload)
+        else:
+            cls._deliver(user_id, payload)
+
+    @classmethod
+    def send_notification(cls, user, title, body, url='/', icon='/static/logo/pwa-192.png'):
+        """Envoie une push notification à tous les appareils de l'utilisateur."""
+        cls._send(user, {'title': title, 'body': body, 'url': url, 'icon': icon})
 
     @classmethod
     def send_live_notification(cls, user, host_username, host_image, live_title, room_id):
         """Envoie une push notification 'X est en live' à un utilisateur."""
-        import json
-        from django.conf import settings as cfg
-
-        if not cfg.VAPID_PUBLIC_KEY or not cfg.VAPID_PRIVATE_KEY:
-            return
-
-        try:
-            from pywebpush import webpush, WebPushException
-        except ImportError:
-            return
-
-        payload = json.dumps({
-            'type':          'live_started',
-            'title':         f'🔴 {host_username} est en live !',
-            'body':          live_title or 'Rejoins maintenant',
-            'icon':          host_image or '/static/logo/vazimba_v2_icon.png',
-            'url':           f'/live/{room_id}/',
+        cls._send(user, {
+            'type':  'live_started',
+            'title': f'🔴 {host_username} est en live !',
+            'body':  live_title or 'Rejoins maintenant',
+            'icon':  host_image or '/static/logo/pwa-192.png',
+            'url':   f'/live/{room_id}/',
         })
-        vapid_claims = {'sub': f"mailto:{cfg.VAPID_CLAIMS_EMAIL}"}
-
-        for sub in cls.objects.filter(user=user):
-            try:
-                webpush(
-                    subscription_info=sub.as_subscription_info(),
-                    data=payload,
-                    vapid_private_key=cfg.VAPID_PRIVATE_KEY,
-                    vapid_claims=vapid_claims,
-                )
-            except Exception:
-                sub.delete()
 
     @classmethod
     def send_call_notification(cls, callee, caller_name, caller_image, room_id, call_mode='video'):
@@ -136,40 +138,14 @@ class PushSubscription(models.Model):
         Le SW affichera la notification même écran éteint, avec sonnerie système
         et boutons Répondre / Refuser.
         """
-        import json
-        from django.conf import settings as cfg
-
-        if not cfg.VAPID_PUBLIC_KEY or not cfg.VAPID_PRIVATE_KEY:
-            return
-
-        try:
-            from pywebpush import webpush, WebPushException
-        except ImportError:
-            return
-
-        icon = caller_image or '/static/logo/vazimba_v2_icon.png'
         mode_label = 'audio' if call_mode == 'audio' else 'vidéo'
-        payload = json.dumps({
+        cls._send(callee, {
             'type':        'incoming_call',
             'title':       f'📞 {caller_name}',
             'body':        f'Appel {mode_label} entrant',
-            'icon':        icon,
+            'icon':        caller_image or '/static/logo/pwa-192.png',
             'url':         f'/chat/?room_id={room_id}&auto_answer=1&call_mode={call_mode}',
             'room_id':     str(room_id),
             'call_mode':   call_mode,
             'caller_name': caller_name,
         })
-        vapid_claims = {'sub': f"mailto:{cfg.VAPID_CLAIMS_EMAIL}"}
-
-        subs = list(cls.objects.filter(user=callee))
-        for sub in subs:
-            try:
-                webpush(
-                    subscription_info=sub.as_subscription_info(),
-                    data=payload,
-                    vapid_private_key=cfg.VAPID_PRIVATE_KEY,
-                    vapid_claims=vapid_claims,
-                )
-            except Exception:
-                sub.delete()
-

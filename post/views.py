@@ -25,6 +25,7 @@ from .forms import PostForm, EditForm, CommentForm
 from .models import Post, Repost, Continent, Country, Follow, Comment, Reaction, PostMedia
 from friend.models import FriendList
 from personal.models import HeroSettings
+from .media_utils import store_post_media
 from .visibility import get_visible_post_or_404, visible_posts
 
 # Import différé pour éviter les imports circulaires
@@ -580,16 +581,12 @@ class AddPostView(LoginRequiredMixin, CreateView):
                 pass
 
         # ── Enregistrer les fichiers média ───────────────────────────────
-        _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
         files = self.request.FILES.getlist('media_files')
         _logger.info("AddPostView: %d fichier(s) reçu(s) post #%s", len(files), post.pk)
         saved = 0
         for i, f in enumerate(files):
-            ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
-            is_vid = ext in _VIDEO_EXTS
-            mtype = 'video' if is_vid else 'image'
             try:
-                PostMedia.objects.create(post=post, file=f, media_type=mtype, order=i)
+                store_post_media(post, f, order=i)
                 saved += 1
             except Exception as e:
                 _logger.exception("PostMedia FAILED (fichier=%s): %s", f.name, e)
@@ -721,7 +718,6 @@ class UpdatePostView(LoginRequiredMixin, UpdateView):
                 _logger.error("delete_media failed: %s", e)
 
         # Ajouter les nouveaux fichiers
-        _VIDEO_EXTS = {'mp4', 'webm', 'ogg', 'mov', 'mkv', 'avi', 'm4v', '3gp'}
         files = self.request.FILES.getlist('media_files')
         try:
             start_order = (PostMedia.objects.filter(post=post)
@@ -729,11 +725,8 @@ class UpdatePostView(LoginRequiredMixin, UpdateView):
         except Exception:
             start_order = 0
         for i, f in enumerate(files):
-            ext = f.name.rsplit('.', 1)[-1].lower() if '.' in f.name else ''
-            is_vid = ext in _VIDEO_EXTS
-            mtype = 'video' if is_vid else 'image'
             try:
-                PostMedia.objects.create(post=post, file=f, media_type=mtype, order=start_order + i)
+                store_post_media(post, f, order=start_order + i)
             except Exception as e:
                 _logger.exception("UpdatePost: PostMedia FAILED (fichier=%s): %s", f.name, e)
 

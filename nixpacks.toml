@@ -1,0 +1,4 @@
+# Paquets système du build Railway (Nixpacks).
+# ffmpeg : recompression des vidéos de posts en 720p (post/media_utils.py).
+[phases.setup]
+aptPkgs = ["ffmpeg"]

@@ -79,6 +79,9 @@ class RoomChatMessage(models.Model):
 
 	objects = RoomChatMessageManager()
 
+	class Meta:
+		indexes = [models.Index(fields=['room', 'timestamp'], name='chatmsg_room_time_idx')]
+
 	def __str__(self):
 		if self.file:
 			return f'[{self.file_type or "file"}] {self.file.name}'
