@@ -63,6 +63,58 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 				await self.channel_layer.group_discard(f"user_{user.id}", self.channel_name)
 			except Exception as e:
 				logger.debug(f"NotificationConsumer: channel_layer.group_discard failed: {e}")
+		for group in list(getattr(self, "_post_groups", ())):
+			try:
+				await self.channel_layer.group_discard(group, self.channel_name)
+			except Exception:
+				pass
+
+	# ── Commentaires en direct ────────────────────────────────────────────
+	async def subscribe_post(self, post_id):
+		try:
+			post_id = int(post_id)
+		except (TypeError, ValueError):
+			return
+		if not await self._can_view_post(post_id):
+			return
+		if not hasattr(self, "_post_groups"):
+			self._post_groups = set()
+		group = f"post_{post_id}"
+		if group in self._post_groups:
+			return
+		try:
+			await self.channel_layer.group_add(group, self.channel_name)
+			self._post_groups.add(group)
+		except Exception as e:
+			logger.debug(f"NotificationConsumer: subscribe_post failed: {e}")
+
+	async def unsubscribe_post(self, post_id):
+		group = f"post_{post_id}"
+		if group not in getattr(self, "_post_groups", ()):
+			return
+		self._post_groups.discard(group)
+		try:
+			await self.channel_layer.group_discard(group, self.channel_name)
+		except Exception:
+			pass
+
+	@database_sync_to_async
+	def _can_view_post(self, post_id):
+		from django.http import Http404
+		from post.visibility import get_visible_post_or_404
+		try:
+			get_visible_post_or_404(self.scope["user"], post_id)
+			return True
+		except Http404:
+			return False
+
+	async def post_comment(self, event):
+		"""Un commentaire vient d'être publié sur un post que l'utilisateur regarde."""
+		await self.send_json({
+			"general_msg_type": GENERAL_MSG_TYPE_POST_COMMENT,
+			"post_id": event["post_id"],
+			"comment": event["comment"],
+		})
 
 
 	async def receive_json(self, content):
@@ -73,7 +125,12 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 		command = content.get("command", None)
 		logger.debug(f"NotificationConsumer: receive_json. Command: {command}")
 		try:
-			if command == "get_general_notifications":
+			if command == "subscribe_post":
+				# Suivre en direct les commentaires d'un post ouvert à l'écran.
+				await self.subscribe_post(content.get("post_id"))
+			elif command == "unsubscribe_post":
+				await self.unsubscribe_post(content.get("post_id"))
+			elif command == "get_general_notifications":
 				payload = await get_general_notifications(self.scope["user"], content.get("page_number", None))
 				if payload == None:
 					await self.general_pagination_exhausted()

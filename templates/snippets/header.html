@@ -1437,6 +1437,7 @@
             if(data.general_msg_type == 5){ updateGeneralNotificationDiv(data.notification); }
             if(data.general_msg_type == 6){ handleNewPostNotification(data); }
             if(data.general_msg_type == 7){ handleLiveStartedNotification(data); }
+            if(data.general_msg_type == 8 && typeof window._onLivePostComment === 'function'){ window._onLivePostComment(data); }
             if(data.chat_msg_type == 10){ handleChatNotificationsData(data.notifications, data.new_page_number); }
             if(data.chat_msg_type == 11){ setChatPaginationExhausted(); }
             if(data.chat_msg_type == 13){ handleNewChatNotificationsData(data.notifications); }

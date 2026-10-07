@@ -2790,6 +2790,10 @@ function toggleComments(postId) {
     var isOpen = panel.classList.contains('open');
     panel.classList.toggle('open', !isOpen);
     if (btn) btn.classList.toggle('active', !isOpen);
+    /* Commentaires en direct : s'abonner au post tant que le panneau est ouvert */
+    if (window.notificationSocketSend) {
+        window.notificationSocketSend({command: isOpen ? 'unsubscribe_post' : 'subscribe_post', post_id: postId});
+    }
     if (!isOpen) {
         var ta = document.getElementById('comment-input-' + postId);
         if (!ta) return;
@@ -3327,12 +3331,43 @@ function escHtml(str) {
 }
 
 /* ══════════════════════════════════════
-   LIVE COMMENT POLLING
-   Rafraîchit les commentaires ouverts toutes les 8 s
+   COMMENTAIRES EN DIRECT
+   Les nouveaux commentaires arrivent par le WebSocket de notifications
+   (message general_msg_type 8). Le polling HTTP ne sert plus que de
+   roue de secours (toutes les 45 s) si le WebSocket est coupé.
    ══════════════════════════════════════ */
 (function() {
     /* Map postId → dernier comment id connu */
     var _lastCommentId = {};
+    var CURRENT_USER_ID = {{ request.user.id|default:0 }};
+
+    function appendComment(c, postId) {
+        if (c.parent_id) return;                       /* les réponses se chargent avec leur fil */
+        if (document.getElementById('comment-item-' + c.id)) return;   /* déjà affiché (ex. : le nôtre) */
+        var list = document.getElementById('comment-list-' + postId);
+        if (!list) return;
+        var addUrl = '{% url "post:add-comment" 0 %}'.replace('/0/', '/' + postId + '/');
+        if (c.can_delete === undefined) {
+            c.can_delete = (CURRENT_USER_ID && (c.author_id === CURRENT_USER_ID || c.post_author_id === CURRENT_USER_ID));
+        }
+        list.insertAdjacentHTML('beforeend', buildCommentHtml(c, postId, addUrl));
+        updateCommentCount(postId, 1);
+        _lastCommentId[postId] = Math.max(_lastCommentId[postId] || 0, c.id);
+    }
+
+    window._onLivePostComment = function(data) {
+        if (data && data.comment) appendComment(data.comment, String(data.post_id));
+    };
+
+    /* Après une reconnexion du WebSocket, se réabonner aux panneaux ouverts */
+    var _prevConnected = window._notifWsConnected;
+    window._notifWsConnected = function() {
+        if (typeof _prevConnected === 'function') _prevConnected();
+        document.querySelectorAll('.pc-comment-panel.open').forEach(function(panel) {
+            var m = panel.id.match(/comment-panel-(\d+)/);
+            if (m && window.notificationSocketSend) window.notificationSocketSend({command: 'subscribe_post', post_id: m[1]});
+        });
+    };
 
     function buildCommentHtml(data, postId, addUrl) {
         var delBtn = data.can_delete
@@ -3371,14 +3406,7 @@ function escHtml(str) {
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(d){
                 if (!d || !d.comments.length) return;
-                var list = document.getElementById('comment-list-' + postId);
-                d.comments.forEach(function(c) {
-                    /* Ne pas dupliquer un commentaire déjà dans le DOM */
-                    if (document.getElementById('comment-item-' + c.id)) return;
-                    if (list) list.insertAdjacentHTML('beforeend', buildCommentHtml(c, postId, addUrl));
-                    updateCommentCount(postId, 1);
-                    _lastCommentId[postId] = Math.max(_lastCommentId[postId] || 0, c.id);
-                });
+                d.comments.forEach(function(c) { appendComment(c, postId); });
             })
             .catch(function(){});
         });
@@ -3398,7 +3426,7 @@ function escHtml(str) {
 
     document.addEventListener('DOMContentLoaded', function() {
         initLastIds();
-        setInterval(pollOpenCommentSections, 8000);
+        setInterval(pollOpenCommentSections, 45000);
     });
 })();
 

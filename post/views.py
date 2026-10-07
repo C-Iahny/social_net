@@ -827,6 +827,38 @@ def unfollow(request):
 # ──────────────────────────────────────────────
 # Comments
 # ──────────────────────────────────────────────
+def _broadcast_comment(post, comment):
+    """Pousse le commentaire aux lecteurs du post abonnés via le WebSocket
+    de notifications (groupe post_<id>, voir NotificationConsumer.subscribe_post).
+    Le client calcule lui-même can_delete à partir de author_id / post_author_id."""
+    try:
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        channel_layer = get_channel_layer()
+        if not channel_layer:
+            return
+        try:
+            avatar = comment.author.profile_image.url
+        except Exception:
+            avatar = '/static/images/default_profile_image.png'
+        async_to_sync(channel_layer.group_send)(f"post_{post.id}", {
+            "type": "post_comment",
+            "post_id": post.id,
+            "comment": {
+                "id":             comment.id,
+                "author":         comment.author.username,
+                "author_id":      comment.author.id,
+                "post_author_id": post.author_id,
+                "avatar":         avatar,
+                "body":           comment.body,
+                "created_at":     comment.created_at.strftime("%d %b %Y, %H:%M"),
+                "parent_id":      comment.parent_id,
+            },
+        })
+    except Exception:
+        _logger.exception("Diffusion WebSocket du commentaire %s impossible", comment.pk)
+
+
 @login_required(login_url="login")
 def add_comment(request, post_id):
     """Ajoute un commentaire via POST (AJAX ou classique)."""
@@ -849,6 +881,7 @@ def add_comment(request, post_id):
             except (ValueError, CommentModel.DoesNotExist):
                 pass
         comment.save()
+        _broadcast_comment(post, comment)
 
         # Notification au propriétaire du post — uniquement pour les commentaires racine
         # (les réponses à des commentaires ont leur propre notification ci-dessous)
