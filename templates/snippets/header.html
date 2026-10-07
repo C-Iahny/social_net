@@ -1768,7 +1768,8 @@ document.addEventListener('click', function(e) {
     // Register service worker
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
 
-    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    // Le service worker est enregistré une seule fois par base.html : on attend qu'il soit prêt.
+    navigator.serviceWorker.ready
     .then(function(reg) {
         // Check existing subscription
         return reg.pushManager.getSubscription().then(function(sub) {
