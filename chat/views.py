@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from urllib.parse import urlencode
@@ -76,47 +76,45 @@ def private_chat_room_view(request, *args, **kwargs):
 	if story_reply_msg:
 		context['story_reply_msg'] = story_reply_msg
 
-	# 1. Find all the rooms this user is a part of
-	rooms1 = PrivateChatRoom.objects.filter(user1=user, is_active=True)
-	rooms2 = PrivateChatRoom.objects.filter(user2=user, is_active=True)
-
-	# 2. merge the lists
-	rooms = list(chain(rooms1, rooms2))
+	# 1. Toutes les conversations de l'utilisateur, avec les deux participants
+	#    (select_related évite une requête par conversation pour l'avatar/nom)
+	rooms = list(
+		PrivateChatRoom.objects
+		.filter(Q(user1=user) | Q(user2=user), is_active=True)
+		.select_related('user1', 'user2')
+		.annotate(last_ts=Max('roomchatmessage__timestamp'))
+	)
 
 	"""
 	m_and_f:
 		[{"message": "hey", "friend": "Mitch"}, {"message": "You there?", "friend": "Blake"},]
 	Where message = The most recent message
 	"""
+	# 2. Dernier message de chaque conversation et compteurs de non-lus :
+	#    deux requêtes en tout, quel que soit le nombre de conversations
+	#    (auparavant ~3 requêtes par conversation).
+	last_msgs = {}
+	with_msgs = [r for r in rooms if r.last_ts is not None]
+	if with_msgs:
+		pairs = Q()
+		for r in with_msgs:
+			pairs |= Q(room_id=r.pk, timestamp=r.last_ts)
+		for m in RoomChatMessage.objects.filter(pairs).order_by('-id'):
+			last_msgs.setdefault(m.room_id, m)
+	unread_by_room = dict(
+		UnreadChatRoomMessages.objects.filter(user=user, room__in=rooms).values_list('room_id', 'count')
+	)
+
 	m_and_f_raw = []
 	for room in rooms:
-		# Figure out which user is the "other user" (aka friend)
-		if room.user1 == user:
-			friend = room.user2
-		else:
-			friend = room.user1
-
-		# Dernier message + timestamp pour tri
-		try:
-			last_msg_obj = RoomChatMessage.objects.filter(room=room).latest('timestamp')
-			last_msg  = (last_msg_obj.content or '')[:30]
-			last_time = last_msg_obj.timestamp
-		except RoomChatMessage.DoesNotExist:
-			last_msg  = ""
-			# Rooms sans message → en dernier, mais type cohérent (datetime) pour le tri
-			last_time = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
-
-		try:
-			unread_obj = UnreadChatRoomMessages.objects.get(room=room, user=user)
-			unread_count = unread_obj.count
-		except UnreadChatRoomMessages.DoesNotExist:
-			unread_count = 0
-
+		friend = room.user2 if room.user1_id == user.id else room.user1
+		last_msg_obj = last_msgs.get(room.pk)
 		m_and_f_raw.append({
-			'message': last_msg,
+			'message': (last_msg_obj.content or '')[:30] if last_msg_obj else '',
 			'friend':  friend,
-			'unread':  unread_count,
-			'_ts':     last_time,
+			'unread':  unread_by_room.get(room.pk, 0),
+			# Rooms sans message → en dernier, mais type cohérent (datetime) pour le tri
+			'_ts':     room.last_ts or datetime.datetime.min.replace(tzinfo=datetime.timezone.utc),
 		})
 
 	# Tri : conversation la plus récente en premier
