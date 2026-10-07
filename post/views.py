@@ -1459,7 +1459,6 @@ def vintana_create(request):
         # Parsing de la date (format HTML datetime-local : YYYY-MM-DDTHH:MM)
         try:
             from datetime import datetime
-            import pytz
             naive_dt = datetime.strptime(reveal_s, '%Y-%m-%dT%H:%M')
             tz = timezone.get_current_timezone()
             reveal_dt = timezone.make_aware(naive_dt, tz)

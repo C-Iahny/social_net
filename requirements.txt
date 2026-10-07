@@ -5,32 +5,32 @@
 # développement (Jupyter, OpenCV, etc.) — ne pas utiliser en production.
 
 # ── Django core ──────────────────────────────────────────────────────────────
-Django==4.2.25
-asgiref==3.7.2
+Django==5.2.7
+asgiref==3.9.1
 sqlparse==0.5.3
-pytz==2022.7.1
+pytz==2025.2
 
 # ── ASGI / WebSockets (Channels + Daphne) ────────────────────────────────────
-channels==4.0.0
-channels-redis==4.2.0
-daphne==4.0.0
-redis==5.0.1
-msgpack==1.0.7
+channels==4.3.1
+channels-redis==4.3.0
+daphne==4.2.1
+redis==5.2.1
+msgpack==1.1.1
 async-timeout==4.0.3
 
 # ── Serveur WSGI (fallback / Health checks) ──────────────────────────────────
-gunicorn==20.1.0
+gunicorn==23.0.0
 
 # ── Base de données ──────────────────────────────────────────────────────────
 # psycopg2-binary : version binaire pré-compilée, aucune dépendance système
 psycopg2-binary==2.9.9
-dj-database-url==1.0.0
+dj-database-url==2.3.0
 
 # ── Configuration / variables d'environnement ────────────────────────────────
-python-decouple==3.6
+python-decouple==3.8
 
 # ── Fichiers statiques ───────────────────────────────────────────────────────
-whitenoise==6.2.0
+whitenoise==6.9.0
 
 # ── Images ───────────────────────────────────────────────────────────────────
 Pillow==11.3.0
@@ -41,36 +41,34 @@ boto3>=1.34.0
 django-storages[s3]>=1.14.0
 
 # ── Frontend / formulaires ───────────────────────────────────────────────────
-django-ckeditor==6.5.1
-django-js-asset==2.0.0
-django-crispy-forms==2.1
-crispy-bootstrap4==2024.1    # Template pack Bootstrap 4 requis par django-crispy-forms 2.x
+django-crispy-forms==2.4
+crispy-bootstrap4==2025.6    # Template pack Bootstrap 4 requis par django-crispy-forms 2.x
 
 # ── Interface d'administration ───────────────────────────────────────────────
-django-jazzmin==2.6.0
+django-jazzmin==3.0.1
 
 # ── Divers Django ────────────────────────────────────────────────────────────
-django-extensions==3.2.1
+django-extensions==4.1
 
 # ── Cryptographie / sécurité ─────────────────────────────────────────────────
 cryptography==46.0.7
 pyOpenSSL==25.3.0    # 25.1.0 exige cryptography<46 → conflit avec le pin ci-dessus
 
 # ── Web Push Notifications (VAPID) ───────────────────────────────────────────
-pywebpush==1.14.0
+pywebpush==2.0.3
 
 # ── Twisted (requis par Daphne/Channels) ─────────────────────────────────────
-Twisted==23.10.0
-autobahn==23.6.2
-txaio==23.1.1
+Twisted==24.11.0
+autobahn==24.4.2
+txaio==23.6.1
 constantly==23.10.4
-incremental==22.10.0
+incremental==24.7.2
 hyperlink==21.0.0
-automat==22.10.0
-zope.interface==6.1
-service-identity==24.1.0
-pyasn1==0.5.1
-pyasn1-modules==0.3.0
+automat==24.8.1
+zope.interface==7.2
+service-identity==24.2.0
+pyasn1==0.6.1
+pyasn1-modules==0.4.2
 
 # ── HTTP ─────────────────────────────────────────────────────────────────────
 requests==2.32.5
@@ -91,5 +89,5 @@ django-anymail[brevo]>=10.0
 africastalking>=1.2.5
 
 # ── Planificateur de tâches (cron digest push) ───────────────────────────────
-APScheduler==3.10.4
-bleach==6.0.0    # Assainissement du HTML utilisateur (filtre |safe_html) — anti-XSS stocké
+APScheduler==3.11.0
+bleach==6.2.0    # Assainissement du HTML utilisateur (filtre |safe_html) — anti-XSS stocké

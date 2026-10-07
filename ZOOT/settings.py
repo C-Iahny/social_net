@@ -93,7 +93,6 @@ INSTALLED_APPS = [
     'tourisme',
     'resto',
     'pwa',
-    'ckeditor',
     'crispy_forms',
     # FIX : django-crispy-forms 2.x a extrait les template packs en packages séparés.
     # 'bootstrap3' n'est plus inclus par défaut. On utilise bootstrap4 (voir CRISPY_TEMPLATE_PACK).
