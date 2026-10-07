@@ -1,0 +1,406 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}{% trans "Vidéos" %} · Vazimba{% endblock %}
+{% block meta_description %}{% trans "Les vidéos de la communauté Vazimba, en plein écran." %}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ══ Fil vidéo vertical ══════════════════════════════════════════════════
+   Plein écran, une vidéo par écran, défilement avec accrochage (scroll-snap).
+   Sur mobile la barre de navigation basse reste visible ; l'en-tête est
+   masqué pour laisser toute la place à la vidéo. */
+:root { --vf-nav: 0px; }
+@media (max-width: 767px) {
+    :root { --vf-nav: calc(58px + env(safe-area-inset-bottom, 0px)); }
+    #header { display: none !important; }
+}
+html, body { background: #000 !important; overscroll-behavior-y: contain; }
+main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width: none !important; }
+
+.vf-stage {
+    position: fixed; top: 0; left: 0; right: 0; bottom: var(--vf-nav);
+    background: #000; z-index: 8000;
+    display: flex; justify-content: center;
+}
+.vf-scroller {
+    width: 100%; max-width: 480px; height: 100%;
+    overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+.vf-scroller::-webkit-scrollbar { display: none; }
+@media (min-width: 768px) {
+    .vf-stage { background: #0b0806; }
+    .vf-scroller { border-left: 1px solid rgba(255,255,255,.06); border-right: 1px solid rgba(255,255,255,.06); }
+}
+
+.vf-slide {
+    position: relative; height: 100%; scroll-snap-align: start; scroll-snap-stop: always;
+    background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center;
+}
+.vf-slide video {
+    width: 100%; height: 100%; object-fit: contain; background: #000;
+}
+.vf-slide video.vf-cover { object-fit: cover; }
+.vf-poster {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    filter: blur(14px) brightness(.6); transform: scale(1.1); pointer-events: none;
+}
+.vf-slide.vf-playing .vf-poster { opacity: 0; transition: opacity .4s; }
+
+/* Dégradés pour la lisibilité du texte */
+.vf-shade {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 55%; pointer-events: none;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.55) 60%, rgba(0,0,0,.8) 100%);
+}
+.vf-top {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 3;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, rgba(0,0,0,.6), rgba(0,0,0,0));
+    color: #fff;
+}
+.vf-top h1 { font-size: 1rem; font-weight: 700; margin: 0; letter-spacing: .3px; display: flex; align-items: center; gap: 8px; }
+.vf-top h1 small { font-weight: 500; opacity: .7; font-size: .78rem; }
+.vf-back, .vf-sound {
+    width: 38px; height: 38px; border-radius: 50%; border: 0; cursor: pointer;
+    background: rgba(255,255,255,.14); color: #fff; display: inline-flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(6px);
+}
+.vf-back .material-icons, .vf-sound .material-icons { font-size: 22px; }
+
+/* Infos auteur + légende */
+.vf-info {
+    position: absolute; left: 14px; right: 84px; bottom: 18px; z-index: 3; color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,.6);
+}
+.vf-author { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; text-decoration: none; color: #fff; }
+.vf-author img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; }
+.vf-author b { font-size: .95rem; }
+.vf-region {
+    display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 600;
+    background: rgba(139,69,19,.75); padding: 2px 8px; border-radius: 999px; margin-left: 6px; vertical-align: middle;
+}
+.vf-region .material-icons { font-size: 13px; }
+.vf-caption { font-size: .9rem; line-height: 1.35; margin: 0; max-height: 4.1em; overflow: hidden; white-space: pre-line; }
+.vf-caption.vf-expanded { max-height: 40vh; overflow-y: auto; }
+.vf-more { background: none; border: 0; color: rgba(255,255,255,.75); font-size: .8rem; padding: 2px 0; cursor: pointer; }
+
+/* Actions à droite */
+.vf-actions {
+    position: absolute; right: 10px; bottom: 24px; z-index: 3;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.vf-act { background: none; border: 0; color: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; text-decoration: none; }
+.vf-act .vf-ico {
+    width: 46px; height: 46px; border-radius: 50%; background: rgba(0,0,0,.35);
+    display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    transition: transform .15s;
+}
+.vf-act:active .vf-ico { transform: scale(.9); }
+.vf-act .material-icons { font-size: 28px; }
+.vf-act span.vf-n { font-size: .75rem; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,.8); }
+.vf-act.vf-liked .material-icons { color: #ff3b5c; }
+
+/* Cœur d'animation du double-tap */
+.vf-heart-burst {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%) scale(0);
+    color: #ff3b5c; font-size: 110px; pointer-events: none; z-index: 4; opacity: 0;
+}
+.vf-heart-burst.go { animation: vfBurst .8s ease-out forwards; }
+@keyframes vfBurst {
+    0%   { transform: translate(-50%,-50%) scale(0);   opacity: 0; }
+    25%  { transform: translate(-50%,-50%) scale(1.2); opacity: 1; }
+    60%  { transform: translate(-50%,-50%) scale(1);   opacity: 1; }
+    100% { transform: translate(-50%,-70%) scale(1.1); opacity: 0; }
+}
+
+/* Barre de progression + icône pause */
+.vf-progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255,255,255,.18); z-index: 3; }
+.vf-progress i { display: block; height: 100%; width: 0; background: #fff; }
+.vf-paused-ico {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); z-index: 3;
+    color: rgba(255,255,255,.85); font-size: 72px; pointer-events: none; display: none;
+}
+.vf-slide.vf-user-paused .vf-paused-ico { display: block; }
+.vf-tap-sound {
+    position: absolute; left: 50%; top: 14%; transform: translateX(-50%); z-index: 3;
+    background: rgba(0,0,0,.55); color: #fff; padding: 8px 14px; border-radius: 999px; font-size: .8rem;
+    display: flex; align-items: center; gap: 6px; pointer-events: none;
+}
+.vf-tap-sound .material-icons { font-size: 18px; }
+
+/* États vides / chargement */
+.vf-empty {
+    height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff; text-align: center; padding: 24px; gap: 14px;
+}
+.vf-empty .material-icons { font-size: 64px; opacity: .6; }
+.vf-empty a { color: #fff; background: #8B4513; padding: 10px 18px; border-radius: 999px; text-decoration: none; font-weight: 600; }
+.vf-loading { height: 80px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.6); font-size: .85rem; scroll-snap-align: none; }
+
+/* Bouton Créer (desktop : pas de barre basse) */
+.vf-create {
+    position: absolute; right: 14px; bottom: 18px; z-index: 5; display: none;
+    background: #8B4513; color: #fff; border: 0; border-radius: 999px; padding: 10px 16px; font-weight: 700;
+    text-decoration: none; align-items: center; gap: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.4);
+}
+@media (min-width: 768px) { .vf-create { display: inline-flex; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{{ initial_items|json_script:"vf-initial" }}
+<div class="vf-stage" id="vf-stage">
+    <div class="vf-scroller" id="vf-scroller" data-next="{{ next_offset|default_if_none:'' }}"
+         data-more-url="{% url 'post:video-feed-more' %}"
+         data-react-url="{% url 'post:react-post' %}">
+        {% if not initial_items %}
+        <div class="vf-empty">
+            <span class="material-icons">videocam_off</span>
+            <p>{% trans "Aucune vidéo pour le moment. Soyez la première personne à en publier une !" %}</p>
+            <a href="{% url 'post:addPost' %}">{% trans "Publier une vidéo" %}</a>
+        </div>
+        {% endif %}
+        <div class="vf-loading" id="vf-loading" style="display:none;">{% trans "Chargement…" %}</div>
+    </div>
+    <div class="vf-top">
+        <button class="vf-back" type="button" onclick="history.length > 1 ? history.back() : location.assign('{% url 'post:post-view' %}')" aria-label="{% trans 'Retour' %}">
+            <span class="material-icons">arrow_back</span>
+        </button>
+        <h1>{% trans "Vidéos" %} <small>{% trans "Pour toi" %}</small></h1>
+        <button class="vf-sound" type="button" id="vf-sound-btn" aria-label="{% trans 'Son' %}">
+            <span class="material-icons">volume_off</span>
+        </button>
+    </div>
+    <a class="vf-create" href="{% url 'post:addPost' %}"><span class="material-icons">videocam</span> {% trans "Publier une vidéo" %}</a>
+</div>
+
+<template id="vf-slide-tpl">
+    <section class="vf-slide">
+        <img class="vf-poster" alt="" hidden>
+        <video playsinline webkit-playsinline loop muted preload="none"></video>
+        <div class="vf-shade"></div>
+        <span class="material-icons vf-paused-ico">play_arrow</span>
+        <span class="material-icons vf-heart-burst">favorite</span>
+        <div class="vf-info">
+            <a class="vf-author" href="#"><img alt=""><b></b><span class="vf-region" hidden><span class="material-icons">place</span><span class="vf-region-name"></span></span></a>
+            <p class="vf-caption"></p>
+            <button class="vf-more" type="button" hidden>{% trans "Voir plus" %}</button>
+        </div>
+        <div class="vf-actions">
+            <button class="vf-act vf-like" type="button" aria-label="{% trans 'J’aime' %}"><span class="vf-ico"><span class="material-icons">favorite</span></span><span class="vf-n"></span></button>
+            <a class="vf-act vf-comment" aria-label="{% trans 'Commentaires' %}"><span class="vf-ico"><span class="material-icons">chat_bubble</span></span><span class="vf-n"></span></a>
+            <button class="vf-act vf-share" type="button" aria-label="{% trans 'Partager' %}"><span class="vf-ico"><span class="material-icons">share</span></span><span class="vf-n">{% trans "Partager" %}</span></button>
+        </div>
+        <div class="vf-progress"><i></i></div>
+    </section>
+</template>
+
+<script>
+(function () {
+    var scroller  = document.getElementById('vf-scroller');
+    var loadingEl = document.getElementById('vf-loading');
+    var soundBtn  = document.getElementById('vf-sound-btn');
+    var tpl       = document.getElementById('vf-slide-tpl');
+    var MORE_URL  = scroller.dataset.moreUrl;
+    var REACT_URL = scroller.dataset.reactUrl;
+    var nextOffset = scroller.dataset.next === '' ? null : parseInt(scroller.dataset.next, 10);
+    var loading = false;
+    var soundOn = false;              // les navigateurs exigent un geste avant le son
+    var slides = [];
+    var current = null;
+    var L = {
+        sound:  "{% trans 'Toucher pour activer le son' %}",
+        more:   "{% trans 'Voir plus' %}",
+        less:   "{% trans 'Voir moins' %}",
+        copied: "{% trans 'Lien copié' %}"
+    };
+
+    function csrf() { var m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : ''; }
+    function fmt(n) { return n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace('.0', '') + 'k' : String(n || ''); }
+
+    /* ── Construction d'une diapositive ─────────────────────────────── */
+    function buildSlide(item) {
+        var node = tpl.content.firstElementChild.cloneNode(true);
+        node.dataset.id = item.id;
+        node.dataset.src = item.video;
+        var video = node.querySelector('video');
+        if (item.poster) {
+            var poster = node.querySelector('.vf-poster');
+            poster.src = item.poster; poster.hidden = false;
+            video.poster = item.poster;
+        }
+        var a = node.querySelector('.vf-author');
+        a.href = '/account/' + item.author.id + '/view/';
+        a.querySelector('img').src = item.author.avatar;
+        a.querySelector('b').textContent = item.author.username;
+        if (item.region) {
+            node.querySelector('.vf-region').hidden = false;
+            node.querySelector('.vf-region-name').textContent = item.region;
+        }
+        var cap = node.querySelector('.vf-caption');
+        cap.textContent = item.caption || '';
+        var more = node.querySelector('.vf-more');
+        if ((item.caption || '').length > 90) {
+            more.hidden = false;
+            more.onclick = function () {
+                var open = cap.classList.toggle('vf-expanded');
+                more.textContent = open ? L.less : L.more;
+            };
+        }
+        var like = node.querySelector('.vf-like');
+        like.classList.toggle('vf-liked', !!item.user_reaction);
+        like.querySelector('.vf-n').textContent = fmt(item.reactions);
+        like.onclick = function (e) { e.stopPropagation(); react(node, like); };
+        var comment = node.querySelector('.vf-comment');
+        comment.href = item.url + '#comments';
+        comment.querySelector('.vf-n').textContent = fmt(item.comments);
+        node.querySelector('.vf-share').onclick = function (e) { e.stopPropagation(); share(item); };
+
+        /* Tap : pause/lecture ; double tap : j'aime */
+        var lastTap = 0;
+        node.addEventListener('click', function (e) {
+            if (e.target.closest('.vf-info, .vf-actions')) return;
+            var now = Date.now();
+            if (now - lastTap < 300) {
+                burstHeart(node);
+                if (!like.classList.contains('vf-liked')) react(node, like);
+                lastTap = 0;
+                return;
+            }
+            lastTap = now;
+            setTimeout(function () {
+                if (lastTap !== now) return;        // c'était un double tap
+                if (!soundOn) { setSound(true); return; }
+                if (video.paused) { node.classList.remove('vf-user-paused'); video.play().catch(function(){}); }
+                else { node.classList.add('vf-user-paused'); video.pause(); }
+            }, 300);
+        });
+        video.addEventListener('timeupdate', function () {
+            if (video.duration) node.querySelector('.vf-progress i').style.width = (video.currentTime / video.duration * 100) + '%';
+        });
+        video.addEventListener('playing', function () { node.classList.add('vf-playing'); });
+        video.addEventListener('loadedmetadata', function () {
+            /* Vidéo verticale : remplir l'écran ; horizontale : la montrer entière */
+            if (video.videoHeight > video.videoWidth) video.classList.add('vf-cover');
+        });
+        return node;
+    }
+
+    function burstHeart(node) {
+        var h = node.querySelector('.vf-heart-burst');
+        h.classList.remove('go'); void h.offsetWidth; h.classList.add('go');
+    }
+
+    /* ── Réaction (cœur) via l'API existante ────────────────────────── */
+    function react(node, btn) {
+        var body = new URLSearchParams({post_id: node.dataset.id, reaction: 'heart'});
+        fetch(REACT_URL, {method: 'POST', credentials: 'same-origin', body: body,
+            headers: {'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest'}})
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+            if (!d) return;
+            btn.classList.toggle('vf-liked', !!d.user_reaction);
+            btn.querySelector('.vf-n').textContent = fmt(d.total);
+        }).catch(function () {});
+    }
+
+    function share(item) {
+        var url = location.origin + item.url;
+        var text = (item.caption || '').slice(0, 120) || ('Vidéo de ' + item.author.username + ' sur Vazimba');
+        if (navigator.share) { navigator.share({title: 'Vazimba', text: text, url: url}).catch(function () {}); return; }
+        if (navigator.clipboard) navigator.clipboard.writeText(url).then(function () { toast(L.copied); });
+    }
+
+    function toast(msg) {
+        var t = document.createElement('div');
+        t.className = 'vf-tap-sound'; t.style.top = 'auto'; t.style.bottom = '90px';
+        t.textContent = msg; document.getElementById('vf-stage').appendChild(t);
+        setTimeout(function () { t.remove(); }, 1600);
+    }
+
+    /* ── Son ────────────────────────────────────────────────────────── */
+    function setSound(on) {
+        soundOn = on;
+        soundBtn.querySelector('.material-icons').textContent = on ? 'volume_up' : 'volume_off';
+        slides.forEach(function (s) { s.querySelector('video').muted = !on; });
+        var hint = document.getElementById('vf-sound-hint'); if (hint) hint.remove();
+        try { localStorage.setItem('vf-sound', on ? '1' : '0'); } catch (e) {}
+    }
+    soundBtn.onclick = function () { setSound(!soundOn); };
+
+    /* ── Lecture de la diapositive visible, économie de données ─────── */
+    function attachSrc(slide) {
+        var v = slide.querySelector('video');
+        if (!v.getAttribute('src')) { v.src = slide.dataset.src; v.preload = 'auto'; }
+    }
+    function detachSrc(slide) {
+        var v = slide.querySelector('video');
+        if (v.getAttribute('src')) { v.pause(); v.removeAttribute('src'); v.load(); slide.classList.remove('vf-playing'); }
+    }
+    function activate(slide) {
+        if (current === slide) return;
+        if (current) { current.querySelector('video').pause(); current.classList.remove('vf-user-paused'); }
+        current = slide;
+        var idx = slides.indexOf(slide);
+        /* Seule la vidéo visible et la suivante sont téléchargées (3G/4G) */
+        slides.forEach(function (s, i) {
+            if (i === idx || i === idx + 1) attachSrc(s); else if (Math.abs(i - idx) > 1) detachSrc(s);
+        });
+        var v = slide.querySelector('video');
+        v.muted = !soundOn;
+        v.currentTime = 0;
+        v.play().catch(function () { v.muted = true; soundOn = false; v.play().catch(function () {}); });
+        if (idx >= slides.length - 3) loadMore();
+    }
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting && e.intersectionRatio >= 0.6) activate(e.target); });
+    }, {root: scroller, threshold: [0.6]});
+
+    function append(items) {
+        items.forEach(function (item) {
+            var node = buildSlide(item);
+            scroller.insertBefore(node, loadingEl);
+            slides.push(node);
+            io.observe(node);
+        });
+    }
+
+    function loadMore() {
+        if (loading || nextOffset === null) return;
+        loading = true; loadingEl.style.display = 'flex';
+        fetch(MORE_URL + '?offset=' + nextOffset, {credentials: 'same-origin', headers: {'X-Requested-With': 'XMLHttpRequest'}})
+        .then(function (r) { return r.ok ? r.json() : {items: [], next_offset: null}; })
+        .then(function (d) { append(d.items || []); nextOffset = d.next_offset; })
+        .catch(function () {})
+        .finally(function () { loading = false; loadingEl.style.display = 'none'; });
+    }
+
+    /* ── Clavier (desktop) ──────────────────────────────────────────── */
+    document.addEventListener('keydown', function (e) {
+        if (!current) return;
+        var idx = slides.indexOf(current);
+        if (e.key === 'ArrowDown' || e.key === 'j') { if (slides[idx + 1]) slides[idx + 1].scrollIntoView({behavior: 'smooth'}); e.preventDefault(); }
+        if (e.key === 'ArrowUp' || e.key === 'k')   { if (slides[idx - 1]) slides[idx - 1].scrollIntoView({behavior: 'smooth'}); e.preventDefault(); }
+        if (e.key === ' ') { var v = current.querySelector('video'); v.paused ? v.play() : v.pause(); e.preventDefault(); }
+        if (e.key === 'm') setSound(!soundOn);
+    });
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden && current) current.querySelector('video').pause();
+    });
+
+    /* ── Démarrage ──────────────────────────────────────────────────── */
+    var initial = JSON.parse(document.getElementById('vf-initial').textContent || '[]');
+    append(initial);
+    if (initial.length) {
+        var hint = document.createElement('div');
+        hint.id = 'vf-sound-hint'; hint.className = 'vf-tap-sound';
+        hint.innerHTML = '<span class="material-icons">volume_off</span>' + L.sound;
+        document.getElementById('vf-stage').appendChild(hint);
+        setTimeout(function () { var h = document.getElementById('vf-sound-hint'); if (h) h.remove(); }, 4000);
+    }
+})();
+</script>
+{% endblock %}

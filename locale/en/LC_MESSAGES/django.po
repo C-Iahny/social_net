@@ -2976,3 +2976,45 @@ msgstr "Request pending"
 
 msgid "Join requests"
 msgstr "Join requests"
+
+msgid "Vidéos"
+msgstr "Videos"
+
+msgid "Vidéo"
+msgstr "Video"
+
+msgid "Pour toi"
+msgstr "For you"
+
+msgid "Son"
+msgstr "Sound"
+
+msgid "Voir plus"
+msgstr "See more"
+
+msgid "Voir moins"
+msgstr "See less"
+
+msgid "Lien copié"
+msgstr "Link copied"
+
+msgid "Toucher pour activer le son"
+msgstr "Tap for sound"
+
+msgid "Publier une vidéo"
+msgstr "Post a video"
+
+msgid "J’aime"
+msgstr "Like"
+
+msgid "Commentaires"
+msgstr "Comments"
+
+msgid "Partager"
+msgstr "Share"
+
+msgid "Aucune vidéo pour le moment. Soyez la première personne à en publier une !"
+msgstr "No videos yet. Be the first to post one!"
+
+msgid "Les vidéos de la communauté Vazimba, en plein écran."
+msgstr "Videos from the Vazimba community, full screen."

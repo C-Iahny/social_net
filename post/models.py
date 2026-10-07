@@ -225,6 +225,9 @@ class PostMedia(models.Model):
     file       = models.FileField(upload_to='post_media/')
     media_type = models.CharField(max_length=10, choices=TYPE_CHOICES, default=IMAGE)
     order      = models.PositiveIntegerField(default=0)
+    # Image d'aperçu d'une vidéo (extraite par ffmpeg en tâche de fond) :
+    # affichée avant la lecture dans le fil vidéo, évite de télécharger la vidéo.
+    poster     = models.ImageField(upload_to='post_media/posters/', blank=True, null=True)
 
     class Meta:
         ordering = ['order']

@@ -193,6 +193,63 @@ def recompress_video_media(media_id):
             logger.warning("Impossible de supprimer l'original %s", old_name)
 
 
+def generate_video_poster(media_id):
+    """Extrait une image (1re seconde) de la vidéo d'un PostMedia, en WebP."""
+    from .models import PostMedia
+
+    if not ffmpeg_available():
+        return
+    try:
+        media = PostMedia.objects.get(pk=media_id)
+    except PostMedia.DoesNotExist:
+        return
+    if media.media_type != 'video' or not media.file or media.poster:
+        return
+
+    tmp_in = tmp_out = None
+    try:
+        suffix = '.' + (_ext(media.file.name) or 'mp4')
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
+            media.file.open('rb')
+            for chunk in media.file.chunks():
+                f.write(chunk)
+            media.file.close()
+            tmp_in = f.name
+        tmp_out = tmp_in + '_poster.jpg'
+        result = subprocess.run(
+            ['ffmpeg', '-y', '-ss', '1', '-i', tmp_in, '-frames:v', '1',
+             '-vf', f'scale=-2:{VIDEO_MAX_DIM}', '-q:v', '4', tmp_out],
+            capture_output=True, timeout=60,
+        )
+        if result.returncode != 0 or not os.path.exists(tmp_out):
+            # Vidéo plus courte qu'une seconde : prendre la première image
+            result = subprocess.run(
+                ['ffmpeg', '-y', '-i', tmp_in, '-frames:v', '1', '-q:v', '4', tmp_out],
+                capture_output=True, timeout=60,
+            )
+        if result.returncode != 0:
+            return
+        with open(tmp_out, 'rb') as f:
+            poster = compress_image(ContentFile(f.read(), name='poster.jpg'))
+        base = os.path.splitext(os.path.basename(media.file.name))[0]
+        media.poster.save(f'{base}.webp', poster, save=True)
+    except Exception as e:
+        logger.warning("generate_video_poster failed: %s", e)
+    finally:
+        for path in (tmp_in, tmp_out):
+            if path and os.path.exists(path):
+                try:
+                    os.remove(path)
+                except Exception:
+                    pass
+
+
+def process_video_media(media_id):
+    """Tâche de fond d'une vidéo de post : aperçu, puis recompression 720p."""
+    generate_video_poster(media_id)
+    recompress_video_media(media_id)
+
+
 def store_post_media(post, django_file, order):
     """Crée le PostMedia d'un fichier uploadé, compressé.
 
@@ -205,6 +262,6 @@ def store_post_media(post, django_file, order):
 
     if _ext(getattr(django_file, 'name', '')) in VIDEO_EXTS:
         media = PostMedia.objects.create(post=post, file=django_file, media_type='video', order=order)
-        run_in_background(recompress_video_media, media.pk)
+        run_in_background(process_video_media, media.pk)
         return media
     return PostMedia.objects.create(post=post, file=compress_image(django_file), media_type='image', order=order)
