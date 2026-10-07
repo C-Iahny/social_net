@@ -10,7 +10,7 @@ from django.utils import timezone
 
 from post.models import Post, Comment, Reaction, PostMedia, Repost
 from .forms import GroupForm
-from .models import Group, GroupMembership, GroupEvent
+from .models import Group, GroupMembership, GroupEvent, GroupJoinRequest
 
 # ── Regex pour extraire les hashtags du texte brut / HTML ────────────────────
 _HASHTAG_RE = re.compile(r'#([A-Za-zÀ-ÿ0-9_]{2,60})')
@@ -303,7 +303,9 @@ def group_detail(request, slug):
     is_member = membership is not None
 
     if group.privacy == Group.PRIVATE and not is_member:
-        return render(request, 'group/group_private.html', {'group': group})
+        pending = (request.user.is_authenticated
+                   and GroupJoinRequest.objects.filter(group=group, user=request.user).exists())
+        return render(request, 'group/group_private.html', {'group': group, 'join_pending': pending})
 
     members = group.memberships.select_related('user').all()
 
@@ -361,6 +363,7 @@ def group_detail(request, slug):
         'is_member':          is_member,
         'is_admin':           is_admin,
         'is_mod':             is_mod,
+        'join_requests':      (group.join_requests.select_related('user') if is_mod else []),
         'members':            members,
         'pinned_posts':       pinned_posts,
         'posts_of_the_page':  posts_page,
@@ -444,13 +447,40 @@ def group_join(request, slug):
     """Rejoindre un groupe (POST)."""
     group = get_object_or_404(Group, slug=slug)
     if request.method == 'POST':
-        _, created = GroupMembership.objects.get_or_create(
-            user=request.user,
-            group=group,
+        if GroupMembership.objects.filter(user=request.user, group=group).exists():
+            return redirect('group:detail', slug=group.slug)
+        if group.privacy == Group.PRIVATE:
+            # Groupe privé : on n'entre que sur validation d'un modérateur.
+            _, created = GroupJoinRequest.objects.get_or_create(user=request.user, group=group)
+            if created:
+                messages.success(request, "Votre demande a été envoyée aux modérateurs du groupe.")
+            else:
+                messages.info(request, "Votre demande est déjà en attente.")
+            return redirect('group:detail', slug=group.slug)
+        GroupMembership.objects.create(user=request.user, group=group, role=GroupMembership.MEMBER)
+        messages.success(request, "Vous avez rejoint le groupe.")
+    return redirect('group:detail', slug=group.slug)
+
+
+@login_required
+def group_join_request_decide(request, slug, request_id):
+    """Accepter ou refuser une demande d'adhésion (POST, admin ou modérateur)."""
+    group = get_object_or_404(Group, slug=slug)
+    if request.method != 'POST':
+        return redirect('group:detail', slug=group.slug)
+    membership = GroupMembership.objects.filter(group=group, user=request.user).first()
+    if not (membership and membership.is_moderator):
+        return HttpResponseForbidden("Non autorisé")
+    join_request = get_object_or_404(GroupJoinRequest, pk=request_id, group=group)
+    if request.POST.get('decision') == 'accept':
+        GroupMembership.objects.get_or_create(
+            user=join_request.user, group=group,
             defaults={'role': GroupMembership.MEMBER},
         )
-        if created:
-            messages.success(request, "Vous avez rejoint le groupe.")
+        messages.success(request, f"{join_request.user.username} a rejoint le groupe.")
+    else:
+        messages.info(request, f"Demande de {join_request.user.username} refusée.")
+    join_request.delete()
     return redirect('group:detail', slug=group.slug)
 
 
@@ -666,6 +696,7 @@ def group_invite_member(request, slug):
             user=target, group=group,
             defaults={'role': GroupMembership.MEMBER},
         )
+        GroupJoinRequest.objects.filter(user=target, group=group).delete()
         return JsonResponse({
             'ok': True,
             'created': created,

@@ -42,3 +42,26 @@ def visible_posts(qs, viewer, author=None):
         qs = qs.filter(public_or_none)
 
     return qs
+
+
+def get_visible_post_or_404(viewer, pk, qs=None):
+    """Récupère un post par sa clé, ou 404 si `viewer` n'a pas le droit de le voir.
+
+    Les vues de détail et les actions (like, commentaire, repost, favori…)
+    passent par ici : sans cela, un brouillon ou un post de groupe privé
+    restait accessible en devinant son ID. L'auteur voit toujours son post.
+    """
+    from django.http import Http404
+    from .models import Post
+
+    if qs is None:
+        qs = Post.objects.all()
+    qs = qs.filter(pk=pk)
+    if getattr(viewer, 'is_authenticated', False):
+        own = qs.filter(author=viewer).first()
+        if own is not None:
+            return own
+    post = visible_posts(qs, viewer).first()
+    if post is None:
+        raise Http404("Post introuvable.")
+    return post

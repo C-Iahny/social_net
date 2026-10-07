@@ -378,12 +378,24 @@ SMS_OTP_MAX_SENDS_PER_HOUR = 3
 JAMENDO_CLIENT_ID = config('JAMENDO_CLIENT_ID', default='b6747d04')
 
 # ── Cache (pour les trending hashtags) ───────────────────────────────────────
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'zoot-cache',
+# Cache partagé (Redis) dès que REDIS_URL est défini : indispensable pour que
+# la limitation de débit (ZOOT/ratelimit.py) et les caches soient communs à
+# tous les workers. Sinon, cache mémoire local au process.
+if _redis_url:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': _redis_url,
+            'KEY_PREFIX': 'zoot',
+        }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'zoot-cache',
+        }
+    }
 
 # ── Sécurité production ───────────────────────────────────────────────────────
 # Domaines autorisés pour les requêtes CSRF (obligatoire pour Railway / HTTPS)

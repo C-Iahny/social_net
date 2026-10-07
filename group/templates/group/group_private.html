@@ -42,7 +42,12 @@
         <span class="material-icons gp-private-icon">lock</span>
         <h2>{{ group.name }}</h2>
         <p>{% trans "This group is private. You need to be a member to view its content." %}</p>
-        {% if user.is_authenticated %}
+        {% if join_pending %}
+        <p class="gp-private-btn" style="cursor:default;opacity:.75;">
+            <span class="material-icons">hourglass_top</span>
+            {% trans "Request pending" %}
+        </p>
+        {% elif user.is_authenticated %}
         <form method="post" action="{% url 'group:join' group.slug %}">
             {% csrf_token %}
             <button type="submit" class="gp-private-btn">

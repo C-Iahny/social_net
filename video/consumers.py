@@ -76,6 +76,9 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         if not room or room.status != LiveRoom.STATUS_ACTIVE:
             await self.close()
             return
+        if not await database_sync_to_async(room.can_view)(user):
+            await self.close()
+            return
 
         await self.accept()
         try:
@@ -89,7 +92,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         """Termine le live si l'hôte ne ping plus pendant HOST_HEARTBEAT_TIMEOUT s."""
         # Laisser le temps à l'hôte d'envoyer son premier ping
         await asyncio.sleep(HOST_HEARTBEAT_TIMEOUT)
-        logger.debug(f"[LIVE {self.room_id}] ⏱️ heartbeat timeout — terminaison automatique du live", flush=True)
+        logger.debug(f"[LIVE {self.room_id}] ⏱️ heartbeat timeout — terminaison automatique du live")
         rid = str(self.room_id)
         _init_chunks.pop(rid, None)
         _recent_chunks.pop(rid, None)
@@ -200,7 +203,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                         },
                     })
                 else:
-                    logger.debug(f"[LIVE {self.room_id}] ⚠️ media_chunk ignoré — is_host=False pour {self.user.username}", flush=True)
+                    logger.debug(f"[LIVE {self.room_id}] ⚠️ media_chunk ignoré — is_host=False pour {self.user.username}")
 
             elif msg_type == 'chat':
                 text = (content.get('text') or '').strip()[:500]
@@ -275,7 +278,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         if room and str(room.host_id) == str(self.user.id):
             self.is_host = True
             await self._save_host_channel()
-            logger.debug(f"[LIVE {self.room_id}] ✅ host connecté : {self.user.username}", flush=True)
+            logger.debug(f"[LIVE {self.room_id}] ✅ host connecté : {self.user.username}")
             # Lancer le watchdog heartbeat (annulé dans disconnect)
             if self._heartbeat_task and not self._heartbeat_task.done():
                 self._heartbeat_task.cancel()
@@ -299,7 +302,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         """Envoie une notification temps-réel + push à tous les amis du host."""
         try:
             friend_ids, host_image = await self._get_friends_and_avatar()
-            logger.debug(f"[LIVE NOTIF] host={self.user.username}, {len(friend_ids)} ami(s) à notifier: {friend_ids}", flush=True)
+            logger.debug(f"[LIVE NOTIF] host={self.user.username}, {len(friend_ids)} ami(s) à notifier: {friend_ids}")
             live_url = f'/live/{self.room_id}/'
 
             for fid in friend_ids:
@@ -345,7 +348,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         from video.models import LiveRoom
         User = get_user_model()
 
-        logger.debug(f"[LIVE PUSH] début — {len(friend_ids)} amis à notifier", flush=True)
+        logger.debug(f"[LIVE PUSH] début — {len(friend_ids)} amis à notifier")
 
         # Récupérer l'objet host et la room pour le GenericForeignKey
         try:
@@ -353,7 +356,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
             room      = LiveRoom.objects.get(pk=room_id)
             room_ct   = ContentType.objects.get_for_model(LiveRoom)
         except Exception as e:
-            logger.debug(f"[LIVE PUSH] ❌ impossible de charger host/room: {e}", flush=True)
+            logger.debug(f"[LIVE PUSH] ❌ impossible de charger host/room: {e}")
             host_user = None
             room      = None
             room_ct   = None
@@ -376,11 +379,11 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                             'read': False,
                         },
                     )
-                    logger.debug(f"[LIVE PUSH] 📥 notif DB créée pour {friend.username}", flush=True)
+                    logger.debug(f"[LIVE PUSH] 📥 notif DB créée pour {friend.username}")
 
                 # ── Push web (optionnel — seulement si abonné) ──
                 subs_count = PushSubscription.objects.filter(user=friend).count()
-                logger.debug(f"[LIVE PUSH] ami {friend.username} (id={fid}) — {subs_count} subscription(s)", flush=True)
+                logger.debug(f"[LIVE PUSH] ami {friend.username} (id={fid}) — {subs_count} subscription(s)")
                 if subs_count > 0:
                     total_subs += subs_count
                     PushSubscription.send_live_notification(
@@ -390,11 +393,11 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                         live_title=live_title,
                         room_id=room_id,
                     )
-                    logger.debug(f"[LIVE PUSH] ✅ push envoyé à {friend.username}", flush=True)
+                    logger.debug(f"[LIVE PUSH] ✅ push envoyé à {friend.username}")
             except Exception as e:
-                logger.debug(f"[LIVE PUSH] ❌ erreur pour ami {fid}: {e}", flush=True)
+                logger.debug(f"[LIVE PUSH] ❌ erreur pour ami {fid}: {e}")
 
-        logger.debug(f"[LIVE PUSH] terminé — {total_subs} subscription(s) au total", flush=True)
+        logger.debug(f"[LIVE PUSH] terminé — {total_subs} subscription(s) au total")
 
     async def _handle_join_viewer(self):
         self.is_host = False
@@ -468,7 +471,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
     def _get_room(self):
         from video.models import LiveRoom
         try:
-            return LiveRoom.objects.select_related('host').get(id=self.room_id)
+            return LiveRoom.objects.select_related('host', 'group').get(id=self.room_id)
         except LiveRoom.DoesNotExist:
             return None
 
@@ -513,7 +516,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                     n.verb = n.verb.replace('est en live', 'était en live')
                     n.save(update_fields=['verb'])
         except Exception as e:
-            logger.debug(f"[LIVE END] verb update error: {e}", flush=True)
+            logger.debug(f"[LIVE END] verb update error: {e}")
 
     @database_sync_to_async
     def _increment_viewer_count(self):
@@ -553,7 +556,7 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
         import io
         try:
             raw = b''.join(_b64.b64decode(c['data']) for c in chunks)
-            logger.debug(f"[LIVE VOD] assemblage {len(raw)//1024} KB pour room {self.room_id}", flush=True)
+            logger.debug(f"[LIVE VOD] assemblage {len(raw)//1024} KB pour room {self.room_id}")
 
             from channels.db import database_sync_to_async
             @database_sync_to_async
@@ -574,15 +577,15 @@ class LiveConsumer(AsyncJsonWebsocketConsumer):
                         replay_url=url,
                         replay_available=True,
                     )
-                    logger.debug(f"[LIVE VOD] ✅ replay disponible: {url}", flush=True)
+                    logger.debug(f"[LIVE VOD] ✅ replay disponible: {url}")
                     return url
                 except Exception as e:
-                    logger.debug(f"[LIVE VOD] ❌ upload échoué: {e}", flush=True)
+                    logger.debug(f"[LIVE VOD] ❌ upload échoué: {e}")
                     return ''
 
             await _do_upload()
         except Exception as e:
-            logger.debug(f"[LIVE VOD] ❌ erreur assemblage: {e}", flush=True)
+            logger.debug(f"[LIVE VOD] ❌ erreur assemblage: {e}")
 
     @database_sync_to_async
     def _get_friends_and_avatar(self):

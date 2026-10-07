@@ -343,7 +343,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		connected_users = await get_connected_users(room)
 
 		# Récupérer les données du message cité (si reply)
-		reply_data = await get_reply_data(reply_to_id) if reply_to_id else None
+		# Le message cité doit appartenir à cette conversation (sinon on l'ignore).
+		reply_data = await get_reply_data(reply_to_id, room) if reply_to_id else None
+		if reply_data is None:
+			reply_to_id = None
 
 		# Execute these functions asynchronously; capture msg_id for avatar lookup
 		results = await asyncio.gather(
@@ -437,7 +440,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 			return
 		try:
 			room = await get_room_or_error(self.room_id, self.scope["user"])
-			await toggle_reaction(msg_id, self.scope["user"], emoji)
+			if not await toggle_reaction(msg_id, room, self.scope["user"], emoji):
+				return
 			reactions = await get_message_reactions(msg_id)
 			await self.channel_layer.group_send(
 				room.group_name,
@@ -685,10 +689,10 @@ def create_room_chat_message(room, user, message, reply_to_id=None):
 
 
 @database_sync_to_async
-def get_reply_data(reply_to_id):
-	"""Retourne {'id', 'username', 'content'} du message cité, ou None."""
+def get_reply_data(reply_to_id, room):
+	"""Retourne {'id', 'username', 'content'} du message cité (dans `room`), ou None."""
 	try:
-		msg = RoomChatMessage.objects.select_related('user').get(pk=int(reply_to_id))
+		msg = RoomChatMessage.objects.select_related('user').get(pk=int(reply_to_id), room=room)
 		body = msg.content[:100] if msg.content else f'[{msg.file_type or "fichier"}]'
 		return {'id': str(msg.id), 'username': msg.user.username, 'content': body}
 	except Exception:
@@ -696,14 +700,20 @@ def get_reply_data(reply_to_id):
 
 
 @database_sync_to_async
-def toggle_reaction(msg_id, user, emoji):
+def toggle_reaction(msg_id, room, user, emoji):
 	"""
 	Toggle la réaction emoji de cet utilisateur sur ce message.
 	- Même emoji → supprime (toggle off)
 	- Emoji différent → remplace
 	- Pas de réaction → crée
+	Retourne False si le message n'appartient pas à `room`.
 	"""
 	from chat.models import MessageReaction
+	try:
+		if not RoomChatMessage.objects.filter(pk=int(msg_id), room=room).exists():
+			return False
+	except (ValueError, TypeError):
+		return False
 	try:
 		r = MessageReaction.objects.get(message_id=int(msg_id), user=user)
 		if r.emoji == emoji:
@@ -713,6 +723,7 @@ def toggle_reaction(msg_id, user, emoji):
 			r.save()
 	except MessageReaction.DoesNotExist:
 		MessageReaction.objects.create(message_id=int(msg_id), user=user, emoji=emoji)
+	return True
 
 
 @database_sync_to_async

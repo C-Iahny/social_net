@@ -3,7 +3,7 @@ import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.utils import timezone
 from django.contrib import messages
 from django.views.decorators.http import require_POST
@@ -35,6 +35,7 @@ def live_list(request):
     _cleanup_stale_rooms()
     active_rooms = (
         LiveRoom.objects
+        .visible_to(request.user)
         .filter(status=LiveRoom.STATUS_ACTIVE)
         .select_related('host', 'group')
         .order_by('-created_at')
@@ -58,7 +59,8 @@ def live_create(request):
     if group_id:
         try:
             from group.models import Group
-            group = Group.objects.get(pk=group_id)
+            # On ne peut lancer un live que dans un groupe dont on est membre.
+            group = Group.objects.get(pk=group_id, memberships__user=request.user)
         except Exception:
             pass
 
@@ -73,7 +75,9 @@ def live_create(request):
 @login_required(login_url='login')
 def live_room(request, room_id):
     """La salle live (hôte ou spectateur)."""
-    room = get_object_or_404(LiveRoom, pk=room_id)
+    room = get_object_or_404(LiveRoom.objects.select_related('group'), pk=room_id)
+    if not room.can_view(request.user):
+        raise Http404
 
     if room.status == LiveRoom.STATUS_ENDED:
         messages.info(request, "Ce live est terminé.")
@@ -119,6 +123,7 @@ def live_api_active(request):
     _cleanup_stale_rooms()
     rooms = (
         LiveRoom.objects
+        .visible_to(request.user)
         .filter(status=LiveRoom.STATUS_ACTIVE)
         .select_related('host', 'group')
         .order_by('-created_at')[:10]

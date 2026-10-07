@@ -1,3 +1,4 @@
+from ZOOT.ratelimit import ratelimit
 """
 URL configuration for ZOOT project.
 
@@ -56,8 +57,8 @@ urlpatterns = [
     path('resto/',    include('resto.urls', namespace='resto')),
     path('',          include('pwa.urls')),  # /sw.js, /manifest.json, /offline/
 
-    path('register/', register_view, name="register"),
-    path('login/', login_view, name="login"),
+    path('register/', ratelimit('5/h', key='ip')(register_view), name="register"),
+    path('login/', ratelimit('10/5m', key='ip')(login_view), name="login"),
     path('logout/', logout_view, name="logout"),
     path('search/', account_search_view, name="search"),
     path('recherche/', global_search_view, name="recherche"),
@@ -78,11 +79,11 @@ urlpatterns = [
         name='password_change_done'),
 
     path('password_reset/',
-        auth_views.PasswordResetView.as_view(
+        ratelimit('5/h', key='ip')(auth_views.PasswordResetView.as_view(
             template_name='password_reset/password_reset_form.html',
             email_template_name='password_reset/password_reset_email.html',
             subject_template_name='password_reset/password_reset_subject.txt',
-        ),
+        )),
         name='password_reset'),
 
     # NOTE: cette URL s'appelle password_reset_done (email envoyé) → PasswordResetDoneView
