@@ -46,3 +46,10 @@ design/preview-*.html
 design/shot-*.png
 design/render-*.html
 design/render-*.png
+
+# Secrets de signature Android (mots de passe + keystores sans extension)
+keystore.properties
+vazimba-android/KeyStorePath/
+
+# Fichiers verrou Office
+~$*
