@@ -22,7 +22,7 @@ class HeroSettings(models.Model):
         help_text="Une phrase, affichée sous le titre. Les phrases courtes rendent mieux.",
     )
     # Défauts alignés sur la charte acajou/ambre du reste de l'interface
-    # (--accent #8B4513 dans snippets/base_css.html). Les anciens défauts
+    # (--accent #8B4513 dans static/css/zoot-base.css). Les anciens défauts
     # étaient l'indigo/violet #1877f2 → #6c2bd9, hérités d'une charte
     # abandonnée : le hero jurait avec la page qui l'entoure.
     gradient_from = models.CharField(
