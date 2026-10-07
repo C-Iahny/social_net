@@ -164,6 +164,13 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('post:post-detail', args=[self.pk])
 
+    class Meta:
+        indexes = [
+            # Profil et fil : posts d'un auteur / d'une région, du plus récent au plus ancien
+            models.Index(fields=['author', '-id'], name='post_author_recent_idx'),
+            models.Index(fields=['region', '-id'], name='post_region_recent_idx'),
+        ]
+
 
 # ── Comment ───────────────────────────────────────────────────────────────────
 class Comment(models.Model):
@@ -178,6 +185,7 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['created_at']
+        indexes = [models.Index(fields=['post', 'created_at'], name='comment_post_created_idx')]
 
     def __str__(self):
         return f"{self.author} → {self.post} : {self.body[:40]}"
