@@ -3121,3 +3121,45 @@ msgstr "Fangatahana miandry"
 
 msgid "Join requests"
 msgstr "Fangatahana hiditra"
+
+msgid "Vidéos"
+msgstr "Horonan-tsary"
+
+msgid "Vidéo"
+msgstr "Horonan-tsary"
+
+msgid "Pour toi"
+msgstr "Ho anao"
+
+msgid "Son"
+msgstr "Feo"
+
+msgid "Voir plus"
+msgstr "Hijery bebe kokoa"
+
+msgid "Voir moins"
+msgstr "Hijery kely kokoa"
+
+msgid "Lien copié"
+msgstr "Voadika ny rohy"
+
+msgid "Toucher pour activer le son"
+msgstr "Tsindrio raha te hihaino"
+
+msgid "Publier une vidéo"
+msgstr "Hamoaka horonan-tsary"
+
+msgid "J’aime"
+msgstr "Tiako"
+
+msgid "Commentaires"
+msgstr "Hevitra"
+
+msgid "Partager"
+msgstr "Zarao"
+
+msgid "Aucune vidéo pour le moment. Soyez la première personne à en publier une !"
+msgstr "Mbola tsy misy horonan-tsary. Aoka ianao no voalohany hamoaka!"
+
+msgid "Les vidéos de la communauté Vazimba, en plein écran."
+msgstr "Horonan-tsarin'ny fiarahamonina Vazimba, amin'ny efijery manontolo."

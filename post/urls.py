@@ -1,4 +1,5 @@
 from ZOOT.ratelimit import ratelimit
+from .video_feed import video_feed_view, video_feed_more
 from django.urls import path
 
 from .views import (
@@ -55,6 +56,8 @@ urlpatterns = [
     path('kabary/create/',     ratelimit('10/m')(kabary_create), name='kabary-create'),
     path('vintana/create/',    ratelimit('10/m')(vintana_create), name='vintana-create'),
     path('tendances/',         tendances_view,        name='tendances'),
+    path('videos/',            video_feed_view,       name='video-feed'),
+    path('videos/more/',       video_feed_more,       name='video-feed-more'),
     path('signaler/',          ratelimit('10/h')(report_content), name='report-content'),
     path('diag/',              diag_media,            name='diag-media'),
     path('<int:post_id>/reactions/', reactions_who,  name='reactions-who'),

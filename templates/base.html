@@ -801,9 +801,9 @@ document.addEventListener('DOMContentLoaded', function() {
         </a>
         <!-- Resto remplace Tendances dans la barre du bas (demande utilisateurs) ;
              Tendances reste accessible via le menu mobile et « Découvrir ». -->
-        <a class="zbn-item" href="{% url 'resto:index' %}" data-page="resto">
-            <span class="material-icons">restaurant</span>
-            <span class="zbn-label">Resto</span>
+        <a class="zbn-item" href="{% url 'post:video-feed' %}" data-page="videos">
+            <span class="material-icons">slow_motion_video</span>
+            <span class="zbn-label">{% trans "Vidéos" %}</span>
         </a>
         <button class="zbn-item zbn-new" id="zbn-create-btn" onclick="openCreateSheet()" data-page="new" aria-label="{% trans 'Créer' %}">
             <div class="zbn-new-icon">
@@ -815,9 +815,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="material-icons">storefront</span>
             <span class="zbn-label">Bazar</span>
         </a>
-        <a class="zbn-item" href="{% url 'account:view' user_id=request.user.id %}" data-page="profile">
-            <span class="material-icons">person</span>
-            <span class="zbn-label">{% trans "Profil" %}</span>
+        <a class="zbn-item" href="{% url 'resto:index' %}" data-page="resto">
+            <span class="material-icons">restaurant</span>
+            <span class="zbn-label">Resto</span>
         </a>
     </nav>
 
@@ -834,6 +834,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span style="color:#fff;" class="material-icons">edit_note</span>
                     </div>
                     <span class="cs-label">Post</span>
+                </a>
+
+                <!-- Vidéo courte -->
+                <a class="cs-item" href="{% url 'post:addPost' %}?video=1" onclick="closeCreateSheet()">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#8B4513,#C1440E);">
+                        <span style="color:#fff;" class="material-icons">videocam</span>
+                    </div>
+                    <span class="cs-label">{% trans "Vidéo" %}</span>
                 </a>
 
                 <!-- Kabary -->
@@ -960,17 +968,22 @@ document.addEventListener('DOMContentLoaded', function() {
         var path = window.location.pathname;
         var map = {
             feed:    ['/feed/'],
+            videos:  ['/feed/videos/'],
             explore: ['/feed/index/', '/'],
             new:     ['/feed/add-post/'],
             bazar:   ['/bazar/'],
             resto:   ['/resto/'],
             profile: ['/account/'],
         };
+        // Le motif le plus long qui correspond gagne (/feed/videos/ ≠ /feed/)
+        var best = null, bestLen = -1;
+        Object.keys(map).forEach(function(page) {
+            map[page].forEach(function(p) {
+                if (path.startsWith(p) && p.length > bestLen) { best = page; bestLen = p.length; }
+            });
+        });
         document.querySelectorAll('.zbn-item').forEach(function(el) {
-            var page = el.dataset.page;
-            var patterns = map[page] || [];
-            var active = patterns.some(function(p) { return path.startsWith(p); });
-            if (active) el.classList.add('active');
+            if (el.dataset.page === best) el.classList.add('active');
         });
 
 

@@ -1148,3 +1148,9 @@ msgstr "Demandes d'adhésion"
 
 msgid "Request to join"
 msgstr "Demander à rejoindre"
+
+msgid "Retour"
+msgstr "Retour"
+
+msgid "Créer"
+msgstr "Créer"
