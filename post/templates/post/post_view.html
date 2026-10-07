@@ -2,6 +2,7 @@
 {% load static %}
 {% load i18n %}
 {% load personal_tags %}
+{% load post_tags %}
 
 {% block content %}
 <style>
@@ -2011,7 +2012,7 @@ body { background: var(--bg); }
 
                 <!-- Body -->
                 {% if post.body %}
-                <div class="pc-body" onclick="expandBody(this)">{{ post.body|safe }}</div>
+                <div class="pc-body" onclick="expandBody(this)">{{ post.body|safe_html }}</div>
                 <span class="pc-read-more"
                       data-more="{% trans 'See more'|escapejs %}"
                       data-less="{% trans 'See less'|escapejs %}"

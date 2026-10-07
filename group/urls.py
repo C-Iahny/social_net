@@ -13,6 +13,7 @@ urlpatterns = [
     path('<slug:slug>/delete/', views.group_delete, name='delete'),
     path('<slug:slug>/join/', views.group_join, name='join'),
     path('<slug:slug>/leave/', views.group_leave, name='leave'),
+    path('<slug:slug>/requests/<int:request_id>/', views.group_join_request_decide, name='join-request-decide'),
     path('<slug:slug>/post/', views.group_add_post, name='add-post'),
     # Gestion des posts
     path('<slug:slug>/pin/<int:post_id>/', views.group_pin_post, name='pin-post'),

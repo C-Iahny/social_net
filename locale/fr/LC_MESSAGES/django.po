@@ -1139,3 +1139,12 @@ msgstr "Saisissez votre mot de passe actuel et choisissez-en un nouveau"
 msgid "Old password"
 msgstr "Ancien mot de passe"
 
+
+msgid "Request pending"
+msgstr "Demande en attente"
+
+msgid "Join requests"
+msgstr "Demandes d'adhésion"
+
+msgid "Request to join"
+msgstr "Demander à rejoindre"

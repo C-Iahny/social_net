@@ -118,8 +118,9 @@
     </div>
 </div>
 
+{{ options_data|json_script:"menu-options" }}
 <script>
-const OPTIONS = {{ options_json|safe }};
+const OPTIONS = JSON.parse(document.getElementById('menu-options').textContent);
 const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
 const SLUG = "{{ restaurant.slug }}";
 const I18N = {group:"{% trans 'Titre du groupe (ex : Sauce, Suppléments)' %}", opt:"{% trans 'Option (ex : Fromage)' %}", extra:"{% trans 'Suppl. Ar' %}",

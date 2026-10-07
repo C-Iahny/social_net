@@ -1,3 +1,4 @@
+from ZOOT.ratelimit import ratelimit
 from django.urls import path
 from stories import views
 
@@ -5,7 +6,7 @@ app_name = 'stories'
 
 urlpatterns = [
     path('',                            views.stories_page,         name='page'),
-    path('create/',                     views.create_story,         name='create'),
+    path('create/',                     ratelimit('20/h')(views.create_story), name='create'),
     path('delete/<int:story_id>/',      views.delete_story,         name='delete'),
     path('viewed/<int:story_id>/',      views.mark_viewed,          name='mark-viewed'),
     path('feed/',                       views.get_feed_stories,     name='feed'),

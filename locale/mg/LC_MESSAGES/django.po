@@ -3115,3 +3115,9 @@ msgstr "Nohamarinin'ny mpanjifa ny fandraisana"
 msgid "Commande %(n)s : réception confirmée par le client"
 msgstr "Kaomandy %(n)s : nohamarinin'ny mpanjifa ny fandraisana"
 
+
+msgid "Request pending"
+msgstr "Fangatahana miandry"
+
+msgid "Join requests"
+msgstr "Fangatahana hiditra"

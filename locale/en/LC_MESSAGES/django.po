@@ -2970,3 +2970,9 @@ msgstr "Receipt confirmed by the customer"
 msgid "Commande %(n)s : réception confirmée par le client"
 msgstr "Order %(n)s: receipt confirmed by the customer"
 
+
+msgid "Request pending"
+msgstr "Request pending"
+
+msgid "Join requests"
+msgstr "Join requests"

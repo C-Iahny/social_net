@@ -154,3 +154,17 @@ class GroupEvent(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.group.name}"
+
+
+class GroupJoinRequest(models.Model):
+    """Demande d'adhésion à un groupe privé, en attente de validation par un modérateur."""
+    group      = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='join_requests')
+    user       = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='group_join_requests')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'group')
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.user} → {self.group}"

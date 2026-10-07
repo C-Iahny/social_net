@@ -1301,6 +1301,34 @@
         <p class="gd-section-label"><span class="material-icons">group</span> {% trans "Members" %} ({{ member_count }})</p>
         {% endif %}
 
+        {% if is_mod and join_requests %}
+        <p class="gd-section-label"><span class="material-icons">how_to_reg</span> {% trans "Join requests" %} ({{ join_requests|length }})</p>
+        <div class="gd-members-full-grid" style="margin-bottom:1.5rem;">
+            {% for jr in join_requests %}
+            <div class="gd-member-card">
+                <a href="{% url 'account:view' user_id=jr.user.id %}" class="gd-member-card-link">
+                    <img src="{{ jr.user.profile_image.url }}" alt="{{ jr.user.username }}" loading="lazy">
+                    <div class="gd-member-card-info">
+                        <span class="gd-member-card-name">{{ jr.user.username }}</span>
+                    </div>
+                </a>
+                <div class="gd-member-card-actions">
+                    <form method="post" action="{% url 'group:join-request-decide' group.slug jr.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="decision" value="accept">
+                        <button type="submit" class="gd-mcard-btn mod" title="{% trans 'Accept' %}"><span class="material-icons">check</span></button>
+                    </form>
+                    <form method="post" action="{% url 'group:join-request-decide' group.slug jr.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="decision" value="reject">
+                        <button type="submit" class="gd-mcard-btn kick" title="{% trans 'Decline' %}"><span class="material-icons">close</span></button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         <div class="gd-members-full-grid" id="gd-members-full-grid">
             {% for m in members %}
             <div class="gd-member-card" id="gd-mcard-{{ m.user.id }}">

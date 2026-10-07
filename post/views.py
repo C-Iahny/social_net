@@ -25,7 +25,7 @@ from .forms import PostForm, EditForm, CommentForm
 from .models import Post, Repost, Continent, Country, Follow, Comment, Reaction, PostMedia
 from friend.models import FriendList
 from personal.models import HeroSettings
-from .visibility import visible_posts
+from .visibility import get_visible_post_or_404, visible_posts
 
 # Import différé pour éviter les imports circulaires
 try:
@@ -403,7 +403,7 @@ def post_feed_view(request):
 
     from regions import REGION_LABELS
     from video.models import LiveRoom
-    active_lives = LiveRoom.objects.filter(
+    active_lives = LiveRoom.objects.visible_to(user).filter(
         host__in=list(friends) + [user],
         status=LiveRoom.STATUS_ACTIVE,
     ).select_related('host').order_by('-created_at')
@@ -773,7 +773,7 @@ def like_post(request):
     (le middleware CSRF ne protège pas les requêtes GET).
     """
     post_id = request.POST.get("post_id") or request.GET.get("post_id")
-    post    = get_object_or_404(Post, id=post_id)
+    post    = get_visible_post_or_404(request.user, post_id)
 
     if post.likes.filter(id=request.user.id).exists():
         post.likes.remove(request.user)
@@ -837,7 +837,7 @@ def unfollow(request):
 @login_required(login_url="login")
 def add_comment(request, post_id):
     """Ajoute un commentaire via POST (AJAX ou classique)."""
-    post = get_object_or_404(Post, id=post_id)
+    post = get_visible_post_or_404(request.user, post_id)
     if request.method != "POST":
         return JsonResponse({"error": "Méthode non autorisée."}, status=405)
 
@@ -1034,7 +1034,7 @@ def new_comments(request, post_id):
     GET /post/<id>/comments/new/?since=<comment_id>
     """
     from django.views.decorators.http import require_GET
-    post = get_object_or_404(Post, id=post_id)
+    post = get_visible_post_or_404(request.user, post_id)
     since_id = request.GET.get('since', 0)
     try:
         since_id = int(since_id)
@@ -1084,7 +1084,7 @@ def react_post(request):
 
     post_id       = request.POST.get('post_id')
     reaction_type = request.POST.get('reaction', 'like')
-    post          = get_object_or_404(Post, id=post_id)
+    post          = get_visible_post_or_404(request.user, post_id)
 
     VALID = {'like', 'heart', 'laugh', 'wow', 'sad'}
     if reaction_type not in VALID:
@@ -1243,7 +1243,7 @@ def repost_post(request):
     if request.method != "POST":
         return JsonResponse({"error": "POST only"}, status=405)
     post_id = request.POST.get("post_id")
-    post = get_object_or_404(Post, id=post_id)
+    post = get_visible_post_or_404(request.user, post_id)
 
     repost, created = Repost.objects.get_or_create(user=request.user, post=post)
     if not created:
@@ -1316,7 +1316,7 @@ def post_detail(request, post_id):
     from django.db.models import Count
     from django.urls import reverse
 
-    post = get_object_or_404(Post.objects.select_related('author'), pk=post_id)
+    post = get_visible_post_or_404(request.user, post_id, Post.objects.select_related('author'))
 
     # Reactions
     reactions_qs = (
@@ -1628,7 +1628,7 @@ def bookmark_post(request):
     """Toggle bookmark AJAX. POST {post_id}. Returns {ok, saved: bool, count: int}."""
     from .models import PostBookmark
     post_id = request.POST.get('post_id')
-    post = get_object_or_404(Post, id=post_id)
+    post = get_visible_post_or_404(request.user, post_id)
     bk, created = PostBookmark.objects.get_or_create(user=request.user, post=post)
     if not created:
         bk.delete()
@@ -1671,7 +1671,13 @@ def mes_favoris_posts(request):
 # ──────────────────────────────────────────────
 @login_required(login_url="login")
 def diag_media(request):
-    """Diagnostic : montre les derniers posts de l'utilisateur avec leurs PostMedia."""
+    """Diagnostic : montre les derniers posts de l'utilisateur avec leurs PostMedia.
+
+    Réservé au staff : la page expose la configuration du stockage R2.
+    """
+    if not request.user.is_staff:
+        from django.http import Http404
+        raise Http404
     from django.conf import settings as _settings
 
     posts = list(
@@ -1720,11 +1726,11 @@ def diag_media(request):
     return render(request, 'post/diag_media.html', {'posts': posts, 'r2_info': r2_info})
 
 
+@login_required(login_url="login")
 def reactions_who(request, post_id):
     """GET /post/<id>/reactions/ — liste des utilisateurs qui ont réagi."""
+    post = get_visible_post_or_404(request.user, post_id)
     try:
-        post = get_object_or_404(Post, id=post_id)
-
         filter_type = request.GET.get('type', '')  # '' = tous
         qs = Reaction.objects.filter(post=post).select_related('user')
         if filter_type:
@@ -1764,4 +1770,4 @@ def reactions_who(request, post_id):
     except Exception as exc:
         import logging
         logging.getLogger(__name__).exception('reactions_who error post_id=%s: %s', post_id, exc)
-        return JsonResponse({'error': str(exc), 'rows': [], 'counts': {}, 'total': 0}, status=500)
+        return JsonResponse({'error': 'Erreur serveur.', 'rows': [], 'counts': {}, 'total': 0}, status=500)

@@ -483,7 +483,7 @@ def order_detail(request, number):
     return render(request, 'resto/order.html', {
         'order': order, 'items': items, 'actor': actor, 'roles': roles,
         'transitions': order.actions_for(roles) if roles else [],
-        'state_json': json.dumps(_order_payload(order)),
+        'order_state': _order_payload(order),
         'review_targets': [(t, dict(OrderReview.ROLE_CHOICES)[t], mine.get(t)) for t in _review_targets(order, actor)],
         'reviews': reviews,
         'customer_rating': OrderReview.for_customer(order.customer) if actor in ('restaurant', 'courier') else None,
@@ -709,7 +709,7 @@ def menu_manage(request, slug):
     return render(request, 'resto/vendor/menu.html', {
         'restaurant': restaurant, 'categories': categories, 'items': items,
         'item_form': MenuItemForm(restaurant=restaurant), 'cat_form': MenuCategoryForm(),
-        'options_json': json.dumps(options_json),
+        'options_data': options_json,
     })
 
 

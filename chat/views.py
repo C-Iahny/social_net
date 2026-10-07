@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from urllib.parse import urlencode
@@ -46,9 +47,10 @@ def private_chat_room_view(request, *args, **kwargs):
 
 	if room_id:
 		try:
-			room = PrivateChatRoom.objects.get(pk=room_id)
+			# Seuls les deux participants peuvent ouvrir la conversation.
+			room = PrivateChatRoom.objects.get(Q(user1=user) | Q(user2=user), pk=room_id)
 			context["room"] = room
-		except PrivateChatRoom.DoesNotExist:
+		except (PrivateChatRoom.DoesNotExist, ValueError):
 			pass
 	elif user_id:
 		# Ouvrir (ou créer) la conversation avec l'utilisateur demandé
@@ -128,6 +130,12 @@ def private_chat_room_view(request, *args, **kwargs):
 
 
 
+_BLOCKED_EXTENSIONS = {
+    '.html', '.htm', '.xhtml', '.svg', '.js', '.mjs', '.exe', '.msi', '.bat',
+    '.cmd', '.com', '.scr', '.ps1', '.sh', '.jar', '.apk', '.php', '.py',
+}
+
+
 # ── File upload endpoint ──────────────────────────────────────────────────────
 @login_required(login_url="login")
 @require_POST
@@ -164,6 +172,12 @@ def upload_chat_file(request):
         file_type = 'voice'
     else:
         file_type = 'document'
+
+    # Refuser les fichiers exécutables ou interprétés par le navigateur
+    # (une page .html/.svg servie depuis le stockage pourrait exécuter du script).
+    ext = os.path.splitext(f.name)[1].lower()
+    if ext in _BLOCKED_EXTENSIONS or mime in ('text/html', 'image/svg+xml', 'application/xhtml+xml'):
+        return JsonResponse({'error': 'Type de fichier non autorisé.'}, status=400)
 
     # Enforce 25 MB max
     MAX_SIZE = 25 * 1024 * 1024

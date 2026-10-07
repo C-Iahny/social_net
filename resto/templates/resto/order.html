@@ -177,9 +177,10 @@
     <p style="margin-top:1rem;"><a href="{% if actor == 'restaurant' %}{% url 'resto:vendor_orders' order.restaurant.slug %}{% elif actor == 'courier' %}{% url 'resto:courier_dashboard' %}{% else %}{% url 'resto:my_orders' %}{% endif %}" style="color:var(--accent);">← {% trans "Retour" %}</a></p>
 </div>
 
+{{ order_state|json_script:"order-state" }}
 <script>
 (function(){
-  let state = {{ state_json|safe }};
+  let state = JSON.parse(document.getElementById('order-state').textContent);
   const NUMBER = state.number, IS_DELIVERY = state.mode === 'delivery';
   const I18N = {courier:"{% trans 'Livreur' %}", resto:"{% trans 'Restaurant' %}", you:"{% trans 'Livraison' %}",
                 pos:"{% trans 'Position du livreur mise à jour à' %}", nopos:"{% trans 'La position du livreur apparaîtra ici dès qu\'il partagera son GPS.' %}",
