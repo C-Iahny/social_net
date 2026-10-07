@@ -4,12 +4,6 @@ from django.urls import reverse
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
-try:
-    from ckeditor.fields import RichTextField
-except ImportError:
-    # Fallback si CKEditor n'est pas disponible
-    RichTextField = models.TextField
-
 from account.models import Account
 
 
@@ -66,7 +60,7 @@ class Post(models.Model):
 
     title        = models.CharField(max_length=255, blank=True, default='')
     header_image = models.ImageField(blank=True, null=True, upload_to='header_images')
-    body         = RichTextField(blank=True, null=True)
+    body         = models.TextField(blank=True, null=True)
     snippet      = models.CharField(max_length=255, blank=True, default='click the link above.')
     post_date    = models.DateField(auto_now_add=True)
     category     = models.CharField(max_length=255, blank=True, null=True, default='Category')
