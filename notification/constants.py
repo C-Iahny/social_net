@@ -13,6 +13,7 @@ GENERAL_MSG_TYPE_GET_UNREAD_NOTIFICATIONS_COUNT = 4  # Send the number of unread
 GENERAL_MSG_TYPE_UPDATED_NOTIFICATION = 5  # Update a notification that has been altered (Ex: Accept/decline a friend request)
 GENERAL_MSG_TYPE_NEW_POST_NOTIFICATION = 6  # A friend published a new post
 GENERAL_MSG_TYPE_LIVE_STARTED         = 7  # A friend started a live stream
+GENERAL_MSG_TYPE_POST_COMMENT         = 8  # Nouveau commentaire sur un post que l'utilisateur regarde
 
 
 """
