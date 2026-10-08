@@ -1547,23 +1547,29 @@ body { background: var(--bg); }
 
         {% include 'stories/story_bar.html' %}
 
-        <!-- ── Onglets région ── -->
-        {% if user_region %}
-        <div class="feed-region-tabs" style="display:flex;gap:.5rem;padding:.6rem .5rem .1rem;margin-bottom:.25rem;">
-            <a href="{% url 'post:post-view' %}"
+        <!-- ── Onglets : Mon fil · Pour toi · Ma région ── -->
+        <div class="feed-region-tabs" style="display:flex;gap:.5rem;padding:.6rem .5rem .1rem;margin-bottom:.25rem;overflow-x:auto;scrollbar-width:none;">
+            <a href="{% url 'post:post-view' %}?tab=feed"
                class="feed-tab-pill {% if active_tab == 'feed' %}active{% endif %}"
-               style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;transition:background .15s,color .15s;
+               style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s;
                       {% if active_tab == 'feed' %}background:var(--accent,#6366f1);color:#fff;{% else %}background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);color:var(--text-primary,#111);{% endif %}">
-                🏠 Mon fil
+                🏠 {% trans "Mon fil" %}
             </a>
+            <a href="{% url 'post:post-view' %}?tab=foryou"
+               class="feed-tab-pill {% if active_tab == 'foryou' %}active{% endif %}"
+               style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s;
+                      {% if active_tab == 'foryou' %}background:var(--accent,#6366f1);color:#fff;{% else %}background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);color:var(--text-primary,#111);{% endif %}">
+                ✨ {% trans "Pour toi" %}
+            </a>
+            {% if user_region %}
             <a href="{% url 'post:post-view' %}?tab=region"
                class="feed-tab-pill {% if active_tab == 'region' %}active{% endif %}"
-               style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;transition:background .15s,color .15s;
+               style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s;
                       {% if active_tab == 'region' %}background:var(--accent,#6366f1);color:#fff;{% else %}background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);color:var(--text-primary,#111);{% endif %}">
                 📍 {{ user_region_label|default:"Ma région" }}
             </a>
+            {% endif %}
         </div>
-        {% endif %}
 
         <!-- New-posts banner -->
         <div id="new-posts-banner" onclick="window.location.reload()">
@@ -2551,7 +2557,7 @@ var _ZF_CSRF = '{{ csrf_token }}';
         _loading = true;
         if (indicator) indicator.classList.add('visible');
 
-        fetch(_feedMoreUrl + '?page=' + _nextPage, {
+        fetch(_feedMoreUrl + '?page=' + _nextPage + '&tab={{ active_tab|escapejs }}', {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(function(r) { return r.json(); })

@@ -299,60 +299,48 @@ def get_profile_suggestions(user, limit=12):
 
 # Feed
 # ──────────────────────────────────────────────
-@login_required(login_url="login")
-def post_feed_view(request):
-    """Fil d'actualité : posts de l'utilisateur + ses amis (+ onglet région)."""
-    user = request.user
+def _friends_of(user):
+    """Amis de `user` (crée la FriendList si absente)."""
+    friend_list, _created = FriendList.objects.get_or_create(user=user)
+    return friend_list.friends.all()
 
-    # Récupérer la liste d'amis (créer si absente)
-    try:
-        friend_list = FriendList.objects.get(user=user)
-        friends = friend_list.friends.all()
-    except FriendList.DoesNotExist:
-        friend_list = FriendList(user=user)
-        friend_list.save()
-        friends = friend_list.friends.none()
 
-    # ── Onglet actif : "feed" (défaut) ou "region" ────────────────────────────
-    tab = request.GET.get('tab', 'feed')
-    user_region = getattr(user, 'region', '')
-
+def _feed_page(user, tab, page_number, friends):
+    """
+    Page de posts pour l'onglet demandé :
+      - 'feed'   : soi + amis, chronologique
+      - 'region' : posts de la région de l'utilisateur
+      - 'foryou' : recommandation (post/foryou.py)
+    Renvoie (page, tab_normalisé). Toutes les listes passent par visible_posts().
+    """
+    from .foryou import foryou_page
+    user_region = getattr(user, 'region', '') or ''
     if tab == 'region' and user_region:
-        # Posts de la région de l'utilisateur (tous auteurs, tous publics).
-        # visible_posts() exclut les groupes privés dont l'utilisateur n'est
-        # pas membre — ils apparaissaient auparavant dans cet onglet.
-        feed_posts = visible_posts(
-            Post.objects.filter(region=user_region).select_related('author', 'group').order_by("-id"),
+        qs = visible_posts(
+            Post.objects.filter(region=user_region).select_related('author', 'group').order_by('-id'),
             user,
         )
-    else:
-        # Posts : les siens (publiés) + ceux de ses amis
-        feed_posts = visible_posts(
-            Post.objects.filter(author__in=list(friends) + [user])
-            .select_related('author', 'group').order_by("-id"),
-            user,
-        )
-        tab = 'feed'  # normalise si region vide
+        return Paginator(qs, 5).get_page(page_number), 'region'
+    if tab == 'foryou':
+        return foryou_page(user, page_number), 'foryou'
+    qs = visible_posts(
+        Post.objects.filter(author__in=list(friends) + [user])
+        .select_related('author', 'group').order_by('-id'),
+        user,
+    )
+    return Paginator(qs, 5).get_page(page_number), 'feed'
 
-    # Pagination (5 posts par page)
-    paginator = Paginator(feed_posts, 5)
-    page_number = request.GET.get("page")
-    posts_of_the_page = paginator.get_page(page_number)
 
-    # Quelques statistiques pour le sidebar
-    from post.models import Post as PostModel
-    my_post_count = PostModel.objects.filter(author=user).count()
+def _decorate_feed_posts(posts, user):
+    """Commentaires, réactions, favoris et médias de chaque post, en requêtes groupées."""
+    from django.db.models import Count
+    from .models import Comment as CommentModel, PostBookmark
+    posts = list(posts)
+    post_ids = [p.id for p in posts]
 
-    # Précharger les commentaires pour tous les posts de la page
-    post_ids = [p.id for p in posts_of_the_page]
-    from .models import Comment as CommentModel
-    comments_all = list(CommentModel.objects.filter(
-        post_id__in=post_ids
-    ).select_related('author').order_by('created_at'))
-
-    # Organiser : commentaires racine par post, réponses par commentaire parent
-    top_by_post = {}     # post_id → [top-level Comment]
-    replies_map = {}     # parent_comment_id → [Reply Comment]
+    comments_all = list(CommentModel.objects.filter(post_id__in=post_ids)
+                        .select_related('author').order_by('created_at'))
+    top_by_post, replies_map = {}, {}
     for c in comments_all:
         if c.parent_id is None:
             top_by_post.setdefault(c.post_id, []).append(c)
@@ -362,44 +350,42 @@ def post_feed_view(request):
         for c in comments:
             c.reply_list = replies_map.get(c.id, [])
 
-    # Précharger les réactions
-    from .models import Reaction
-    from django.db.models import Count
-    reactions_qs = (
-        Reaction.objects.filter(post_id__in=post_ids)
-        .values('post_id', 'reaction_type')
-        .annotate(c=Count('id'))
-    )
     reactions_by_post = {}
-    for row in reactions_qs:
+    for row in (Reaction.objects.filter(post_id__in=post_ids)
+                .values('post_id', 'reaction_type').annotate(c=Count('id'))):
         reactions_by_post.setdefault(row['post_id'], {})[row['reaction_type']] = row['c']
+    user_reaction_by_post = dict(Reaction.objects.filter(post_id__in=post_ids, user=user)
+                                 .values_list('post_id', 'reaction_type'))
+    bookmarked_ids = set(PostBookmark.objects.filter(user=user, post_id__in=post_ids)
+                         .values_list('post_id', flat=True))
 
-    # Réaction de l'utilisateur courant
-    user_reactions_qs = Reaction.objects.filter(
-        post_id__in=post_ids, user=user
-    ).values_list('post_id', 'reaction_type')
-    user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
-
-    # Bookmarks de l'utilisateur courant
-    from .models import PostBookmark
-    bookmarked_ids = set(
-        PostBookmark.objects.filter(user=user, post_id__in=post_ids)
-        .values_list('post_id', flat=True)
-    )
-
-    # Attacher les données directement à chaque post
-    for post in posts_of_the_page:
+    for post in posts:
         top = top_by_post.get(post.id, [])
-        for c in top:
-            if not hasattr(c, 'reply_list'):
-                c.reply_list = []
         post.page_comments   = top
         post.total_comments  = len(top) + sum(len(c.reply_list) for c in top)
         post.reaction_counts = reactions_by_post.get(post.id, {})
         post.user_reaction   = user_reaction_by_post.get(post.id)
         post.total_reactions = sum(post.reaction_counts.values())
         post.is_bookmarked   = post.id in bookmarked_ids
-    _attach_media(posts_of_the_page, post_ids)
+    _attach_media(posts, post_ids)
+    return posts
+
+
+@login_required(login_url="login")
+def post_feed_view(request):
+    """Fil d'actualité : Mon fil (amis), Pour toi (recommandation), Ma région."""
+    user = request.user
+    friends = _friends_of(user)
+    user_region = getattr(user, 'region', '') or ''
+
+    # Onglet par défaut : « Pour toi » tant que l'utilisateur n'a pas d'amis,
+    # pour qu'un nouveau compte ne tombe jamais sur un fil vide.
+    friends_count = friends.count()
+    tab = request.GET.get('tab') or ('foryou' if friends_count == 0 else 'feed')
+    posts_of_the_page, tab = _feed_page(user, tab, request.GET.get("page"), friends)
+    _decorate_feed_posts(posts_of_the_page, user)
+
+    my_post_count = Post.objects.filter(author=user).count()
 
     # Groupes de l'utilisateur (raccourci sidebar droite)
     my_groups = []
@@ -427,14 +413,14 @@ def post_feed_view(request):
 
     context = {
         "friends":            friends,
-        "friends_count":      friends.count(),
+        "friends_count":      friends_count,
         "posts_of_the_page":  posts_of_the_page,
         "post_form":          PostForm(),
         "my_post_count":      my_post_count,
         "trending_hashtags":  get_trending_hashtags(),
         "my_groups":          my_groups,
         "recent_bazar":       recent_bazar,
-        # région
+        # onglets
         "active_tab":         tab,
         "user_region":        user_region,
         "user_region_label":  REGION_LABELS.get(user_region, ''),
@@ -451,78 +437,20 @@ def post_feed_view(request):
 # ──────────────────────────────────────────────
 @login_required(login_url="login")
 def post_feed_more(request):
-    """Retourne le fragment HTML des posts pour l'infinite scroll."""
+    """Fragment HTML de la page suivante, pour l'onglet courant (feed / region / foryou)."""
     if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
         return redirect('post:post-view')
 
     user = request.user
-    try:
-        friend_list = FriendList.objects.get(user=user)
-        friends = friend_list.friends.all()
-    except FriendList.DoesNotExist:
-        friends = []
-
-    feed_posts = Post.objects.filter(
-        author__in=list(friends) + [user]
-    ).select_related('author', 'group').order_by("-id")
-
-    paginator = Paginator(feed_posts, 5)
-    page_number = request.GET.get("page", 1)
-    posts_page = paginator.get_page(page_number)
-
-    # Précharger les commentaires
-    post_ids = [p.id for p in posts_page]
-    from .models import Comment as CommentModel
-    comments_all = list(CommentModel.objects.filter(
-        post_id__in=post_ids
-    ).select_related('author').order_by('created_at'))
-
-    top_by_post = {}
-    replies_map = {}
-    for c in comments_all:
-        if c.parent_id is None:
-            top_by_post.setdefault(c.post_id, []).append(c)
-        else:
-            replies_map.setdefault(c.parent_id, []).append(c)
-    for comments in top_by_post.values():
-        for c in comments:
-            c.reply_list = replies_map.get(c.id, [])
-
-    # Précharger les réactions
-    from .models import Reaction
-    from django.db.models import Count
-    reactions_qs = (
-        Reaction.objects.filter(post_id__in=post_ids)
-        .values('post_id', 'reaction_type')
-        .annotate(c=Count('id'))
-    )
-    reactions_by_post = {}
-    for row in reactions_qs:
-        reactions_by_post.setdefault(row['post_id'], {})[row['reaction_type']] = row['c']
-
-    user_reactions_qs = Reaction.objects.filter(
-        post_id__in=post_ids, user=user
-    ).values_list('post_id', 'reaction_type')
-    user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
-
-    for post in posts_page:
-        top = top_by_post.get(post.id, [])
-        for c in top:
-            if not hasattr(c, 'reply_list'):
-                c.reply_list = []
-        post.page_comments   = top
-        post.total_comments  = len(top) + sum(len(c.reply_list) for c in top)
-        post.reaction_counts = reactions_by_post.get(post.id, {})
-        post.user_reaction   = user_reaction_by_post.get(post.id)
-        post.total_reactions = sum(post.reaction_counts.values())
-    _attach_media(posts_page, post_ids)
+    friends = _friends_of(user)
+    posts_page, _tab = _feed_page(user, request.GET.get('tab', 'feed'), request.GET.get("page", 1), friends)
+    _decorate_feed_posts(posts_page, user)
 
     html = render_to_string(
         'post/post_cards_fragment.html',
         {'posts_of_the_page': posts_page, 'request': request},
         request=request,
     )
-
     return JsonResponse({
         'html':      html,
         'has_next':  posts_page.has_next(),
