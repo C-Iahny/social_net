@@ -227,6 +227,10 @@
   }
   window.rsQty = d => { qty = Math.max(1, Math.min(20, qty + d)); rsRefresh(); };
   window.rsCloseItem = () => document.getElementById('rs-modal-bg').classList.remove('show');
+  // Arrivée depuis un post / une vidéo : ?plat=<id> ouvre la fiche du plat
+  (function(){ const pk = new URLSearchParams(location.search).get('plat');
+    if(pk && /^\d+$/.test(pk)){ const open = () => rsOpenItem(pk);
+      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', open) : open(); } })();
 
   window.rsAdd = async function(replace){
     const err = document.getElementById('rs-m-err'); err.textContent = '';

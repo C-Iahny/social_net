@@ -251,6 +251,13 @@
 
             <div class="post-form-body">
 
+                {% if want_video %}
+                <div class="video-hint">
+                    <span class="material-icons">slow_motion_video</span>
+                    <span>{% trans "Ajoutez votre vidéo : elle apparaîtra dans le fil Vidéos. Format vertical conseillé." %}</span>
+                </div>
+                {% endif %}
+
                 <!-- Title -->
                 <div class="form-field">
                     <label for="id_title">{% trans "Title" %} <span style="color:var(--badge-danger-t,red)">*</span></label>
@@ -328,6 +335,8 @@
                     </div>
                 </div>
 
+                {% include 'post/_product_picker.html' %}
+
                 {% if form.non_field_errors %}
                 <div style="color:var(--badge-danger-t,red);font-size:.88rem;margin-bottom:.8rem;">
                     {{ form.non_field_errors }}
@@ -387,6 +396,10 @@
 
 <script>
 var VIDEO_EXTS = ['mp4','webm','ogg','mov','mkv','avi','m4v','3gp'];
+{% if want_video %}
+(function(){ var i=document.getElementById('id_media_files'); if(i){ i.accept='video/*,.mp4,.mov,.webm,.mkv,.avi,.m4v,.3gp'; }
+  var z=document.getElementById('media-upload-zone-desktop'); if(z) z.classList.add('dragover'); })();
+{% endif %}
 var _pending = [];       // tableau de File/Blob objects
 var _blobPromises = [];  // promesses de lecture en mémoire (pour _doFetch)
 
@@ -571,7 +584,7 @@ function _doFetch(extraAction, extraScheduledAt) {
         if (csrf) fd.append('csrfmiddlewaretoken', csrf.value);
 
         /* Champs texte */
-        ['title', 'body'].forEach(function(n) {
+        ['title', 'body', 'product'].forEach(function(n) {
             var el = _form.querySelector('[name=' + n + ']');
             if (el) fd.append(n, el.value || '');
         });
