@@ -3063,3 +3063,6 @@ msgstr "Sell in this story"
 
 msgid "Publiez d'abord une annonce sur le Bazar ou un plat sur Resto, puis liez-le à votre story."
 msgstr "First publish a listing on the Bazar or a dish on Resto, then link it to your story."
+
+msgid "Mon fil"
+msgstr "My feed"

@@ -55,7 +55,7 @@ class PostVisibilityTests(TestCase):
 
     def test_post_body_is_sanitized_in_feed(self):
         Post.objects.create(author=self.other, body='<p>ok</p><script>alert(1)</script>')
-        html = client_for(self.other).get(reverse('post:post-view')).content.decode()
+        html = client_for(self.other).get(reverse('post:post-view') + '?tab=feed').content.decode()
         self.assertIn('<p>ok</p>', html)
         self.assertNotIn('<script>alert(1)</script>', html)
 

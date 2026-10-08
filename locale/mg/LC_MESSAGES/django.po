@@ -3208,3 +3208,6 @@ msgstr "Hivarotra amin'ity story ity"
 
 msgid "Publiez d'abord une annonce sur le Bazar ou un plat sur Resto, puis liez-le à votre story."
 msgstr "Avoahy aloha ny doka ao amin'ny Bazar na sakafo ao amin'ny Resto, dia ampifandraiso amin'ny story-nao."
+
+msgid "Mon fil"
+msgstr "Ny fampitako"
