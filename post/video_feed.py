@@ -24,6 +24,7 @@ from django.views.decorators.http import require_GET
 
 from regions import REGION_LABELS
 from .models import Post, PostMedia, Reaction, Comment
+from .products import attach_products
 from .visibility import visible_posts
 
 logger = logging.getLogger(__name__)
@@ -99,6 +100,7 @@ def video_page(user, offset, limit=PAGE_SIZE):
         return [], None
 
     posts = {p.id: p for p in Post.objects.filter(id__in=page_ids).select_related('author')}
+    attach_products(posts.values())
     media_by_post = {}
     for m in PostMedia.objects.filter(post_id__in=page_ids, media_type=PostMedia.VIDEO).order_by('order'):
         media_by_post.setdefault(m.post_id, m)
@@ -134,6 +136,7 @@ def video_page(user, offset, limit=PAGE_SIZE):
             'user_reaction': mine.get(pid),
             'url':           reverse('post:post-detail', args=[post.id]),
             'is_mine':       post.author_id == getattr(user, 'pk', None),
+            'product':       post.product,
         })
     next_offset = offset + limit if offset + limit < len(ids) else None
     return items, next_offset

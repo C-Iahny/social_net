@@ -469,6 +469,43 @@
 }
 
 /* ── Modal audio ───────────────────────────────────── */
+#zsc-shop-modal {
+  position: fixed; inset: 0; z-index: 25000;
+  background: rgba(0,0,0,.7); display: none; align-items: flex-end; justify-content: center;
+}
+#zsc-shop-modal.open { display: flex; }
+#zsc-shop-panel {
+  background: var(--bg-card); border-radius: 22px 22px 0 0;
+  width: min(100vw,480px); max-height: 78vh; overflow-y: auto;
+  padding: 1.2rem 1.2rem calc(1.5rem + env(safe-area-inset-bottom,0px));
+  animation: zsSlideUp .22s ease;
+}
+#zsc-shop-panel h3 { font-size: 1rem; font-weight: 800; color: var(--text); margin: 0 0 .9rem; display: flex; align-items: center; gap: .4rem; }
+#zsc-shop-panel h3 .material-icons { color: var(--accent); }
+#zsc-shop-list { display: flex; flex-direction: column; gap: 6px; }
+.zsc-shop-item {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 8px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); cursor: pointer;
+}
+.zsc-shop-item img, .zsc-shop-item .zsc-shop-ico { width: 46px; height: 46px; border-radius: 9px; object-fit: cover; flex: none; }
+.zsc-shop-item .zsc-shop-ico { display: flex; align-items: center; justify-content: center; color: var(--accent); background: var(--bg-card); }
+.zsc-shop-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.zsc-shop-txt small { color: var(--text-muted); font-size: .7rem; text-transform: uppercase; }
+.zsc-shop-txt b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.zsc-shop-txt span { color: var(--accent); font-weight: 700; font-size: .9rem; }
+.zsc-shop-empty { color: var(--text-muted); font-size: .9rem; margin: 0; }
+.zsc-shop-empty a { color: var(--accent); font-weight: 700; }
+#zsc-shop-chip {
+  position: absolute; left: 50%; bottom: 5.4rem; transform: translateX(-50%); z-index: 12;
+  display: flex; align-items: center; gap: .4rem; max-width: 88vw;
+  padding: .4rem .5rem .4rem .9rem; border-radius: 22px;
+  background: rgba(255,255,255,.92); color: #1f1711; font-weight: 700; font-size: .85rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,.35);
+}
+#zsc-shop-chip > .material-icons { color: #8B4513; font-size: 1.1rem; }
+#zsc-shop-chip span:not(.material-icons) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#zsc-shop-chip button { border: 0; background: transparent; color: #7a6a5e; display: flex; padding: 2px; cursor: pointer; }
+#zsc-shop-chip button .material-icons { font-size: 1rem; }
 #zsc-audio-modal {
   position: fixed; inset: 0; z-index: 25000;
   background: rgba(0,0,0,.7); display: none; align-items: flex-end; justify-content: center;
@@ -797,6 +834,9 @@
     <button class="zsc-ibtn" id="zsc-tool-music" onclick="zscOpenAudio()" title="Musique">
       <span class="material-icons">music_note</span>
     </button>
+    <button class="zsc-ibtn" id="zsc-tool-shop" onclick="zscOpenShop()" title="{% trans 'Vendre' %}">
+      <span class="material-icons">storefront</span>
+    </button>
   </div>
 
   <!-- Options texte -->
@@ -839,6 +879,13 @@
     </button>
   </div>
 
+  <!-- Produit lié (achat depuis la story) -->
+  <div id="zsc-shop-chip" style="display:none;">
+    <span class="material-icons">shopping_bag</span>
+    <span id="zsc-shop-chip-txt"></span>
+    <button type="button" onclick="zscClearShop()" aria-label="{% trans 'Retirer' %}"><span class="material-icons">close</span></button>
+  </div>
+
   <!-- Barre du bas -->
   <div class="zsc-bottom">
     <input type="text" id="zsc-caption-in" maxlength="200"
@@ -851,6 +898,14 @@
   <!-- Upload progress -->
   <div id="zsc-upbar"><div id="zsc-upbar-fill"></div></div>
 
+</div>
+</div>
+
+<!-- Modal produit : lier une annonce Bazar ou un plat Resto -->
+<div id="zsc-shop-modal" onclick="if(event.target===this)zscCloseShop()">
+<div id="zsc-shop-panel">
+  <h3><span class="material-icons">storefront</span> {% trans "Vendre dans cette story" %}</h3>
+  <div id="zsc-shop-list"><p class="zsc-shop-empty">{% trans "Chargement…" %}</p></div>
 </div>
 </div>
 
@@ -970,6 +1025,46 @@ var _sc = {
   textX: 50, textY: 50,
   dragging: false, dragSX: 0, dragSY: 0, dragOX: 50, dragOY: 50,
   textMode: false,
+  link: '', linkLabel: '',
+};
+
+/* ─── Produit lié (achat depuis la story) ─────────── */
+var _shopProducts = null;
+window.zscOpenShop = function(){
+  document.getElementById('zsc-shop-modal').classList.add('open');
+  var list = document.getElementById('zsc-shop-list');
+  function render(){
+    if(!_shopProducts || !_shopProducts.length){
+      list.innerHTML = '<p class="zsc-shop-empty">{% trans "Publiez d'abord une annonce sur le Bazar ou un plat sur Resto, puis liez-le à votre story." %} ' +
+        '<a href="{% url 'bazar:create' %}">{% trans "Vendre au Bazar" %}</a> · <a href="{% url 'resto:vendor_dashboard' %}">{% trans "Ouvrir un Resto" %}</a></p>';
+      return;
+    }
+    list.innerHTML = _shopProducts.map(function(p, i){
+      return '<button type="button" class="zsc-shop-item" onclick="zscPickShop(' + i + ')">' +
+        (p.image ? '<img src="' + _esc(p.image) + '" alt="">' : '<span class="zsc-shop-ico material-icons">' + (p.kind === 'resto' ? 'restaurant' : 'storefront') + '</span>') +
+        '<span class="zsc-shop-txt"><small>' + _esc(p.badge) + ' · ' + _esc(p.seller) + '</small><b>' + _esc(p.title) + '</b><span>' + _esc(p.price) + '</span></span></button>';
+    }).join('');
+  }
+  if(_shopProducts){ render(); return; }
+  fetch('{% url "post:my-products" %}', {credentials:'same-origin'})
+    .then(function(r){ return r.json(); })
+    .then(function(d){ _shopProducts = d.products || []; render(); })
+    .catch(function(){ _shopProducts = []; render(); });
+};
+window.zscCloseShop = function(){ document.getElementById('zsc-shop-modal').classList.remove('open'); };
+window.zscPickShop = function(i){
+  var p = _shopProducts[i]; if(!p) return;
+  _sc.link = location.origin + p.url;
+  _sc.linkLabel = (p.cta + ' · ' + p.price).slice(0, 60);
+  document.getElementById('zsc-shop-chip-txt').textContent = p.title + ' — ' + p.price;
+  document.getElementById('zsc-shop-chip').style.display = 'flex';
+  document.getElementById('zsc-tool-shop').classList.add('active');
+  zscCloseShop();
+};
+window.zscClearShop = function(){
+  _sc.link = ''; _sc.linkLabel = '';
+  var chip = document.getElementById('zsc-shop-chip'); if(chip) chip.style.display = 'none';
+  var b = document.getElementById('zsc-tool-shop'); if(b) b.classList.remove('active');
 };
 
 /* ─── Helpers ─────────────────────────────────────── */
@@ -1176,7 +1271,10 @@ function _zvLoad(){
   var linkWrap = document.getElementById('zsv-link');
   if(story.link){
     linkWrap.style.display='block';
-    document.getElementById('zsv-link-a').href=story.link;
+    var la = document.getElementById('zsv-link-a');
+    la.href=story.link;
+    /* Lien interne (Bazar, Resto…) : même onglet, pour rester dans l'app */
+    la.target = story.link.indexOf(location.origin + '/') === 0 || story.link.charAt(0) === '/' ? '_self' : '_blank';
     document.getElementById('zsv-link-lbl').textContent=story.link_label||'Voir l\'offre';
   } else { linkWrap.style.display='none'; }
 
@@ -1515,6 +1613,7 @@ function zscOpen(){
   _sc.audioTrimStart=0; _sc._audioUrl=''; _sc.audioUrlExternal='';
   _sc.type='image'; _sc.grad='grad_cyan'; _sc.textColor='#ffffff';
   _sc.textX=50; _sc.textY=50; _sc.textMode=false;
+  zscClearShop();
 
   document.getElementById('zsc-img').classList.remove('active');
   var v=document.getElementById('zsc-vid'); v.classList.remove('active'); v.pause(); v.src='';
@@ -1690,6 +1789,7 @@ window.zscPublish = function(){
   if(_sc.audioFile) fd.append('audio', _sc.audioFile);
   else if(_sc._audioUrl||_sc.audioUrlExternal) fd.append('audio_url', _sc._audioUrl||_sc.audioUrlExternal);
   fd.append('audio_trim_start', _sc.audioTrimStart);
+  if(_sc.link){ fd.append('link', _sc.link); fd.append('link_label', _sc.linkLabel); }
 
   var upbar=document.getElementById('zsc-upbar');
   var upfill=document.getElementById('zsc-upbar-fill');

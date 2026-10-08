@@ -241,6 +241,8 @@
                     {% endif %}
                 </div>
 
+                {% include 'post/_product_picker.html' %}
+
                 {% if form.non_field_errors %}
                 <p style="color:var(--badge-danger-t,red);font-size:.88rem;">{{ form.non_field_errors }}</p>
                 {% endif %}

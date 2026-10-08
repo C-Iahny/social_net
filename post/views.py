@@ -27,6 +27,7 @@ from friend.models import FriendList
 from personal.models import HeroSettings
 from .media_utils import store_post_media
 from .visibility import get_visible_post_or_404, visible_posts
+from .products import attach_products, apply_product_ref, user_products
 
 # Import différé pour éviter les imports circulaires
 try:
@@ -193,6 +194,13 @@ def _attach_media(posts, post_ids):
         _logger.exception("_attach_media ERREUR (post_ids=%s): %s", post_ids, e)
         for post in posts:
             post.media_list = []
+    # Carte produit (annonce Bazar / plat Resto lié) — achat depuis le post
+    try:
+        attach_products(posts)
+    except Exception as e:
+        _logger.exception("attach_products ERREUR: %s", e)
+        for post in posts:
+            post.product = None
 
 
 
@@ -534,7 +542,11 @@ class AddPostView(LoginRequiredMixin, CreateView):
     form_class = PostForm
     template_name = "post/add_post.html"
 
-    # title est désormais blank=True — pas besoin d'auto-génération
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['my_products'] = user_products(self.request.user)
+        ctx['want_video'] = self.request.GET.get('video') == '1'
+        return ctx
 
     def form_valid(self, form):
         form.instance.author = self.request.user
@@ -579,6 +591,9 @@ class AddPostView(LoginRequiredMixin, CreateView):
                 post.save(update_fields=['lieu'])
             except Exception:
                 pass
+
+        # ── Lier un produit (annonce Bazar / plat Resto de l'auteur) ─────
+        apply_product_ref(post, self.request.user, self.request.POST.get('product'))
 
         # ── Enregistrer les fichiers média ───────────────────────────────
         files = self.request.FILES.getlist('media_files')
@@ -703,11 +718,16 @@ class UpdatePostView(LoginRequiredMixin, UpdateView):
             ctx['existing_media'] = list(PostMedia.objects.filter(post=self.object).order_by('order'))
         except Exception:
             ctx['existing_media'] = []
+        ctx['my_products'] = user_products(self.request.user)
+        post = self.object
+        ctx['current_product'] = ('bazar:%d' % post.annonce_id if post.annonce_id
+                                  else 'resto:%d' % post.menu_item_id if post.menu_item_id else '')
         return ctx
 
     def form_valid(self, form):
         response = super().form_valid(form)
         post = self.object
+        apply_product_ref(post, self.request.user, self.request.POST.get('product'), clear_if_empty=True)
 
         # Supprimer les médias cochés
         delete_ids = self.request.POST.getlist('delete_media')

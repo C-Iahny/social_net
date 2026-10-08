@@ -87,6 +87,27 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
 .vf-caption.vf-expanded { max-height: 40vh; overflow-y: auto; }
 .vf-more { background: none; border: 0; color: rgba(255,255,255,.75); font-size: .8rem; padding: 2px 0; cursor: pointer; }
 
+/* Carte produit sur la vidéo : acheter / commander sans quitter le fil */
+.vf-product {
+    display: flex; align-items: center; gap: 10px; margin: 0 0 10px; padding: 8px;
+    border-radius: 14px; background: rgba(255,255,255,.94); color: #1f1711; text-decoration: none;
+    text-shadow: none; box-shadow: 0 4px 16px rgba(0,0,0,.35); max-width: 340px;
+    animation: vfProdIn .35s ease;
+}
+@keyframes vfProdIn { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+.vf-product img, .vf-product-ico { width: 46px; height: 46px; border-radius: 9px; object-fit: cover; flex: none; }
+.vf-product-ico { display: flex; align-items: center; justify-content: center; background: #f8f4ef; color: #8B4513; }
+.vf-product-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.2; }
+.vf-product-txt small { font-size: .68rem; color: #7a6a5e; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vf-product-txt b { font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vf-product-txt span { font-size: .85rem; font-weight: 800; color: #8B4513; }
+.vf-product-cta {
+    flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 8px 12px;
+    border-radius: 999px; background: #8B4513; color: #fff; font-weight: 700; font-size: .82rem; white-space: nowrap;
+}
+.vf-product-cta .material-icons { font-size: 17px; }
+.vf-product.vf-product-off .vf-product-cta { background: #7a6a5e; }
+
 /* Actions à droite */
 .vf-actions {
     position: absolute; right: 10px; bottom: 24px; z-index: 3;
@@ -185,6 +206,11 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
         <span class="material-icons vf-paused-ico">play_arrow</span>
         <span class="material-icons vf-heart-burst">favorite</span>
         <div class="vf-info">
+            <a class="vf-product" href="#" hidden>
+                <img alt="" hidden><span class="vf-product-ico material-icons" hidden>storefront</span>
+                <span class="vf-product-txt"><small></small><b></b><span></span></span>
+                <span class="vf-product-cta"><span class="material-icons">shopping_bag</span><em></em></span>
+            </a>
             <a class="vf-author" href="#"><img alt=""><b></b><span class="vf-region" hidden><span class="material-icons">place</span><span class="vf-region-name"></span></span></a>
             <p class="vf-caption"></p>
             <button class="vf-more" type="button" hidden>{% trans "Voir plus" %}</button>
@@ -215,7 +241,8 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
         sound:  "{% trans 'Toucher pour activer le son' %}",
         more:   "{% trans 'Voir plus' %}",
         less:   "{% trans 'Voir moins' %}",
-        copied: "{% trans 'Lien copié' %}"
+        copied: "{% trans 'Lien copié' %}",
+        unavailable: "{% trans 'Indisponible' %}"
     };
 
     function csrf() { var m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : ''; }
@@ -258,6 +285,19 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
         comment.href = item.url + '#comments';
         comment.querySelector('.vf-n').textContent = fmt(item.comments);
         node.querySelector('.vf-share').onclick = function (e) { e.stopPropagation(); share(item); };
+        if (item.product) {
+            var pr = item.product, pe = node.querySelector('.vf-product');
+            pe.hidden = false;
+            pe.href = pr.url;
+            pe.classList.toggle('vf-product-off', !pr.available);
+            if (pr.image) { pe.querySelector('img').src = pr.image; pe.querySelector('img').hidden = false; }
+            else { var ico = pe.querySelector('.vf-product-ico'); ico.hidden = false; ico.textContent = pr.kind === 'resto' ? 'restaurant' : 'storefront'; }
+            pe.querySelector('small').textContent = pr.badge + ' · ' + pr.seller;
+            pe.querySelector('b').textContent = pr.title;
+            pe.querySelector('.vf-product-txt span').textContent = pr.price;
+            pe.querySelector('.vf-product-cta .material-icons').textContent = pr.kind === 'resto' ? 'shopping_basket' : 'shopping_bag';
+            pe.querySelector('.vf-product-cta em').textContent = pr.available ? pr.cta : L.unavailable;
+        }
 
         /* Tap : pause/lecture ; double tap : j'aime */
         var lastTap = 0;

@@ -1,0 +1,90 @@
+{% load i18n %}
+{# Sélecteur « Lier un produit » — attend `my_products` (liste) et `current_product` (ref ou '') dans le contexte #}
+{{ my_products|json_script:"pp-products-data" }}
+<div class="form-field pp-field">
+    <label>
+        <span class="material-icons" style="font-size:1rem;vertical-align:middle;">storefront</span>
+        {% trans "Vendre dans ce post" %}
+        <span style="font-weight:400;color:var(--text-muted);font-size:.8rem;"> — {% trans "optionnel" %}</span>
+    </label>
+    <input type="hidden" name="product" id="pp-input" value="{{ current_product|default:'' }}">
+    <div id="pp-selected" class="pp-selected" hidden>
+        <img id="pp-sel-img" src="" alt="" hidden>
+        <span id="pp-sel-ico" class="material-icons">storefront</span>
+        <span class="pp-sel-txt"><b id="pp-sel-title"></b><small id="pp-sel-price"></small></span>
+        <button type="button" class="pp-sel-remove" onclick="ppClear()" aria-label="{% trans 'Retirer' %}"><span class="material-icons">close</span></button>
+    </div>
+    {% if my_products %}
+    <button type="button" class="pp-open-btn" id="pp-open-btn" onclick="ppOpen()">
+        <span class="material-icons">add_shopping_cart</span>
+        {% trans "Lier une annonce ou un plat" %}
+    </button>
+    {% else %}
+    <p class="pp-empty">
+        {% trans "Publiez d'abord une annonce sur le Bazar ou un plat sur Resto, puis liez-le à votre post : vos abonnés pourront acheter en un geste." %}
+        <a href="{% url 'bazar:create' %}">{% trans "Vendre au Bazar" %}</a> ·
+        <a href="{% url 'resto:vendor_dashboard' %}">{% trans "Ouvrir un Resto" %}</a>
+    </p>
+    {% endif %}
+</div>
+
+<div id="pp-sheet" class="pp-sheet" onclick="if(event.target===this)ppClose()">
+    <div class="pp-panel">
+        <h3><span class="material-icons">storefront</span> {% trans "Choisir un produit" %}</h3>
+        <input type="search" id="pp-search" class="pp-search" placeholder="{% trans 'Rechercher…' %}" oninput="ppRender(this.value)">
+        <div id="pp-list" class="pp-list"></div>
+    </div>
+</div>
+
+<script>
+(function () {
+    var products = [];
+    try { products = JSON.parse(document.getElementById('pp-products-data').textContent) || []; } catch (e) {}
+    var byRef = {};
+    products.forEach(function (p) { byRef[p.ref] = p; });
+
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+    window.ppRender = function (q) {
+        q = (q || '').toLowerCase();
+        var list = document.getElementById('pp-list');
+        var html = '';
+        products.forEach(function (p) {
+            if (q && (p.title + ' ' + p.seller).toLowerCase().indexOf(q) === -1) return;
+            html += '<button type="button" class="pp-item" onclick="ppPick(' + JSON.stringify(p.ref) + ')">' +
+                (p.image ? '<img src="' + esc(p.image) + '" alt="">' :
+                    '<span class="pp-item-ico material-icons">' + (p.kind === 'resto' ? 'restaurant' : 'storefront') + '</span>') +
+                '<span class="pp-item-txt"><small>' + esc(p.badge) + ' · ' + esc(p.seller) + '</small><b>' + esc(p.title) +
+                '</b><span>' + esc(p.price) + '</span></span></button>';
+        });
+        list.innerHTML = html || '<p class="pp-empty">{% trans "Aucun produit trouvé." %}</p>';
+    };
+    window.ppOpen = function () {
+        ppRender('');
+        document.getElementById('pp-sheet').classList.add('open');
+        setTimeout(function () { var s = document.getElementById('pp-search'); if (s) s.focus(); }, 50);
+    };
+    window.ppClose = function () { document.getElementById('pp-sheet').classList.remove('open'); };
+    window.ppPick = function (ref) {
+        var p = byRef[ref];
+        if (!p) return;
+        document.getElementById('pp-input').value = ref;
+        var img = document.getElementById('pp-sel-img'), ico = document.getElementById('pp-sel-ico');
+        if (p.image) { img.src = p.image; img.hidden = false; ico.hidden = true; }
+        else { img.hidden = true; ico.hidden = false; ico.textContent = p.kind === 'resto' ? 'restaurant' : 'storefront'; }
+        document.getElementById('pp-sel-title').textContent = p.title;
+        document.getElementById('pp-sel-price').textContent = p.badge + ' · ' + p.price;
+        document.getElementById('pp-selected').hidden = false;
+        var btn = document.getElementById('pp-open-btn'); if (btn) btn.hidden = true;
+        ppClose();
+    };
+    window.ppClear = function () {
+        document.getElementById('pp-input').value = '';
+        document.getElementById('pp-selected').hidden = true;
+        var btn = document.getElementById('pp-open-btn'); if (btn) btn.hidden = false;
+    };
+    var initial = document.getElementById('pp-input').value;
+    if (initial && byRef[initial]) ppPick(initial);
+})();
+</script>

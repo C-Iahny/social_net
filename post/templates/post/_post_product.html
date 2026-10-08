@@ -1,0 +1,24 @@
+{% load i18n %}
+{% if post.product %}
+<a class="pc-product{% if not post.product.available %} pc-product-off{% endif %}" href="{{ post.product.url }}"
+   data-kind="{{ post.product.kind }}">
+    {% if post.product.image %}
+    <img class="pc-product-img" src="{{ post.product.image }}" alt="" loading="lazy" decoding="async">
+    {% else %}
+    <span class="pc-product-img pc-product-img-empty"><span class="material-icons">{% if post.product.kind == 'resto' %}restaurant{% else %}storefront{% endif %}</span></span>
+    {% endif %}
+    <span class="pc-product-info">
+        <span class="pc-product-badge">{{ post.product.badge }} · {{ post.product.seller }}</span>
+        <span class="pc-product-title">{{ post.product.title }}</span>
+        <span class="pc-product-price">{{ post.product.price }}</span>
+    </span>
+    <span class="pc-product-cta">
+        {% if post.product.available %}
+        <span class="material-icons">{% if post.product.kind == 'resto' %}shopping_basket{% else %}shopping_bag{% endif %}</span>
+        {{ post.product.cta }}
+        {% else %}
+        {% trans "Indisponible" %}
+        {% endif %}
+    </span>
+</a>
+{% endif %}

@@ -97,6 +97,22 @@ class Post(models.Model):
         verbose_name='Lieu touristique lié',
     )
 
+    # ── Produit lié : achat direct depuis le post / la vidéo ─────────────────
+    annonce = models.ForeignKey(
+        'bazar.Annonce',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='posts',
+        verbose_name='Annonce Bazar liée',
+    )
+    menu_item = models.ForeignKey(
+        'resto.MenuItem',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='posts',
+        verbose_name='Plat Resto lié',
+    )
+
     # ── Statut & publication programmée ──────────────────────────────────────
     STATUS_PUBLISHED = 'published'
     STATUS_DRAFT     = 'draft'

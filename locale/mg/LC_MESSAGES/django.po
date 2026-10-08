@@ -3163,3 +3163,48 @@ msgstr "Mbola tsy misy horonan-tsary. Aoka ianao no voalohany hamoaka!"
 
 msgid "Les vidéos de la communauté Vazimba, en plein écran."
 msgstr "Horonan-tsarin'ny fiarahamonina Vazimba, amin'ny efijery manontolo."
+
+msgid "Louer"
+msgstr "Hanofa"
+
+msgid "Acheter"
+msgstr "Hividy"
+
+msgid "Vendre dans ce post"
+msgstr "Hivarotra amin'ity lahatsoratra ity"
+
+msgid "optionnel"
+msgstr "tsy voatery"
+
+msgid "Retirer"
+msgstr "Esory"
+
+msgid "Lier une annonce ou un plat"
+msgstr "Ampifandraiso amin'ny doka na sakafo"
+
+msgid "Publiez d'abord une annonce sur le Bazar ou un plat sur Resto, puis liez-le à votre post : vos abonnés pourront acheter en un geste."
+msgstr "Avoahy aloha ny doka ao amin'ny Bazar na sakafo ao amin'ny Resto, dia ampifandraiso amin'ny lahatsoratrao : afaka mividy indray mandeha ny mpanaraka anao."
+
+msgid "Vendre au Bazar"
+msgstr "Hivarotra ao amin'ny Bazar"
+
+msgid "Ouvrir un Resto"
+msgstr "Hanokatra Resto"
+
+msgid "Choisir un produit"
+msgstr "Hifidy vokatra"
+
+msgid "Aucun produit trouvé."
+msgstr "Tsy misy vokatra hita."
+
+msgid "Ajoutez votre vidéo : elle apparaîtra dans le fil Vidéos. Format vertical conseillé."
+msgstr "Ampio ny horonan-tsarinao : hiseho ao amin'ny Horonan-tsary izy. Endrika mitsangana no tsara."
+
+msgid "Vendre"
+msgstr "Hivarotra"
+
+msgid "Vendre dans cette story"
+msgstr "Hivarotra amin'ity story ity"
+
+msgid "Publiez d'abord une annonce sur le Bazar ou un plat sur Resto, puis liez-le à votre story."
+msgstr "Avoahy aloha ny doka ao amin'ny Bazar na sakafo ao amin'ny Resto, dia ampifandraiso amin'ny story-nao."

@@ -3018,3 +3018,48 @@ msgstr "No videos yet. Be the first to post one!"
 
 msgid "Les vidéos de la communauté Vazimba, en plein écran."
 msgstr "Videos from the Vazimba community, full screen."
+
+msgid "Louer"
+msgstr "Rent"
+
+msgid "Acheter"
+msgstr "Buy"
+
+msgid "Vendre dans ce post"
+msgstr "Sell in this post"
+
+msgid "optionnel"
+msgstr "optional"
+
+msgid "Retirer"
+msgstr "Remove"
+
+msgid "Lier une annonce ou un plat"
+msgstr "Link a listing or a dish"
+
+msgid "Publiez d'abord une annonce sur le Bazar ou un plat sur Resto, puis liez-le à votre post : vos abonnés pourront acheter en un geste."
+msgstr "First publish a listing on the Bazar or a dish on Resto, then link it to your post: your followers can buy in one tap."
+
+msgid "Vendre au Bazar"
+msgstr "Sell on the Bazar"
+
+msgid "Ouvrir un Resto"
+msgstr "Open a Resto"
+
+msgid "Choisir un produit"
+msgstr "Choose a product"
+
+msgid "Aucun produit trouvé."
+msgstr "No product found."
+
+msgid "Ajoutez votre vidéo : elle apparaîtra dans le fil Vidéos. Format vertical conseillé."
+msgstr "Add your video: it will appear in the Videos feed. Vertical format recommended."
+
+msgid "Vendre"
+msgstr "Sell"
+
+msgid "Vendre dans cette story"
+msgstr "Sell in this story"
+
+msgid "Publiez d'abord une annonce sur le Bazar ou un plat sur Resto, puis liez-le à votre story."
+msgstr "First publish a listing on the Bazar or a dish on Resto, then link it to your story."

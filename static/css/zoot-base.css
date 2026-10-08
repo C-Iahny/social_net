@@ -1226,3 +1226,86 @@ html.data-saver .ds-img-wrap { position: relative; }
         .vintana-body { display: flex; flex-direction: column; gap: .5rem; }
         .vintana-message { margin: 0; line-height: 1.75; }
 
+
+/* ── Achat depuis un post : carte produit (annonce Bazar / plat Resto) ─── */
+.pc-product {
+    display: flex; align-items: center; gap: 12px;
+    margin: 10px 14px 4px; padding: 10px;
+    border: 1px solid var(--border, rgba(0,0,0,.1)); border-radius: 14px;
+    background: var(--bg, #f8f4ef); color: var(--text, #1f1711); text-decoration: none;
+    transition: transform .15s, box-shadow .15s;
+}
+.pc-product:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+.pc-product-img {
+    width: 64px; height: 64px; border-radius: 10px; object-fit: cover; flex: none;
+    background: var(--bg-card, #fff); display: flex; align-items: center; justify-content: center;
+}
+.pc-product-img-empty .material-icons { color: var(--accent, #8B4513); font-size: 30px; }
+.pc-product-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pc-product-badge { font-size: .72rem; color: var(--text-muted, #7a6a5e); text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-product-title { font-weight: 700; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pc-product-price { font-weight: 800; color: var(--accent, #8B4513); font-size: .95rem; }
+.pc-product-cta {
+    flex: none; display: inline-flex; align-items: center; gap: 4px;
+    padding: 9px 13px; border-radius: 999px; font-weight: 700; font-size: .85rem;
+    background: var(--accent, #8B4513); color: #fff; white-space: nowrap;
+}
+.pc-product-cta .material-icons { font-size: 18px; }
+.pc-product-off .pc-product-cta { background: var(--text-muted, #7a6a5e); }
+.pc-product-off { opacity: .75; }
+@media (max-width: 420px) {
+    .pc-product-cta span:not(.material-icons) { display: none; }
+    .pc-product-cta { padding: 9px 10px; }
+}
+
+/* ── Sélecteur « Vendre dans ce post » (formulaires de post) ───────────── */
+.pp-open-btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px;
+    border: 1.5px dashed var(--accent, #8B4513); border-radius: 12px; background: transparent;
+    color: var(--accent, #8B4513); font-weight: 700; cursor: pointer; font-size: .9rem;
+}
+.pp-open-btn .material-icons { font-size: 20px; }
+.pp-selected {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+    border: 1px solid var(--border, rgba(0,0,0,.1)); border-radius: 12px; background: var(--bg, #f8f4ef);
+}
+.pp-selected img, .pp-selected > .material-icons { width: 44px; height: 44px; border-radius: 9px; object-fit: cover; }
+.pp-selected > .material-icons { display: flex; align-items: center; justify-content: center; color: var(--accent, #8B4513); background: var(--bg-card, #fff); }
+.pp-sel-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pp-sel-txt b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-sel-txt small { color: var(--text-muted, #7a6a5e); }
+.pp-sel-remove { border: 0; background: transparent; color: var(--text-muted, #7a6a5e); cursor: pointer; padding: 4px; }
+.pp-empty { font-size: .85rem; color: var(--text-muted, #7a6a5e); margin: .3rem 0 0; }
+.pp-empty a { color: var(--accent, #8B4513); font-weight: 700; }
+.pp-sheet {
+    position: fixed; inset: 0; z-index: 25000; background: rgba(0,0,0,.55);
+    display: none; align-items: flex-end; justify-content: center;
+}
+.pp-sheet.open { display: flex; }
+.pp-panel {
+    background: var(--bg-card, #fff); border-radius: 22px 22px 0 0; width: min(100vw, 520px);
+    max-height: 78vh; display: flex; flex-direction: column;
+    padding: 1rem 1rem calc(1.2rem + env(safe-area-inset-bottom, 0px));
+}
+.pp-panel h3 { margin: 0 0 .7rem; font-size: 1rem; display: flex; align-items: center; gap: .4rem; color: var(--text, #1f1711); }
+.pp-panel h3 .material-icons { color: var(--accent, #8B4513); }
+.pp-search { width: 100%; padding: .55rem .8rem; border: 1.5px solid var(--border, rgba(0,0,0,.12)); border-radius: 10px; background: var(--bg, #f8f4ef); color: var(--text, #1f1711); margin-bottom: .6rem; font-size: .95rem; }
+.pp-list { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.pp-item {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    padding: 8px; border: 1px solid var(--border, rgba(0,0,0,.1)); border-radius: 12px;
+    background: var(--bg, #f8f4ef); color: var(--text, #1f1711); cursor: pointer;
+}
+.pp-item img, .pp-item-ico { width: 48px; height: 48px; border-radius: 9px; object-fit: cover; flex: none; }
+.pp-item-ico { display: flex; align-items: center; justify-content: center; color: var(--accent, #8B4513); background: var(--bg-card, #fff); }
+.pp-item-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pp-item-txt small { color: var(--text-muted, #7a6a5e); font-size: .72rem; text-transform: uppercase; }
+.pp-item-txt b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-item-txt span { color: var(--accent, #8B4513); font-weight: 700; font-size: .9rem; }
+
+/* Bandeau « Ajoutez votre vidéo » (Créer → Vidéo) */
+.video-hint {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: .9rem;
+    border-radius: 12px; background: var(--accent, #8B4513); color: #fff; font-size: .9rem;
+}
+.video-hint .material-icons { font-size: 22px; }

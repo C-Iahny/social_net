@@ -30,6 +30,7 @@ from .views import (
     diag_media,
     reactions_who,
 )
+from .products import my_products
 
 app_name = 'post'
 
@@ -58,6 +59,7 @@ urlpatterns = [
     path('tendances/',         tendances_view,        name='tendances'),
     path('videos/',            video_feed_view,       name='video-feed'),
     path('videos/more/',       video_feed_more,       name='video-feed-more'),
+    path('products/mine/',     my_products,           name='my-products'),
     path('signaler/',          ratelimit('10/h')(report_content), name='report-content'),
     path('diag/',              diag_media,            name='diag-media'),
     path('<int:post_id>/reactions/', reactions_who,  name='reactions-who'),
