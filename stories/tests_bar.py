@@ -34,3 +34,6 @@ class StoryBarHooksTests(TestCase):
         self.assertNotIn('z-index:2147483647', html)
         self.assertIn('function toggleTheme()', html)
         self.assertIn('_syncThemeColor(next)', html)
+        # Menu profil mobile : le bouton ferme le menu (et lève le verrou de défilement) lui-même
+        self.assertIn('onclick="_vzb_closeDropdown(this); toggleTheme();"', html)
+        self.assertIn('function _unlockIfNoMenu()', html)
