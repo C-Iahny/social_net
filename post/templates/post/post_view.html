@@ -1559,7 +1559,7 @@ body { background: var(--bg); }
                class="feed-tab-pill {% if active_tab == 'foryou' %}active{% endif %}"
                style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s;
                       {% if active_tab == 'foryou' %}background:var(--accent,#6366f1);color:#fff;{% else %}background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);color:var(--text-primary,#111);{% endif %}">
-                ✨ {% trans "Pour toi" %}
+                   {% trans "Pour toi" %}
             </a>
             {% if user_region %}
             <a href="{% url 'post:post-view' %}?tab=region"
@@ -2091,7 +2091,7 @@ body { background: var(--bg); }
                         <span class="material-icons">chat_bubble_outline</span>
                         <span id="comment-count-{{ post.id }}"
                               style="font-size:.76rem;margin-left:.15rem;color:var(--text-muted);{% if not post.total_comments %}display:none{% endif %}">
-                            {% if post.total_comments %}({{ post.total_comments }}){% endif %}
+                            {% if post.total_comments %}{{ post.total_comments }}{% endif %}
                         </span>
                     </button>
 
