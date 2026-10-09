@@ -9,12 +9,12 @@
 <style>
 /* ══ Fil vidéo vertical ══════════════════════════════════════════════════
    Plein écran, une vidéo par écran, défilement avec accrochage (scroll-snap).
-   Sur mobile la barre de navigation basse reste visible ; l'en-tête est
-   masqué pour laisser toute la place à la vidéo. */
+   Sur mobile, en-tête et barre de navigation basse sont masqués : la vidéo
+   occupe tout l'écran, le bouton retour en haut à gauche suffit. */
 :root { --vf-nav: 0px; }
 @media (max-width: 767px) {
-    :root { --vf-nav: calc(58px + env(safe-area-inset-bottom, 0px)); }
-    #header { display: none !important; }
+    #header, #zoot-bottom-nav { display: none !important; }
+    main#contenu-principal { padding-bottom: 0 !important; }
 }
 html, body { background: #000 !important; overscroll-behavior-y: contain; }
 main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width: none !important; }
@@ -72,7 +72,7 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
 
 /* Infos auteur + légende */
 .vf-info {
-    position: absolute; left: 14px; right: 84px; bottom: 18px; z-index: 3; color: #fff;
+    position: absolute; left: 14px; right: 84px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 3; color: #fff;
     text-shadow: 0 1px 2px rgba(0,0,0,.6);
 }
 .vf-author { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; text-decoration: none; color: #fff; }
@@ -110,7 +110,7 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
 
 /* Actions à droite */
 .vf-actions {
-    position: absolute; right: 10px; bottom: 24px; z-index: 3;
+    position: absolute; right: 10px; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 3;
     display: flex; flex-direction: column; align-items: center; gap: 16px;
 }
 .vf-act { background: none; border: 0; color: #fff; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; text-decoration: none; }
@@ -193,7 +193,7 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
 
 /* Bouton Créer (desktop : pas de barre basse) */
 .vf-create {
-    position: absolute; right: 14px; bottom: 18px; z-index: 5; display: none;
+    position: absolute; right: 14px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 5; display: none;
     background: var(--accent); color: #fff; border: 0; border-radius: 999px; padding: 10px 16px; font-weight: 700;
     text-decoration: none; align-items: center; gap: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.4);
 }
