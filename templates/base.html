@@ -28,8 +28,13 @@
     <!-- ① Anti-FOUC : appliquer le thème AVANT tout rendu -->
     <script>
         (function() {
-            var t = localStorage.getItem('zoot-theme');
-            document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+            var t = null;
+            try { t = localStorage.getItem('zoot-theme'); } catch(e) {}
+            var dark = (t === 'dark');
+            document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            /* Barre système au ton du thème choisi, dès le premier rendu */
+            var metas = document.querySelectorAll('meta[name="theme-color"]');
+            for (var i = 0; i < metas.length; i++) metas[i].setAttribute('content', dark ? '#0f1419' : '#ffffff');
         })();
     </script>
 
@@ -69,46 +74,33 @@
             if (ddLabel) ddLabel.textContent = theme === 'dark' ? 'Mode clair'  : 'Mode sombre';
         }
 
+        /* Barre système / barre d'adresse accordée au thème choisi (et non au
+           réglage système) : on écrase les deux <meta theme-color>. */
+        function _syncThemeColor(theme) {
+            var c = theme === 'dark' ? '#0f1419' : '#ffffff';
+            document.querySelectorAll('meta[name="theme-color"]').forEach(function(m) {
+                m.setAttribute('content', c);
+            });
+        }
+
+        /* Bascule simple et synchrone. L'ancienne version empilait un calque
+           opaque plein écran, deux requestAnimationFrame et une classe
+           « sans transition » sur tous les éléments : dans la WebView Android
+           de l'application, le calque restait parfois affiché (RAF jamais
+           rappelé) et la page semblait figée jusqu'au rechargement. Ici rien
+           ne peut rester bloqué : un seul recalcul de style, et les
+           transitions CSS existantes font un fondu naturel. */
+        var _themeBusy = false;
         function toggleTheme() {
+            if (_themeBusy) return;
+            _themeBusy = true;
             var html = document.documentElement;
             var next = (html.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
-
-            /* ── Overlay opaque pour masquer le recalcul CSS ──────────────────
-               Sur Android/iOS, requestAnimationFrame fire au DÉBUT d'un frame
-               (avant le paint). setTimeout(0) à l'intérieur d'un RAF fire
-               dans la task queue APRÈS que le frame soit peint à l'écran.
-               C'est la seule garantie fiable que l'overlay est visible
-               avant qu'on change data-theme et déclenche le recalcul CSS.  */
-            var overlay = document.createElement('div');
-            overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;'
-                + 'background:' + (next === 'dark' ? '#0f1419' : '#f4f6f8') + ';'
-                + 'pointer-events:none;transition:none;';
-            document.body.appendChild(overlay);
-
-            /* Forcer le style flush pour s'assurer que l'overlay entre
-               dans le pipeline de rendu de ce frame */
-            overlay.getBoundingClientRect();
-
-            /* RAF → paint → setTimeout(0) s'exécute après ce paint */
-            requestAnimationFrame(function() {
-                setTimeout(function() {
-                    /* Ici l'overlay EST visible à l'écran */
-                    html.classList.add('vzb-no-transition');
-                    html.setAttribute('data-theme', next);
-                    try { localStorage.setItem('zoot-theme', next); } catch(e) {}
-                    _syncThemeIcons(next);
-
-                    /* RAF suivant : recalcul CSS terminé → on retire l'overlay */
-                    requestAnimationFrame(function() {
-                        html.classList.remove('vzb-no-transition');
-                        overlay.style.transition = 'opacity .18s ease';
-                        overlay.style.opacity = '0';
-                        setTimeout(function() {
-                            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-                        }, 200);
-                    });
-                }, 0);
-            });
+            html.setAttribute('data-theme', next);
+            try { localStorage.setItem('zoot-theme', next); } catch(e) {}
+            _syncThemeIcons(next);
+            _syncThemeColor(next);
+            setTimeout(function() { _themeBusy = false; }, 250);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
