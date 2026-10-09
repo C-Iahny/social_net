@@ -3238,3 +3238,39 @@ msgstr "Tsiambaratelo"
 
 msgid "Vazimba sur Google Play"
 msgstr "Vazimba ao amin'ny Google Play"
+
+msgid "Le réseau social malgache."
+msgstr "Ny tambajotra sosialy malagasy."
+
+msgid "Téléchargez l'application Android"
+msgstr "Alaivo ny rindrambaiko Android"
+
+msgid "Disponible sur Google Play"
+msgstr "Azo alaina ao amin'ny Google Play"
+
+msgid "Navigation"
+msgstr "Fitetezana"
+
+msgid "Découvrir"
+msgstr "Hizaha"
+
+msgid "Explorer"
+msgstr "Hikaroka"
+
+msgid "Groupes"
+msgstr "Vondrona"
+
+msgid "Appli Android"
+msgstr "Rindrambaiko Android"
+
+msgid "Contact"
+msgstr "Fifandraisana"
+
+msgid "Mentions légales"
+msgstr "Lalàna"
+
+msgid "Fil d'actualité"
+msgstr "Vaovao"
+
+msgid "Tourisme"
+msgstr "Fizahan-tany"
