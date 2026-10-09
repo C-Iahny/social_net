@@ -1164,13 +1164,13 @@
 
                 <!-- Affichage & Langue (accessibles ici car masqués de la top nav sur mobile) -->
                 <p class="zoot-dropdown-label">{% trans "Display" %} &amp; {% trans "Language" %}</p>
-                <button class="dropdown-item" onclick="toggleTheme();" type="button"
+                <button class="dropdown-item" onclick="_vzb_closeDropdown(this); toggleTheme();" type="button"
                         style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
                     <span class="material-icons" id="dd-theme-icon">dark_mode</span>
                     <span id="dd-theme-label">{% trans "Dark mode" %}</span>
                 </button>
                 <!-- Mode économie de données -->
-                <button class="dropdown-item" onclick="toggleDataSaver()" type="button"
+                <button class="dropdown-item" onclick="_vzb_closeDropdown(this); toggleDataSaver()" type="button"
                         style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
                     <span class="material-icons" id="dd-datasaver-icon" style="color:var(--text-muted);">data_saver_off</span>
                     <span id="dd-datasaver-label">{% trans "Mode économie" %}</span>
@@ -1383,6 +1383,19 @@
         /* Débloquer immédiatement le scroll iOS (ne pas attendre hidden.bs.dropdown) */
         unlockScroll();
     };
+    /* Filet de sécurité : si le corps est verrouillé alors qu'aucun menu
+       n'est plus ouvert (la WebView Android n'émet pas toujours
+       hidden.bs.dropdown après un clic sur un bouton du menu, p. ex. le
+       changement de thème), on déverrouille. Sans cela la page restait
+       figée en position:fixed jusqu'au rechargement. */
+    function _unlockIfNoMenu() {
+        if (!document.body.classList.contains('zoot-dd-open')) return;
+        if (!document.querySelector('.dropdown-menu.show')) unlockScroll();
+    }
+    document.addEventListener('click', function() { setTimeout(_unlockIfNoMenu, 120); }, true);
+    document.addEventListener('touchend', function() { setTimeout(_unlockIfNoMenu, 200); }, { passive: true, capture: true });
+    document.addEventListener('visibilitychange', _unlockIfNoMenu);
+
     // Bootstrap 4 événements jQuery
     if (window.jQuery) {
         $(document).on('show.bs.dropdown',   lockScroll);

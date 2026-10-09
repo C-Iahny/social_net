@@ -100,7 +100,12 @@
             try { localStorage.setItem('zoot-theme', next); } catch(e) {}
             _syncThemeIcons(next);
             _syncThemeColor(next);
-            setTimeout(function() { _themeBusy = false; }, 250);
+            /* Si le bouton venait du menu profil mobile, s'assurer que le
+               verrou de défilement du menu est bien levé */
+            setTimeout(function() {
+                _themeBusy = false;
+                if (!document.querySelector('.dropdown-menu.show') && window._vzb_unlockScroll) window._vzb_unlockScroll();
+            }, 250);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
