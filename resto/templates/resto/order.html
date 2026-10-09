@@ -194,7 +194,7 @@
     const pts = [];
     if(state.pickup.lat !== null){ mPick = L.marker([state.pickup.lat, state.pickup.lng], {icon:icon('🏪')}).addTo(map).bindTooltip(I18N.resto + ' · ' + state.pickup.name); pts.push([state.pickup.lat, state.pickup.lng]); }
     if(state.delivery.lat !== null){ mDrop = L.marker([state.delivery.lat, state.delivery.lng], {icon:icon('🏠')}).addTo(map).bindTooltip(I18N.you); pts.push([state.delivery.lat, state.delivery.lng]); }
-    if(pts.length >= 2) line = L.polyline(pts, {color:'#8B4513', dashArray:'6 8', weight:3}).addTo(map);
+    if(pts.length >= 2) line = L.polyline(pts, {color:'#0f766e', dashArray:'6 8', weight:3}).addTo(map);
     if(pts.length) map.fitBounds(L.latLngBounds(pts).pad(.3)); else map.setView([-18.8792, 47.5079], 12);
     window._rsIcon = icon;
   }

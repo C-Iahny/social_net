@@ -71,7 +71,7 @@
 }
 
 [data-theme="dark"] #header {
-    box-shadow: 0 1px 0 var(--border), 0 4px 32px rgba(212,175,55,.05), 0 4px 24px rgba(0,0,0,.6);
+    box-shadow: 0 1px 0 var(--border), 0 4px 32px rgba(var(--accent-rgb),.05), 0 4px 24px rgba(0,0,0,.6);
 }
 
 .zoot-nav-inner {
@@ -99,18 +99,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 10px var(--accent-glow, rgba(139,69,19,.25));
+    box-shadow: 0 2px 10px var(--accent-glow);
     transition: transform .2s, box-shadow .2s;
 }
 .zoot-brand:hover .zoot-brand-icon {
     transform: scale(1.07);
-    box-shadow: 0 4px 20px var(--accent-glow, rgba(139,69,19,.35));
+    box-shadow: 0 4px 20px var(--accent-glow);
 }
 [data-theme="dark"] .zoot-brand-icon {
-    box-shadow: 0 0 14px rgba(212,175,55,.38), 0 2px 10px rgba(0,0,0,.4);
+    box-shadow: 0 0 14px rgba(var(--accent-rgb),.38), 0 2px 10px rgba(0,0,0,.4);
 }
 [data-theme="dark"] .zoot-brand:hover .zoot-brand-icon {
-    box-shadow: 0 0 24px rgba(212,175,55,.6), 0 4px 16px rgba(0,0,0,.4);
+    box-shadow: 0 0 24px rgba(var(--accent-rgb),.6), 0 4px 16px rgba(0,0,0,.4);
 }
 .zoot-brand-icon svg { display: block; }
 .zoot-brand-text {
@@ -163,10 +163,10 @@
     color: var(--accent);
 }
 [data-theme="dark"] .zoot-nav-link:hover {
-    text-shadow: 0 0 8px rgba(212,175,55,.45);
+    text-shadow: 0 0 8px rgba(var(--accent-rgb),.45);
 }
 [data-theme="dark"] .zoot-nav-link.active {
-    text-shadow: 0 0 10px rgba(212,175,55,.55);
+    text-shadow: 0 0 10px rgba(var(--accent-rgb),.55);
 }
 .zoot-nav-link.active::after {
     content: '';
@@ -180,7 +180,7 @@
     border-radius: 3px 3px 0 0;
 }
 [data-theme="dark"] .zoot-nav-link.active::after {
-    box-shadow: 0 0 8px var(--accent), 0 0 16px rgba(212,175,55,.28);
+    box-shadow: 0 0 8px var(--accent), 0 0 16px rgba(var(--accent-rgb),.28);
 }
 
 /* ── Centre nav "Plus" dropdown ── */
@@ -331,7 +331,7 @@
     position: absolute;
     top: 4px; right: 4px;
     min-width: 17px; height: 17px;
-    background: var(--accent3, #e0245e);
+    background: var(--accent3);
     color: #fff;
     border-radius: 9px;
     font-size: .65rem;
@@ -447,7 +447,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(212,175,55,.18) 0%, rgba(205,127,50,.14) 100%);
+    background: linear-gradient(135deg, rgba(var(--accent-rgb),.18) 0%, rgba(var(--accent-rgb),.14) 100%);
     border-radius: 12px 12px 0 0;
 }
 .zoot-profile-header {
@@ -1185,7 +1185,7 @@
                         <button type="submit" style="
                             border:1.5px solid {% if CURRENT_LANG == lang_code %}var(--accent){% else %}var(--border){% endif %};
                             border-radius:20px;padding:.28rem .65rem;
-                            background:{% if CURRENT_LANG == lang_code %}var(--accent-glow,rgba(139,69,19,.1)){% else %}var(--btn-bg){% endif %};
+                            background:{% if CURRENT_LANG == lang_code %}var(--accent-glow){% else %}var(--btn-bg){% endif %};
                             font-size:.82rem;font-weight:700;cursor:pointer;
                             color:{% if CURRENT_LANG == lang_code %}var(--accent){% else %}var(--text){% endif %};
                             display:inline-flex;align-items:center;gap:.3rem;font-family:inherit;

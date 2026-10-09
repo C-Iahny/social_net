@@ -15,7 +15,7 @@
 
 /* ── Hero ── */
 .td-hero {
-    background: linear-gradient(135deg, var(--accent-dark, #6b3410) 0%, var(--accent, #8B4513) 55%, var(--accent2, #A0522D) 100%);
+    background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 55%, var(--accent2) 100%);
     border-radius: 20px;
     padding: 1.6rem 1.5rem 1.4rem;
     margin-bottom: 1.25rem;
@@ -91,7 +91,7 @@
 }
 .td-card:hover {
     border-color: var(--accent);
-    box-shadow: 0 4px 20px var(--accent-glow, rgba(139,69,19,.15));
+    box-shadow: 0 4px 20px var(--accent-glow);
     transform: translateY(-1px);
     text-decoration: none;
     color: var(--text);
@@ -132,7 +132,7 @@
     display: inline-flex;
     align-items: center;
     gap: .2rem;
-    background: var(--accent-glow, rgba(139,69,19,.12));
+    background: var(--accent-glow);
     color: var(--accent);
     font-size: .72rem;
     font-weight: 700;
@@ -140,7 +140,7 @@
     border-radius: 50px;
     white-space: nowrap;
 }
-[data-theme="dark"] .td-count { background: rgba(212,175,55,.18); }
+[data-theme="dark"] .td-count { background: rgba(var(--accent-rgb),.18); }
 
 /* Barre de progression relative */
 .td-bar-wrap {

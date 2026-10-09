@@ -21,21 +21,21 @@ class HeroSettings(models.Model):
         verbose_name="Texte d'accroche",
         help_text="Une phrase, affichée sous le titre. Les phrases courtes rendent mieux.",
     )
-    # Défauts alignés sur la charte acajou/ambre du reste de l'interface
-    # (--accent #8B4513 dans static/css/zoot-base.css). Les anciens défauts
-    # étaient l'indigo/violet #1877f2 → #6c2bd9, hérités d'une charte
-    # abandonnée : le hero jurait avec la page qui l'entoure.
+    # Défauts alignés sur la palette lagon du reste de l'interface
+    # (--accent-dark / --accent2 dans static/css/zoot-base.css). Les chartes
+    # précédentes (indigo/violet, puis acajou) sont reprises par les
+    # migrations 0008 et 0009 pour que le hero suive la page qui l'entoure.
     gradient_from = models.CharField(
         max_length=20,
-        default="#5c2a08",
+        default="#115e59",
         verbose_name="Couleur de début (dégradé)",
-        help_text="Code couleur hexadécimal, ex. #5c2a08",
+        help_text="Code couleur hexadécimal, ex. #115e59",
     )
     gradient_to   = models.CharField(
         max_length=20,
-        default="#A0522D",
+        default="#0891b2",
         verbose_name="Couleur de fin (dégradé)",
-        help_text="Code couleur hexadécimal, ex. #A0522D",
+        help_text="Code couleur hexadécimal, ex. #0891b2",
     )
     background_image = models.ImageField(
         upload_to="hero_bg/",

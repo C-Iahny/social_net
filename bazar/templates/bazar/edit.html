@@ -28,8 +28,8 @@
     gap: .5rem;
 }
 .bazar-section .form-control {
-    background: var(--bg-secondary, #fdf8f3) !important;
-    background-color: var(--bg-secondary, #fdf8f3) !important;
+    background: var(--bg-secondary) !important;
+    background-color: var(--bg-secondary) !important;
     border: 1.5px solid var(--border);
     border-radius: 9px;
     color: var(--text-primary);
@@ -41,8 +41,8 @@
     background: rgba(255,255,255,.06) !important;
     background-color: rgba(255,255,255,.06) !important;
 }
-.bazar-section .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(139,69,19,.12); outline: none; }
-[data-theme="dark"] .bazar-section .form-control:focus { box-shadow: 0 0 0 3px rgba(212,175,55,.12); }
+.bazar-section .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.12); outline: none; }
+[data-theme="dark"] .bazar-section .form-control:focus { box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.12); }
 .bazar-section label { font-size: .82rem; font-weight: 700; color: var(--text-secondary,var(--text-muted)); margin-bottom: .35rem; display: block; }
 .bazar-section .form-text { font-size: .75rem; color: var(--text-muted); margin-top: .3rem; }
 .errorlist { list-style:none; padding:0; margin:.25rem 0 0; font-size:.8rem; color:#dc3545; }
@@ -84,8 +84,8 @@
     cursor: pointer;
     transition: border-color .2s, background .2s;
 }
-.bazar-upload-zone:hover { border-color: var(--accent); background: rgba(139,69,19,.04); }
-[data-theme="dark"] .bazar-upload-zone:hover { background: rgba(212,175,55,.05); }
+.bazar-upload-zone:hover { border-color: var(--accent); background: rgba(var(--accent-rgb),.04); }
+[data-theme="dark"] .bazar-upload-zone:hover { background: rgba(var(--accent-rgb),.05); }
 .bazar-file-input { display: none !important; }
 .bazar-preview-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:.5rem;margin-top:.85rem; }
 .bazar-preview-item { position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:var(--border); }
