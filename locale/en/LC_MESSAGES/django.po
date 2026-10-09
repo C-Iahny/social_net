@@ -3087,3 +3087,9 @@ msgstr "View profile photo"
 
 msgid "Voir le profil"
 msgstr "View profile"
+
+msgid "Confidentialité"
+msgstr "Privacy"
+
+msgid "Vazimba sur Google Play"
+msgstr "Vazimba on Google Play"

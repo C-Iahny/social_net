@@ -3232,3 +3232,9 @@ msgstr "Hijery ny sarin'ny mombamomba"
 
 msgid "Voir le profil"
 msgstr "Hijery ny mombamomba"
+
+msgid "Confidentialité"
+msgstr "Tsiambaratelo"
+
+msgid "Vazimba sur Google Play"
+msgstr "Vazimba ao amin'ny Google Play"
