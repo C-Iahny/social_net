@@ -1179,7 +1179,7 @@ body { background: var(--bg); }
     border-radius: 10px;
     margin: 0 .4rem;
 }
-.lsb-story-item:hover { background: var(--bg-hover, rgba(99,102,241,.07)); }
+.lsb-story-item:hover { background: var(--bg-hover); }
 
 /* Mini avatar ring */
 .lsb-story-ring {
@@ -1716,7 +1716,7 @@ body { background: var(--bg); }
                     <span class="material-icons">edit_note</span><span class="btn-label"> {% trans "Write" %}</span>
                 </button>
                 <a class="create-box-action" href="{% url 'post:kabary-create' %}"
-                   style="background:linear-gradient(135deg,var(--accent-glow,rgba(99,102,241,.1)),transparent);
+                   style="background:linear-gradient(135deg,var(--accent-glow),transparent);
                            border:1px solid var(--accent);color:var(--accent);">
                     <span class="material-icons">record_voice_over</span><span class="btn-label"> Kabary</span>
                 </a>

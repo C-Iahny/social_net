@@ -16,10 +16,10 @@
 
     <!-- ── PWA ── -->
     <link rel="manifest" href="/manifest.json">
-    <!-- theme-color était #6366f1 (indigo), hérité d'une ancienne charte :
-         la barre système du téléphone jurait avec l'interface acajou. -->
-    <meta name="theme-color" content="#8B4513" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#16100c" media="(prefers-color-scheme: dark)">
+    <!-- Barre système accordée au fond de l'interface (palette lagon, voir
+         static/css/zoot-base.css) : blanc en clair, ardoise en sombre. -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -81,7 +81,7 @@
                avant qu'on change data-theme et déclenche le recalcul CSS.  */
             var overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483647;'
-                + 'background:' + (next === 'dark' ? '#0d0603' : '#f8f4ef') + ';'
+                + 'background:' + (next === 'dark' ? '#0f1419' : '#f4f6f8') + ';'
                 + 'pointer-events:none;transition:none;';
             document.body.appendChild(overlay);
 
@@ -838,7 +838,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <!-- Vidéo courte -->
                 <a class="cs-item" href="{% url 'post:addPost' %}?video=1" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#8B4513,#C1440E);">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
                         <span style="color:#fff;" class="material-icons">videocam</span>
                     </div>
                     <span class="cs-label">{% trans "Vidéo" %}</span>

@@ -16,19 +16,19 @@
     "allowMixedContent": false,
     "captureInput": true,
     "webContentsDebuggingEnabled": false,
-    "backgroundColor": "#16100c",
+    "backgroundColor": "#f4f6f8",
     "overrideUserAgent": "VazimbaApp/1.1 Android"
   },
   "ios": {
     "contentInset": "automatic",
-    "backgroundColor": "#16100c",
+    "backgroundColor": "#f4f6f8",
     "overrideUserAgent": "VazimbaApp/1.1 iOS"
   },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 1500,
       "launchAutoHide": true,
-      "backgroundColor": "#16100c",
+      "backgroundColor": "#f4f6f8",
       "showSpinner": false,
       "androidSplashResourceName": "splash",
       "androidScaleType": "CENTER_CROP"

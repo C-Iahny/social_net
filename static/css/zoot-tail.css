@@ -73,7 +73,7 @@
 .pwa-install-actions { display: flex; gap: .5rem; }
 .pwa-btn-install {
     flex: 1; padding: .45rem .7rem; border-radius: 10px;
-    background: linear-gradient(135deg, #6366f1, #a855f7);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff; border: none; cursor: pointer; font-weight: 700; font-size: .82rem;
 }
 .pwa-btn-later {

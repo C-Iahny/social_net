@@ -69,7 +69,7 @@
     background: #2a0e03;
     overflow: hidden;
 }
-[data-theme="dark"] .chat-sidebar { background: #0d0603; }
+[data-theme="dark"] .chat-sidebar { background: var(--bg); }
 
 .chat-sidebar-header {
     padding: 14px 14px 12px;
@@ -121,13 +121,13 @@
     position: relative;
 }
 .friend-container:hover { background: rgba(255,255,255,.05); }
-.friend-container.active { background: rgba(212,175,55,.1); }
+.friend-container.active { background: rgba(var(--accent-rgb),.1); }
 .friend-container.active::before {
     content: '';
     position: absolute;
     left: 0; top: 8px; bottom: 8px;
     width: 3px;
-    background: #D4AF37;
+    background: var(--accent);
     border-radius: 0 3px 3px 0;
 }
 
@@ -139,7 +139,7 @@
     display: block;
     border: 2px solid rgba(255,255,255,.08);
 }
-.friend-container.active .friend-avatar-wrap img { border-color: rgba(212,175,55,.4); }
+.friend-container.active .friend-avatar-wrap img { border-color: rgba(var(--accent-rgb),.4); }
 .friend-online-dot {
     position: absolute;
     bottom: 1px; right: 1px;
@@ -150,7 +150,7 @@
     display: none;
 }
 .friend-container.online .friend-online-dot { display: block; }
-[data-theme="dark"] .friend-online-dot { border-color: #0d0603; }
+[data-theme="dark"] .friend-online-dot { border-color: var(--bg); }
 
 .friend-info { flex: 1; min-width: 0; }
 .friend-top {
@@ -180,13 +180,13 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.friend-container.active .friend-name { color: #D4AF37; }
-.friend-container.active .friend-time { color: rgba(212,175,55,.55); }
-.friend-container.active .friend-preview { color: rgba(212,175,55,.5); }
+.friend-container.active .friend-name { color: var(--accent); }
+.friend-container.active .friend-time { color: rgba(var(--accent-rgb),.55); }
+.friend-container.active .friend-preview { color: rgba(var(--accent-rgb),.5); }
 
 /* Unread badge */
 .friend-unread {
-    background: #8B4513;
+    background: var(--accent);
     color: #fff;
     font-size: .68rem;
     font-weight: 700;
@@ -416,7 +416,7 @@
     margin: 10px 0 4px;
 }
 .date-sep-inner {
-    background: rgba(139,69,19,.1);
+    background: rgba(var(--accent-rgb),.1);
     color: #7a4a25;
     font-size: .7rem;
     font-weight: 600;
@@ -425,8 +425,8 @@
     letter-spacing: .02em;
 }
 [data-theme="dark"] .date-sep-inner {
-    background: rgba(212,175,55,.1);
-    color: rgba(212,175,55,.6);
+    background: rgba(var(--accent-rgb),.1);
+    color: rgba(var(--accent-rgb),.6);
 }
 
 /* Bubble */
@@ -446,7 +446,7 @@
 .message-container:not(.own-msg) .msg-p {
     background: #fff;
     color: #1a0a02;
-    border: 1px solid #e8d5c2;
+    border: 1px solid var(--border);
     border-radius: 4px 18px 18px 18px;
     box-shadow: 0 1px 2px rgba(0,0,0,.05);
 }
@@ -458,7 +458,7 @@
 
 /* Sent bubble */
 .message-container.own-msg .msg-p {
-    background: #8B4513;
+    background: var(--accent);
     color: #fff;
     border-radius: 18px 4px 18px 18px;
 }
@@ -611,10 +611,10 @@
 .reaction-chip:active { transform: scale(.82); }
 /* Réaction choisie par soi-même : légère lueur pour la distinguer */
 .reaction-chip.mine {
-    filter: drop-shadow(0 0 4px rgba(139,69,19,.55));
+    filter: drop-shadow(0 0 4px rgba(var(--accent-rgb),.55));
 }
 [data-theme="dark"] .reaction-chip.mine {
-    filter: drop-shadow(0 0 4px rgba(212,175,55,.65));
+    filter: drop-shadow(0 0 4px rgba(var(--accent-rgb),.65));
 }
 .rc-count {
     font-size: .60rem;
@@ -1017,16 +1017,16 @@
     display: flex;
     align-items: center;
     gap: .4rem;
-    /* Brun sienna très sombre — cohérent avec --accent:#8B4513 (light) / D4AF37 (dark) */
-    background: rgba(42,14,3,.86);
+    /* Ardoise profonde — même famille que le fond sombre de la palette lagon */
+    background: rgba(30,41,59,.88);
     border: none;
     border-radius: 50px;
     padding: .38rem .38rem .38rem 1.05rem;
     transition: box-shadow .18s;
 }
 [data-theme="dark"] .chat-input-inner {
-    /* Mode nuit : teinte chaude profonde accordée à l'or */
-    background: rgba(25,8,2,.88);
+    /* Mode nuit : à peine plus clair que la carte, pour rester lisible */
+    background: rgba(39,48,57,.92);
 }
 .chat-input-inner:hover,
 .chat-input-inner:focus-within {
@@ -1156,13 +1156,13 @@
     animation: callRingPulse 1.8s ease-in-out infinite;
 }
 @keyframes callRingPulse {
-    0%,100% { box-shadow: 0 0 0 0 rgba(212,175,55,.22); }
-    50%      { box-shadow: 0 0 0 18px rgba(212,175,55,.0); }
+    0%,100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb),.22); }
+    50%      { box-shadow: 0 0 0 18px rgba(var(--accent-rgb),.0); }
 }
 .call-avatar-circle {
     width: 78px; height: 78px;
     border-radius: 50%;
-    background: #8B4513;
+    background: var(--accent);
     display: flex; align-items: center; justify-content: center;
     font-size: 30px; font-weight: 800; color: #fff;
     overflow: hidden;
@@ -1207,7 +1207,7 @@
     position: absolute; inset: 0;
     width: 100%; height: 100%;
     object-fit: cover;
-    background: #0d0603;
+    background: var(--bg);
 }
 /* Mode audio : pas de vidéo distante, on affiche un avatar centré */
 .call-audio-bg {
@@ -1349,11 +1349,11 @@
     .chat-sidebar .friend-preview { color: var(--text-muted); }
     .chat-sidebar .friend-time    { color: var(--text-muted); }
     .chat-sidebar .friend-container:hover  { background: var(--btn-bg, rgba(0,0,0,.05)); }
-    .chat-sidebar .friend-container.active { background: rgba(139,69,19,.1); }
-    .chat-sidebar .friend-container.active .friend-name    { color: #8B4513; }
-    .chat-sidebar .friend-container.active .friend-preview { color: rgba(139,69,19,.65); }
-    .chat-sidebar .friend-container.active .friend-time    { color: rgba(139,69,19,.5); }
-    [data-theme="dark"] .chat-sidebar .friend-container.active .friend-name { color: #D4AF37; }
+    .chat-sidebar .friend-container.active { background: rgba(var(--accent-rgb),.1); }
+    .chat-sidebar .friend-container.active .friend-name    { color: var(--accent); }
+    .chat-sidebar .friend-container.active .friend-preview { color: rgba(var(--accent-rgb),.65); }
+    .chat-sidebar .friend-container.active .friend-time    { color: rgba(var(--accent-rgb),.5); }
+    [data-theme="dark"] .chat-sidebar .friend-container.active .friend-name { color: var(--accent); }
     /* Séparateur entre items */
     .chat-sidebar .friend-container { border-bottom: 1px solid var(--border, rgba(0,0,0,.06)); }
 

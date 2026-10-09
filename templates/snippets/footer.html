@@ -18,7 +18,7 @@
     bottom: -60px; left: 50%;
     transform: translateX(-50%);
     width: 500px; height: 120px;
-    background: radial-gradient(ellipse, rgba(212,175,55,.07) 0%, transparent 70%);
+    background: radial-gradient(ellipse, rgba(var(--accent-rgb),.07) 0%, transparent 70%);
     pointer-events: none;
 }
 
@@ -45,7 +45,7 @@
     display: flex; align-items: center; justify-content: center;
 }
 [data-theme="dark"] .footer-brand-icon {
-    box-shadow: 0 0 12px rgba(212,175,55,.28);
+    box-shadow: 0 0 12px rgba(var(--accent-rgb),.28);
 }
 .footer-brand-icon svg { display: block; }
 .footer-brand-name {
@@ -99,7 +99,7 @@
     transform: translate(-50%, -50%);
     width: 80px; height: 1px;
     background: var(--accent);
-    box-shadow: 0 0 8px var(--accent), 0 0 16px rgba(212,175,55,.28);
+    box-shadow: 0 0 8px var(--accent), 0 0 16px rgba(var(--accent-rgb),.28);
 }
 
 /* Copyright */
@@ -125,7 +125,7 @@
 [data-theme="dark"] .footer-tagline {
     color: var(--neon-cyan);
     opacity: .45;
-    text-shadow: 0 0 6px rgba(212,175,55,.28);
+    text-shadow: 0 0 6px rgba(var(--accent-rgb),.28);
 }
 
 @media (max-width: 768px) {
@@ -150,11 +150,11 @@
             <!-- Fallback texte si l'image ne charge pas -->
             <span id="footer-logo-txt"
                   style="display:none;font-size:1.8rem;font-weight:900;letter-spacing:3px;
-                         color:#8B4513;font-family:inherit;">VAZIMBA</span>
+                         color:var(--accent);font-family:inherit;">VAZIMBA</span>
         </a>
         <style>
         [data-theme="dark"] .footer-brand img { filter: brightness(0) invert(1); }
-        [data-theme="dark"] #footer-logo-txt { color: #D4AF37; }
+        [data-theme="dark"] #footer-logo-txt { color: var(--accent); }
         </style>
 
         <!-- Tagline -->

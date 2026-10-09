@@ -393,36 +393,36 @@
 
 /* ── Dark mode — boutons accentués ── */
 [data-theme="dark"] .filter-tab.active {
-    background: rgba(212,175,55,0.14);
+    background: rgba(var(--accent-rgb),0.14);
     color: var(--accent);
-    box-shadow: 0 0 0 1px rgba(212,175,55,0.28);
+    box-shadow: 0 0 0 1px rgba(var(--accent-rgb),0.28);
 }
 [data-theme="dark"] .filter-tab.active:hover {
-    background: rgba(212,175,55,0.22);
+    background: rgba(var(--accent-rgb),0.22);
     color: var(--accent);
 }
 [data-theme="dark"] .cta-primary {
-    background: rgba(212,175,55,0.10);
+    background: rgba(var(--accent-rgb),0.10);
     color: var(--accent) !important;
-    border: 1px solid rgba(212,175,55,0.26);
+    border: 1px solid rgba(var(--accent-rgb),0.26);
 }
 [data-theme="dark"] .cta-primary:hover {
-    background: rgba(212,175,55,0.18);
+    background: rgba(var(--accent-rgb),0.18);
     color: var(--accent) !important;
 }
 [data-theme="dark"] .explore-cta-primary {
-    background: rgba(212,175,55,0.10);
+    background: rgba(var(--accent-rgb),0.10);
     color: var(--accent) !important;
-    border: 1px solid rgba(212,175,55,0.26);
+    border: 1px solid rgba(var(--accent-rgb),0.26);
 }
 [data-theme="dark"] .explore-cta-primary:hover {
-    background: rgba(212,175,55,0.18);
+    background: rgba(var(--accent-rgb),0.18);
     color: var(--accent) !important;
 }
 [data-theme="dark"] .country-tag:hover {
-    background: rgba(212,175,55,0.10);
+    background: rgba(var(--accent-rgb),0.10);
     color: var(--accent);
-    border-color: rgba(212,175,55,0.28);
+    border-color: rgba(var(--accent-rgb),0.28);
 }
 </style>
 
@@ -436,12 +436,12 @@
   }
   /* ── Forcer la palette acajou (surpasse les valeurs DB) ── */
   .explore-hero {
-    background: linear-gradient(135deg, #5c2a08 0%, #8B4513 55%, #A0522D 100%) !important;
+    background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent) 55%, var(--accent2) 100%) !important;
   }
   {% if hero.background_image %}
   .explore-hero {
     background:
-      linear-gradient(135deg, rgba(92,42,8,.72) 0%, rgba(139,69,19,.58) 100%),
+      linear-gradient(135deg, rgba(17,94,89,.72) 0%, rgba(var(--accent-rgb),.58) 100%),
       url('{{ hero.background_image.url }}') center / cover no-repeat !important;
   }
   {% endif %}

@@ -46,8 +46,8 @@
 
 /* Inputs uniformes */
 .bazar-section .form-control {
-    background: var(--bg-secondary, #fdf8f3) !important;
-    background-color: var(--bg-secondary, #fdf8f3) !important;
+    background: var(--bg-secondary) !important;
+    background-color: var(--bg-secondary) !important;
     border: 1.5px solid var(--border);
     border-radius: 9px;
     color: var(--text-primary);
@@ -61,11 +61,11 @@
 }
 .bazar-section .form-control:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(139,69,19,.12);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.12);
     outline: none;
 }
 [data-theme="dark"] .bazar-section .form-control:focus {
-    box-shadow: 0 0 0 3px rgba(212,175,55,.12);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.12);
 }
 .bazar-section label {
     font-size: .82rem;
@@ -99,11 +99,11 @@
 }
 .bazar-upload-zone:hover, .bazar-upload-zone.drag-over {
     border-color: var(--accent);
-    background: rgba(139,69,19,.04);
+    background: rgba(var(--accent-rgb),.04);
 }
 [data-theme="dark"] .bazar-upload-zone:hover,
 [data-theme="dark"] .bazar-upload-zone.drag-over {
-    background: rgba(212,175,55,.05);
+    background: rgba(var(--accent-rgb),.05);
 }
 .bazar-upload-icon { font-size: 2.2rem; margin-bottom: .5rem; }
 .bazar-upload-text { font-size: .9rem; font-weight: 600; margin-bottom: .2rem; }

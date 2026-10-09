@@ -34,8 +34,8 @@
     })();
   </script>
 
-  <meta name="theme-color" content="#8B4513" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#16100c" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0f1419" media="(prefers-color-scheme: dark)">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,47 +43,47 @@
 
   <style>
     /* ════════════════════════════════════════════════════════════════════
-       Direction éditoriale — jetons alignés sur snippets/base_css.html
-       (#8B4513, #e8d5c2, #2d1a0e, Space Grotesk), avec Instrument Serif
+       Direction éditoriale — jetons alignés sur static/css/zoot-base.css
+       (palette lagon : #0f766e, #e3e8ed, #111827, Space Grotesk), avec Instrument Serif
        en italique pour les accents typographiques.
        ════════════════════════════════════════════════════════════════════ */
     :root {
-      --lp-bg:        #faf7f2;
+      --lp-bg:        #f6f8fa;
       --lp-card:      #ffffff;
-      --lp-band:      #f2e9df;
-      --lp-ink:       #1c1208;
-      --lp-body:      #55402f;
-      --lp-muted:     #6b4c35;
-      --lp-subtle:    #9a7060;
-      --lp-line:      #e8d5c2;
-      --lp-line-firm: #e0cdb8;
-      --lp-accent:    #8B4513;
-      --lp-accent-d:  #6b3410;
-      --lp-on-accent: #faf7f2;
-      --lp-dark:      #1c1208;
-      --lp-on-dark:   #f7efe4;
-      --lp-on-dark-m: #c9b6a2;
-      --lp-dark-kick: #d9a066;
-      --lp-shadow:    0 1px 4px rgba(80,40,10,.07), 0 6px 24px rgba(80,40,10,.09);
+      --lp-band:      #eaeef1;
+      --lp-ink:       #111827;
+      --lp-body:      #3f4a58;
+      --lp-muted:     #5b6675;
+      --lp-subtle:    #8b95a3;
+      --lp-line:      #e3e8ed;
+      --lp-line-firm: #d3dae1;
+      --lp-accent:    #0f766e;
+      --lp-accent-d:  #115e59;
+      --lp-on-accent: #ffffff;
+      --lp-dark:      #0f1419;
+      --lp-on-dark:   #e6ebf0;
+      --lp-on-dark-m: #9aa7b4;
+      --lp-dark-kick: #2dd4bf;
+      --lp-shadow:    0 1px 3px rgba(17,24,39,.05), 0 6px 24px rgba(17,24,39,.07);
       --lp-font:      'Space Grotesk', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
       --lp-serif:     'Instrument Serif', Georgia, serif;
       --lp-maxw:      1296px;
     }
 
     [data-theme="dark"] {
-      --lp-bg:        #16100c;
-      --lp-card:      #1f1510;
-      --lp-band:      #1a120d;
-      --lp-ink:       #f0e6da;
-      --lp-body:      #bfa287;
-      --lp-muted:     #b0906f;
-      --lp-subtle:    #8a6f57;
-      --lp-line:      #3a2a1e;
-      --lp-line-firm: #4a3826;
-      --lp-accent:    #D4AF37;
-      --lp-accent-d:  #b8941f;
-      --lp-on-accent: #16100c;
-      --lp-dark:      #0f0b07;
+      --lp-bg:        #0f1419;
+      --lp-card:      #171d24;
+      --lp-band:      #141a20;
+      --lp-ink:       #e6ebf0;
+      --lp-body:      #b4bfca;
+      --lp-muted:     #9aa7b4;
+      --lp-subtle:    #6c7986;
+      --lp-line:      #263039;
+      --lp-line-firm: #33404b;
+      --lp-accent:    #2dd4bf;
+      --lp-accent-d:  #14b8a6;
+      --lp-on-accent: #0f1419;
+      --lp-dark:      #0a0e12;
       --lp-shadow:    0 2px 12px rgba(0,0,0,.45);
     }
 
@@ -361,7 +361,7 @@
     le dégradé configurable en admin revient en calque semi-transparent.
   {% endcomment %}
   <section class="hero {% if hero.background_image %}has-bg{% endif %}"
-           {% if hero.background_image %}style="background-image: linear-gradient(135deg, {{ hero.gradient_from|default:'#5c2a08' }}d9, {{ hero.gradient_to|default:'#A0522D' }}d9), url('{{ hero.background_image.url }}');"{% endif %}>
+           {% if hero.background_image %}style="background-image: linear-gradient(135deg, {{ hero.gradient_from|default:'#115e59' }}d9, {{ hero.gradient_to|default:'#0891b2' }}d9), url('{{ hero.background_image.url }}');"{% endif %}>
     <div class="wrap hero-stack">
       <h1>{{ hero.title|hero_accent }}</h1>
       <p class="hero-sub">{{ hero.subtitle }}</p>

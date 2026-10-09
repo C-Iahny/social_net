@@ -478,13 +478,13 @@
 }
 .gd-tab .material-icons { font-size: 1rem; }
 .gd-tab:hover { color: var(--accent); }
-.gd-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-glow, rgba(99,102,241,.07)); }
+.gd-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-glow); }
 
 /* ── Épinglées ── */
 .gd-pinned-section { margin-bottom: 1.4rem; }
 .gd-pinned-card {
     position: relative;
-    background: linear-gradient(135deg, var(--accent-glow, rgba(99,102,241,.07)) 0%, var(--bg-card) 100%);
+    background: linear-gradient(135deg, var(--accent-glow) 0%, var(--bg-card) 100%);
     border: 1.5px solid var(--accent);
     border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: .75rem;
 }
@@ -654,7 +654,7 @@
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 18px; height: 18px; padding: 0 5px;
     border-radius: 9px;
-    background: var(--accent-glow, rgba(99,102,241,.15));
+    background: var(--accent-glow);
     color: var(--accent);
     font-size: .7rem; font-weight: 800;
     line-height: 1;
@@ -707,7 +707,7 @@
     color: #fff;
 }
 .gd-member-card-role.mod {
-    background: var(--accent-glow, rgba(99,102,241,.12));
+    background: var(--accent-glow);
     color: var(--accent2);
     border: 1px solid rgba(99,102,241,.25);
 }
@@ -909,7 +909,7 @@
                     <div style="margin-top:.2rem;display:flex;gap:.3rem;">
                         {% if m.role == 'member' %}
                         <form method="post" action="{% url 'group:promote-member' group.slug m.user.id %}" style="display:inline;">
-                            {% csrf_token %}<button type="submit" style="font-size:.65rem;padding:.1rem .35rem;border-radius:5px;background:var(--accent-glow,rgba(99,102,241,.12));border:1px solid var(--accent);color:var(--accent);cursor:pointer;font-family:inherit;" title="{% trans 'Promote to moderator' %}">+mod</button>
+                            {% csrf_token %}<button type="submit" style="font-size:.65rem;padding:.1rem .35rem;border-radius:5px;background:var(--accent-glow);border:1px solid var(--accent);color:var(--accent);cursor:pointer;font-family:inherit;" title="{% trans 'Promote to moderator' %}">+mod</button>
                         </form>
                         {% elif m.role == 'moderator' %}
                         <form method="post" action="{% url 'group:demote-member' group.slug m.user.id %}" style="display:inline;">
@@ -1185,7 +1185,7 @@
     <div id="gd-tab-dina" class="gd-tab-pane" style="display:none;">
 
         <!-- En-tête Dina -->
-        <div style="background:linear-gradient(135deg,var(--accent-glow,rgba(99,102,241,.08)),var(--bg-card));
+        <div style="background:linear-gradient(135deg,var(--accent-glow),var(--bg-card));
                     border:1.5px solid var(--accent);border-radius:18px;
                     padding:1.4rem 1.5rem 1.5rem;margin-bottom:1.5rem;
                     box-shadow:0 2px 16px rgba(0,0,0,.06);">
