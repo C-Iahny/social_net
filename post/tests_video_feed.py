@@ -81,3 +81,31 @@ class VideoFeedTests(TestCase):
 
     def test_requires_login(self):
         self.assertEqual(Client().get(reverse('post:video-feed')).status_code, 302)
+
+
+class VideoFeedCommentsSheetTests(TestCase):
+    """Les commentaires s'ouvrent dans une feuille sur la vidéo, sans quitter le fil."""
+
+    def setUp(self):
+        cache.clear()
+        self.me, self.other = mk('moi2'), mk('autre2')
+        self.client = Client()
+        self.client.force_login(self.me)
+        self.post = video_post(self.other, 'clip')
+
+    def tearDown(self):
+        for m in PostMedia.objects.all():
+            m.file.delete(save=False)
+
+    def test_page_has_comments_sheet_wired_to_endpoints(self):
+        html = self.client.get(reverse('post:video-feed')).content.decode()
+        self.assertIn('id="vf-cs"', html)
+        self.assertIn(reverse('post:new-comments', args=[0]), html)
+        self.assertIn(reverse('post:add-comment', args=[0]), html)
+
+    def test_comment_roundtrip_from_the_sheet(self):
+        r = self.client.post(reverse('post:add-comment', args=[self.post.pk]), {'body': 'Tsara be !'},
+                             HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertTrue(r.json()['ok'])
+        data = self.client.get(reverse('post:new-comments', args=[self.post.pk]) + '?since=0').json()
+        self.assertEqual([c['body'] for c in data['comments']], ['Tsara be !'])

@@ -58,7 +58,7 @@
                 '<span class="pp-item-txt"><small>' + esc(p.badge) + ' · ' + esc(p.seller) + '</small><b>' + esc(p.title) +
                 '</b><span>' + esc(p.price) + '</span></span></button>';
         });
-        list.innerHTML = html || '<p class="pp-empty">{% trans "Aucun produit trouvé." %}</p>';
+        {% trans "Aucun produit trouvé." as ppNone %}list.innerHTML = html || '<p class="pp-empty">{{ ppNone|escapejs }}</p>';
     };
     window.ppOpen = function () {
         ppRender('');
