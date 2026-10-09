@@ -3220,3 +3220,15 @@ msgstr "Mbola tsy misy hevitra. Aoka ianao no voalohany!"
 
 msgid "Supprimer ce commentaire ?"
 msgstr "Hofafana ve ity hevitra ity?"
+
+msgid "Déjà vue"
+msgstr "Efa hita"
+
+msgid "Revoir la story"
+msgstr "Hijery indray ny story"
+
+msgid "Voir la photo de profil"
+msgstr "Hijery ny sarin'ny mombamomba"
+
+msgid "Voir le profil"
+msgstr "Hijery ny mombamomba"

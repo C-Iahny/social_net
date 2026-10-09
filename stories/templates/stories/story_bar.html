@@ -1103,6 +1103,10 @@ function loadStories(){
     .then(function(data){
       _sv.groups = data.groups || [];
       renderBar();
+      /* Le widget latéral du fil et la page profil écoutent cet événement */
+      try {
+        document.dispatchEvent(new CustomEvent('zootStoriesLoaded', { detail: { groups: _sv.groups } }));
+      } catch (e) {}
     }).catch(function(e){ console.error('[Stories] fetch error',e); });
 }
 
@@ -1127,10 +1131,67 @@ function renderBar(){
         '</div>' +
       '</div>' +
       '<div class="zs-label">'+_esc((g.username||'').substring(0,9))+'</div>';
-    item.onclick = (function(i){ return function(){ zvOpen(i, 0); }; })(gi);
+    item.onclick = (function(i){ return function(){ zsTapGroup(i); }; })(gi);
     cont.appendChild(item);
   });
 }
+
+/* ── Ouverture d'un groupe (barre, widget du fil, anneau du profil) ────────
+   Story non vue : on l'ouvre directement. Tout déjà vu : on propose de
+   revoir la story, de voir la photo de profil ou d'aller sur le profil. */
+window.openStoryViewer = function(gi, si){ zvOpen(gi||0, si||0); };
+
+window.zsTapGroup = function(gi){
+  var g = _sv.groups[gi];
+  if(!g || !g.stories || !g.stories.length) return;
+  if(g.has_unseen){ zvOpen(gi, 0); return; }
+  _zsGroupSheet(gi, g);
+};
+
+function _zsGroupSheet(gi, g){
+  var old = document.getElementById('_zs-gsheet'); if(old) old.remove();
+  var sh = document.createElement('div');
+  sh.id = '_zs-gsheet';
+  sh.style.cssText = 'position:fixed;inset:0;z-index:30000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
+  var btnS = 'width:100%;padding:.8rem;border:none;border-radius:14px;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.55rem;font-family:var(--font-primary,sans-serif);margin-bottom:.65rem;';
+  {% trans "Déjà vue" as gsSeen %}{% trans "Revoir la story" as gsReplay %}{% trans "Voir la photo de profil" as gsPhoto %}{% trans "Voir le profil" as gsProfile %}{% trans "Annuler" as gsCancel %}
+  sh.innerHTML =
+    '<div style="background:var(--bg-card);color:var(--text);border-radius:22px 22px 0 0;width:min(100vw,480px);padding:1.1rem 1.4rem calc(1.6rem + env(safe-area-inset-bottom,0px));animation:zsSlideUp .22s ease;">' +
+      '<div style="display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;">' +
+        '<img src="'+_esc(g.avatar||'')+'" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--border);">' +
+        '<div><b style="display:block;">'+_esc(g.username||'')+'</b><small style="color:var(--text-muted);">{{ gsSeen|escapejs }} · '+g.stories.length+' story</small></div>' +
+      '</div>' +
+      '<button type="button" style="'+btnS+'background:var(--accent);color:var(--on-accent,#fff);" data-act="replay"><span class="material-icons">replay</span> {{ gsReplay|escapejs }}</button>' +
+      '<button type="button" style="'+btnS+'background:var(--btn-bg);color:var(--text);" data-act="photo"><span class="material-icons">account_circle</span> {{ gsPhoto|escapejs }}</button>' +
+      '<button type="button" style="'+btnS+'background:var(--btn-bg);color:var(--text);" data-act="profile"><span class="material-icons">person</span> {{ gsProfile|escapejs }}</button>' +
+      '<button type="button" style="width:100%;padding:.55rem;background:none;color:var(--text-muted);border:none;font-size:.88rem;cursor:pointer;font-family:var(--font-primary,sans-serif);" data-act="cancel">{{ gsCancel|escapejs }}</button>' +
+    '</div>';
+  sh.addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('[data-act]') : null;
+    var act = b ? b.getAttribute('data-act') : (e.target===sh ? 'cancel' : null);
+    if(!act) return;
+    sh.remove();
+    if(act==='replay'){ zvOpen(gi, 0); }
+    else if(act==='photo'){
+      if(window.openGalleryLightbox) window.openGalleryLightbox([g.avatar], 0);
+      else window.open(g.avatar, '_blank');
+    }
+    else if(act==='profile'){ window.location.href = '{% url "account:view" user_id=0 %}'.replace('/0/', '/'+g.user_id+'/'); }
+  });
+  document.body.appendChild(sh);
+}
+
+/* Bouton retour Android : fermer la feuille ou le viewer avant de quitter la page */
+(function(){
+  var prev = window._androidBackHandler;
+  window._androidBackHandler = function(){
+    var sh = document.getElementById('_zs-gsheet') || document.getElementById('_zs-mysheet');
+    if(sh){ sh.remove(); return true; }
+    var v = document.getElementById('zsv');
+    if(v && v.classList.contains('open')){ zvClose(); return true; }
+    return typeof prev === 'function' ? prev() : false;
+  };
+})();
 
 function _updateMineRing(myGroup){
   var ring = document.getElementById('zs-mine-ring');
@@ -1946,6 +2007,8 @@ if(document.readyState==='loading'){
    et window.zootStories.openViewer(storyId, userId).
    On traduit vers les fonctions internes zsMyTap() / zvOpen(gi, si). */
 window.zootStories = {
+  /* Tableau vivant : la page profil y insère son groupe si besoin */
+  groups: function(){ return _sv.groups; },
   openCreator: function(){
     if(typeof zsMyTap === 'function') zsMyTap();
   },

@@ -2445,6 +2445,7 @@ document.addEventListener('zootStoriesLoaded', function(e) {
             is_me: IS_SELF,
             stories: stories,
             all_seen: stories.every(function(s){ return s.seen; }),
+            has_unseen: stories.some(function(s){ return !s.seen; }),
         };
     }
 
@@ -2480,22 +2481,30 @@ document.addEventListener('zootStoriesLoaded', function(e) {
 
         /* Avec stories : cliquer sur le wrapper (zone ring) ouvre les stories.
            La photo elle-même a stopPropagation → ouvre le lightbox. */
+        /* Anneau coloré (story non vue) : ouvre la story. Anneau gris (tout vu) :
+           feuille « revoir la story / voir la photo de profil ». */
         wrap.onclick = function() {
-            openProfileStoryAt(0);
+            var gi = _profileGroupIndex();
+            if (gi < 0) return;
+            if (window.zsTapGroup) window.zsTapGroup(gi);
+            else window.openStoryViewer(gi, 0);
         };
     }
 
-    window.openProfileStoryAt = function(idx) {
-        if (!window._profileStoryGroup) return;
-        if (window.zootStories) {
-            var groups = window.zootStories.groups();
-            var found = -1;
-            for (var i = 0; i < groups.length; i++) {
-                if (groups[i].user_id === PROFILE_USER_ID) { found = i; break; }
-            }
-            if (found === -1) { groups.unshift(window._profileStoryGroup); found = 0; }
-            window.openStoryViewer(found);
+    /* Index du groupe de ce profil dans la barre des stories (inséré au besoin) */
+    function _profileGroupIndex() {
+        if (!window._profileStoryGroup || !window.zootStories || !window.zootStories.groups) return -1;
+        var groups = window.zootStories.groups();
+        for (var i = 0; i < groups.length; i++) {
+            if (groups[i].user_id === PROFILE_USER_ID) return i;
         }
+        groups.unshift(window._profileStoryGroup);
+        return 0;
+    }
+
+    window.openProfileStoryAt = function(idx) {
+        var gi = _profileGroupIndex();
+        if (gi >= 0 && window.openStoryViewer) window.openStoryViewer(gi, idx || 0);
     };
     window.openProfileStory = function() { openProfileStoryAt(0); };
 

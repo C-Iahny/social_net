@@ -3075,3 +3075,15 @@ msgstr "No comments yet. Be the first!"
 
 msgid "Supprimer ce commentaire ?"
 msgstr "Delete this comment?"
+
+msgid "Déjà vue"
+msgstr "Already seen"
+
+msgid "Revoir la story"
+msgstr "Watch the story again"
+
+msgid "Voir la photo de profil"
+msgstr "View profile photo"
+
+msgid "Voir le profil"
+msgstr "View profile"
