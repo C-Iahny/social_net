@@ -159,6 +159,36 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
 }
 .vf-empty .material-icons { font-size: 64px; opacity: .6; }
 .vf-empty a { color: #fff; background: #8B4513; padding: 10px 18px; border-radius: 999px; text-decoration: none; font-weight: 600; }
+/* Feuille de commentaires : on reste sur la vidéo */
+.vf-cs {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 9500;
+    height: min(68vh, 560px); max-height: calc(100% - 56px);
+    background: var(--bg-card, #fff); color: var(--text, #1f1711);
+    border-radius: 18px 18px 0 0; box-shadow: 0 -8px 30px rgba(0,0,0,.35);
+    display: flex; flex-direction: column;
+    transform: translateY(105%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
+}
+.vf-cs.open { transform: none; }
+@media (min-width: 768px) { .vf-cs { left: 50%; right: auto; width: 480px; transform: translate(-50%, 105%); } .vf-cs.open { transform: translate(-50%, 0); } }
+.vf-cs-head { display: flex; align-items: center; justify-content: center; position: relative; padding: 12px 48px 10px; font-weight: 700; font-size: .95rem; border-bottom: 1px solid var(--border, rgba(0,0,0,.08)); }
+.vf-cs-head::before { content: ''; position: absolute; top: 5px; left: 50%; width: 38px; height: 4px; margin-left: -19px; border-radius: 2px; background: var(--border, rgba(0,0,0,.18)); }
+.vf-cs-close { position: absolute; right: 8px; top: 6px; border: 0; background: none; color: var(--text-muted, #7a6a5e); cursor: pointer; padding: 6px; display: flex; }
+.vf-cs-list { flex: 1; overflow-y: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 12px; overscroll-behavior: contain; }
+.vf-cs-empty { text-align: center; color: var(--text-muted, #7a6a5e); font-size: .9rem; padding: 28px 10px; }
+.vf-cs-item { display: flex; gap: 10px; align-items: flex-start; }
+.vf-cs-item img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex: none; }
+.vf-cs-body { flex: 1; min-width: 0; }
+.vf-cs-body b { font-size: .82rem; display: block; }
+.vf-cs-body p { margin: 2px 0 0; font-size: .92rem; line-height: 1.35; word-break: break-word; white-space: pre-line; }
+.vf-cs-meta { font-size: .72rem; color: var(--text-muted, #7a6a5e); margin-top: 3px; display: flex; gap: 10px; }
+.vf-cs-meta button { border: 0; background: none; color: inherit; padding: 0; cursor: pointer; font-size: inherit; }
+.vf-cs-form { display: flex; gap: 8px; align-items: flex-end; padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border, rgba(0,0,0,.08)); background: var(--bg-card, #fff); }
+.vf-cs-form img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex: none; }
+.vf-cs-form textarea { flex: 1; resize: none; max-height: 110px; padding: 9px 12px; border-radius: 18px; border: 1.5px solid var(--border, rgba(0,0,0,.12)); background: var(--bg, #f8f4ef); color: var(--text, #1f1711); font: inherit; font-size: .95rem; line-height: 1.3; }
+.vf-cs-send { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--accent, #8B4513); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; flex: none; }
+.vf-cs-send:disabled { opacity: .5; }
+.vf-cs-backdrop { position: fixed; inset: 0; z-index: 9400; background: rgba(0,0,0,.25); display: none; }
+.vf-cs-backdrop.open { display: block; }
 .vf-loading { height: 80px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,.6); font-size: .85rem; scroll-snap-align: none; }
 
 /* Bouton Créer (desktop : pas de barre basse) */
@@ -197,6 +227,23 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
     </div>
     <a class="vf-create" href="{% url 'post:addPost' %}"><span class="material-icons">videocam</span> {% trans "Publier une vidéo" %}</a>
 </div>
+
+<div class="vf-cs-backdrop" id="vf-cs-backdrop"></div>
+<section class="vf-cs" id="vf-cs" aria-label="{% trans 'Commentaires' %}"
+         data-list-url="{% url 'post:new-comments' 0 %}"
+         data-add-url="{% url 'post:add-comment' 0 %}"
+         data-del-url="{% url 'post:delete-comment' 0 %}">
+    <div class="vf-cs-head">
+        <span id="vf-cs-title">{% trans "Commentaires" %}</span>
+        <button type="button" class="vf-cs-close" id="vf-cs-close" aria-label="{% trans 'Fermer' %}"><span class="material-icons">close</span></button>
+    </div>
+    <div class="vf-cs-list" id="vf-cs-list"></div>
+    <form class="vf-cs-form" id="vf-cs-form" autocomplete="off">
+        <img src="{{ request.user.profile_image.url }}" alt="">
+        <textarea id="vf-cs-input" rows="1" maxlength="1000" placeholder="{% trans 'Écrire un commentaire…' %}"></textarea>
+        <button type="submit" class="vf-cs-send" id="vf-cs-send" aria-label="{% trans 'Envoyer' %}"><span class="material-icons">send</span></button>
+    </form>
+</section>
 
 <template id="vf-slide-tpl">
     <section class="vf-slide">
@@ -238,11 +285,16 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
     var slides = [];
     var current = null;
     var L = {
-        sound:  "{% trans 'Toucher pour activer le son' %}",
-        more:   "{% trans 'Voir plus' %}",
-        less:   "{% trans 'Voir moins' %}",
-        copied: "{% trans 'Lien copié' %}",
-        unavailable: "{% trans 'Indisponible' %}"
+        {% trans 'Toucher pour activer le son' as L_sound %}sound: "{{ L_sound|escapejs }}",
+        {% trans 'Voir plus' as L_more %}more: "{{ L_more|escapejs }}",
+        {% trans 'Voir moins' as L_less %}less: "{{ L_less|escapejs }}",
+        {% trans 'Lien copié' as L_copied %}copied: "{{ L_copied|escapejs }}",
+        {% trans 'Indisponible' as L_unavailable %}unavailable: "{{ L_unavailable|escapejs }}",
+        {% trans 'Chargement…' as L_loading %}loading: "{{ L_loading|escapejs }}",
+        {% trans 'Commentaires' as L_comments %}comments: "{{ L_comments|escapejs }}",
+        {% trans 'Aucun commentaire. Soyez le premier !' as L_noComment %}noComment: "{{ L_noComment|escapejs }}",
+        {% trans 'Supprimer' as L_del %}del: "{{ L_del|escapejs }}",
+        {% trans 'Supprimer ce commentaire ?' as L_confirmDel %}confirmDel: "{{ L_confirmDel|escapejs }}"
     };
 
     function csrf() { var m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : ''; }
@@ -284,6 +336,7 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
         var comment = node.querySelector('.vf-comment');
         comment.href = item.url + '#comments';
         comment.querySelector('.vf-n').textContent = fmt(item.comments);
+        comment.onclick = function (e) { e.preventDefault(); e.stopPropagation(); openComments(node, item); };
         node.querySelector('.vf-share').onclick = function (e) { e.stopPropagation(); share(item); };
         if (item.product) {
             var pr = item.product, pe = node.querySelector('.vf-product');
@@ -354,6 +407,115 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
         if (navigator.clipboard) navigator.clipboard.writeText(url).then(function () { toast(L.copied); });
     }
 
+    /* ── Commentaires sans quitter la vidéo ──────────────────────── */
+    var cs = document.getElementById('vf-cs');
+    var csBackdrop = document.getElementById('vf-cs-backdrop');
+    var csList = document.getElementById('vf-cs-list');
+    var csInput = document.getElementById('vf-cs-input');
+    var csSend = document.getElementById('vf-cs-send');
+    var csPost = null;       // {node, item}
+    var csSeen = {};
+    var ME = {{ request.user.id }};
+
+    function esc(str) { return String(str == null ? '' : str).replace(/[&<>"']/g, function (c) {
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+    function csUrl(kind, id) { return cs.dataset[kind + 'Url'].replace('/0/', '/' + id + '/'); }
+
+    function bumpCount(delta) {
+        if (!csPost) return;
+        csPost.item.comments = Math.max(0, (csPost.item.comments || 0) + delta);
+        csPost.node.querySelector('.vf-comment .vf-n').textContent = fmt(csPost.item.comments);
+        document.getElementById('vf-cs-title').textContent = L.comments + (csPost.item.comments ? ' · ' + csPost.item.comments : '');
+    }
+
+    function commentEl(c) {
+        var canDel = c.can_delete || c.author_id === ME || (csPost && csPost.item.author.id === ME);
+        var div = document.createElement('div');
+        div.className = 'vf-cs-item'; div.dataset.id = c.id;
+        div.innerHTML = '<a href="/account/' + c.author_id + '/view/"><img src="' + esc(c.avatar) + '" alt=""></a>' +
+            '<div class="vf-cs-body"><b>' + esc(c.author) + '</b><p>' + esc(c.body) + '</p>' +
+            '<div class="vf-cs-meta"><span>' + esc(c.created_at) + '</span>' +
+            (canDel ? '<button type="button" class="vf-cs-del">' + L.del + '</button>' : '') + '</div></div>';
+        var del = div.querySelector('.vf-cs-del');
+        if (del) del.onclick = function () {
+            if (!confirm(L.confirmDel)) return;
+            fetch(csUrl('del', c.id), { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (r) { if (r.ok) { div.remove(); bumpCount(-1); if (!csList.children.length) showEmpty(); } });
+        };
+        return div;
+    }
+    function showEmpty() { csList.innerHTML = '<div class="vf-cs-empty">' + L.noComment + '</div>'; }
+    function appendComment(c, scroll) {
+        if (csSeen[c.id]) return;
+        csSeen[c.id] = true;
+        var empty = csList.querySelector('.vf-cs-empty'); if (empty) empty.remove();
+        csList.appendChild(commentEl(c));
+        if (scroll) csList.scrollTop = csList.scrollHeight;
+    }
+
+    function openComments(node, item) {
+        csPost = { node: node, item: item };
+        csSeen = {};
+        csList.innerHTML = '<div class="vf-cs-empty">' + L.loading + '</div>';
+        bumpCount(0);
+        cs.classList.add('open'); csBackdrop.classList.add('open');
+        if (window.notificationSocketSend) window.notificationSocketSend({ command: 'subscribe_post', post_id: item.id });
+        fetch(csUrl('list', item.id) + '?since=0', { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!csPost || csPost.item.id !== item.id) return;
+                csList.innerHTML = '';
+                var list = d.comments || [];
+                if (!list.length) { showEmpty(); return; }
+                list.forEach(function (c) { appendComment(c, false); });
+                csList.scrollTop = csList.scrollHeight;
+            })
+            .catch(function () { showEmpty(); });
+    }
+    function closeComments() {
+        if (!cs.classList.contains('open')) return;
+        cs.classList.remove('open'); csBackdrop.classList.remove('open');
+        if (csPost && window.notificationSocketSend) window.notificationSocketSend({ command: 'unsubscribe_post', post_id: csPost.item.id });
+        csPost = null; csInput.blur();
+    }
+    document.getElementById('vf-cs-close').onclick = closeComments;
+    csBackdrop.onclick = closeComments;
+    csInput.addEventListener('input', function () { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 110) + 'px'; });
+    csInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('vf-cs-form').requestSubmit(); }
+        e.stopPropagation();   // ne pas déclencher les raccourcis du fil (espace, j/k, m)
+    });
+    document.getElementById('vf-cs-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var body = csInput.value.trim();
+        if (!body || !csPost) return;
+        var item = csPost.item;
+        csSend.disabled = true;
+        var fd = new FormData(); fd.append('body', body);
+        fetch(csUrl('add', item.id), { method: 'POST', body: fd, credentials: 'same-origin', headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json(); })
+            .then(function (c) {
+                csSend.disabled = false;
+                if (!c || !c.ok) { toast(c && c.error ? c.error : 'Erreur'); return; }
+                csInput.value = ''; csInput.style.height = 'auto';
+                if (csPost && csPost.item.id === item.id) { appendComment(c, true); bumpCount(1); }
+            })
+            .catch(function () { csSend.disabled = false; });
+    });
+    /* Commentaires des autres en direct (WebSocket, général msg type 8) */
+    window._onLivePostComment = function (data) {
+        if (!csPost || !data || parseInt(data.post_id, 10) !== csPost.item.id) return;
+        var c = data.comment || {};
+        if (c.parent_id) return;
+        var atBottom = csList.scrollHeight - csList.scrollTop - csList.clientHeight < 80;
+        if (!csSeen[c.id]) { appendComment(c, atBottom); bumpCount(1); }
+    };
+    var _prevConnected = window._notifWsConnected;
+    window._notifWsConnected = function () {
+        if (typeof _prevConnected === 'function') _prevConnected();
+        if (csPost && window.notificationSocketSend) window.notificationSocketSend({ command: 'subscribe_post', post_id: csPost.item.id });
+    };
+
     function toast(msg) {
         var t = document.createElement('div');
         t.className = 'vf-tap-sound'; t.style.top = 'auto'; t.style.bottom = '90px';
@@ -384,6 +546,7 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
         if (current === slide) return;
         if (current) { current.querySelector('video').pause(); current.classList.remove('vf-user-paused'); }
         current = slide;
+        if (csPost && csPost.node !== slide) closeComments();   // on a changé de vidéo
         var idx = slides.indexOf(slide);
         /* Seule la vidéo visible et la suivante sont téléchargées (3G/4G) */
         slides.forEach(function (s, i) {
@@ -420,7 +583,10 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
 
     /* ── Clavier (desktop) ──────────────────────────────────────────── */
     document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { closeComments(); return; }
+        if (cs.classList.contains('open')) return;   // la feuille de commentaires a le clavier
         if (!current) return;
+        if (e.key === 'c') { var cur = slides.indexOf(current); if (cur > -1) current.querySelector('.vf-comment').click(); return; }
         var idx = slides.indexOf(current);
         if (e.key === 'ArrowDown' || e.key === 'j') { if (slides[idx + 1]) slides[idx + 1].scrollIntoView({behavior: 'smooth'}); e.preventDefault(); }
         if (e.key === 'ArrowUp' || e.key === 'k')   { if (slides[idx - 1]) slides[idx - 1].scrollIntoView({behavior: 'smooth'}); e.preventDefault(); }

@@ -3211,3 +3211,12 @@ msgstr "Avoahy aloha ny doka ao amin'ny Bazar na sakafo ao amin'ny Resto, dia am
 
 msgid "Mon fil"
 msgstr "Ny fampitako"
+
+msgid "Écrire un commentaire…"
+msgstr "Soraty ny hevitrao…"
+
+msgid "Aucun commentaire. Soyez le premier !"
+msgstr "Mbola tsy misy hevitra. Aoka ianao no voalohany!"
+
+msgid "Supprimer ce commentaire ?"
+msgstr "Hofafana ve ity hevitra ity?"

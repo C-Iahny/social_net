@@ -3066,3 +3066,12 @@ msgstr "First publish a listing on the Bazar or a dish on Resto, then link it to
 
 msgid "Mon fil"
 msgstr "My feed"
+
+msgid "Écrire un commentaire…"
+msgstr "Write a comment…"
+
+msgid "Aucun commentaire. Soyez le premier !"
+msgstr "No comments yet. Be the first!"
+
+msgid "Supprimer ce commentaire ?"
+msgstr "Delete this comment?"

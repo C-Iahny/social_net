@@ -1035,8 +1035,9 @@ window.zscOpenShop = function(){
   var list = document.getElementById('zsc-shop-list');
   function render(){
     if(!_shopProducts || !_shopProducts.length){
-      list.innerHTML = '<p class="zsc-shop-empty">{% trans "Publiez d'abord une annonce sur le Bazar ou un plat sur Resto, puis liez-le à votre story." %} ' +
-        '<a href="{% url 'bazar:create' %}">{% trans "Vendre au Bazar" %}</a> · <a href="{% url 'resto:vendor_dashboard' %}">{% trans "Ouvrir un Resto" %}</a></p>';
+      {% trans "Publiez d'abord une annonce sur le Bazar ou un plat sur Resto, puis liez-le à votre story." as shopEmpty %}{% trans "Vendre au Bazar" as shopBazar %}{% trans "Ouvrir un Resto" as shopResto %}
+      list.innerHTML = '<p class="zsc-shop-empty">{{ shopEmpty|escapejs }} ' +
+        '<a href="{% url 'bazar:create' %}">{{ shopBazar|escapejs }}</a> · <a href="{% url 'resto:vendor_dashboard' %}">{{ shopResto|escapejs }}</a></p>';
       return;
     }
     list.innerHTML = _shopProducts.map(function(p, i){
