@@ -3093,3 +3093,39 @@ msgstr "Privacy"
 
 msgid "Vazimba sur Google Play"
 msgstr "Vazimba on Google Play"
+
+msgid "Le réseau social malgache."
+msgstr "The Malagasy social network."
+
+msgid "Téléchargez l'application Android"
+msgstr "Download the Android app"
+
+msgid "Disponible sur Google Play"
+msgstr "Get it on Google Play"
+
+msgid "Navigation"
+msgstr "Navigation"
+
+msgid "Découvrir"
+msgstr "Discover"
+
+msgid "Explorer"
+msgstr "Explore"
+
+msgid "Groupes"
+msgstr "Groups"
+
+msgid "Appli Android"
+msgstr "Android app"
+
+msgid "Contact"
+msgstr "Contact"
+
+msgid "Mentions légales"
+msgstr "Legal"
+
+msgid "Fil d'actualité"
+msgstr "News feed"
+
+msgid "Tourisme"
+msgstr "Tourism"

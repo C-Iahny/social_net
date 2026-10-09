@@ -1,81 +1,173 @@
 {% load static %}
 {% load i18n %}
+{% get_current_language as FOOTER_LANG %}
 <style>
-/* ── Pied de page compact (même esprit que celui d'eVazo) : une seule ligne,
-   marque · contact · légal · copyright, séparés par des points médians. ── */
+/* ── Pied de page, sur le modèle d'eVazo : quatre colonnes (marque, navigation,
+   découvrir, contact + langues) puis une ligne copyright / légal. ── */
 #pied {
-    background: var(--bg-card);
+    background: var(--bg);
     border-top: 1px solid var(--border);
-    padding: 14px 24px;
-    text-align: center;
+    padding: 3rem 1.5rem 1.5rem;
     font-family: var(--font-primary, 'Space Grotesk', sans-serif);
-}
-.vz-footer-inner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: .82rem;
-    color: var(--text-subtle);
-}
-.vz-footer-brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--text);
-    font-weight: 600;
-    letter-spacing: .02em;
-    text-decoration: none !important;
-}
-.vz-footer-brand img {
-    height: 20px; width: 20px;
-    border-radius: 4px;
-    object-fit: contain;
-}
-[data-theme="dark"] .vz-footer-brand img { filter: brightness(0) invert(1); }
-.vz-footer-sep { color: var(--border); }
-.vz-footer-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
     color: var(--text-muted);
-    text-decoration: none;
-    font-size: .8rem;
-    transition: color .2s;
 }
-.vz-footer-link .material-icons { font-size: .95rem; }
-.vz-footer-link:hover { color: var(--accent); text-decoration: underline; }
-.vz-footer-copy { color: var(--text-subtle); }
+.vz-footer-grid {
+    max-width: 1140px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 2rem 2.5rem;
+}
+.vz-footer-brand img.vz-footer-logo {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    object-fit: contain;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 4px;
+    display: block;
+}
+[data-theme="dark"] .vz-footer-brand img.vz-footer-logo { filter: brightness(0) invert(1); background: transparent; }
+.vz-footer-tagline {
+    font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-size: 1.35rem;
+    color: var(--text);
+    margin: 1rem 0 1.4rem;
+    line-height: 1.3;
+}
+.vz-footer-dl {
+    font-size: .92rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: .6rem;
+}
+.vz-footer-badge img {
+    height: 56px; width: auto; display: block;
+    margin-left: -6px;             /* le badge officiel a une marge interne */
+    transition: transform .15s;
+}
+.vz-footer-badge:hover img { transform: translateY(-1px); }
 
+.vz-footer-h {
+    font-size: .74rem;
+    font-weight: 700;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+}
+.vz-footer-h + .vz-footer-h { margin-top: 1.6rem; }
+.vz-footer-col a, .vz-footer-col button.vz-footer-lang {
+    display: flex; align-items: center; gap: .4rem;
+    color: var(--text);
+    font-size: .98rem;
+    text-decoration: none;
+    padding: .32rem 0;
+    background: none; border: 0; cursor: pointer; font-family: inherit;
+    transition: color .15s;
+}
+.vz-footer-col a:hover, .vz-footer-col button.vz-footer-lang:hover { color: var(--accent); text-decoration: none; }
+.vz-footer-col a .material-icons { font-size: 1.05rem; color: var(--text-muted); }
+.vz-footer-langs { display: flex; flex-wrap: wrap; align-items: center; gap: .15rem .55rem; }
+.vz-footer-langs form { margin: 0; }
+.vz-footer-langs .vz-footer-lang.active { color: var(--accent); font-weight: 700; }
+.vz-footer-langs .vz-footer-sep { color: var(--text-subtle); }
+
+.vz-footer-bottom {
+    max-width: 1140px;
+    margin: 2.5rem auto 0;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem;
+    font-size: .9rem;
+    color: var(--text-muted);
+}
+.vz-footer-legal { display: flex; align-items: center; gap: .6rem; }
+.vz-footer-legal a { color: var(--text-muted); text-decoration: none; }
+.vz-footer-legal a:hover { color: var(--accent); text-decoration: underline; }
+
+@media (max-width: 991px) {
+    .vz-footer-grid { grid-template-columns: 1fr 1fr; }
+    .vz-footer-brand { grid-column: 1 / -1; }
+}
+@media (max-width: 575px) {
+    #pied { padding: 2.2rem 1rem 1.2rem; }
+    .vz-footer-grid { grid-template-columns: 1fr; gap: 1.6rem; }
+    .vz-footer-bottom { flex-direction: column; align-items: flex-start; }
+}
 @media (max-width: 767px) {
     /* La barre de navigation mobile fixe ne doit pas recouvrir le pied de page */
-    #pied { padding-bottom: calc(14px + 68px + env(safe-area-inset-bottom, 0px)); }
+    #pied { padding-bottom: calc(1.2rem + 68px + env(safe-area-inset-bottom, 0px)); }
 }
 </style>
 
 <footer id="pied" class="mt-5">
-    <div class="vz-footer-inner">
-        <a href="/" class="vz-footer-brand">
-            <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="" onerror="this.style.display='none'"> Vazimba
-        </a>
-        <span class="vz-footer-sep">·</span>
-        <a href="mailto:contact@vazimba.io" class="vz-footer-link">
-            <span class="material-icons" aria-hidden="true">mail</span>contact@vazimba.io
-        </a>
-        <span class="vz-footer-sep">·</span>
-        <a href="{% url 'legal:cgu' %}" class="vz-footer-link">
-            <span class="material-icons" aria-hidden="true">description</span>CGU
-        </a>
-        <span class="vz-footer-sep">·</span>
-        <a href="{% url 'legal:confidentialite' %}" class="vz-footer-link">
-            <span class="material-icons" aria-hidden="true">shield</span>{% trans "Confidentialité" %}
-        </a>
-        <span class="vz-footer-sep">·</span>
-        <a href="https://play.google.com/store/apps/details?id=com.vazimba.io" class="vz-footer-link" target="_blank" rel="noopener" title="{% trans 'Vazimba sur Google Play' %}">
-            <span class="material-icons" aria-hidden="true">android</span>Google Play
-        </a>
-        <span class="vz-footer-sep">·</span>
-        <span class="vz-footer-copy">© {% now "Y" %} Vazimba</span>
+    <div class="vz-footer-grid">
+
+        <!-- Marque -->
+        <div class="vz-footer-col vz-footer-brand">
+            <a href="/" aria-label="Vazimba">
+                <img class="vz-footer-logo" src="{% static 'logo/vazimba_v2_icon.png' %}" alt="Vazimba" onerror="this.style.display='none'">
+            </a>
+            <p class="vz-footer-tagline">{% trans "Le réseau social malgache." %}</p>
+            <p class="vz-footer-dl">{% trans "Téléchargez l'application Android" %}</p>
+            <a class="vz-footer-badge" href="https://play.google.com/store/apps/details?id=com.vazimba.io" target="_blank" rel="noopener" title="{% trans 'Vazimba sur Google Play' %}">
+                <img src="{% static 'logo/google-play-badge-fr.png' %}" alt="{% trans 'Disponible sur Google Play' %}" loading="lazy">
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="vz-footer-col" aria-label="{% trans 'Navigation' %}">
+            <h4 class="vz-footer-h">{% trans "Navigation" %}</h4>
+            <a href="{% url 'post:post-view' %}">{% trans "Fil d'actualité" %}</a>
+            <a href="{% url 'post:video-feed' %}">{% trans "Vidéos" %}</a>
+            <a href="{% url 'stories:page' %}">{% trans "Stories" %}</a>
+            <a href="{% url 'bazar:index' %}">{% trans "Bazar" %}</a>
+            <a href="{% url 'resto:index' %}">{% trans "Resto" %}</a>
+            <a href="{% url 'tourisme:home' %}">{% trans "Tourisme" %}</a>
+        </nav>
+
+        <!-- Découvrir -->
+        <nav class="vz-footer-col" aria-label="{% trans 'Découvrir' %}">
+            <h4 class="vz-footer-h">{% trans "Découvrir" %}</h4>
+            <a href="{% url 'post:index' %}">{% trans "Explorer" %}</a>
+            <a href="{% url 'post:tendances' %}">{% trans "Tendances" %}</a>
+            <a href="{% url 'group:list' %}">{% trans "Groupes" %}</a>
+            <a href="{% url 'bazar:create' %}">{% trans "Vendre au Bazar" %}</a>
+            <a href="{% url 'resto:vendor_dashboard' %}">{% trans "Ouvrir un Resto" %}</a>
+            <a href="https://play.google.com/store/apps/details?id=com.vazimba.io" target="_blank" rel="noopener">
+                <span class="material-icons" aria-hidden="true">android</span>{% trans "Appli Android" %}
+            </a>
+        </nav>
+
+        <!-- Contact + langues -->
+        <div class="vz-footer-col">
+            <h4 class="vz-footer-h">{% trans "Contact" %}</h4>
+            <a href="mailto:contact@vazimba.io">contact@vazimba.io</a>
+            <h4 class="vz-footer-h">{% trans "Langues" %}</h4>
+            <div class="vz-footer-langs">
+                {% for lang_code, lang_name in LANGUAGES %}
+                <form method="post" action="{% url 'set_language' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="language" value="{{ lang_code }}">
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <button type="submit" class="vz-footer-lang{% if FOOTER_LANG == lang_code %} active{% endif %}">
+                        {% if lang_code == 'mg' %}Malagasy{% elif lang_code == 'en' %}English{% else %}Français{% endif %}
+                    </button>
+                </form>
+                {% if not forloop.last %}<span class="vz-footer-sep">·</span>{% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="vz-footer-bottom">
+        <span>© {% now "Y" %} Vazimba</span>
+        <nav class="vz-footer-legal" aria-label="{% trans 'Mentions légales' %}">
+            <a href="{% url 'legal:cgu' %}">CGU</a>
+            <span>·</span>
+            <a href="{% url 'legal:confidentialite' %}">{% trans "Confidentialité" %}</a>
+        </nav>
     </div>
 </footer>
