@@ -451,7 +451,7 @@ def get_general_notifications(user, page_number):
 		p = Paginator(notifications, DEFAULT_NOTIFICATION_PAGE_SIZE)
 
 		payload = {}
-		if len(notifications) > 0:
+		if notifications.exists():
 			if int(page_number) <= p.num_pages:
 				s = LazyNotificationEncoder()
 				serialized_notifications = s.serialize(p.page(page_number).object_list)
@@ -603,11 +603,8 @@ def mark_notifications_read(user):
 	marks a notification as "read"
 	"""
 	if user.is_authenticated:
-		notifications = Notification.objects.filter(target=user)
-		if notifications:
-			for notification in notifications.all():
-				notification.read = True
-				notification.save()
+		# Un seul UPDATE au lieu d'un save() par notification
+		Notification.objects.filter(target=user, read=False).update(read=True)
 	return
 
 
@@ -629,7 +626,7 @@ def get_chat_notifications(user, page_number):
 		# sleep(1)  
 		logger.debug("PAGES: " + str(p.num_pages))
 		payload = {}
-		if len(notifications) > 0:
+		if notifications.exists():
 			if int(page_number) <= p.num_pages:
 				s = LazyNotificationEncoder()
 				serialized_notifications = s.serialize(p.page(page_number).object_list)

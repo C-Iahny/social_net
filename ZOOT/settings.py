@@ -303,7 +303,8 @@ if R2_ACCOUNT_ID and R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY:
     AWS_S3_REGION_NAME    = 'auto'
     AWS_DEFAULT_ACL       = 'public-read'
     AWS_S3_FILE_OVERWRITE = False
-    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    # Les noms de fichiers sont uniques (pas d'écrasement) : cache long côté navigateur/CDN
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'public, max-age=31536000, immutable'}
     AWS_QUERYSTRING_AUTH  = False   # URLs publiques sans signature
 
     # URL publique des médias servis par R2 (CDN ou r2.dev)

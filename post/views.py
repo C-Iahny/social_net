@@ -161,8 +161,9 @@ def Index(request):
     countries = Country.objects.select_related('continent').order_by('name')
 
     # ── Stats globales ────────────────────────────────────────────────────────
-    total_post_count = Post.objects.count()
-    total_user_count = User.objects.count()
+    from django.core.cache import cache
+    total_post_count = cache.get_or_set('explore:total_posts', Post.objects.count, 600)
+    total_user_count = cache.get_or_set('explore:total_users', User.objects.count, 600)
 
     hero = HeroSettings.get()          # singleton — crée l'instance si absente
 
@@ -334,21 +335,12 @@ def _feed_page(user, tab, page_number, friends):
 def _decorate_feed_posts(posts, user):
     """Commentaires, réactions, favoris et médias de chaque post, en requêtes groupées."""
     from django.db.models import Count
-    from .models import Comment as CommentModel, PostBookmark
+    from .models import PostBookmark
+    from .comments_utils import load_comments_grouped
     posts = list(posts)
     post_ids = [p.id for p in posts]
 
-    comments_all = list(CommentModel.objects.filter(post_id__in=post_ids)
-                        .select_related('author').order_by('created_at'))
-    top_by_post, replies_map = {}, {}
-    for c in comments_all:
-        if c.parent_id is None:
-            top_by_post.setdefault(c.post_id, []).append(c)
-        else:
-            replies_map.setdefault(c.parent_id, []).append(c)
-    for comments in top_by_post.values():
-        for c in comments:
-            c.reply_list = replies_map.get(c.id, [])
+    top_by_post, comment_totals = load_comments_grouped(post_ids)
 
     reactions_by_post = {}
     for row in (Reaction.objects.filter(post_id__in=post_ids)
@@ -362,7 +354,7 @@ def _decorate_feed_posts(posts, user):
     for post in posts:
         top = top_by_post.get(post.id, [])
         post.page_comments   = top
-        post.total_comments  = len(top) + sum(len(c.reply_list) for c in top)
+        post.total_comments  = comment_totals.get(post.id, 0)
         post.reaction_counts = reactions_by_post.get(post.id, {})
         post.user_reaction   = user_reaction_by_post.get(post.id)
         post.total_reactions = sum(post.reaction_counts.values())
@@ -1162,12 +1154,12 @@ def react_post(request):
 @login_required(login_url="login")
 def hashtag_view(request, tag):
     """Affiche les posts contenant un hashtag donné."""
-    from django.db.models import Q
+    from django.db.models import Q, Count
     tag_clean = tag.lstrip('#').lower()
     posts = visible_posts(
         Post.objects.filter(
             Q(body__icontains='#' + tag_clean) | Q(title__icontains='#' + tag_clean)
-        ).select_related('author', 'group').order_by('-id'),
+        ).select_related('author', 'group').annotate(n_comments=Count('comments')).order_by('-id'),
         request.user,
     )
 

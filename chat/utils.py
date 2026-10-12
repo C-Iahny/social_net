@@ -72,7 +72,7 @@ class LazyRoomChatMessageEncoder(Serializer):
         try:
             from collections import defaultdict
             grouped = defaultdict(list)
-            for r in obj.reactions.select_related('user').all():
+            for r in obj.reactions.all():   # préchargé par by_room()
                 grouped[r.emoji].append(r.user.username)
             if grouped:
                 dump_object['reactions'] = [

@@ -114,9 +114,7 @@ class FriendList(models.Model):
 		"""
 		Is this a friend?
 		"""
-		if friend in self.friends.all():
-			return True
-		return False
+		return self.friends.filter(pk=friend.pk).exists()
 
 
 
@@ -133,6 +131,9 @@ class FriendRequest(models.Model):
 	receiver 			= models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="receiver")
 
 	is_active			= models.BooleanField(blank=False, null=False, default=True, db_index=True)
+
+	class Meta:
+		indexes = [models.Index(fields=['receiver', 'is_active'], name='friendreq_receiver_active_idx')]
 
 	timestamp 			= models.DateTimeField(auto_now_add=True)
 

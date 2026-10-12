@@ -281,6 +281,9 @@ class Follow(models.Model):
     user_follower = models.ForeignKey(Account, on_delete=models.CASCADE,
                                       related_name='be_follwed')
 
+    class Meta:
+        indexes = [models.Index(fields=['user_follower', 'user'], name='follow_pair_idx')]
+
     def __str__(self):
         return f"{self.user_follower} follows {self.user}"
 

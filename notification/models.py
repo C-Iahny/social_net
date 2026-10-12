@@ -31,7 +31,10 @@ class Notification(models.Model):
 	content_object 				= GenericForeignKey()
 
 	class Meta:
-		indexes = [models.Index(fields=['target', '-timestamp'], name='notif_target_recent_idx')]
+		indexes = [
+			models.Index(fields=['target', '-timestamp'], name='notif_target_recent_idx'),
+			models.Index(fields=['target', 'read'], name='notif_target_read_idx'),
+		]
 
 	def __str__(self):
 		return self.verb

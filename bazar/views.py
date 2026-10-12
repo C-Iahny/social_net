@@ -48,6 +48,13 @@ def _heic_to_jpeg(upload_file):
         return upload_file
 
 
+def _prepare_image(upload_file):
+    """HEIC → JPEG puis redimensionnement/WebP : les photos d'annonce de 3 à
+    8 Mo étaient stockées et servies en taille d'origine dans la grille."""
+    from post.media_utils import compress_image
+    return compress_image(_heic_to_jpeg(upload_file))
+
+
 # ── Liste / Explore ─────────────────────────────────────────────────────────────
 
 def bazar_index(request):
@@ -249,7 +256,7 @@ def annonce_create(request):
             for i, img_file in enumerate(images[:limit]):
                 AnnonceImage.objects.create(
                     annonce=annonce,
-                    image=_heic_to_jpeg(img_file),
+                    image=_prepare_image(img_file),
                     is_primary=(i == 0),
                     order=i,
                 )
@@ -295,7 +302,7 @@ def annonce_edit(request, pk):
                     break
                 AnnonceImage.objects.create(
                     annonce=annonce,
-                    image=_heic_to_jpeg(img_file),
+                    image=_prepare_image(img_file),
                     is_primary=False,
                     order=current_count + i,
                 )

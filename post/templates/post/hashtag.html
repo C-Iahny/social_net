@@ -154,7 +154,7 @@ body { background: var(--bg); }
                     {{ post.total_likes }} réaction{{ post.total_likes|pluralize }}
                     &nbsp;·&nbsp;
                     <span class="material-icons">chat_bubble_outline</span>
-                    {{ post.comments.count }} commentaire{{ post.comments.count|pluralize }}
+                    {{ post.n_comments }} commentaire{{ post.n_comments|pluralize }}
                 </div>
                 <a href="{% url 'post:post-view' %}" style="padding:.5rem 1rem; color:var(--accent); font-size:.85rem; font-weight:700; text-decoration:none;">
                     {% trans "View" %}

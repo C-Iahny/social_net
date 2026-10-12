@@ -69,7 +69,7 @@ class Story(models.Model):
     link_label   = models.CharField(max_length=60, blank=True, default='', verbose_name='Texte du bouton')
 
     created_at   = models.DateTimeField(auto_now_add=True)
-    expires_at   = models.DateTimeField(blank=True, null=True)
+    expires_at   = models.DateTimeField(blank=True, null=True, db_index=True)   # filtré à chaque chargement
 
     class Meta:
         ordering = ['-created_at']

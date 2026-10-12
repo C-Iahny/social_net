@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.utils import timezone
 
 from stories.models import Story, StoryView, StoryReaction, StoryReply
@@ -165,11 +166,35 @@ def _download_audio_from_url(url):
     return file_obj, content_type
 
 
-def _story_to_dict(story, viewer):
-    """Sérialise une Story en dict JSON-compatible."""
+def _seen_story_ids(viewer, stories):
+    """Ids des stories déjà vues par `viewer`, en une seule requête."""
+    if not (viewer and viewer.is_authenticated):
+        return set()
+    ids = [s.id for s in stories]
+    if not ids:
+        return set()
+    return set(StoryView.objects.filter(viewer=viewer, story_id__in=ids)
+               .values_list('story_id', flat=True))
+
+
+def _with_view_counts(qs):
+    """Annote le nombre de vues pour éviter un COUNT par story."""
+    return qs.annotate(n_views=Count('views'))
+
+
+def _story_to_dict(story, viewer, seen_ids=None):
+    """Sérialise une Story en dict JSON-compatible.
+
+    `seen_ids` (ensemble pré-calculé par _seen_story_ids) et l'annotation
+    `n_views` évitent les deux requêtes par story que faisait l'ancienne
+    version : la barre des stories en coûtait 2 × N à chaque ouverture du fil.
+    """
     seen = False
     if viewer and viewer.is_authenticated:
-        seen = StoryView.objects.filter(story=story, viewer=viewer).exists()
+        if seen_ids is not None:
+            seen = story.id in seen_ids
+        else:
+            seen = StoryView.objects.filter(story=story, viewer=viewer).exists()
 
     try:
         avatar = story.user.profile_image.url
@@ -198,7 +223,7 @@ def _story_to_dict(story, viewer):
         'created_at':  story.created_at.isoformat(),
         'expires_at':  story.expires_at.isoformat(),
         'time_left':   story.time_left_seconds,
-        'view_count':  story.view_count,
+        'view_count':  getattr(story, 'n_views', None) if getattr(story, 'n_views', None) is not None else story.view_count,
         'seen':        seen,
         'is_mine':     (viewer and viewer.is_authenticated and story.user_id == viewer.id),
     }
@@ -325,6 +350,12 @@ def create_story(request):
         else:
             return JsonResponse({'error': 'Format de fichier non supporté.'}, status=400)
 
+    # Image : redimensionnée et convertie en WebP (comme les posts) ; une
+    # story de 8 Mo était servie telle quelle dans la barre du fil.
+    if media_file and media_type == 'image':
+        from post.media_utils import compress_image
+        media_file = compress_image(media_file)
+
     try:
         story = Story.objects.create(
             user        = request.user,
@@ -388,13 +419,15 @@ def get_feed_stories(request):
     viewer = request.user if request.user.is_authenticated else None
 
     # Stories actives de tous les utilisateurs
-    stories_qs = Story.objects.filter(
+    stories_qs = _with_view_counts(Story.objects.filter(
         expires_at__gt=now,
-    ).select_related('user').order_by('user', 'created_at')   # chronologique
+    ).select_related('user')).order_by('user', 'created_at')   # chronologique
+    stories_list = list(stories_qs)
+    seen_ids = _seen_story_ids(viewer, stories_list)
 
     # Grouper par utilisateur
     grouped = {}
-    for story in stories_qs:
+    for story in stories_list:
         try:
             uid = story.user_id
             if uid not in grouped:
@@ -410,7 +443,7 @@ def get_feed_stories(request):
                     'has_unseen': False,
                     'is_mine':    (viewer and uid == viewer.id),
                 }
-            s = _story_to_dict(story, viewer)
+            s = _story_to_dict(story, viewer, seen_ids)
             grouped[uid]['stories'].append(s)
             if not s['seen']:
                 grouped[uid]['has_unseen'] = True
@@ -437,8 +470,10 @@ def get_my_stories(request):
     stories_qs = Story.objects.filter(
         user=request.user, expires_at__gt=now
     ).select_related('user').order_by('-created_at')
+    stories_list = list(_with_view_counts(stories_qs))
+    seen_ids = _seen_story_ids(request.user, stories_list)
     return JsonResponse({
-        'stories': [_story_to_dict(s, request.user) for s in stories_qs]
+        'stories': [_story_to_dict(s, request.user, seen_ids) for s in stories_list]
     })
 
 
@@ -509,8 +544,10 @@ def get_profile_stories(request, user_id):
         user=profile_user, expires_at__gt=now
     ).select_related('user').order_by('-created_at')
     viewer = request.user if request.user.is_authenticated else None
+    stories_list = list(_with_view_counts(stories_qs))
+    seen_ids = _seen_story_ids(viewer, stories_list)
     return JsonResponse({
-        'stories': [_story_to_dict(s, viewer) for s in stories_qs]
+        'stories': [_story_to_dict(s, viewer, seen_ids) for s in stories_list]
     })
 
 

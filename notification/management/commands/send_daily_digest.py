@@ -50,6 +50,14 @@ class Command(BaseCommand):
 
         if dry_run:
             self.stdout.write(self.style.WARNING("[DRY-RUN] Aucune notification ne sera envoyée."))
+        else:
+            # Marqueur du jour (cache partagé Redis) : si deux planificateurs
+            # tournent (web + worker, ou plusieurs réplicas), un seul envoie.
+            from django.core.cache import cache
+            marker = 'digest:sent:' + timezone.now().strftime('%Y-%m-%d')
+            if not cache.add(marker, 1, 36 * 3600):
+                self.stdout.write("Digest déjà envoyé aujourd'hui — rien à faire.")
+                return
 
         # ── 1. Candidats : utilisateurs ayant au moins une PushSubscription
         #        et n'ayant pas visité depuis hours_inactive heures ──────────

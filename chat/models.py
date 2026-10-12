@@ -53,7 +53,13 @@ class PrivateChatRoom(models.Model):
 
 class RoomChatMessageManager(models.Manager):
 	def by_room(self, room):
-		qs = RoomChatMessage.objects.filter(room=room).order_by("-timestamp")
+		# Auteur, message cité et réactions chargés avec la page : l'encodeur
+		# faisait ~3 requêtes par message à chaque ouverture d'une conversation.
+		from django.db.models import Prefetch
+		qs = (RoomChatMessage.objects.filter(room=room)
+			.select_related('user', 'reply_to', 'reply_to__user')
+			.prefetch_related(Prefetch('reactions', queryset=MessageReaction.objects.select_related('user')))
+			.order_by("-timestamp"))
 		return qs
 
 class RoomChatMessage(models.Model):

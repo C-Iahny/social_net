@@ -153,12 +153,14 @@ def friends_list_view(request, *args, **kwargs):
 	friend_list, _ = FriendList.objects.get_or_create(user=this_user)
 
 	# Must be friends to view a friends list
-	if user != this_user and user not in friend_list.friends.all():
+	if user != this_user and not friend_list.friends.filter(pk=user.pk).exists():
 		return HttpResponse("You must be friends to view their friends list.", status=403)
 
 	auth_user_friend_list, _ = FriendList.objects.get_or_create(user=user)
+	# Amis communs en un seul ensemble d'ids (plus une requête par ami)
+	my_friend_ids = set(auth_user_friend_list.friends.values_list('id', flat=True))
 	friends = [
-		(friend, auth_user_friend_list.is_mutual_friend(friend))
+		(friend, friend.id in my_friend_ids)
 		for friend in friend_list.friends.all()
 	]
 

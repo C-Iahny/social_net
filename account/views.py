@@ -172,18 +172,8 @@ def account_view(request, *args, **kwargs):
 			).values_list('post_id', 'reaction_type')
 			user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
-		comments_all = list(CommentModel.objects.filter(
-			post_id__in=post_ids).select_related('author').order_by('created_at'))
-		top_by_post = {}
-		replies_map = {}
-		for c in comments_all:
-			if c.parent_id is None:
-				top_by_post.setdefault(c.post_id, []).append(c)
-			else:
-				replies_map.setdefault(c.parent_id, []).append(c)
-		for top_comments in top_by_post.values():
-			for c in top_comments:
-				c.reply_list = replies_map.get(c.id, [])
+		from post.comments_utils import load_comments_grouped
+		top_by_post, comment_totals = load_comments_grouped(post_ids)
 
 		for post in posts:
 			post.user_reaction   = user_reaction_by_post.get(post.id)
@@ -194,7 +184,7 @@ def account_view(request, *args, **kwargs):
 				if not hasattr(c, 'reply_list'):
 					c.reply_list = []
 			post.page_comments  = top
-			post.total_comments = len(top) + sum(len(c.reply_list) for c in top)
+			post.total_comments = comment_totals.get(post.id, 0)
 		_attach_media(posts, post_ids)
 	else:
 		for post in posts:
@@ -546,18 +536,8 @@ def profile_posts_more(request, *args, **kwargs):
 			).values_list('post_id', 'reaction_type')
 			user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
-		comments_all = list(CommentModel.objects.filter(
-			post_id__in=post_ids).select_related('author').order_by('created_at'))
-		top_by_post = {}
-		replies_map = {}
-		for c in comments_all:
-			if c.parent_id is None:
-				top_by_post.setdefault(c.post_id, []).append(c)
-			else:
-				replies_map.setdefault(c.parent_id, []).append(c)
-		for tc in top_by_post.values():
-			for c in tc:
-				c.reply_list = replies_map.get(c.id, [])
+		from post.comments_utils import load_comments_grouped
+		top_by_post, comment_totals = load_comments_grouped(post_ids)
 		for post in posts:
 			post.user_reaction   = user_reaction_by_post.get(post.id)
 			post.reaction_counts = reactions_by_post.get(post.id, {})
@@ -567,7 +547,7 @@ def profile_posts_more(request, *args, **kwargs):
 				if not hasattr(c, 'reply_list'):
 					c.reply_list = []
 			post.page_comments  = top
-			post.total_comments = len(top) + sum(len(c.reply_list) for c in top)
+			post.total_comments = comment_totals.get(post.id, 0)
 		_attach_media(posts, post_ids)
 	else:
 		for post in posts:
@@ -623,9 +603,14 @@ def update_cover_image(request):
 	}
 	try:
 		import uuid
+		from post.media_utils import compress_image
 		ext = _EXT_BY_MIME.get(mime, '.jpg')
-		filename = f"cover_images/{uuid.uuid4().hex}{ext}"
 		cover_file.seek(0)
+		if mime != 'image/gif':                 # GIF animé conservé tel quel
+			compressed = compress_image(cover_file)
+			if compressed is not cover_file:
+				cover_file, ext = compressed, '.webp'
+		filename = f"cover_images/{uuid.uuid4().hex}{ext}"
 		account = request.user
 		if account.cover_image and account.cover_image.name:
 			try:
