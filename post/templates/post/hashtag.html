@@ -206,7 +206,7 @@ function processHashtagsAndMentions(container) {
         var html = n.textContent
             .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
             .replace(/#([a-zA-ZÀ-ÿ0-9_]{2,30})/g, function(m, tag) {
-                return '<a class="hashtag" href="/post/hashtag/' + tag.toLowerCase() + '/">' + m + '</a>';
+                return '<a class="hashtag" href="' + '{% url "post:hashtag" tag="__TAG__" %}'.replace('__TAG__', encodeURIComponent(tag.toLowerCase())) + '">' + m + '</a>';
             })
             .replace(/@([a-zA-Z0-9_]{2,30})/g, function(m, user) {
                 return '<a class="mention" href="/account/search/?q=' + encodeURIComponent(user) + '" style="color:var(--accent2);font-weight:700;text-decoration:none;">' + m + '</a>';

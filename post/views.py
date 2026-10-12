@@ -570,10 +570,7 @@ class AddPostView(LoginRequiredMixin, CreateView):
         if post.status in (Post.STATUS_DRAFT, Post.STATUS_SCHEDULED):
             redirect_url = reverse('post:mes-brouillons')
         else:
-            # Ajouter les paramètres de diagnostic à l'URL pour afficher le bandeau
-            from urllib.parse import urlencode
-            diag_qs = urlencode({'post_ok': '1', 'recv': len(files), 'saved': saved, 'pid': post.pk})
-            redirect_url = reverse('post:post-view') + '?' + diag_qs
+            redirect_url = reverse('post:post-view')
 
         # Détection AJAX via le champ 'ajax=1' dans le corps (plus fiable que
         # X-Requested-With qui peut être bloqué par Capacitor / Android WebView)
@@ -1637,66 +1634,6 @@ def mes_favoris_posts(request):
         user=request.user
     ).select_related('post', 'post__author').order_by('-created_at')
     return render(request, 'post/mes_favoris_posts.html', {'bookmarks': bookmarks})
-
-
-# ──────────────────────────────────────────────
-# Page de diagnostic média (temporaire)
-# ──────────────────────────────────────────────
-@login_required(login_url="login")
-def diag_media(request):
-    """Diagnostic : montre les derniers posts de l'utilisateur avec leurs PostMedia.
-
-    Réservé au staff : la page expose la configuration du stockage R2.
-    """
-    if not request.user.is_staff:
-        from django.http import Http404
-        raise Http404
-    from django.conf import settings as _settings
-
-    posts = list(
-        Post.objects.filter(author=request.user)
-        .order_by('-id')[:10]
-    )
-    post_ids = [p.id for p in posts]
-    media_qs = PostMedia.objects.filter(post_id__in=post_ids).order_by('post_id', 'order')
-    media_map = {}
-    for m in media_qs:
-        media_map.setdefault(m.post_id, []).append(m)
-    for p in posts:
-        p.diag_media = media_map.get(p.id, [])
-
-    # ── Informations de configuration R2 ─────────────────────────────────────
-    r2_account_id   = getattr(_settings, 'R2_ACCOUNT_ID', None)
-    r2_public_url   = getattr(_settings, 'R2_PUBLIC_URL', None)
-    r2_bucket       = getattr(_settings, 'AWS_STORAGE_BUCKET_NAME', None) or getattr(_settings, 'R2_BUCKET_NAME', None)
-    r2_access_key   = bool(getattr(_settings, 'AWS_ACCESS_KEY_ID', None))
-    media_url       = getattr(_settings, 'MEDIA_URL', '/')
-    storage_backend = _settings.STORAGES['default']['BACKEND']
-    querystring_auth = getattr(_settings, 'AWS_QUERYSTRING_AUTH', True)
-    default_acl      = getattr(_settings, 'AWS_DEFAULT_ACL', None)
-
-    # Construire l'URL type pour tester
-    sample_url = None
-    if r2_public_url:
-        sample_url = f"https://{r2_public_url}/post_media/test.jpg"
-    elif r2_account_id and r2_bucket:
-        sample_url = f"https://{r2_account_id}.r2.cloudflarestorage.com/{r2_bucket}/post_media/test.jpg"
-
-    r2_info = {
-        'storage_backend': storage_backend,
-        'media_url': media_url,
-        'r2_account_id_set': bool(r2_account_id),
-        'r2_public_url': r2_public_url,
-        'r2_bucket': r2_bucket,
-        'r2_access_key_set': r2_access_key,
-        'querystring_auth': querystring_auth,
-        'default_acl': default_acl,
-        'sample_url': sample_url,
-        'is_local': 'FileSystemStorage' in storage_backend,
-        'is_r2': 'R2Media' in storage_backend or 'S3Boto3' in storage_backend,
-    }
-
-    return render(request, 'post/diag_media.html', {'posts': posts, 'r2_info': r2_info})
 
 
 @login_required(login_url="login")

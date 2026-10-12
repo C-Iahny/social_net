@@ -27,7 +27,6 @@ from .views import (
     bookmark_post,
     mes_brouillons,
     mes_favoris_posts,
-    diag_media,
     reactions_who,
 )
 from .products import my_products
@@ -61,7 +60,6 @@ urlpatterns = [
     path('videos/more/',       video_feed_more,       name='video-feed-more'),
     path('products/mine/',     my_products,           name='my-products'),
     path('signaler/',          ratelimit('10/h')(report_content), name='report-content'),
-    path('diag/',              diag_media,            name='diag-media'),
     path('<int:post_id>/reactions/', reactions_who,  name='reactions-who'),
     path('<int:post_id>/',           post_detail,    name='post-detail'),
 ]

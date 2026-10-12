@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 {% load static i18n %}
-<html lang="fr">
+{% get_current_language as HTML_LANG %}<html lang="{{ HTML_LANG|default:"fr" }}">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
 
     <!-- Titre surchargeable par page : toutes les pages s'appelaient
          « Vazimba », ce qui rend les onglets et l'historique du navigateur
@@ -121,14 +121,18 @@
     <link rel="dns-prefetch" href="https://ajax.googleapis.com">
 
     <!-- ── Polices & icônes ── -->
-    <!-- Material Icons (critique : utilisé dans toute la nav) -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Icons&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" rel="stylesheet">
-    <!-- Polices texte avec display=swap pour ne pas bloquer le rendu -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Material Icons (critique : utilisé dans toute la nav). display=block :
+         une icône en police non chargée doit rester invisible plutôt que
+         d'afficher son nom (« home », « add ») pendant le téléchargement.
+         Material Symbols n'est utilisé nulle part : plus chargé. -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Icons&display=block" rel="stylesheet">
+    <!-- Police texte avec display=swap pour ne pas bloquer le rendu (graisses
+         réellement utilisées ; Space Mono n'était employée nulle part) -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body{% if request.user.is_authenticated %} class="has-bnav"{% endif %}>
 
 <!-- ── Barre de progression navigation (NProgress-style) ── -->
 <div id="vzb-bar"></div>
@@ -733,61 +737,10 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 </script>
 
-    <!-- ── Détection automatique de langue par géolocalisation IP ──────── -->
-    <!-- Appelé UNE SEULE FOIS si aucune préférence n'est déjà enregistrée  -->
-    {% get_current_language as ZOOT_LANG %}
-    <script>
-    (function() {
-        // Mapping pays → code langue supporté par le site
-        var COUNTRY_LANG = {
-            // Madagascar → Malagasy
-            'MG': 'mg',
-            // Pays francophones principaux → Français
-            'FR':'fr','BE':'fr','CH':'fr','LU':'fr','MC':'fr',
-            'SN':'fr','CI':'fr','ML':'fr','BF':'fr','CM':'fr',
-            'TG':'fr','BJ':'fr','NE':'fr','GN':'fr','GA':'fr',
-            'CD':'fr','CG':'fr','RW':'fr','BI':'fr','DJ':'fr',
-            'HT':'fr','MU':'fr','SC':'fr','KM':'fr',
-            // Tout le reste → Anglais (défaut)
-        };
-        var DEFAULT_LANG = 'fr';  // Vazimba est un réseau francophone — FR par défaut
-
-        // Si une langue a déjà été choisie manuellement par l'utilisateur,
-        // on ne touche à rien (respect du choix explicite)
-        var cookieLang = (document.cookie.match(/zoot_language=([^;]+)/) || [])[1];
-        if (cookieLang) return;
-
-        // Appel à l'API de géolocalisation IP (gratuit, sans clé, non-commercial)
-        fetch('https://ip-api.com/json/?fields=countryCode', {cache:'no-cache'})
-            .then(function(r){ return r.json(); })
-            .then(function(data) {
-                var detected = COUNTRY_LANG[data.countryCode] || DEFAULT_LANG;
-                var current  = '{{ ZOOT_LANG }}';
-                // Ne rien faire si la langue détectée == langue active
-                if (detected === current) return;
-                // Appliquer via la vue Django set_language
-                var form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '{% url "set_language" %}';
-                form.style.display = 'none';
-                var csrfInput = document.createElement('input');
-                csrfInput.name = 'csrfmiddlewaretoken';
-                csrfInput.value = '{{ csrf_token }}';
-                var langInput = document.createElement('input');
-                langInput.name = 'language';
-                langInput.value = detected;
-                var nextInput = document.createElement('input');
-                nextInput.name = 'next';
-                nextInput.value = window.location.pathname;
-                form.appendChild(csrfInput);
-                form.appendChild(langInput);
-                form.appendChild(nextInput);
-                document.body.appendChild(form);
-                form.submit();
-            })
-            .catch(function(){/* silencieux — pas de langue forcée si l'API échoue */});
-    })();
-    </script>
+    <!-- La détection de langue par géolocalisation IP a été retirée : l'appel
+         partait à chaque page sans cookie de langue, en HTTP simple (bloqué
+         depuis une page HTTPS), et aurait rechargé la page en pleine lecture.
+         La langue se choisit dans l'en-tête ou le pied de page. -->
 
     <!-- ── Mobile bottom navigation ── -->
     {% if request.user.is_authenticated %}
