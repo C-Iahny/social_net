@@ -1,0 +1,163 @@
+/* Généré depuis stories/templates/stories/story_list.html — styles de page servis en statique (cache navigateur + service worker)
+   au lieu d'être renvoyés dans chaque réponse HTML. Modifier ICI, plus dans le gabarit. */
+
+/* ── Page fond sombre ─────────────────────────────────── */
+body { background: #0a0a0a !important; }
+[data-theme="dark"] body { background: #000 !important; }
+
+/* ── Wrapper ──────────────────────────────────────────── */
+.sl-wrapper {
+    max-width: 640px; margin: 0 auto;
+    padding: 70px 0 80px; box-sizing: border-box;
+}
+@media (max-width: 767px) { .sl-wrapper { padding-top: 58px; } }
+
+/* ── Titre ────────────────────────────────────────────── */
+.sl-title {
+    color: #fff; font-size: 1.6rem; font-weight: 800;
+    padding: .9rem 1rem .6rem; margin: 0;
+    letter-spacing: -.01em;
+}
+
+/* ── Grille 2 colonnes plein-écran ───────────────────── */
+.sl-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+    padding: 0 3px;
+}
+
+/* ── Carte générique ──────────────────────────────────── */
+.sl-card {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #1c1c1e;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .15s;
+}
+.sl-card:active { transform: scale(.97); }
+
+/* Fond image/vidéo plein-bleed */
+.sl-card > img,
+.sl-card > video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+}
+
+/* Fond gradient (story texte) */
+.sl-card.grad_cyan    { background: linear-gradient(160deg,#00bcd4,#2196f3); }
+.sl-card.grad_purple  { background: linear-gradient(160deg,#9c27b0,#e91e63); }
+.sl-card.grad_sunset  { background: linear-gradient(160deg,#ff9800,#f44336); }
+.sl-card.grad_forest  { background: linear-gradient(160deg,var(--success),#00bcd4); }
+.sl-card.grad_night   { background: linear-gradient(160deg,#1a237e,#7b1fa2); }
+.sl-card.grad_gold    { background: linear-gradient(160deg,#ffc107,#ff9800); }
+
+/* Vignette bas */
+.sl-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+    background: linear-gradient(transparent, rgba(0,0,0,.72));
+    pointer-events: none;
+}
+
+/* Avatar en haut à gauche */
+.sl-card-avatar {
+    position: absolute; top: .55rem; left: .55rem;
+    width: 36px; height: 36px; border-radius: 50%;
+    object-fit: cover; z-index: 2;
+    box-shadow: 0 0 0 2.5px #4f8ef7, 0 0 0 4px rgba(0,0,0,.5);
+}
+.sl-card-avatar.seen {
+    box-shadow: 0 0 0 2.5px #555, 0 0 0 4px rgba(0,0,0,.5);
+}
+
+/* Texte story texte centré */
+.sl-card-textbody {
+    position: absolute; inset: 0; z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.2rem .7rem; text-align: center;
+    color: #fff; font-size: .95rem; font-weight: 700; line-height: 1.4;
+    text-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+/* Nom en bas */
+.sl-card-name {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: .45rem .6rem .55rem;
+    color: #fff; font-size: .78rem; font-weight: 700;
+    z-index: 2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-shadow: 0 1px 4px rgba(0,0,0,.5);
+}
+
+/* Bouton lien promo sur la carte */
+.sl-card-link {
+    position: absolute; bottom: 2rem; left: .6rem; right: .6rem;
+    z-index: 3;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: .25rem; padding: .28rem .6rem; border-radius: 20px;
+    background: rgba(255,255,255,.22); backdrop-filter: blur(6px);
+    color: #fff; font-size: .68rem; font-weight: 700; text-decoration: none;
+    border: 1px solid rgba(255,255,255,.35);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sl-card-link .material-icons { font-size: .8rem; flex-shrink: 0; }
+
+/* ── Carte CRÉER (première position) ─────────────────── */
+.sl-create-card {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #1c1c1e;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .15s;
+}
+.sl-create-card:active { transform: scale(.97); }
+.sl-create-card > img,
+.sl-create-card > video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    filter: brightness(.45);
+}
+.sl-create-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 45%;
+    background: linear-gradient(transparent, rgba(0,0,0,.8));
+    pointer-events: none;
+}
+/* Bouton "+" centré */
+.sl-create-plus {
+    position: absolute; inset: 0; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+    padding-bottom: 2.5rem; /* compenser le nom en bas */
+}
+.sl-create-plus-circle {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.sl-create-plus-circle .material-icons {
+    font-size: 2rem; color: #111; font-weight: 900;
+}
+/* Nom "Ma story" en bas */
+.sl-create-name {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: .45rem .6rem .55rem;
+    color: #fff; font-size: .78rem; font-weight: 700;
+    z-index: 2; text-shadow: 0 1px 4px rgba(0,0,0,.5);
+}
+
+/* ── Vide ─────────────────────────────────────────────── */
+.sl-empty {
+    text-align: center; padding: 4rem 1.5rem; color: rgba(255,255,255,.45);
+    grid-column: span 2;
+}
+.sl-empty .material-icons { font-size: 3.5rem; color: rgba(255,255,255,.15); display: block; margin-bottom: .8rem; }

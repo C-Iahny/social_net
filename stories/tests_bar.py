@@ -36,4 +36,8 @@ class StoryBarHooksTests(TestCase):
         self.assertIn('_syncThemeColor(next)', html)
         # Menu profil mobile : le bouton ferme le menu (et lève le verrou de défilement) lui-même
         self.assertIn('onclick="_vzb_closeDropdown(this); toggleTheme();"', html)
-        self.assertIn('function _unlockIfNoMenu()', html)
+        # le filet de sécurité du verrou de défilement vit dans un script statique
+        from pathlib import Path
+        from django.conf import settings
+        js = ''.join(p.read_text() for p in (Path(settings.BASE_DIR) / 'static' / 'js').glob('vz-*.js'))
+        self.assertIn('function _unlockIfNoMenu()', js + html)

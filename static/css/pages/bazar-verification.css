@@ -1,0 +1,191 @@
+/* Généré depuis bazar/templates/bazar/verification.html — styles de page servis en statique (cache navigateur + service worker)
+   au lieu d'être renvoyés dans chaque réponse HTML. Modifier ICI, plus dans le gabarit. */
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.verif-wrap {
+    max-width: 680px;
+    margin: 2.5rem auto 5rem;
+    padding: 0 1rem;
+}
+.verif-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 2rem;
+}
+.verif-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    margin-bottom: .35rem;
+}
+.verif-sub {
+    font-size: .88rem;
+    color: var(--text-muted);
+    margin-bottom: 1.75rem;
+    line-height: 1.55;
+}
+
+/* ── Choix du type ───────────────────────────────────────────────────────── */
+.verif-type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .85rem;
+    margin-bottom: 1.75rem;
+}
+@media (max-width: 480px) { .verif-type-grid { grid-template-columns: 1fr; } }
+
+.verif-type-card {
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 1.1rem 1rem;
+    cursor: pointer;
+    transition: border-color .18s, background .18s;
+    position: relative;
+    text-align: left;
+    background: var(--bg-secondary);
+}
+.verif-type-card:hover { border-color: var(--accent); }
+.verif-type-card.active-verified {
+    border-color: var(--success);
+    background: rgba(16,185,129,.07);
+}
+.verif-type-card.active-pro {
+    border-color: #d97706;
+    background: rgba(217,119,6,.07);
+}
+.verif-type-icon { font-size: 1.8rem; margin-bottom: .5rem; display: block; }
+.verif-type-name {
+    font-weight: 800;
+    font-size: .95rem;
+    margin-bottom: .25rem;
+}
+.verif-type-desc {
+    font-size: .78rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+.verif-type-perks {
+    margin-top: .65rem;
+    display: flex;
+    flex-direction: column;
+    gap: .22rem;
+}
+.verif-type-perk {
+    font-size: .75rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+.verif-type-perk::before { content: '✓'; font-size: .7rem; }
+.verif-type-card.active-verified .verif-type-perk::before { color: var(--success); }
+.verif-type-card.active-pro .verif-type-perk::before { color: #d97706; }
+
+/* ── Statut badge ─────────────────────────────────────────────────────────── */
+.verif-status-box {
+    border-radius: 14px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.verif-status-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
+.verif-status-pending  { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.verif-status-approved { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
+.verif-status-rejected { background: #fff1f2; border: 1px solid #fca5a5; color: #9f1239; }
+.verif-status-pro-approved { background: #fffbeb; border: 1px solid #fcd34d; color: #78350f; }
+[data-theme="dark"] .verif-status-pending  { background: rgba(254,243,199,.08); border-color: #92400e; color: #fde68a; }
+[data-theme="dark"] .verif-status-approved { background: rgba(6,95,70,.12); border-color: #065f46; color: #6ee7b7; }
+[data-theme="dark"] .verif-status-rejected { background: rgba(159,18,57,.12); border-color: #9f1239; color: #fca5a5; }
+[data-theme="dark"] .verif-status-pro-approved { background: rgba(120,53,15,.15); border-color: #92400e; color: #fcd34d; }
+.verif-status-label  { font-weight: 700; font-size: 1rem; margin-bottom: .2rem; }
+.verif-status-detail { font-size: .83rem; opacity: .85; }
+
+/* ── Formulaire ──────────────────────────────────────────────────────────── */
+.verif-label {
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: .4rem;
+    display: block;
+}
+.verif-label .req { color: var(--danger); margin-left: .2rem; }
+
+.verif-input, .verif-select, .verif-textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: .7rem 1rem;
+    font-size: .9rem;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color .18s;
+}
+.verif-textarea { min-height: 110px; resize: vertical; }
+.verif-input:focus, .verif-select:focus, .verif-textarea:focus { border-color: var(--accent); }
+
+.verif-row { margin-bottom: 1rem; }
+.verif-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .85rem;
+    margin-bottom: 1rem;
+}
+@media (max-width: 480px) { .verif-row-2 { grid-template-columns: 1fr; } }
+
+.verif-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: .65rem 1.5rem;
+    font-weight: 700;
+    font-size: .92rem;
+    cursor: pointer;
+    transition: opacity .18s;
+    margin-top: 1rem;
+}
+[data-theme="dark"] .verif-submit { color: #1a0a02; }
+.verif-submit:hover { opacity: .85; }
+.verif-hint { font-size: .78rem; color: var(--text-muted); margin-top: .35rem; }
+.verif-section-title {
+    font-size: .82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    margin: 1.5rem 0 .85rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.verif-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+hr.verif-sep { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+/* Boutique form — caché par défaut */
+#verif-boutique-fields { display: none; }
+#verif-boutique-fields.visible { display: block; }
+
+/* Bannière preview */
+.banner-preview {
+    width: 100%;
+    height: 80px;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-top: .5rem;
+    display: none;
+}
+.banner-preview.visible { display: block; }

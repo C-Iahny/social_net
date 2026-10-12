@@ -1,0 +1,113 @@
+/* Généré depuis tourisme/templates/tourisme/lieu_edit.html — styles de page servis en statique (cache navigateur + service worker)
+   au lieu d'être renvoyés dans chaque réponse HTML. Modifier ICI, plus dans le gabarit. */
+
+.lieu-submit-wrap { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.tour-breadcrumb {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .8rem; color: var(--text-muted); margin-bottom: 1.2rem; flex-wrap: wrap;
+}
+.tour-breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.tour-breadcrumb a:hover { text-decoration: underline; }
+.tour-breadcrumb .material-icons { font-size: .9rem; }
+.ls-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 1.8rem 1.6rem; box-shadow: var(--shadow);
+}
+.ls-title {
+    font-size: 1.5rem; font-weight: 800; letter-spacing: -.03em;
+    color: var(--text); margin: 0 0 .4rem;
+    display: flex; align-items: center; gap: .5rem;
+}
+.ls-title .material-icons { color: var(--accent); font-size: 1.7rem; }
+.ls-subtitle { font-size: .88rem; color: var(--text-muted); margin-bottom: 1.4rem; }
+.ls-section-label {
+    font-size: .72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--text-muted);
+    margin: 1.4rem 0 .8rem;
+    display: flex; align-items: center; gap: .3rem;
+}
+.ls-section-label .material-icons { font-size: .9rem; color: var(--accent); }
+.ls-field { margin-bottom: 1rem; }
+.ls-label { display: block; font-size: .82rem; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+.ls-label span.req { color: var(--accent); }
+.ls-input, .ls-select, .ls-textarea {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 10px;
+    background: var(--bg); color: var(--text); padding: .65rem .85rem;
+    font-size: .9rem; font-family: inherit; transition: border-color .18s;
+}
+.ls-input:focus, .ls-select:focus, .ls-textarea:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.ls-textarea { resize: vertical; min-height: 100px; }
+.ls-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+@media (max-width: 520px) { .ls-row { grid-template-columns: 1fr; } }
+.ls-error {
+    background: #fde8e8; color: var(--danger); border-radius: 9px;
+    padding: .65rem .9rem; font-size: .85rem; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .4rem;
+}
+[data-theme="dark"] .ls-error { background: #2d0a0a; color: #f87171; }
+.ls-error .material-icons { font-size: 1rem; }
+.ls-submit-btn {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: var(--accent); color: #fff; border: none; border-radius: 11px;
+    padding: .75rem 2rem; font-size: .95rem; font-weight: 700;
+    cursor: pointer; transition: opacity .18s; width: 100%;
+    justify-content: center; margin-top: .5rem;
+}
+.ls-submit-btn:hover { opacity: .88; }
+
+/* Photos existantes */
+.existing-images-grid {
+    display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: 1rem;
+}
+.existing-img-item {
+    position: relative; width: 90px; height: 90px;
+    border-radius: 10px; overflow: hidden;
+    border: 2px solid var(--border);
+}
+.existing-img-item img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.existing-img-item label {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0); cursor: pointer;
+    transition: background .18s;
+}
+.existing-img-item input[type=checkbox] { display: none; }
+.existing-img-item input[type=checkbox]:checked + label {
+    background: rgba(220,38,38,.6);
+}
+.existing-img-item input[type=checkbox]:checked + label .del-icon { opacity: 1; }
+.del-icon {
+    color: #fff; font-size: 1.8rem; opacity: 0; transition: opacity .15s;
+}
+.existing-img-item label:hover { background: rgba(0,0,0,.25); }
+.existing-img-item label:hover .del-icon { opacity: .7; }
+.existing-img-primary {
+    position: absolute; top: 3px; left: 3px;
+    background: var(--accent); color: #fff;
+    font-size: .55rem; font-weight: 700; border-radius: 4px;
+    padding: 1px 4px; line-height: 1.4;
+}
+.delete-hint { font-size: .78rem; color: var(--text-muted); margin-bottom: .7rem; }
+
+/* Upload zone */
+.ls-upload-zone {
+    border: 2px dashed var(--border); border-radius: 12px;
+    padding: 1.2rem 1rem; text-align: center; cursor: pointer;
+    transition: border-color .2s, background .2s; position: relative;
+}
+.ls-upload-zone:hover { border-color: var(--accent); background: var(--accent-glow); }
+.ls-upload-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.ls-upload-label { font-size: .85rem; color: var(--text-muted); }
+.ls-upload-hint { font-size: .75rem; color: var(--text-subtle); margin-top: .2rem; }
+.ls-preview-grid { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .8rem; }
+.ls-preview-thumb {
+    width: 72px; height: 72px; border-radius: 8px; overflow: hidden;
+    border: 2px solid var(--border);
+}
+.ls-preview-thumb img { width: 100%; height: 100%; object-fit: cover; }

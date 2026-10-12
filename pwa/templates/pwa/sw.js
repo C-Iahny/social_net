@@ -7,7 +7,7 @@
 /* ── Version ─────────────────────────────────────────────────────────────────
    Incrémenter SW_VERSION pour forcer la mise à jour chez tous les clients.
    ─────────────────────────────────────────────────────────────────────────── */
-const SW_VERSION  = 'vazimba-v20';
+const SW_VERSION  = 'vazimba-v21';
 const STATIC_CACHE = SW_VERSION + '-static';
 const PAGES_CACHE  = SW_VERSION + '-pages';
 const IMG_CACHE    = SW_VERSION + '-images';
@@ -20,6 +20,10 @@ const OFFLINE_URL  = '/offline/';
    ─────────────────────────────────────────────────────────────────────────── */
 const PRECACHE_STATIC = [
     '{% static "perso/bootstrap/css/bootstrap.min.css" %}',
+    '{% static "css/zoot-base.css" %}',
+    '{% static "js/vz-core.js" %}',
+    '{% static "perso/jquery/jquery-3.5.1.min.js" %}',
+    '{% static "perso/bootstrap/js/bootstrap-4.5.3.bundle.min.js" %}',
 ];
 
 const PRECACHE_PAGES = [
@@ -119,17 +123,14 @@ self.addEventListener('fetch', function(event) {
         return;
     }
 
-    /* ── Pages HTML ─────────────────────────────────────────────────────── */
+    /* ── Pages HTML : Network-First, cache seulement en secours ─────────────
+       Les pages sont personnalisées (profil, groupes, annonces, jetons CSRF) :
+       les servir d'abord depuis le cache montrait une page périmée — voire
+       celle d'un autre utilisateur sur un téléphone partagé — et, après un
+       déploiement, des liens vers d'anciens statiques. Le cache ne sert plus
+       que hors connexion. ─────────────────────────────────────────────────── */
     if (req.headers.get('Accept') && req.headers.get('Accept').includes('text/html')) {
-        /* Chat, admin, login → Network-First (données toujours fraîches) */
-        if (_isNoCachePath(url)) {
-            event.respondWith(networkFirstHTML(req));
-        } else {
-            /* Toutes les autres pages → Stale-While-Revalidate
-               → La page mise en cache s'affiche INSTANTANÉMENT,
-                 le réseau met à jour le cache en arrière-plan             */
-            event.respondWith(staleWhileRevalidateHTML(req));
-        }
+        event.respondWith(networkFirstHTML(req));
         return;
     }
 });
@@ -211,13 +212,13 @@ function staleWhileRevalidate(request, cacheName, maxEntries) {
 
 /* ── Limiter la taille d'un cache (supprimer les plus anciennes entrées) ─── */
 function trimCache(cacheName, maxEntries) {
+    /* Une seule lecture des clés, suppression groupée des plus anciennes
+       (l'ancienne version relisait toutes les clés à chaque suppression). */
     return caches.open(cacheName).then(function(cache) {
         return cache.keys().then(function(keys) {
-            if (keys.length > maxEntries) {
-                return cache.delete(keys[0]).then(function() {
-                    return trimCache(cacheName, maxEntries);
-                });
-            }
+            var excess = keys.length - maxEntries;
+            if (excess <= 0) return;
+            return Promise.all(keys.slice(0, excess).map(function(k) { return cache.delete(k); }));
         });
     });
 }
@@ -417,7 +418,15 @@ self.addEventListener('notificationclick', function(event) {
 
 /* ── Message depuis la page : forcer la mise à jour ─────────────────────── */
 self.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
+    if (!event.data) return;
+    if (event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
+    }
+    /* Déconnexion : vider pages et images en cache (téléphone partagé) */
+    if (event.data.type === 'CLEAR_CACHE') {
+        event.waitUntil(Promise.all([
+            caches.delete(PAGES_CACHE),
+            caches.delete(IMG_CACHE),
+        ]));
     }
 });

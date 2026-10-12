@@ -4,15 +4,7 @@
 
 {% block content %}
 {% include 'resto/_style.html' %}
-<style>
-.rs-mi { display: flex; gap: .7rem; align-items: center; padding: .7rem; }
-.rs-mi + .rs-mi { border-top: 1px solid var(--border); }
-.rs-mi img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; background: var(--btn-bg); }
-.rs-og { border: 1px dashed var(--border); border-radius: 10px; padding: .6rem; margin-bottom: .6rem; }
-.rs-og input { margin-bottom: .3rem; }
-.rs-og .opt { display: flex; gap: .4rem; margin-bottom: .3rem; }
-.rs-og .opt input:first-child { flex: 2; } .rs-og .opt input:nth-child(2) { flex: 1; }
-</style>
+<link rel="stylesheet" href="{% static 'css/pages/resto-menu.css' %}">
 <div class="rs-wrap" style="max-width:860px;">
     <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0 1rem;">
         <h1 style="font-size:1.4rem;font-weight:800;margin:0;">🍛 {% trans "Menu" %} · {{ restaurant.name }}</h1>

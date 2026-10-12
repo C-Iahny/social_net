@@ -1,0 +1,181 @@
+/* Généré depuis account/templates/account/edit_account.html — styles de page servis en statique (cache navigateur + service worker)
+   au lieu d'être renvoyés dans chaque réponse HTML. Modifier ICI, plus dans le gabarit. */
+
+.edit-page {
+    min-height: calc(100vh - 62px);
+    background: var(--bg);
+    padding: 2rem 1rem 3rem;
+}
+.edit-card {
+    max-width: 560px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+    overflow: hidden;
+}
+[data-theme="dark"] .edit-card { box-shadow: 0 4px 24px rgba(0,0,0,.35); }
+
+/* ── Card header ── */
+.edit-card-header {
+    padding: 1.5rem 2rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+.edit-card-header .material-icons {
+    font-size: 1.4rem;
+    color: var(--accent);
+}
+.edit-card-header h2 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0;
+}
+
+/* ── Avatar section ── */
+.avatar-section {
+    padding: 1.75rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+.image-container {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+#id_profile_image_display {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent);
+    display: block;
+}
+#id_middle_container {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.45);
+    opacity: 0;
+    transition: opacity .25s;
+}
+.image-container:hover #id_middle_container { opacity: 1; }
+#id_text {
+    color: #fff;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 4px;
+}
+.avatar-info h4 { font-size: .95rem; font-weight: 700; color: var(--text); margin: 0 0 .25rem; }
+.avatar-info p  { font-size: .8rem; color: var(--text-muted); margin: 0; }
+
+/* Crop confirm buttons */
+#id_image_crop_confirm {
+    display: none;
+    gap: .75rem;
+    margin-bottom: .5rem;
+}
+#id_confirm, #id_cancel {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem !important;
+    transition: transform .15s;
+}
+#id_confirm { color: #4caf7d; background: rgba(76,175,125,.12); border: 1.5px solid rgba(76,175,125,.3); }
+#id_cancel  { color: #e0245e; background: rgba(224,36,94,.12);  border: 1.5px solid rgba(224,36,94,.3); }
+#id_confirm:hover, #id_cancel:hover { transform: scale(1.1); }
+
+/* ── Form body ── */
+.edit-form-body { padding: 1.5rem 2rem 2rem; }
+.edit-section-title {
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin: 1.5rem 0 .85rem;
+    padding-bottom: .4rem;
+    border-bottom: 1px solid var(--border);
+}
+.edit-section-title:first-child { margin-top: 0; }
+.edit-field { margin-bottom: 1rem; }
+.edit-field label {
+    display: block;
+    font-size: .82rem; font-weight: 600;
+    color: var(--text-muted); margin-bottom: .35rem;
+}
+.edit-input-wrap {
+    display: flex; align-items: center;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: 0 .85rem; height: 48px;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.edit-input-wrap:focus-within {
+    border-color: var(--accent); background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(24,119,242,.12);
+}
+.edit-input-wrap .material-icons { font-size: 1.05rem; color: var(--text-muted); margin-right: .6rem; flex-shrink: 0; }
+.edit-input-wrap input {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-size: .95rem; padding: 0; font-family: inherit;
+}
+.edit-input-wrap input::placeholder { color: var(--text-muted); }
+.edit-textarea-wrap {
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; padding: .7rem .85rem;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+    display: flex; gap: .5rem;
+}
+.edit-textarea-wrap:focus-within {
+    border-color: var(--accent); background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(24,119,242,.12);
+}
+.edit-textarea-wrap .material-icons { font-size: 1.05rem; color: var(--text-muted); margin-top: 2px; flex-shrink: 0; }
+.edit-textarea-wrap textarea {
+    flex: 1; background: none; border: none; outline: none;
+    color: var(--text); font-size: .95rem; resize: vertical;
+    min-height: 80px; font-family: inherit; line-height: 1.5;
+}
+.edit-textarea-wrap textarea::placeholder { color: var(--text-muted); }
+.edit-checkbox-wrap {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .75rem .85rem;
+    background: var(--btn-bg); border: 1.5px solid var(--border);
+    border-radius: 12px; cursor: pointer;
+    transition: border-color .2s;
+}
+.edit-checkbox-wrap:hover { border-color: var(--accent); }
+.edit-checkbox-wrap input[type="checkbox"] {
+    width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;
+}
+.edit-checkbox-wrap span { font-size: .9rem; color: var(--text); font-weight: 500; cursor: pointer; }
+.edit-errors {
+    background: rgba(224,36,94,.1); border: 1px solid rgba(224,36,94,.25);
+    border-radius: 10px; padding: .6rem .9rem; margin-bottom: .75rem;
+    font-size: .84rem; color: var(--danger);
+}
+[data-theme="dark"] .edit-errors { color: #f28b82; }
+.edit-save-btn {
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
+    width: 100%; height: 50px;
+    background: var(--accent);
+    color: var(--on-accent); border: none; border-radius: var(--radius);
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 16px var(--accent-glow);
+    transition: opacity .2s, transform .15s;
+    margin-top: 1.5rem;
+}
+.edit-save-btn:hover { opacity: .92; transform: translateY(-1px); }
+.edit-save-btn .material-icons { font-size: 1.1rem; }

@@ -8,13 +8,7 @@
 
 {% block content %}
 {% include 'resto/_style.html' %}
-<style>
-.rs-radio { display: flex; gap: .5rem; flex-wrap: wrap; }
-.rs-radio label { flex: 1; min-width: 140px; border: 1.5px solid var(--border); border-radius: 10px; padding: .6rem .8rem; cursor: pointer; font-size: .9rem; display: flex; gap: .5rem; align-items: center; }
-.rs-radio input { accent-color: var(--accent); }
-.rs-radio label:has(input:checked) { border-color: var(--accent); background: var(--accent-glow); }
-#rs-pickmap { height: 240px; border-radius: 12px; border: 1px solid var(--border); margin-top: .5rem; }
-</style>
+<link rel="stylesheet" href="{% static 'css/pages/resto-checkout.css' %}">
 <div class="rs-wrap" style="max-width:760px;">
     <h1 style="font-size:1.4rem;font-weight:800;margin:.5rem 0 1rem;">✅ {% trans "Finaliser la commande" %}</h1>
 

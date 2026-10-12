@@ -1,0 +1,13 @@
+/* Généré depuis resto/templates/resto/courier/profile.html — styles de page servis en statique (cache navigateur + service worker)
+   au lieu d'être renvoyés dans chaque réponse HTML. Modifier ICI, plus dans le gabarit. */
+
+.rs-cp-head { display: flex; gap: 1rem; align-items: center; }
+.rs-cp-photo { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; background: var(--btn-bg); flex: none;
+               display: flex; align-items: center; justify-content: center; font-size: 2.4rem; border: 3px solid var(--bg-card); box-shadow: var(--shadow); }
+.rs-cp-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: .6rem; margin-top: 1rem; }
+.rs-cp-stat { background: var(--btn-bg); border-radius: 10px; padding: .6rem; text-align: center; }
+.rs-cp-stat b { display: block; font-size: 1.25rem; color: var(--accent); }
+.rs-cp-stat span { font-size: .72rem; color: var(--text-muted); }
+.rs-cp-row { display: flex; gap: .6rem; padding: .45rem 0; border-top: 1px dashed var(--border); font-size: .9rem; }
+.rs-cp-row .k { color: var(--text-muted); min-width: 120px; flex: none; }
+.rs-check { color: var(--success); font-weight: 700; } .rs-cross { color: var(--text-subtle); }
