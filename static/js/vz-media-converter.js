@@ -139,7 +139,30 @@ window.ZootMediaConverter = (function() {
                         resolve(compressed);
                     });
                 };
-                img.onerror = function() { URL.revokeObjectURL(url); resolve(file); };
+                img.onerror = function() {
+                    URL.revokeObjectURL(url);
+                    /* WebView Android (application) : une URL blob: peut être refusée
+                       pour les images → second essai en data-URL avant d'abandonner
+                       (sinon la photo partait sans aucune compression). */
+                    try {
+                        var rd = new FileReader();
+                        rd.onload = function(e) {
+                            var img2 = new Image();
+                            img2.onload = function() {
+                                resizeAndConvert(img2, reportOrig || file.size).then(function(result) {
+                                    if (!result || !result.blob) { resolve(file); return; }
+                                    var mime = result.mime || 'image/webp';
+                                    resolve(new File([result.blob], baseName + (mime === 'image/jpeg' ? '.jpg' : '.webp'),
+                                                     { type: mime, lastModified: Date.now() }));
+                                }).catch(function() { resolve(file); });
+                            };
+                            img2.onerror = function() { resolve(file); };
+                            img2.src = e.target.result;
+                        };
+                        rd.onerror = function() { resolve(file); };
+                        rd.readAsDataURL(sourceBlob);
+                    } catch (e) { resolve(file); }
+                };
                 img.src = url;
             }
 

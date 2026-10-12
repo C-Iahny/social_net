@@ -1095,12 +1095,21 @@ window.zscOnFile = function(inp){
   document.getElementById('zsc-pub-btn').style.display='flex';
   document.getElementById('zsc-pub-btn').disabled=false;
 
-  var url = URL.createObjectURL(file);
   if(_sc.type==='video'){
-    var v=document.getElementById('zsc-vid'); v.src=url; v.classList.add('active'); v.play().catch(function(){});
+    var v=document.getElementById('zsc-vid'); v.src=URL.createObjectURL(file); v.classList.add('active'); v.play().catch(function(){});
     document.getElementById('zsc-img').classList.remove('active');
   } else {
-    document.getElementById('zsc-img').src=url; document.getElementById('zsc-img').classList.add('active');
+    /* Image : data-URL via FileReader. Dans la WebView Android de l'application
+       (Capacitor, page servie depuis vazimba.io), une URL blob: dans <img>
+       affichait une image cassée ; le web mobile, lui, l'acceptait. Même
+       approche que le formulaire de post. */
+    var imgEl = document.getElementById('zsc-img');
+    imgEl.removeAttribute('src');
+    var rd = new FileReader();
+    rd.onload = function(e){ imgEl.src = e.target.result; };
+    rd.onerror = function(){ try { imgEl.src = URL.createObjectURL(file); } catch(err) {} };
+    rd.readAsDataURL(file);
+    imgEl.classList.add('active');
     document.getElementById('zsc-vid').classList.remove('active');
   }
   document.getElementById('zsc-txtbg').classList.remove('active');
