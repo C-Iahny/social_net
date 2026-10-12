@@ -62,13 +62,13 @@
                     <div class="fr-actions">
                         <button class="fr-btn fr-btn-decline"
                                 id="id_cancel_{{ request.sender.id }}"
-                                onclick="handleDecline('{{ request.id }}')">
+                                onclick="handleDecline('{{ request.id }}')" type="button">
                             <span class="material-icons">close</span>
                             {% trans "Decline" %}
                         </button>
                         <button class="fr-btn fr-btn-accept"
                                 id="id_confirm_{{ request.sender.id }}"
-                                onclick="handleAccept('{{ request.id }}')">
+                                onclick="handleAccept('{{ request.id }}')" type="button">
                             <span class="material-icons">check</span>
                             {% trans "Accept" %}
                         </button>
@@ -141,10 +141,10 @@ function checkEmpty() {
     if (cards.length === 0) {
         grid.innerHTML = '<div class="fr-empty">' +
             '<div class="fr-empty-icon-wrap"><span class="material-icons">inbox</span></div>' +
-            '<h3>{% trans "No requests" %}</h3>' +
-            '<p>{% trans "When someone sends you a friend request, it will appear here." %}</p>' +
+            '<h3>{% trans "No requests"|escapejs %}</h3>' +
+            '<p>{% trans "When someone sends you a friend request, it will appear here."|escapejs %}</p>' +
             '<a class="fr-empty-cta" href="/search/?q=">' +
-            '<span class="material-icons" style="font-size:.95rem;">person_search</span>{% trans "Find people" %}</a>' +
+            '<span class="material-icons" style="font-size:.95rem;">person_search</span>{% trans "Find people"|escapejs %}</a>' +
             '</div>';
     }
 }

@@ -3311,3 +3311,699 @@ msgstr "Report this place"
 
 msgid "Signaler cette story"
 msgstr "Report this story"
+
+msgid "Adresse / Coordonnées GPS"
+msgstr "Address / GPS coordinates"
+
+msgid "Adresse / GPS"
+msgstr "Address / GPS"
+
+msgid "Années d'expérience"
+msgstr "Years of experience"
+
+msgid "Aucun guide disponible pour l'instant."
+msgstr "No guide available yet."
+
+msgid "Aucun guide trouvé"
+msgstr "No guide found"
+
+msgid "Aucun lieu approuvé pour l'instant."
+msgstr "No approved place yet."
+
+msgid "Aucun lieu trouvé"
+msgstr "No place found"
+
+msgid "Aucun live en cours — sois le premier à diffuser !"
+msgstr "No live right now — be the first to go live!"
+
+msgid "Bio / Présentation"
+msgstr "Bio / About"
+
+msgid "Ce guide n'a pas renseigné de numéro de contact."
+msgstr "This guide has not provided a contact number."
+
+msgid "Ce lieu est en attente de validation par un administrateur. Il n'est visible que par vous."
+msgstr "This place is awaiting approval by an administrator. Only you can see it."
+
+msgid "Chat en direct"
+msgstr "Live chat"
+
+msgid "Choisir une photo"
+msgstr "Choose a photo"
+
+msgid "Cliquez ou glissez vos nouvelles photos ici"
+msgstr "Click or drag your new photos here"
+
+msgid "Cliquez ou glissez vos photos ici"
+msgstr "Click or drag your photos here"
+
+msgid "Cliquez sur une photo pour la marquer à supprimer (fond rouge = sera supprimée)."
+msgstr "Click a photo to mark it for deletion (red = will be deleted)."
+
+msgid "Commencer le live"
+msgstr "Start the live"
+
+msgid "Conditions &amp; Tarifs"
+msgstr "Terms &amp; Rates"
+
+msgid "Conditions détaillées"
+msgstr "Detailed terms"
+
+msgid "Connectez-vous"
+msgstr "Log in"
+
+msgid "Conseils pour les visiteurs : transport, hébergement, précautions…"
+msgstr "Tips for visitors: transport, accommodation, precautions…"
+
+msgid "Conseils pratiques"
+msgstr "Practical tips"
+
+msgid "Date de visite (optionnel) :"
+msgstr "Visit date (optional):"
+
+msgid "De côtes"
+msgstr "Of coastline"
+
+msgid "Devenir guide"
+msgstr "Become a guide"
+
+msgid "Découvrez"
+msgstr "Discover"
+
+msgid "Décrivez ce lieu : paysage, histoire, ce qui le rend unique…"
+msgstr "Describe this place: scenery, history, what makes it unique…"
+
+msgid "Décrivez votre expérience, vos points forts, pourquoi vous choisir."
+msgstr "Describe your experience, your strengths, why choose you."
+
+msgid "Décrivez votre expérience..."
+msgstr "Describe your experience..."
+
+msgid "Effacer les filtres"
+msgstr "Clear filters"
+
+msgid "En attente de la diffusion…"
+msgstr "Waiting for the stream…"
+
+msgid "Enregistrer les modifications"
+msgstr "Save changes"
+
+msgid "Espèces endémiques"
+msgstr "Endemic species"
+
+msgid "Essayez d'autres termes ou"
+msgstr "Try other terms or"
+
+msgid "Ex : 🇲🇬 Madagascar vs France — Coupe du Monde !"
+msgstr "E.g. 🇲🇬 Madagascar vs France — World Cup!"
+
+msgid "Ex: -18.9249, 44.8237 ou nom du village"
+msgstr "E.g. -18.9249, 44.8237 or village name"
+
+msgid "Ex: Avril à Novembre"
+msgstr "E.g. April to November"
+
+msgid "Ex: Gratuit, 5 000 Ar…"
+msgstr "E.g. Free, 5,000 Ar…"
+
+msgid "Ex: Observation des lémuriens, Randonnée, Circuit culturel, Plongée"
+msgstr "E.g. Lemur watching, Hiking, Cultural tour, Diving"
+
+msgid "Ex: Prix incluant le carburant et le chauffeur. Hébergement non inclus. Demi-tarif pour les enfants de moins de 12 ans…"
+msgstr "E.g. Price includes fuel and driver. Accommodation not included. Half price for children under 12…"
+
+msgid "Ex: Tsingy de Bemaraha, Nosy Be, Isalo…"
+msgstr "E.g. Tsingy de Bemaraha, Nosy Be, Isalo…"
+
+msgid "Explorer par catégorie"
+msgstr "Browse by category"
+
+msgid "Faune endémique, Randonnée, Culturel, Plage"
+msgstr "Endemic wildlife, Hiking, Culture, Beach"
+
+msgid "Format international recommandé. Ex: +261 32 00 000 00"
+msgstr "International format recommended. E.g. +261 32 00 000 00"
+
+msgid "Guide vérifié"
+msgstr "Verified guide"
+
+msgid "Guides"
+msgstr "Guides"
+
+msgid "Guides pour ce lieu"
+msgstr "Guides for this place"
+
+msgid "Guides touristiques"
+msgstr "Tour guides"
+
+msgid "Guides vérifiés"
+msgstr "Verified guides"
+
+msgid "Image précédente"
+msgstr "Previous image"
+
+msgid "Image suivante"
+msgstr "Next image"
+
+msgid "Inclusions, exclusions, forfaits, conditions d'annulation…"
+msgstr "Inclusions, exclusions, packages, cancellation terms…"
+
+msgid "Informations pratiques"
+msgstr "Practical information"
+
+msgid "Informations principales"
+msgstr "Main information"
+
+msgid "Inscrivez-vous gratuitement et soyez trouvé par des milliers de voyageurs."
+msgstr "Sign up for free and get found by thousands of travellers."
+
+msgid "JPG, PNG, WEBP — max 8 photos. La première sera la photo principale."
+msgstr "JPG, PNG, WEBP — max 8 photos. The first one is the main photo."
+
+msgid "JPG, PNG, WEBP — maximum 8 photos au total"
+msgstr "JPG, PNG, WEBP — 8 photos maximum in total"
+
+msgid "L'hôte a mis fin à la diffusion."
+msgstr "The host ended the stream."
+
+msgid "L'île rouge vous attend — baobabs, plages de corail, lémuriens et paysages à couper le souffle."
+msgstr "The red island awaits you — baobabs, coral beaches, lemurs and breathtaking landscapes."
+
+msgid "LIVE"
+msgstr "LIVE"
+
+msgid "Langues &amp; Contact"
+msgstr "Languages &amp; Contact"
+
+msgid "Le live est terminé"
+msgstr "The live has ended"
+
+msgid "Lieux"
+msgstr "Places"
+
+msgid "Lieux populaires"
+msgstr "Popular places"
+
+msgid "Lieux similaires"
+msgstr "Similar places"
+
+msgid "Lieux touristiques"
+msgstr "Tourist places"
+
+msgid "Listez les régions, noms de parcs, zones géographiques que vous couvrez."
+msgstr "List the regions, park names and areas you cover."
+
+msgid "Lives en cours"
+msgstr "Lives in progress"
+
+msgid "Malagasy, Français, Anglais"
+msgstr "Malagasy, French, English"
+
+msgid "Meilleure période"
+msgstr "Best time to visit"
+
+msgid "Modifier le lieu"
+msgstr "Edit place"
+
+msgid "Moyens de déplacement"
+msgstr "Means of transport"
+
+msgid "Nom du lieu"
+msgstr "Place name"
+
+msgid "Nombre d'années en tant que guide"
+msgstr "Number of years as a guide"
+
+msgid "Nombre max de voyageurs"
+msgstr "Max number of travellers"
+
+msgid "Pagination"
+msgstr "Pagination"
+
+msgid "Partage ton écran pour diffuser le match, ou utilise ta caméra."
+msgstr "Share your screen to stream the match, or use your camera."
+
+msgid "Partager l'écran"
+msgstr "Share screen"
+
+msgid "Partagez un lieu que vous connaissez et aidez les voyageurs à découvrir Madagascar."
+msgstr "Share a place you know and help travellers discover Madagascar."
+
+msgid "Partagez votre écran pour diffuser le match en direct à vos amis sur Vazimba."
+msgstr "Share your screen to stream the match live to your friends on Vazimba."
+
+msgid "Pas d'image disponible"
+msgstr "No image available"
+
+msgid "Pers. max."
+msgstr "Max people"
+
+msgid "Photo actuelle"
+msgstr "Current photo"
+
+msgid "Photo de profil"
+msgstr "Profile photo"
+
+msgid "Photos (jusqu'à 8)"
+msgstr "Photos (up to 8)"
+
+msgid "Photos existantes"
+msgstr "Existing photos"
+
+msgid "Plein écran"
+msgstr "Full screen"
+
+msgid "Principal"
+msgstr "Main"
+
+msgid "Prix indicatif / jour (Ariary)"
+msgstr "Indicative price / day (Ariary)"
+
+msgid "Proposer un lieu"
+msgstr "Suggest a place"
+
+msgid "Proposer un lieu touristique"
+msgstr "Suggest a tourist place"
+
+msgid "Publications sur ce lieu"
+msgstr "Posts about this place"
+
+msgid "Quitter"
+msgstr "Leave"
+
+msgid "Rechercher un guide…"
+msgstr "Search for a guide…"
+
+msgid "Rechercher un lieu…"
+msgstr "Search for a place…"
+
+msgid "Regardez le match ensemble ⚽"
+msgstr "Watch the match together ⚽"
+
+msgid "Rejoignez notre réseau de guides touristiques et aidez les voyageurs à découvrir l'île."
+msgstr "Join our network of tour guides and help travellers discover the island."
+
+msgid "Rejoindre"
+msgstr "Join"
+
+msgid "Rejoindre le live"
+msgstr "Join the live"
+
+msgid "Retourner"
+msgstr "Flip"
+
+msgid "Régions"
+msgstr "Regions"
+
+msgid "Régions couvertes"
+msgstr "Regions covered"
+
+msgid "Régions où vous guidez"
+msgstr "Regions where you guide"
+
+msgid "S'inscrire comme guide"
+msgstr "Register as a guide"
+
+msgid "Se connecter pour s'inscrire"
+msgstr "Log in to register"
+
+msgid "Soumettre le lieu"
+msgstr "Submit place"
+
+msgid "Soyez le premier à laisser un avis sur ce lieu !"
+msgstr "Be the first to review this place!"
+
+msgid "Spécialités"
+msgstr "Specialities"
+
+msgid "Séparez par des virgules. Ex: Malagasy, Français, Anglais"
+msgstr "Separate with commas. E.g. Malagasy, French, English"
+
+msgid "Séparez par des virgules. Ex: Voiture, 4×4, Pirogue"
+msgstr "Separate with commas. E.g. Car, 4×4, Dugout canoe"
+
+msgid "Taille du groupe"
+msgstr "Group size"
+
+msgid "Taille max du groupe"
+msgstr "Max group size"
+
+msgid "Tarif d'entrée"
+msgstr "Entrance fee"
+
+msgid "Tarif journalier approximatif. Laissez vide si variable."
+msgstr "Approximate daily rate. Leave blank if it varies."
+
+msgid "Terminer"
+msgstr "End"
+
+msgid "Tous"
+msgstr "All"
+
+msgid "Tous formats image (JPG, PNG, HEIC, GIF…) — max 10 Mo"
+msgstr "All image formats (JPG, PNG, HEIC, GIF…) — max 10 MB"
+
+msgid "Tous les guides"
+msgstr "All guides"
+
+msgid "Toutes les régions"
+msgstr "All regions"
+
+msgid "Transports"
+msgstr "Transport"
+
+msgid "Transports disponibles"
+msgstr "Available transport"
+
+msgid "Trouver un guide"
+msgstr "Find a guide"
+
+msgid "Types de circuits &amp; spécialités"
+msgstr "Tour types &amp; specialities"
+
+msgid "Voir d'autres lives"
+msgstr "See other lives"
+
+msgid "Voir le replay"
+msgstr "Watch the replay"
+
+msgid "Voir tout"
+msgstr "See all"
+
+msgid "Voiture, 4×4, Pirogue, À pied"
+msgstr "Car, 4×4, Dugout canoe, On foot"
+
+msgid "Votre profil sera examiné par un administrateur avant d'être publié."
+msgstr "Your profile will be reviewed by an administrator before being published."
+
+msgid "Votre soumission sera vérifiée par un administrateur avant d'être publiée. Vous recevrez une notification dès qu'elle sera approuvée."
+msgstr "Your submission will be checked by an administrator before publication. You will be notified once it is approved."
+
+msgid "Vous connaissez Madagascar ?"
+msgstr "Do you know Madagascar?"
+
+msgid "Vous guidez des voyageurs à Madagascar ?"
+msgstr "Do you guide travellers in Madagascar?"
+
+msgid "Vérifiés"
+msgstr "Verified"
+
+msgid "Vérifiés seulement"
+msgstr "Verified only"
+
+msgid "pour laisser un avis."
+msgstr "to leave a review."
+
+msgid "réinitialisez les filtres"
+msgstr "reset the filters"
+
+msgid "Écran"
+msgstr "Screen"
+
+msgid "Écris un message…"
+msgstr "Write a message…"
+
+msgid "— Choisir —"
+msgstr "— Choose —"
+
+msgid "🎬 Choisir la source de diffusion"
+msgstr "🎬 Choose the broadcast source"
+
+msgid "5000 km"
+msgstr "5000 km"
+
+msgid "Actualités de la plateforme"
+msgstr "Platform news"
+
+msgid "Add a story"
+msgstr "Add a story"
+
+msgid "Adresse / Localisation"
+msgstr "Address / Location"
+
+msgid "Ajouter de la musique"
+msgstr "Add music"
+
+msgid "Alimentation & Boissons"
+msgstr "Food & Drinks"
+
+msgid "Aller au contenu"
+msgstr "Skip to content"
+
+msgid "Ami"
+msgstr "Friend"
+
+msgid "Annonces disponibles"
+msgstr "Available listings"
+
+msgid "Announcements"
+msgstr "Announcements"
+
+msgid "Appareil photo"
+msgstr "Camera"
+
+msgid "Appeler"
+msgstr "Call"
+
+msgid "Aucun brouillon pour l'instant."
+msgstr "No draft yet."
+
+msgid "Aucun post sauvegardé pour l'instant."
+msgstr "No saved post yet."
+
+msgid "Aucune annonce disponible pour le moment."
+msgstr "No listing available at the moment."
+
+msgid "Automobile & Moto"
+msgstr "Cars & Motorbikes"
+
+msgid "Boutique Pro"
+msgstr "Pro Shop"
+
+msgid "Brouillon"
+msgstr "Draft"
+
+msgid "Brouillons & Programmés"
+msgstr "Drafts & Scheduled"
+
+msgid "Catégorie principale"
+msgstr "Main category"
+
+msgid "Changer de thème"
+msgstr "Switch theme"
+
+msgid "Choisir une catégorie"
+msgstr "Choose a category"
+
+msgid "Communauté"
+msgstr "Community"
+
+msgid "Contacter"
+msgstr "Contact"
+
+msgid "Créer mon compte"
+msgstr "Create my account"
+
+msgid "Créer un compte gratuit"
+msgstr "Create a free account"
+
+msgid "Créer un post"
+msgstr "Create a post"
+
+msgid "Créé le"
+msgstr "Created on"
+
+msgid "Date et heure de publication"
+msgstr "Publication date and time"
+
+msgid "Description de votre boutique"
+msgstr "Your shop description"
+
+msgid "Display"
+msgstr "Display"
+
+msgid "Début du clip (30 s max)"
+msgstr "Clip start (30 s max)"
+
+msgid "Découvrir Madagascar"
+msgstr "Discover Madagascar"
+
+msgid "Effacer"
+msgstr "Clear"
+
+msgid "Envoyer le message vocal"
+msgstr "Send voice message"
+
+msgid "Galerie"
+msgstr "Gallery"
+
+msgid "Galerie / Vidéo"
+msgstr "Gallery / Video"
+
+msgid "Gratuit"
+msgstr "Free"
+
+msgid "Groupes & directs"
+msgstr "Groups & lives"
+
+msgid "Horaires d'ouverture"
+msgstr "Opening hours"
+
+msgid "Immobilier"
+msgstr "Real estate"
+
+msgid "J'adore"
+msgstr "Love"
+
+msgid "J'ai déjà un compte"
+msgstr "I already have an account"
+
+msgid "J'aime"
+msgstr "Like"
+
+msgid "Lien direct vers un fichier audio public"
+msgstr "Direct link to a public audio file"
+
+msgid "Loading stories…"
+msgstr "Loading stories…"
+
+msgid "Ma boutique"
+msgstr "My shop"
+
+msgid "Marketplace"
+msgstr "Marketplace"
+
+msgid "Matériaux & BTP"
+msgstr "Materials & Construction"
+
+msgid "Menu"
+msgstr "Menu"
+
+msgid "Message vocal"
+msgstr "Voice message"
+
+msgid "No active stories from your friends yet."
+msgstr "No active stories from your friends yet."
+
+msgid "No notifications yet"
+msgstr "No notifications yet"
+
+msgid "Nom de la boutique"
+msgstr "Shop name"
+
+msgid "Photo de couverture"
+msgstr "Cover photo"
+
+msgid "Plus"
+msgstr "More"
+
+msgid "Posts sauvegardés"
+msgstr "Saved posts"
+
+msgid "Prix max (Ar)"
+msgstr "Max price (Ar)"
+
+msgid "Prix min (Ar)"
+msgstr "Min price (Ar)"
+
+msgid "Pro"
+msgstr "Pro"
+
+msgid "Programmer"
+msgstr "Schedule"
+
+msgid "Programmé"
+msgstr "Scheduled"
+
+msgid "Publication le"
+msgstr "Published on"
+
+msgid "Que voulez-vous créer ?"
+msgstr "What do you want to create?"
+
+msgid "Rejoignez la communauté"
+msgstr "Join the community"
+
+msgid "Remove from group"
+msgstr "Remove from group"
+
+msgid "Remove this suggestion"
+msgstr "Remove this suggestion"
+
+msgid "Request sent"
+msgstr "Request sent"
+
+msgid "Retirer des sauvegardes"
+msgstr "Remove from saved"
+
+msgid "Sent"
+msgstr "Sent"
+
+msgid "Signaler cette annonce"
+msgstr "Report this listing"
+
+msgid "Statut de l'annonce"
+msgstr "Listing status"
+
+msgid "Story texte"
+msgstr "Text story"
+
+msgid "Suggested for you"
+msgstr "Suggested for you"
+
+msgid "Suggested profile"
+msgstr "Suggested profile"
+
+msgid "Toucher pour lire"
+msgstr "Tap to play"
+
+msgid "Tout"
+msgstr "All"
+
+msgid "Triste"
+msgstr "Sad"
+
+msgid "Type d'annonce"
+msgstr "Listing type"
+
+msgid "Vendeur Vérifié"
+msgstr "Verified Seller"
+
+msgid "Veuillez choisir une date et heure."
+msgstr "Please choose a date and time."
+
+msgid "Voir"
+msgstr "View"
+
+msgid "Voir la boutique"
+msgstr "View shop"
+
+msgid "Voir les annonces"
+msgstr "View listings"
+
+msgid "Voir ma page boutique"
+msgstr "View my shop page"
+
+msgid "Votre fil, vos gens"
+msgstr "Your feed, your people"
+
+msgid "WhatsApp"
+msgstr "WhatsApp"
+
+msgid "Your recent activity"
+msgstr "Your recent activity"
+
+msgid "chaque jour"
+msgstr "every day"
+
+msgid "jusqu'au"
+msgstr "until"
+
+msgid "min."
+msgstr "min."
+
+msgid "Électronique & Informatique"
+msgstr "Electronics & Computers"
+
+msgid "Évoluer vers Boutique Pro"
+msgstr "Upgrade to Pro Shop"

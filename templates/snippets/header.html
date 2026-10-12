@@ -144,7 +144,7 @@
                        oninput="onSearchInput(this.value)"
                        onfocus="if(this.value.length>1)showSearchDd()"
                        onblur="hideSearchDdDelayed()">
-                <button type="submit"><span class="material-icons">search</span></button>
+                <button type="submit" aria-label="{% trans 'Rechercher' %}"><span class="material-icons">search</span></button>
             </form>
             <!-- Live suggestion dropdown -->
             <div id="zoot-search-dd" style="
@@ -174,7 +174,7 @@
         <!-- Language switcher -->
         {% get_current_language as CURRENT_LANG %}
         <div style="position:relative;">
-            <button class="zoot-lang-btn" id="zoot-lang-toggle" onclick="document.getElementById('zoot-lang-dd').classList.toggle('open');event.stopPropagation();" title="{% trans 'Language' %}">
+            <button class="zoot-lang-btn" id="zoot-lang-toggle" onclick="document.getElementById('zoot-lang-dd').classList.toggle('open');event.stopPropagation();" title="{% trans 'Language' %}" type="button">
                 <span class="lang-flag">{% if CURRENT_LANG == 'mg' %}🇲🇬{% elif CURRENT_LANG == 'en' %}🇬🇧{% else %}🇫🇷{% endif %}</span>
                 <span class="lang-code zoot-lang-code-hide-mobile">{{ CURRENT_LANG|upper }}</span>
                 <span class="material-icons" style="font-size:.85rem;opacity:.6">expand_more</span>
@@ -203,7 +203,7 @@
         </a>
 
         <!-- Theme toggle (desktop — masqué sur mobile par CSS) -->
-        <button id="theme-toggle-btn" onclick="toggleTheme()" class="zoot-icon-btn" title="{% trans 'Dark mode' %}">
+        <button id="theme-toggle-btn" onclick="toggleTheme()" class="zoot-icon-btn" title="{% trans 'Dark mode' %}" type="button">
             <span class="material-icons" style="font-size:1.25rem">dark_mode</span>
         </button>
 
@@ -395,7 +395,7 @@
         </div>
 
         <!-- Mobile hamburger -->
-        <button class="zoot-hamburger" id="zoot-mobile-toggle" aria-label="Menu">
+        <button class="zoot-hamburger" id="zoot-mobile-toggle" aria-label="Menu" type="button">
             <span class="material-icons">menu</span>
         </button>
 
@@ -413,7 +413,7 @@
              comptes connectés : sur téléphone, un visiteur n'avait aucun
              accès au Bazar, au Tourisme ni aux Groupes, pourtant publics. -->
         <button class="zoot-hamburger" id="zoot-mobile-toggle" aria-label="Menu"
-                aria-expanded="false" aria-controls="zoot-mobile-menu">
+                aria-expanded="false" aria-controls="zoot-mobile-menu" type="button">
             <span class="material-icons">menu</span>
         </button>
         {% endif %}
@@ -426,7 +426,7 @@
 <div class="zoot-mobile-menu" id="zoot-mobile-menu">
     <form class="zoot-mobile-search" method="GET" action="{% url 'search' %}">
         <input type="text" name="q" placeholder="{% trans 'Search...' %}" autocomplete="off">
-        <button type="submit"><span class="material-icons" style="font-size:1.1rem;color:var(--text-muted)">search</span></button>
+        <button type="submit" aria-label="{% trans 'Rechercher' %}"><span class="material-icons" style="font-size:1.1rem;color:var(--text-muted)">search</span></button>
     </form>
 
     <!-- Accueil & Bazar -->
@@ -629,7 +629,7 @@
                 '<div class="zoot-toast-user">' + (data.from_username||'') + ' a publié quelque chose</div>' +
                 '<div class="zoot-toast-msg">'+(data.post_title||'')+'</div>' +
             '</div>' +
-            '<button class="zoot-toast-close material-icons" onclick="this.closest(\'.zoot-toast-item\').remove()">close</button>';
+            '<button class="zoot-toast-close material-icons" onclick="this.closest(\'.zoot-toast-item\').remove()" type="button">close</button>';
         toast.addEventListener('click', function(ev){
             if(!ev.target.classList.contains('zoot-toast-close')) window.location.href = feedUrl;
         });
@@ -658,7 +658,7 @@
                     '</div>' +
                     '<div class="zoot-toast-msg">' + liveTitle + '</div>' +
                 '</div>' +
-                '<button class="zoot-toast-close material-icons" onclick="this.closest(\'.zoot-toast-item\').remove()">close</button>';
+                '<button class="zoot-toast-close material-icons" onclick="this.closest(\'.zoot-toast-item\').remove()" type="button">close</button>';
             toast.style.cursor = 'pointer';
             toast.addEventListener('click', function(ev) {
                 if (!ev.target.classList.contains('zoot-toast-close')) window.location.href = liveUrl;
@@ -783,7 +783,7 @@ document.addEventListener('click', function(e) {
             html += '<div style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.3rem .9rem .2rem;">Utilisateurs</div>';
             data.users.forEach(function(u) {
                 var avatarHtml = u.avatar
-                    ? '<img src="' + u.avatar + '" width="32" height="32" style="border-radius:50%;object-fit:cover;border:2px solid var(--border);" loading="lazy">'
+                    ? '<img src="' + u.avatar + '" width="32" height="32" style="border-radius:50%;object-fit:cover;border:2px solid var(--border);" loading="lazy" alt="">'
                     : '<span class="material-icons" style="font-size:1.6rem;color:var(--text-muted);">account_circle</span>';
                 html += '<a href="/account/' + u.id + '/" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.45rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
                       + ' onmouseover="this.style.background=\'var(--btn-bg)\'"'
@@ -816,7 +816,7 @@ document.addEventListener('click', function(e) {
             html += '<div style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.4rem .9rem .2rem;">Bazar</div>';
             data.annonces.forEach(function(a) {
                 var thumb = a.img
-                    ? '<img src="' + a.img + '" width="36" height="36" style="border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;" loading="lazy">'
+                    ? '<img src="' + a.img + '" width="36" height="36" style="border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;" loading="lazy" alt="">'
                     : '<span class="material-icons" style="font-size:1.4rem;color:var(--text-muted);flex-shrink:0;">storefront</span>';
                 html += '<a href="/bazar/' + a.id + '/" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
                       + ' onmouseover="this.style.background=\'var(--btn-bg)\'"'

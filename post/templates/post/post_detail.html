@@ -96,7 +96,7 @@
                         id="react-btn-{{ post.id }}"
                         onclick="pdQuickReact()"
                         onmouseenter="openPicker({{ post.id }})"
-                        title="Réagir">
+                        title="Réagir" type="button">
                     <span id="react-icon-{{ post.id }}" style="font-size:1.1rem;line-height:1;">
                         {% if post.user_reaction == 'like' %}👍
                         {% elif post.user_reaction == 'heart' %}❤️
@@ -117,19 +117,19 @@
                 </button>
                 <div class="reaction-picker" id="picker-{{ post.id }}" onmouseleave="closePicker({{ post.id }})">
                     <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
-                            onclick="sendReaction({{ post.id }}, 'like')" data-label="{% trans "J'aime" %}">👍</button>
+                            onclick="sendReaction({{ post.id }}, 'like')" data-label="{% trans "J'aime" %}" type="button">👍</button>
                     <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
-                            onclick="sendReaction({{ post.id }}, 'heart')" data-label="{% trans "J'adore" %}">❤️</button>
+                            onclick="sendReaction({{ post.id }}, 'heart')" data-label="{% trans "J'adore" %}" type="button">❤️</button>
                     <button class="reaction-emoji-btn {% if post.user_reaction == 'laugh' %}selected{% endif %}"
-                            onclick="sendReaction({{ post.id }}, 'laugh')" data-label="{% trans "Haha" %}">😂</button>
+                            onclick="sendReaction({{ post.id }}, 'laugh')" data-label="{% trans "Haha" %}" type="button">😂</button>
                     <button class="reaction-emoji-btn {% if post.user_reaction == 'wow' %}selected{% endif %}"
-                            onclick="sendReaction({{ post.id }}, 'wow')" data-label="{% trans "Wow" %}">😮</button>
+                            onclick="sendReaction({{ post.id }}, 'wow')" data-label="{% trans "Wow" %}" type="button">😮</button>
                     <button class="reaction-emoji-btn {% if post.user_reaction == 'sad' %}selected{% endif %}"
-                            onclick="sendReaction({{ post.id }}, 'sad')" data-label="{% trans "Triste" %}">😢</button>
+                            onclick="sendReaction({{ post.id }}, 'sad')" data-label="{% trans "Triste" %}" type="button">😢</button>
                 </div>
             </div>
 
-            <button class="pd-action-item" onclick="document.getElementById('pd-comment-input').focus()">
+            <button class="pd-action-item" onclick="document.getElementById('pd-comment-input').focus()" type="button">
                 <span class="material-icons">chat_bubble_outline</span>
                 Commenter
                 {% if post.total_comments %}
@@ -137,7 +137,7 @@
                 {% endif %}
             </button>
 
-            <button class="pd-action-item" onclick="pdSharePost()">
+            <button class="pd-action-item" onclick="pdSharePost()" type="button">
                 <span class="material-icons">share</span>
                 {% trans "Share" %}
             </button>
@@ -163,10 +163,10 @@
                         <div class="pc-comment-footer">
                             <span class="pc-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
                             <button class="pc-comment-reply-btn"
-                                    onclick="pdToggleReply({{ c.id }})">{% trans "Reply" %}</button>
+                                    onclick="pdToggleReply({{ c.id }})" type="button">{% trans "Reply" %}</button>
                             {% if request.user == c.author or request.user == post.author %}
                             <button class="pc-comment-del"
-                                    onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">{% trans "Delete" %}</button>
+                                    onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')" type="button">{% trans "Delete" %}</button>
                             {% else %}
                             <button type="button" class="pc-comment-del" onclick="openReportModal('comment','{{ c.id }}')">{% trans "Signaler" %}</button>
                             {% endif %}
@@ -188,7 +188,7 @@
                                         <span class="pc-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
                                         {% if request.user == reply.author or request.user == post.author %}
                                         <button class="pc-comment-del"
-                                                onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')">{% trans "Delete" %}</button>
+                                                onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')" type="button">{% trans "Delete" %}</button>
                                         {% else %}
                                         <button type="button" class="pc-comment-del" onclick="openReportModal('comment','{{ reply.id }}')">{% trans "Signaler" %}</button>
                                         {% endif %}
@@ -213,7 +213,7 @@
                             </div>
                             <button class="pc-comment-send"
                                     onclick="submitReply({{ c.id }}, {{ post.id }}, '{{ comment_url }}')"
-                                    title="{% trans 'Reply' %}">
+                                    title="{% trans 'Reply' %}" type="button">
                                 <span class="material-icons">send</span>
                             </button>
                         </div>
@@ -234,7 +234,7 @@
                               onkeydown="pdHandleCommentKey(event)"
                               oninput="autoResize(this)"></textarea>
                 </div>
-                <button class="pc-comment-submit" onclick="pdSubmitComment()" title="Envoyer">
+                <button class="pc-comment-submit" onclick="pdSubmitComment()" title="Envoyer" type="button">
                     <span class="material-icons">send</span>
                 </button>
             </div>
@@ -476,7 +476,7 @@ function sendReaction(postId, rtype) {
         if (!btn) return;
 
         var EMOJIS  = { like:'👍', heart:'❤️', laugh:'😂', wow:'😮', sad:'😢' };
-        var LABELS  = { like:'{% trans "Tiana" %}', heart:'{% trans "Tiako" %}', laugh:'{% trans "Heniky" %}', wow:'{% trans "Mahagaga" %}', sad:'{% trans "Maika" %}' };
+        var LABELS  = { like:'{% trans "Tiana"|escapejs %}', heart:'{% trans "Tiako"|escapejs %}', laugh:'{% trans "Heniky"|escapejs %}', wow:'{% trans "Mahagaga"|escapejs %}', sad:'{% trans "Maika"|escapejs %}' };
 
         if (data.user_reaction) {
             btn.classList.add('liked');

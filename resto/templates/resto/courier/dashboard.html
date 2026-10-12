@@ -80,7 +80,7 @@
   const HAS_ACTIVE = {{ orders|length }} > 0;
   const AVAILABLE = {{ courier.is_available|yesno:"true,false" }};
   const el = document.getElementById('rs-gps-status');
-  const I18N = {on:"{% trans 'GPS partagé' %}", off:"{% trans 'GPS inactif' %}", err:"{% trans 'GPS refusé ou indisponible' %}"};
+  const I18N = {on:"{% trans 'GPS partagé'|escapejs %}", off:"{% trans 'GPS inactif'|escapejs %}", err:"{% trans 'GPS refusé ou indisponible'|escapejs %}"};
   // Partage de position : seulement quand le livreur est disponible ou a une livraison en cours
   if((HAS_ACTIVE || AVAILABLE) && navigator.geolocation){
     let last = 0;

@@ -12,15 +12,15 @@
     {% if not lieu.is_approved and is_owner %}
     <div style="background:#fff3e0;border-left:4px solid #f57c00;border-radius:0 12px 12px 0;padding:.75rem 1rem;margin-bottom:1rem;font-size:.86rem;color:#e65100;display:flex;align-items:center;gap:.5rem;">
         <span class="material-icons" style="font-size:1.1rem;">hourglass_top</span>
-        Ce lieu est en attente de validation par un administrateur. Il n'est visible que par vous.
+        {% trans "Ce lieu est en attente de validation par un administrateur. Il n'est visible que par vous." %}
     </div>
     {% endif %}
 
     <!-- Breadcrumb -->
     <nav class="tour-breadcrumb">
-        <a href="{% url 'tourisme:home' %}">Tourisme</a>
+        <a href="{% url 'tourisme:home' %}">{% trans "Tourisme" %}</a>
         <span class="material-icons">chevron_right</span>
-        <a href="{% url 'tourisme:lieux_list' %}">Lieux</a>
+        <a href="{% url 'tourisme:lieux_list' %}">{% trans "Lieux" %}</a>
         <span class="material-icons">chevron_right</span>
         <span>{{ lieu.name }}</span>
     </nav>
@@ -31,10 +31,10 @@
             {% if images %}
                 <img src="{{ images.0.image.url }}" alt="{{ lieu.name }}" id="mainImg">
                 {% if images|length > 1 %}
-                <button class="gallery-nav-btn prev" id="galleryPrev" onclick="galleryNav(-1)" aria-label="Image précédente">
+                <button class="gallery-nav-btn prev" id="galleryPrev" onclick="galleryNav(-1)" aria-label="{% trans 'Image précédente' %}" type="button">
                     <span class="material-icons">chevron_left</span>
                 </button>
-                <button class="gallery-nav-btn next" id="galleryNext" onclick="galleryNav(1)" aria-label="Image suivante">
+                <button class="gallery-nav-btn next" id="galleryNext" onclick="galleryNav(1)" aria-label="{% trans 'Image suivante' %}" type="button">
                     <span class="material-icons">chevron_right</span>
                 </button>
                 <div class="gallery-counter" id="galleryCounter">1 / {{ images|length }}</div>
@@ -42,7 +42,7 @@
             {% else %}
                 <div class="lieu-main-img-ph">
                     <span class="material-icons">landscape</span>
-                    <span style="font-size:.85rem;">Pas d'image disponible</span>
+                    <span style="font-size:.85rem;">{% trans "Pas d'image disponible" %}</span>
                 </div>
             {% endif %}
         </div>
@@ -92,7 +92,7 @@
             <a href="{% url 'tourisme:lieu_edit' lieu.slug %}"
                style="display:inline-flex;align-items:center;gap:.3rem;background:var(--btn-bg);border:1.5px solid var(--border);color:var(--text);border-radius:50px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;text-decoration:none;">
                 <span class="material-icons" style="font-size:.95rem">edit</span>
-                Modifier
+                {% trans "Modifier" %}
             </a>
             {% endif %}
             <a href="{% url 'tourisme:lieux_list' %}?cat={{ lieu.category }}"
@@ -115,7 +115,7 @@
         <div class="lieu-info-card">
             <div class="lieu-info-label">
                 <span class="material-icons">calendar_today</span>
-                Meilleure période
+                {% trans "Meilleure période" %}
             </div>
             <div class="lieu-info-value">{{ lieu.best_period }}</div>
         </div>
@@ -124,7 +124,7 @@
         <div class="lieu-info-card">
             <div class="lieu-info-label">
                 <span class="material-icons">paid</span>
-                Tarif d'entrée
+                {% trans "Tarif d'entrée" %}
             </div>
             <div class="lieu-info-value">{{ lieu.entry_fee }}</div>
         </div>
@@ -133,7 +133,7 @@
         <div class="lieu-info-card">
             <div class="lieu-info-label">
                 <span class="material-icons">location_on</span>
-                Adresse / GPS
+                {% trans "Adresse / GPS" %}
             </div>
             <div class="lieu-info-value">{{ lieu.address }}</div>
         </div>
@@ -142,7 +142,7 @@
         <div class="lieu-info-card">
             <div class="lieu-info-label">
                 <span class="material-icons">map</span>
-                Région
+                {% trans "Région" %}
             </div>
             <div class="lieu-info-value">{{ lieu.get_region_display }}</div>
         </div>
@@ -155,7 +155,7 @@
     <div class="lieu-tips">
         <div class="lieu-tips-title">
             <span class="material-icons">tips_and_updates</span>
-            Conseils pratiques
+            {% trans "Conseils pratiques" %}
         </div>
         <div class="lieu-tips-text">{{ lieu.tips|linebreaksbr }}</div>
     </div>
@@ -166,7 +166,7 @@
     <section style="margin-bottom:2rem;">
         <h2 class="lieu-section-title">
             <span class="material-icons">person_pin</span>
-            Guides pour ce lieu
+            {% trans "Guides pour ce lieu" %}
         </h2>
         <div class="lieu-guides-grid">
             {% for guide in guides %}
@@ -202,7 +202,7 @@
     <section style="margin-bottom:2rem;">
         <h2 class="lieu-section-title">
             <span class="material-icons">article</span>
-            Publications sur ce lieu
+            {% trans "Publications sur ce lieu" %}
         </h2>
         <div class="lieu-posts-grid">
             {% for post in lieu_posts %}
@@ -280,10 +280,10 @@
                     <label for="star{{ v }}">★</label>
                     {% endfor %}
                 </div>
-                <textarea class="avis-comment-input" name="comment" placeholder="Décrivez votre expérience..." required>{% if user_avis %}{{ user_avis.comment }}{% endif %}</textarea>
+                <textarea class="avis-comment-input" name="comment" placeholder="{% trans 'Décrivez votre expérience...' %}" required>{% if user_avis %}{{ user_avis.comment }}{% endif %}</textarea>
                 <div class="avis-visited-row">
                     <span class="material-icons" style="font-size:1rem;">event</span>
-                    Date de visite (optionnel) :
+                    {% trans "Date de visite (optionnel) :" %}
                     <input type="date" name="visited_at"
                            value="{% if user_avis and user_avis.visited_at %}{{ user_avis.visited_at|date:'Y-m-d' }}{% endif %}">
                 </div>
@@ -295,8 +295,8 @@
         </div>
         {% else %}
         <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1rem;">
-            <a href="{% url 'login' %}" style="color:var(--accent);font-weight:600;">Connectez-vous</a>
-            pour laisser un avis.
+            <a href="{% url 'login' %}" style="color:var(--accent);font-weight:600;">{% trans "Connectez-vous" %}</a>
+            {% trans "pour laisser un avis." %}
         </p>
         {% endif %}
 
@@ -330,7 +330,7 @@
         </div>
         {% else %}
         <p style="font-size:.87rem;color:var(--text-muted);">
-            Soyez le premier à laisser un avis sur ce lieu !
+            {% trans "Soyez le premier à laisser un avis sur ce lieu !" %}
         </p>
         {% endif %}
     </section>
@@ -340,7 +340,7 @@
     <section>
         <h2 class="lieu-section-title">
             <span class="material-icons">grid_view</span>
-            Lieux similaires
+            {% trans "Lieux similaires" %}
         </h2>
         <div class="similaires-grid">
             {% for sim in similaires %}

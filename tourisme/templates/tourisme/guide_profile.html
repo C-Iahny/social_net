@@ -11,9 +11,9 @@
 
     <!-- Breadcrumb -->
     <nav class="tour-breadcrumb">
-        <a href="{% url 'tourisme:home' %}">Tourisme</a>
+        <a href="{% url 'tourisme:home' %}">{% trans "Tourisme" %}</a>
         <span class="material-icons">chevron_right</span>
-        <a href="{% url 'tourisme:guides_list' %}">Guides</a>
+        <a href="{% url 'tourisme:guides_list' %}">{% trans "Guides" %}</a>
         <span class="material-icons">chevron_right</span>
         <span>{{ guide.display_name }}</span>
     </nav>
@@ -42,13 +42,13 @@
                 {% if guide.is_verified %}
                 <span class="badge-verifie">
                     <span class="material-icons">verified</span>
-                    Guide vérifié
+                    {% trans "Guide vérifié" %}
                 </span>
                 {% endif %}
                 {% if not guide.is_active %}
                 <span class="badge-unavailable">
                     <span class="material-icons">pause_circle</span>
-                    Indisponible
+                    {% trans "Indisponible" %}
                 </span>
                 {% endif %}
             </h1>
@@ -69,7 +69,7 @@
                 {% if guide.max_group_size %}
                 <div class="gp-stat">
                     <div class="gp-stat-num">{{ guide.max_group_size }}</div>
-                    <div class="gp-stat-label">Pers. max.</div>
+                    <div class="gp-stat-label">{% trans "Pers. max." %}</div>
                 </div>
                 {% endif %}
                 {% with nb=guide.lieux_favoris.count %}
@@ -87,7 +87,7 @@
                 <a href="https://wa.me/{{ guide.phone|cut:' '|cut:'+'|cut:'-' }}"
                    target="_blank" rel="noopener" class="btn-contact">
                     <span class="material-icons" style="font-size:1.1rem">chat</span>
-                    Contacter sur WhatsApp
+                    {% trans "Contacter sur WhatsApp" %}
                 </a>
                 <a href="tel:{{ guide.phone }}" style="display:inline-flex;align-items:center;gap:.3rem;background:var(--btn-bg);border:1.5px solid var(--border);color:var(--text);border-radius:50px;padding:.6rem 1.2rem;font-weight:600;font-size:.88rem;text-decoration:none;">
                     <span class="material-icons" style="font-size:1rem">call</span>
@@ -97,12 +97,12 @@
                 {% if is_owner %}
                 <a href="{% url 'tourisme:guide_register' %}" class="btn-edit">
                     <span class="material-icons" style="font-size:1rem">edit</span>
-                    Modifier mon profil
+                    {% trans "Modifier mon profil" %}
                 </a>
                 <a href="{% url 'tourisme:lieu_submit' %}"
                    style="display:inline-flex;align-items:center;gap:.35rem;background:var(--accent);color:#fff;border-radius:50px;padding:.55rem 1.2rem;font-weight:700;font-size:.85rem;text-decoration:none;">
                     <span class="material-icons" style="font-size:1rem">add_location_alt</span>
-                    Proposer un lieu
+                    {% trans "Proposer un lieu" %}
                 </a>
                 {% endif %}
             </div>
@@ -114,7 +114,7 @@
     <div class="gp-section">
         <div class="gp-section-title">
             <span class="material-icons">person</span>
-            Présentation
+            {% trans "Présentation" %}
         </div>
         <div class="gp-bio">{{ guide.bio|linebreaksbr }}</div>
     </div>
@@ -124,14 +124,14 @@
     <div class="gp-section">
         <div class="gp-section-title">
             <span class="material-icons">info</span>
-            Informations pratiques
+            {% trans "Informations pratiques" %}
         </div>
         <div class="gp-info-grid">
             {% if guide.languages %}
             <div class="gp-info-row">
                 <div class="gp-info-label">
                     <span class="material-icons">translate</span>
-                    Langues parlées
+                    {% trans "Langues parlées" %}
                 </div>
                 <div class="gp-tags">
                     {% for lang in guide.language_list %}
@@ -144,7 +144,7 @@
             <div class="gp-info-row">
                 <div class="gp-info-label">
                     <span class="material-icons">directions_car</span>
-                    Transports
+                    {% trans "Transports" %}
                 </div>
                 <div class="gp-tags">
                     {% for t in guide.transport_list %}
@@ -160,7 +160,7 @@
             <div class="gp-info-row">
                 <div class="gp-info-label">
                     <span class="material-icons">star</span>
-                    Spécialités
+                    {% trans "Spécialités" %}
                 </div>
                 <div class="gp-info-value">{{ guide.specialities }}</div>
             </div>
@@ -169,7 +169,7 @@
             <div class="gp-info-row">
                 <div class="gp-info-label">
                     <span class="material-icons">group</span>
-                    Taille du groupe
+                    {% trans "Taille du groupe" %}
                 </div>
                 <div class="gp-info-value">Jusqu'à {{ guide.max_group_size }} personnes</div>
             </div>
@@ -178,7 +178,7 @@
             <div class="gp-info-row" style="grid-column: 1 / -1;">
                 <div class="gp-info-label">
                     <span class="material-icons">map</span>
-                    Régions couvertes
+                    {% trans "Régions couvertes" %}
                 </div>
                 <div class="gp-info-value">{{ guide.regions_covered }}</div>
             </div>
@@ -191,7 +191,7 @@
     <div class="gp-section">
         <div class="gp-section-title">
             <span class="material-icons">receipt_long</span>
-            Conditions &amp; Tarifs
+            {% trans "Conditions &amp; Tarifs" %}
         </div>
         <div class="gp-conditions">{{ guide.conditions|linebreaksbr }}</div>
     </div>
@@ -238,7 +238,7 @@
     {% if not guide.phone %}
     <div style="text-align:center;padding:1.5rem;background:var(--bg-card);border-radius:14px;border:1px solid var(--border);">
         <span class="material-icons" style="font-size:2rem;color:var(--text-muted);display:block;margin-bottom:.4rem">phone_disabled</span>
-        <div style="font-size:.88rem;color:var(--text-muted);">Ce guide n'a pas renseigné de numéro de contact.</div>
+        <div style="font-size:.88rem;color:var(--text-muted);">{% trans "Ce guide n'a pas renseigné de numéro de contact." %}</div>
     </div>
     {% endif %}
 

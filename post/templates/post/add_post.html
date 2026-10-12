@@ -470,7 +470,7 @@ function _diagToast(msg, color) {
 function submitAs(action) {
     if (action === 'schedule') {
         var dt = document.getElementById('sched-dt-input').value;
-        if (!dt) { vzAlert('{% trans "Veuillez choisir une date et heure." %}'); return; }
+        if (!dt) { vzAlert('{% trans "Veuillez choisir une date et heure."|escapejs %}'); return; }
         _doFetch('schedule', dt);
     } else {
         _doFetch(action);

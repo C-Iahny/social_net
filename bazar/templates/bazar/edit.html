@@ -211,8 +211,8 @@
 
 <script>
 var VZB_I18N = {
-    saving: "{% trans 'Enregistrement…' %}",
-    networkError: "{% trans 'Erreur réseau. Réessayez.' %}"
+    saving: "{% trans 'Enregistrement…'|escapejs %}",
+    networkError: "{% trans 'Erreur réseau. Réessayez.'|escapejs %}"
 };
 </script>
 <script>
@@ -233,7 +233,7 @@ function _deletePhotoNow(imgPk, btn) {
             document.getElementById(`photo-${imgPk}`).remove();
         }
     })
-    .catch(() => vzAlert('{% trans "Erreur lors de la suppression." %}'));
+    .catch(() => vzAlert('{% trans "Erreur lors de la suppression."|escapejs %}'));
 }
 
 // Aperçu nouvelles photos

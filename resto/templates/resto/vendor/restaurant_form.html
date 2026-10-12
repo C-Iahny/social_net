@@ -57,7 +57,7 @@
   if(latEl.value && lngEl.value) setPoint(L.latLng(start));
   map.on('click', e => setPoint(e.latlng));
   window.rsLocate = () => navigator.geolocation?.getCurrentPosition(p => { const ll = L.latLng(p.coords.latitude, p.coords.longitude); map.setView(ll, 16); setPoint(ll); },
-                                                                    () => vzAlert('{% trans "Position indisponible" %}'), {enableHighAccuracy:true, timeout:8000});
+                                                                    () => vzAlert('{% trans "Position indisponible"|escapejs %}'), {enableHighAccuracy:true, timeout:8000});
 })();
 </script>
 {% endblock %}

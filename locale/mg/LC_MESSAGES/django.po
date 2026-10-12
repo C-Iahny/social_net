@@ -3456,3 +3456,681 @@ msgstr "Hitatitra ity toerana ity"
 
 msgid "Signaler cette story"
 msgstr "Hitatitra ity story ity"
+
+msgid "Adresse / Coordonnées GPS"
+msgstr "Adiresy / GPS"
+
+msgid "Adresse / GPS"
+msgstr "Adiresy / GPS"
+
+msgid "Années d'expérience"
+msgstr "Taona niasana"
+
+msgid "Aucun guide disponible pour l'instant."
+msgstr "Mbola tsy misy mpitari-dalana."
+
+msgid "Aucun guide trouvé"
+msgstr "Tsy nisy mpitari-dalana hita"
+
+msgid "Aucun lieu approuvé pour l'instant."
+msgstr "Mbola tsy misy toerana nankatoavina."
+
+msgid "Aucun lieu trouvé"
+msgstr "Tsy nisy toerana hita"
+
+msgid "Aucun live en cours — sois le premier à diffuser !"
+msgstr "Tsy misy live mandeha — aoka ianao no voalohany !"
+
+msgid "Bio / Présentation"
+msgstr "Mombamomba"
+
+msgid "Ce guide n'a pas renseigné de numéro de contact."
+msgstr "Tsy nametraka laharana ity mpitari-dalana ity."
+
+msgid "Ce lieu est en attente de validation par un administrateur. Il n'est visible que par vous."
+msgstr "Miandry fankatoavana ity toerana ity. Ianao irery no mahita azy."
+
+msgid "Chat en direct"
+msgstr "Resaka mivantana"
+
+msgid "Choisir une photo"
+msgstr "Hifidy sary"
+
+msgid "Cliquez ou glissez vos nouvelles photos ici"
+msgstr "Tsindrio na tariho eto ny sary vaovao"
+
+msgid "Cliquez ou glissez vos photos ici"
+msgstr "Tsindrio na tariho eto ny sarinao"
+
+msgid "Cliquez sur une photo pour la marquer à supprimer (fond rouge = sera supprimée)."
+msgstr "Tsindrio ny sary hofafana (mena = hofafana)."
+
+msgid "Commencer le live"
+msgstr "Hanomboka ny live"
+
+msgid "Conditions &amp; Tarifs"
+msgstr "Fepetra sy vidiny"
+
+msgid "Conditions détaillées"
+msgstr "Fepetra amin'ny antsipiriany"
+
+msgid "Connectez-vous"
+msgstr "Midira"
+
+msgid "Conseils pour les visiteurs : transport, hébergement, précautions…"
+msgstr "Torohevitra ho an'ny mpitsidika : fitaterana, trano, fitandremana…"
+
+msgid "Conseils pratiques"
+msgstr "Torohevitra"
+
+msgid "Date de visite (optionnel) :"
+msgstr "Daty nitsidihana (tsy voatery) :"
+
+msgid "De côtes"
+msgstr "Morontsiraka"
+
+msgid "Devenir guide"
+msgstr "Ho mpitari-dalana"
+
+msgid "Découvrez"
+msgstr "Zahao"
+
+msgid "Décrivez ce lieu : paysage, histoire, ce qui le rend unique…"
+msgstr "Faritao ity toerana ity : tontolo, tantara, ny mampiavaka azy…"
+
+msgid "Décrivez votre expérience, vos points forts, pourquoi vous choisir."
+msgstr "Lazao ny traikefanao sy ny tanjakao."
+
+msgid "Décrivez votre expérience..."
+msgstr "Lazao ny traikefanao..."
+
+msgid "Effacer les filtres"
+msgstr "Fafao ny sivana"
+
+msgid "En attente de la diffusion…"
+msgstr "Miandry ny fandefasana…"
+
+msgid "Enregistrer les modifications"
+msgstr "Tehirizo ny fanovana"
+
+msgid "Espèces endémiques"
+msgstr "Karazana tsy misy afa-tsy eto"
+
+msgid "Essayez d'autres termes ou"
+msgstr "Andramo teny hafa na"
+
+msgid "Ex : 🇲🇬 Madagascar vs France — Coupe du Monde !"
+msgstr "Ohatra : 🇲🇬 Madagasikara vs Frantsa — Fiadiana ny amboara eran-tany !"
+
+msgid "Ex: -18.9249, 44.8237 ou nom du village"
+msgstr "Ohatra : -18.9249, 44.8237 na anaran-tanàna"
+
+msgid "Ex: Avril à Novembre"
+msgstr "Ohatra : Aprily ka hatramin'ny Novambra"
+
+msgid "Ex: Gratuit, 5 000 Ar…"
+msgstr "Ohatra : Maimaim-poana, 5 000 Ar…"
+
+msgid "Ex: Tsingy de Bemaraha, Nosy Be, Isalo…"
+msgstr "Ohatra : Tsingy Bemaraha, Nosy Be, Isalo…"
+
+msgid "Explorer par catégorie"
+msgstr "Hizaha isaky ny sokajy"
+
+msgid "Format international recommandé. Ex: +261 32 00 000 00"
+msgstr "Endrika iraisam-pirenena. Ohatra : +261 32 00 000 00"
+
+msgid "Guide vérifié"
+msgstr "Mpitari-dalana voamarina"
+
+msgid "Guides"
+msgstr "Mpitari-dalana"
+
+msgid "Guides pour ce lieu"
+msgstr "Mpitari-dalana ho an'ity toerana ity"
+
+msgid "Guides touristiques"
+msgstr "Mpitari-dalana"
+
+msgid "Guides vérifiés"
+msgstr "Mpitari-dalana voamarina"
+
+msgid "Image précédente"
+msgstr "Sary teo aloha"
+
+msgid "Image suivante"
+msgstr "Sary manaraka"
+
+msgid "Informations pratiques"
+msgstr "Fampahalalana azo ampiasaina"
+
+msgid "Informations principales"
+msgstr "Fampahalalana fototra"
+
+msgid "Inscrivez-vous gratuitement et soyez trouvé par des milliers de voyageurs."
+msgstr "Misorata anarana maimaim-poana ary ho hitan'ny mpandeha an'arivony."
+
+msgid "JPG, PNG, WEBP — max 8 photos. La première sera la photo principale."
+msgstr "JPG, PNG, WEBP — 8 sary farafahabetsany. Ny voalohany no sary fototra."
+
+msgid "JPG, PNG, WEBP — maximum 8 photos au total"
+msgstr "JPG, PNG, WEBP — 8 sary farafahabetsany"
+
+msgid "L'hôte a mis fin à la diffusion."
+msgstr "Nahatsahatra ny fandefasana ny tompon-trano."
+
+msgid "L'île rouge vous attend — baobabs, plages de corail, lémuriens et paysages à couper le souffle."
+msgstr "Miandry anao ny Nosy Mena — baobab, torapasika, varika ary tontolo mahavariana."
+
+msgid "LIVE"
+msgstr "LIVE"
+
+msgid "Langues &amp; Contact"
+msgstr "Fiteny sy fifandraisana"
+
+msgid "Le live est terminé"
+msgstr "Vita ny live"
+
+msgid "Lieux"
+msgstr "Toerana"
+
+msgid "Lieux populaires"
+msgstr "Toerana malaza"
+
+msgid "Lieux similaires"
+msgstr "Toerana mitovy"
+
+msgid "Lieux touristiques"
+msgstr "Toerana fizahan-tany"
+
+msgid "Lives en cours"
+msgstr "Live mandeha"
+
+msgid "Malagasy, Français, Anglais"
+msgstr "Malagasy, Frantsay, Anglisy"
+
+msgid "Meilleure période"
+msgstr "Fotoana tsara indrindra"
+
+msgid "Modifier le lieu"
+msgstr "Ovay ny toerana"
+
+msgid "Moyens de déplacement"
+msgstr "Fitaterana"
+
+msgid "Nom du lieu"
+msgstr "Anaran'ny toerana"
+
+msgid "Nombre d'années en tant que guide"
+msgstr "Isan'ny taona naha-mpitari-dalana"
+
+msgid "Nombre max de voyageurs"
+msgstr "Isan'ny mpandeha farafahabetsany"
+
+msgid "Pagination"
+msgstr "Pejy"
+
+msgid "Partage ton écran pour diffuser le match, ou utilise ta caméra."
+msgstr "Zarao ny efijerinao handefasana ny lalao, na ampiasao ny fakan-tsarinao."
+
+msgid "Partager l'écran"
+msgstr "Hizara efijery"
+
+msgid "Partagez un lieu que vous connaissez et aidez les voyageurs à découvrir Madagascar."
+msgstr "Zarao ny toerana fantatrao ary ampio ny mpandeha hahita an'i Madagasikara."
+
+msgid "Pas d'image disponible"
+msgstr "Tsy misy sary"
+
+msgid "Pers. max."
+msgstr "Olona farafahabetsany"
+
+msgid "Photo actuelle"
+msgstr "Sary ankehitriny"
+
+msgid "Photo de profil"
+msgstr "Sarin'ny mombamomba"
+
+msgid "Photos (jusqu'à 8)"
+msgstr "Sary (hatramin'ny 8)"
+
+msgid "Photos existantes"
+msgstr "Sary efa misy"
+
+msgid "Plein écran"
+msgstr "Efijery feno"
+
+msgid "Principal"
+msgstr "Fototra"
+
+msgid "Prix indicatif / jour (Ariary)"
+msgstr "Vidiny isan'andro (Ariary)"
+
+msgid "Proposer un lieu"
+msgstr "Hanolotra toerana"
+
+msgid "Proposer un lieu touristique"
+msgstr "Hanolotra toerana fizahan-tany"
+
+msgid "Publications sur ce lieu"
+msgstr "Lahatsoratra momba ity toerana ity"
+
+msgid "Quitter"
+msgstr "Hiala"
+
+msgid "Rechercher un guide…"
+msgstr "Hitady mpitari-dalana…"
+
+msgid "Rechercher un lieu…"
+msgstr "Hitady toerana…"
+
+msgid "Regardez le match ensemble ⚽"
+msgstr "Jereo miaraka ny lalao ⚽"
+
+msgid "Rejoignez notre réseau de guides touristiques et aidez les voyageurs à découvrir l'île."
+msgstr "Midira ao amin'ny tambajotran'ny mpitari-dalana ary ampio ny mpandeha hahita ny Nosy."
+
+msgid "Rejoindre"
+msgstr "Hiditra"
+
+msgid "Rejoindre le live"
+msgstr "Hiditra ao amin'ny live"
+
+msgid "Retourner"
+msgstr "Avadiho"
+
+msgid "Régions"
+msgstr "Faritra"
+
+msgid "Régions couvertes"
+msgstr "Faritra iasana"
+
+msgid "Régions où vous guidez"
+msgstr "Faritra itarihanao"
+
+msgid "S'inscrire comme guide"
+msgstr "Hisoratra ho mpitari-dalana"
+
+msgid "Se connecter pour s'inscrire"
+msgstr "Midira raha hisoratra anarana"
+
+msgid "Soumettre le lieu"
+msgstr "Alefaso ny toerana"
+
+msgid "Soyez le premier à laisser un avis sur ce lieu !"
+msgstr "Aoka ianao no voalohany hanome hevitra !"
+
+msgid "Spécialités"
+msgstr "Fahaizana manokana"
+
+msgid "Séparez par des virgules. Ex: Malagasy, Français, Anglais"
+msgstr "Sarao amin'ny faingo. Ohatra : Malagasy, Frantsay, Anglisy"
+
+msgid "Séparez par des virgules. Ex: Voiture, 4×4, Pirogue"
+msgstr "Sarao amin'ny faingo. Ohatra : Fiara, 4×4, Lakana"
+
+msgid "Taille du groupe"
+msgstr "Haben'ny vondrona"
+
+msgid "Taille max du groupe"
+msgstr "Haben'ny vondrona farafahabetsany"
+
+msgid "Tarif d'entrée"
+msgstr "Vidim-pidirana"
+
+msgid "Tarif journalier approximatif. Laissez vide si variable."
+msgstr "Vidiny isan'andro eo ho eo. Avelao foana raha miovaova."
+
+msgid "Terminer"
+msgstr "Hamarana"
+
+msgid "Tous"
+msgstr "Rehetra"
+
+msgid "Tous formats image (JPG, PNG, HEIC, GIF…) — max 10 Mo"
+msgstr "Endrika sary rehetra (JPG, PNG, HEIC, GIF…) — 10 Mo farafahabetsany"
+
+msgid "Tous les guides"
+msgstr "Mpitari-dalana rehetra"
+
+msgid "Toutes les régions"
+msgstr "Faritra rehetra"
+
+msgid "Transports"
+msgstr "Fitaterana"
+
+msgid "Transports disponibles"
+msgstr "Fitaterana misy"
+
+msgid "Trouver un guide"
+msgstr "Hitady mpitari-dalana"
+
+msgid "Types de circuits &amp; spécialités"
+msgstr "Karazana dia sy fahaizana manokana"
+
+msgid "Voir d'autres lives"
+msgstr "Hijery live hafa"
+
+msgid "Voir le replay"
+msgstr "Hijery ny famerenana"
+
+msgid "Voir tout"
+msgstr "Hijery ny rehetra"
+
+msgid "Voiture, 4×4, Pirogue, À pied"
+msgstr "Fiara, 4×4, Lakana, An-tongotra"
+
+msgid "Votre profil sera examiné par un administrateur avant d'être publié."
+msgstr "Hodinihin'ny mpitantana ny mombamomba anao alohan'ny hamoahana azy."
+
+msgid "Votre soumission sera vérifiée par un administrateur avant d'être publiée. Vous recevrez une notification dès qu'elle sera approuvée."
+msgstr "Hohamarinin'ny mpitantana ny tolotrao alohan'ny hamoahana azy. Hahazo fampandrenesana ianao rehefa ankatoavina."
+
+msgid "Vous connaissez Madagascar ?"
+msgstr "Fantatrao ve i Madagasikara ?"
+
+msgid "Vous guidez des voyageurs à Madagascar ?"
+msgstr "Mitarika mpandeha eto Madagasikara ve ianao ?"
+
+msgid "Vérifiés"
+msgstr "Voamarina"
+
+msgid "Vérifiés seulement"
+msgstr "Ny voamarina ihany"
+
+msgid "pour laisser un avis."
+msgstr "raha hanome hevitra."
+
+msgid "réinitialisez les filtres"
+msgstr "avereno ny sivana"
+
+msgid "Écran"
+msgstr "Efijery"
+
+msgid "Écris un message…"
+msgstr "Manorata hafatra…"
+
+msgid "— Choisir —"
+msgstr "— Safidio —"
+
+msgid "🎬 Choisir la source de diffusion"
+msgstr "🎬 Safidio ny loharanon'ny fandefasana"
+
+msgid "5000 km"
+msgstr "5000 km"
+
+msgid "Actualités de la plateforme"
+msgstr "Vaovaon'ny sehatra"
+
+msgid "Add a story"
+msgstr "Hanampy story"
+
+msgid "Adresse / Localisation"
+msgstr "Adiresy / Toerana"
+
+msgid "Ajouter de la musique"
+msgstr "Hanampy mozika"
+
+msgid "Alimentation & Boissons"
+msgstr "Sakafo sy zava-pisotro"
+
+msgid "Aller au contenu"
+msgstr "Mankany amin'ny votoaty"
+
+msgid "Ami"
+msgstr "Namana"
+
+msgid "Annonces disponibles"
+msgstr "Dokam-barotra misy"
+
+msgid "Announcements"
+msgstr "Filazana"
+
+msgid "Appareil photo"
+msgstr "Fakan-tsary"
+
+msgid "Appeler"
+msgstr "Hiantso"
+
+msgid "Aucun brouillon pour l'instant."
+msgstr "Mbola tsy misy drafitra."
+
+msgid "Aucun post sauvegardé pour l'instant."
+msgstr "Mbola tsy misy lahatsoratra voatahiry."
+
+msgid "Aucune annonce disponible pour le moment."
+msgstr "Tsy misy dokam-barotra amin'izao fotoana izao."
+
+msgid "Automobile & Moto"
+msgstr "Fiara sy môtô"
+
+msgid "Boutique Pro"
+msgstr "Boutique Pro"
+
+msgid "Brouillon"
+msgstr "Drafitra"
+
+msgid "Brouillons & Programmés"
+msgstr "Drafitra sy voalahatra"
+
+msgid "Catégorie principale"
+msgstr "Sokajy fototra"
+
+msgid "Changer de thème"
+msgstr "Hanova endrika"
+
+msgid "Choisir une catégorie"
+msgstr "Hifidy sokajy"
+
+msgid "Communauté"
+msgstr "Fiaraha-monina"
+
+msgid "Contacter"
+msgstr "Hifandray"
+
+msgid "Créer mon compte"
+msgstr "Hamorona ny kaontiko"
+
+msgid "Créer un compte gratuit"
+msgstr "Hamorona kaonty maimaim-poana"
+
+msgid "Créer un post"
+msgstr "Hamorona lahatsoratra"
+
+msgid "Créé le"
+msgstr "Noforonina ny"
+
+msgid "Date et heure de publication"
+msgstr "Daty sy ora famoahana"
+
+msgid "Description de votre boutique"
+msgstr "Famaritana ny fivarotanao"
+
+msgid "Display"
+msgstr "Fampisehoana"
+
+msgid "Début du clip (30 s max)"
+msgstr "Fiandohan'ny clip (30 s farafahabetsany)"
+
+msgid "Découvrir Madagascar"
+msgstr "Hizaha an'i Madagasikara"
+
+msgid "Effacer"
+msgstr "Fafao"
+
+msgid "Envoyer le message vocal"
+msgstr "Alefaso ny hafatra am-peo"
+
+msgid "Galerie"
+msgstr "Sary"
+
+msgid "Galerie / Vidéo"
+msgstr "Sary / Horonan-tsary"
+
+msgid "Gratuit"
+msgstr "Maimaim-poana"
+
+msgid "Groupes & directs"
+msgstr "Vondrona sy live"
+
+msgid "Horaires d'ouverture"
+msgstr "Ora fisokafana"
+
+msgid "Immobilier"
+msgstr "Trano sy tany"
+
+msgid "J'adore"
+msgstr "Tiako be"
+
+msgid "J'ai déjà un compte"
+msgstr "Efa manana kaonty aho"
+
+msgid "J'aime"
+msgstr "Tiako"
+
+msgid "Lien direct vers un fichier audio public"
+msgstr "Rohy mivantana mankany amin'ny rakipeo"
+
+msgid "Loading stories…"
+msgstr "Mampiditra ny story…"
+
+msgid "Ma boutique"
+msgstr "Ny fivarotako"
+
+msgid "Marketplace"
+msgstr "Tsena"
+
+msgid "Matériaux & BTP"
+msgstr "Fitaovana sy fanorenana"
+
+msgid "Menu"
+msgstr "Menio"
+
+msgid "Message vocal"
+msgstr "Hafatra am-peo"
+
+msgid "No active stories from your friends yet."
+msgstr "Mbola tsy misy story avy amin'ny namanao."
+
+msgid "No notifications yet"
+msgstr "Mbola tsy misy fampandrenesana"
+
+msgid "Nom de la boutique"
+msgstr "Anaran'ny fivarotana"
+
+msgid "Photo de couverture"
+msgstr "Sary fonony"
+
+msgid "Plus"
+msgstr "Bebe kokoa"
+
+msgid "Posts sauvegardés"
+msgstr "Lahatsoratra voatahiry"
+
+msgid "Prix max (Ar)"
+msgstr "Vidiny ambony (Ar)"
+
+msgid "Prix min (Ar)"
+msgstr "Vidiny ambany (Ar)"
+
+msgid "Pro"
+msgstr "Pro"
+
+msgid "Programmer"
+msgstr "Halahatra"
+
+msgid "Programmé"
+msgstr "Voalahatra"
+
+msgid "Publication le"
+msgstr "Navoaka ny"
+
+msgid "Que voulez-vous créer ?"
+msgstr "Inona no tianao hoforonina ?"
+
+msgid "Rejoignez la communauté"
+msgstr "Midira ao amin'ny fiaraha-monina"
+
+msgid "Remove from group"
+msgstr "Esory amin'ny vondrona"
+
+msgid "Remove this suggestion"
+msgstr "Esory ity soso-kevitra ity"
+
+msgid "Request sent"
+msgstr "Lasa ny fangatahana"
+
+msgid "Retirer des sauvegardes"
+msgstr "Esory amin'ny voatahiry"
+
+msgid "Sent"
+msgstr "Lasa"
+
+msgid "Signaler cette annonce"
+msgstr "Hitatitra ity dokam-barotra ity"
+
+msgid "Statut de l'annonce"
+msgstr "Toetry ny dokam-barotra"
+
+msgid "Story texte"
+msgstr "Story an-tsoratra"
+
+msgid "Suggested for you"
+msgstr "Natolotra ho anao"
+
+msgid "Suggested profile"
+msgstr "Mombamomba natolotra"
+
+msgid "Toucher pour lire"
+msgstr "Tsindrio raha hijery"
+
+msgid "Tout"
+msgstr "Rehetra"
+
+msgid "Triste"
+msgstr "Malahelo"
+
+msgid "Type d'annonce"
+msgstr "Karazana dokam-barotra"
+
+msgid "Vendeur Vérifié"
+msgstr "Mpivarotra voamarina"
+
+msgid "Veuillez choisir une date et heure."
+msgstr "Misafidiana daty sy ora azafady."
+
+msgid "Voir"
+msgstr "Hijery"
+
+msgid "Voir la boutique"
+msgstr "Hijery ny fivarotana"
+
+msgid "Voir les annonces"
+msgstr "Hijery ny dokam-barotra"
+
+msgid "Voir ma page boutique"
+msgstr "Hijery ny pejin'ny fivarotako"
+
+msgid "Votre fil, vos gens"
+msgstr "Ny vaovaonao, ny olonao"
+
+msgid "WhatsApp"
+msgstr "WhatsApp"
+
+msgid "Your recent activity"
+msgstr "Ny hetsikao farany"
+
+msgid "chaque jour"
+msgstr "isan'andro"
+
+msgid "jusqu'au"
+msgstr "hatramin'ny"
+
+msgid "min."
+msgstr "min."
+
+msgid "Électronique & Informatique"
+msgstr "Elektronika sy informatika"
+
+msgid "Évoluer vers Boutique Pro"
+msgstr "Hiakatra ho Boutique Pro"

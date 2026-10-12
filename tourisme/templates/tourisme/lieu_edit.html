@@ -10,19 +10,19 @@
 <div class="lieu-submit-wrap">
 
     <nav class="tour-breadcrumb">
-        <a href="{% url 'tourisme:home' %}">Tourisme</a>
+        <a href="{% url 'tourisme:home' %}">{% trans "Tourisme" %}</a>
         <span class="material-icons">chevron_right</span>
-        <a href="{% url 'tourisme:lieux_list' %}">Lieux</a>
+        <a href="{% url 'tourisme:lieux_list' %}">{% trans "Lieux" %}</a>
         <span class="material-icons">chevron_right</span>
         <a href="{% url 'tourisme:lieu_detail' lieu.slug %}">{{ lieu.name }}</a>
         <span class="material-icons">chevron_right</span>
-        <span>Modifier</span>
+        <span>{% trans "Modifier" %}</span>
     </nav>
 
     <div class="ls-card">
         <h1 class="ls-title">
             <span class="material-icons">edit_location_alt</span>
-            Modifier le lieu
+            {% trans "Modifier le lieu" %}
         </h1>
         <p class="ls-subtitle">{{ lieu.name }}</p>
 
@@ -38,18 +38,18 @@
 
             <div class="ls-section-label">
                 <span class="material-icons">info</span>
-                Informations principales
+                {% trans "Informations principales" %}
             </div>
 
             <div class="ls-field">
-                <label class="ls-label" for="id_name">Nom du lieu <span class="req">*</span></label>
+                <label class="ls-label" for="id_name">{% trans "Nom du lieu" %} <span class="req">*</span></label>
                 <input class="ls-input" type="text" id="id_name" name="name"
                        value="{{ lieu.name }}" required maxlength="200">
             </div>
 
             <div class="ls-row">
                 <div class="ls-field">
-                    <label class="ls-label" for="id_category">Catégorie</label>
+                    <label class="ls-label" for="id_category">{% trans "Catégorie" %}</label>
                     <select class="ls-select" id="id_category" name="category">
                         {% for val, label in categories %}
                         <option value="{{ val }}" {% if lieu.category == val %}selected{% endif %}>{{ label }}</option>
@@ -57,9 +57,9 @@
                     </select>
                 </div>
                 <div class="ls-field">
-                    <label class="ls-label" for="id_region">Région</label>
+                    <label class="ls-label" for="id_region">{% trans "Région" %}</label>
                     <select class="ls-select" id="id_region" name="region">
-                        <option value="">— Choisir —</option>
+                        <option value="">{% trans "— Choisir —" %}</option>
                         {% for val, label in regions %}
                         <option value="{{ val }}" {% if lieu.region == val %}selected{% endif %}>{{ label }}</option>
                         {% endfor %}
@@ -68,37 +68,37 @@
             </div>
 
             <div class="ls-field">
-                <label class="ls-label" for="id_description">Description <span class="req">*</span></label>
+                <label class="ls-label" for="id_description">{% trans "Description" %} <span class="req">*</span></label>
                 <textarea class="ls-textarea" id="id_description" name="description"
                           required style="min-height:140px;">{{ lieu.description }}</textarea>
             </div>
 
             <div class="ls-section-label">
                 <span class="material-icons">directions</span>
-                Informations pratiques
+                {% trans "Informations pratiques" %}
             </div>
 
             <div class="ls-field">
-                <label class="ls-label" for="id_address">Adresse / Coordonnées GPS</label>
+                <label class="ls-label" for="id_address">{% trans "Adresse / Coordonnées GPS" %}</label>
                 <input class="ls-input" type="text" id="id_address" name="address"
                        value="{{ lieu.address }}">
             </div>
 
             <div class="ls-row">
                 <div class="ls-field">
-                    <label class="ls-label" for="id_best_period">Meilleure période</label>
+                    <label class="ls-label" for="id_best_period">{% trans "Meilleure période" %}</label>
                     <input class="ls-input" type="text" id="id_best_period" name="best_period"
                            value="{{ lieu.best_period }}">
                 </div>
                 <div class="ls-field">
-                    <label class="ls-label" for="id_entry_fee">Tarif d'entrée</label>
+                    <label class="ls-label" for="id_entry_fee">{% trans "Tarif d'entrée" %}</label>
                     <input class="ls-input" type="text" id="id_entry_fee" name="entry_fee"
                            value="{{ lieu.entry_fee }}">
                 </div>
             </div>
 
             <div class="ls-field">
-                <label class="ls-label" for="id_tips">Conseils pratiques</label>
+                <label class="ls-label" for="id_tips">{% trans "Conseils pratiques" %}</label>
                 <textarea class="ls-textarea" id="id_tips" name="tips"
                           style="min-height:80px;">{{ lieu.tips }}</textarea>
             </div>
@@ -106,11 +106,11 @@
             <!-- Photos existantes -->
             <div class="ls-section-label">
                 <span class="material-icons">photo_library</span>
-                Photos existantes
+                {% trans "Photos existantes" %}
             </div>
 
             {% if images %}
-            <p class="delete-hint">Cliquez sur une photo pour la marquer à supprimer (fond rouge = sera supprimée).</p>
+            <p class="delete-hint">{% trans "Cliquez sur une photo pour la marquer à supprimer (fond rouge = sera supprimée)." %}</p>
             <div class="existing-images-grid">
                 {% for img in images %}
                 <div class="existing-img-item">
@@ -120,32 +120,32 @@
                     </label>
                     <img src="{{ img.image.url }}" alt="">
                     {% if img.is_primary %}
-                    <span class="existing-img-primary">Principal</span>
+                    <span class="existing-img-primary">{% trans "Principal" %}</span>
                     {% endif %}
                 </div>
                 {% endfor %}
             </div>
             {% else %}
-            <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.8rem;">Aucune photo pour le moment.</p>
+            <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.8rem;">{% trans "Aucune photo pour le moment." %}</p>
             {% endif %}
 
             <!-- Ajouter des photos -->
             <div class="ls-section-label">
                 <span class="material-icons">add_photo_alternate</span>
-                Ajouter des photos
+                {% trans "Ajouter des photos" %}
             </div>
 
             <div class="ls-upload-zone">
                 <input type="file" name="images" accept="image/*" multiple
                        onchange="previewNewImages(this)">
-                <div class="ls-upload-label">Cliquez ou glissez vos nouvelles photos ici</div>
-                <div class="ls-upload-hint">JPG, PNG, WEBP — maximum 8 photos au total</div>
+                <div class="ls-upload-label">{% trans "Cliquez ou glissez vos nouvelles photos ici" %}</div>
+                <div class="ls-upload-hint">{% trans "JPG, PNG, WEBP — maximum 8 photos au total" %}</div>
             </div>
             <div class="ls-preview-grid" id="newPreviewGrid"></div>
 
             <button type="submit" class="ls-submit-btn" style="margin-top:1.2rem;">
                 <span class="material-icons" style="font-size:1.1rem;">save</span>
-                Enregistrer les modifications
+                {% trans "Enregistrer les modifications" %}
             </button>
         </form>
     </div>

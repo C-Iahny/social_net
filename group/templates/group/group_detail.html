@@ -164,7 +164,7 @@
                 <span class="material-icons">add_photo_alternate</span>
                 {% trans "Photo / Vidéo" %}
             </button>
-            <button class="gd-post-submit" id="gd-submit-btn" onclick="gdSubmitPost()">
+            <button class="gd-post-submit" id="gd-submit-btn" onclick="gdSubmitPost()" type="button">
                 <span class="material-icons">send</span> {% trans "Publier" %}
             </button>
         </div>
@@ -218,19 +218,19 @@
 
     <!-- ── Onglets ── -->
     <div class="gd-tabs">
-        <button class="gd-tab active" data-tab="posts" onclick="gdSwitchTab('posts', this)">
+        <button class="gd-tab active" data-tab="posts" onclick="gdSwitchTab('posts', this)" type="button">
             <span class="material-icons">article</span> {% trans "Posts" %}
         </button>
-        <button class="gd-tab" data-tab="media" onclick="gdSwitchTab('media', this)">
+        <button class="gd-tab" data-tab="media" onclick="gdSwitchTab('media', this)" type="button">
             <span class="material-icons">photo_library</span> {% trans "Media" %}
         </button>
-        <button class="gd-tab" data-tab="events" onclick="gdSwitchTab('events', this)">
+        <button class="gd-tab" data-tab="events" onclick="gdSwitchTab('events', this)" type="button">
             <span class="material-icons">event</span> {% trans "Events" %}
         </button>
-        <button class="gd-tab" data-tab="dina" onclick="gdSwitchTab('dina', this)">
+        <button class="gd-tab" data-tab="dina" onclick="gdSwitchTab('dina', this)" type="button">
             <span class="material-icons">gavel</span> {% trans "Dina" %}
         </button>
-        <button class="gd-tab" data-tab="members" onclick="gdSwitchTab('members', this)">
+        <button class="gd-tab" data-tab="members" onclick="gdSwitchTab('members', this)" type="button">
             <span class="material-icons">group</span> {% trans "Members" %}
             <span class="gd-tab-badge">{{ member_count }}</span>
         </button>
@@ -249,7 +249,7 @@
             <div class="gd-pinned-card">
                 {% if is_mod %}
                 <button class="gd-pin-btn active" title="{% trans 'Unpin' %}"
-                        onclick="gdTogglePin({{ post.id }}, '{% url 'group:pin-post' group.slug post.id %}', this)">
+                        onclick="gdTogglePin({{ post.id }}, '{% url 'group:pin-post' group.slug post.id %}', this)" type="button">
                     <span class="material-icons">push_pin</span>
                 </button>
                 {% endif %}
@@ -372,7 +372,7 @@
                     {% if is_member %}
                     <button class="gd-attend-btn {% if request.user in ev.attendees.all %}attending{% endif %}"
                             id="gd-attend-btn-{{ ev.id }}"
-                            onclick="gdAttendEvent({{ ev.id }}, '{% url 'group:event-attend' group.slug ev.id %}', this)">
+                            onclick="gdAttendEvent({{ ev.id }}, '{% url 'group:event-attend' group.slug ev.id %}', this)" type="button">
                         {% if request.user in ev.attendees.all %}
                         <span class="material-icons">check_circle</span> {% trans "Going" %}
                         {% else %}
@@ -592,7 +592,7 @@
     <div class="gd-invite-modal">
         <div class="gd-invite-header">
             <h3><span class="material-icons">person_add</span> {% trans "Add a member" %}</h3>
-            <button onclick="gdCloseInviteModal()" class="gd-invite-close" type="button">
+            <button onclick="gdCloseInviteModal()" class="gd-invite-close" type="button" aria-label="{% trans 'Fermer' %}">
                 <span class="material-icons">close</span>
             </button>
         </div>
@@ -1063,7 +1063,7 @@ function gdInviteSearch(q) {
                 return '<div class="gd-invite-user-row">'
                     + avatarHtml
                     + '<span class="gd-invite-username">' + u.username + '</span>'
-                    + '<button class="gd-invite-add-btn" onclick="gdAddMember(' + u.id + ', this)">'
+                    + '<button class="gd-invite-add-btn" onclick="gdAddMember(' + u.id + ', this)" type="button">'
                     + '<span class="material-icons">person_add</span> {% trans "Add"|escapejs %}'
                     + '</button></div>';
             }).join('');

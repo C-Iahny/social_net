@@ -5,6 +5,7 @@
 {% load post_tags %}
 
 {% block content %}
+<h1 class="vz-sr-only">{% trans "Fil d'actualité" %}</h1>
 <link rel="stylesheet" href="{% static 'css/pages/post-post_view.css' %}">
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -97,7 +98,7 @@
                     <span class="material-icons">auto_stories</span>
                     {% trans "Stories" %}
                 </span>
-                <button class="lsb-stories-add-btn" onclick="window.zootStories && window.zootStories.openCreator()" title="{% trans 'Add a story' %}">
+                <button class="lsb-stories-add-btn" onclick="window.zootStories && window.zootStories.openCreator()" title="{% trans 'Add a story' %}" type="button">
                     <span class="material-icons">add</span>
                 </button>
             </div>
@@ -416,7 +417,7 @@
             } catch(err) { console.error('cb-form:',err); vzAlert('Erreur réseau.'); }
             finally {
                 submitBtn.disabled=false;
-                submitBtn.innerHTML='<span class="material-icons" style="font-size:.95rem;">send</span> {% trans "Publish" %}';
+                submitBtn.innerHTML='<span class="material-icons" style="font-size:.95rem;">send</span> {% trans "Publish"|escapejs %}';
             }
         });
         })();
@@ -477,7 +478,7 @@
                     </div>
                     {% elif request.user.is_authenticated %}
                     <div class="pc-owner-menu">
-                        <button class="pc-menu-btn" onclick="openReportModal('post','{{ post.pk }}')" title="Signaler" style="background:none;border:none;cursor:pointer;padding:0;">
+                        <button class="pc-menu-btn" onclick="openReportModal('post','{{ post.pk }}')" title="Signaler" style="background:none;border:none;cursor:pointer;padding:0;" type="button">
                             <span class="material-icons" style="font-size:1.1rem;color:var(--text-muted);">flag</span>
                         </button>
                     </div>
@@ -513,7 +514,7 @@
                     </div>
                     {% elif request.user.is_authenticated %}
                     <div class="pc-owner-menu">
-                        <button class="pc-menu-btn" onclick="openReportModal('post','{{ post.pk }}')" title="Signaler" style="background:none;border:none;cursor:pointer;padding:0;">
+                        <button class="pc-menu-btn" onclick="openReportModal('post','{{ post.pk }}')" title="Signaler" style="background:none;border:none;cursor:pointer;padding:0;" type="button">
                             <span class="material-icons" style="font-size:1.1rem;color:var(--text-muted);">flag</span>
                         </button>
                     </div>
@@ -561,7 +562,7 @@
                         <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
                                 id="react-btn-{{ post.id }}"
                                 onclick="quickReact({{ post.id }})"
-                                title="Réagir">
+                                title="Réagir" type="button">
                             <span id="react-icon-{{ post.id }}" style="font-size:1.05rem;line-height:1;">
                                 {% if post.user_reaction == 'like' %}👍
                                 {% elif post.user_reaction == 'heart' %}❤️
@@ -583,21 +584,21 @@
                         <!-- Picker -->
                         <div class="reaction-picker" id="picker-{{ post.id }}">
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'like')" data-label="{% trans "J'aime" %}">👍</button>
+                                    onclick="sendReaction({{ post.id }}, 'like')" data-label="{% trans "J'aime" %}" type="button">👍</button>
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'heart')" data-label="{% trans "J'adore" %}">❤️</button>
+                                    onclick="sendReaction({{ post.id }}, 'heart')" data-label="{% trans "J'adore" %}" type="button">❤️</button>
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'laugh' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'laugh')" data-label="{% trans "Haha" %}">😂</button>
+                                    onclick="sendReaction({{ post.id }}, 'laugh')" data-label="{% trans "Haha" %}" type="button">😂</button>
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'wow' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'wow')" data-label="{% trans "Wow" %}">😮</button>
+                                    onclick="sendReaction({{ post.id }}, 'wow')" data-label="{% trans "Wow" %}" type="button">😮</button>
                             <button class="reaction-emoji-btn {% if post.user_reaction == 'sad' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'sad')" data-label="{% trans "Triste" %}">😢</button>
+                                    onclick="sendReaction({{ post.id }}, 'sad')" data-label="{% trans "Triste" %}" type="button">😢</button>
                         </div>
                     </div>
 
                     <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
                             onclick="toggleComments({{ post.id }})"
-                            style="flex:1;">
+                            style="flex:1;" type="button">
                         <span class="material-icons">chat_bubble_outline</span>
                         <span id="comment-count-{{ post.id }}"
                               style="font-size:.76rem;margin-left:.15rem;color:var(--text-muted);{% if not post.total_comments %}display:none{% endif %}">
@@ -605,7 +606,7 @@
                         </span>
                     </button>
 
-                    <button class="pc-footer-btn" onclick="sharePost({{ post.id }}, '{{ post.title|escapejs }}')" style="flex:1;">
+                    <button class="pc-footer-btn" onclick="sharePost({{ post.id }}, '{{ post.title|escapejs }}')" style="flex:1;" type="button" aria-label="{% trans 'Partager' %}">
                         <span class="material-icons">share</span>
                     </button>
 
@@ -613,7 +614,7 @@
                             id="bk-btn-{{ post.id }}"
                             onclick="toggleBookmark({{ post.id }}, this)"
                             style="flex:1;"
-                            title="{% if post.is_bookmarked %}{% trans 'Retirer des sauvegardes' %}{% else %}{% trans 'Sauvegarder' %}{% endif %}">
+                            title="{% if post.is_bookmarked %}{% trans 'Retirer des sauvegardes' %}{% else %}{% trans 'Sauvegarder' %}{% endif %}" type="button">
                         <span class="material-icons">{% if post.is_bookmarked %}bookmark{% else %}bookmark_border{% endif %}</span>
                     </button>
                 </div>
@@ -635,12 +636,12 @@
                                 <div class="pc-comment-footer">
                                     <span class="pc-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
                                     <button class="pc-comment-reply-btn"
-                                            onclick="toggleReplyForm({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')">
+                                            onclick="toggleReplyForm({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')" type="button">
                                         {% trans "Reply" %}
                                     </button>
                                     {% if request.user == c.author or request.user == post.author %}
                                     <button class="pc-comment-del"
-                                            onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">
+                                            onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')" type="button">
                                         {% trans "Delete" %}
                                     </button>
                                     {% else %}
@@ -665,7 +666,7 @@
                                                 <span class="pc-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
                                                 {% if request.user == reply.author or request.user == post.author %}
                                                 <button class="pc-comment-del"
-                                                        onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')">
+                                                        onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')" type="button">
                                                     {% trans "Delete" %}
                                                 </button>
                                                 {% else %}
@@ -693,7 +694,7 @@
                                     </div>
                                     <button class="pc-comment-send"
                                             onclick="submitReply({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
-                                            title="Répondre">
+                                            title="Répondre" type="button">
                                         <span class="material-icons">send</span>
                                     </button>
                                 </div>
@@ -718,7 +719,7 @@
                         </div>
                         <button class="pc-comment-send" id="comment-send-{{ post.id }}"
                                 onclick="submitComment({{ post.id }}, '{% url 'post:add-comment' post.id %}')"
-                                title="Envoyer">
+                                title="Envoyer" type="button">
                             <span class="material-icons">send</span>
                         </button>
                     </div>
@@ -1021,13 +1022,13 @@
                 <span class="sb-icon">📘</span>
                 <span class="sb-label">Facebook</span>
             </a>
-            <button class="share-btn copy" onclick="copyShareLink()">
+            <button class="share-btn copy" onclick="copyShareLink()" type="button">
                 <span class="sb-icon">🔗</span>
                 <span class="sb-label">{% trans "Copy link" %}</span>
             </button>
         </div>
         {% if request.user.is_authenticated %}
-        <button class="share-btn" id="share-repost-btn" onclick="doRepost()" style="width:100%;flex-direction:row;gap:.6rem;margin-bottom:.75rem;">
+        <button class="share-btn" id="share-repost-btn" onclick="doRepost()" style="width:100%;flex-direction:row;gap:.6rem;margin-bottom:.75rem;" type="button">
             <span class="sb-icon" style="font-size:1.2rem;">🔁</span>
             <span style="font-size:.9rem;font-weight:700;" id="share-repost-label">{% trans "Repost" %}</span>
         </button>
@@ -1036,7 +1037,7 @@
             <span class="material-icons">link</span>
             <span class="share-copylink-text" id="share-url-display"></span>
         </div>
-        <button class="share-cancel" onclick="closeShareModal()">{% trans "Cancel" %}</button>
+        <button class="share-cancel" onclick="closeShareModal()" type="button">{% trans "Cancel" %}</button>
     </div>
 </div>
 <!-- Copy toast -->
@@ -1370,7 +1371,7 @@ function submitComment(postId, url) {
         ta.value = ''; ta.style.height = 'auto';
 
         var delBtn = data.can_delete
-            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))" type="button">Supprimer</button>'
             : '';
 
         var html = '<div class="pc-comment-item" id="comment-item-' + data.id + '">'
@@ -1382,18 +1383,18 @@ function submitComment(postId, url) {
             +   '</div>'
             +   '<div class="pc-comment-footer">'
             +     '<span class="pc-comment-time">' + data.created_at + '</span>'
-            +     '<button class="pc-comment-reply-btn" onclick="toggleReplyForm(' + data.id + ', ' + postId + ', \'' + url + '\')">Répondre</button>'
+            +     '<button class="pc-comment-reply-btn" onclick="toggleReplyForm(' + data.id + ', ' + postId + ', \'' + url + '\')" type="button">Répondre</button>'
             +     delBtn
             +   '</div>'
             +   '<div class="pc-comment-replies" id="replies-' + data.id + '" style="display:none;"></div>'
             +   '<div class="pc-reply-form-wrap" id="reply-form-' + data.id + '">'
-            +     '<img class="reply-form-avatar" src="' + data.avatar + '">'
+            +     '<img class="reply-form-avatar" src="' + data.avatar + '" alt="">'
             +     '<div class="pc-reply-input-wrap">'
             +       '<textarea class="pc-reply-textarea" id="reply-input-' + data.id + '" placeholder="Écrire une réponse…" rows="1" maxlength="1000"'
             +       ' onkeydown="handleReplyKey(event,' + data.id + ',' + postId + ',\'' + url + '\')"'
             +       ' oninput="autoResize(this)"></textarea>'
             +     '</div>'
-            +     '<button class="pc-comment-send" onclick="submitReply(' + data.id + ',' + postId + ',\'' + url + '\')" title="Répondre">'
+            +     '<button class="pc-comment-send" onclick="submitReply(' + data.id + ',' + postId + ',\'' + url + '\')" title="Répondre" type="button">'
             +       '<span class="material-icons">send</span></button>'
             +   '</div>'
             + '</div>'
@@ -1460,7 +1461,7 @@ function submitReply(parentCommentId, postId, url) {
         if (form) form.classList.remove('open');
 
         var delBtn = data.can_delete
-            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))" type="button">Supprimer</button>'
             : '';
 
         var html = '<div class="pc-comment-reply-item" id="comment-item-' + data.id + '">'
@@ -1583,7 +1584,7 @@ function sharePost(postId, postTitle) {
     var encodedUrl   = encodeURIComponent(_shareUrl);
     var encodedTitle = encodeURIComponent(title);
     document.getElementById('share-url-display').textContent = _shareUrl;
-    document.getElementById('share-modal-title').textContent = title ? title.substring(0, 60) : '{% trans "Share" %}';
+    document.getElementById('share-modal-title').textContent = title ? title.substring(0, 60) : '{% trans "Share"|escapejs %}';
     document.getElementById('share-wa').href =
         'https://wa.me/?text=' + encodedTitle + '%20' + encodedUrl;
     document.getElementById('share-tw').href =
@@ -1816,11 +1817,11 @@ function toggleBookmark(postId, btn) {
         if (d.saved) {
             btn.classList.add('bookmarked');
             if (icon) icon.textContent = 'bookmark';
-            btn.title = '{% trans "Retirer des sauvegardes" %}';
+            btn.title = '{% trans "Retirer des sauvegardes"|escapejs %}';
         } else {
             btn.classList.remove('bookmarked');
             if (icon) icon.textContent = 'bookmark_border';
-            btn.title = '{% trans "Sauvegarder" %}';
+            btn.title = '{% trans "Sauvegarder"|escapejs %}';
         }
     });
 }
@@ -1894,7 +1895,7 @@ function escHtml(str) {
 
     function buildCommentHtml(data, postId, addUrl) {
         var delBtn = data.can_delete
-            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))">Supprimer</button>'
+            ? '<button class="pc-comment-del" onclick="deleteComment(' + data.id + ', commentDeleteUrl(' + data.id + '))" type="button">Supprimer</button>'
             : '';
         return '<div class="pc-comment-item" id="comment-item-' + data.id + '">'
             + '<a href="/account/' + data.author_id + '/view/"><img class="cmt-avatar" src="' + data.avatar + '" alt="' + escHtml(data.author) + '"></a>'
@@ -1905,7 +1906,7 @@ function escHtml(str) {
             +   '</div>'
             +   '<div class="pc-comment-footer">'
             +     '<span class="pc-comment-time">' + data.created_at + '</span>'
-            +     '<button class="pc-comment-reply-btn" onclick="toggleReplyForm(' + data.id + ', ' + postId + ', \'' + addUrl + '\')">Répondre</button>'
+            +     '<button class="pc-comment-reply-btn" onclick="toggleReplyForm(' + data.id + ', ' + postId + ', \'' + addUrl + '\')" type="button">Répondre</button>'
             +     delBtn
             +   '</div>'
             +   '<div class="pc-comment-replies" id="replies-' + data.id + '" style="display:none;"></div>'
@@ -1972,7 +1973,7 @@ function escHtml(str) {
         var items = _allGroups;
 
         if (!items.length) {
-            list.innerHTML = '<p class="lsb-stories-empty">{% trans "No active stories from your friends yet." %}</p>';
+            list.innerHTML = '<p class="lsb-stories-empty">{% trans "No active stories from your friends yet."|escapejs %}</p>';
             return;
         }
 
@@ -2003,8 +2004,8 @@ function escHtml(str) {
             var more = document.createElement('button');
             more.className = 'lsb-stories-more';
             more.textContent = _expanded
-                ? '{% trans "See less" %}'
-                : '{% trans "See more" %} (' + (items.length - MAX_VISIBLE) + ')';
+                ? '{% trans "See less"|escapejs %}'
+                : '{% trans "See more"|escapejs %} (' + (items.length - MAX_VISIBLE) + ')';
             more.onclick = function() {
                 _expanded = !_expanded;
                 renderSidebarStories(_allGroups);
@@ -2083,7 +2084,7 @@ function escHtml(str) {
   <div id="rw-panel">
     <div id="rw-header">
       <span id="rw-title">Réactions</span>
-      <button id="rw-close" onclick="rwClose()">
+      <button id="rw-close" onclick="rwClose()" type="button" aria-label="{% trans 'Fermer' %}">
         <span class="material-icons">close</span>
       </button>
     </div>
@@ -2133,11 +2134,11 @@ function escHtml(str) {
 
     function _buildTabs(total) {
         var tabs = document.getElementById('rw-tabs');
-        var html = '<button class="rw-tab active" onclick="rwFilter(\'\')">Tous ' + total + '</button>';
+        var html = '<button class="rw-tab active" onclick="rwFilter(\'\')" type="button">Tous ' + total + '</button>';
         Object.keys(_rwCounts).forEach(function(type) {
             var emoji = EMOJI_MAP[type] || '';
             var cnt   = _rwCounts[type] || 0;
-            html += '<button class="rw-tab" onclick="rwFilter(\'' + type + '\')">'
+            html += '<button class="rw-tab" onclick="rwFilter(\'' + type + '\')" type="button">'
                   + emoji + ' ' + cnt + '</button>';
         });
         tabs.innerHTML = html;
@@ -2163,7 +2164,7 @@ function escHtml(str) {
 
         var html = rows.map(function(r) {
             return '<a href="/account/' + r.id + '/" class="rw-row">'
-                + '<div class="rw-av"><img src="' + _e(r.avatar) + '" onerror="this.parentNode.textContent=\'' + _e(r.username.charAt(0).toUpperCase()) + '\'"></div>'
+                + '<div class="rw-av"><img src="' + _e(r.avatar) + '" onerror="this.parentNode.textContent=\'' + _e(r.username.charAt(0).toUpperCase()) + '\'" alt=""></div>'
                 + '<span class="rw-name">' + _e(r.username) + '</span>'
                 + '<span class="rw-emoji">' + (r.emoji || '') + '</span>'
                 + '</a>';

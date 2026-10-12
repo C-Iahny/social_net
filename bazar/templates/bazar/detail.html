@@ -23,8 +23,8 @@
             <div class="gallery-wrap">
                 <img id="main-photo" class="bazar-main-img" src="{{ images.0.image.url }}" alt="{{ annonce.title }}" onclick="openLightbox(this.src)" style="cursor:zoom-in;">
                 {% if images|length > 1 %}
-                <button class="gallery-arrow gallery-prev-arrow" onclick="galleryNav(-1)" aria-label="Photo précédente">&#8249;</button>
-                <button class="gallery-arrow gallery-next-arrow" onclick="galleryNav(1)" aria-label="Photo suivante">&#8250;</button>
+                <button class="gallery-arrow gallery-prev-arrow" onclick="galleryNav(-1)" aria-label="Photo précédente" type="button">&#8249;</button>
+                <button class="gallery-arrow gallery-next-arrow" onclick="galleryNav(1)" aria-label="Photo suivante" type="button">&#8250;</button>
                 {% endif %}
             </div>
             {% if images|length > 1 %}
@@ -264,7 +264,7 @@
             <button id="fav-btn"
                     onclick="toggleFavori({{ annonce.pk }})"
                     class="bazar-contact-btn {% if is_saved %}bazar-btn-fav-saved{% else %}bazar-btn-outline{% endif %}"
-                    style="width:100%;margin-top:.5rem;">
+                    style="width:100%;margin-top:.5rem;" type="button">
                 <svg id="fav-icon" width="16" height="16" fill="{% if is_saved %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
@@ -279,7 +279,7 @@
             {% if user.is_authenticated and user != annonce.seller %}
             <button onclick="openReportModal('annonce','{{ annonce.pk }}')"
                     class="bazar-contact-btn bazar-btn-outline"
-                    style="width:100%;margin-top:.5rem;border-color:rgba(239,68,68,.35);color:rgba(239,68,68,.8);">
+                    style="width:100%;margin-top:.5rem;border-color:rgba(239,68,68,.35);color:rgba(239,68,68,.8);" type="button">
                 <span class="material-icons" style="font-size:1rem;">flag</span>
                 {% trans "Signaler cette annonce" %}
             </button>
@@ -305,7 +305,7 @@
                                    padding:.42rem .85rem;border-radius:8px;font-size:.8rem;font-weight:700;
                                    cursor:pointer;transition:all .18s;"
                             onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-                            onmouseout="if(!this.dataset.copied){this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'}">
+                            onmouseout="if(!this.dataset.copied){this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'}" type="button">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                         <span class="copy-label">{% trans "Copier le lien" %}</span>
                     </button>
@@ -342,9 +342,9 @@
 
 <!-- Lightbox -->
 <div id="lightbox" onclick="closeLightbox()">
-    <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+    <button id="lightbox-close" onclick="closeLightbox()" type="button">✕</button>
     {% if images|length > 1 %}
-    <button class="lb-nav-btn" id="lightbox-prev" onclick="event.stopPropagation(); lightboxNav(-1)">&#8249;</button>
+    <button class="lb-nav-btn" id="lightbox-prev" onclick="event.stopPropagation(); lightboxNav(-1)" type="button">&#8249;</button>
     {% endif %}
     <img id="lightbox-img" src="" alt="Aperçu">
     <div id="lb-error" style="display:none;color:#fff;flex-direction:column;align-items:center;gap:.75rem;font-size:.95rem;opacity:.7;">
@@ -352,17 +352,17 @@
         <span>{% trans "Image non disponible" %}</span>
     </div>
     {% if images|length > 1 %}
-    <button class="lb-nav-btn" id="lightbox-next" onclick="event.stopPropagation(); lightboxNav(1)">&#8250;</button>
+    <button class="lb-nav-btn" id="lightbox-next" onclick="event.stopPropagation(); lightboxNav(1)" type="button">&#8250;</button>
     <div id="lightbox-counter"></div>
     {% endif %}
 </div>
 
 <script>
 var VZB_I18N = {
-    confirmSold: "{% trans 'Marquer cette annonce comme vendue ?' %}",
-    confirmDelete: "{% trans 'Supprimer définitivement cette annonce ?' %}",
-    copyLink: "{% trans 'Copier le lien' %}",
-    copied: "{% trans '✓ Copié !' %}"
+    confirmSold: "{% trans 'Marquer cette annonce comme vendue ?'|escapejs %}",
+    confirmDelete: "{% trans 'Supprimer définitivement cette annonce ?'|escapejs %}",
+    copyLink: "{% trans 'Copier le lien'|escapejs %}",
+    copied: "{% trans '✓ Copié !'|escapejs %}"
 };
 </script>
 <script>
@@ -452,9 +452,9 @@ document.getElementById('lightbox').addEventListener('touchend', e => {
 
 // ── Favori ─────────────────────────────────────────────────────────────────────
 var VZB_I18N_FAV = {
-    save:    "{% trans 'Sauvegarder' %}",
-    saved:   "{% trans 'Sauvegardé' %}",
-    saving:  "{% trans 'Chargement…' %}",
+    save:    "{% trans 'Sauvegarder'|escapejs %}",
+    saved:   "{% trans 'Sauvegardé'|escapejs %}",
+    saving:  "{% trans 'Chargement…'|escapejs %}",
 };
 function toggleFavori(pk) {
     const btn   = document.getElementById('fav-btn');

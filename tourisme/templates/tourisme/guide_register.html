@@ -38,12 +38,12 @@
         <div class="form-section">
             <div class="form-section-title">
                 <span class="material-icons">photo_camera</span>
-                Photo de profil
+                {% trans "Photo de profil" %}
             </div>
             <div class="photo-upload-wrap">
                 <div class="photo-preview" id="photoPreview">
                     {% if guide and guide.photo %}
-                        <img src="{{ guide.photo.url }}" alt="Photo actuelle" id="photoImg"
+                        <img src="{{ guide.photo.url }}" alt="{% trans 'Photo actuelle' %}" id="photoImg"
                              onerror="this.style.display='none'; document.getElementById('photoIcon').style.display='block';">
                         <span class="material-icons" id="photoIcon" style="display:none;">person</span>
                     {% else %}
@@ -53,12 +53,12 @@
                 <div>
                     <label for="id_photo" class="photo-input-btn">
                         <span class="material-icons">upload</span>
-                        Choisir une photo
+                        {% trans "Choisir une photo" %}
                     </label>
                     <input type="file" name="photo" id="id_photo"
                            accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.heif,.avif,.svg">
                     <div style="font-size:.75rem;color:var(--text-subtle);margin-top:.3rem;">
-                        Tous formats image (JPG, PNG, HEIC, GIF…) — max 10 Mo
+                        {% trans "Tous formats image (JPG, PNG, HEIC, GIF…) — max 10 Mo" %}
                     </div>
                 </div>
             </div>
@@ -68,12 +68,12 @@
         <div class="form-section">
             <div class="form-section-title">
                 <span class="material-icons">person</span>
-                Présentation
+                {% trans "Présentation" %}
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    Bio / Présentation <span class="req">*</span>
-                    <span class="hint">Décrivez votre expérience, vos points forts, pourquoi vous choisir.</span>
+                    {% trans "Bio / Présentation" %} <span class="req">*</span>
+                    <span class="hint">{% trans "Décrivez votre expérience, vos points forts, pourquoi vous choisir." %}</span>
                 </label>
                 <textarea name="bio" class="form-control" rows="5"
                           placeholder="Ex: Guide professionnel depuis 10 ans, spécialisé dans les treks dans le Parc National de l'Isalo et les circuits côtiers du sud…" required>{{ guide.bio|default:'' }}</textarea>
@@ -81,16 +81,16 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">
-                        Années d'expérience
-                        <span class="hint">Nombre d'années en tant que guide</span>
+                        {% trans "Années d'expérience" %}
+                        <span class="hint">{% trans "Nombre d'années en tant que guide" %}</span>
                     </label>
                     <input type="number" name="years_experience" class="form-control"
                            min="0" max="60" value="{{ guide.years_experience|default:0 }}" placeholder="0">
                 </div>
                 <div class="form-group">
                     <label class="form-label">
-                        Taille max du groupe
-                        <span class="hint">Nombre max de voyageurs</span>
+                        {% trans "Taille max du groupe" %}
+                        <span class="hint">{% trans "Nombre max de voyageurs" %}</span>
                     </label>
                     <input type="number" name="max_group_size" class="form-control"
                            min="1" max="100" value="{{ guide.max_group_size|default:10 }}" placeholder="10">
@@ -102,21 +102,21 @@
         <div class="form-section">
             <div class="form-section-title">
                 <span class="material-icons">translate</span>
-                Langues &amp; Contact
+                {% trans "Langues &amp; Contact" %}
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    Langues parlées
-                    <span class="hint">Séparez par des virgules. Ex: Malagasy, Français, Anglais</span>
+                    {% trans "Langues parlées" %}
+                    <span class="hint">{% trans "Séparez par des virgules. Ex: Malagasy, Français, Anglais" %}</span>
                 </label>
                 <input type="text" name="languages" class="form-control"
-                       placeholder="Malagasy, Français, Anglais"
+                       placeholder="{% trans 'Malagasy, Français, Anglais' %}"
                        value="{{ guide.languages|default:'' }}">
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    Téléphone / WhatsApp
-                    <span class="hint">Format international recommandé. Ex: +261 32 00 000 00</span>
+                    {% trans "Téléphone / WhatsApp" %}
+                    <span class="hint">{% trans "Format international recommandé. Ex: +261 32 00 000 00" %}</span>
                 </label>
                 <input type="tel" name="phone" class="form-control"
                        placeholder="+261 32 00 000 00"
@@ -128,12 +128,12 @@
         <div class="form-section">
             <div class="form-section-title">
                 <span class="material-icons">map</span>
-                Régions couvertes
+                {% trans "Régions couvertes" %}
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    Régions où vous guidez
-                    <span class="hint">Listez les régions, noms de parcs, zones géographiques que vous couvrez.</span>
+                    {% trans "Régions où vous guidez" %}
+                    <span class="hint">{% trans "Listez les régions, noms de parcs, zones géographiques que vous couvrez." %}</span>
                 </label>
                 <textarea name="regions_covered" class="form-control" rows="3"
                           placeholder="Ex: Parc National de l'Isalo (région Ihorombe), Tuléar et côte sud-ouest, Diego-Suarez (Diana)…">{{ guide.regions_covered|default:'' }}</textarea>
@@ -144,15 +144,15 @@
         <div class="form-section">
             <div class="form-section-title">
                 <span class="material-icons">directions_car</span>
-                Moyens de déplacement
+                {% trans "Moyens de déplacement" %}
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    Transports disponibles
-                    <span class="hint">Séparez par des virgules. Ex: Voiture, 4×4, Pirogue</span>
+                    {% trans "Transports disponibles" %}
+                    <span class="hint">{% trans "Séparez par des virgules. Ex: Voiture, 4×4, Pirogue" %}</span>
                 </label>
                 <input type="text" name="transport_modes" class="form-control"
-                       placeholder="Voiture, 4×4, Pirogue, À pied"
+                       placeholder="{% trans 'Voiture, 4×4, Pirogue, À pied' %}"
                        value="{{ guide.transport_modes|default:'' }}">
             </div>
         </div>
@@ -161,15 +161,15 @@
         <div class="form-section">
             <div class="form-section-title">
                 <span class="material-icons">star</span>
-                Spécialités
+                {% trans "Spécialités" %}
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    Types de circuits &amp; spécialités
-                    <span class="hint">Ex: Observation des lémuriens, Randonnée, Circuit culturel, Plongée</span>
+                    {% trans "Types de circuits &amp; spécialités" %}
+                    <span class="hint">{% trans "Ex: Observation des lémuriens, Randonnée, Circuit culturel, Plongée" %}</span>
                 </label>
                 <input type="text" name="specialities" class="form-control"
-                       placeholder="Faune endémique, Randonnée, Culturel, Plage"
+                       placeholder="{% trans 'Faune endémique, Randonnée, Culturel, Plage' %}"
                        value="{{ guide.specialities|default:'' }}">
             </div>
         </div>
@@ -178,12 +178,12 @@
         <div class="form-section">
             <div class="form-section-title">
                 <span class="material-icons">receipt_long</span>
-                Conditions &amp; Tarifs
+                {% trans "Conditions &amp; Tarifs" %}
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    Prix indicatif / jour (Ariary)
-                    <span class="hint">Tarif journalier approximatif. Laissez vide si variable.</span>
+                    {% trans "Prix indicatif / jour (Ariary)" %}
+                    <span class="hint">{% trans "Tarif journalier approximatif. Laissez vide si variable." %}</span>
                 </label>
                 <input type="number" name="prix_jour" class="form-control"
                        min="0" placeholder="100000"
@@ -191,11 +191,11 @@
             </div>
             <div class="form-group">
                 <label class="form-label">
-                    Conditions détaillées
-                    <span class="hint">Inclusions, exclusions, forfaits, conditions d'annulation…</span>
+                    {% trans "Conditions détaillées" %}
+                    <span class="hint">{% trans "Inclusions, exclusions, forfaits, conditions d'annulation…" %}</span>
                 </label>
                 <textarea name="conditions" class="form-control" rows="4"
-                          placeholder="Ex: Prix incluant le carburant et le chauffeur. Hébergement non inclus. Demi-tarif pour les enfants de moins de 12 ans…">{{ guide.conditions|default:'' }}</textarea>
+                          placeholder="{% trans 'Ex: Prix incluant le carburant et le chauffeur. Hébergement non inclus. Demi-tarif pour les enfants de moins de 12 ans…' %}">{{ guide.conditions|default:'' }}</textarea>
             </div>
         </div>
 
@@ -207,7 +207,7 @@
 
         <p style="text-align:center;font-size:.8rem;color:var(--text-subtle);margin-top:.9rem;">
             <span class="material-icons" style="font-size:.9rem;vertical-align:middle;">info</span>
-            Votre profil sera examiné par un administrateur avant d'être publié.
+            {% trans "Votre profil sera examiné par un administrateur avant d'être publié." %}
         </p>
     </form>
 

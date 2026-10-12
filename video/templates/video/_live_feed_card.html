@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load static %}
 {# Carte live dans le feed — affichée uniquement si live.status == 'active' #}
 <article class="live-feed-card" id="live-feed-{{ live.id }}">
@@ -18,7 +19,7 @@
       <div class="lfc-top">
         <span class="lfc-live-badge">
           <span class="material-icons" style="font-size:10px;vertical-align:middle;">circle</span>
-          LIVE
+          {% trans "LIVE" %}
         </span>
         <div class="lfc-host">
           {% if live.host.profile_image %}
@@ -40,7 +41,7 @@
       {# Bouton rejoindre #}
       <a href="{% url 'video:live-room' live.id %}" class="lfc-join-btn">
         <span class="material-icons" style="vertical-align:middle;margin-right:4px;">play_circle_filled</span>
-        Rejoindre le live
+        {% trans "Rejoindre le live" %}
       </a>
 
       {% if live.replay_available and live.replay_url %}
@@ -49,7 +50,7 @@
                 padding:.4rem .9rem;background:rgba(0,0,0,.7);color:#fff;
                 border-radius:20px;font-size:.82rem;text-decoration:none;">
           <span class="material-icons" style="font-size:1rem;">play_circle</span>
-          Voir le replay
+          {% trans "Voir le replay" %}
       </a>
       {% endif %}
 

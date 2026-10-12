@@ -11,26 +11,25 @@
 
     <!-- Breadcrumb -->
     <nav class="tour-breadcrumb">
-        <a href="{% url 'tourisme:home' %}">Tourisme</a>
+        <a href="{% url 'tourisme:home' %}">{% trans "Tourisme" %}</a>
         <span class="material-icons">chevron_right</span>
-        <a href="{% url 'tourisme:lieux_list' %}">Lieux</a>
+        <a href="{% url 'tourisme:lieux_list' %}">{% trans "Lieux" %}</a>
         <span class="material-icons">chevron_right</span>
-        <span>Proposer un lieu</span>
+        <span>{% trans "Proposer un lieu" %}</span>
     </nav>
 
     <div class="ls-card">
         <h1 class="ls-title">
             <span class="material-icons">add_location_alt</span>
-            Proposer un lieu touristique
+            {% trans "Proposer un lieu touristique" %}
         </h1>
         <p class="ls-subtitle">
-            Partagez un lieu que vous connaissez et aidez les voyageurs à découvrir Madagascar.
+            {% trans "Partagez un lieu que vous connaissez et aidez les voyageurs à découvrir Madagascar." %}
         </p>
 
         <div class="ls-info-banner">
             <span class="material-icons">info</span>
-            Votre soumission sera vérifiée par un administrateur avant d'être publiée.
-            Vous recevrez une notification dès qu'elle sera approuvée.
+            {% trans "Votre soumission sera vérifiée par un administrateur avant d'être publiée. Vous recevrez une notification dès qu'elle sera approuvée." %}
         </div>
 
         {% if error %}
@@ -46,19 +45,19 @@
             <!-- Infos principales -->
             <div class="ls-section-label">
                 <span class="material-icons">info</span>
-                Informations principales
+                {% trans "Informations principales" %}
             </div>
 
             <div class="ls-field">
-                <label class="ls-label" for="id_name">Nom du lieu <span class="req">*</span></label>
+                <label class="ls-label" for="id_name">{% trans "Nom du lieu" %} <span class="req">*</span></label>
                 <input class="ls-input" type="text" id="id_name" name="name"
-                       placeholder="Ex: Tsingy de Bemaraha, Nosy Be, Isalo…"
+                       placeholder="{% trans 'Ex: Tsingy de Bemaraha, Nosy Be, Isalo…' %}"
                        required maxlength="200">
             </div>
 
             <div class="ls-row">
                 <div class="ls-field">
-                    <label class="ls-label" for="id_category">Catégorie <span class="req">*</span></label>
+                    <label class="ls-label" for="id_category">{% trans "Catégorie" %} <span class="req">*</span></label>
                     <select class="ls-select" id="id_category" name="category">
                         {% for val, label in categories %}
                         <option value="{{ val }}">{{ label }}</option>
@@ -66,9 +65,9 @@
                     </select>
                 </div>
                 <div class="ls-field">
-                    <label class="ls-label" for="id_region">Région</label>
+                    <label class="ls-label" for="id_region">{% trans "Région" %}</label>
                     <select class="ls-select" id="id_region" name="region">
-                        <option value="">— Choisir —</option>
+                        <option value="">{% trans "— Choisir —" %}</option>
                         {% for val, label in regions %}
                         <option value="{{ val }}">{{ label }}</option>
                         {% endfor %}
@@ -77,48 +76,48 @@
             </div>
 
             <div class="ls-field">
-                <label class="ls-label" for="id_description">Description <span class="req">*</span></label>
+                <label class="ls-label" for="id_description">{% trans "Description" %} <span class="req">*</span></label>
                 <textarea class="ls-textarea" id="id_description" name="description"
-                          placeholder="Décrivez ce lieu : paysage, histoire, ce qui le rend unique…"
+                          placeholder="{% trans 'Décrivez ce lieu : paysage, histoire, ce qui le rend unique…' %}"
                           required style="min-height:140px;"></textarea>
             </div>
 
             <!-- Infos pratiques -->
             <div class="ls-section-label">
                 <span class="material-icons">directions</span>
-                Informations pratiques
+                {% trans "Informations pratiques" %}
             </div>
 
             <div class="ls-field">
-                <label class="ls-label" for="id_address">Adresse / Coordonnées GPS</label>
+                <label class="ls-label" for="id_address">{% trans "Adresse / Coordonnées GPS" %}</label>
                 <input class="ls-input" type="text" id="id_address" name="address"
-                       placeholder="Ex: -18.9249, 44.8237 ou nom du village">
+                       placeholder="{% trans 'Ex: -18.9249, 44.8237 ou nom du village' %}">
             </div>
 
             <div class="ls-row">
                 <div class="ls-field">
-                    <label class="ls-label" for="id_best_period">Meilleure période</label>
+                    <label class="ls-label" for="id_best_period">{% trans "Meilleure période" %}</label>
                     <input class="ls-input" type="text" id="id_best_period" name="best_period"
-                           placeholder="Ex: Avril à Novembre">
+                           placeholder="{% trans 'Ex: Avril à Novembre' %}">
                 </div>
                 <div class="ls-field">
-                    <label class="ls-label" for="id_entry_fee">Tarif d'entrée</label>
+                    <label class="ls-label" for="id_entry_fee">{% trans "Tarif d'entrée" %}</label>
                     <input class="ls-input" type="text" id="id_entry_fee" name="entry_fee"
-                           placeholder="Ex: Gratuit, 5 000 Ar…">
+                           placeholder="{% trans 'Ex: Gratuit, 5 000 Ar…' %}">
                 </div>
             </div>
 
             <div class="ls-field">
-                <label class="ls-label" for="id_tips">Conseils pratiques</label>
+                <label class="ls-label" for="id_tips">{% trans "Conseils pratiques" %}</label>
                 <textarea class="ls-textarea" id="id_tips" name="tips"
-                          placeholder="Conseils pour les visiteurs : transport, hébergement, précautions…"
+                          placeholder="{% trans 'Conseils pour les visiteurs : transport, hébergement, précautions…' %}"
                           style="min-height:80px;"></textarea>
             </div>
 
             <!-- Photos -->
             <div class="ls-section-label">
                 <span class="material-icons">photo_library</span>
-                Photos (jusqu'à 8)
+                {% trans "Photos (jusqu'à 8)" %}
             </div>
 
             <div class="ls-upload-zone" id="uploadZone">
@@ -128,14 +127,14 @@
                 <div class="ls-upload-icon">
                     <span class="material-icons" style="font-size:2.5rem;color:var(--accent);">add_photo_alternate</span>
                 </div>
-                <div class="ls-upload-label">Cliquez ou glissez vos photos ici</div>
-                <div class="ls-upload-hint">JPG, PNG, WEBP — max 8 photos. La première sera la photo principale.</div>
+                <div class="ls-upload-label">{% trans "Cliquez ou glissez vos photos ici" %}</div>
+                <div class="ls-upload-hint">{% trans "JPG, PNG, WEBP — max 8 photos. La première sera la photo principale." %}</div>
             </div>
             <div class="ls-preview-grid" id="previewGrid"></div>
 
             <button type="submit" class="ls-submit-btn">
                 <span class="material-icons">send</span>
-                Soumettre le lieu
+                {% trans "Soumettre le lieu" %}
             </button>
         </form>
     </div>

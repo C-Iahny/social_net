@@ -24,7 +24,7 @@
     --bg-hover:     #eaeef1;
     --text:         #111827;
     --text-muted:   #5b6675;
-    --text-subtle:  #8b95a3;
+    --text-subtle:  #65707f;   /* ≥ 4,5:1 sur blanc et sur --bg */
     --border:       #e3e8ed;
     --accent:       #0f766e;
     --accent2:      #0891b2;
@@ -79,7 +79,7 @@
     --bg-hover:     #1e262e;
     --text:         #e6ebf0;
     --text-muted:   #9aa7b4;
-    --text-subtle:  #6c7986;
+    --text-subtle:  #8893a0;   /* ≥ 4,5:1 sur les cartes sombres */
     --border:       #263039;
     --accent:       #2dd4bf;
     --accent2:      #22d3ee;
@@ -1560,3 +1560,6 @@ body.vz-lock { overflow: hidden !important; }
 .vz-empty .material-icons { font-size: 2.6rem; color: var(--text-subtle); }
 .vz-empty-title { font-weight: 800; color: var(--text); font-size: 1rem; }
 .vz-empty-text  { font-size: .9rem; max-width: 320px; }
+
+/* ── Texte réservé aux lecteurs d'écran (titres de page, libellés) ── */
+.vz-sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }

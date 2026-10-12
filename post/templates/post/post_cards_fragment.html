@@ -186,7 +186,7 @@
             <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
                     id="react-btn-{{ post.id }}"
                     onclick="quickReact({{ post.id }})"
-                    title="Réagir">
+                    title="Réagir" type="button">
                 <span id="react-icon-{{ post.id }}" style="font-size:1.05rem;line-height:1;">
                     {% if post.user_reaction == 'like' %}👍
                     {% elif post.user_reaction == 'heart' %}❤️
@@ -207,20 +207,20 @@
             </button>
             <div class="reaction-picker" id="picker-{{ post.id }}">
                 <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
-                        onclick="sendReaction({{ post.id }}, 'like')" title="{% trans "J'aime" %}">👍</button>
+                        onclick="sendReaction({{ post.id }}, 'like')" title="{% trans "J'aime" %}" type="button">👍</button>
                 <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
-                        onclick="sendReaction({{ post.id }}, 'heart')" title="{% trans "J'adore" %}">❤️</button>
+                        onclick="sendReaction({{ post.id }}, 'heart')" title="{% trans "J'adore" %}" type="button">❤️</button>
                 <button class="reaction-emoji-btn {% if post.user_reaction == 'laugh' %}selected{% endif %}"
-                        onclick="sendReaction({{ post.id }}, 'laugh')" title="{% trans "Haha" %}">😂</button>
+                        onclick="sendReaction({{ post.id }}, 'laugh')" title="{% trans "Haha" %}" type="button">😂</button>
                 <button class="reaction-emoji-btn {% if post.user_reaction == 'wow' %}selected{% endif %}"
-                        onclick="sendReaction({{ post.id }}, 'wow')" title="{% trans "Wow" %}">😮</button>
+                        onclick="sendReaction({{ post.id }}, 'wow')" title="{% trans "Wow" %}" type="button">😮</button>
                 <button class="reaction-emoji-btn {% if post.user_reaction == 'sad' %}selected{% endif %}"
-                        onclick="sendReaction({{ post.id }}, 'sad')" title="{% trans "Triste" %}">😢</button>
+                        onclick="sendReaction({{ post.id }}, 'sad')" title="{% trans "Triste" %}" type="button">😢</button>
             </div>
         </div>
 
         <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
-                onclick="toggleComments({{ post.id }})" style="flex:1;">
+                onclick="toggleComments({{ post.id }})" style="flex:1;" type="button">
             <span class="material-icons">chat_bubble_outline</span>
             <span id="comment-count-{{ post.id }}"
                   style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.total_comments %}display:none{% endif %}">
@@ -229,7 +229,7 @@
         </button>
 
         <button class="pc-footer-btn" onclick="sharePost({{ post.id }}, '{{ post.title|escapejs }}')" style="flex:1;"
-                data-post-id="{{ post.id }}" data-reposted="{{ post.user_reposted|yesno:'true,false' }}">
+                data-post-id="{{ post.id }}" data-reposted="{{ post.user_reposted|yesno:'true,false' }}" type="button">
             <span class="material-icons" style="{% if post.user_reposted %}color:var(--accent){% endif %}">repeat</span>
             <span id="repost-count-{{ post.id }}"
                   style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.repost_count %}display:none{% endif %}">
@@ -254,12 +254,12 @@
                     <div class="pc-comment-footer">
                         <span class="pc-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
                         <button class="pc-comment-reply-btn"
-                                onclick="toggleReplyForm({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')">
+                                onclick="toggleReplyForm({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')" type="button">
                             {% trans "Reply" %}
                         </button>
                         {% if request.user == c.author or request.user == post.author %}
                         <button class="pc-comment-del"
-                                onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">
+                                onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')" type="button">
                             {% trans "Delete" %}
                         </button>
                         {% endif %}
@@ -281,7 +281,7 @@
                                     <span class="pc-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
                                     {% if request.user == reply.author or request.user == post.author %}
                                     <button class="pc-comment-del"
-                                            onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')">
+                                            onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')" type="button">
                                         {% trans "Delete" %}
                                     </button>
                                     {% endif %}
@@ -306,7 +306,7 @@
                         </div>
                         <button class="pc-comment-send"
                                 onclick="submitReply({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
-                                title="{% trans 'Reply' %}">
+                                title="{% trans 'Reply' %}" type="button">
                             <span class="material-icons">send</span>
                         </button>
                     </div>
@@ -328,7 +328,7 @@
             </div>
             <button class="pc-comment-send" id="comment-send-{{ post.id }}"
                     onclick="submitComment({{ post.id }}, '{% url 'post:add-comment' post.id %}')"
-                    title="{% trans 'Send' %}">
+                    title="{% trans 'Send' %}" type="button">
                 <span class="material-icons">send</span>
             </button>
         </div>

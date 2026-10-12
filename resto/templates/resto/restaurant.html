@@ -126,12 +126,12 @@
   const LOGGED = {{ request.user.is_authenticated|yesno:"true,false" }};
   const CAN_ORDER = {{ restaurant.can_order|yesno:"true,false" }};
   const I18N = {
-    required: "{% trans 'obligatoire' %}", choose: "{% trans 'choisissez' %}", max: "{% trans 'max' %}",
-    login: "{% trans 'Connectez-vous pour commander.' %}", closed: "{% trans 'Ce restaurant est fermé pour le moment.' %}",
-    ingredients: "{% trans 'Ingrédients' %}", ingHint: "{% trans 'cochez ce que vous ne voulez pas' %}", fixed: "{% trans 'inclus' %}",
-    remove: "{% trans 'Enlever' %}", addIt: "{% trans 'Ajouter' %}", extras: "{% trans 'En plus, si vous voulez' %}",
-    replace: "{% trans 'Votre panier contient des plats de' %}", replace2: "{% trans 'Le vider et ajouter ce plat ?' %}",
-    added: "{% trans 'Ajouté au panier' %}", articles: "{% trans 'article(s)' %}",
+    required: "{% trans 'obligatoire'|escapejs %}", choose: "{% trans 'choisissez'|escapejs %}", max: "{% trans 'max'|escapejs %}",
+    login: "{% trans 'Connectez-vous pour commander.'|escapejs %}", closed: "{% trans 'Ce restaurant est fermé pour le moment.'|escapejs %}",
+    ingredients: "{% trans 'Ingrédients'|escapejs %}", ingHint: "{% trans 'cochez ce que vous ne voulez pas'|escapejs %}", fixed: "{% trans 'inclus'|escapejs %}",
+    remove: "{% trans 'Enlever'|escapejs %}", addIt: "{% trans 'Ajouter'|escapejs %}", extras: "{% trans 'En plus, si vous voulez'|escapejs %}",
+    replace: "{% trans 'Votre panier contient des plats de'|escapejs %}", replace2: "{% trans 'Le vider et ajouter ce plat ?'|escapejs %}",
+    added: "{% trans 'Ajouté au panier'|escapejs %}", articles: "{% trans 'article(s)'|escapejs %}",
   };
   let item = null, qty = 1;
   const fmt = n => n.toLocaleString('fr-FR').replace(/ | /g, ' ') + ' Ar';

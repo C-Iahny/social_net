@@ -115,10 +115,10 @@
 const OPTIONS = JSON.parse(document.getElementById('menu-options').textContent);
 const CSRF = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
 const SLUG = "{{ restaurant.slug }}";
-const I18N = {group:"{% trans 'Titre du groupe (ex : Sauce, Suppléments)' %}", opt:"{% trans 'Option (ex : Fromage)' %}", extra:"{% trans 'Suppl. Ar' %}",
-              min:"{% trans 'Min' %}", max:"{% trans 'Max' %}", addopt:"{% trans '+ option' %}", del:"{% trans 'Supprimer le groupe' %}",
-              saved:"{% trans 'Options enregistrées' %}", edit:"{% trans 'Modifier le plat' %}", add:"{% trans 'Ajouter un plat' %}",
-              removable:"{% trans 'retirable' %}", price:"{% trans 'Suppl. Ar' %}", defaultOn:"{% trans 'coché par défaut' %}", choice:"{% trans 'au choix du client' %}"};
+const I18N = {group:"{% trans 'Titre du groupe (ex : Sauce, Suppléments)'|escapejs %}", opt:"{% trans 'Option (ex : Fromage)'|escapejs %}", extra:"{% trans 'Suppl. Ar'|escapejs %}",
+              min:"{% trans 'Min'|escapejs %}", max:"{% trans 'Max'|escapejs %}", addopt:"{% trans '+ option'|escapejs %}", del:"{% trans 'Supprimer le groupe'|escapejs %}",
+              saved:"{% trans 'Options enregistrées'|escapejs %}", edit:"{% trans 'Modifier le plat'|escapejs %}", add:"{% trans 'Ajouter un plat'|escapejs %}",
+              removable:"{% trans 'retirable'|escapejs %}", price:"{% trans 'Suppl. Ar'|escapejs %}", defaultOn:"{% trans 'coché par défaut'|escapejs %}", choice:"{% trans 'au choix du client'|escapejs %}"};
 let curItem = null;
 
 // ── Éditeur d'ingrédients : une ligne = un ingrédient + case « retirable par le client » ──

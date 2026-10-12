@@ -47,10 +47,10 @@
         </div>
       </div>
       <div class="zsv-topbtns">
-        <button class="zsv-ibtn" id="zsv-mute-btn" onclick="zvToggleMute()" title="Son">
+        <button class="zsv-ibtn" id="zsv-mute-btn" onclick="zvToggleMute()" title="Son" type="button">
           <span class="material-icons" id="zsv-mute-icon">volume_up</span>
         </button>
-        <button class="zsv-ibtn" onclick="zvClose()">
+        <button class="zsv-ibtn" onclick="zvClose()" type="button" aria-label="{% trans 'Fermer' %}">
           <span class="material-icons">close</span>
         </button>
       </div>
@@ -87,11 +87,11 @@
 
   <!-- Barre "mes views" -->
   <div id="zsv-mine-bar">
-    <button class="zsv-views-btn" onclick="zvOpenViewers()">
+    <button class="zsv-views-btn" onclick="zvOpenViewers()" type="button">
       <span class="material-icons">visibility</span>
       <span id="zsv-view-count">0</span>&nbsp;vue(s)
     </button>
-    <button class="zsv-del-btn" onclick="zvDeleteCurrent()">
+    <button class="zsv-del-btn" onclick="zvDeleteCurrent()" type="button">
       <span class="material-icons">delete</span> Supprimer
     </button>
   </div>
@@ -99,18 +99,18 @@
   <!-- Réactions + réponse -->
   <div class="zsv-bottom" id="zsv-bottom">
     <div class="zsv-emojis" id="zsv-emojis">
-      <button class="zsv-emobtn" onclick="zvReact('❤️')">❤️</button>
-      <button class="zsv-emobtn" onclick="zvReact('😂')">😂</button>
-      <button class="zsv-emobtn" onclick="zvReact('😮')">😮</button>
-      <button class="zsv-emobtn" onclick="zvReact('😢')">😢</button>
-      <button class="zsv-emobtn" onclick="zvReact('🔥')">🔥</button>
+      <button class="zsv-emobtn" onclick="zvReact('❤️')" type="button">❤️</button>
+      <button class="zsv-emobtn" onclick="zvReact('😂')" type="button">😂</button>
+      <button class="zsv-emobtn" onclick="zvReact('😮')" type="button">😮</button>
+      <button class="zsv-emobtn" onclick="zvReact('😢')" type="button">😢</button>
+      <button class="zsv-emobtn" onclick="zvReact('🔥')" type="button">🔥</button>
     </div>
     <div class="zsv-reply-row">
       <input type="text" class="zsv-reply-input" id="zsv-reply-in"
              placeholder="Envoyer un message…" maxlength="500"
              oninput="_zvReplyCheck(this)"
              onkeydown="if(event.key==='Enter'&&!event.isComposing){event.preventDefault();zvSendReply();}">
-      <button class="zsv-reply-send" id="zsv-reply-send" disabled onclick="zvSendReply()">
+      <button class="zsv-reply-send" id="zsv-reply-send" disabled onclick="zvSendReply()" type="button" aria-label="{% trans 'Envoyer' %}">
         <span class="material-icons">send</span>
       </button>
     </div>
@@ -158,7 +158,7 @@
              accept="image/*" capture="environment"
              onchange="zscOnFile(this)">
     </label>
-    <button class="zsc-pick-btn zsc-pick-text" onclick="zscToggleTextMode()">
+    <button class="zsc-pick-btn zsc-pick-text" onclick="zscToggleTextMode()" type="button">
       <span class="material-icons">text_fields</span>
       {% trans "Story texte" %}
     </button>
@@ -173,11 +173,11 @@
 
   <!-- HUD haut -->
   <div class="zsc-top">
-    <button class="zsc-ibtn" onclick="zscClose()">
+    <button class="zsc-ibtn" onclick="zscClose()" type="button" aria-label="{% trans 'Fermer' %}">
       <span class="material-icons">close</span>
     </button>
     <div style="display:flex;gap:.35rem;">
-      <button class="zsc-ibtn" id="zsc-text-story-btn" onclick="zscToggleTextMode()" title="Story texte">
+      <button class="zsc-ibtn" id="zsc-text-story-btn" onclick="zscToggleTextMode()" title="Story texte" type="button">
         <span class="material-icons">text_fields</span>
       </button>
     </div>
@@ -185,16 +185,16 @@
 
   <!-- Outils droite -->
   <div id="zsc-tools">
-    <button class="zsc-ibtn" id="zsc-tool-txt" onclick="zscToggleText()" title="Texte">
+    <button class="zsc-ibtn" id="zsc-tool-txt" onclick="zscToggleText()" title="Texte" type="button">
       <span class="material-icons">title</span>
     </button>
-    <button class="zsc-ibtn" id="zsc-tool-color" onclick="zscToggleColors()" title="Couleur" style="display:none;">
+    <button class="zsc-ibtn" id="zsc-tool-color" onclick="zscToggleColors()" title="Couleur" style="display:none;" type="button">
       <span class="material-icons">palette</span>
     </button>
-    <button class="zsc-ibtn" id="zsc-tool-music" onclick="zscOpenAudio()" title="Musique">
+    <button class="zsc-ibtn" id="zsc-tool-music" onclick="zscOpenAudio()" title="Musique" type="button">
       <span class="material-icons">music_note</span>
     </button>
-    <button class="zsc-ibtn" id="zsc-tool-shop" onclick="zscOpenShop()" title="{% trans 'Vendre' %}">
+    <button class="zsc-ibtn" id="zsc-tool-shop" onclick="zscOpenShop()" title="{% trans 'Vendre' %}" type="button">
       <span class="material-icons">storefront</span>
     </button>
   </div>
@@ -234,7 +234,7 @@
   <div id="zsc-audio-pill">
     <span class="material-icons">audiotrack</span>
     <span id="zsc-audio-name">—</span>
-    <button class="zsc-audio-rm" onclick="zscRemoveAudio()">
+    <button class="zsc-audio-rm" onclick="zscRemoveAudio()" type="button" aria-label="{% trans 'Fermer' %}">
       <span class="material-icons">close</span>
     </button>
   </div>
@@ -250,7 +250,7 @@
   <div class="zsc-bottom">
     <input type="text" id="zsc-caption-in" maxlength="200"
            placeholder="{% trans 'Ajouter une légende…' %}">
-    <button id="zsc-pub-btn" onclick="zscPublish()" disabled>
+    <button id="zsc-pub-btn" onclick="zscPublish()" disabled type="button">
       <span class="material-icons">bolt</span> {% trans "Publier" %}
     </button>
   </div>
@@ -298,7 +298,7 @@
   <div class="zsc-apanel" id="zsc-ap-url">
     <div class="zsc-url-row">
       <input type="url" class="zsc-url-inp" id="zsc-url-inp" placeholder="https://…/musique.mp3">
-      <button class="zsc-url-btn" onclick="zscLoadAudioUrl()">
+      <button class="zsc-url-btn" onclick="zscLoadAudioUrl()" type="button">
         <span class="material-icons">download</span>
       </button>
     </div>
@@ -312,7 +312,7 @@
       <input type="text" class="zsc-search-inp" id="zsc-search-inp"
              placeholder="afrobeats, malagasy, chill…"
              onkeydown="if(event.key==='Enter')zscSearchMusic()">
-      <button class="zsc-search-btn" onclick="zscSearchMusic()">
+      <button class="zsc-search-btn" onclick="zscSearchMusic()" type="button" aria-label="{% trans 'Rechercher' %}">
         <span class="material-icons">search</span>
       </button>
     </div>
@@ -329,7 +329,7 @@
       {% trans "Début du clip (30 s max)" %}
     </div>
     <div class="zsc-trim-row">
-      <button class="zsc-trim-play" onclick="zscTrimToggle()">
+      <button class="zsc-trim-play" onclick="zscTrimToggle()" type="button" aria-label="{% trans 'Lecture' %}">
         <span class="material-icons" id="zsc-trim-icon">play_arrow</span>
       </button>
       <input type="range" id="zsc-trim-range" min="0" max="100" step="0.5" value="0"
@@ -338,7 +338,7 @@
     </div>
   </div>
 
-  <button class="zsc-acancel" onclick="zscCloseAudio()">{% trans "Annuler" %}</button>
+  <button class="zsc-acancel" onclick="zscCloseAudio()" type="button">{% trans "Annuler" %}</button>
 </div>
 </div>
 
@@ -590,13 +590,13 @@ function _zsMySheet(gi){
   var btnS = 'width:100%;padding:.8rem;border:none;border-radius:14px;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.55rem;font-family:var(--font-primary,sans-serif);';
   sh.innerHTML =
     '<div style="background:var(--bg-card);border-radius:22px 22px 0 0;width:min(100vw,480px);padding:1.2rem 1.4rem calc(1.8rem + env(safe-area-inset-bottom,0px));animation:zsSlideUp .22s ease;">' +
-      '<button style="'+btnS+'background:var(--accent);color:#fff;margin-bottom:.65rem;" onclick="_zsMySheetCreate()">' +
+      '<button style="'+btnS+'background:var(--accent);color:#fff;margin-bottom:.65rem;" onclick="_zsMySheetCreate()" type="button">' +
         '<span class="material-icons">add_circle</span> Créer une story' +
       '</button>' +
-      '<button style="'+btnS+'background:var(--btn-bg);color:var(--text);" onclick="_zsMySheetView('+gi+')">' +
+      '<button style="'+btnS+'background:var(--btn-bg);color:var(--text);" onclick="_zsMySheetView('+gi+')" type="button">' +
         '<span class="material-icons">play_circle</span> Voir mes stories' +
       '</button>' +
-      '<button style="width:100%;padding:.55rem;background:none;color:var(--text-muted);border:none;font-size:.88rem;cursor:pointer;margin-top:.4rem;font-family:var(--font-primary,sans-serif);" onclick="document.getElementById(\'_zs-mysheet\').remove()">Annuler</button>' +
+      '<button style="width:100%;padding:.55rem;background:none;color:var(--text-muted);border:none;font-size:.88rem;cursor:pointer;margin-top:.4rem;font-family:var(--font-primary,sans-serif);" onclick="document.getElementById(\'_zs-mysheet\').remove()" type="button">Annuler</button>' +
     '</div>';
   sh.onclick = function(e){ if(e.target===sh) sh.remove(); };
   document.body.appendChild(sh);
@@ -916,7 +916,7 @@ window.zvOpenViewers = function(){
           return '<div class="zsv-vrow' + (hasReply ? ' zsv-vrow-reply' : '') + '"' +
             (hasReply ? ' data-uid="'+r.id+'" data-reply="'+_esc(r.reply_msg || '')+'" onclick="zvOpenReplyChat(this)" title="Répondre dans le chat"' : '') +
             '>' +
-            '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'">' +
+            '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'" alt="">' +
             '<div style="flex:1;min-width:0;">' +
               '<div class="zsv-vrow-name">'+_esc(r.username)+'</div>' +
               (hasReply ? '<div class="zsv-vrow-msg">'+_esc(r.reply_msg)+'</div>' : '') +
@@ -1318,7 +1318,7 @@ window.zscSearchMusic = function(){
       res.innerHTML=d.tracks.map(function(t){
         var dur=Math.floor(t.duration/60)+':'+(('0'+Math.floor(t.duration%60)).slice(-2));
         return '<div class="zsc-result" onclick="zscPickTrack('+JSON.stringify(t.audio_url)+','+JSON.stringify(t.name)+')">' +
-          '<img src="'+_esc(t.image)+'" onerror="this.style.display=\'none\'">' +
+          '<img src="'+_esc(t.image)+'" onerror="this.style.display=\'none\'" alt="">' +
           '<div class="zsc-result-info"><div class="zsc-rname">'+_esc(t.name)+'</div>' +
           '<div class="zsc-rartist">'+_esc(t.artist)+'</div></div>' +
           '<div class="zsc-rdur">'+dur+'</div></div>';

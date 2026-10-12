@@ -64,7 +64,7 @@
         <!-- Header -->
         <div id="id_room_title">
             <!-- Bouton retour vers la liste (mobile uniquement) -->
-            <button class="chat-header-btn chat-back-btn" id="chat-back-btn" title="{% trans 'Conversations' %}">
+            <button class="chat-header-btn chat-back-btn" id="chat-back-btn" title="{% trans 'Conversations' %}" type="button">
                 <span class="material-icons">arrow_back</span>
             </button>
             <a class="d-flex align-items-center" style="gap:.65rem;" id="id_user_info_container" target="_blank">
@@ -85,14 +85,14 @@
             <!-- Actions + WS dot -->
             <div class="chat-header-actions">
                 <!-- Appel audio -->
-                <button class="chat-header-btn" id="btn-call-audio" title="{% trans 'Appel audio' %}" onclick="startCall('audio')" style="display:none;">
+                <button class="chat-header-btn" id="btn-call-audio" title="{% trans 'Appel audio' %}" onclick="startCall('audio')" style="display:none;" type="button">
                     <span class="material-icons">call</span>
                 </button>
                 <!-- Appel vidéo -->
-                <button class="chat-header-btn" id="btn-call-video" title="{% trans 'Appel vidéo' %}" onclick="startCall('video')" style="display:none;">
+                <button class="chat-header-btn" id="btn-call-video" title="{% trans 'Appel vidéo' %}" onclick="startCall('video')" style="display:none;" type="button">
                     <span class="material-icons">videocam</span>
                 </button>
-                <button class="chat-header-btn" title="{% trans 'Infos' %}" id="chat-header-info-btn" style="display:none;" onclick="if(typeof selectUser==='function'){selectUser(currentFriendId);}">
+                <button class="chat-header-btn" title="{% trans 'Infos' %}" id="chat-header-info-btn" style="display:none;" onclick="if(typeof selectUser==='function'){selectUser(currentFriendId);}" type="button">
                     <span class="material-icons">info_outline</span>
                 </button>
             </div>
@@ -127,7 +127,7 @@
                 <div class="file-preview-item" id="file-preview-item">
                     <span class="material-icons">attach_file</span>
                     <span class="file-preview-name" id="file-preview-name"></span>
-                    <button class="file-preview-remove" onclick="clearFileSelection()" title="Supprimer">
+                    <button class="file-preview-remove" onclick="clearFileSelection()" title="Supprimer" type="button">
                         <span class="material-icons" style="font-size:.9rem;">close</span>
                     </button>
                 </div>
@@ -159,7 +159,7 @@
                     <div class="bazar-ref-price">{{ bazar_annonce.formatted_price }}</div>
                     {% endif %}
                 </div>
-                <button class="bazar-ref-close" onclick="closeBazarRef()" title="Fermer">
+                <button class="bazar-ref-close" onclick="closeBazarRef()" title="Fermer" type="button">
                     <span class="material-icons" style="font-size:1.1rem;">close</span>
                 </button>
             </div>
@@ -180,7 +180,7 @@
                         <span id="reply-preview-author"></span>
                         <div id="reply-preview-body"></div>
                     </div>
-                    <button id="reply-cancel-btn" onclick="cancelReply()" title="Annuler">✕</button>
+                    <button id="reply-cancel-btn" onclick="cancelReply()" title="Annuler" type="button">✕</button>
                 </div>
                 <div class="chat-input-inner" style="position:relative;">
                     <!-- Indicateur enregistrement vocal -->
@@ -231,7 +231,7 @@
             <!-- Prévisualisation caméra locale (masquée en mode audio) -->
             <video id="call-out-local-vid" autoplay muted playsinline
                    class="call-local-preview" style="display:none;"></video>
-            <button class="call-btn call-btn-red" onclick="hangUp()" title="{% trans 'Annuler' %}">
+            <button class="call-btn call-btn-red" onclick="hangUp()" title="{% trans 'Annuler' %}" type="button">
                 <span class="material-icons">call_end</span>
             </button>
         </div>
@@ -247,13 +247,13 @@
             <div class="call-status" id="call-inc-type">{% trans "Appel vidéo entrant" %}</div>
             <div class="call-inc-row">
                 <div>
-                    <button class="call-btn call-btn-red" onclick="rejectCall()" title="{% trans 'Refuser' %}">
+                    <button class="call-btn call-btn-red" onclick="rejectCall()" title="{% trans 'Refuser' %}" type="button">
                         <span class="material-icons">call_end</span>
                     </button>
                     <div class="call-inc-label">{% trans "Refuser" %}</div>
                 </div>
                 <div>
-                    <button class="call-btn call-btn-green" onclick="acceptCall()" title="{% trans 'Accepter' %}">
+                    <button class="call-btn call-btn-green" onclick="acceptCall()" title="{% trans 'Accepter' %}" type="button">
                         <span class="material-icons" id="call-inc-accept-icon">videocam</span>
                     </button>
                     <div class="call-inc-label">{% trans "Accepter" %}</div>
@@ -290,32 +290,32 @@
                 <div id="call-ice-debug" style="font-size:10px;color:#aaa;letter-spacing:1px;min-height:14px;text-align:center;"></div>
                 <div class="call-ctrl-row">
                     <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-                        <button class="call-ctrl-btn" id="call-btn-mic" onclick="toggleMic()" title="{% trans 'Micro' %}">
+                        <button class="call-ctrl-btn" id="call-btn-mic" onclick="toggleMic()" title="{% trans 'Micro' %}" type="button">
                             <span class="material-icons" id="call-mic-icon">mic</span>
                         </button>
                         <span class="call-ctrl-lbl">{% trans "Micro" %}</span>
                     </div>
                     <!-- Bouton haut-parleur (toggle écouteur ↔ haut-parleur) -->
                     <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-                        <button class="call-ctrl-btn" id="call-btn-speaker" onclick="toggleSpeaker()" title="Haut-parleur">
+                        <button class="call-ctrl-btn" id="call-btn-speaker" onclick="toggleSpeaker()" title="Haut-parleur" type="button">
                             <span class="material-icons" id="call-speaker-icon">volume_up</span>
                         </button>
                         <span class="call-ctrl-lbl">HP</span>
                     </div>
                     <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-                        <button class="call-ctrl-btn call-ctrl-hangup" onclick="hangUp()" title="{% trans 'Raccrocher' %}">
+                        <button class="call-ctrl-btn call-ctrl-hangup" onclick="hangUp()" title="{% trans 'Raccrocher' %}" type="button">
                             <span class="material-icons">call_end</span>
                         </button>
                         <span class="call-ctrl-lbl">{% trans "Fin" %}</span>
                     </div>
                     <div id="call-cam-wrap" style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-                        <button class="call-ctrl-btn" id="call-btn-cam" onclick="toggleCam()" title="{% trans 'Caméra' %}">
+                        <button class="call-ctrl-btn" id="call-btn-cam" onclick="toggleCam()" title="{% trans 'Caméra' %}" type="button">
                             <span class="material-icons" id="call-cam-icon">videocam</span>
                         </button>
                         <span class="call-ctrl-lbl">{% trans "Caméra" %}</span>
                     </div>
                     <div id="call-flip-wrap" style="display:none;flex-direction:column;align-items:center;gap:4px;">
-                        <button class="call-ctrl-btn" id="call-btn-flip" onclick="flipCallCamera()" title="Retourner la caméra">
+                        <button class="call-ctrl-btn" id="call-btn-flip" onclick="flipCallCamera()" title="Retourner la caméra" type="button">
                             <span class="material-icons">camera_front</span>
                         </button>
                         <span class="call-ctrl-lbl">Retourner</span>
@@ -339,7 +339,7 @@
 </div>
 
 <!-- Mobile sidebar toggle -->
-<button class="chat-sidebar-toggle" id="sidebar-toggle-btn" title="{% trans 'Conversations' %}">
+<button class="chat-sidebar-toggle" id="sidebar-toggle-btn" title="{% trans 'Conversations' %}" type="button">
     <span class="material-icons">chat</span>
 </button>
 
@@ -385,7 +385,7 @@
     // ── Pré-remplissage depuis une fiche Bazar ────────────────────
     {% if bazar_annonce %}
     if(ta && ta.value.trim() === ''){
-        ta.value = "{% trans 'Bonjour, je suis intéressé(e) par votre annonce : ' %}{{ bazar_annonce.title }}";
+        ta.value = "{% trans 'Bonjour, je suis intéressé(e) par votre annonce : '|escapejs %}{{ bazar_annonce.title }}";
         ta.style.height = 'auto';
         ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
         /* Afficher le bouton Envoyer */

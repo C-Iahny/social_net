@@ -15,40 +15,40 @@
         Madagascar
     </div>
     <h1 class="tour-hero-title">
-        Découvrez<br><span>Madagascar</span>
+        {% trans "Découvrez" %}<br><span>Madagascar</span>
     </h1>
     <p class="tour-hero-sub">
-        L'île rouge vous attend — baobabs, plages de corail, lémuriens et paysages à couper le souffle.
+        {% trans "L'île rouge vous attend — baobabs, plages de corail, lémuriens et paysages à couper le souffle." %}
     </p>
     <div class="tour-hero-actions">
         <a href="{% url 'tourisme:lieux_list' %}" class="tour-btn-primary">
             <span class="material-icons" style="font-size:1.1rem">explore</span>
-            Lieux touristiques
+            {% trans "Lieux touristiques" %}
         </a>
         <a href="{% url 'tourisme:guides_list' %}" class="tour-btn-outline">
             <span class="material-icons" style="font-size:1.1rem">person</span>
-            Trouver un guide
+            {% trans "Trouver un guide" %}
         </a>
         {% if user.is_authenticated %}
         <a href="{% url 'tourisme:lieu_submit' %}" class="tour-btn-outline"
            style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.35);">
             <span class="material-icons" style="font-size:1.1rem">add_location_alt</span>
-            Proposer un lieu
+            {% trans "Proposer un lieu" %}
         </a>
         {% endif %}
     </div>
     <div class="tour-hero-stats">
         <div class="tour-stat">
             <div class="tour-stat-num">22</div>
-            <div class="tour-stat-label">Régions</div>
+            <div class="tour-stat-label">{% trans "Régions" %}</div>
         </div>
         <div class="tour-stat">
             <div class="tour-stat-num">5000+</div>
-            <div class="tour-stat-label">Espèces endémiques</div>
+            <div class="tour-stat-label">{% trans "Espèces endémiques" %}</div>
         </div>
         <div class="tour-stat">
-            <div class="tour-stat-num">5000 km</div>
-            <div class="tour-stat-label">De côtes</div>
+            <div class="tour-stat-num">{% trans "5000 km" %}</div>
+            <div class="tour-stat-label">{% trans "De côtes" %}</div>
         </div>
     </div>
 </section>
@@ -59,7 +59,7 @@
     <section class="tour-section" style="padding-bottom:0">
         <h2 class="tour-section-title">
             <span class="material-icons">category</span>
-            Explorer par catégorie
+            {% trans "Explorer par catégorie" %}
         </h2>
         <div class="cat-strip">
             {% for cat_key, cat_label in categories %}
@@ -84,10 +84,10 @@
         <div class="tour-section-header">
             <h2 class="tour-section-title">
                 <span class="material-icons">star</span>
-                Lieux populaires
+                {% trans "Lieux populaires" %}
             </h2>
             <a href="{% url 'tourisme:lieux_list' %}" class="tour-see-all">
-                Voir tout <span class="material-icons" style="font-size:1rem">arrow_forward</span>
+                {% trans "Voir tout" %} <span class="material-icons" style="font-size:1rem">arrow_forward</span>
             </a>
         </div>
 
@@ -123,7 +123,7 @@
         {% else %}
         <div style="text-align:center;padding:3rem 1rem;color:var(--text-muted);">
             <span class="material-icons" style="font-size:3rem;opacity:.3;display:block;margin-bottom:.5rem">landscape</span>
-            Aucun lieu approuvé pour l'instant.
+            {% trans "Aucun lieu approuvé pour l'instant." %}
         </div>
         {% endif %}
     </section>
@@ -133,10 +133,10 @@
         <div class="tour-section-header">
             <h2 class="tour-section-title">
                 <span class="material-icons">verified_user</span>
-                Guides vérifiés
+                {% trans "Guides vérifiés" %}
             </h2>
             <a href="{% url 'tourisme:guides_list' %}?verified=1" class="tour-see-all">
-                Tous les guides <span class="material-icons" style="font-size:1rem">arrow_forward</span>
+                {% trans "Tous les guides" %} <span class="material-icons" style="font-size:1rem">arrow_forward</span>
             </a>
         </div>
 
@@ -159,7 +159,7 @@
                         {% if guide.is_verified %}
                         <span class="guide-verified-badge">
                             <span class="material-icons">verified</span>
-                            Vérifié
+                            {% trans "Vérifié" %}
                         </span>
                         {% endif %}
                     </div>
@@ -179,24 +179,24 @@
         {% else %}
         <div style="text-align:center;padding:3rem 1rem;color:var(--text-muted);">
             <span class="material-icons" style="font-size:3rem;opacity:.3;display:block;margin-bottom:.5rem">person_search</span>
-            Aucun guide disponible pour l'instant.
+            {% trans "Aucun guide disponible pour l'instant." %}
         </div>
         {% endif %}
 
         <!-- CTA Devenir guide -->
         <div style="text-align:center;margin-top:2rem;padding:2rem;background:var(--bg-card);border-radius:16px;border:1px solid var(--border);">
             <span class="material-icons" style="font-size:2.5rem;color:var(--accent);display:block;margin-bottom:.5rem">explore</span>
-            <div style="font-weight:700;font-size:1.05rem;color:var(--text);margin-bottom:.4rem">Vous connaissez Madagascar ?</div>
-            <div style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.2rem">Rejoignez notre réseau de guides touristiques et aidez les voyageurs à découvrir l'île.</div>
+            <div style="font-weight:700;font-size:1.05rem;color:var(--text);margin-bottom:.4rem">{% trans "Vous connaissez Madagascar ?" %}</div>
+            <div style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.2rem">{% trans "Rejoignez notre réseau de guides touristiques et aidez les voyageurs à découvrir l'île." %}</div>
             {% if user.is_authenticated %}
             <a href="{% url 'tourisme:guide_register' %}" style="display:inline-flex;align-items:center;gap:.4rem;background:var(--accent);color:#fff;border-radius:50px;padding:.65rem 1.6rem;font-weight:700;font-size:.9rem;text-decoration:none;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
                 <span class="material-icons" style="font-size:1.1rem">add</span>
-                Devenir guide
+                {% trans "Devenir guide" %}
             </a>
             {% else %}
             <a href="{% url 'login' %}?next={% url 'tourisme:guide_register' %}" style="display:inline-flex;align-items:center;gap:.4rem;background:var(--accent);color:#fff;border-radius:50px;padding:.65rem 1.6rem;font-weight:700;font-size:.9rem;text-decoration:none;">
                 <span class="material-icons" style="font-size:1.1rem">login</span>
-                Se connecter pour s'inscrire
+                {% trans "Se connecter pour s'inscrire" %}
             </a>
             {% endif %}
         </div>

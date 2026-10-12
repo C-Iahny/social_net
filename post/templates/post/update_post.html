@@ -166,7 +166,7 @@ function _renderPreview() {
     var count = _pending.length;
     label.innerHTML = count > 0
         ? '<span class="upload-label">' + count + ' fichier(s)</span> — cliquer pour en ajouter'
-        : '<span class="upload-label">{% trans "Click to add" %}</span> {% trans "or drag and drop" %}';
+        : '<span class="upload-label">{% trans "Click to add"|escapejs %}</span> {% trans "or drag and drop"|escapejs %}';
 
     _pending.forEach(function(file, idx) {
         var item = document.createElement('div');

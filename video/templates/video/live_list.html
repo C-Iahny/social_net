@@ -10,19 +10,19 @@
     <!-- ── Hero : créer un live ── -->
     <div class="live-create-card">
         <div class="live-create-header">
-            <span class="live-badge-big"><span class="dot"></span> LIVE</span>
-            <h1 class="live-create-title">Regardez le match ensemble ⚽</h1>
+            <span class="live-badge-big"><span class="dot"></span> {% trans "LIVE" %}</span>
+            <h1 class="live-create-title">{% trans "Regardez le match ensemble ⚽" %}</h1>
         </div>
-        <p class="live-create-sub">Partagez votre écran pour diffuser le match en direct à vos amis sur Vazimba.</p>
+        <p class="live-create-sub">{% trans "Partagez votre écran pour diffuser le match en direct à vos amis sur Vazimba." %}</p>
 
         <div class="live-form" id="live-create-form">
             {% csrf_token %}
             <input type="text" id="live-title-input" class="live-title-input"
-                   placeholder="Ex : 🇲🇬 Madagascar vs France — Coupe du Monde !"
+                   placeholder="{% trans 'Ex : 🇲🇬 Madagascar vs France — Coupe du Monde !' %}"
                    maxlength="200">
             <button type="button" class="live-btn-start" id="live-btn-start" onclick="startLive()">
                 <span class="material-icons">live_tv</span>
-                Commencer le live
+                {% trans "Commencer le live" %}
             </button>
         </div>
         <script>
@@ -76,7 +76,7 @@
     <!-- ── Lives actifs ── -->
     <div class="live-section-title">
         <span class="material-icons">videocam</span>
-        Lives en cours
+        {% trans "Lives en cours" %}
         <span id="live-count-badge" style="
             background:rgba(255,59,59,.12);
             color:var(--danger);
@@ -93,7 +93,7 @@
         <a href="{% url 'video:live-room' room_id=room.pk %}" class="live-card">
             <div class="live-card-thumb">
                 <span class="material-icons live-card-thumb-icon">live_tv</span>
-                <span class="live-card-live-badge"><span class="dot"></span> LIVE</span>
+                <span class="live-card-live-badge"><span class="dot"></span> {% trans "LIVE" %}</span>
                 <span class="live-card-viewers">
                     <span class="material-icons">visibility</span>
                     {{ room.viewer_count }}
@@ -113,9 +113,9 @@
                     {{ room.group.name }}
                 </div>
                 {% endif %}
-                <button class="live-card-join-btn" onclick="event.preventDefault();window.location.href=this.closest('a').href;">
+                <button class="live-card-join-btn" onclick="event.preventDefault();window.location.href=this.closest('a').href;" type="button">
                     <span class="material-icons">play_circle</span>
-                    Rejoindre
+                    {% trans "Rejoindre" %}
                 </button>
             </div>
         </a>
@@ -124,7 +124,7 @@
     {% else %}
     <div class="live-empty">
         <span class="material-icons">live_tv</span>
-        <p>Aucun live en cours — sois le premier à diffuser !</p>
+        <p>{% trans "Aucun live en cours — sois le premier à diffuser !" %}</p>
     </div>
     {% endif %}
 

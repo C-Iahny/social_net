@@ -7,10 +7,10 @@
 <!-- ── Ended overlay ── -->
 <div class="lr-ended-overlay" id="lr-ended-overlay">
     <span class="material-icons lr-ended-icon">live_tv</span>
-    <div class="lr-ended-title">Le live est terminé</div>
-    <div class="lr-ended-sub">L'hôte a mis fin à la diffusion.</div>
-    <button class="lr-ended-btn" onclick="window.location.href='{% url 'video:live-list' %}'">
-        Voir d'autres lives
+    <div class="lr-ended-title">{% trans "Le live est terminé" %}</div>
+    <div class="lr-ended-sub">{% trans "L'hôte a mis fin à la diffusion." %}</div>
+    <button class="lr-ended-btn" onclick="window.location.href='{% url 'video:live-list' %}'" type="button">
+        {% trans "Voir d'autres lives" %}
     </button>
 </div>
 
@@ -20,7 +20,7 @@
     <!-- Top bar -->
     <div class="lr-topbar">
         <div class="lr-topbar-left">
-            <span class="lr-live-indicator"><span class="lr-live-dot"></span> LIVE</span>
+            <span class="lr-live-indicator"><span class="lr-live-dot"></span> {% trans "LIVE" %}</span>
             <span class="lr-title">{{ room.title }}</span>
             <div class="lr-host-info">
                 <img src="{{ room.host.profile_image.url }}" alt="{{ room.host.username }}">
@@ -33,17 +33,17 @@
                 <span id="lr-viewer-count">{{ room.viewer_count }}</span>
             </span>
             <div class="lr-reactions-bar" id="lr-reactions-bar">
-                <button class="lr-react-btn" onclick="sendReaction('❤️')">❤️</button>
-                <button class="lr-react-btn" onclick="sendReaction('🔥')">🔥</button>
-                <button class="lr-react-btn" onclick="sendReaction('😂')">😂</button>
-                <button class="lr-react-btn" onclick="sendReaction('👏')">👏</button>
-                <button class="lr-react-btn" onclick="sendReaction('😮')">😮</button>
-                <button class="lr-react-btn" onclick="sendReaction('🎉')">🎉</button>
+                <button class="lr-react-btn" onclick="sendReaction('❤️')" type="button">❤️</button>
+                <button class="lr-react-btn" onclick="sendReaction('🔥')" type="button">🔥</button>
+                <button class="lr-react-btn" onclick="sendReaction('😂')" type="button">😂</button>
+                <button class="lr-react-btn" onclick="sendReaction('👏')" type="button">👏</button>
+                <button class="lr-react-btn" onclick="sendReaction('😮')" type="button">😮</button>
+                <button class="lr-react-btn" onclick="sendReaction('🎉')" type="button">🎉</button>
             </div>
             <a href="{% url 'video:live-list' %}"
                style="color:rgba(255,255,255,.45);font-size:.82rem;text-decoration:none;display:flex;align-items:center;gap:.2rem;">
                 <span class="material-icons" style="font-size:1rem;">arrow_back</span>
-                Quitter
+                {% trans "Quitter" %}
             </a>
         </div>
     </div>
@@ -56,29 +56,29 @@
             <video id="lr-video" autoplay playsinline muted></video>
 
             <!-- Bouton plein écran -->
-            <button id="lr-fullscreen-btn" onclick="toggleFullscreen()" title="Plein écran"
+            <button id="lr-fullscreen-btn" onclick="toggleFullscreen()" title="{% trans 'Plein écran' %}"
                     style="position:absolute;top:.75rem;right:.75rem;z-index:15;
                            width:38px;height:38px;border-radius:10px;
                            background:rgba(0,0,0,.55);border:1.5px solid rgba(255,255,255,.2);
                            color:#fff;cursor:pointer;display:flex;align-items:center;
                            justify-content:center;backdrop-filter:blur(4px);
-                           transition:background .2s,transform .15s;">
+                           transition:background .2s,transform .15s;" type="button">
                 <span class="material-icons" style="font-size:1.3rem;">fullscreen</span>
             </button>
 
             {% if is_host %}
             <!-- Host: source chooser overlay -->
             <div class="lr-status-overlay" id="lr-source-overlay">
-                <div class="lr-status-title">🎬 Choisir la source de diffusion</div>
-                <div class="lr-status-sub">Partage ton écran pour diffuser le match, ou utilise ta caméra.</div>
+                <div class="lr-status-title">{% trans "🎬 Choisir la source de diffusion" %}</div>
+                <div class="lr-status-sub">{% trans "Partage ton écran pour diffuser le match, ou utilise ta caméra." %}</div>
                 <div class="lr-source-btns">
-                    <button class="lr-source-btn" id="btn-screen" onclick="startSource('screen')">
+                    <button class="lr-source-btn" id="btn-screen" onclick="startSource('screen')" type="button">
                         <span class="material-icons">screen_share</span>
-                        Partager l'écran
+                        {% trans "Partager l'écran" %}
                     </button>
-                    <button class="lr-source-btn" id="btn-camera" onclick="startSource('camera')">
+                    <button class="lr-source-btn" id="btn-camera" onclick="startSource('camera')" type="button">
                         <span class="material-icons">videocam</span>
-                        Caméra
+                        {% trans "Caméra" %}
                     </button>
                 </div>
             </div>
@@ -86,7 +86,7 @@
             <!-- Viewer: waiting overlay -->
             <div class="lr-waiting-overlay" id="lr-waiting-overlay">
                 <div class="lr-waiting-spinner"></div>
-                <div class="lr-waiting-text">En attente de la diffusion…</div>
+                <div class="lr-waiting-text">{% trans "En attente de la diffusion…" %}</div>
             </div>
             {% endif %}
         </div>
@@ -95,14 +95,14 @@
         <div class="lr-chat">
             <div class="lr-chat-header">
                 <span class="material-icons">chat_bubble_outline</span>
-                Chat en direct
+                {% trans "Chat en direct" %}
             </div>
             <div class="lr-chat-messages" id="lr-chat-messages"></div>
             <div class="lr-chat-input-wrap">
                 <input class="lr-chat-input" id="lr-chat-input"
-                       type="text" placeholder="Écris un message…" maxlength="500"
+                       type="text" placeholder="{% trans 'Écris un message…' %}" maxlength="500"
                        autocomplete="off">
-                <button class="lr-chat-send-btn" onclick="sendChat()">
+                <button class="lr-chat-send-btn" onclick="sendChat()" type="button" aria-label="{% trans 'Envoyer' %}">
                     <span class="material-icons">send</span>
                 </button>
             </div>
@@ -113,28 +113,28 @@
     <!-- Host controls -->
     {% if is_host %}
     <div class="lr-controls" id="lr-controls" style="display:none;">
-        <button class="lr-ctrl-btn" id="btn-toggle-screen" onclick="toggleSource('screen')">
+        <button class="lr-ctrl-btn" id="btn-toggle-screen" onclick="toggleSource('screen')" type="button">
             <span class="material-icons">screen_share</span>
-            Écran
+            {% trans "Écran" %}
         </button>
-        <button class="lr-ctrl-btn" id="btn-toggle-camera" onclick="toggleSource('camera')">
+        <button class="lr-ctrl-btn" id="btn-toggle-camera" onclick="toggleSource('camera')" type="button">
             <span class="material-icons">videocam</span>
-            Caméra
+            {% trans "Caméra" %}
         </button>
-        <button class="lr-ctrl-btn" id="btn-flip-camera" onclick="flipCamera()" style="display:none;">
+        <button class="lr-ctrl-btn" id="btn-flip-camera" onclick="flipCamera()" style="display:none;" type="button">
             <span class="material-icons">camera_front</span>
-            Retourner
+            {% trans "Retourner" %}
         </button>
-        <button class="lr-ctrl-btn" id="btn-toggle-mic" onclick="toggleMic()">
+        <button class="lr-ctrl-btn" id="btn-toggle-mic" onclick="toggleMic()" type="button">
             <span class="material-icons">mic</span>
-            Micro
+            {% trans "Micro" %}
         </button>
         <form method="post" action="{% url 'video:live-end' room_id=room.pk %}" style="display:inline;"
               data-vz-confirm="{% trans 'Terminer le live ?' %}" data-vz-danger>
             {% csrf_token %}
             <button type="submit" class="lr-ctrl-btn danger">
                 <span class="material-icons">stop_circle</span>
-                Terminer
+                {% trans "Terminer" %}
             </button>
         </form>
     </div>

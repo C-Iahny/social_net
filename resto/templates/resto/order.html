@@ -182,9 +182,9 @@
 (function(){
   let state = JSON.parse(document.getElementById('order-state').textContent);
   const NUMBER = state.number, IS_DELIVERY = state.mode === 'delivery';
-  const I18N = {courier:"{% trans 'Livreur' %}", resto:"{% trans 'Restaurant' %}", you:"{% trans 'Livraison' %}",
-                pos:"{% trans 'Position du livreur mise à jour à' %}", nopos:"{% trans 'La position du livreur apparaîtra ici dès qu\'il partagera son GPS.' %}",
-                noassign:"{% trans 'Pas encore attribué' %}"};
+  const I18N = {courier:"{% trans 'Livreur'|escapejs %}", resto:"{% trans 'Restaurant'|escapejs %}", you:"{% trans 'Livraison'|escapejs %}",
+                pos:"{% trans 'Position du livreur mise à jour à'|escapejs %}", nopos:"{% trans 'La position du livreur apparaîtra ici dès qu\'il partagera son GPS.'|escapejs %}",
+                noassign:"{% trans 'Pas encore attribué'|escapejs %}"};
   // ── Carte ──
   let map, mCourier, mPick, mDrop, line;
   if(IS_DELIVERY && window.L && document.getElementById('rs-map')){

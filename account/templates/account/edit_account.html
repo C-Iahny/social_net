@@ -147,7 +147,7 @@
                         <div style="font-size:.82rem;color:var(--text-muted);" id="phone-verified-display">{{ request.user.phone_number }}</div>
                     </div>
                     <button onclick="document.getElementById('phone-change-area').style.display='block';this.style.display='none';"
-                            style="margin-left:auto;font-size:.78rem;color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline;">
+                            style="margin-left:auto;font-size:.78rem;color:var(--accent);background:none;border:none;cursor:pointer;text-decoration:underline;" type="button">
                         Changer
                     </button>
                 </div>
@@ -174,7 +174,7 @@
                                         border:none;font-weight:700;font-size:.88rem;
                                         cursor:pointer;white-space:nowrap;
                                         transition:opacity .2s;flex-shrink:0;
-                                    ">
+                                    " type="button">
                                 Envoyer le code
                             </button>
                         </div>
@@ -204,7 +204,7 @@
                             </div>
                             <small style="color:var(--text-muted);font-size:.78rem;margin-top:.3rem;display:block;">
                                 Code valable 10 minutes •
-                                <button onclick="phoneSendOtp(true)" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.78rem;text-decoration:underline;padding:0;">
+                                <button onclick="phoneSendOtp(true)" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:.78rem;text-decoration:underline;padding:0;" type="button">
                                     Renvoyer
                                 </button>
                             </small>
