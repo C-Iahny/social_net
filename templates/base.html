@@ -57,6 +57,18 @@
     <!-- ③ Variables CSS + styles de base (après Bootstrap pour avoir priorité) -->
     <link rel="stylesheet" href="{% static 'css/zoot-base.css' %}">
 
+    <!-- ③ bis — Socle d'interface commun : toasts, confirmation, garde des
+         formulaires, pile des calques pour le bouton Retour. Chargé tôt et
+         de façon synchrone : les scripts des pages s'appuient dessus. -->
+    <script>
+    {% trans "Annuler" as vzc_cancel %}{% trans "Confirmer" as vzc_confirm %}{% trans "Fermer" as vzc_close %}{% trans "Êtes-vous sûr ?" as vzc_title %}
+    window.VZ_I18N = {
+        cancel: "{{ vzc_cancel|escapejs }}", confirm: "{{ vzc_confirm|escapejs }}",
+        close: "{{ vzc_close|escapejs }}", confirmTitle: "{{ vzc_title|escapejs }}"
+    };
+    </script>
+    <script src="{% static 'js/vz-core.js' %}"></script>
+
     <!-- ④ Fonctions thème globales -->
     <script>
         function _syncThemeIcons(theme) {
@@ -242,24 +254,8 @@
 
 	<main id="contenu-principal" tabindex="-1">
         {% if messages %}
-        <div id="django-messages" style="position:fixed;top:70px;right:1rem;z-index:9000;display:flex;flex-direction:column;gap:.4rem;max-width:340px;">
-            {% for message in messages %}
-            <div style="
-                background:{% if message.tags == 'success' %}var(--accent){% elif message.tags == 'warning' %}#f59e0b{% elif message.tags == 'error' %}#e53935{% else %}var(--bg-card){% endif %};
-                color:{% if message.tags == 'success' or message.tags == 'warning' or message.tags == 'error' %}#fff{% else %}var(--text){% endif %};
-                border:1px solid var(--border);border-radius:12px;padding:.6rem 1rem;
-                font-size:.88rem;font-weight:600;
-                box-shadow:0 4px 16px rgba(0,0,0,.15);
-                display:flex;align-items:center;gap:.5rem;
-                animation:fadeInUp .3s ease both;">
-                <span class="material-icons" style="font-size:1rem;">
-                    {% if message.tags == 'success' %}check_circle{% elif message.tags == 'warning' %}warning{% elif message.tags == 'error' %}error{% else %}info{% endif %}
-                </span>
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        <script>setTimeout(function(){var el=document.getElementById('django-messages');if(el)el.style.display='none';},5000);</script>
+        {# Messages Django rendus en toasts par vz-core.js (un seul système de notification) #}
+        <script type="application/json" id="vz-flash">[{% for message in messages %}{"t":"{{ message.tags|escapejs }}","m":"{{ message|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]</script>
         {% endif %}
 
 		{% block content %}
@@ -278,12 +274,12 @@
 <div id="ds-slow-banner" style="display:none;" role="alert" aria-live="polite">
     <span class="ds-banner-icon">📶</span>
     <div class="ds-banner-text">
-        <div class="ds-banner-title">Connexion lente détectée</div>
-        <div class="ds-banner-sub">Activer le mode économie pour réduire la consommation de données&nbsp;?</div>
+        <div class="ds-banner-title">{% trans "Connexion lente détectée" %}</div>
+        <div class="ds-banner-sub">{% trans "Activer le mode économie pour réduire la consommation de données ?" %}</div>
     </div>
     <div class="ds-banner-actions">
-        <button class="ds-banner-accept" onclick="dsEnable(true, true)">Activer</button>
-        <button class="ds-banner-dismiss" onclick="dsDismissBanner()">Ignorer</button>
+        <button type="button" class="ds-banner-accept" onclick="dsEnable(true, true)">{% trans "Activer" %}</button>
+        <button type="button" class="ds-banner-dismiss" onclick="dsDismissBanner()">{% trans "Ignorer" %}</button>
     </div>
 </div>
 
@@ -682,6 +678,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var lb = document.getElementById('g-lightbox');
         if (lb) lb.style.display = 'none';
         document.body.style.overflow = '';
+        if (window.vzLayers) vzLayers.remove(window.gLbClose);
         _resetZoom();
     };
 
@@ -714,6 +711,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var next = document.getElementById('g-lb-next');
         if (!lb) return;
         _resetZoom();
+        if (lb.style.display !== 'flex' && window.vzLayers) vzLayers.push(window.gLbClose);
         lb.style.display = 'flex';
         document.body.style.overflow = 'hidden';
         if (img) {
@@ -781,7 +779,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- Post -->
                 <a class="cs-item" href="{% url 'post:addPost' %}" onclick="closeCreateSheet()">
                     <div class="cs-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
-                        <span style="color:#fff;" class="material-icons">edit_note</span>
+                        <span class="material-icons" style="color:#fff;">edit_note</span>
                     </div>
                     <span class="cs-label">Post</span>
                 </a>
@@ -789,15 +787,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- Vidéo courte -->
                 <a class="cs-item" href="{% url 'post:addPost' %}?video=1" onclick="closeCreateSheet()">
                     <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
-                        <span style="color:#fff;" class="material-icons">videocam</span>
+                        <span class="material-icons" style="color:#fff;">videocam</span>
                     </div>
                     <span class="cs-label">{% trans "Vidéo" %}</span>
                 </a>
 
                 <!-- Kabary -->
                 <a class="cs-item" href="{% url 'post:kabary-create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">
-                        <span style="color:#fff;" class="material-icons">campaign</span>
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#f59e0b,var(--danger));">
+                        <span class="material-icons" style="color:#fff;">campaign</span>
                     </div>
                     <span class="cs-label">Kabary</span>
                 </a>
@@ -805,7 +803,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- Vintana -->
                 <a class="cs-item" href="{% url 'post:vintana-create' %}" onclick="closeCreateSheet()">
                     <div class="cs-icon" style="background:linear-gradient(135deg,#0ea5e9,#6366f1);">
-                        <span style="color:#fff;" class="material-icons">auto_awesome</span>
+                        <span class="material-icons" style="color:#fff;">auto_awesome</span>
                     </div>
                     <span class="cs-label">Vintana</span>
                 </a>
@@ -815,31 +813,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 <a class="cs-item" href="{% url 'stories:page' %}"
                    onclick="if(typeof zsMyTap==='function'){event.preventDefault();closeCreateSheet();setTimeout(zsMyTap,220);}else{closeCreateSheet();}">
                     <div class="cs-icon" style="background:linear-gradient(135deg,#ec4899,#f59e0b);">
-                        <span style="color:#fff;" class="material-icons">add_circle</span>
+                        <span class="material-icons" style="color:#fff;">add_circle</span>
                     </div>
                     <span class="cs-label">Story</span>
                 </a>
 
                 <!-- Bazar -->
                 <a class="cs-item" href="{% url 'bazar:create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#10b981,#0ea5e9);">
-                        <span style="color:#fff;" class="material-icons">sell</span>
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--success),#0ea5e9);">
+                        <span class="material-icons" style="color:#fff;">sell</span>
                     </div>
                     <span class="cs-label">Bazar</span>
                 </a>
 
                 <!-- Resto : commander un repas -->
                 <a class="cs-item" href="{% url 'resto:index' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#f97316,#dc2626);">
-                        <span style="color:#fff;" class="material-icons">restaurant</span>
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#f97316,var(--danger));">
+                        <span class="material-icons" style="color:#fff;">restaurant</span>
                     </div>
                     <span class="cs-label">Resto</span>
                 </a>
 
                 <!-- Groupe -->
                 <a class="cs-item" href="{% url 'group:create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#6366f1,#10b981);">
-                        <span style="color:#fff;" class="material-icons">group_add</span>
+                    <div class="cs-icon" style="background:linear-gradient(135deg,#6366f1,var(--success));">
+                        <span class="material-icons" style="color:#fff;">group_add</span>
                     </div>
                     <span class="cs-label">Groupe</span>
                 </a>
@@ -847,8 +845,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <!-- Live -->
                 <button class="cs-item" type="button" onclick="closeCreateSheet();_submitLiveCreate();"
                         style="background:none;border:none;cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;gap:.35rem;text-decoration:none;color:inherit;">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#ef4444,#f59e0b);">
-                        <span style="color:#fff;" class="material-icons">videocam</span>
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--danger),#f59e0b);">
+                        <span class="material-icons" style="color:#fff;">videocam</span>
                     </div>
                     <span class="cs-label">Live</span>
                 </button>
@@ -865,20 +863,24 @@ document.addEventListener('DOMContentLoaded', function() {
     function openCreateSheet() {
         var overlay = document.getElementById('create-sheet-overlay');
         var btn     = document.getElementById('zbn-create-btn');
+        if (overlay.classList.contains('open')) return;
         overlay.style.display = 'block';
         /* Force reflow pour que la transition CSS opacity se déclenche
            (plus fiable que requestAnimationFrame sur mobile Safari) */
         overlay.getBoundingClientRect();
         overlay.classList.add('open');
         if (btn) btn.classList.add('menu-open');
-        document.body.style.overflow = 'hidden';
+        if (window.vzLock) vzLock(); else document.body.style.overflow = 'hidden';
+        if (window.vzLayers) vzLayers.push(_doCloseSheet);   /* Retour Android / Échap */
     }
     function _doCloseSheet() {
         var overlay = document.getElementById('create-sheet-overlay');
         var btn     = document.getElementById('zbn-create-btn');
+        if (!overlay.classList.contains('open')) return;
         overlay.classList.remove('open');
         if (btn) btn.classList.remove('menu-open');
-        document.body.style.overflow = '';
+        if (window.vzUnlock) vzUnlock(); else document.body.style.overflow = '';
+        if (window.vzLayers) vzLayers.remove(_doCloseSheet);
         setTimeout(function() {
             if (!overlay.classList.contains('open')) overlay.style.display = 'none';
         }, 300);
@@ -906,10 +908,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.changedTouches[0].clientY - startY > 60) _doCloseSheet();
         }, { passive: true });
     })();
-    /* Fermer avec la touche Escape */
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') _doCloseSheet();
-    });
+    /* Échap : géré par la pile des calques (vz-core.js) */
     </script>
 
     <script>
@@ -1020,6 +1019,7 @@ document.addEventListener('DOMContentLoaded', function() {
             _zootLbImgs = [src]; _zootLbIdx = 0;
         }
         _zootLbRender();
+        if (document.getElementById('zoot-lightbox').style.display !== 'flex' && window.vzLayers) vzLayers.push(zootCloseImg);
         document.getElementById('zoot-lightbox').style.display = 'flex';
         document.body.style.overflow = 'hidden';
         document.addEventListener('keydown', _zootLbKey);
@@ -1053,6 +1053,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function zootCloseImg() {
+        if (window.vzLayers) vzLayers.remove(zootCloseImg);
         document.getElementById('zoot-lightbox').style.display = 'none';
         document.getElementById('zoot-lb-prev').style.display  = 'none';
         document.getElementById('zoot-lb-next').style.display  = 'none';
@@ -1088,11 +1089,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- Prompt installation PWA -->
 <div id="pwa-install-prompt">
-    <h4>📱 Installer Vazimba</h4>
-    <p>Accédez à l'app directement depuis votre écran d'accueil, même hors ligne.</p>
+    <h4>📱 {% trans "Installer Vazimba" %}</h4>
+    <p>{% trans "Accédez à l’app directement depuis votre écran d’accueil, même hors ligne." %}</p>
     <div class="pwa-install-actions">
-        <button class="pwa-btn-install" onclick="pwaInstall()">Installer</button>
-        <button class="pwa-btn-later" onclick="pwaDismiss()">Plus tard</button>
+        <button type="button" class="pwa-btn-install" onclick="pwaInstall()">{% trans "Installer" %}</button>
+        <button type="button" class="pwa-btn-later" onclick="pwaDismiss()">{% trans "Plus tard" %}</button>
     </div>
 </div>
 
@@ -1115,7 +1116,7 @@ if ('serviceWorker' in navigator) {
             // Écouter les messages du SW (sync réussie)
             navigator.serviceWorker.addEventListener('message', function(event) {
                 if (event.data && event.data.type === 'SYNC_SUCCESS') {
-                    pwaShowToast('✓ Post publié avec succès !', 3000);
+                    vzToast('{% trans "Post publié avec succès !" %}', 'success');
                 }
             });
 
@@ -1124,7 +1125,8 @@ if ('serviceWorker' in navigator) {
                 var newWorker = reg.installing;
                 newWorker.addEventListener('statechange', function() {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        pwaShowToast('🔄 Mise à jour disponible — rechargez la page', 0);
+                        pwaShowToast('{% trans "Nouvelle version disponible" %}', 0,
+                                     { label: '{% trans "Recharger" %}', onClick: function() { location.reload(); } });
                     }
                 });
             });
@@ -1207,7 +1209,7 @@ window.pwaDismiss = function() {
 window.addEventListener('appinstalled', function() {
     _installEl.style.display = 'none';
     _deferredPrompt = null;
-    pwaShowToast('✓ Vazimba installé sur votre écran d\'accueil !', 3500);
+    vzToast('{% trans "Vazimba est installé sur votre écran d’accueil." %}', 'success');
 });
 
 /* ════════════════════════════════════════════════════════════════════
@@ -1216,7 +1218,8 @@ window.addEventListener('appinstalled', function() {
 var _toastEl = document.getElementById('pwa-sync-toast');
 var _toastTimer = null;
 
-window.pwaShowToast = function(msg, duration) {
+window.pwaShowToast = function(msg, duration, action) {
+    if (window.vzToast) return vzToast(msg, { type: 'info', duration: duration, action: action });
     _toastEl.textContent = msg;
     _toastEl.style.display = 'block';
     if (_toastTimer) clearTimeout(_toastTimer);
@@ -1284,49 +1287,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <!-- ══ Modal Signalement de contenu ══════════════════════════════════════ -->
 {% if user.is_authenticated %}
-<div id="report-modal-overlay" style="
-    display:none; position:fixed; inset:0; z-index:9900;
-    background:rgba(0,0,0,.55); align-items:center; justify-content:center;
-" onclick="if(event.target===this)closeReportModal()">
-    <div style="
-        background:var(--bg-card); border:1px solid var(--border);
-        border-radius:20px; width:min(92vw,420px); padding:1.6rem 1.8rem;
-        box-shadow:0 24px 64px rgba(0,0,0,.35);
-        animation:dropIn .18s ease;
-    ">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;">
-            <div style="display:flex;align-items:center;gap:.55rem;font-weight:900;font-size:1.05rem;color:var(--text);">
-                <span class="material-icons" style="color:#ef4444;font-size:1.2rem;">flag</span>
-                Signaler un contenu
-            </div>
-            <button onclick="closeReportModal()" style="
-                background:none;border:none;cursor:pointer;
-                color:var(--text-muted);padding:.25rem;border-radius:50%;
-                display:flex;align-items:center;
-            "><span class="material-icons">close</span></button>
+<div id="report-modal-overlay" class="vz-overlay" style="display:none;" onclick="if(event.target===this)closeReportModal()">
+    <div class="vz-dialog vz-dialog--danger" role="dialog" aria-modal="true" aria-labelledby="report-modal-title">
+        <div class="vz-dialog-handle"></div>
+        <div class="vz-dialog-head">
+            <span class="material-icons" aria-hidden="true">flag</span>
+            <h3 class="vz-dialog-title" id="report-modal-title">{% trans "Signaler un contenu" %}</h3>
+            <button type="button" class="vz-btn vz-btn--icon vz-btn--sm vz-btn--muted" onclick="closeReportModal()" aria-label="{% trans 'Fermer' %}" style="border:0;"><span class="material-icons">close</span></button>
         </div>
-        <p style="font-size:.85rem;color:var(--text-muted);margin:0 0 1rem;">
-            Sélectionnez la raison du signalement. Notre équipe examinera ce contenu.
-        </p>
+        <p class="vz-dialog-text">{% trans "Sélectionnez la raison du signalement. Notre équipe examinera ce contenu." %}</p>
         <input type="hidden" id="report-ct" value="">
         <input type="hidden" id="report-oid" value="">
-        <div id="report-reasons-wrap" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;">
-            <!-- Rempli par JS (tableau hardcodé) -->
+        <div id="report-reasons-wrap" style="display:flex;flex-direction:column;gap:.25rem;margin-bottom:1rem;"></div>
+        <div class="vz-field">
+            <label for="report-comment">{% trans "Précision (facultatif)" %}</label>
+            <textarea id="report-comment" rows="2" style="min-height:72px;"></textarea>
         </div>
-        <textarea id="report-comment" placeholder="Précision optionnelle…" rows="2"
-            style="width:100%;box-sizing:border-box;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:.6rem .85rem;color:var(--text);font-family:inherit;font-size:.88rem;resize:none;outline:none;margin-bottom:.9rem;transition:border-color .2s;"
-            onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
-        <div id="report-feedback" style="font-size:.83rem;color:var(--accent);min-height:1.2rem;margin-bottom:.5rem;"></div>
-        <div style="display:flex;gap:.6rem;justify-content:flex-end;">
-            <button onclick="closeReportModal()" style="
-                background:var(--btn-bg);border:1px solid var(--border);border-radius:10px;
-                padding:.5rem 1.1rem;cursor:pointer;font-size:.88rem;color:var(--text);font-weight:600;
-            ">Annuler</button>
-            <button onclick="submitReport()" style="
-                background:linear-gradient(135deg,#ef4444,#dc2626);
-                color:#fff;border:none;border-radius:10px;
-                padding:.5rem 1.3rem;cursor:pointer;font-size:.88rem;font-weight:700;
-            ">Envoyer</button>
+        <div id="report-feedback" role="status" style="font-size:.85rem;font-weight:600;min-height:1.2rem;margin-bottom:.5rem;color:var(--text-muted);"></div>
+        <div class="vz-dialog-actions">
+            <button type="button" class="vz-btn vz-btn--secondary" onclick="closeReportModal()">{% trans "Annuler" %}</button>
+            <button type="button" class="vz-btn vz-btn--danger" id="report-submit-btn" onclick="submitReport()">{% trans "Envoyer" %}</button>
         </div>
     </div>
 </div>
@@ -1336,12 +1316,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var _REPORT_URL = "{% url 'post:report-content' %}";
     var _CSRF_COOKIE = 'csrftoken';
     var _REPORT_REASONS = [
-        ['spam',     'Spam / publicité abusive'],
-        ['hate',     'Discours haineux / harcèlement'],
-        ['violence', 'Violence / contenu choquant'],
-        ['nudity',   'Nudité / contenu adulte'],
-        ['false',    'Fausse information'],
-        ['other',    'Autre'],
+        ['spam',     '{% trans "Spam / publicité abusive"|escapejs %}'],
+        ['hate',     '{% trans "Discours haineux / harcèlement"|escapejs %}'],
+        ['violence', '{% trans "Violence / contenu choquant"|escapejs %}'],
+        ['nudity',   '{% trans "Nudité / contenu adulte"|escapejs %}'],
+        ['false',    '{% trans "Fausse information"|escapejs %}'],
+        ['other',    '{% trans "Autre"|escapejs %}'],
     ];
 
     function buildReasonsList() {
@@ -1350,15 +1330,13 @@ document.addEventListener('DOMContentLoaded', function() {
         wrap.innerHTML = '';
         _REPORT_REASONS.forEach(function(pair, i) {
             var lbl = document.createElement('label');
-            lbl.style.cssText = 'display:flex;align-items:center;gap:.65rem;cursor:pointer;padding:.5rem .6rem;border-radius:10px;transition:background .15s;';
-            lbl.onmouseover = function(){ this.style.background = 'var(--btn-bg)'; };
-            lbl.onmouseout  = function(){ this.style.background = 'none'; };
+            lbl.style.cssText = 'display:flex;align-items:center;gap:.65rem;cursor:pointer;padding:.55rem .6rem;border-radius:var(--radius-sm);margin:0;min-height:44px;';
             var inp = document.createElement('input');
             inp.type = 'radio'; inp.name = 'report-reason'; inp.value = pair[0];
-            inp.style.cssText = 'accent-color:var(--accent);width:17px;height:17px;';
+            inp.style.cssText = 'accent-color:var(--accent);width:18px;height:18px;margin:0;';
             if (i === 0) inp.checked = true;
             var span = document.createElement('span');
-            span.style.cssText = 'font-size:.9rem;color:var(--text);';
+            span.style.cssText = 'font-size:.92rem;color:var(--text);';
             span.textContent = pair[1];
             lbl.appendChild(inp); lbl.appendChild(span);
             wrap.appendChild(lbl);
@@ -1370,12 +1348,24 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('report-ct').value  = ct;
         document.getElementById('report-oid').value = objectId;
         document.getElementById('report-comment').value = '';
-        document.getElementById('report-feedback').textContent = '';
-        document.getElementById('report-modal-overlay').style.display = 'flex';
+        var fb = document.getElementById('report-feedback');
+        fb.textContent = ''; fb.style.color = 'var(--text-muted)';
+        var ov = document.getElementById('report-modal-overlay');
+        if (ov.style.display === 'flex') return;
+        ov.style.display = 'flex';
+        ov.getBoundingClientRect();
+        ov.classList.add('open');
+        if (window.vzLock) vzLock();
+        if (window.vzLayers) vzLayers.push(window.closeReportModal);
     };
 
     window.closeReportModal = function() {
-        document.getElementById('report-modal-overlay').style.display = 'none';
+        var ov = document.getElementById('report-modal-overlay');
+        if (ov.style.display !== 'flex') return;
+        ov.classList.remove('open');
+        if (window.vzUnlock) vzUnlock();
+        if (window.vzLayers) vzLayers.remove(window.closeReportModal);
+        setTimeout(function(){ ov.style.display = 'none'; }, 200);
     };
 
     window.submitReport = function() {
@@ -1385,9 +1375,13 @@ document.addEventListener('DOMContentLoaded', function() {
         var radios  = document.querySelectorAll('input[name="report-reason"]');
         var reason  = '';
         radios.forEach(function(r){ if(r.checked) reason = r.value; });
-        var fb = document.getElementById('report-feedback');
+        var fb  = document.getElementById('report-feedback');
+        var btn = document.getElementById('report-submit-btn');
 
-        if (!reason) { fb.style.color = '#ef4444'; fb.textContent = 'Veuillez choisir une raison.'; return; }
+        if (!reason) { fb.style.color = 'var(--danger)'; fb.textContent = '{% trans "Veuillez choisir une raison."|escapejs %}'; return; }
+        if (btn.classList.contains('is-loading')) return;
+        btn.classList.add('is-loading'); btn.setAttribute('aria-busy', 'true');
+        function done() { btn.classList.remove('is-loading'); btn.removeAttribute('aria-busy'); }
 
         var csrf = (document.cookie.match('(^|;)\\s*' + _CSRF_COOKIE + '\\s*=\\s*([^;]+)') || [])[2] || '';
         var fd = new FormData();
@@ -1401,16 +1395,16 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(function(r){ return r.json(); })
         .then(function(data){
+            done();
             if (data.ok) {
-                fb.style.color = 'var(--accent)';
-                fb.textContent = 'Signalement envoyé. Merci !';
-                setTimeout(closeReportModal, 1400);
+                closeReportModal();
+                vzToast('{% trans "Signalement envoyé. Merci !"|escapejs %}', 'success');
             } else {
-                fb.style.color = '#ef4444';
-                fb.textContent = data.error || 'Erreur lors de l\'envoi.';
+                fb.style.color = 'var(--danger)';
+                fb.textContent = data.error || '{% trans "Erreur lors de l’envoi."|escapejs %}';
             }
         })
-        .catch(function(){ fb.style.color='#ef4444'; fb.textContent='Erreur réseau.'; });
+        .catch(function(){ done(); fb.style.color='var(--danger)'; fb.textContent='{% trans "Erreur réseau."|escapejs %}'; });
     };
 })();
 </script>
@@ -1436,6 +1430,39 @@ document.addEventListener('DOMContentLoaded', function() {
         /* 1. Override spécifique à la page */
         if (typeof window._androidBackHandler === 'function') {
             try { if (window._androidBackHandler()) return; } catch(e) {}
+        }
+
+        /* 1 bis. Dernier calque ouvert déclaré à vz-core (feuilles, dialogues,
+           lightbox, feuille « Créer », signalement…) */
+        if (window.vzLayers && vzLayers.closeTop()) return;
+
+        /* 1 ter. Calques connus qui ne passent pas (encore) par la pile */
+        var dd = document.querySelector('.dropdown-menu.show');
+        if (dd) {
+            var tog = dd.parentElement && dd.parentElement.querySelector('[data-toggle="dropdown"]');
+            if (tog && window._vzb_closeDropdown) { _vzb_closeDropdown(tog); return; }
+            if (tog) { tog.click(); return; }
+        }
+        var known = [
+            ['.share-modal-overlay.open', 'closeShareModal'],
+            ['#rw-modal.open', 'rwClose'],
+            ['#gd-invite-overlay.open', 'gdCloseInviteModal'],
+            ['.pp-sheet.open', 'ppClose'],
+            ['.rs-modal-bg.show', 'rsCloseItem'],
+            ['#_zs-gsheet', null], ['#_zs-mysheet', null],
+        ];
+        for (var k = 0; k < known.length; k++) {
+            var el = document.querySelector(known[k][0]);
+            if (!el) continue;
+            var fnName = known[k][1];
+            if (fnName && typeof window[fnName] === 'function') { try { window[fnName](); return; } catch(e) {} }
+            var closer = el.querySelector('[data-close], .vz-dialog-close, [aria-label="Fermer"], .close');
+            if (closer) { closer.click(); return; }
+            el.classList.remove('open', 'show');
+            el.remove && el.id && el.id.indexOf('_zs-') === 0 && el.remove();
+            document.body.style.overflow = '';
+            if (window.vzUnlock) vzUnlock(true);
+            return;
         }
 
         /* 2. Fermer la première modale Bootstrap visible */
@@ -1468,21 +1495,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function _showExitToast() {
-        var t = document.getElementById('_cap-exit-toast');
-        if (!t) {
-            t = document.createElement('div');
-            t.id = '_cap-exit-toast';
-            t.setAttribute('style',
-                'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);' +
-                'background:rgba(30,30,30,.92);color:#fff;padding:10px 22px;' +
-                'border-radius:24px;font-size:.85rem;z-index:999999;' +
-                'opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;');
-            document.body.appendChild(t);
-        }
-        t.textContent = 'Appuyez encore pour quitter';
-        t.style.opacity = '1';
-        clearTimeout(t._tid);
-        t._tid = setTimeout(function () { t.style.opacity = '0'; }, 1800);
+        if (window.vzToast) { vzToast('{% trans "Appuyez encore pour quitter"|escapejs %}', { type: 'info', duration: 1800 }); return; }
     }
 })();
 </script>

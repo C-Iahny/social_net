@@ -31,7 +31,7 @@
                 <input type="hidden" name="pk" value="{{ c.pk }}"><input type="hidden" name="order" value="{{ c.order }}">
                 <input class="form-control" name="name" value="{{ c.name }}" style="width:150px;padding:.3rem .5rem;font-size:.85rem;">
                 <button class="rs-btn sm secondary" type="submit">💾</button>
-                <button class="rs-btn sm ghost" type="submit" name="delete" value="1" onclick="return confirm('{% trans "Supprimer cette rubrique ?" %}')">✕</button>
+                <button class="rs-btn sm ghost" type="submit" name="delete" value="1" data-vz-confirm="{% trans 'Supprimer cette rubrique ?' %}" data-vz-danger>✕</button>
             </form>
             {% endfor %}
         </div>
@@ -55,7 +55,7 @@
             <div style="display:flex;gap:.3rem;flex-wrap:wrap;justify-content:flex-end;">
                 <button class="rs-btn sm secondary" type="button" onclick="rsEditItem({{ it.pk }}, {{ it.category_id|default:'null' }}, '{{ it.name|escapejs }}', '{{ it.description|escapejs }}', {{ it.price|floatformat:0 }}, {{ it.is_available|yesno:'true,false' }}, {{ it.order }}, '{{ it.ingredients|escapejs }}', '{{ it.preparation|escapejs }}')">✏️</button>
                 <button class="rs-btn sm secondary" type="button" onclick="rsEditOptions({{ it.pk }}, '{{ it.name|escapejs }}')">🧩 {% trans "Options" %}</button>
-                <form method="post" action="{% url 'resto:item_delete' restaurant.slug it.pk %}" onsubmit="return confirm('{% trans "Supprimer ce plat ?" %}')">{% csrf_token %}<button class="rs-btn sm ghost" type="submit">🗑</button></form>
+                <form method="post" action="{% url 'resto:item_delete' restaurant.slug it.pk %}" data-vz-confirm="{% trans 'Supprimer ce plat ?' %}" data-vz-danger>{% csrf_token %}<button class="rs-btn sm ghost" type="submit">🗑</button></form>
             </div>
         </div>
         {% empty %}

@@ -3274,3 +3274,107 @@ msgstr "Vaovao"
 
 msgid "Tourisme"
 msgstr "Fizahan-tany"
+
+# ── Socle d’interface commun (toasts, confirmation, signalement) ──
+
+msgid "Confirmer"
+msgstr "Hamafiso"
+
+msgid "Êtes-vous sûr ?"
+msgstr "Azo antoka ve ?"
+
+msgid "Nouvelle version disponible"
+msgstr "Misy kinova vaovao"
+
+msgid "Recharger"
+msgstr "Avereno"
+
+msgid "Post publié avec succès !"
+msgstr "Voapetraka ny lahatsoratra !"
+
+msgid "Vazimba est installé sur votre écran d’accueil."
+msgstr "Voapetraka eo amin'ny efijery fandraisana ny Vazimba."
+
+msgid "Signaler un contenu"
+msgstr "Hitatitra votoaty"
+
+msgid "Sélectionnez la raison du signalement. Notre équipe examinera ce contenu."
+msgstr "Safidio ny antony. Hojeren'ny ekipanay ity votoaty ity."
+
+msgid "Précision (facultatif)"
+msgstr "Fanazavana (tsy voatery)"
+
+msgid "Spam / publicité abusive"
+msgstr "Spam / dokam-barotra tsy mety"
+
+msgid "Discours haineux / harcèlement"
+msgstr "Fankahalana / fanorisorenana"
+
+msgid "Violence / contenu choquant"
+msgstr "Herisetra / votoaty manafintohina"
+
+msgid "Nudité / contenu adulte"
+msgstr "Fitanjahana / votoaty ho an'ny olon-dehibe"
+
+msgid "Fausse information"
+msgstr "Vaovao diso"
+
+msgid "Veuillez choisir une raison."
+msgstr "Misafidiana antony azafady."
+
+msgid "Signalement envoyé. Merci !"
+msgstr "Lasa ny tatitra. Misaotra !"
+
+msgid "Erreur lors de l’envoi."
+msgstr "Nisy olana tamin'ny fandefasana."
+
+msgid "Erreur réseau."
+msgstr "Olana amin'ny tambajotra."
+
+msgid "Appuyez encore pour quitter"
+msgstr "Tsindrio indray raha hiala"
+
+msgid "Connexion lente détectée"
+msgstr "Miadana ny fifandraisana"
+
+msgid "Activer le mode économie pour réduire la consommation de données ?"
+msgstr "Alefa ve ny fitsitsiana data ?"
+
+msgid "Activer"
+msgstr "Alefaso"
+
+msgid "Ignorer"
+msgstr "Aza raharahaina"
+
+msgid "Installer"
+msgstr "Apetraho"
+
+msgid "Plus tard"
+msgstr "Aoriana"
+
+msgid "Installer Vazimba"
+msgstr "Apetraho ny Vazimba"
+
+msgid "Accédez à l’app directement depuis votre écran d’accueil, même hors ligne."
+msgstr "Sokafy avy eo amin'ny efijery fandraisana ny rindrambaiko, na tsy misy aza ny internet."
+
+msgid "Répondre"
+msgstr "Valio"
+
+msgid "Supprimer cette story ?"
+msgstr "Hofafana ve ity story ity ?"
+
+msgid "Story supprimée"
+msgstr "Voafafa ny story"
+
+msgid "Terminer le live ?"
+msgstr "Hatsahatra ve ny live ?"
+
+msgid "Marquer comme vendue ?"
+msgstr "Hamarihina ho lafo ?"
+
+msgid "Supprimer définitivement ?"
+msgstr "Hofafana tanteraka ?"
+
+msgid "Supprimer ce brouillon ?"
+msgstr "Hofafana ve ity drafitra ity ?"

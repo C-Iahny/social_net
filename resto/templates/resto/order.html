@@ -80,11 +80,11 @@
         <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
             {% for code, label in transitions %}
             {% if code == 'cancelled' %}
-            <form method="post" action="{% url 'resto:order_cancel' order.number %}" onsubmit="return confirm('{% trans "Annuler cette commande ?" %}')">{% csrf_token %}
+            <form method="post" action="{% url 'resto:order_cancel' order.number %}" data-vz-confirm="{% trans 'Annuler cette commande ?' %}" data-vz-danger>{% csrf_token %}
                 <button class="rs-btn danger" type="submit">{{ label }}</button></form>
             {% else %}
             <form method="post" action="{% url 'resto:order_set_status' order.number %}" style="display:flex;gap:.4rem;align-items:center;"
-                  {% if code == 'delivered' %}onsubmit="return confirm('{% trans "Confirmer : la commande a bien été remise ?" %}')"{% endif %}>{% csrf_token %}
+                  {% if code == 'delivered' %}data-vz-confirm="{% trans 'Confirmer : la commande a bien été remise ?' %}"{% endif %}>{% csrf_token %}
                 <input type="hidden" name="status" value="{{ code }}">
                 {% if code == 'accepted' %}<input class="form-control" name="estimated_minutes" type="number" min="5" max="240" value="{{ order.estimated_minutes|default:30 }}" style="width:90px;" title="{% trans 'Délai (min)' %}">{% endif %}
                 {% if code == 'refused' %}<input class="form-control" name="note" placeholder="{% trans 'Motif' %}" style="width:160px;">{% endif %}

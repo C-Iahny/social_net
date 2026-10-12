@@ -167,16 +167,16 @@
 .edit-errors {
     background: rgba(224,36,94,.1); border: 1px solid rgba(224,36,94,.25);
     border-radius: 10px; padding: .6rem .9rem; margin-bottom: .75rem;
-    font-size: .84rem; color: #c0392b;
+    font-size: .84rem; color: var(--danger);
 }
 [data-theme="dark"] .edit-errors { color: #f28b82; }
 .edit-save-btn {
     display: flex; align-items: center; justify-content: center; gap: .5rem;
     width: 100%; height: 50px;
-    background: linear-gradient(135deg, #1877f2 0%, #7c3aed 100%);
-    color: #fff; border: none; border-radius: 12px;
+    background: var(--accent);
+    color: var(--on-accent); border: none; border-radius: var(--radius);
     font-size: 1rem; font-weight: 700; cursor: pointer;
-    box-shadow: 0 4px 16px rgba(24,119,242,.35);
+    box-shadow: 0 4px 16px var(--accent-glow);
     transition: opacity .2s, transform .15s;
     margin-top: 1.5rem;
 }
@@ -322,7 +322,7 @@
                 ">
                     <span style="font-size:1.1rem;">✅</span>
                     <div>
-                        <div style="font-size:.88rem;font-weight:700;color:#10b981;">Téléphone vérifié</div>
+                        <div style="font-size:.88rem;font-weight:700;color:var(--success);">Téléphone vérifié</div>
                         <div style="font-size:.82rem;color:var(--text-muted);" id="phone-verified-display">{{ request.user.phone_number }}</div>
                     </div>
                     <button onclick="document.getElementById('phone-change-area').style.display='block';this.style.display='none';"
@@ -375,15 +375,9 @@
                                            autocomplete="one-time-code"
                                            style="flex:1;background:none;border:none;outline:none;color:var(--text);font-size:1.1rem;letter-spacing:.3em;font-weight:700;">
                                 </div>
-                                <button id="btn-verify-otp"
+                                <button id="btn-verify-otp" type="button"
                                         onclick="phoneVerifyOtp()"
-                                        style="
-                                            padding:0 1rem;height:48px;border-radius:12px;
-                                            background:#10b981;color:#fff;
-                                            border:none;font-weight:700;font-size:.88rem;
-                                            cursor:pointer;white-space:nowrap;
-                                            transition:opacity .2s;flex-shrink:0;
-                                        ">
+                                        class="vz-btn vz-btn--success" style="height:48px;flex-shrink:0;">
                                     Vérifier
                                 </button>
                             </div>
@@ -491,13 +485,13 @@
                 timeout: 10000,
                 success: function(data) {
                     if (data.result == "success") { document.getElementById("id_cancel").click(); }
-                    else if (data.result == "error") { alert(data.exception); document.getElementById("id_cancel").click(); }
+                    else if (data.result == "error") { vzAlert(data.exception); document.getElementById("id_cancel").click(); }
                 },
                 error: function(data) { console.error("ERROR...", data); },
                 complete: function(data) { displayLoadingSpinner(false); }
             });
         } else {
-            alert("Choisissez une image de moins de 10 Mo.");
+            vzAlert("Choisissez une image de moins de 10 Mo.");
             document.getElementById("id_cancel").click();
         }
     }
@@ -617,7 +611,7 @@
                     'background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);' +
                     'border-radius:12px;padding:.65rem .9rem;">' +
                     '<span style="font-size:1.1rem;">✅</span>' +
-                    '<div><div style="font-size:.88rem;font-weight:700;color:#10b981;">Téléphone vérifié</div>' +
+                    '<div><div style="font-size:.88rem;font-weight:700;color:var(--success);">Téléphone vérifié</div>' +
                     '<div style="font-size:.82rem;color:var(--text-muted);">' + res.data.phone_display + '</div></div>' +
                     '</div>';
             }, 1200);

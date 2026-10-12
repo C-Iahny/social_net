@@ -145,7 +145,7 @@
     bottom: 1px; right: 1px;
     width: 10px; height: 10px;
     border-radius: 50%;
-    background: #22c55e;
+    background: var(--success);
     border: 2px solid #2a0e03;
     display: none;
 }
@@ -273,7 +273,7 @@
     border: 2px solid var(--bg, #fff);
     display: none;              /* caché jusqu'à ouverture d'une conv */
 }
-#chat-header-presence-dot.online  { background: #22c55e; }
+#chat-header-presence-dot.online  { background: var(--success); }
 #chat-header-presence-dot.offline { background: #aaa; }
 #id_other_username {
     font-size: .95rem;
@@ -641,7 +641,7 @@
 }
 .chat-mic-btn:hover { background: rgba(0,0,0,.06); color: var(--accent); }
 .chat-mic-btn.recording {
-    background: #e53935;
+    background: var(--danger);
     color: #fff;
     animation: mic-pulse 1s ease-in-out infinite;
 }
@@ -659,7 +659,7 @@
     bottom: calc(100% + 8px);
     left: 50%;
     transform: translateX(-50%);
-    background: #e53935;
+    background: var(--danger);
     color: #fff;
     font-size: .78rem;
     font-weight: 600;
@@ -822,11 +822,11 @@
     flex-shrink: 0;
     font-size: 1.3rem;
 }
-.file-icon.icon-pdf  { background: #fdecea; color: #e53935; }
+.file-icon.icon-pdf  { background: #fdecea; color: var(--danger); }
 .file-icon.icon-word { background: #e3f2fd; color: #1565c0; }
 .file-icon.icon-ppt  { background: #fff3e0; color: #e65100; }
 .file-icon.icon-img  { background: #f3e5f5; color: #7b1fa2; }
-.file-icon.icon-vid  { background: #e8f5e9; color: #2e7d32; }
+.file-icon.icon-vid  { background: #e8f5e9; color: var(--success); }
 .file-icon.icon-zip  { background: #fafafa; color: #616161; }
 .file-icon.icon-gen  { background: #e8eaf6; color: #3949ab; }
 [data-theme="dark"] .file-icon.icon-pdf  { background: #3b1010; color: #ff6b6b; }
@@ -907,7 +907,7 @@
     color: var(--text-muted); padding: 0; line-height: 1;
     margin-left: 2px;
 }
-.file-preview-remove:hover { color: #e53935; }
+.file-preview-remove:hover { color: var(--danger); }
 
 /* System message */
 .system-message {
@@ -1081,7 +1081,7 @@
     align-items: center;
     justify-content: center;
     gap: .25rem;
-    background: #fff;
+    background: var(--bg-card);
     color: var(--accent);
     border: none;
     border-radius: 40px;
@@ -1184,8 +1184,8 @@
 }
 .call-btn:active { transform: scale(.9); }
 .call-btn .material-icons { font-size: 1.7rem; color: #fff; }
-.call-btn-red   { background: #e53935; }
-.call-btn-green { background: #22c55e; }
+.call-btn-red   { background: var(--danger); }
+.call-btn-green { background: var(--success); }
 .call-btn-red:hover   { filter: brightness(1.12); }
 .call-btn-green:hover { filter: brightness(1.12); }
 
@@ -1577,7 +1577,7 @@
                               inputmode="text"
                               enterkeyhint="send"></textarea>
                     <!-- Bouton annuler enregistrement (caché par défaut) -->
-                    <button type="button" id="rec-cancel-btn" class="chat-mic-btn" title="{% trans 'Annuler' %}" style="display:none;color:#e53935;">
+                    <button type="button" id="rec-cancel-btn" class="chat-mic-btn" title="{% trans 'Annuler' %}" style="display:none;color:var(--danger);">
                         <span class="material-icons">delete</span>
                     </button>
                     <!-- Bouton micro (visible quand input vide ET pas en train d'enregistrer) -->
@@ -1852,7 +1852,7 @@ function fileIconEmoji(fname, ftype){
 /* ── Upload + broadcast ────────────────────────────────────── */
 function uploadAndSendFile(f){
     if(!roomId){
-        alert("Ouvrez d'abord une conversation.");
+        vzAlert("Ouvrez d'abord une conversation.");
         return;
     }
     var formData = new FormData();
@@ -1896,18 +1896,18 @@ function uploadAndSendFile(f){
                 }
                 clearFileSelection();
             } else {
-                alert(data.error || 'Échec de l\'envoi.');
+                vzAlert(data.error || 'Échec de l\'envoi.');
             }
         } else {
             try {
                 var err = JSON.parse(xhr.responseText);
-                alert(err.error || 'Erreur serveur.');
-            } catch(e){ alert('Erreur serveur.'); }
+                vzAlert(err.error || 'Erreur serveur.');
+            } catch(e){ vzAlert('Erreur serveur.'); }
         }
     };
     xhr.onerror = function(){
         uploadProg.style.display = 'none';
-        alert('Erreur réseau.');
+        vzAlert('Erreur réseau.');
     };
     xhr.send(formData);
 }
@@ -2127,7 +2127,7 @@ window._CT = {
             if(old) old.remove();
             var errDiv = document.createElement('div');
             errDiv.className = 'chat-err-toast';
-            errDiv.style.cssText = 'text-align:center;color:#e53935;font-size:.78rem;padding:.4rem .6rem;margin:.3rem 0;background:rgba(229,57,53,.08);border-radius:8px;';
+            errDiv.style.cssText = 'text-align:center;color:var(--danger);font-size:.78rem;padding:.4rem .6rem;margin:.3rem 0;background:rgba(229,57,53,.08);border-radius:8px;';
             errDiv.textContent = '⚠ ' + msg;
             chatLog.appendChild(errDiv);
             chatLog.scrollTop = chatLog.scrollHeight;
@@ -2470,7 +2470,7 @@ window._CT = {
             })
             .catch(function(err){
                 console.warn('Micro inaccessible :', err);
-                alert('Impossible d\'accéder au microphone. Vérifiez les permissions.');
+                vzAlert('Impossible d\'accéder au microphone. Vérifiez les permissions.');
             });
         }
 
@@ -3710,15 +3710,15 @@ window._CT = {
     /* ── Démarrer un appel (sortant) ─────────────────────────── */
     function startCall(mode){
         if(_callState !== 'idle'){
-            alert(_CT ? _CT.call_busy : 'Un appel est déjà en cours.');
+            vzAlert(_CT ? _CT.call_busy : 'Un appel est déjà en cours.');
             return;
         }
         if(!roomId || !chatSocket || chatSocket.readyState !== WebSocket.OPEN){
-            alert(_CT ? _CT.call_no_room : 'Ouvrez d\'abord une conversation.');
+            vzAlert(_CT ? _CT.call_no_room : 'Ouvrez d\'abord une conversation.');
             return;
         }
         if(!_webrtcSupported()){
-            alert(_webrtcUnsupportedMsg());
+            vzAlert(_webrtcUnsupportedMsg());
             return;
         }
         _callMode  = mode || 'video';
@@ -3791,7 +3791,7 @@ window._CT = {
             console.error('startCall:', err);
             var wantVideo = (_callMode === 'video');
             _callCleanup(false);
-            alert(_gumErrorMsg(err, wantVideo));
+            vzAlert(_gumErrorMsg(err, wantVideo));
         });
     }
 
@@ -3910,7 +3910,7 @@ window._CT = {
             console.error('acceptCall:', err);
             var wantVideo = (_callMode === 'video');
             _callCleanup(true);
-            alert(_gumErrorMsg(err, wantVideo));
+            vzAlert(_gumErrorMsg(err, wantVideo));
         });
     }
 
@@ -4067,10 +4067,10 @@ window._CT = {
             if(data['response'] == "Successfully got the chat."){
                 setupWebSocket(data['chatroom_id']);
             } else if(data['response'] != null){
-                alert(data['response']);
+                vzAlert(data['response']);
             }
         })
-        .catch(function(){ alert("Something went wrong."); });
+        .catch(function(){ vzAlert("Something went wrong."); });
     }
 </script>
 

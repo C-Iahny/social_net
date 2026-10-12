@@ -155,7 +155,7 @@
 
   window.rsOpenItem = async function(pk){
     if(!LOGGED){ window.location = "{% url 'login' %}?next=" + encodeURIComponent(window.location.pathname); return; }
-    if(!CAN_ORDER){ alert(I18N.closed); return; }
+    if(!CAN_ORDER){ vzAlert(I18N.closed); return; }
     const r = await fetch(`/resto/r/${SLUG}/plat/${pk}/`, {credentials:'same-origin'});
     if(!r.ok) return;
     item = await r.json(); qty = 1;
@@ -249,7 +249,7 @@
     btn.disabled = false;
     const data = await r.json().catch(()=>({}));
     if(r.status === 409){
-      if(confirm(`${I18N.replace} ${data.current_restaurant}. ${I18N.replace2}`)) return rsAdd(true);
+      if(await vzConfirm({ text: `${I18N.replace} ${data.current_restaurant}. ${I18N.replace2}` })) return rsAdd(true);
       return;
     }
     if(!r.ok){ err.textContent = data.error || 'Erreur'; return; }

@@ -45,7 +45,7 @@
 [data-theme="dark"] .bazar-section .form-control:focus { box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.12); }
 .bazar-section label { font-size: .82rem; font-weight: 700; color: var(--text-secondary,var(--text-muted)); margin-bottom: .35rem; display: block; }
 .bazar-section .form-text { font-size: .75rem; color: var(--text-muted); margin-top: .3rem; }
-.errorlist { list-style:none; padding:0; margin:.25rem 0 0; font-size:.8rem; color:#dc3545; }
+.errorlist { list-style:none; padding:0; margin:.25rem 0 0; font-size:.8rem; color:var(--danger); }
 
 /* Photos existantes */
 .existing-photos {
@@ -73,7 +73,7 @@
     width:20px;height:20px;border-radius:50%;font-size:.8rem;
     cursor:pointer;display:flex;align-items:center;justify-content:center;
 }
-.existing-photo-del:hover { background:#dc3545; }
+.existing-photo-del:hover { background:var(--danger); }
 
 /* Upload zone nouvelle photo */
 .bazar-upload-zone {
@@ -331,7 +331,10 @@ var VZB_I18N = {
 <script>
 // Supprimer photo existante via AJAX
 function deletePhoto(imgPk, btn) {
-    if (!confirm('{% trans "Supprimer cette photo ?" %}')) return;
+    vzConfirm({ text: '{% trans "Supprimer cette photo ?"|escapejs %}', danger: true, confirmText: '{% trans "Supprimer"|escapejs %}' })
+    .then(function(ok){ if (ok) _deletePhotoNow(imgPk, btn); });
+}
+function _deletePhotoNow(imgPk, btn) {
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     fetch(`/bazar/image/${imgPk}/supprimer/`, {
         method: 'POST',
@@ -343,7 +346,7 @@ function deletePhoto(imgPk, btn) {
             document.getElementById(`photo-${imgPk}`).remove();
         }
     })
-    .catch(() => alert('{% trans "Erreur lors de la suppression." %}'));
+    .catch(() => vzAlert('{% trans "Erreur lors de la suppression." %}'));
 }
 
 // Aperçu nouvelles photos
@@ -433,7 +436,7 @@ if (_editForm) {
             }); }
         }).catch(function() {
             if (btn) { btn.disabled = false; btn.innerHTML = orig; }
-            alert(VZB_I18N.networkError);
+            vzAlert(VZB_I18N.networkError);
         });
     });
 }

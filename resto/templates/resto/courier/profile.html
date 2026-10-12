@@ -14,7 +14,7 @@
 .rs-cp-stat span { font-size: .72rem; color: var(--text-muted); }
 .rs-cp-row { display: flex; gap: .6rem; padding: .45rem 0; border-top: 1px dashed var(--border); font-size: .9rem; }
 .rs-cp-row .k { color: var(--text-muted); min-width: 120px; flex: none; }
-.rs-check { color: #10b981; font-weight: 700; } .rs-cross { color: var(--text-subtle); }
+.rs-check { color: var(--success); font-weight: 700; } .rs-cross { color: var(--text-subtle); }
 </style>
 <div class="rs-wrap" style="max-width:760px;">
     <div class="rs-card" style="padding:1.1rem;">
@@ -40,7 +40,7 @@
             <div class="rs-cp-stat"><b>{{ deliveries }}</b><span>{% trans "Livraisons effectuées" %}</span></div>
             <div class="rs-cp-stat"><b>{% if rating.count %}★ {{ rating.avg }}{% else %}—{% endif %}</b><span>{{ rating.count }} {% trans "avis" %}</span></div>
             <div class="rs-cp-stat"><b>{% if on_time_pct is not None %}{{ on_time_pct }} %{% else %}—{% endif %}</b><span>{% trans "Dans les délais" %}</span></div>
-            <div class="rs-cp-stat"><b style="{% if rating.payment_issues %}color:#c0392b;{% endif %}">{{ rating.payment_issues }}</b><span>{% trans "Problème de paiement" %}</span></div>
+            <div class="rs-cp-stat"><b style="{% if rating.payment_issues %}color:var(--danger);{% endif %}">{{ rating.payment_issues }}</b><span>{% trans "Problème de paiement" %}</span></div>
         </div>
         {% if level == 'new' %}
         <p class="rs-form err" style="margin:.8rem 0 0;font-size:.82rem;">⚠️ {% trans "Ce livreur n'a pas encore fait vérifier son identité par Vazimba. Préférez un livreur vérifié pour les commandes importantes." %}</p>

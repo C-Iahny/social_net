@@ -36,7 +36,7 @@
     display: inline-flex;
     align-items: center;
     gap: .35rem;
-    background: #ff3b3b;
+    background: var(--danger);
     color: #fff;
     font-size: .78rem;
     font-weight: 800;
@@ -190,7 +190,7 @@
 .lr-source-btn .material-icons { font-size: 2rem; }
 .lr-source-btn.active {
     background: rgba(255,59,59,.2);
-    border-color: #ff3b3b;
+    border-color: var(--danger);
 }
 
 /* ── Chat panel ── */
@@ -282,7 +282,7 @@
 .lr-chat-send-btn {
     width: 36px; height: 36px;
     border-radius: 50%;
-    background: #ff3b3b;
+    background: var(--danger);
     border: none;
     color: #fff;
     cursor: pointer;
@@ -338,7 +338,7 @@
 }
 .lr-ctrl-btn.danger:hover {
     background: rgba(255,59,59,.3);
-    border-color: #ff3b3b;
+    border-color: var(--danger);
 }
 .lr-ctrl-btn.danger .material-icons { color: #ff5555; }
 
@@ -388,7 +388,7 @@
 .lr-waiting-spinner {
     width: 44px; height: 44px;
     border: 3px solid rgba(255,59,59,.25);
-    border-top-color: #ff3b3b;
+    border-top-color: var(--danger);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -552,7 +552,7 @@
             Micro
         </button>
         <form method="post" action="{% url 'video:live-end' room_id=room.pk %}" style="display:inline;"
-              onsubmit="return confirm('Terminer le live ?');">
+              data-vz-confirm="{% trans 'Terminer le live ?' %}" data-vz-danger>
             {% csrf_token %}
             <button type="submit" class="lr-ctrl-btn danger">
                 <span class="material-icons">stop_circle</span>

@@ -15,14 +15,14 @@
 					// ui is updated
 				}
 				else if(data['response'] != null){
-					alert(data['response'])
+					vzAlert(data['response'])
 				}
 			},
 			error: function(xhr) {
 				console.error("ERROR...", xhr)
 				var msg = "Something went wrong."
 				try { msg = JSON.parse(xhr.responseText)['response'] || msg } catch(e) {}
-				alert(msg)
+				vzAlert(msg)
 			},
 			complete: function(data){
 				uiUpdateFunction()

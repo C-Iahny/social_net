@@ -27,7 +27,7 @@
                 <span class="rs-badge {% if c.is_available %}open{% else %}closed{% endif %}">{% if c.is_available %}{% trans "Disponible" %}{% else %}{% trans "Indisponible" %}{% endif %}</span>
                 <div class="rs-muted">{{ c.get_vehicle_display }} · 📞 {{ c.phone|default:"—" }}{% if c.position_updated_at %} · 📍 {{ c.position_updated_at|date:"d/m H:i" }}{% endif %}</div>
             </div>
-            <form method="post" onsubmit="return confirm('{% trans "Retirer ce livreur ?" %}')">{% csrf_token %}<input type="hidden" name="remove" value="{{ c.pk }}"><button class="rs-btn sm ghost" type="submit">✕</button></form>
+            <form method="post" data-vz-confirm="{% trans 'Retirer ce livreur ?' %}" data-vz-danger>{% csrf_token %}<input type="hidden" name="remove" value="{{ c.pk }}"><button class="rs-btn sm ghost" type="submit">✕</button></form>
         </div>
         {% empty %}
         <p class="rs-muted" style="padding:1rem;margin:0;">{% trans "Aucun livreur rattaché. Sans livreur, vos commandes « prêtes » sont proposées aux livreurs indépendants de votre région." %}</p>

@@ -13,12 +13,12 @@ function createOrReturnPrivateChat(id){
         if(data['response'] == "Successfully got the chat."){
             OnGetOrCreateChatroomSuccess(data['chatroom_id']);
         } else if(data['response'] != null){
-            alert(data['response']);
+            vzAlert(data['response']);
         }
     })
     .catch(function(err){
         console.error("createOrReturnPrivateChat error:", err);
-        alert("Something went wrong.");
+        vzAlert("Something went wrong.");
     });
 }
 

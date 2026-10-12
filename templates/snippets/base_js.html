@@ -209,6 +209,7 @@ window.ZootMediaConverter = (function() {
     var _toastEl = null;
     var _toastTimer = null;
     function _showToast(msg) {
+        if (window.vzToast) { vzToast(msg, { type: 'info', duration: 3000 }); return; }
         if (!_toastEl) {
             _toastEl = document.createElement('div');
             _toastEl.style.cssText = [

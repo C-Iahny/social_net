@@ -175,7 +175,7 @@ body { background: var(--bg); }
 .btn-p-primary  { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
 .btn-p-secondary { background: var(--btn-bg); color: var(--text); border: 1.5px solid var(--border); }
 .btn-p-secondary:hover { background: var(--btn-hover); color: var(--text); }
-.btn-p-danger { background: rgba(229,57,53,.1); color: #e53935; border: 1.5px solid rgba(229,57,53,.25); }
+.btn-p-danger { background: rgba(229,57,53,.1); color: var(--danger); border: 1.5px solid rgba(229,57,53,.25); }
 [data-theme="dark"] .btn-p-danger { color: #f28b82; border-color: rgba(242,139,130,.25); }
 .btn-p-success { background: rgba(76,175,80,.1); color: #388e3c; border: 1.5px solid rgba(76,175,80,.25); }
 [data-theme="dark"] .btn-p-success { color: #66bb6a; border-color: rgba(102,187,106,.25); }
@@ -468,7 +468,7 @@ body { background: var(--bg); }
 }
 .pf-menu-btn .material-icons { font-size: 1rem; }
 .pf-menu-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
-.pf-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; }
+.pf-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: var(--danger); }
 .pf-post-title {
     padding: .4rem 1.1rem .15rem;
     font-weight: 700; font-size: 1.07rem; color: var(--text);
@@ -606,7 +606,7 @@ body { background: var(--bg); }
 }
 .pc-menu-btn .material-icons { font-size: 1rem; }
 .pc-menu-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
-.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; }
+.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: var(--danger); }
 .pc-title { padding: .4rem 1.1rem .15rem; font-weight: 700; font-size: 1.07rem; color: var(--text); line-height: 1.4; letter-spacing: -.01em; }
 .pc-title-link { color: inherit; text-decoration: none; }
 .pc-title-link:hover { color: var(--accent); text-decoration: none; }
@@ -728,7 +728,7 @@ body { background: var(--bg); }
 .pc-comment-reply-btn { background: none; border: none; padding: 0; cursor: pointer; color: var(--text-muted); font-size: .72rem; font-weight: 700; transition: color .12s; text-transform: uppercase; }
 .pc-comment-reply-btn:hover { color: var(--accent); }
 .pc-comment-del { background: none; border: none; padding: 0; cursor: pointer; color: var(--text-muted); font-size: .72rem; font-weight: 600; transition: color .12s; margin-left: auto; }
-.pc-comment-del:hover { color: #e53935; }
+.pc-comment-del:hover { color: var(--danger); }
 .pc-comment-replies { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; padding-left: .1rem; border-left: 2px solid rgba(0,207,255,.22); margin-left: .6rem; }
 [data-theme="dark"] .pc-comment-replies { border-left-color: rgba(0,207,255,.18); }
 .pc-comment-reply-item { display: flex; align-items: flex-start; gap: .5rem; }
@@ -776,7 +776,7 @@ body { background: var(--bg); }
     z-index: 9999; display: flex; align-items: center; gap: .5rem;
 }
 #share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
-#share-toast .material-icons { font-size: 1.05rem; color: #4caf50; }
+#share-toast .material-icons { font-size: 1.05rem; color: var(--success); }
 
 /* ── Empty state ── */
 .pf-empty {
@@ -1209,7 +1209,7 @@ body { background: var(--bg); }
                         <div class="dropdown-menu" aria-labelledby="friends-drop"
                              style="border-radius:12px;border-color:var(--border);background:var(--bg-card);box-shadow:0 8px 28px rgba(0,0,0,.18);padding:.4rem;">
                             <a class="dropdown-item" href="#"
-                               style="border-radius:8px;color:#e53935;font-size:.88rem;padding:.5rem .85rem;"
+                               style="border-radius:8px;color:var(--danger);font-size:.88rem;padding:.5rem .85rem;"
                                onclick="removeFriend('{{ id }}', onFriendRemoved)">
                                 <span class="material-icons mr-1" style="font-size:.95rem;vertical-align:middle;">person_remove</span>
                                 {% trans "Remove friend" %}
@@ -1497,17 +1497,11 @@ body { background: var(--bg); }
                     <div id="pf-cb-submit-bar"
                          style="padding:.35rem 1.1rem .6rem;align-items:center;justify-content:flex-end;gap:.5rem;">
                         <span id="pf-cb-file-count" style="flex:1;font-size:.79rem;color:var(--text-muted);"></span>
-                        <button type="button" id="pf-cb-cancel-btn"
-                                style="padding:.35rem .9rem;border:1.5px solid var(--border);border-radius:10px;
-                                       background:none;color:var(--text-muted);font-size:.82rem;cursor:pointer;">
+                        <button type="button" id="pf-cb-cancel-btn" class="vz-btn vz-btn--muted vz-btn--sm">
                             {% trans "Cancel" %}
                         </button>
-                        <button type="button" id="pf-cb-submit-btn"
-                                style="display:flex;align-items:center;gap:.3rem;padding:.38rem 1rem;
-                                       background:linear-gradient(135deg,var(--accent),var(--accent2));
-                                       border:none;border-radius:10px;color:#fff;font-size:.85rem;
-                                       font-weight:700;cursor:pointer;">
-                            <span class="material-icons" style="font-size:.95rem;">send</span>
+                        <button type="button" id="pf-cb-submit-btn" class="vz-btn vz-btn--primary vz-btn--sm">
+                            <span class="material-icons">send</span>
                             {% trans "Publish" %}
                         </button>
                     </div>
@@ -1702,8 +1696,8 @@ body { background: var(--bg); }
                                     });
                                 }
                             }
-                        } else { alert('Erreur lors de la publication.'); }
-                    } catch(err) { console.error('pf-cb-form:',err); alert('Erreur réseau.'); }
+                        } else { vzAlert('Erreur lors de la publication.'); }
+                    } catch(err) { console.error('pf-cb-form:',err); vzAlert('Erreur réseau.'); }
                     finally {
                         submitBtn.disabled=false;
                         submitBtn.innerHTML='<span class="material-icons" style="font-size:.95rem;">send</span> {% trans "Publish" %}';
@@ -2205,7 +2199,10 @@ function submitReply(parentCommentId, postId, url) {
 var _delUrlTpl = "{% url 'post:delete-comment' 999999 %}";
 function commentDeleteUrl(id) { return _delUrlTpl.replace('999999', id); }
 function deleteComment(commentId, url) {
-    if (!confirm('Supprimer ce commentaire ?')) return;
+    vzConfirm({ text: '{% trans "Supprimer ce commentaire ?"|escapejs %}', danger: true, confirmText: '{% trans "Supprimer"|escapejs %}' })
+    .then(function(ok){ if (ok) _deleteCommentNow(commentId, url); });
+}
+function _deleteCommentNow(commentId, url) {
     var fd = new FormData();
     fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
     fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
@@ -2723,7 +2720,7 @@ function uploadCoverImage(input) {
     .then(function(data) {
         if (btn) { btn.disabled = false; btn.style.opacity = ''; }
         if (!data.ok) {
-            alert(data.error || 'Erreur lors de l\'upload.');
+            vzAlert(data.error || 'Erreur lors de l\'upload.');
         }
         input.value = '';
     })

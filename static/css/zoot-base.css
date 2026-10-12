@@ -33,8 +33,24 @@
     --accent-rgb:   15,118,110;
     --accent-glow:  rgba(15,118,110,0.16);
     --on-accent:    #ffffff;
+    /* Couleurs sémantiques : danger/succès/avertissement/info. Toujours via
+       ces jetons (plus de #e53935, #dc3545, #10b981… dans les gabarits). */
+    --danger:       #dc2626;
+    --danger-rgb:   220,38,38;
+    --success:      #16a34a;
+    --success-rgb:  22,163,74;
+    --warning:      #d97706;
+    --info:         #0891b2;
+    /* Échelle unique de rayons et d'ombres */
+    --radius-sm:    8px;
+    --radius:       12px;
+    --radius-lg:    18px;
+    --radius-xl:    24px;
+    --radius-pill:  999px;
+    --shadow-sm:    0 1px 2px rgba(17,24,39,.06);
     --shadow:       0 1px 3px rgba(17,24,39,.05), 0 6px 24px rgba(17,24,39,.07);
     --shadow-lg:    0 8px 40px rgba(17,24,39,.12);
+    --tap:          44px;   /* cible tactile minimale */
     --input-bg:     #f8fafb;
     --dropdown-bg:  #ffffff;
     --btn-bg:       #eef2f5;
@@ -72,6 +88,13 @@
     --accent-rgb:   45,212,191;
     --accent-glow:  rgba(45,212,191,0.14);
     --on-accent:    #0f1419;
+    --danger:       #ef4444;
+    --danger-rgb:   239,68,68;
+    --success:      #22c55e;
+    --success-rgb:  34,197,94;
+    --warning:      #fbbf24;
+    --info:         #22d3ee;
+    --shadow-sm:    0 1px 2px rgba(0,0,0,.4);
     --shadow:       0 2px 8px rgba(0,0,0,.45), 0 8px 32px rgba(0,0,0,.25);
     --shadow-lg:    0 12px 48px rgba(0,0,0,.6);
     --input-bg:     #121820;
@@ -527,7 +550,7 @@ textarea:focus, select:focus {
    ============================================================ */
 .btn-accent {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff;
+    color: var(--on-accent);
     border: none;
     border-radius: 22px;
     font-family: var(--font-primary);
@@ -542,7 +565,6 @@ textarea:focus, select:focus {
     box-shadow: 0 6px 24px var(--accent-glow);
 }
 [data-theme="dark"] .btn-accent {
-    color: var(--bg);
     box-shadow: 0 0 16px rgba(var(--accent-rgb),.25);
 }
 
@@ -808,7 +830,7 @@ html.data-saver .ds-img-wrap { position: relative; }
 .ds-banner-actions { display: flex; flex-direction: column; gap: .35rem; align-items: stretch; flex-shrink: 0; }
 .ds-banner-accept {
     background: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
     border: none;
     border-radius: 8px;
     padding: .35rem .85rem;
@@ -817,7 +839,7 @@ html.data-saver .ds-img-wrap { position: relative; }
     cursor: pointer;
     white-space: nowrap;
 }
-[data-theme="dark"] .ds-banner-accept { color: #1a0a02; }
+[data-theme="dark"] .ds-banner-accept { color: var(--on-accent); }
 .ds-banner-dismiss {
     background: none;
     border: 1.5px solid var(--border);
@@ -832,8 +854,8 @@ html.data-saver .ds-img-wrap { position: relative; }
 .ds-banner-dismiss:hover { border-color: var(--text-muted); color: var(--text-primary); }
 
 /* Icône mode économie dans le dropdown (couleur quand actif) */
-#dd-datasaver-icon.active { color: #10b981 !important; }
-#dd-datasaver-label.active { color: #10b981 !important; font-weight: 800 !important; }
+#dd-datasaver-icon.active { color: var(--success) !important; }
+#dd-datasaver-label.active { color: var(--success) !important; font-weight: 800 !important; }
 
 /* ═══════════════════════════════════════════════════
    BOTTOM TAB BAR — mobile uniquement
@@ -1028,7 +1050,7 @@ html.data-saver .ds-img-wrap { position: relative; }
                 position: absolute;
                 top: 6px; right: calc(50% - 14px);
                 min-width: 16px; height: 16px;
-                background: #e53935;
+                background: var(--danger);
                 color: #fff; font-size: .6rem; font-weight: 800;
                 border-radius: 8px; padding: 0 4px;
                 display: flex; align-items: center; justify-content: center;
@@ -1250,3 +1272,291 @@ html.data-saver .ds-img-wrap { position: relative; }
     border-radius: 12px; background: var(--accent); color: #fff; font-size: .9rem;
 }
 .video-hint .material-icons { font-size: 22px; }
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   SOCLE COMMUN DES COMPOSANTS (2026-10) — boutons, champs, toasts, dialogues
+   Objectif : une seule famille de boutons (.vz-btn) à la place des ~70
+   familles locales, des états complets (survol, actif, désactivé,
+   chargement, focus clavier), des cibles tactiles de 44 px, et des
+   retours utilisateur en toast / feuille au lieu des alert() natifs.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Focus clavier visible partout (les 60+ `outline:none` des pages ne
+      retirent plus le repère de navigation au clavier) ── */
+:is(a, button, input, select, textarea, summary, [tabindex], [role="button"]):focus-visible {
+    outline: 3px solid rgba(var(--accent-rgb), .55) !important;
+    outline-offset: 2px;
+}
+:is(input, select, textarea):focus-visible { outline-offset: 0; }
+
+/* ── Mouvement réduit : respecter la préférence système ── */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ── Tactile : pas de délai de 300 ms ni de double-zoom sur les boutons ── */
+button, [role="button"], .vz-btn, a.btn, input[type="submit"], input[type="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Sur écran tactile, aucun champ sous 16 px : iOS zoome sinon la page
+      à chaque focus, et le texte reste lisible sur petit écran ── */
+@media (pointer: coarse) and (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+    textarea, select {
+        font-size: max(16px, 1em) !important;
+    }
+}
+
+/* ── Boutons icône trop petits (30–36 px) : zone de toucher étendue à ~44 px
+      sans changer la mise en page ── */
+.vz-tap, .pc-menu-btn, .pf-menu-btn, .gd-mcard-btn, .chat-attach-btn,
+.pc-comment-send, .pc-comment-del, .chat-header-btn, .zoot-nav-icon-btn,
+.fl-btn, .zoot-icon-btn, .zsc-ibtn, .zsv-ibtn {
+    position: relative;
+}
+.vz-tap::after, .pc-menu-btn::after, .pf-menu-btn::after, .gd-mcard-btn::after,
+.chat-attach-btn::after, .pc-comment-send::after, .pc-comment-del::after,
+.chat-header-btn::after, .zoot-nav-icon-btn::after, .zsc-ibtn::after, .zsv-ibtn::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: inherit;
+}
+
+/* ── Famille de boutons ── */
+.vz-btn {
+    --vz-spin: var(--text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    min-height: var(--tap);
+    padding: 0 1.15rem;
+    border-radius: var(--radius);
+    border: 1.5px solid transparent;
+    background: var(--btn-bg);
+    color: var(--text);
+    font-family: var(--font-primary);
+    font-size: .95rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    vertical-align: middle;
+    transition: background .15s, color .15s, border-color .15s, box-shadow .15s,
+                transform .1s, opacity .15s;
+}
+.vz-btn:hover { text-decoration: none; }
+.vz-btn:active { transform: scale(.97); }
+.vz-btn:disabled, .vz-btn[aria-disabled="true"] { opacity: .55; pointer-events: none; }
+.vz-btn .material-icons { font-size: 1.2rem; line-height: 1; }
+
+.vz-btn--primary {
+    --vz-spin: var(--on-accent);
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: 0 2px 10px var(--accent-glow);
+}
+.vz-btn--primary:hover { background: var(--accent-dark); color: var(--on-accent); }
+
+.vz-btn--secondary { background: var(--btn-bg); color: var(--text); border-color: var(--border); }
+.vz-btn--secondary:hover { background: var(--btn-hover); color: var(--text); }
+
+.vz-btn--ghost { background: transparent; color: var(--accent); }
+.vz-btn--ghost:hover { background: rgba(var(--accent-rgb), .08); color: var(--accent); }
+
+.vz-btn--muted { background: transparent; color: var(--text-muted); border-color: var(--border); }
+.vz-btn--muted:hover { background: var(--btn-bg); color: var(--text); }
+
+.vz-btn--danger { --vz-spin: #fff; background: var(--danger); color: #fff; }
+.vz-btn--danger:hover { filter: brightness(.92); color: #fff; }
+.vz-btn--danger-soft { background: rgba(var(--danger-rgb), .10); color: var(--danger); border-color: rgba(var(--danger-rgb), .3); }
+.vz-btn--danger-soft:hover { background: var(--danger); color: #fff; }
+
+.vz-btn--success { --vz-spin: #fff; background: var(--success); color: #fff; }
+.vz-btn--success:hover { filter: brightness(.92); color: #fff; }
+
+.vz-btn--sm   { min-height: 36px; padding: 0 .85rem; font-size: .85rem; border-radius: var(--radius-sm); gap: .35rem; }
+.vz-btn--sm .material-icons { font-size: 1.05rem; }
+.vz-btn--lg   { min-height: 52px; padding: 0 1.5rem; font-size: 1.02rem; border-radius: var(--radius-lg); }
+.vz-btn--pill { border-radius: var(--radius-pill); }
+.vz-btn--block { display: flex; width: 100%; }
+.vz-btn--icon { width: var(--tap); min-width: var(--tap); padding: 0; border-radius: 50%; }
+.vz-btn--icon.vz-btn--sm { width: 36px; min-width: 36px; }
+.vz-btn--icon.vz-btn--lg { width: 56px; min-width: 56px; min-height: 56px; }
+
+/* État chargement (ajouté par vz-core.js pendant une soumission) : le
+   libellé disparaît, un anneau tourne. mix-blend-mode le rend visible sur
+   fond clair comme sur fond coloré. */
+.is-loading {
+    position: relative !important;
+    color: transparent !important;
+    pointer-events: none !important;
+    text-shadow: none !important;
+}
+.is-loading > * { visibility: hidden; }
+.is-loading::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 18px; height: 18px;
+    margin: -9px 0 0 -9px;
+    border-radius: 50%;
+    border: 2.5px solid rgba(255,255,255,.45);
+    border-top-color: #fff;
+    mix-blend-mode: difference;
+    animation: vzSpin .7s linear infinite;
+    visibility: visible;
+}
+@keyframes vzSpin { to { transform: rotate(360deg); } }
+
+/* ── Champs de formulaire ── */
+.vz-field { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1rem; }
+.vz-field > label, .vz-label { font-size: .85rem; font-weight: 700; color: var(--text); margin: 0; }
+.vz-req { color: var(--danger); margin-left: .15rem; }
+.vz-input,
+.vz-field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.vz-field textarea,
+.vz-field select {
+    width: 100%;
+    min-height: 48px;
+    padding: .65rem .9rem;
+    font-size: 16px;
+    font-family: var(--font-primary);
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    background: var(--input-bg);
+    color: var(--text);
+}
+.vz-field textarea { min-height: 96px; resize: vertical; }
+.vz-field-help  { font-size: .78rem; color: var(--text-muted); }
+.vz-field-error { font-size: .8rem; font-weight: 600; color: var(--danger); }
+.vz-field.has-error input, .vz-field.has-error textarea, .vz-field.has-error select {
+    border-color: var(--danger) !important;
+    box-shadow: 0 0 0 3px rgba(var(--danger-rgb), .14) !important;
+}
+
+/* ── Toasts (vzToast) ── */
+#vz-toasts {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--bnav-h, 0px) + 16px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 2147483000;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    width: min(92vw, 420px);
+    pointer-events: none;
+}
+@media (min-width: 768px) {
+    #vz-toasts { left: auto; right: 1.25rem; bottom: 1.25rem; transform: none; }
+}
+.vz-toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .7rem .9rem;
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    font-size: .9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    animation: fadeInUp .22s ease both;
+}
+.vz-toast.vz-toast-out { opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s; }
+.vz-toast .material-icons { font-size: 1.25rem; flex-shrink: 0; }
+.vz-toast-msg { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.vz-toast--success { border-color: rgba(var(--success-rgb), .4); }
+.vz-toast--success .material-icons { color: var(--success); }
+.vz-toast--error   { border-color: rgba(var(--danger-rgb), .45); }
+.vz-toast--error .material-icons { color: var(--danger); }
+.vz-toast--warning .material-icons { color: var(--warning); }
+.vz-toast--info .material-icons { color: var(--accent); }
+.vz-toast-action {
+    flex-shrink: 0;
+    background: none; border: 0; padding: .3rem .5rem;
+    color: var(--accent); font: inherit; font-weight: 800; cursor: pointer;
+    border-radius: var(--radius-sm);
+}
+.vz-toast-action:hover { background: rgba(var(--accent-rgb), .1); }
+.vz-toast-close {
+    flex-shrink: 0; width: 32px; height: 32px; margin: -4px -6px -4px 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: none; border: 0; color: var(--text-muted); cursor: pointer; border-radius: 50%;
+}
+.vz-toast-close:hover { background: var(--btn-bg); color: var(--text); }
+.vz-toast-close .material-icons { font-size: 1.1rem; }
+
+/* ── Dialogue / feuille (vzConfirm, signalement, …) ── */
+body.vz-lock { overflow: hidden !important; }
+.vz-overlay {
+    position: fixed; inset: 0;
+    z-index: 2147482000;
+    background: rgba(0,0,0,.5);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .18s;
+}
+.vz-overlay.open { opacity: 1; }
+.vz-dialog {
+    width: 100%;
+    max-width: 520px;
+    max-height: 92vh;
+    overflow: auto;
+    background: var(--bg-card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: 1rem 1.1rem calc(1.1rem + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -8px 40px rgba(0,0,0,.25);
+    transform: translateY(24px);
+    transition: transform .22s cubic-bezier(.32,1,.23,1);
+}
+.vz-overlay.open .vz-dialog { transform: translateY(0); }
+@media (min-width: 640px) {
+    .vz-overlay { align-items: center; padding: 1rem; }
+    .vz-dialog { border-radius: var(--radius-xl); padding: 1.4rem 1.5rem; box-shadow: var(--shadow-lg); transform: translateY(12px) scale(.98); }
+}
+.vz-dialog-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto .9rem; }
+@media (min-width: 640px) { .vz-dialog-handle { display: none; } }
+.vz-dialog-head { display: flex; align-items: center; gap: .6rem; margin-bottom: .6rem; }
+.vz-dialog-head .material-icons { font-size: 1.5rem; color: var(--accent); }
+.vz-dialog--danger .vz-dialog-head .material-icons { color: var(--danger); }
+.vz-dialog-title { font-size: 1.08rem; font-weight: 800; margin: 0; flex: 1; color: var(--text); }
+.vz-dialog-text  { font-size: .92rem; color: var(--text-muted); margin: 0 0 1.1rem; line-height: 1.5; }
+.vz-dialog-actions { display: flex; gap: .6rem; }
+.vz-dialog-actions .vz-btn { flex: 1; }
+@media (min-width: 640px) {
+    .vz-dialog-actions { justify-content: flex-end; }
+    .vz-dialog-actions .vz-btn { flex: 0 0 auto; min-width: 120px; }
+}
+
+/* ── État vide partagé ── */
+.vz-empty {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    gap: .5rem; padding: 2.5rem 1.25rem; color: var(--text-muted);
+}
+.vz-empty .material-icons { font-size: 2.6rem; color: var(--text-subtle); }
+.vz-empty-title { font-weight: 800; color: var(--text); font-size: 1rem; }
+.vz-empty-text  { font-size: .9rem; max-width: 320px; }

@@ -55,7 +55,7 @@ body { background: #0a0a0a !important; }
 .sl-card.grad_cyan    { background: linear-gradient(160deg,#00bcd4,#2196f3); }
 .sl-card.grad_purple  { background: linear-gradient(160deg,#9c27b0,#e91e63); }
 .sl-card.grad_sunset  { background: linear-gradient(160deg,#ff9800,#f44336); }
-.sl-card.grad_forest  { background: linear-gradient(160deg,#4caf50,#00bcd4); }
+.sl-card.grad_forest  { background: linear-gradient(160deg,var(--success),#00bcd4); }
 .sl-card.grad_night   { background: linear-gradient(160deg,#1a237e,#7b1fa2); }
 .sl-card.grad_gold    { background: linear-gradient(160deg,#ffc107,#ff9800); }
 
@@ -188,7 +188,7 @@ body { background: #0a0a0a !important; }
                         {% if s.bg_gradient == 'grad_cyan' %}linear-gradient(160deg,#00bcd4,#2196f3)
                         {% elif s.bg_gradient == 'grad_purple' %}linear-gradient(160deg,#9c27b0,#e91e63)
                         {% elif s.bg_gradient == 'grad_sunset' %}linear-gradient(160deg,#ff9800,#f44336)
-                        {% elif s.bg_gradient == 'grad_forest' %}linear-gradient(160deg,#4caf50,#00bcd4)
+                        {% elif s.bg_gradient == 'grad_forest' %}linear-gradient(160deg,var(--success),#00bcd4)
                         {% elif s.bg_gradient == 'grad_night' %}linear-gradient(160deg,#1a237e,#7b1fa2)
                         {% elif s.bg_gradient == 'grad_gold' %}linear-gradient(160deg,#ffc107,#ff9800)
                         {% else %}#222{% endif %};filter:brightness(.5);">

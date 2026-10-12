@@ -334,7 +334,7 @@
     align-items: center;
     gap: .2rem;
     background: #e8f5e9;
-    color: #2e7d32;
+    color: var(--success);
     border-radius: 50px;
     padding: .1rem .5rem;
     font-size: .65rem;
@@ -464,7 +464,7 @@
         <div class="cat-strip">
             {% for cat_key, cat_label in categories %}
             <a href="{% url 'tourisme:lieux_list' %}?cat={{ cat_key }}" class="cat-chip">
-                {% if cat_key == 'nature' %}<span class="material-icons" style="font-size:.9rem;color:#2e7d32">forest</span>
+                {% if cat_key == 'nature' %}<span class="material-icons" style="font-size:.9rem;color:var(--success)">forest</span>
                 {% elif cat_key == 'plage' %}<span class="material-icons" style="font-size:.9rem;color:#0277bd">waves</span>
                 {% elif cat_key == 'histoire' %}<span class="material-icons" style="font-size:.9rem;color:#5d4037">museum</span>
                 {% elif cat_key == 'faune' %}<span class="material-icons" style="font-size:.9rem;color:#ef6c00">pets</span>

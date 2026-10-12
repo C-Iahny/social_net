@@ -48,7 +48,7 @@
 }
 .verif-type-card:hover { border-color: var(--accent); }
 .verif-type-card.active-verified {
-    border-color: #10b981;
+    border-color: var(--success);
     background: rgba(16,185,129,.07);
 }
 .verif-type-card.active-pro {
@@ -80,7 +80,7 @@
     gap: .35rem;
 }
 .verif-type-perk::before { content: '✓'; font-size: .7rem; }
-.verif-type-card.active-verified .verif-type-perk::before { color: #10b981; }
+.verif-type-card.active-verified .verif-type-perk::before { color: var(--success); }
 .verif-type-card.active-pro .verif-type-perk::before { color: #d97706; }
 
 /* ── Statut badge ─────────────────────────────────────────────────────────── */
@@ -112,7 +112,7 @@
     margin-bottom: .4rem;
     display: block;
 }
-.verif-label .req { color: #ef4444; margin-left: .2rem; }
+.verif-label .req { color: var(--danger); margin-left: .2rem; }
 
 .verif-input, .verif-select, .verif-textarea {
     width: 100%;

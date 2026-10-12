@@ -161,16 +161,16 @@
 /* ── Conseils ── */
 .lieu-tips {
     background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-    border-left: 4px solid #2e7d32;
+    border-left: 4px solid var(--success);
     border-radius: 0 12px 12px 0;
     padding: 1rem 1.2rem; margin-bottom: 1.5rem;
 }
 [data-theme="dark"] .lieu-tips {
     background: linear-gradient(135deg, #0a2e0f, #112d0f);
-    border-left-color: #4caf50;
+    border-left-color: var(--success);
 }
 .lieu-tips-title {
-    font-size: .8rem; font-weight: 700; color: #2e7d32;
+    font-size: .8rem; font-weight: 700; color: var(--success);
     text-transform: uppercase; letter-spacing: .06em;
     display: flex; align-items: center; gap: .3rem; margin-bottom: .5rem;
 }
@@ -296,7 +296,7 @@
     transition: opacity .18s;
 }
 .avis-submit-btn:hover { opacity: .87; }
-.avis-error { color: #e53935; font-size: .83rem; margin-bottom: .7rem; }
+.avis-error { color: var(--danger); font-size: .83rem; margin-bottom: .7rem; }
 .avis-list { display: flex; flex-direction: column; gap: .85rem; }
 .avis-card {
     background: var(--bg-card); border: 1px solid var(--border);

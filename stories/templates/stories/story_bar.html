@@ -1588,11 +1588,13 @@ window.zvOpenReplyChat = function(el){
 window.zvDeleteCurrent = function(){
   var story = (_sv.groups[_sv.curG]||{stories:[]}).stories[_sv.curS];
   if(!story||!story.is_mine) return;
-  if(!confirm('Supprimer cette story ?')) return;
-  _post(URLS.delete+story.id+'/')
-    .then(function(r){ return r.json(); }).then(function(d){
-      if(d.ok){ _toast('Story supprimée'); loadStories(); zvClose(); }
-    }).catch(function(){});
+  vzConfirm({ text: '{% trans "Supprimer cette story ?"|escapejs %}', danger: true, confirmText: '{% trans "Supprimer"|escapejs %}' }).then(function(ok){
+    if(!ok) return;
+    _post(URLS.delete+story.id+'/')
+      .then(function(r){ return r.json(); }).then(function(d){
+        if(d.ok){ _toast('{% trans "Story supprimée"|escapejs %}'); loadStories(); zvClose(); }
+      }).catch(function(){});
+  });
 };
 
 /* ── Gestes viewer ─────────────────────────────────── */

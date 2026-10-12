@@ -262,7 +262,7 @@ body { background: var(--bg); }
 }
 .lsb-nav-item:hover .lsb-nav-icon { background: rgba(0,207,255,.12); }
 .lsb-nav-icon .material-icons { font-size: 1.1rem; color: var(--accent); }
-.lsb-nav-item.danger .lsb-nav-icon .material-icons { color: #e53935; }
+.lsb-nav-item.danger .lsb-nav-icon .material-icons { color: var(--danger); }
 .lsb-nav-item.danger:hover { background: rgba(229,57,53,.06); }
 [data-theme="dark"] .lsb-nav-item.danger:hover { background: rgba(229,57,53,.1); }
 
@@ -544,7 +544,7 @@ body { background: var(--bg); }
 }
 .pc-menu-btn .material-icons { font-size: 1rem; }
 .pc-menu-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
-.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; }
+.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: var(--danger); }
 [data-theme="dark"] .pc-menu-btn.danger:hover { color: #f28b82; }
 
 /* ── Card body ── */
@@ -954,7 +954,7 @@ body { background: var(--bg); }
     color: var(--text-muted); font-size: .72rem; font-weight: 600;
     transition: color .12s; margin-left: auto;
 }
-.pc-comment-del:hover { color: #e53935; }
+.pc-comment-del:hover { color: var(--danger); }
 
 /* Replies container */
 .pc-comment-replies {
@@ -1399,7 +1399,7 @@ body { background: var(--bg); }
     z-index: 9999; display: flex; align-items: center; gap: .5rem;
 }
 #share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
-#share-toast .material-icons { font-size: 1.05rem; color: #4caf50; }
+#share-toast .material-icons { font-size: 1.05rem; color: var(--success); }
 </style>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -1475,8 +1475,8 @@ body { background: var(--bg); }
                 display:flex;align-items:center;justify-content:space-between;
                 border-bottom:1px solid rgba(255,59,59,.1);
             ">
-                <span style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:800;color:#ff3b3b;">
-                    <span style="width:7px;height:7px;background:#ff3b3b;border-radius:50%;animation:livePulse2 1.4s infinite;"></span>
+                <span style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:800;color:var(--danger);">
+                    <span style="width:7px;height:7px;background:var(--danger);border-radius:50%;animation:livePulse2 1.4s infinite;"></span>
                     Lives en cours
                 </span>
                 <a href="{% url 'video:live-list' %}" style="font-size:.72rem;font-weight:700;color:var(--accent);text-decoration:none;">Voir tout</a>
@@ -1493,7 +1493,7 @@ body { background: var(--bg); }
                 transition:background .15s;
             }
             .feed-live-item:hover{background:var(--btn-bg);text-decoration:none;color:var(--text);}
-            .feed-live-item img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid #ff3b3b;flex-shrink:0;}
+            .feed-live-item img{width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid var(--danger);flex-shrink:0;}
             .feed-live-item-body{flex:1;min-width:0;}
             .feed-live-item-user{font-size:.78rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
             .feed-live-item-title{font-size:.72rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -1620,18 +1620,11 @@ body { background: var(--bg); }
             {# Pied formulaire : Annuler + Publier (visible uniquement si ouvert) #}
             <div id="cb-submit-bar" style="padding:.35rem 1.1rem .6rem;align-items:center;justify-content:flex-end;gap:.5rem;">
                 <span id="cb-file-count" style="flex:1;font-size:.79rem;color:var(--text-muted);"></span>
-                <button type="button" id="cb-cancel-btn"
-                    style="background:none;border:1.5px solid var(--border);border-radius:10px;
-                           padding:.4rem .85rem;color:var(--text-muted);font-size:.83rem;
-                           font-weight:600;cursor:pointer;">
+                <button type="button" id="cb-cancel-btn" class="vz-btn vz-btn--muted vz-btn--sm">
                     {% trans "Cancel" %}
                 </button>
-                <button type="button" id="cb-submit-btn"
-                    style="background:linear-gradient(135deg,var(--accent),var(--accent2));
-                           color:#fff;border:none;border-radius:10px;padding:.4rem 1rem;
-                           font-size:.88rem;font-weight:700;cursor:pointer;
-                           display:flex;align-items:center;gap:.35rem;">
-                    <span class="material-icons" style="font-size:.95rem;">send</span>
+                <button type="button" id="cb-submit-btn" class="vz-btn vz-btn--primary vz-btn--sm">
+                    <span class="material-icons">send</span>
                     {% trans "Publish" %}
                 </button>
             </div>
@@ -1836,8 +1829,8 @@ body { background: var(--bg); }
                             }
                         }
                     }
-                } else { alert('Erreur lors de la publication.'); }
-            } catch(err) { console.error('cb-form:',err); alert('Erreur réseau.'); }
+                } else { vzAlert('Erreur lors de la publication.'); }
+            } catch(err) { console.error('cb-form:',err); vzAlert('Erreur réseau.'); }
             finally {
                 submitBtn.disabled=false;
                 submitBtn.innerHTML='<span class="material-icons" style="font-size:.95rem;">send</span> {% trans "Publish" %}';
@@ -2914,7 +2907,10 @@ var _delUrlTpl = "{% url 'post:delete-comment' 999999 %}";
 function commentDeleteUrl(id) { return _delUrlTpl.replace('999999', id); }
 
 function deleteComment(commentId, url) {
-    if (!confirm('Supprimer ce commentaire ?')) return;
+    vzConfirm({ text: '{% trans "Supprimer ce commentaire ?"|escapejs %}', danger: true, confirmText: '{% trans "Supprimer"|escapejs %}' })
+    .then(function(ok){ if (ok) _deleteCommentNow(commentId, url); });
+}
+function _deleteCommentNow(commentId, url) {
     var fd = new FormData();
     fd.append('csrfmiddlewaretoken', _ZF_CSRF);
     fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })

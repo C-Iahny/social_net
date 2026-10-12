@@ -44,7 +44,7 @@
           background: var(--accent); color: #fff; transition: transform .15s, box-shadow .15s; }
 .rs-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px var(--accent-glow); color: #fff; text-decoration: none; }
 .rs-btn.secondary { background: var(--btn-bg); color: var(--text); }
-.rs-btn.danger { background: #c0392b; }
+.rs-btn.danger { background: var(--danger); }
 .rs-btn.ghost { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
 .rs-btn.sm { padding: .35rem .7rem; font-size: .8rem; border-radius: 8px; }
 .rs-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
@@ -74,7 +74,7 @@
 .rs-form label { font-weight: 600; font-size: .85rem; color: var(--text); margin-bottom: .2rem; }
 .rs-form .form-control { background: var(--input-bg, var(--bg-card)); color: var(--text); border: 1.5px solid var(--border); border-radius: 8px; }
 .rs-form .help { font-size: .75rem; color: var(--text-muted); }
-.rs-form .err { color: #c0392b; font-size: .8rem; }
+.rs-form .err { color: var(--danger); font-size: .8rem; }
 .rs-row { display: flex; gap: .8rem; flex-wrap: wrap; }
 .rs-row > * { flex: 1 1 200px; }
 
@@ -112,12 +112,12 @@
 .rs-step { flex: 1; min-width: 70px; text-align: center; position: relative; font-size: .68rem; color: var(--text-muted); }
 .rs-step .dot { width: 22px; height: 22px; border-radius: 50%; margin: 0 auto .3rem; background: var(--border);
                 display: flex; align-items: center; justify-content: center; color: #fff; font-size: .8rem; }
-.rs-step.done .dot { background: #10b981; }
+.rs-step.done .dot { background: var(--success); }
 .rs-step.current .dot { background: var(--accent); box-shadow: 0 0 0 5px var(--accent-glow); }
 .rs-step.current { color: var(--accent); font-weight: 700; }
 .rs-step::after { content: ''; position: absolute; top: 11px; left: 50%; width: 100%; height: 2px; background: var(--border); z-index: -1; }
 .rs-step:last-child::after { display: none; }
-.rs-step.done::after { background: #10b981; }
+.rs-step.done::after { background: var(--success); }
 #rs-map { width: 100%; height: 320px; border-radius: 12px; border: 1px solid var(--border); background: var(--btn-bg); }
 .rs-timeline { list-style: none; padding: 0; margin: 0; }
 .rs-timeline li { padding: .35rem 0 .35rem 1.2rem; border-left: 2px solid var(--border); position: relative; font-size: .85rem; }

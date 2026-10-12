@@ -60,7 +60,7 @@ body { background: var(--bg); }
 }
 .draft-btn-edit    { background:var(--btn-bg);color:var(--text); }
 .draft-btn-publish { background:var(--accent);color:#fff; }
-.draft-btn-delete  { background:#fee2e2;color:#b91c1c; }
+.draft-btn-delete  { background:#fee2e2;color:var(--danger); }
 [data-theme="dark"] .draft-btn-delete { background:#450a0a;color:#fca5a5; }
 .draft-btn:hover { opacity:.85; }
 .draft-empty { text-align:center;padding:3rem 1rem;color:var(--text-muted); }
@@ -117,7 +117,7 @@ body { background: var(--bg); }
                     </form>
                     {% endif %}
                     <a href="{% url 'post:delete-post' post.pk %}" class="draft-btn draft-btn-delete"
-                       onclick="return confirm('{% trans "Supprimer ce brouillon ?" %}')">
+                       data-vz-confirm="{% trans 'Supprimer ce brouillon ?' %}" data-vz-danger>
                         <span class="material-icons" style="font-size:.9rem;">delete</span>
                         {% trans "Supprimer" %}
                     </a>

@@ -84,7 +84,7 @@
     padding: 0;
     margin: .25rem 0 0;
     font-size: .8rem;
-    color: #dc3545;
+    color: var(--danger);
 }
 
 /* Zone upload photos */
@@ -321,17 +321,17 @@
                 {% trans "Article" %}
             </div>
             <div class="form-group mb-3">
-                <label for="{{ form.title.id_for_label }}">{{ form.title.label }} <span style="color:#dc3545;">*</span></label>
+                <label for="{{ form.title.id_for_label }}">{{ form.title.label }} <span style="color:var(--danger);">*</span></label>
                 {{ form.title }}
                 {% if form.title.errors %}<ul class="errorlist">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="{{ form.category.id_for_label }}">{{ form.category.label }} <span style="color:#dc3545;">*</span></label>
+                    <label for="{{ form.category.id_for_label }}">{{ form.category.label }} <span style="color:var(--danger);">*</span></label>
                     {{ form.category }}
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="{{ form.condition.id_for_label }}">{{ form.condition.label }} <span style="color:#dc3545;">*</span></label>
+                    <label for="{{ form.condition.id_for_label }}">{{ form.condition.label }} <span style="color:var(--danger);">*</span></label>
                     {{ form.condition }}
                 </div>
             </div>
@@ -365,7 +365,7 @@
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
                 {% trans "Description" %}
             </div>
-            <label for="{{ form.description.id_for_label }}">{{ form.description.label }} <span style="color:#dc3545;">*</span></label>
+            <label for="{{ form.description.id_for_label }}">{{ form.description.label }} <span style="color:var(--danger);">*</span></label>
             {{ form.description }}
             <small class="form-text">{% trans "Soyez précis : marque, modèle, dimensions, défauts éventuels…" %}</small>
             {% if form.description.errors %}<ul class="errorlist">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
@@ -379,7 +379,7 @@
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="{{ form.location.id_for_label }}">{{ form.location.label }} <span style="color:#dc3545;">*</span></label>
+                    <label for="{{ form.location.id_for_label }}">{{ form.location.label }} <span style="color:var(--danger);">*</span></label>
                     {{ form.location }}
                     {% if form.location.errors %}<ul class="errorlist">{% for e in form.location.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
                 </div>
@@ -550,7 +550,7 @@ document.getElementById('bazar-create-form').addEventListener('submit', function
     })
     .catch(function() {
         if (btn) { btn.disabled = false; btn.innerHTML = orig; }
-        alert(VZB_I18N.networkError);
+        vzAlert(VZB_I18N.networkError);
     });
 });
 

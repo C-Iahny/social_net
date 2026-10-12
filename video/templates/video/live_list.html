@@ -52,7 +52,7 @@
     display: inline-flex;
     align-items: center;
     gap: .4rem;
-    background: #ff3b3b;
+    background: var(--danger);
     color: #fff;
     font-weight: 800;
     font-size: .9rem;
@@ -103,7 +103,7 @@
 }
 .live-title-input::placeholder { color: rgba(255,255,255,.35); }
 .live-title-input:focus {
-    border-color: #ff3b3b;
+    border-color: var(--danger);
     background: rgba(255,255,255,.12);
 }
 .live-btn-start {
@@ -111,7 +111,7 @@
     align-items: center;
     gap: .5rem;
     padding: .75rem 1.5rem;
-    background: linear-gradient(135deg, #ff3b3b, #c0392b);
+    background: linear-gradient(135deg, var(--danger), var(--danger));
     color: #fff;
     border: none;
     border-radius: 14px;
@@ -182,7 +182,7 @@
 .live-card-live-badge {
     position: absolute;
     top: 10px; left: 10px;
-    background: #ff3b3b;
+    background: var(--danger);
     color: #fff;
     font-weight: 800;
     font-size: .7rem;
@@ -224,7 +224,7 @@
     width: 32px; height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #ff3b3b;
+    border: 2px solid var(--danger);
 }
 .live-card-username {
     font-weight: 700;
@@ -258,7 +258,7 @@
     width: 100%;
     margin-top: .75rem;
     padding: .55rem;
-    background: linear-gradient(135deg, #ff3b3b, #c0392b);
+    background: linear-gradient(135deg, var(--danger), var(--danger));
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -318,7 +318,7 @@
 
             var csrfToken = getCsrf();
             if (!csrfToken) {
-                alert('Erreur de session. Rechargez la page et réessayez.');
+                vzAlert('Erreur de session. Rechargez la page et réessayez.');
                 return;
             }
 
@@ -343,7 +343,7 @@
                 }
             })
             .catch(function(err) {
-                alert('Impossible de créer le live : ' + err.message);
+                vzAlert('Impossible de créer le live : ' + err.message);
                 if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-icons">live_tv</span> Commencer le live'; }
             });
         }
@@ -356,7 +356,7 @@
         Lives en cours
         <span id="live-count-badge" style="
             background:rgba(255,59,59,.12);
-            color:#ff3b3b;
+            color:var(--danger);
             font-size:.75rem;
             font-weight:800;
             padding:.15rem .55rem;

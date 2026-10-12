@@ -17,12 +17,12 @@
 					// UI gets updated
 				}
 				else if(data['response'] != null){
-					alert(data['response'])
+					vzAlert(data['response'])
 				}
 			},
 			error: function(data) {
 				console.error("ERROR...", data)
-				alert("Something went wrong.")
+				vzAlert("Something went wrong.")
 			},
 			complete: function(data){
 				uiUpdateFunction()

@@ -152,7 +152,7 @@
     position: relative;
 }
 .bazar-action-btn:hover { border-color: var(--accent); color: var(--accent); }
-.bazar-action-del:hover { border-color: #dc3545; color: #dc3545; }
+.bazar-action-del:hover { border-color: var(--danger); color: var(--danger); }
 /* Tooltip sur les boutons actions */
 .bazar-action-btn[title]:hover::after {
     content: attr(title);
@@ -258,7 +258,7 @@
     <div style="background:#fff1f2;border:1.5px solid #fca5a5;border-radius:14px;padding:.85rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#9f1239;flex-wrap:wrap;">
         <span style="font-size:1.4rem;">❌</span>
         <span style="flex:1;"><strong>{% trans "Demande refusée." %}</strong>{% if verification.admin_notes %} {% trans "Motif :" %} {{ verification.admin_notes }}{% endif %}</span>
-        <a href="{% url 'bazar:request_verification' %}" style="background:#ef4444;color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:.4rem .9rem;text-decoration:none;flex-shrink:0;">
+        <a href="{% url 'bazar:request_verification' %}" style="background:var(--danger);color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:.4rem .9rem;text-decoration:none;flex-shrink:0;">
             {% trans "Réessayer" %}
         </a>
     </div>
@@ -329,14 +329,14 @@
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
             </button>
             <!-- Marquer vendue -->
-            <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" onsubmit="return confirm('Marquer comme vendue ?')">
+            <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" data-vz-confirm="{% trans 'Marquer comme vendue ?' %}">
                 {% csrf_token %}
                 <button type="submit" class="bazar-action-btn" title="{% trans 'Marquer vendue' %}" style="color:#166534;border-color:#166534;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                 </button>
             </form>
             {% endif %}
-            <form method="post" action="{% url 'bazar:delete' annonce.pk %}" onsubmit="return confirm('Supprimer définitivement ?')">
+            <form method="post" action="{% url 'bazar:delete' annonce.pk %}" data-vz-confirm="{% trans 'Supprimer définitivement ?' %}" data-vz-danger>
                 {% csrf_token %}
                 <button type="submit" class="bazar-action-btn bazar-action-del" title="{% trans 'Supprimer' %}">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M9 6V4h6v2"/></svg>
@@ -369,7 +369,7 @@ function toggleStatus(pk, badgeEl) {
     })
     .then(r => r.json())
     .then(data => {
-        if (!data.success) { alert(data.error || 'Erreur'); return; }
+        if (!data.success) { vzAlert(data.error || 'Erreur'); return; }
         badgeEl.className = 'bazar-row-status toggleable ' +
             (data.new_status === 'active' ? 'status-active' : 'status-pause');
         badgeEl.innerHTML = data.new_status === 'active' ? '✓ Active' : '⏸ En pause';
@@ -379,7 +379,7 @@ function toggleStatus(pk, badgeEl) {
         // Afficher/masquer les boutons Bump et Marquer-vendue
         _refreshRowActions(pk, data.new_status);
     })
-    .catch(() => alert('Erreur réseau.'));
+    .catch(() => vzAlert('Erreur réseau.'));
 }
 
 function _refreshRowActions(pk, newStatus) {
@@ -398,13 +398,13 @@ function bumpAnnonce(pk, btn) {
     .then(r => r.json())
     .then(data => {
         if (data.cooldown) {
-            alert(`Vous pouvez rafraîchir à nouveau dans ${data.remaining_h}h.`);
+            vzAlert(`Vous pouvez rafraîchir à nouveau dans ${data.remaining_h}h.`);
             btn.disabled = false;
             btn.style.opacity = '';
             return;
         }
         if (!data.success) {
-            alert(data.error || 'Erreur');
+            vzAlert(data.error || 'Erreur');
             btn.disabled = false;
             btn.style.opacity = '';
             return;
@@ -427,7 +427,7 @@ function bumpAnnonce(pk, btn) {
         }, 1200);
     })
     .catch(() => {
-        alert('Erreur réseau.');
+        vzAlert('Erreur réseau.');
         btn.disabled = false;
         btn.style.opacity = '';
     });

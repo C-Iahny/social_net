@@ -438,9 +438,11 @@ main#contenu-principal { padding: 0 !important; margin: 0 !important; max-width:
             (canDel ? '<button type="button" class="vf-cs-del">' + L.del + '</button>' : '') + '</div></div>';
         var del = div.querySelector('.vf-cs-del');
         if (del) del.onclick = function () {
-            if (!confirm(L.confirmDel)) return;
-            fetch(csUrl('del', c.id), { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(function (r) { if (r.ok) { div.remove(); bumpCount(-1); if (!csList.children.length) showEmpty(); } });
+            vzConfirm({ text: L.confirmDel, danger: true, confirmText: L.del }).then(function (ok) {
+                if (!ok) return;
+                fetch(csUrl('del', c.id), { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': csrf(), 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function (r) { if (r.ok) { div.remove(); bumpCount(-1); if (!csList.children.length) showEmpty(); } });
+            });
         };
         return div;
     }

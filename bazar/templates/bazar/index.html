@@ -251,7 +251,7 @@
     display: inline-flex;
     align-items: center;
     gap: .25rem;
-    background: #10b981;
+    background: var(--success);
     color: #fff;
     font-size: .65rem;
     font-weight: 700;
@@ -260,7 +260,7 @@
     letter-spacing: .04em;
     white-space: nowrap;
 }
-[data-theme="dark"] .bazar-badge-verified { background: #059669; }
+[data-theme="dark"] .bazar-badge-verified { background: var(--success); }
 
 /* Filtre vérifié */
 .bazar-filter-verified {
@@ -278,16 +278,16 @@
     transition: border-color .18s, color .18s;
     white-space: nowrap;
 }
-.bazar-filter-verified:hover { border-color: #10b981; color: #10b981; }
+.bazar-filter-verified:hover { border-color: var(--success); color: var(--success); }
 .bazar-filter-verified.active {
-    border-color: #10b981;
+    border-color: var(--success);
     background: #ecfdf5;
     color: #065f46;
 }
 [data-theme="dark"] .bazar-filter-verified.active {
     background: rgba(6,95,70,.15);
     color: #6ee7b7;
-    border-color: #059669;
+    border-color: var(--success);
 }
 .bazar-filter-verified input { display: none; }
 .bazar-badge-sold {
@@ -769,7 +769,7 @@ var VZB_I18N = {
 
     window.detectMyRegion = function() {
         if (!navigator.geolocation) {
-            alert(VZB_I18N.geoUnavailable);
+            vzAlert(VZB_I18N.geoUnavailable);
             return;
         }
         var btn   = document.getElementById('geo-detect-btn');
@@ -795,7 +795,7 @@ var VZB_I18N = {
                 if (btn) btn.classList.remove('loading');
                 if (label) label.textContent = VZB_I18N.nearMe;
                 var msgs = {1: VZB_I18N.geoPermDenied, 2: VZB_I18N.geoPosUnavail, 3: VZB_I18N.geoTimeout};
-                alert(msgs[err.code] || VZB_I18N.geoError);
+                vzAlert(msgs[err.code] || VZB_I18N.geoError);
             },
             { timeout: 8000, maximumAge: 300000 }
         );

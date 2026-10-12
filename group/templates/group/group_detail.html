@@ -94,8 +94,8 @@
     background: var(--btn-bg); border: 1.5px solid var(--border); color: var(--text-muted);
 }
 .gd-secondary:hover { background: var(--btn-hover); color: var(--text); text-decoration: none; }
-.gd-danger { background: var(--btn-bg); border: 1.5px solid var(--border); color: #e53935; }
-.gd-danger:hover { background: rgba(229,57,53,.1); border-color: #e53935; }
+.gd-danger { background: var(--btn-bg); border: 1.5px solid var(--border); color: var(--danger); }
+.gd-danger:hover { background: rgba(229,57,53,.1); border-color: var(--danger); }
 
 /* ── Members strip ── */
 .gd-members-strip {
@@ -276,7 +276,7 @@
 }
 .pc-menu-btn .material-icons { font-size: 1rem; }
 .pc-menu-btn:hover { background: var(--btn-bg); color: var(--text); }
-.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; }
+.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: var(--danger); }
 .pc-title { padding: .4rem 1.1rem .15rem; font-weight: 700; font-size: 1.07rem; color: var(--text); }
 .pc-title-link { color: inherit; text-decoration: none; }
 .pc-title-link:hover { color: var(--accent); }
@@ -368,7 +368,7 @@
 .pc-comment-reply-btn:hover { color: var(--accent); }
 .pc-comment-del { background: none; border: none; padding: 0; cursor: pointer;
     color: var(--text-muted); font-size: .72rem; font-weight: 600; margin-left: auto; transition: color .12s; }
-.pc-comment-del:hover { color: #e53935; }
+.pc-comment-del:hover { color: var(--danger); }
 .pc-comment-replies { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem;
     border-left: 2px solid rgba(0,207,255,.22); margin-left: .6rem; padding-left: .65rem; }
 .pc-comment-reply-item { display: flex; align-items: flex-start; gap: .5rem; }
@@ -646,8 +646,8 @@
 
 /* ── Feedback création événement ── */
 .gd-ev-create-feedback { font-size: .83rem; font-weight: 600; flex: 1; min-height: 1.2em; }
-.gd-ev-create-feedback.success { color: #22c55e; }
-.gd-ev-create-feedback.error { color: #e53935; }
+.gd-ev-create-feedback.success { color: var(--success); }
+.gd-ev-create-feedback.error { color: var(--danger); }
 
 /* ── Badge sur onglet ── */
 .gd-tab-badge {
@@ -729,8 +729,8 @@
 .gd-mcard-btn:hover { background: var(--btn-hover); color: var(--text); }
 .gd-mcard-btn.mod { border-color: var(--accent); color: var(--accent); }
 .gd-mcard-btn.mod:hover { background: var(--accent); color: #fff; }
-.gd-mcard-btn.kick { border-color: #e5393540; color: #e53935; margin-left: auto; }
-.gd-mcard-btn.kick:hover { background: rgba(229,57,53,.1); border-color: #e53935; }
+.gd-mcard-btn.kick { border-color: #e5393540; color: var(--danger); margin-left: auto; }
+.gd-mcard-btn.kick:hover { background: rgba(229,57,53,.1); border-color: var(--danger); }
 
 @media (max-width: 575px) {
     .gd-members-full-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .5rem; }
@@ -826,23 +826,9 @@
                 {% csrf_token %}
                 <input type="hidden" name="group_id" value="{{ group.pk }}">
                 <input type="hidden" name="title"    value="Live dans {{ group.name|escapejs }}">
-                <button type="submit" style="
-                    display:inline-flex;align-items:center;gap:.4rem;
-                    padding:.5rem 1rem;
-                    background:rgba(255,59,59,.1);
-                    border:1.5px solid rgba(255,59,59,.4);
-                    border-radius:12px;
-                    color:#ff3b3b;
-                    font-size:.85rem;font-weight:700;
-                    cursor:pointer;
-                    font-family:inherit;
-                    transition:background .2s,border-color .2s;
-                "
-                onmouseover="this.style.background='rgba(255,59,59,.2)';this.style.borderColor='#ff3b3b'"
-                onmouseout="this.style.background='rgba(255,59,59,.1)';this.style.borderColor='rgba(255,59,59,.4)'"
-                >
-                    <span class="material-icons" style="font-size:1rem;">live_tv</span>
-                    🔴 Live
+                <button type="submit" class="vz-btn vz-btn--danger-soft vz-btn--sm">
+                    <span class="material-icons">live_tv</span>
+                    Live
                 </button>
             </form>
             {% endif %}
@@ -1246,21 +1232,11 @@
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.6rem;gap:.5rem;">
                     <span id="gd-dina-feedback" style="font-size:.82rem;font-weight:600;flex:1;min-height:1.2em;"></span>
                     <div style="display:flex;gap:.5rem;">
-                        <button type="button" onclick="gdCancelDinaEdit()"
-                                style="padding:.42rem .9rem;border-radius:9px;
-                                       background:var(--btn-bg);border:1.5px solid var(--border);
-                                       color:var(--text-muted);font-size:.82rem;font-weight:600;
-                                       cursor:pointer;font-family:inherit;">
+                        <button type="button" onclick="gdCancelDinaEdit()" class="vz-btn vz-btn--secondary vz-btn--sm">
                             {% trans "Cancel" %}
                         </button>
-                        <button type="button" onclick="gdSaveDina()"
-                                id="gd-dina-save-btn"
-                                style="display:inline-flex;align-items:center;gap:.35rem;
-                                       padding:.42rem 1rem;border-radius:9px;
-                                       background:linear-gradient(135deg,var(--accent),var(--accent2));
-                                       border:none;color:#fff;font-size:.82rem;font-weight:700;
-                                       cursor:pointer;font-family:inherit;transition:opacity .15s;">
-                            <span class="material-icons" style="font-size:.9rem;">save</span>
+                        <button type="button" onclick="gdSaveDina()" id="gd-dina-save-btn" class="vz-btn vz-btn--primary vz-btn--sm">
+                            <span class="material-icons">save</span>
                             {% trans "Save Dina" %}
                         </button>
                     </div>
@@ -1506,7 +1482,7 @@ function gdSubmitPost() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
         if (btn) { btn.disabled = false; btn.style.opacity = ''; }
-        if (!data.ok) { alert(data.error || 'Erreur lors de la publication.'); return; }
+        if (!data.ok) { vzAlert(data.error || 'Erreur lors de la publication.'); return; }
         /* Réinitialiser le formulaire */
         document.getElementById('gd-post-title').value = '';
         document.getElementById('gd-post-body').value  = '';
@@ -1663,7 +1639,10 @@ function handleReplyKey(e,cid,pid,url){ if(e.key==='Enter'&&!e.shiftKey){e.preve
 
 /* ── Delete comment ── */
 function deleteComment(cid, url){
-    if(!confirm('Supprimer ce commentaire ?')) return;
+    vzConfirm({ text: '{% trans "Supprimer ce commentaire ?"|escapejs %}', danger: true, confirmText: '{% trans "Supprimer"|escapejs %}' })
+    .then(function(ok){ if (ok) _deleteCommentNow(cid, url); });
+}
+function _deleteCommentNow(cid, url) {
     fetch(url,{method:'POST',headers:{'X-CSRFToken':GD_CSRF,'X-Requested-With':'XMLHttpRequest'},credentials:'same-origin'})
     .then(function(r){return r.json();})
     .then(function(data){
@@ -2001,8 +1980,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* ── Expulser un membre (kick) ── */
 function gdKickMember(userId, username, url) {
-    if (!confirm('{% trans "Remove"|escapejs %} « ' + username + ' » {% trans "from the group?"|escapejs %}')) return;
-
+    vzConfirm({ text: '{% trans "Remove"|escapejs %} « ' + username + ' » {% trans "from the group?"|escapejs %}', danger: true, confirmText: '{% trans "Supprimer"|escapejs %}' })
+    .then(function(ok){ if (ok) _gdKickMemberNow(userId, username, url); });
+}
+function _gdKickMemberNow(userId, username, url) {
     fetch(url, {
         method: 'POST',
         headers: {
@@ -2029,12 +2010,12 @@ function gdKickMember(userId, username, url) {
                 if (n > 0) badge.textContent = n - 1;
             }
         } else {
-            alert(data.error || '{% trans "An error occurred."|escapejs %}');
+            vzAlert(data.error || '{% trans "An error occurred."|escapejs %}');
         }
     })
     .catch(function(e) {
         console.error('Kick error:', e);
-        alert('{% trans "Server error. Please try again."|escapejs %}');
+        vzAlert('{% trans "Server error. Please try again."|escapejs %}');
     });
 }
 </script>

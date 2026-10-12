@@ -43,7 +43,7 @@
         {% endif %}
         <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap;">
             <a class="rs-btn" href="{% url 'resto:checkout' %}" style="flex:1;">{% trans "Commander" %} →</a>
-            <form method="post" action="{% url 'resto:cart_clear' %}" onsubmit="return confirm('{% trans "Vider le panier ?" %}')">{% csrf_token %}
+            <form method="post" action="{% url 'resto:cart_clear' %}" data-vz-confirm="{% trans 'Vider le panier ?' %}" data-vz-danger>{% csrf_token %}
                 <button class="rs-btn ghost" type="submit">{% trans "Vider" %}</button>
             </form>
         </div>

@@ -67,7 +67,7 @@
     transition: all .15s;
 }
 .verified-toggle:hover, .verified-toggle.active {
-    border-color: #2e7d32; color: #2e7d32;
+    border-color: var(--success); color: var(--success);
     background: #e8f5e9; text-decoration: none;
 }
 [data-theme="dark"] .verified-toggle.active {
@@ -113,7 +113,7 @@
 .guide-verified-dot {
     position: absolute; bottom: 1px; right: 1px;
     width: 18px; height: 18px; border-radius: 50%;
-    background: #2e7d32; border: 2px solid var(--bg-card);
+    background: var(--success); border: 2px solid var(--bg-card);
     display: flex; align-items: center; justify-content: center;
 }
 .guide-verified-dot .material-icons { font-size: .7rem; color: #fff; }
@@ -125,7 +125,7 @@
 }
 .badge-verifie {
     display: inline-flex; align-items: center; gap: .15rem;
-    background: #e8f5e9; color: #2e7d32; border-radius: 50px;
+    background: #e8f5e9; color: var(--success); border-radius: 50px;
     padding: .1rem .5rem; font-size: .66rem; font-weight: 700;
 }
 [data-theme="dark"] .badge-verifie { background: #0a2e0f; color: #81c784; }
@@ -449,7 +449,7 @@
                     html += '<div style="font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:.35rem;">'
                           + esc(g.name);
                     if (g.is_verified) {
-                        html += '<span style="color:#2e7d32;font-size:.75rem;font-weight:800;">✓ Vérifié</span>';
+                        html += '<span style="color:var(--success);font-size:.75rem;font-weight:800;">✓ Vérifié</span>';
                     }
                     html += '</div>';
                     if (g.specialities) {

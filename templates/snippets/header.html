@@ -421,8 +421,8 @@
     transition: color .15s;
 }
 .zoot-nav-right .dropdown-item:hover .material-icons { color: var(--accent); }
-.zoot-nav-right .dropdown-item.danger { color: #e53935; }
-.zoot-nav-right .dropdown-item.danger .material-icons { color: #e53935; }
+.zoot-nav-right .dropdown-item.danger { color: var(--danger); }
+.zoot-nav-right .dropdown-item.danger .material-icons { color: var(--danger); }
 .zoot-nav-right .dropdown-item.danger:hover { background: #fdecea; color: #c62828; }
 [data-theme="dark"] .zoot-nav-right .dropdown-item.danger:hover { background: #3e1a1a; }
 
@@ -914,10 +914,10 @@
                 <a class="dropdown-item" href="{% url 'group:list' %}">
                     <span class="material-icons">groups</span> {% trans "Groupes" %}
                 </a>
-                <a class="dropdown-item" href="{% url 'video:live-list' %}" style="color:#ff3b3b;">
-                    <span class="material-icons" style="color:#ff3b3b;">radio_button_checked</span>
+                <a class="dropdown-item" href="{% url 'video:live-list' %}" style="color:var(--danger);">
+                    <span class="material-icons" style="color:var(--danger);">radio_button_checked</span>
                     Live
-                    <span id="nav-live-count" style="background:#ff3b3b;color:#fff;font-size:.65rem;font-weight:800;padding:0 5px;border-radius:8px;min-width:16px;text-align:center;margin-left:auto;display:none;"></span>
+                    <span id="nav-live-count" style="background:var(--danger);color:#fff;font-size:.65rem;font-weight:800;padding:0 5px;border-radius:8px;min-width:16px;text-align:center;margin-left:auto;display:none;"></span>
                 </a>
 
                 <div class="dropdown-divider"></div>
@@ -1137,8 +1137,8 @@
                 <!-- Live -->
                 <a class="dropdown-item" href="{% url 'video:live-list' %}"
                    id="nav-live-btn"
-                   style="color:#ff3b3b;">
-                    <span class="material-icons" style="color:#ff3b3b;">radio_button_checked</span>
+                   style="color:var(--danger);">
+                    <span class="material-icons" style="color:var(--danger);">radio_button_checked</span>
                     Live
                 </a>
 
@@ -1263,8 +1263,8 @@
     <a href="{% url 'group:list' %}" class="zoot-mobile-link">
         <span class="material-icons">groups</span> {% trans "Groupes" %}
     </a>
-    <a href="{% url 'video:live-list' %}" class="zoot-mobile-link" style="color:#ff3b3b;">
-        <span class="material-icons" style="color:#ff3b3b;">radio_button_checked</span> Live
+    <a href="{% url 'video:live-list' %}" class="zoot-mobile-link" style="color:var(--danger);">
+        <span class="material-icons" style="color:var(--danger);">radio_button_checked</span> Live
     </a>
 
     <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
@@ -1866,7 +1866,7 @@ document.addEventListener('click', function(e) {
     // Global function to toggle push notifications
     window.togglePushNotif = function() {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            alert('Ton navigateur ne supporte pas les notifications push.');
+            vzAlert('Ton navigateur ne supporte pas les notifications push.');
             return;
         }
         if (Notification.permission === 'granted') {
@@ -1892,7 +1892,7 @@ document.addEventListener('click', function(e) {
                 });
             });
         } else if (Notification.permission === 'denied') {
-            alert('Les notifications sont bloquées. Modifie les paramètres de ton navigateur pour les autoriser.');
+            vzAlert('Les notifications sont bloquées. Modifie les paramètres de ton navigateur pour les autoriser.');
         } else {
             Notification.requestPermission().then(function(perm) {
                 if (perm === 'granted') {
@@ -1945,29 +1945,16 @@ document.addEventListener('click', function(e) {
     <!-- Boutons Rejeter / Accepter -->
     <div style="display:flex;gap:2.5rem;align-items:center;">
         <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem;">
-            <button onclick="_gcoReject()" style="
-                background:#e0245e;border:none;border-radius:50%;
-                width:64px;height:64px;cursor:pointer;
-                display:flex;align-items:center;justify-content:center;
-                box-shadow:0 4px 18px rgba(224,36,94,.55);
-                transition:transform .15s;
-            " onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform=''">
-                <span class="material-icons" style="color:#fff;font-size:1.8rem;">call_end</span>
+            <button type="button" onclick="_gcoReject()" class="vz-btn vz-btn--icon vz-btn--lg vz-btn--danger" aria-label="{% trans 'Refuser' %}" style="box-shadow:0 4px 18px rgba(var(--danger-rgb),.5);">
+                <span class="material-icons" style="font-size:1.8rem;">call_end</span>
             </button>
-            <span style="color:#ccc;font-size:.75rem;">Refuser</span>
+            <span style="color:#ccc;font-size:.75rem;">{% trans "Refuser" %}</span>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem;">
-            <button onclick="_gcoAccept()" style="
-                background:#4caf50;border:none;border-radius:50%;
-                width:64px;height:64px;cursor:pointer;
-                display:flex;align-items:center;justify-content:center;
-                box-shadow:0 4px 18px rgba(76,175,80,.55);
-                transition:transform .15s;
-                animation:gcoBounce .6s ease-in-out infinite alternate;
-            " onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform=''">
-                <span id="gco-accept-icon" class="material-icons" style="color:#fff;font-size:1.8rem;">call</span>
+            <button type="button" onclick="_gcoAccept()" class="vz-btn vz-btn--icon vz-btn--lg vz-btn--success" aria-label="{% trans 'Répondre' %}" style="box-shadow:0 4px 18px rgba(var(--success-rgb),.5);animation:gcoBounce .6s ease-in-out infinite alternate;">
+                <span id="gco-accept-icon" class="material-icons" style="font-size:1.8rem;">call</span>
             </button>
-            <span style="color:#ccc;font-size:.75rem;">Répondre</span>
+            <span style="color:#ccc;font-size:.75rem;">{% trans "Répondre" %}</span>
         </div>
     </div>
 </div>

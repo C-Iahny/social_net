@@ -182,12 +182,12 @@
 [data-theme="dark"] .bazar-btn-outline:hover { color: #1a0a02; }
 .bazar-btn-danger {
     background: transparent;
-    border: 1.5px solid #dc3545;
-    color: #dc3545;
+    border: 1.5px solid var(--danger);
+    color: var(--danger);
     font-size: .85rem;
     padding: .5rem 1rem;
 }
-.bazar-btn-danger:hover { background: #dc3545; color: #fff; text-decoration: none; }
+.bazar-btn-danger:hover { background: var(--danger); color: #fff; text-decoration: none; }
 .bazar-btn-fav-saved {
     background: #fff0f3;
     border: 1.5px solid #e0325a;
@@ -525,7 +525,7 @@
                             {% if sv.seller_type == 'pro' %}
                             <span style="display:inline-flex;align-items:center;gap:.2rem;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .5rem;border-radius:20px;letter-spacing:.04em;">⭐ {% trans "Boutique Pro" %}</span>
                             {% else %}
-                            <span style="display:inline-flex;align-items:center;gap:.2rem;background:#10b981;color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;">✓ {% trans "Vérifié" %}</span>
+                            <span style="display:inline-flex;align-items:center;gap:.2rem;background:var(--success);color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;letter-spacing:.04em;">✓ {% trans "Vérifié" %}</span>
                             {% endif %}
                         {% endif %}
                         {% endwith %}
@@ -554,7 +554,7 @@
                 {% trans "Modifier l'annonce" %}
             </a>
             {% if annonce.status == 'active' %}
-            <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" onsubmit="return confirm(VZB_I18N.confirmSold)">
+            <form method="post" action="{% url 'bazar:mark_sold' annonce.pk %}" data-vz-confirm="{% trans 'Marquer cette annonce comme vendue ?' %}">
                 {% csrf_token %}
                 <button type="submit" class="bazar-contact-btn bazar-btn-outline" style="border-color:#166534;color:#166534;">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
@@ -562,7 +562,7 @@
                 </button>
             </form>
             {% endif %}
-            <form method="post" action="{% url 'bazar:delete' annonce.pk %}" onsubmit="return confirm(VZB_I18N.confirmDelete)">
+            <form method="post" action="{% url 'bazar:delete' annonce.pk %}" data-vz-confirm="{% trans 'Supprimer définitivement cette annonce ?' %}" data-vz-danger>
                 {% csrf_token %}
                 <button type="submit" class="bazar-contact-btn bazar-btn-danger">
                     <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>

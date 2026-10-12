@@ -115,7 +115,7 @@
 }
 .pd-action-btn .material-icons { font-size: .9rem; }
 .pd-action-btn:hover { background: var(--btn-hover); color: var(--text); text-decoration: none; }
-.pd-action-btn.danger:hover { background: rgba(229,57,53,.1); color: #e53935; border-color: #e53935; }
+.pd-action-btn.danger:hover { background: rgba(229,57,53,.1); color: var(--danger); border-color: var(--danger); }
 
 /* ── Body ── */
 .pd-body {
@@ -314,7 +314,7 @@
     transition: color .15s;
 }
 .pc-comment-reply-btn:hover { color: var(--accent); }
-.pc-comment-del:hover { color: #e53935; }
+.pc-comment-del:hover { color: var(--danger); }
 
 .pc-comment-replies { padding-left: 1.5rem; margin-top: .5rem; display: flex; flex-direction: column; gap: .6rem; }
 .pc-comment-reply-item { display: flex; gap: .55rem; align-items: flex-start; }
@@ -742,7 +742,10 @@ function autoResize(el) {
 
 /* ── Supprimer un commentaire ── */
 function deleteComment(commentId, deleteUrl) {
-    if (!confirm('Supprimer ce commentaire ?')) return;
+    vzConfirm({ text: '{% trans "Supprimer ce commentaire ?"|escapejs %}', danger: true, confirmText: '{% trans "Supprimer"|escapejs %}' })
+    .then(function(ok){ if (ok) _deleteCommentNow(commentId, deleteUrl); });
+}
+function _deleteCommentNow(commentId, deleteUrl) {
     fetch(deleteUrl, {
         method: 'POST',
         headers: { 'X-CSRFToken': CSRF_TOKEN, 'X-Requested-With': 'XMLHttpRequest' },

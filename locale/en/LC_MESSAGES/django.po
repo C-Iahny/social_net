@@ -3129,3 +3129,107 @@ msgstr "News feed"
 
 msgid "Tourisme"
 msgstr "Tourism"
+
+# ── Socle d’interface commun (toasts, confirmation, signalement) ──
+
+msgid "Confirmer"
+msgstr "Confirm"
+
+msgid "Êtes-vous sûr ?"
+msgstr "Are you sure?"
+
+msgid "Nouvelle version disponible"
+msgstr "New version available"
+
+msgid "Recharger"
+msgstr "Reload"
+
+msgid "Post publié avec succès !"
+msgstr "Post published!"
+
+msgid "Vazimba est installé sur votre écran d’accueil."
+msgstr "Vazimba is installed on your home screen."
+
+msgid "Signaler un contenu"
+msgstr "Report content"
+
+msgid "Sélectionnez la raison du signalement. Notre équipe examinera ce contenu."
+msgstr "Select the reason for the report. Our team will review this content."
+
+msgid "Précision (facultatif)"
+msgstr "Details (optional)"
+
+msgid "Spam / publicité abusive"
+msgstr "Spam / abusive advertising"
+
+msgid "Discours haineux / harcèlement"
+msgstr "Hate speech / harassment"
+
+msgid "Violence / contenu choquant"
+msgstr "Violence / shocking content"
+
+msgid "Nudité / contenu adulte"
+msgstr "Nudity / adult content"
+
+msgid "Fausse information"
+msgstr "False information"
+
+msgid "Veuillez choisir une raison."
+msgstr "Please choose a reason."
+
+msgid "Signalement envoyé. Merci !"
+msgstr "Report sent. Thank you!"
+
+msgid "Erreur lors de l’envoi."
+msgstr "Error while sending."
+
+msgid "Erreur réseau."
+msgstr "Network error."
+
+msgid "Appuyez encore pour quitter"
+msgstr "Press again to exit"
+
+msgid "Connexion lente détectée"
+msgstr "Slow connection detected"
+
+msgid "Activer le mode économie pour réduire la consommation de données ?"
+msgstr "Enable data saver to use less data?"
+
+msgid "Activer"
+msgstr "Enable"
+
+msgid "Ignorer"
+msgstr "Dismiss"
+
+msgid "Installer"
+msgstr "Install"
+
+msgid "Plus tard"
+msgstr "Later"
+
+msgid "Installer Vazimba"
+msgstr "Install Vazimba"
+
+msgid "Accédez à l’app directement depuis votre écran d’accueil, même hors ligne."
+msgstr "Open the app straight from your home screen, even offline."
+
+msgid "Répondre"
+msgstr "Answer"
+
+msgid "Supprimer cette story ?"
+msgstr "Delete this story?"
+
+msgid "Story supprimée"
+msgstr "Story deleted"
+
+msgid "Terminer le live ?"
+msgstr "End the live?"
+
+msgid "Marquer comme vendue ?"
+msgstr "Mark as sold?"
+
+msgid "Supprimer définitivement ?"
+msgstr "Delete permanently?"
+
+msgid "Supprimer ce brouillon ?"
+msgstr "Delete this draft?"
