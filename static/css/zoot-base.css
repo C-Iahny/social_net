@@ -914,7 +914,15 @@ html.data-saver .ds-img-wrap { position: relative; }
             bottom: 0; left: 0; right: 0;
             background: var(--bg-card);
             border-radius: 20px 20px 0 0;
-            padding: 1rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+            /* La barre de navigation basse (hauteur --bnav-h, zone de sécurité
+               comprise) reste visible par-dessus la feuille pour le bouton « × » :
+               on réserve sa hauteur, sinon la dernière rangée (Resto, Groupe,
+               Live) passait dessous. Sur desktop --bnav-h vaut 0. */
+            padding: 1rem 1rem calc(1.25rem + var(--bnav-h, env(safe-area-inset-bottom, 0px)));
+            max-height: calc(100vh - 48px);   /* repli anciennes WebView */
+            max-height: calc(100dvh - 48px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             z-index: 1101;
             transform: translateY(100%);
             transition: transform .28s cubic-bezier(.32,1,.23,1);
