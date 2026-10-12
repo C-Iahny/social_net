@@ -17,6 +17,9 @@
                 <span class="rs-badge {% if restaurant.is_open %}open{% else %}closed{% endif %}">{% if restaurant.is_open %}{% trans "Ouvert" %}{% else %}{% trans "Fermé" %}{% endif %}</span>
                 {% if not restaurant.is_approved %}<span class="rs-badge pending">{% trans "En attente de validation" %}</span>{% endif %}
                 {% include 'resto/_rating.html' with r=rating %}
+                {% if request.user.is_authenticated and not is_owner %}
+                <button type="button" class="vz-btn vz-btn--icon vz-btn--sm vz-btn--muted" style="border:0;" onclick="openReportModal('restaurant','{{ restaurant.pk }}')" aria-label="{% trans 'Signaler ce restaurant' %}" title="{% trans 'Signaler' %}"><span class="material-icons">flag</span></button>
+                {% endif %}
             </h1>
             <p class="rs-muted" style="margin:.2rem 0 0;">{{ restaurant.get_category_display }} · 📍 {{ restaurant.address }}{% if restaurant.opening_hours %} · 🕒 {{ restaurant.opening_hours }}{% endif %}</p>
             {% if restaurant.description %}<p style="margin:.4rem 0 0;font-size:.9rem;">{{ restaurant.description }}</p>{% endif %}

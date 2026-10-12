@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block page_title %}{% trans "Compte supprimé" %} — Vazimba{% endblock %}
+{% block content %}
+<div class="vz-empty" style="margin-top:6rem;">
+    <span class="material-icons">waving_hand</span>
+    <div class="vz-empty-title">{% trans "Votre compte a été supprimé." %}</div>
+    <p class="vz-empty-text">{% trans "Merci d’avoir fait partie de Vazimba. Veloma, et à bientôt peut-être." %}</p>
+    <a class="vz-btn vz-btn--primary" href="/">{% trans "Retour à l’accueil" %}</a>
+</div>
+{% endblock %}

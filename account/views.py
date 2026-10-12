@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 
 
 from account.forms import RegistrationForm, AccountAuthenticationForm, AccountUpdateForm
-from account.models import Account, PhoneVerification
+from account.models import Account, PhoneVerification, UserBlock
+from django.db.models import Q as models_Q
 from friend.utils import get_friend_request_or_false
 from friend.friend_request_status import FriendRequestStatus
 from friend.models import FriendList, FriendRequest
@@ -173,7 +174,7 @@ def account_view(request, *args, **kwargs):
 			user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
 		from post.comments_utils import load_comments_grouped
-		top_by_post, comment_totals = load_comments_grouped(post_ids)
+		top_by_post, comment_totals = load_comments_grouped(post_ids, viewer=request.user)
 
 		for post in posts:
 			post.user_reaction   = user_reaction_by_post.get(post.id)
@@ -251,7 +252,9 @@ def account_view(request, *args, **kwargs):
 		context['is_friend'] = False
 		context['request_sent'] = FriendRequestStatus.NO_REQUEST_SENT.value
 
+		context['is_blocked'] = False
 		if request.user.is_authenticated:
+			context['is_blocked'] = UserBlock.objects.filter(blocker=request.user, blocked=account).exists()
 			if request.user == account:
 				context['is_self'] = True
 				# Incoming friend requests for self
@@ -364,6 +367,7 @@ def edit_account_view(request, *args, **kwargs):
 	context['DATA_UPLOAD_MAX_MEMORY_SIZE'] = settings.DATA_UPLOAD_MAX_MEMORY_SIZE
 	from regions import REGION_CHOICES
 	context['region_choices'] = REGION_CHOICES
+	context['blocked_users'] = Account.objects.filter(blocks_received__blocker=request.user).order_by('username')
 	return render(request, 'account/edit_account.html', context)
 
 
@@ -537,7 +541,7 @@ def profile_posts_more(request, *args, **kwargs):
 			user_reaction_by_post = {pid: rtype for pid, rtype in user_reactions_qs}
 
 		from post.comments_utils import load_comments_grouped
-		top_by_post, comment_totals = load_comments_grouped(post_ids)
+		top_by_post, comment_totals = load_comments_grouped(post_ids, viewer=request.user)
 		for post in posts:
 			post.user_reaction   = user_reaction_by_post.get(post.id)
 			post.reaction_counts = reactions_by_post.get(post.id, {})
@@ -784,3 +788,75 @@ def phone_verify_otp(request):
 		'phone_display': format_phone_display(phone_e164),
 		'message': 'Numéro vérifié avec succès !',
 	})
+
+
+# ── Blocage d'un utilisateur ────────────────────────────────────────────────
+@require_POST
+def toggle_block(request, user_id):
+	"""POST /account/bloquer/<id>/ — bloque ou débloque, renvoie {ok, blocked}."""
+	if not request.user.is_authenticated:
+		return JsonResponse({'ok': False, 'error': 'auth'}, status=401)
+	try:
+		other = Account.objects.get(pk=user_id)
+	except (Account.DoesNotExist, ValueError):
+		return JsonResponse({'ok': False, 'error': 'introuvable'}, status=404)
+	if other == request.user:
+		return JsonResponse({'ok': False, 'error': 'self'}, status=400)
+	existing = UserBlock.objects.filter(blocker=request.user, blocked=other)
+	if existing.exists():
+		existing.delete()
+		return JsonResponse({'ok': True, 'blocked': False})
+	UserBlock.objects.create(blocker=request.user, blocked=other)
+	# Un bloqué n'est plus un ami ni un demandeur
+	try:
+		mine, _ = FriendList.objects.get_or_create(user=request.user)
+		theirs, _ = FriendList.objects.get_or_create(user=other)
+		mine.friends.remove(other); theirs.friends.remove(request.user)
+		FriendRequest.objects.filter(
+			models_Q(sender=request.user, receiver=other) | models_Q(sender=other, receiver=request.user),
+			is_active=True,
+		).update(is_active=False)
+	except Exception:
+		logger.exception("toggle_block: nettoyage amitié")
+	return JsonResponse({'ok': True, 'blocked': True})
+
+
+# ── Suppression du compte ───────────────────────────────────────────────────
+def delete_account_view(request):
+	"""GET : page de confirmation. POST (mot de passe) : suppression définitive.
+
+	URL publique exigée par Google Play pour la suppression de compte.
+	Suppression en cascade ; si une contrainte protège des données (commandes
+	Resto d'un restaurateur), le compte est anonymisé et désactivé à la place.
+	"""
+	if not request.user.is_authenticated:
+		return redirect(f"{settings.LOGIN_URL}?next={request.path}")
+	error = None
+	if request.method == 'POST':
+		password = request.POST.get('password', '')
+		if not request.user.check_password(password):
+			error = 'wrong_password'
+		else:
+			user = request.user
+			logout(request)
+			try:
+				user.delete()
+			except Exception:
+				logger.exception("delete_account: cascade impossible, anonymisation")
+				uid = user.pk
+				user.email = f'supprime-{uid}@vazimba.invalid'
+				user.username = f'compte-supprime-{uid}'
+				user.bio = ''; user.location = ''
+				user.phone_number = ''; user.phone_verified = False
+				user.is_active = False
+				user.set_unusable_password()
+				try:
+					if user.profile_image and 'default' not in str(user.profile_image):
+						user.profile_image.delete(save=False)
+					if user.cover_image:
+						user.cover_image.delete(save=False)
+				except Exception:
+					pass
+				user.save()
+			return render(request, 'account/delete_account_done.html')
+	return render(request, 'account/delete_account.html', {'error': error})

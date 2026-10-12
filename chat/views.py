@@ -265,6 +265,10 @@ def create_or_return_private_chat(request, *args, **kwargs):
 			user2_id = request.POST.get("user2_id")
 			try:
 				user2 = Account.objects.get(pk=user2_id)
+				from account.models import UserBlock
+				if UserBlock.is_blocked_between(user1, user2):
+					payload['response'] = "Cette conversation n'est pas disponible."
+					return HttpResponse(json.dumps(payload), content_type="application/json", status=403)
 				chat = find_or_create_private_chat(user1, user2)
 				payload['response'] = "Successfully got the chat."
 				payload['chatroom_id'] = chat.id

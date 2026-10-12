@@ -87,6 +87,10 @@
             <a class="gd-action gd-danger" href="{% url 'group:delete' group.slug %}">
                 <span class="material-icons">delete_outline</span> {% trans "Delete" %}
             </a>
+            {% elif request.user.is_authenticated %}
+            <button class="gd-action gd-secondary" type="button" onclick="openReportModal('group','{{ group.pk }}')" title="{% trans 'Signaler' %}">
+                <span class="material-icons">flag</span> {% trans "Signaler" %}
+            </button>
             {% endif %}
         </div>
 

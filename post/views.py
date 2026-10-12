@@ -145,7 +145,8 @@ def Index(request):
     # ?sort=recent  → classés par date (défaut)
     sort = request.GET.get('sort', 'recent')
 
-    posts_qs = Post.objects.select_related("author")
+    # Même règle de visibilité que le fil : publiés, groupes accessibles, comptes non bloqués
+    posts_qs = visible_posts(Post.objects.select_related("author"), request.user)
     if sort == 'popular':
         # annotate évite le N+1 de total_likes() en template
         posts_qs = posts_qs.annotate(like_count=Count('likes', distinct=True)).order_by("-like_count", "-id")
@@ -340,7 +341,7 @@ def _decorate_feed_posts(posts, user):
     posts = list(posts)
     post_ids = [p.id for p in posts]
 
-    top_by_post, comment_totals = load_comments_grouped(post_ids)
+    top_by_post, comment_totals = load_comments_grouped(post_ids, viewer=user)
 
     reactions_by_post = {}
     for row in (Reaction.objects.filter(post_id__in=post_ids)
@@ -1494,10 +1495,16 @@ def report_content(request):
 
     # Mapping nom simple → app_label.model
     CT_MAP = {
-        'post':    ('post',    'post'),
-        'annonce': ('bazar',   'annonce'),
-        'account': ('account', 'account'),
-        'comment': ('post',    'comment'),
+        'post':       ('post',     'post'),
+        'annonce':    ('bazar',    'annonce'),
+        'account':    ('account',  'account'),
+        'comment':    ('post',     'comment'),
+        'group':      ('group',    'group'),
+        'restaurant': ('resto',    'restaurant'),
+        'lieu':       ('tourisme', 'lieutouristique'),
+        'story':      ('stories',  'story'),
+        'message':    ('chat',     'roomchatmessage'),
+        'live':       ('video',    'liveroom'),
     }
     mapping = CT_MAP.get(ct_name)
     if not mapping:

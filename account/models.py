@@ -274,3 +274,34 @@ class PhoneVerification(models.Model):
         from django.utils import timezone
         from datetime import timedelta
         return timezone.now() > self.created_at + timedelta(minutes=self.OTP_VALID_MINUTES)
+
+
+class UserBlock(models.Model):
+	"""`blocker` ne veut plus voir `blocked` ni en entendre parler : posts et
+	commentaires masqués dans les deux sens, plus de message privé ni de
+	demande d'ami possible entre les deux."""
+	blocker    = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='blocks_made')
+	blocked    = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='blocks_received')
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		unique_together = ('blocker', 'blocked')
+		indexes = [models.Index(fields=['blocked', 'blocker'], name='userblock_reverse_idx')]
+
+	def __str__(self):
+		return f'{self.blocker} ⛔ {self.blocked}'
+
+	@staticmethod
+	def hidden_user_ids(user):
+		"""Ids à masquer pour `user` : ceux qu'il a bloqués et ceux qui l'ont bloqué."""
+		if not getattr(user, 'is_authenticated', False):
+			return set()
+		ids = set(UserBlock.objects.filter(blocker=user).values_list('blocked_id', flat=True))
+		ids |= set(UserBlock.objects.filter(blocked=user).values_list('blocker_id', flat=True))
+		return ids
+
+	@staticmethod
+	def is_blocked_between(a, b):
+		return UserBlock.objects.filter(
+			models.Q(blocker=a, blocked=b) | models.Q(blocker=b, blocked=a)
+		).exists()

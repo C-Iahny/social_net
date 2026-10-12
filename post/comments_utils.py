@@ -2,7 +2,7 @@
 from django.db.models import Count
 
 
-def load_comments_grouped(post_ids, cap=150):
+def load_comments_grouped(post_ids, cap=150, viewer=None):
     """Retourne (top_by_post, totals).
 
     Les `cap` commentaires les plus récents de la page (toutes publications
@@ -15,13 +15,17 @@ def load_comments_grouped(post_ids, cap=150):
     post_ids = list(post_ids)
     if not post_ids:
         return {}, {}
+    base = Comment.objects.filter(post_id__in=post_ids)
+    if viewer is not None:
+        from account.models import UserBlock
+        hidden = UserBlock.hidden_user_ids(viewer)
+        if hidden:
+            base = base.exclude(author_id__in=hidden)
     totals = dict(
-        Comment.objects.filter(post_id__in=post_ids)
-        .values_list('post_id').annotate(n=Count('id')).values_list('post_id', 'n')
+        base.values_list('post_id').annotate(n=Count('id')).values_list('post_id', 'n')
     )
     newest = list(
-        Comment.objects.filter(post_id__in=post_ids)
-        .select_related('author').order_by('-created_at', '-id')[:cap]
+        base.select_related('author').order_by('-created_at', '-id')[:cap]
     )
     newest.reverse()                     # ordre chronologique pour l'affichage
     top_by_post, replies_map = {}, {}

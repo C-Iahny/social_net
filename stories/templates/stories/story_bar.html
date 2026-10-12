@@ -80,6 +80,11 @@
   <!-- Audio caché -->
   <audio id="zsv-audio" loop style="display:none;"></audio>
 
+  <!-- Signaler la story d'un autre utilisateur -->
+  <button type="button" id="zsv-report-btn" class="zsv-ibtn" onclick="zvReportCurrent()" aria-label="{% trans 'Signaler cette story' %}" title="{% trans 'Signaler' %}" style="display:none;position:absolute;right:56px;top:calc(14px + env(safe-area-inset-top, 0px));z-index:6;background:rgba(0,0,0,.35);border:0;color:#fff;width:36px;height:36px;border-radius:50%;align-items:center;justify-content:center;">
+    <span class="material-icons" style="font-size:1.2rem;">flag</span>
+  </button>
+
   <!-- Barre "mes views" -->
   <div id="zsv-mine-bar">
     <button class="zsv-views-btn" onclick="zvOpenViewers()">
@@ -711,6 +716,8 @@ function _zvLoad(){
   /* Propres stories */
   var mineBar = document.getElementById('zsv-mine-bar');
   var bottomEl = document.getElementById('zsv-bottom');
+  var reportBtn = document.getElementById('zsv-report-btn');
+  if(reportBtn) reportBtn.style.display = (story.is_mine || !window.openReportModal) ? 'none' : 'flex';
   if(story.is_mine){
     mineBar.style.display='flex'; bottomEl.style.display='none';
     document.getElementById('zsv-view-count').textContent = story.view_count||0;
@@ -940,6 +947,11 @@ window.zvOpenReplyChat = function(el){
   window.location.href = '/chat/?user_id=' + uid;
 };
 
+window.zvReportCurrent = function(){
+  var story = (_sv.groups[_sv.curG]||{stories:[]}).stories[_sv.curS];
+  if(!story || story.is_mine || typeof openReportModal !== 'function') return;
+  openReportModal('story', story.id);
+};
 window.zvDeleteCurrent = function(){
   var story = (_sv.groups[_sv.curG]||{stories:[]}).stories[_sv.curS];
   if(!story||!story.is_mine) return;

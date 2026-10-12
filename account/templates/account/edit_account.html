@@ -455,4 +455,51 @@
     }
 })();
 </script>
+
+<!-- ═══════════════ Zone sensible : comptes bloqués, suppression ═══════════════ -->
+<div style="max-width:640px;margin:1.5rem auto 3rem;padding:0 1rem;">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.2rem 1.3rem;">
+        <h2 style="font-size:1rem;font-weight:800;margin:0 0 .8rem;display:flex;align-items:center;gap:.5rem;">
+            <span class="material-icons" style="color:var(--text-muted);">block</span>{% trans "Comptes bloqués" %}
+        </h2>
+        {% if blocked_users %}
+        <div style="display:flex;flex-direction:column;gap:.5rem;">
+            {% for b in blocked_users %}
+            <div style="display:flex;align-items:center;gap:.7rem;" id="blocked-row-{{ b.pk }}">
+                <img src="{{ b.profile_image.url }}" alt="" width="36" height="36" style="border-radius:50%;object-fit:cover;" loading="lazy">
+                <a href="{% url 'account:view' user_id=b.pk %}" style="flex:1;font-weight:700;color:var(--text);">{{ b.username }}</a>
+                <button type="button" class="vz-btn vz-btn--secondary vz-btn--sm" onclick="vzToggleBlock({{ b.pk }}, this)">{% trans "Débloquer" %}</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="font-size:.9rem;color:var(--text-muted);margin:0;">{% trans "Vous n’avez bloqué personne." %}</p>
+        {% endif %}
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid rgba(var(--danger-rgb),.35);border-radius:var(--radius-lg);padding:1.2rem 1.3rem;margin-top:1rem;">
+        <h2 style="font-size:1rem;font-weight:800;margin:0 0 .4rem;display:flex;align-items:center;gap:.5rem;color:var(--danger);">
+            <span class="material-icons">delete_forever</span>{% trans "Supprimer mon compte" %}
+        </h2>
+        <p style="font-size:.9rem;color:var(--text-muted);margin:0 0 .9rem;">{% trans "Suppression définitive de votre profil et de vos contenus." %}</p>
+        <a class="vz-btn vz-btn--danger-soft vz-btn--sm" href="{% url 'account:delete' %}">{% trans "Supprimer mon compte" %}</a>
+    </div>
+</div>
+<script>
+window.vzToggleBlock = function(userId, btn) {
+    var url = '{% url "account:block" user_id=0 %}'.replace('/0/', '/' + userId + '/');
+    if (btn) btn.classList.add('is-loading');
+    fetch(url, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        if (btn) btn.classList.remove('is-loading');
+        if (!d.ok) { vzAlert('{% trans "Action impossible."|escapejs %}'); return; }
+        var row = document.getElementById('blocked-row-' + userId);
+        if (row && !d.blocked) row.remove();
+        vzToast(d.blocked ? '{% trans "Compte bloqué."|escapejs %}' : '{% trans "Compte débloqué."|escapejs %}', 'success');
+        if (typeof window._vzOnBlockChange === 'function') window._vzOnBlockChange(d.blocked);
+    })
+    .catch(function(){ if (btn) btn.classList.remove('is-loading'); vzAlert('{% trans "Erreur réseau."|escapejs %}'); });
+};
+</script>
 {% endblock content %}

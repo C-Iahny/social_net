@@ -3378,3 +3378,81 @@ msgstr "Hofafana tanteraka ?"
 
 msgid "Supprimer ce brouillon ?"
 msgstr "Hofafana ve ity drafitra ity ?"
+
+msgid "Supprimer mon compte"
+msgstr "Hamafa ny kaontiko"
+
+msgid "Cette action est définitive : votre profil, vos publications, vos stories, vos messages et vos annonces seront supprimés. Les commandes et transactions déjà réalisées sont conservées de façon anonyme, comme l’exige la loi."
+msgstr "Tsy azo averina ity : hofafana ny mombamomba anao, ny lahatsoratrao, ny story, ny hafatra ary ny dokam-barotrao. Tazonina tsy misy anarana ny baiko sy ny varotra efa vita, araka ny lalàna."
+
+msgid "Vous pouvez aussi simplement vous déconnecter si vous souhaitez faire une pause."
+msgstr "Azonao atao koa ny miala fotsiny raha te hiato kely ianao."
+
+msgid "Mot de passe incorrect."
+msgstr "Diso ny tenimiafina."
+
+msgid "Supprimer définitivement votre compte Vazimba ?"
+msgstr "Hofafana tanteraka ve ny kaontinao Vazimba ?"
+
+msgid "Oui, supprimer"
+msgstr "Eny, fafao"
+
+msgid "Confirmez avec votre mot de passe"
+msgstr "Hamafiso amin'ny tenimiafinao"
+
+msgid "Compte supprimé"
+msgstr "Voafafa ny kaonty"
+
+msgid "Votre compte a été supprimé."
+msgstr "Voafafa ny kaontinao."
+
+msgid "Merci d’avoir fait partie de Vazimba. Veloma, et à bientôt peut-être."
+msgstr "Misaotra anao nandray anjara tao amin'ny Vazimba. Veloma, ary mandra-pihaona angamba."
+
+msgid "Retour à l’accueil"
+msgstr "Hiverina any am-piandohana"
+
+msgid "Comptes bloqués"
+msgstr "Kaonty voasakana"
+
+msgid "Débloquer"
+msgstr "Esory ny sakana"
+
+msgid "Vous n’avez bloqué personne."
+msgstr "Tsy nisy nosakananao."
+
+msgid "Suppression définitive de votre profil et de vos contenus."
+msgstr "Famafana tanteraka ny mombamomba anao sy ny votoatinao."
+
+msgid "Action impossible."
+msgstr "Tsy azo atao."
+
+msgid "Compte bloqué."
+msgstr "Voasakana ny kaonty."
+
+msgid "Compte débloqué."
+msgstr "Nesorina ny sakana."
+
+msgid "Signaler ce profil"
+msgstr "Hitatitra ity mombamomba ity"
+
+msgid "Signaler"
+msgstr "Hitatitra"
+
+msgid "Débloquer cet utilisateur ?"
+msgstr "Hesorina ve ny sakana amin'ity mpampiasa ity ?"
+
+msgid "Bloquer cet utilisateur ? Vous ne verrez plus ses publications et il ne pourra plus vous écrire."
+msgstr "Hosakanana ve ity mpampiasa ity ? Tsy ho hitanao intsony ny lahatsorany ary tsy afaka manoratra aminao izy."
+
+msgid "Bloquer"
+msgstr "Sakano"
+
+msgid "Signaler ce restaurant"
+msgstr "Hitatitra ity trano fisakafoanana ity"
+
+msgid "Signaler ce lieu"
+msgstr "Hitatitra ity toerana ity"
+
+msgid "Signaler cette story"
+msgstr "Hitatitra ity story ity"

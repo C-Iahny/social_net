@@ -167,6 +167,8 @@
                             {% if request.user == c.author or request.user == post.author %}
                             <button class="pc-comment-del"
                                     onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')">{% trans "Delete" %}</button>
+                            {% else %}
+                            <button type="button" class="pc-comment-del" onclick="openReportModal('comment','{{ c.id }}')">{% trans "Signaler" %}</button>
                             {% endif %}
                         </div>
 
@@ -187,6 +189,8 @@
                                         {% if request.user == reply.author or request.user == post.author %}
                                         <button class="pc-comment-del"
                                                 onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')">{% trans "Delete" %}</button>
+                                        {% else %}
+                                        <button type="button" class="pc-comment-del" onclick="openReportModal('comment','{{ reply.id }}')">{% trans "Signaler" %}</button>
                                         {% endif %}
                                     </div>
                                 </div>

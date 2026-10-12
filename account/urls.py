@@ -2,12 +2,14 @@ from django.urls import path, include
 from .views import (
     account_view, edit_account_view, crop_image,
     global_search_api, profile_posts_more, update_cover_image,
-    phone_send_otp, phone_verify_otp,
+    phone_send_otp, phone_verify_otp, toggle_block, delete_account_view,
 )
 
 app_name = 'account'
 
 urlpatterns = [
+    path('supprimer/',                 delete_account_view, name="delete"),
+    path('bloquer/<int:user_id>/',     toggle_block,        name="block"),
     path('<user_id>/',                  account_view,        name="view"),
     path('<user_id>/edit/',             edit_account_view,   name="edit"),
     path('<user_id>/edit/cropImage',    crop_image,          name="crop_image"),

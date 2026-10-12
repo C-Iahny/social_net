@@ -30,6 +30,10 @@ def send_friend_request(request, *args, **kwargs):
 	if receiver == user:
 		return _json({'response': "You cannot send a friend request to yourself."}, status=400)
 
+	from account.models import UserBlock
+	if UserBlock.is_blocked_between(user, receiver):
+		return _json({'response': "Cette action n'est pas disponible."}, status=403)
+
 	already_sent = FriendRequest.objects.filter(
 		sender=user, receiver=receiver, is_active=True
 	).exists()

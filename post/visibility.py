@@ -38,6 +38,11 @@ def visible_posts(qs, viewer, author=None):
         member_group_ids = GroupMembership.objects.filter(user=viewer).values('group_id')
         # L'auteur voit toujours ses propres posts publiés, même en groupe privé.
         qs = qs.filter(public_or_none | Q(group_id__in=member_group_ids) | Q(author=viewer))
+        # Blocage : ni les posts des comptes bloqués, ni ceux des comptes qui m'ont bloqué
+        from account.models import UserBlock
+        hidden = UserBlock.hidden_user_ids(viewer)
+        if hidden:
+            qs = qs.exclude(author_id__in=hidden)
     else:
         qs = qs.filter(public_or_none)
 

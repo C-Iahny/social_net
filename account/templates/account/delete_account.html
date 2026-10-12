@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block page_title %}{% trans "Supprimer mon compte" %} — Vazimba{% endblock %}
+{% block content %}
+<div style="max-width:560px;margin:5rem auto 3rem;padding:0 1rem;">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.6rem 1.4rem;box-shadow:var(--shadow);">
+        <div class="vz-dialog-head" style="margin-bottom:.8rem;">
+            <span class="material-icons" style="color:var(--danger);">delete_forever</span>
+            <h1 class="vz-dialog-title" style="font-size:1.25rem;">{% trans "Supprimer mon compte" %}</h1>
+        </div>
+        <p class="vz-dialog-text">{% trans "Cette action est définitive : votre profil, vos publications, vos stories, vos messages et vos annonces seront supprimés. Les commandes et transactions déjà réalisées sont conservées de façon anonyme, comme l’exige la loi." %}</p>
+        <p class="vz-dialog-text">{% trans "Vous pouvez aussi simplement vous déconnecter si vous souhaitez faire une pause." %}</p>
+        {% if error == 'wrong_password' %}
+        <div class="vz-field-error" role="alert" style="margin-bottom:.8rem;">{% trans "Mot de passe incorrect." %}</div>
+        {% endif %}
+        <form method="post" data-vz-confirm="{% trans 'Supprimer définitivement votre compte Vazimba ?' %}" data-vz-danger data-vz-confirm-label="{% trans 'Oui, supprimer' %}">
+            {% csrf_token %}
+            <div class="vz-field{% if error %} has-error{% endif %}">
+                <label for="del-password">{% trans "Confirmez avec votre mot de passe" %} <span class="vz-req">*</span></label>
+                <input type="password" id="del-password" name="password" required autocomplete="current-password">
+            </div>
+            <div class="vz-dialog-actions">
+                <a class="vz-btn vz-btn--secondary" href="{% url 'account:edit' user_id=request.user.pk %}">{% trans "Annuler" %}</a>
+                <button type="submit" class="vz-btn vz-btn--danger">
+                    <span class="material-icons">delete_forever</span>{% trans "Supprimer mon compte" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

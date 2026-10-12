@@ -32,7 +32,8 @@ from account.views import (
     account_search_view,
 )
 from post.views import global_search_view
-from personal.views import landing_view, privacy_policy_view
+from personal.views import landing_view
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -41,7 +42,8 @@ urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     path('', landing_view, name='landing'),       # Page d'accueil = landing page
     # ── Pages légales (accessibles sans login — requises par les stores) ──────
-    path('privacy/', privacy_policy_view, name='privacy-policy'),
+    # Ancienne page (URL déclarée sur Google Play) → politique unique et traduite
+    path('privacy/', RedirectView.as_view(pattern_name='legal:confidentialite', permanent=False), name='privacy-policy'),
     path('feed/', include('post.urls')),           # Le fil d'actualité est déplacé ici
     path('personal/', include('personal.urls')),
     path('account/', include('account.urls', namespace='account')),

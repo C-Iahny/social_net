@@ -113,6 +113,3 @@ def landing_view(request):
 	return render(request, "personal/landing.html", context)
 
 
-def privacy_policy_view(request):
-    """Politique de confidentialité — obligatoire pour Google Play Store."""
-    return render(request, "personal/privacy_policy.html")

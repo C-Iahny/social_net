@@ -153,10 +153,12 @@
                 </a>
             {% endif %}
             {% if request.user.is_authenticated and not is_self %}
-            <button class="btn-p" onclick="openReportModal('account','{{ id }}')"
-                    style="background:none;border:1px solid rgba(239,68,68,.3);color:rgba(239,68,68,.75);padding:.45rem .9rem;border-radius:22px;cursor:pointer;font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:.35rem;">
-                <span class="material-icons" style="font-size:.95rem;">flag</span>
-                Signaler
+            <button type="button" class="vz-btn vz-btn--muted vz-btn--sm vz-btn--pill" onclick="openReportModal('account','{{ id }}')" title="{% trans 'Signaler ce profil' %}">
+                <span class="material-icons">flag</span>{% trans "Signaler" %}
+            </button>
+            <button type="button" class="vz-btn vz-btn--sm vz-btn--pill {% if is_blocked %}vz-btn--danger-soft{% else %}vz-btn--muted{% endif %}" id="profile-block-btn"
+                    onclick="vzConfirm({ text: {% if is_blocked %}'{% trans "Débloquer cet utilisateur ?"|escapejs %}'{% else %}'{% trans "Bloquer cet utilisateur ? Vous ne verrez plus ses publications et il ne pourra plus vous écrire."|escapejs %}'{% endif %}, danger: {% if is_blocked %}false{% else %}true{% endif %} }).then(function(ok){ if (ok) vzToggleBlock({{ id }}, document.getElementById('profile-block-btn')); })">
+                <span class="material-icons">block</span>{% if is_blocked %}{% trans "Débloquer" %}{% else %}{% trans "Bloquer" %}{% endif %}
             </button>
             {% endif %}
         </div>
@@ -1173,6 +1175,18 @@ function showShareToast() {
 /* ══════════════════════════════════════
    HELPERS
    ══════════════════════════════════════ */
+window.vzToggleBlock = function(userId, btn) {
+    var url = '{% url "account:block" user_id=0 %}'.replace('/0/', '/' + userId + '/');
+    if (btn) btn.classList.add('is-loading');
+    fetch(url, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken'), 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+        if (!d.ok) { if (btn) btn.classList.remove('is-loading'); vzAlert('{% trans "Action impossible."|escapejs %}'); return; }
+        vzToast(d.blocked ? '{% trans "Compte bloqué."|escapejs %}' : '{% trans "Compte débloqué."|escapejs %}', 'success');
+        setTimeout(function(){ location.reload(); }, 600);
+    })
+    .catch(function(){ if (btn) btn.classList.remove('is-loading'); vzAlert('{% trans "Erreur réseau."|escapejs %}'); });
+};
 function getCookie(name) {
     var val = null;
     if (document.cookie) {

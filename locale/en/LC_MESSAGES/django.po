@@ -3233,3 +3233,81 @@ msgstr "Delete permanently?"
 
 msgid "Supprimer ce brouillon ?"
 msgstr "Delete this draft?"
+
+msgid "Supprimer mon compte"
+msgstr "Delete my account"
+
+msgid "Cette action est définitive : votre profil, vos publications, vos stories, vos messages et vos annonces seront supprimés. Les commandes et transactions déjà réalisées sont conservées de façon anonyme, comme l’exige la loi."
+msgstr "This action is permanent: your profile, posts, stories, messages and listings will be deleted. Completed orders and transactions are kept anonymously, as required by law."
+
+msgid "Vous pouvez aussi simplement vous déconnecter si vous souhaitez faire une pause."
+msgstr "You can also simply log out if you just want a break."
+
+msgid "Mot de passe incorrect."
+msgstr "Incorrect password."
+
+msgid "Supprimer définitivement votre compte Vazimba ?"
+msgstr "Permanently delete your Vazimba account?"
+
+msgid "Oui, supprimer"
+msgstr "Yes, delete"
+
+msgid "Confirmez avec votre mot de passe"
+msgstr "Confirm with your password"
+
+msgid "Compte supprimé"
+msgstr "Account deleted"
+
+msgid "Votre compte a été supprimé."
+msgstr "Your account has been deleted."
+
+msgid "Merci d’avoir fait partie de Vazimba. Veloma, et à bientôt peut-être."
+msgstr "Thank you for being part of Vazimba. Veloma, and maybe see you soon."
+
+msgid "Retour à l’accueil"
+msgstr "Back to home"
+
+msgid "Comptes bloqués"
+msgstr "Blocked accounts"
+
+msgid "Débloquer"
+msgstr "Unblock"
+
+msgid "Vous n’avez bloqué personne."
+msgstr "You have not blocked anyone."
+
+msgid "Suppression définitive de votre profil et de vos contenus."
+msgstr "Permanent deletion of your profile and content."
+
+msgid "Action impossible."
+msgstr "Action not possible."
+
+msgid "Compte bloqué."
+msgstr "Account blocked."
+
+msgid "Compte débloqué."
+msgstr "Account unblocked."
+
+msgid "Signaler ce profil"
+msgstr "Report this profile"
+
+msgid "Signaler"
+msgstr "Report"
+
+msgid "Débloquer cet utilisateur ?"
+msgstr "Unblock this user?"
+
+msgid "Bloquer cet utilisateur ? Vous ne verrez plus ses publications et il ne pourra plus vous écrire."
+msgstr "Block this user? You will no longer see their posts and they will not be able to message you."
+
+msgid "Bloquer"
+msgstr "Block"
+
+msgid "Signaler ce restaurant"
+msgstr "Report this restaurant"
+
+msgid "Signaler ce lieu"
+msgstr "Report this place"
+
+msgid "Signaler cette story"
+msgstr "Report this story"
