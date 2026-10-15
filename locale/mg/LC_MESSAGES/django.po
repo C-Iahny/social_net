@@ -4134,3 +4134,54 @@ msgstr "Elektronika sy informatika"
 
 msgid "Évoluer vers Boutique Pro"
 msgstr "Hiakatra ho Boutique Pro"
+
+msgid "Photo, vidéo ou texte : visible 24 heures par vos amis."
+msgstr "Sary, horonan-tsary na soratra : hitan'ny namanao mandritra ny 24 ora."
+
+msgid "Texte"
+msgstr "Soratra"
+
+msgid "Écrivez quelque chose…"
+msgstr "Manorata zavatra…"
+
+msgid "Alignement"
+msgstr "Fandaminana"
+
+msgid "Fond du texte"
+msgstr "Fototry ny soratra"
+
+msgid "Terminé"
+msgstr "Vita"
+
+msgid "Taille du texte"
+msgstr "Haben'ny soratra"
+
+msgid "Ajouter du texte"
+msgstr "Hanampy soratra"
+
+msgid "Ajuster ou remplir"
+msgstr "Ampifanaraho na fenoy"
+
+msgid "Musique"
+msgstr "Mozika"
+
+msgid "Touchez Aa pour écrire, glissez le texte pour le placer."
+msgstr "Tsindrio Aa raha hanoratra, tariho ny soratra hametrahana azy."
+
+msgid "Votre story"
+msgstr "Ny story-nao"
+
+msgid "Écrivez un texte avant de publier."
+msgstr "Manorata soratra alohan'ny hamoahana."
+
+msgid "Choisissez une photo ou une vidéo."
+msgstr "Misafidiana sary na horonan-tsary."
+
+msgid "Story publiée !"
+msgstr "Voapetraka ny story !"
+
+msgid "Erreur"
+msgstr "Olana"
+
+msgid "Erreur réseau"
+msgstr "Olana amin'ny tambajotra"

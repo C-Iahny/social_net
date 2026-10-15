@@ -4007,3 +4007,54 @@ msgstr "Electronics & Computers"
 
 msgid "Évoluer vers Boutique Pro"
 msgstr "Upgrade to Pro Shop"
+
+msgid "Photo, vidéo ou texte : visible 24 heures par vos amis."
+msgstr "Photo, video or text: visible to your friends for 24 hours."
+
+msgid "Texte"
+msgstr "Text"
+
+msgid "Écrivez quelque chose…"
+msgstr "Write something…"
+
+msgid "Alignement"
+msgstr "Alignment"
+
+msgid "Fond du texte"
+msgstr "Text background"
+
+msgid "Terminé"
+msgstr "Done"
+
+msgid "Taille du texte"
+msgstr "Text size"
+
+msgid "Ajouter du texte"
+msgstr "Add text"
+
+msgid "Ajuster ou remplir"
+msgstr "Fit or fill"
+
+msgid "Musique"
+msgstr "Music"
+
+msgid "Touchez Aa pour écrire, glissez le texte pour le placer."
+msgstr "Tap Aa to write, drag the text to place it."
+
+msgid "Votre story"
+msgstr "Your story"
+
+msgid "Écrivez un texte avant de publier."
+msgstr "Write some text before publishing."
+
+msgid "Choisissez une photo ou une vidéo."
+msgstr "Choose a photo or a video."
+
+msgid "Story publiée !"
+msgstr "Story published!"
+
+msgid "Erreur"
+msgstr "Error"
+
+msgid "Erreur réseau"
+msgstr "Network error"

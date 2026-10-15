@@ -30,10 +30,11 @@
 <div id="zsv-inner">
 
   <!-- Médias -->
+  <div id="zsv-blur" aria-hidden="true"></div>
   <img  id="zsv-img" class="zsv-media" alt="">
   <video id="zsv-vid" class="zsv-media" playsinline></video>
   <div id="zsv-txtbg"><p id="zsv-txtbg-p"></p></div>
-  <div id="zsv-txtpos"><p id="zsv-txtpos-p"></p></div>
+  <div id="zsv-txtpos" class="zst-text" data-bg="none"><p id="zsv-txtpos-p"></p></div>
 
   <!-- HUD top -->
   <div class="zsv-hud">
@@ -128,137 +129,145 @@
 </div>
 
 <!-- ═══════════════════════════════════════
-     CRÉATEUR PLEIN ÉCRAN
+     CRÉATEUR PLEIN ÉCRAN (style Instagram / Facebook)
      ═══════════════════════════════════════ -->
-<div id="zsc">
-<div id="zsc-preview">
+<div id="zsc" role="dialog" aria-modal="true" aria-label="{% trans 'Créer une story' %}">
 
-  <!-- Médias preview -->
-  <img  id="zsc-img" class="zsc-media" alt="">
-  <video id="zsc-vid" class="zsc-media" playsinline muted loop></video>
-  <div id="zsc-txtbg" class="grad_cyan"></div>
-
-  <!-- Placeholder — 3 boutons APK-safe.
-       TECHNIQUE : l'input est ENFANT DIRECT du label (pas de "for" cross-DOM).
-       Le WebView Android déclenche le picker qd le label reçoit le tap, et
-       l'input enfant est colocalisé → aucun problème de cross-boundary.
-       Input : width:1px;height:1px (PAS 0) + opacity:0 → invisible mais actif. -->
-  <div id="zsc-placeholder" class="zsc-picker-wrap">
-    <label class="zsc-pick-btn zsc-pick-gallery">
-      <span class="material-icons">photo_library</span>
-      <span>{% trans "Galerie / Vidéo" %}</span>
-      <input type="file" id="zsc-file-in" class="input-file-hidden"
-             accept="image/*,video/*,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.mp4,.mov,.webm"
-             onchange="zscOnFile(this)">
-    </label>
-    <label class="zsc-pick-btn zsc-pick-camera">
-      <span class="material-icons">camera_alt</span>
-      <span>{% trans "Appareil photo" %}</span>
-      <input type="file" id="zsc-cam-in" class="input-file-hidden"
-             accept="image/*" capture="environment"
-             onchange="zscOnFile(this)">
-    </label>
-    <button class="zsc-pick-btn zsc-pick-text" onclick="zscToggleTextMode()" type="button">
-      <span class="material-icons">text_fields</span>
-      {% trans "Story texte" %}
-    </button>
-  </div>
-
-  <!-- Texte glissable -->
-  <div id="zsc-txtover">
-    <p id="zsc-txtcontent" contenteditable="true"
-       data-ph="{% trans 'Tapez votre texte…' %}"
-       spellcheck="false"></p>
-  </div>
-
-  <!-- HUD haut -->
-  <div class="zsc-top">
-    <button class="zsc-ibtn" onclick="zscClose()" type="button" aria-label="{% trans 'Fermer' %}">
+  <!-- ── Écran d'entrée : choix de la source ── -->
+  <div id="zsc-start">
+    <button class="zsc-ibtn zsc-start-close" onclick="zscClose()" type="button" aria-label="{% trans 'Fermer' %}">
       <span class="material-icons">close</span>
     </button>
-    <div style="display:flex;gap:.35rem;">
-      <button class="zsc-ibtn" id="zsc-text-story-btn" onclick="zscToggleTextMode()" title="Story texte" type="button">
-        <span class="material-icons">text_fields</span>
+    <div class="zsc-start-head">
+      <h2>{% trans "Créer une story" %}</h2>
+      <p>{% trans "Photo, vidéo ou texte : visible 24 heures par vos amis." %}</p>
+    </div>
+    <div class="zsc-start-grid">
+      <!-- L'input est ENFANT du label : seule technique fiable dans la WebView Android -->
+      <label class="zsc-start-card zsc-card-gallery">
+        <span class="zsc-start-ico"><span class="material-icons">photo_library</span></span>
+        <span class="zsc-start-lbl">{% trans "Galerie" %}</span>
+        <input type="file" id="zsc-file-in" class="input-file-hidden"
+               accept="image/*,video/*,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif,.mp4,.mov,.webm"
+               onchange="zscOnFile(this)">
+      </label>
+      <label class="zsc-start-card zsc-card-camera">
+        <span class="zsc-start-ico"><span class="material-icons">photo_camera</span></span>
+        <span class="zsc-start-lbl">{% trans "Caméra" %}</span>
+        <input type="file" id="zsc-cam-in" class="input-file-hidden"
+               accept="image/*" capture="environment"
+               onchange="zscOnFile(this)">
+      </label>
+      <button class="zsc-start-card zsc-card-text" onclick="zscStartText()" type="button">
+        <span class="zsc-start-ico"><span class="material-icons">text_fields</span></span>
+        <span class="zsc-start-lbl">{% trans "Texte" %}</span>
       </button>
     </div>
   </div>
 
-  <!-- Outils droite -->
-  <div id="zsc-tools">
-    <button class="zsc-ibtn" id="zsc-tool-txt" onclick="zscToggleText()" title="Texte" type="button">
-      <span class="material-icons">title</span>
-    </button>
-    <button class="zsc-ibtn" id="zsc-tool-color" onclick="zscToggleColors()" title="Couleur" style="display:none;" type="button">
-      <span class="material-icons">palette</span>
-    </button>
-    <button class="zsc-ibtn" id="zsc-tool-music" onclick="zscOpenAudio()" title="Musique" type="button">
-      <span class="material-icons">music_note</span>
-    </button>
-    <button class="zsc-ibtn" id="zsc-tool-shop" onclick="zscOpenShop()" title="{% trans 'Vendre' %}" type="button">
-      <span class="material-icons">storefront</span>
-    </button>
-  </div>
+  <!-- ── Scène d'édition (cadre 9:16 centré sur grand écran) ── -->
+  <div id="zsc-stage">
+    <canvas id="zsc-canvas" class="zsc-media"></canvas>
+    <img  id="zsc-img" class="zsc-media" alt="">
+    <video id="zsc-vid" class="zsc-media" playsinline muted loop></video>
+    <div id="zsc-txtbg" class="grad_cyan"></div>
 
-  <!-- Options texte -->
-  <div id="zsc-txtopts">
-    <div class="zsc-colors">
-      <span style="font-size:.7rem;color:rgba(255,255,255,.7);font-weight:600;margin-right:.2rem;">Couleur</span>
-      <div class="zsc-cdot active" style="background:#fff;box-shadow:0 0 0 1px #aaa;" onclick="zscSetColor('#ffffff',this)"></div>
-      <div class="zsc-cdot" style="background:#000;" onclick="zscSetColor('#000000',this)"></div>
-      <div class="zsc-cdot" style="background:#FFD700;" onclick="zscSetColor('#FFD700',this)"></div>
-      <div class="zsc-cdot" style="background:#FF4444;" onclick="zscSetColor('#FF4444',this)"></div>
-      <div class="zsc-cdot" style="background:#00CFFF;" onclick="zscSetColor('#00CFFF',this)"></div>
-      <div class="zsc-cdot" style="background:#FF8C00;" onclick="zscSetColor('#FF8C00',this)"></div>
-      <div class="zsc-cdot" style="background:#FF69B4;" onclick="zscSetColor('#FF69B4',this)"></div>
-      <div class="zsc-cdot" style="background:#7FFF00;" onclick="zscSetColor('#7FFF00',this)"></div>
+    <!-- Texte posé sur la story (glissable, touchez pour modifier) -->
+    <div id="zsc-txtover" class="zst-text" data-bg="none" style="display:none;">
+      <p id="zsc-txtcontent" contenteditable="false" spellcheck="false"
+         data-ph="{% trans 'Écrivez quelque chose…' %}"></p>
     </div>
-    <div class="zsc-font-row">
-      <span class="material-icons">text_fields</span>
-      <input type="range" id="zsc-font-slider" min="14" max="56" value="22" step="1"
-             oninput="zscApplyFont(this.value)">
-      <span class="material-icons">format_size</span>
+
+    <!-- Voile + outils du mode texte -->
+    <div id="zsc-tedit">
+      <div class="zsc-tedit-top">
+        <div class="zsc-tedit-opts">
+          <button class="zsc-ibtn" id="zsc-align-btn" onclick="zscCycleAlign()" type="button" aria-label="{% trans 'Alignement' %}">
+            <span class="material-icons">format_align_center</span>
+          </button>
+          <button class="zsc-ibtn" id="zsc-bg-btn" onclick="zscCycleBg()" type="button" aria-label="{% trans 'Fond du texte' %}">
+            <span class="material-icons">format_color_fill</span>
+          </button>
+        </div>
+        <button class="zsc-done" onclick="zscDoneText()" type="button">{% trans "Terminé" %}</button>
+      </div>
+      <div class="zsc-size-wrap">
+        <input type="range" id="zsc-size" min="4" max="15" step="0.5" value="7"
+               oninput="zscSetSize(this.value)" aria-label="{% trans 'Taille du texte' %}">
+      </div>
+      <div class="zsc-palette" id="zsc-palette">
+        <button type="button" class="zsc-chip active" style="--c:#ffffff" data-c="#ffffff" onclick="zscSetColor('#ffffff',this)" aria-label="blanc"></button>
+        <button type="button" class="zsc-chip" style="--c:#111111" data-c="#111111" onclick="zscSetColor('#111111',this)" aria-label="noir"></button>
+        <button type="button" class="zsc-chip" style="--c:#2dd4bf" data-c="#2dd4bf" onclick="zscSetColor('#2dd4bf',this)" aria-label="lagon"></button>
+        <button type="button" class="zsc-chip" style="--c:#fbbf24" data-c="#fbbf24" onclick="zscSetColor('#fbbf24',this)" aria-label="or"></button>
+        <button type="button" class="zsc-chip" style="--c:#f97316" data-c="#f97316" onclick="zscSetColor('#f97316',this)" aria-label="orange"></button>
+        <button type="button" class="zsc-chip" style="--c:#ef4444" data-c="#ef4444" onclick="zscSetColor('#ef4444',this)" aria-label="rouge"></button>
+        <button type="button" class="zsc-chip" style="--c:#ec4899" data-c="#ec4899" onclick="zscSetColor('#ec4899',this)" aria-label="rose"></button>
+        <button type="button" class="zsc-chip" style="--c:#a855f7" data-c="#a855f7" onclick="zscSetColor('#a855f7',this)" aria-label="violet"></button>
+        <button type="button" class="zsc-chip" style="--c:#3b82f6" data-c="#3b82f6" onclick="zscSetColor('#3b82f6',this)" aria-label="bleu"></button>
+        <button type="button" class="zsc-chip" style="--c:#22c55e" data-c="#22c55e" onclick="zscSetColor('#22c55e',this)" aria-label="vert"></button>
+      </div>
     </div>
+
+    <!-- Corbeille (apparaît quand on glisse le texte) -->
+    <div id="zsc-trash"><span class="material-icons">delete</span></div>
+
+    <!-- HUD haut -->
+    <div class="zsc-top">
+      <button class="zsc-ibtn" onclick="zscClose()" type="button" aria-label="{% trans 'Fermer' %}">
+        <span class="material-icons">close</span>
+      </button>
+      <div class="zsc-top-tools" id="zsc-tools">
+        <button class="zsc-ibtn zsc-ibtn--aa" id="zsc-tool-txt" onclick="zscEditText()" type="button" aria-label="{% trans 'Ajouter du texte' %}">Aa</button>
+        <button class="zsc-ibtn" id="zsc-tool-fit" onclick="zscToggleFit()" type="button" aria-label="{% trans 'Ajuster ou remplir' %}" style="display:none;">
+          <span class="material-icons">fit_screen</span>
+        </button>
+        <button class="zsc-ibtn" id="zsc-tool-music" onclick="zscOpenAudio()" type="button" aria-label="{% trans 'Musique' %}">
+          <span class="material-icons">music_note</span>
+        </button>
+        <button class="zsc-ibtn" id="zsc-tool-shop" onclick="zscOpenShop()" type="button" aria-label="{% trans 'Vendre' %}">
+          <span class="material-icons">storefront</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Fonds des stories texte -->
+    <div id="zsc-grads">
+      <button type="button" class="zsc-gswatch grad_cyan active" data-g="grad_cyan"   onclick="zscSetGrad('grad_cyan',this)"   aria-label="cyan"></button>
+      <button type="button" class="zsc-gswatch grad_purple"      data-g="grad_purple" onclick="zscSetGrad('grad_purple',this)" aria-label="violet"></button>
+      <button type="button" class="zsc-gswatch grad_sunset"      data-g="grad_sunset" onclick="zscSetGrad('grad_sunset',this)" aria-label="sunset"></button>
+      <button type="button" class="zsc-gswatch grad_forest"      data-g="grad_forest" onclick="zscSetGrad('grad_forest',this)" aria-label="vert"></button>
+      <button type="button" class="zsc-gswatch grad_night"       data-g="grad_night"  onclick="zscSetGrad('grad_night',this)"  aria-label="nuit"></button>
+      <button type="button" class="zsc-gswatch grad_gold"        data-g="grad_gold"   onclick="zscSetGrad('grad_gold',this)"   aria-label="or"></button>
+    </div>
+
+    <!-- Pastilles : musique et produit liés -->
+    <div class="zsc-chips">
+      <div id="zsc-audio-pill" class="zsc-pill" style="display:none;">
+        <span class="material-icons">audiotrack</span>
+        <span id="zsc-audio-name">—</span>
+        <button class="zsc-pill-rm" onclick="zscRemoveAudio()" type="button" aria-label="{% trans 'Retirer' %}"><span class="material-icons">close</span></button>
+      </div>
+      <div id="zsc-shop-chip" class="zsc-pill" style="display:none;">
+        <span class="material-icons">shopping_bag</span>
+        <span id="zsc-shop-chip-txt"></span>
+        <button class="zsc-pill-rm" type="button" onclick="zscClearShop()" aria-label="{% trans 'Retirer' %}"><span class="material-icons">close</span></button>
+      </div>
+    </div>
+
+    <!-- Barre du bas : publier -->
+    <div class="zsc-bottom">
+      <div class="zsc-hint" id="zsc-hint">{% trans "Touchez Aa pour écrire, glissez le texte pour le placer." %}</div>
+      <button id="zsc-pub-btn" class="zsc-pub" onclick="zscPublish()" type="button" disabled>
+        {% if request.user.is_authenticated %}<img src="{{ request.user.profile_image.url }}" alt="" onerror="this.style.display='none'">{% endif %}
+        <span class="zsc-pub-lbl">{% trans "Votre story" %}</span>
+        <span class="material-icons">send</span>
+      </button>
+    </div>
+
+    <!-- Progression de l'envoi -->
+    <div id="zsc-upbar"><div id="zsc-upbar-fill"></div></div>
   </div>
-
-  <!-- Sélecteur de gradient -->
-  <div id="zsc-grads">
-    <div class="zsc-gswatch grad_cyan active"   data-g="grad_cyan"   onclick="zscSetGrad('grad_cyan',this)"></div>
-    <div class="zsc-gswatch grad_purple"         data-g="grad_purple" onclick="zscSetGrad('grad_purple',this)"></div>
-    <div class="zsc-gswatch grad_sunset"         data-g="grad_sunset" onclick="zscSetGrad('grad_sunset',this)"></div>
-    <div class="zsc-gswatch grad_forest"         data-g="grad_forest" onclick="zscSetGrad('grad_forest',this)"></div>
-    <div class="zsc-gswatch grad_night"          data-g="grad_night"  onclick="zscSetGrad('grad_night',this)"></div>
-    <div class="zsc-gswatch grad_gold"           data-g="grad_gold"   onclick="zscSetGrad('grad_gold',this)"></div>
-  </div>
-
-  <!-- Bande audio -->
-  <div id="zsc-audio-pill">
-    <span class="material-icons">audiotrack</span>
-    <span id="zsc-audio-name">—</span>
-    <button class="zsc-audio-rm" onclick="zscRemoveAudio()" type="button" aria-label="{% trans 'Fermer' %}">
-      <span class="material-icons">close</span>
-    </button>
-  </div>
-
-  <!-- Produit lié (achat depuis la story) -->
-  <div id="zsc-shop-chip" style="display:none;">
-    <span class="material-icons">shopping_bag</span>
-    <span id="zsc-shop-chip-txt"></span>
-    <button type="button" onclick="zscClearShop()" aria-label="{% trans 'Retirer' %}"><span class="material-icons">close</span></button>
-  </div>
-
-  <!-- Barre du bas -->
-  <div class="zsc-bottom">
-    <input type="text" id="zsc-caption-in" maxlength="200"
-           placeholder="{% trans 'Ajouter une légende…' %}">
-    <button id="zsc-pub-btn" onclick="zscPublish()" disabled type="button">
-      <span class="material-icons">bolt</span> {% trans "Publier" %}
-    </button>
-  </div>
-
-  <!-- Upload progress -->
-  <div id="zsc-upbar"><div id="zsc-upbar-fill"></div></div>
-
-</div>
 </div>
 
 <!-- Modal produit : lier une annonce Bazar ou un plat Resto -->
@@ -342,8 +351,8 @@
 </div>
 </div>
 
-<!-- Les inputs zsc-file-in et zsc-cam-in sont maintenant ENFANTS DIRECTS
-     de leurs labels dans #zsc-placeholder. Ne pas les redéclarer ici. -->
+<!-- Les inputs zsc-file-in et zsc-cam-in sont ENFANTS DIRECTS de leurs labels
+     dans #zsc-start (WebView Android). Ne pas les redéclarer ici. -->
 
 <!-- Audio trim caché -->
 <audio id="zsc-trim-audio" style="display:none;" onended="zscTrimStop()"></audio>
@@ -379,12 +388,11 @@ var _sv = {
   duration: 5000,
 };
 var _sc = {
-  file: null, audioFile: null, audioName: '', audioTrimStart: 0,
+  file: null, bitmap: null, audioFile: null, audioName: '', audioTrimStart: 0,
   _audioUrl: '', audioUrlExternal: '',
-  type: 'image', grad: 'grad_cyan', textColor: '#ffffff',
-  textX: 50, textY: 50,
-  dragging: false, dragSX: 0, dragSY: 0, dragOX: 50, dragOY: 50,
-  textMode: false,
+  type: 'image', grad: 'grad_cyan', fit: 'contain',
+  text: { content: '', color: '#ffffff', size: 7, align: 'center', bg: 'none', x: 50, y: 50 },
+  editing: false, dragging: false, dragSX: 0, dragSY: 0, dragOX: 50, dragOY: 50,
   link: '', linkLabel: '',
 };
 
@@ -673,21 +681,36 @@ function _zvLoad(){
     _zvStartProgress();
   }
 
-  /* Texte positionné */
-  if(story.caption && (story.story_type==='image_text' || (story.text_x && story.text_y && story.story_type!=='text'))){
-    txtpos.style.display='block';
-    txtpos.style.left = (story.text_x||50)+'%';
-    txtpos.style.top  = (story.text_y||50)+'%';
+  /* Texte posé (position en %, taille en % de la largeur, fond, alignement)
+     — mêmes règles que le créateur : rendu identique */
+  var hasText = !!story.caption && story.story_type !== 'text';
+  if(hasText){
+    var inner = document.getElementById('zsv-inner');
+    var W = inner.clientWidth || 360;
+    var size = parseFloat(story.text_size) || 7;
+    var bg = story.text_bg || 'none';
+    var color = story.text_color || '#ffffff';
+    txtpos.style.display = 'block';
+    txtpos.style.left = (story.text_x || 50) + '%';
+    txtpos.style.top  = (story.text_y || 50) + '%';
+    txtpos.style.fontSize = (W * size / 100) + 'px';
+    txtpos.style.textAlign = story.text_align || 'center';
+    txtpos.dataset.bg = bg;
+    txtpos.style.setProperty('--zst-color', color);
+    txtpos.style.background = bg === 'solid' ? color : (bg === 'soft' ? 'rgba(0,0,0,.45)' : 'transparent');
     var tp = document.getElementById('zsv-txtpos-p');
     tp.textContent = story.caption;
-    tp.style.color = story.text_color||'#fff';
+    tp.style.color = (bg === 'solid') ? (_zvIsLight(color) ? '#111' : '#fff') : color;
   }
-
-  /* Caption simple */
-  var capEl = document.getElementById('zsv-caption');
-  if(story.caption && story.story_type==='image' && !story.text_x){
-    capEl.textContent = story.caption; capEl.style.display='block';
-  } else { capEl.style.display='none'; }
+  document.getElementById('zsv-caption').style.display = 'none';
+  /* Photo : ajustée (fond flou) ou remplissante selon le choix à la création */
+  img.style.objectFit = (story.media_fit === 'cover') ? 'cover' : 'contain';
+  var blur = document.getElementById('zsv-blur');
+  if(blur){
+    if(story.media_type === 'image' && story.media_url && story.media_fit !== 'cover'){
+      blur.style.backgroundImage = 'url("' + story.media_url + '")'; blur.style.display = 'block';
+    } else { blur.style.display = 'none'; }
+  }
 
   /* Lien */
   var linkWrap = document.getElementById('zsv-link');
@@ -734,6 +757,11 @@ function _zvLoad(){
     story.seen = true;
     _sv.groups[_sv.curG].has_unseen = _sv.groups[_sv.curG].stories.some(function(s){ return !s.seen; });
   }
+}
+
+function _zvIsLight(hex){
+  var h=(hex||'').replace('#',''); if(h.length!==6) return true;
+  return (0.299*parseInt(h.substr(0,2),16) + 0.587*parseInt(h.substr(2,2),16) + 0.114*parseInt(h.substr(4,2),16)) > 150;
 }
 
 function _zvRenderBars(count){
@@ -1037,212 +1065,312 @@ function _zvInitGestures(){
 }
 
 /* ═══════════════════════════════════════════════════
-   CRÉATEUR
+   CRÉATEUR — refonte façon Instagram / Facebook
+   • écran d'entrée (galerie / caméra / texte)
+   • scène 9:16 ; photo dessinée dans un <canvas> (fiable dans la WebView
+     Android de l'application, où une URL blob: dans <img> s'affichait cassée)
+   • un texte posé sur la story : taille, couleur, alignement, fond,
+     glisser pour placer, glisser vers la corbeille pour retirer
+   • mêmes unités que le lecteur (positions en %, taille en % de la largeur)
+     → ce que l'on voit est ce qui sera publié
    ═══════════════════════════════════════════════════ */
-function zscOpen(){
-  _sc.file=null; _sc.audioFile=null; _sc.audioName='';
-  _sc.audioTrimStart=0; _sc._audioUrl=''; _sc.audioUrlExternal='';
-  _sc.type='image'; _sc.grad='grad_cyan'; _sc.textColor='#ffffff';
-  _sc.textX=50; _sc.textY=50; _sc.textMode=false;
-  zscClearShop();
+var T_ALIGN = ['center', 'left', 'right'];
+var T_BG    = ['none', 'soft', 'solid'];
+var ALIGN_ICON = { center: 'format_align_center', left: 'format_align_left', right: 'format_align_right' };
 
+function _stage(){ return document.getElementById('zsc-stage'); }
+function _txtOver(){ return document.getElementById('zsc-txtover'); }
+function _txtP(){ return document.getElementById('zsc-txtcontent'); }
+
+function _zscResetState(){
+  _sc.file=null; _sc.bitmap=null; _sc.audioFile=null; _sc.audioName='';
+  _sc.audioTrimStart=0; _sc._audioUrl=''; _sc.audioUrlExternal='';
+  _sc.type='image'; _sc.grad='grad_cyan'; _sc.fit='contain';
+  _sc.text = { content:'', color:'#ffffff', size:7, align:'center', bg:'none', x:50, y:50 };
+  _sc.editing=false; _sc.dragging=false;
+  zscClearShop();
+}
+
+function zscOpen(){
+  _zscResetState();
+  var root = document.getElementById('zsc');
+  root.classList.remove('zsc-editing', 'zsc-has-media', 'zsc-text-story', 'zsc-dragging');
+  document.getElementById('zsc-start').style.display='flex';
+  document.getElementById('zsc-stage').style.display='none';
   document.getElementById('zsc-img').classList.remove('active');
-  var v=document.getElementById('zsc-vid'); v.classList.remove('active'); v.pause(); v.src='';
+  document.getElementById('zsc-canvas').classList.remove('active');
+  var v=document.getElementById('zsc-vid'); v.classList.remove('active'); v.pause(); v.removeAttribute('src'); v.load();
   document.getElementById('zsc-txtbg').className='grad_cyan';
-  document.getElementById('zsc-txtbg').classList.remove('active');
-  document.getElementById('zsc-txtover').style.display='none';
-  document.getElementById('zsc-txtcontent').textContent='';
-  document.getElementById('zsc-placeholder').style.display='flex';
-  document.getElementById('zsc-tools').style.display='none';
-  document.getElementById('zsc-caption-in').style.display='none';
-  document.getElementById('zsc-pub-btn').style.display='none';
+  _txtOver().style.display='none'; _txtP().textContent='';
   document.getElementById('zsc-pub-btn').disabled=true;
-  document.getElementById('zsc-caption-in').value='';
   document.getElementById('zsc-audio-pill').style.display='none';
-  document.getElementById('zsc-txtopts').classList.remove('open');
-  document.getElementById('zsc-grads').classList.remove('open');
+  document.getElementById('zsc-tool-fit').style.display='none';
   document.getElementById('zsc-upbar').style.display='none';
   document.getElementById('zsc-upbar-fill').style.width='0%';
-  document.getElementById('zsc-text-story-btn').classList.remove('active');
-  document.querySelectorAll('.zsc-gswatch').forEach(function(s){ s.classList.remove('active'); });
-  var def=document.querySelector('.zsc-gswatch[data-g="grad_cyan"]'); if(def) def.classList.add('active');
+  document.getElementById('zsc-hint').style.display='';
+  document.querySelectorAll('.zsc-gswatch').forEach(function(s){ s.classList.toggle('active', s.dataset.g==='grad_cyan'); });
+  document.querySelectorAll('.zsc-chip').forEach(function(c){ c.classList.toggle('active', c.dataset.c==='#ffffff'); });
+  document.getElementById('zsc-size').value = 7;
+  /* on ré-arme les <input type=file> (même fichier choisi deux fois de suite) */
+  ['zsc-file-in','zsc-cam-in'].forEach(function(id){ var i=document.getElementById(id); if(i) i.value=''; });
 
-  document.getElementById('zsc').classList.add('open');
-  document.body.style.overflow='hidden';
+  root.classList.add('open');
+  if (window.vzLock) vzLock(); else document.body.style.overflow='hidden';
+  if (window.vzLayers) vzLayers.push(window.zscClose);
   _zscInitDrag();
 }
 
 window.zscClose = function(){
-  document.getElementById('zsc').classList.remove('open');
-  document.body.style.overflow='';
+  var root = document.getElementById('zsc');
+  if(!root.classList.contains('open')) return;
+  if(_sc.editing){ zscDoneText(); }
+  root.classList.remove('open');
+  if (window.vzUnlock) vzUnlock(); else document.body.style.overflow='';
+  if (window.vzLayers) vzLayers.remove(window.zscClose);
   document.getElementById('zsc-trim-audio').pause();
+  var v=document.getElementById('zsc-vid'); v.pause(); v.removeAttribute('src'); v.load();
 };
 
-/* zscPreviewTap supprimé — les boutons <label for> déclenchent directement
-   l'input sans JS sur Android/APK. */
+function _zscShowStage(){
+  document.getElementById('zsc-start').style.display='none';
+  document.getElementById('zsc-stage').style.display='block';
+  document.getElementById('zsc').classList.add('zsc-has-media');
+  document.getElementById('zsc-pub-btn').disabled=false;
+}
 
+/* ── Photo / vidéo choisie ───────────────────────────── */
 window.zscOnFile = function(inp){
   var file = inp.files && inp.files[0]; if(!file) return;
-  /* IMPORTANT : appeler zscOpen() AVANT de stocker _sc.file,
-     car zscOpen() fait _sc.file=null (reset complet). */
-  if(!document.getElementById('zsc').classList.contains('open')) zscOpen();
   _sc.file = file;
-  _sc.type = file.type.startsWith('video/') ? 'video' : 'image';
-
-  document.getElementById('zsc-placeholder').style.display='none';
-  document.getElementById('zsc-tools').style.display='flex';
-  document.getElementById('zsc-caption-in').style.display='block';
-  document.getElementById('zsc-pub-btn').style.display='flex';
-  document.getElementById('zsc-pub-btn').disabled=false;
+  _sc.type = (file.type||'').indexOf('video/')===0 ? 'video' : 'image';
+  _zscShowStage();
+  document.getElementById('zsc').classList.remove('zsc-text-story');
+  document.getElementById('zsc-txtbg').classList.remove('active');
+  var img=document.getElementById('zsc-img'), cv=document.getElementById('zsc-canvas'), vid=document.getElementById('zsc-vid');
+  img.classList.remove('active'); cv.classList.remove('active'); vid.classList.remove('active');
 
   if(_sc.type==='video'){
-    var v=document.getElementById('zsc-vid'); v.src=URL.createObjectURL(file); v.classList.add('active'); v.play().catch(function(){});
-    document.getElementById('zsc-img').classList.remove('active');
+    vid.src = URL.createObjectURL(file); vid.classList.add('active'); vid.play().catch(function(){});
+    document.getElementById('zsc-tool-fit').style.display='none';
+    _sc.fit='contain';
   } else {
-    /* Image : data-URL via FileReader. Dans la WebView Android de l'application
-       (Capacitor, page servie depuis vazimba.io), une URL blob: dans <img>
-       affichait une image cassée ; le web mobile, lui, l'acceptait. Même
-       approche que le formulaire de post. */
-    var imgEl = document.getElementById('zsc-img');
-    imgEl.removeAttribute('src');
-    var rd = new FileReader();
-    rd.onload = function(e){ imgEl.src = e.target.result; };
-    rd.onerror = function(){ try { imgEl.src = URL.createObjectURL(file); } catch(err) {} };
-    rd.readAsDataURL(file);
-    imgEl.classList.add('active');
-    document.getElementById('zsc-vid').classList.remove('active');
-  }
-  document.getElementById('zsc-txtbg').classList.remove('active');
-
-  /* WebP conversion */
-  if(window.ZootMediaConverter && _sc.type==='image'){
-    ZootMediaConverter.processFiles([file]).then(function(arr){ if(arr[0]) _sc.file=arr[0]; }).catch(function(){});
+    document.getElementById('zsc-tool-fit').style.display='';
+    _zscLoadImage(file);
+    /* WebP + redimensionnement avant envoi (le fichier aperçu reste l'original) */
+    if(window.ZootMediaConverter){
+      ZootMediaConverter.processFiles([file]).then(function(arr){ if(arr[0] && _sc.file===file) _sc.file=arr[0]; }).catch(function(){});
+    }
   }
 };
 
-window.zscToggleTextMode = function(){
-  _sc.textMode = !_sc.textMode;
-  if(_sc.textMode){
-    _sc.type='text'; _sc.file=null;
-    document.getElementById('zsc-img').classList.remove('active');
-    document.getElementById('zsc-vid').classList.remove('active');
-    document.getElementById('zsc-placeholder').style.display='none';
-    var bg=document.getElementById('zsc-txtbg'); bg.className='active '+_sc.grad;
-    document.getElementById('zsc-grads').classList.add('open');
-    document.getElementById('zsc-txtover').style.display='block';
-    document.getElementById('zsc-txtcontent').focus();
-    document.getElementById('zsc-tools').style.display='flex';
-    document.getElementById('zsc-pub-btn').style.display='flex';
-    document.getElementById('zsc-pub-btn').disabled=false;
-    document.getElementById('zsc-caption-in').style.display='none';
-    document.getElementById('zsc-text-story-btn').classList.add('active');
-  } else {
-    _sc.type='image';
-    document.getElementById('zsc-txtbg').classList.remove('active');
-    document.getElementById('zsc-grads').classList.remove('open');
-    document.getElementById('zsc-txtover').style.display='none';
-    document.getElementById('zsc-placeholder').style.display='flex';
-    document.getElementById('zsc-tools').style.display='none';
-    document.getElementById('zsc-pub-btn').style.display='none';
-    document.getElementById('zsc-text-story-btn').classList.remove('active');
+/* Décodage de l'image sans passer par une URL : createImageBitmap(file) puis
+   dessin dans le canvas ; repli FileReader → Image ; dernier repli <img>. */
+function _zscLoadImage(file){
+  var done = function(bmp){ _sc.bitmap = bmp; _zscDrawBitmap(); };
+  var viaReader = function(){
+    try {
+      var rd = new FileReader();
+      rd.onload = function(e){
+        var im = new Image();
+        im.onload = function(){ done(im); };
+        im.onerror = function(){ var img=document.getElementById('zsc-img'); img.src=e.target.result; img.classList.add('active'); };
+        im.src = e.target.result;
+      };
+      rd.onerror = function(){ var img=document.getElementById('zsc-img'); try{ img.src=URL.createObjectURL(file); }catch(err){} img.classList.add('active'); };
+      rd.readAsDataURL(file);
+    } catch(e) {}
+  };
+  if(window.createImageBitmap){
+    var p;
+    try { p = createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch(e){ try { p = createImageBitmap(file); } catch(e2){ p = null; } }
+    if(p && p.then){ p.then(done).catch(viaReader); return; }
   }
+  viaReader();
+}
+
+function _zscDrawBitmap(){
+  var bmp=_sc.bitmap; if(!bmp) return;
+  var cv=document.getElementById('zsc-canvas'), st=_stage();
+  var W=st.clientWidth||360, H=st.clientHeight||640, dpr=Math.min(window.devicePixelRatio||1, 2);
+  cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  var ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+  var bw=bmp.width||bmp.naturalWidth, bh=bmp.height||bmp.naturalHeight;
+  var s = _sc.fit==='cover' ? Math.max(W/bw, H/bh) : Math.min(W/bw, H/bh);
+  var dw=bw*s, dh=bh*s;
+  if(_sc.fit!=='cover'){
+    /* fond flou de la même image derrière la photo ajustée (comme Instagram) */
+    var sc=Math.max(W/bw, H/bh);
+    ctx.save(); ctx.filter='blur(24px) brightness(.6)';
+    ctx.drawImage(bmp, (W-bw*sc)/2, (H-bh*sc)/2, bw*sc, bh*sc);
+    ctx.restore();
+  }
+  ctx.drawImage(bmp, (W-dw)/2, (H-dh)/2, dw, dh);
+  cv.classList.add('active');
+}
+window.addEventListener('resize', function(){ if(_sc.bitmap) _zscDrawBitmap(); _zscRenderText(); });
+
+window.zscToggleFit = function(){
+  _sc.fit = _sc.fit==='cover' ? 'contain' : 'cover';
+  document.getElementById('zsc-tool-fit').querySelector('.material-icons').textContent = _sc.fit==='cover' ? 'fit_screen' : 'crop_free';
+  _zscDrawBitmap();
 };
 
-window.zscToggleText = function(){
-  var ov=document.getElementById('zsc-txtover');
-  var visible = ov.style.display==='block';
-  ov.style.display = visible?'none':'block';
-  document.getElementById('zsc-tool-txt').classList.toggle('active',!visible);
-  document.getElementById('zsc-tool-color').style.display = visible?'none':'flex';
-  if(!visible){ document.getElementById('zsc-txtopts').classList.add('open'); document.getElementById('zsc-txtcontent').focus(); }
-  else { document.getElementById('zsc-txtopts').classList.remove('open'); }
+/* ── Story texte (fond dégradé) ─────────────────────── */
+window.zscStartText = function(){
+  _sc.type='text'; _sc.file=null; _sc.bitmap=null;
+  _zscShowStage();
+  document.getElementById('zsc').classList.add('zsc-text-story');
+  var bg=document.getElementById('zsc-txtbg'); bg.className='active '+_sc.grad;
+  document.getElementById('zsc-tool-fit').style.display='none';
+  zscEditText();
 };
-
-window.zscToggleColors = function(){ document.getElementById('zsc-txtopts').classList.toggle('open'); };
-
-window.zscSetColor = function(color, el){
-  _sc.textColor=color;
-  document.getElementById('zsc-txtcontent').style.color=color;
-  document.querySelectorAll('.zsc-cdot').forEach(function(d){ d.classList.remove('active'); });
-  if(el) el.classList.add('active');
-};
-
-window.zscApplyFont = function(val){
-  document.getElementById('zsc-txtcontent').style.fontSize=val+'px';
-};
-
 window.zscSetGrad = function(g, el){
   _sc.grad=g;
-  var bg=document.getElementById('zsc-txtbg');
-  bg.className=(_sc.textMode?'active ':'')+g;
-  document.querySelectorAll('.zsc-gswatch').forEach(function(s){ s.classList.remove('active'); });
-  if(el) el.classList.add('active');
+  var bg=document.getElementById('zsc-txtbg'); bg.className='active '+g;
+  document.querySelectorAll('.zsc-gswatch').forEach(function(s){ s.classList.toggle('active', s===el); });
 };
 
-/* ── Glisser le texte ─────────────────────────────────── */
+/* ── Texte : édition ────────────────────────────────── */
+function _zscRenderText(){
+  var ov=_txtOver(), p=_txtP(), t=_sc.text, st=_stage();
+  if(!t) return;
+  var W = st.clientWidth || 360;
+  ov.style.left = t.x+'%'; ov.style.top = t.y+'%';
+  ov.style.fontSize = (W * t.size / 100) + 'px';
+  ov.style.textAlign = t.align;
+  ov.dataset.bg = t.bg;
+  ov.style.setProperty('--zst-color', t.color);
+  p.style.color = (t.bg==='solid') ? (_isLight(t.color) ? '#111' : '#fff') : t.color;
+  ov.style.background = t.bg==='solid' ? t.color : (t.bg==='soft' ? 'rgba(0,0,0,.45)' : 'transparent');
+}
+function _isLight(hex){
+  var h=(hex||'').replace('#',''); if(h.length!==6) return true;
+  var r=parseInt(h.substr(0,2),16), g=parseInt(h.substr(2,2),16), b=parseInt(h.substr(4,2),16);
+  return (0.299*r + 0.587*g + 0.114*b) > 150;
+}
+
+window.zscEditText = function(){
+  _sc.editing=true;
+  var root=document.getElementById('zsc'); root.classList.add('zsc-editing');
+  var ov=_txtOver(), p=_txtP();
+  ov.style.display='block'; p.contentEditable='true';
+  document.getElementById('zsc-align-btn').querySelector('.material-icons').textContent = ALIGN_ICON[_sc.text.align];
+  _zscRenderText();
+  setTimeout(function(){ p.focus(); try { document.getSelection().selectAllChildren(p); document.getSelection().collapseToEnd(); } catch(e){} }, 50);
+  document.getElementById('zsc-hint').style.display='none';
+};
+window.zscDoneText = function(){
+  _sc.editing=false;
+  var root=document.getElementById('zsc'); root.classList.remove('zsc-editing');
+  var p=_txtP(); p.contentEditable='false'; p.blur();
+  _sc.text.content = (p.innerText||'').replace(/ /g,' ').trim();
+  if(!_sc.text.content){ _txtOver().style.display='none'; p.textContent=''; }
+  else { p.innerText = _sc.text.content; _zscRenderText(); }
+};
+window.zscSetColor = function(color, el){
+  _sc.text.color=color;
+  document.querySelectorAll('.zsc-chip').forEach(function(c){ c.classList.toggle('active', c===el); });
+  _zscRenderText(); if(_sc.editing) _txtP().focus();
+};
+window.zscSetSize = function(v){ _sc.text.size = parseFloat(v)||7; _zscRenderText(); };
+window.zscCycleAlign = function(){
+  _sc.text.align = T_ALIGN[(T_ALIGN.indexOf(_sc.text.align)+1)%T_ALIGN.length];
+  document.getElementById('zsc-align-btn').querySelector('.material-icons').textContent = ALIGN_ICON[_sc.text.align];
+  _zscRenderText(); if(_sc.editing) _txtP().focus();
+};
+window.zscCycleBg = function(){
+  _sc.text.bg = T_BG[(T_BG.indexOf(_sc.text.bg)+1)%T_BG.length];
+  document.getElementById('zsc-bg-btn').classList.toggle('active', _sc.text.bg!=='none');
+  _zscRenderText(); if(_sc.editing) _txtP().focus();
+};
+/* Entrée = terminé ; Maj+Entrée = nouvelle ligne */
+document.addEventListener('keydown', function(e){
+  if(!_sc.editing || e.target!==_txtP()) return;
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); zscDoneText(); }
+  if(e.key==='Escape'){ e.preventDefault(); zscDoneText(); }
+});
+
+/* ── Texte : glisser pour placer, lâcher sur la corbeille pour retirer ── */
 var _dragInit=false;
 function _zscInitDrag(){
   if(_dragInit) return; _dragInit=true;
-  var ov=document.getElementById('zsc-txtover');
-  var prev=document.getElementById('zsc-preview');
-
+  var ov=_txtOver(), root=document.getElementById('zsc'), trash=document.getElementById('zsc-trash');
+  var moved=false, overTrash=false;
   ov.addEventListener('pointerdown', function(e){
-    if(e.target===document.getElementById('zsc-txtcontent')) return;
-    _sc.dragging=true; e.preventDefault();
-    _sc.dragSX=e.clientX; _sc.dragSY=e.clientY;
-    _sc.dragOX=_sc.textX; _sc.dragOY=_sc.textY;
-    ov.setPointerCapture(e.pointerId);
+    if(_sc.editing) return;
+    _sc.dragging=true; moved=false; overTrash=false;
+    _sc.dragSX=e.clientX; _sc.dragSY=e.clientY; _sc.dragOX=_sc.text.x; _sc.dragOY=_sc.text.y;
+    try { ov.setPointerCapture(e.pointerId); } catch(err){}
+    e.preventDefault();
   });
   ov.addEventListener('pointermove', function(e){
     if(!_sc.dragging) return;
-    var r=prev.getBoundingClientRect();
-    _sc.textX = _sc.dragOX + (e.clientX-_sc.dragSX)/r.width*100;
-    _sc.textY = _sc.dragOY + (e.clientY-_sc.dragSY)/r.height*100;
-    _sc.textX = Math.max(5,Math.min(95,_sc.textX));
-    _sc.textY = Math.max(5,Math.min(95,_sc.textY));
-    ov.style.left = _sc.textX+'%'; ov.style.top = _sc.textY+'%';
+    var r=_stage().getBoundingClientRect();
+    var dx=e.clientX-_sc.dragSX, dy=e.clientY-_sc.dragSY;
+    if(!moved && Math.hypot(dx,dy)>6){ moved=true; root.classList.add('zsc-dragging'); }
+    if(!moved) return;
+    _sc.text.x = Math.max(4, Math.min(96, _sc.dragOX + dx/r.width*100));
+    _sc.text.y = Math.max(6, Math.min(94, _sc.dragOY + dy/r.height*100));
+    _zscRenderText();
+    var tr=trash.getBoundingClientRect();
+    overTrash = e.clientX>=tr.left-20 && e.clientX<=tr.right+20 && e.clientY>=tr.top-20 && e.clientY<=tr.bottom+20;
+    trash.classList.toggle('hot', overTrash);
   });
-  ov.addEventListener('pointerup', function(){ _sc.dragging=false; });
+  function end(e){
+    if(!_sc.dragging) return;
+    _sc.dragging=false; root.classList.remove('zsc-dragging'); trash.classList.remove('hot');
+    if(overTrash){ _sc.text.content=''; _txtP().textContent=''; ov.style.display='none'; return; }
+    if(!moved){ zscEditText(); }
+  }
+  ov.addEventListener('pointerup', end); ov.addEventListener('pointercancel', end);
 }
 
-/* ── Publication ──────────────────────────────────────── */
+/* ── Publication (XHR pour une vraie barre de progression) ── */
 window.zscPublish = function(){
   var btn=document.getElementById('zsc-pub-btn');
-  btn.disabled=true;
-
-  var caption = _sc.textMode
-    ? (document.getElementById('zsc-txtcontent').textContent||'').trim()
-    : (document.getElementById('zsc-caption-in').value||'').trim();
-
-  if(_sc.type==='text' && !caption){ _toast('Le texte ne peut pas être vide.','rgba(176,0,32,.9)'); btn.disabled=false; return; }
-  if(_sc.type!=='text' && !_sc.file){ _toast('Pas de fichier sélectionné.','rgba(176,0,32,.9)'); btn.disabled=false; return; }
+  if(btn.disabled) return;
+  if(_sc.editing) zscDoneText();
+  var t=_sc.text;
+  if(_sc.type==='text' && !t.content){ _toast('{% trans "Écrivez un texte avant de publier."|escapejs %}','rgba(176,0,32,.9)'); zscEditText(); return; }
+  if(_sc.type!=='text' && !_sc.file){ _toast('{% trans "Choisissez une photo ou une vidéo."|escapejs %}','rgba(176,0,32,.9)'); return; }
+  btn.disabled=true; btn.classList.add('is-loading');
 
   var fd = new FormData();
   fd.append('csrfmiddlewaretoken', CSRF);
   fd.append('story_type', _sc.type);
-  fd.append('caption', caption);
+  fd.append('caption', t.content||'');
   fd.append('bg_gradient', _sc.grad);
-  fd.append('text_color', _sc.textColor);
-  fd.append('text_x', _sc.textX);
-  fd.append('text_y', _sc.textY);
-  if(_sc.file) fd.append('media', _sc.file);
+  fd.append('text_color', t.color);
+  fd.append('text_x', t.x); fd.append('text_y', t.y);
+  fd.append('text_size', t.size); fd.append('text_align', t.align); fd.append('text_bg', t.bg);
+  fd.append('media_fit', _sc.fit);
+  if(_sc.file) fd.append('media', _sc.file, _sc.file.name || 'story');
   if(_sc.audioFile) fd.append('audio', _sc.audioFile);
   else if(_sc._audioUrl||_sc.audioUrlExternal) fd.append('audio_url', _sc._audioUrl||_sc.audioUrlExternal);
   fd.append('audio_trim_start', _sc.audioTrimStart);
   if(_sc.link){ fd.append('link', _sc.link); fd.append('link_label', _sc.linkLabel); }
 
-  var upbar=document.getElementById('zsc-upbar');
-  var upfill=document.getElementById('zsc-upbar-fill');
-  upbar.style.display='block'; var pct=0;
-  var fakeProg=setInterval(function(){ pct=Math.min(pct+10,85); upfill.style.width=pct+'%'; },150);
-
-  fetch(URLS.create,{method:'POST',body:fd,credentials:'same-origin'})
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      clearInterval(fakeProg); upfill.style.width='100%';
-      if(d.ok){ _toast('✅ Story publiée !'); setTimeout(function(){ zscClose(); loadStories(); },600); }
-      else { _toast('❌ '+(d.error||'Erreur'),'rgba(176,0,32,.9)'); btn.disabled=false; upbar.style.display='none'; }
-    }).catch(function(){ clearInterval(fakeProg); _toast('❌ Erreur réseau','rgba(176,0,32,.9)'); btn.disabled=false; upbar.style.display='none'; });
+  var upbar=document.getElementById('zsc-upbar'), upfill=document.getElementById('zsc-upbar-fill');
+  upbar.style.display='block'; upfill.style.width='3%';
+  function fail(msg){ _toast('❌ '+msg,'rgba(176,0,32,.9)'); btn.disabled=false; btn.classList.remove('is-loading'); upbar.style.display='none'; }
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', URLS.create, true);
+  xhr.withCredentials = true;
+  xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  xhr.upload.onprogress = function(e){ if(e.lengthComputable) upfill.style.width = Math.max(3, Math.round(e.loaded/e.total*95))+'%'; };
+  xhr.onload = function(){
+    var d={}; try { d=JSON.parse(xhr.responseText||'{}'); } catch(e){}
+    if(xhr.status>=200 && xhr.status<300 && d.ok){
+      upfill.style.width='100%';
+      if(window.vzToast) vzToast('{% trans "Story publiée !"|escapejs %}','success'); else _toast('✅ Story publiée !');
+      setTimeout(function(){ btn.classList.remove('is-loading'); zscClose(); loadStories(); },400);
+    } else fail(d.error||'{% trans "Erreur"|escapejs %}');
+  };
+  xhr.onerror = function(){ fail('{% trans "Erreur réseau"|escapejs %}'); };
+  xhr.send(fd);
 };
 
 /* ═══════════════════════════════════════════════════

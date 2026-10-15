@@ -58,6 +58,13 @@ class Story(models.Model):
     text_x = models.FloatField(default=50.0, help_text='Position horizontale du texte (% depuis la gauche)')
     text_y = models.FloatField(default=50.0, help_text='Position verticale du texte (% depuis le haut)')
     text_color = models.CharField(max_length=20, blank=True, default='#ffffff', help_text='Couleur CSS du texte overlay')
+    text_size  = models.FloatField(default=0.0, help_text='Taille du texte en % de la largeur du cadre (0 = défaut)')
+    text_bg    = models.CharField(max_length=8, blank=True, default='none',
+                                  choices=(('none', 'Aucun'), ('soft', 'Voile sombre'), ('solid', 'Plein')),
+                                  help_text='Fond derrière le texte')
+    media_fit  = models.CharField(max_length=8, blank=True, default='contain',
+                                  choices=(('contain', 'Ajustée'), ('cover', 'Remplir')),
+                                  help_text='Cadrage de la photo dans la story')
 
     # Musique courte (optionnel — surtout pour les stories photo)
     audio           = models.FileField(upload_to=story_audio_path, blank=True, null=True)

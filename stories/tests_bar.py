@@ -41,3 +41,43 @@ class StoryBarHooksTests(TestCase):
         from django.conf import settings
         js = ''.join(p.read_text() for p in (Path(settings.BASE_DIR) / 'static' / 'js').glob('vz-*.js'))
         self.assertIn('function _unlockIfNoMenu()', js + html)
+
+
+class StoryCreatorStyleTests(TestCase):
+    """Le texte posé sur une photo est conservé avec son style et renvoyé au lecteur."""
+    def setUp(self):
+        self.me = Account.objects.create_user(email='crea@test.mg', username='crea', password='pw12345678')
+        self.c = Client()
+        self.c.force_login(self.me)
+
+    def test_text_story_keeps_style(self):
+        r = self.c.post(reverse('stories:create'), {
+            'story_type': 'text', 'caption': 'Salama', 'bg_gradient': 'grad_gold',
+            'text_color': '#111111', 'text_x': 30, 'text_y': 70, 'text_size': 9.5,
+            'text_align': 'left', 'text_bg': 'solid', 'media_fit': 'cover',
+        })
+        self.assertEqual(r.status_code, 200, r.content)
+        data = r.json()
+        self.assertTrue(data['ok'])
+        s = data['story']
+        self.assertEqual((s['caption'], s['text_size'], s['text_bg'], s['text_align'], s['media_fit']),
+                         ('Salama', 9.5, 'solid', 'left', 'cover'))
+        feed = self.c.get(reverse('stories:feed')).json()
+        groups = feed['groups'] if isinstance(feed, dict) else feed
+        st = groups[0]['stories'][0]
+        self.assertEqual(st['text_bg'], 'solid')
+        self.assertEqual(st['text_x'], 30.0)
+
+    def test_invalid_style_values_fall_back(self):
+        r = self.c.post(reverse('stories:create'), {
+            'story_type': 'text', 'caption': 'x', 'text_bg': 'rainbow', 'media_fit': 'zoom',
+            'text_size': 'abc', 'text_align': 'diagonal',
+        })
+        s = r.json()['story']
+        self.assertEqual((s['text_bg'], s['media_fit'], s['text_size'], s['text_align']), ('none', 'contain', 0, 'center'))
+
+    def test_creator_markup_present(self):
+        html = self.c.get(reverse('post:post-view') + '?tab=feed').content.decode()
+        for needle in ['id="zsc-start"', 'id="zsc-canvas"', 'zst-text', 'zscEditText()', 'id="zsc-trash"', 'window.zscPublish = function']:
+            self.assertIn(needle, html)
+        self.assertNotIn('zscToggleTextMode', html)

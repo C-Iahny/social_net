@@ -218,6 +218,9 @@ def _story_to_dict(story, viewer, seen_ids=None):
         'text_x':      story.text_x,
         'text_y':      story.text_y,
         'text_color':  story.text_color or '#ffffff',
+        'text_size':   story.text_size or 0,
+        'text_bg':     story.text_bg or 'none',
+        'media_fit':   story.media_fit or 'contain',
         'link':        story.link,
         'link_label':  story.link_label or 'Voir l\'offre',
         'created_at':  story.created_at.isoformat(),
@@ -296,6 +299,18 @@ def create_story(request):
     bg_gradient = request.POST.get('bg_gradient', 'grad_cyan')
     text_align  = request.POST.get('text_align', 'center')
     text_color  = request.POST.get('text_color', '#ffffff').strip()[:20]
+    text_bg     = request.POST.get('text_bg', 'none')
+    if text_bg not in ('none', 'soft', 'solid'):
+        text_bg = 'none'
+    media_fit   = request.POST.get('media_fit', 'contain')
+    if media_fit not in ('contain', 'cover'):
+        media_fit = 'contain'
+    try:
+        text_size = max(0.0, min(20.0, float(request.POST.get('text_size', 0) or 0)))
+    except (ValueError, TypeError):
+        text_size = 0.0
+    if text_align not in ('left', 'center', 'right'):
+        text_align = 'center'
     link        = request.POST.get('link', '').strip()[:500]
     link_label  = request.POST.get('link_label', '').strip()[:60]
     media_file  = request.FILES.get('media')
@@ -368,6 +383,9 @@ def create_story(request):
             text_x      = text_x,
             text_y      = text_y,
             text_color  = text_color,
+            text_size   = text_size,
+            text_bg     = text_bg,
+            media_fit   = media_fit,
             audio            = audio_file,
             audio_type       = audio_type,
             audio_trim_start = audio_trim_start,
