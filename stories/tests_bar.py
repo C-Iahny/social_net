@@ -81,3 +81,58 @@ class StoryCreatorStyleTests(TestCase):
         for needle in ['id="zsc-start"', 'id="zsc-canvas"', 'zst-text', 'zscEditText()', 'id="zsc-trash"', 'window.zscPublish = function']:
             self.assertIn(needle, html)
         self.assertNotIn('zscToggleTextMode', html)
+
+
+class StoryPreUploadTests(TestCase):
+    """Envoi du média dès sa sélection, publication par jeton (WebView Android)."""
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        self.me = Account.objects.create_user(email='up@test.mg', username='up', password='pw12345678')
+        self.c = Client()
+        self.c.force_login(self.me)
+
+    def _png(self):
+        import io
+        from PIL import Image
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        buf = io.BytesIO(); Image.new('RGB', (40, 30), (200, 30, 30)).save(buf, 'PNG'); buf.seek(0)
+        return SimpleUploadedFile('photo.png', buf.read(), content_type='image/png')
+
+    def test_upload_then_publish_with_token(self):
+        from django.test import override_settings
+        from django.core.cache import cache
+        from stories.models import Story
+        with override_settings(MEDIA_ROOT=self.tmp):
+            r = self.c.post(reverse('stories:upload'), {'media': self._png()})
+            self.assertEqual(r.status_code, 200, r.content)
+            d = r.json()
+            self.assertTrue(d['ok']); self.assertEqual(d['media_type'], 'image'); self.assertIn('tmp_', d['url'])
+            token = d['token']
+            r = self.c.post(reverse('stories:create'), {'story_type': 'image', 'media_token': token, 'caption': 'Salama', 'text_size': 8})
+            self.assertEqual(r.status_code, 200, r.content)
+            s = Story.objects.get(pk=r.json()['story']['id'])
+            self.assertEqual(s.media_type, 'image')
+            self.assertIn('tmp_' + token, s.media.name)
+            self.assertIsNone(cache.get('story:tmp:' + token))      # jeton consommé
+            # un jeton inconnu est refusé
+            r = self.c.post(reverse('stories:create'), {'story_type': 'image', 'media_token': 'abc'})
+            self.assertEqual(r.status_code, 400)
+
+    def test_discard_removes_file(self):
+        from django.test import override_settings
+        from django.core.cache import cache
+        from django.core.files.storage import default_storage
+        with override_settings(MEDIA_ROOT=self.tmp):
+            d = self.c.post(reverse('stories:upload'), {'media': self._png()}).json()
+            info = cache.get('story:tmp:' + d['token'])
+            self.assertTrue(default_storage.exists(info['name']))
+            self.c.post(reverse('stories:upload-discard'), {'token': d['token']})
+            self.assertFalse(default_storage.exists(info['name']))
+            self.assertIsNone(cache.get('story:tmp:' + d['token']))
+
+    def test_creator_uses_pre_upload(self):
+        html = self.c.get(reverse('post:post-view') + '?tab=feed').content.decode()
+        self.assertIn('function _zscUploadNow(file)', html)
+        self.assertIn("fd.append('media_token', _sc.token)", html)
+        self.assertIn('/stories/upload/', html)

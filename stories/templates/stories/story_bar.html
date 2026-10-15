@@ -368,6 +368,8 @@
 var URLS = {
   feed:    '{% url "stories:feed" %}',
   create:  '{% url "stories:create" %}',
+  upload:  '{% url "stories:upload" %}',
+  discard: '{% url "stories:upload-discard" %}',
   delete:  '/stories/delete/',
   viewed:  '/stories/viewed/',
   react:   '/stories/react/',
@@ -1083,6 +1085,7 @@ function _txtOver(){ return document.getElementById('zsc-txtover'); }
 function _txtP(){ return document.getElementById('zsc-txtcontent'); }
 
 function _zscResetState(){
+  _sc.published=false; _sc.token=''; _sc.remoteUrl=''; _sc.uploading=false; _sc.uploadFailed=false; _sc.pendingPublish=false;
   _sc.file=null; _sc.bitmap=null; _sc.audioFile=null; _sc.audioName='';
   _sc.audioTrimStart=0; _sc._audioUrl=''; _sc.audioUrlExternal='';
   _sc.type='image'; _sc.grad='grad_cyan'; _sc.fit='contain';
@@ -1129,6 +1132,7 @@ window.zscClose = function(){
   if (window.vzLayers) vzLayers.remove(window.zscClose);
   document.getElementById('zsc-trim-audio').pause();
   var v=document.getElementById('zsc-vid'); v.pause(); v.removeAttribute('src'); v.load();
+  if(_sc.token && !_sc.published){ _post(URLS.discard, {token:_sc.token}).catch(function(){}); _sc.token=''; }
 };
 
 function _zscShowStage(){
@@ -1150,18 +1154,50 @@ window.zscOnFile = function(inp){
   img.classList.remove('active'); cv.classList.remove('active'); vid.classList.remove('active');
 
   if(_sc.type==='video'){
-    vid.src = URL.createObjectURL(file); vid.classList.add('active'); vid.play().catch(function(){});
+    try { vid.src = URL.createObjectURL(file); vid.classList.add('active'); vid.play().catch(function(){}); } catch(e) {}
     document.getElementById('zsc-tool-fit').style.display='none';
     _sc.fit='contain';
   } else {
     document.getElementById('zsc-tool-fit').style.display='';
     _zscLoadImage(file);
-    /* WebP + redimensionnement avant envoi (le fichier aperçu reste l'original) */
-    if(window.ZootMediaConverter){
-      ZootMediaConverter.processFiles([file]).then(function(arr){ if(arr[0] && _sc.file===file) _sc.file=arr[0]; }).catch(function(){});
-    }
   }
+  /* Envoi immédiat au serveur : (1) la publication devient instantanée,
+     (2) dans l'application Android la page ne peut pas lire le fichier
+     (aperçu impossible côté client) → l'URL renvoyée sert d'aperçu. */
+  _zscUploadNow(file);
 };
+
+function _zscUploadNow(file){
+  _sc.uploading=true; _sc.uploadFailed=false; _sc.token=''; _sc.remoteUrl='';
+  var upbar=document.getElementById('zsc-upbar'), upfill=document.getElementById('zsc-upbar-fill');
+  upbar.style.display='block'; upfill.style.width='3%';
+  var fd=new FormData(); fd.append('csrfmiddlewaretoken', CSRF); fd.append('media', file, file.name||'story');
+  var xhr=new XMLHttpRequest(); xhr.open('POST', URLS.upload, true); xhr.withCredentials=true;
+  xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+  xhr.upload.onprogress=function(e){ if(e.lengthComputable) upfill.style.width=Math.max(3,Math.round(e.loaded/e.total*96))+'%'; };
+  function finish(ok, d){
+    _sc.uploading=false;
+    if(ok && _sc.file===file){
+      _sc.token=d.token; _sc.remoteUrl=d.url;
+      upfill.style.width='100%'; setTimeout(function(){ upbar.style.display='none'; upfill.style.width='0%'; }, 400);
+      /* Aperçu serveur si le décodage local n'a rien donné */
+      if(_sc.type==='image' && !_sc.bitmap){
+        var img=document.getElementById('zsc-img'); img.onerror=null; img.src=d.url; img.classList.add('active');
+        img.style.objectFit = _sc.fit;
+      }
+      if(_sc.type==='video'){
+        var v=document.getElementById('zsc-vid');
+        if(!v.src || v.error){ v.src=d.url; v.classList.add('active'); v.play().catch(function(){}); }
+      }
+    } else if(_sc.file===file){
+      _sc.uploadFailed=true; upbar.style.display='none';
+    }
+    if(_sc.pendingPublish && _sc.file===file){ _sc.pendingPublish=false; zscPublish(); }
+  }
+  xhr.onload=function(){ var d={}; try{ d=JSON.parse(xhr.responseText||'{}'); }catch(e){} finish(xhr.status>=200&&xhr.status<300&&d.ok, d); };
+  xhr.onerror=function(){ finish(false, {}); };
+  xhr.send(fd);
+}
 
 /* Décodage de l'image sans passer par une URL : createImageBitmap(file) puis
    dessin dans le canvas ; repli FileReader → Image ; dernier repli <img>. */
@@ -1173,10 +1209,10 @@ function _zscLoadImage(file){
       rd.onload = function(e){
         var im = new Image();
         im.onload = function(){ done(im); };
-        im.onerror = function(){ var img=document.getElementById('zsc-img'); img.src=e.target.result; img.classList.add('active'); };
+        im.onerror = function(){ _zscServerPreview(); };
         im.src = e.target.result;
       };
-      rd.onerror = function(){ var img=document.getElementById('zsc-img'); try{ img.src=URL.createObjectURL(file); }catch(err){} img.classList.add('active'); };
+      rd.onerror = function(){ _zscServerPreview(); };
       rd.readAsDataURL(file);
     } catch(e) {}
   };
@@ -1187,6 +1223,14 @@ function _zscLoadImage(file){
     if(p && p.then){ p.then(done).catch(viaReader); return; }
   }
   viaReader();
+}
+
+/* Décodage local impossible (WebView Android) : l'aperçu viendra de l'URL
+   renvoyée par /stories/upload/ (voir _zscUploadNow) ; en attendant, fond
+   neutre plutôt qu'une icône d'image cassée. */
+function _zscServerPreview(){
+  var img=document.getElementById('zsc-img'); img.classList.remove('active'); img.removeAttribute('src');
+  if(_sc.remoteUrl){ img.onerror=null; img.src=_sc.remoteUrl; img.style.objectFit=_sc.fit; img.classList.add('active'); }
 }
 
 function _zscDrawBitmap(){
@@ -1216,6 +1260,7 @@ window.zscToggleFit = function(){
   _sc.fit = _sc.fit==='cover' ? 'contain' : 'cover';
   document.getElementById('zsc-tool-fit').querySelector('.material-icons').textContent = _sc.fit==='cover' ? 'fit_screen' : 'crop_free';
   _zscDrawBitmap();
+  document.getElementById('zsc-img').style.objectFit = _sc.fit;
 };
 
 /* ── Story texte (fond dégradé) ─────────────────────── */
@@ -1337,6 +1382,7 @@ window.zscPublish = function(){
   if(_sc.type==='text' && !t.content){ _toast('{% trans "Écrivez un texte avant de publier."|escapejs %}','rgba(176,0,32,.9)'); zscEditText(); return; }
   if(_sc.type!=='text' && !_sc.file){ _toast('{% trans "Choisissez une photo ou une vidéo."|escapejs %}','rgba(176,0,32,.9)'); return; }
   btn.disabled=true; btn.classList.add('is-loading');
+  if(_sc.uploading){ _sc.pendingPublish=true; return; }   /* la publication repartira à la fin de l'envoi */
 
   var fd = new FormData();
   fd.append('csrfmiddlewaretoken', CSRF);
@@ -1347,7 +1393,8 @@ window.zscPublish = function(){
   fd.append('text_x', t.x); fd.append('text_y', t.y);
   fd.append('text_size', t.size); fd.append('text_align', t.align); fd.append('text_bg', t.bg);
   fd.append('media_fit', _sc.fit);
-  if(_sc.file) fd.append('media', _sc.file, _sc.file.name || 'story');
+  if(_sc.file && _sc.token) fd.append('media_token', _sc.token);
+  else if(_sc.file) fd.append('media', _sc.file, _sc.file.name || 'story');
   if(_sc.audioFile) fd.append('audio', _sc.audioFile);
   else if(_sc._audioUrl||_sc.audioUrlExternal) fd.append('audio_url', _sc._audioUrl||_sc.audioUrlExternal);
   fd.append('audio_trim_start', _sc.audioTrimStart);
@@ -1364,7 +1411,7 @@ window.zscPublish = function(){
   xhr.onload = function(){
     var d={}; try { d=JSON.parse(xhr.responseText||'{}'); } catch(e){}
     if(xhr.status>=200 && xhr.status<300 && d.ok){
-      upfill.style.width='100%';
+      _sc.published=true; upfill.style.width='100%';
       if(window.vzToast) vzToast('{% trans "Story publiée !"|escapejs %}','success'); else _toast('✅ Story publiée !');
       setTimeout(function(){ btn.classList.remove('is-loading'); zscClose(); loadStories(); },400);
     } else fail(d.error||'{% trans "Erreur"|escapejs %}');

@@ -1,6 +1,7 @@
 package mg.vazimba.app;
 
 import android.os.Bundle;
+import android.webkit.WebSettings;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -10,6 +11,16 @@ public class MainActivity extends BridgeActivity {
         /* Enregistrer le plugin audio AVANT super.onCreate() */
         registerPlugin(VzbAudioPlugin.class);
         super.onCreate(savedInstanceState);
+
+        /* Lecture des fichiers choisis (galerie / caméra) par la page :
+           sans ces deux réglages, FileReader et createImageBitmap échouent
+           dans la WebView et l'aperçu d'une story restait noir. La page
+           chargée est https://www.vazimba.io, pas un fichier local. */
+        if (this.bridge != null && this.bridge.getWebView() != null) {
+            WebSettings s = this.bridge.getWebView().getSettings();
+            s.setAllowFileAccess(true);
+            s.setAllowContentAccess(true);
+        }
     }
 
     /**

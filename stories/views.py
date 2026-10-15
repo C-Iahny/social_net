@@ -4,6 +4,8 @@ import logging
 import requests as http_requests
 
 from django.conf import settings
+from django.core.cache import cache
+from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
@@ -290,6 +292,63 @@ def stories_page(request):
     return render(request, 'stories/story_list.html', ctx)
 
 
+# ── UPLOAD PRÉALABLE ─────────────────────────────────────────────────────────
+_TMP_TTL = 3600   # un média envoyé mais jamais publié expire au bout d'une heure
+
+
+def _tmp_key(token):
+    return f'story:tmp:{token}'
+
+
+@login_required(login_url='login')
+@require_POST
+def upload_story_media(request):
+    """POST /stories/upload/ — envoie la photo/vidéo dès sa sélection.
+
+    Pourquoi : dans la WebView Android de l'application, la page ne peut pas
+    lire le fichier choisi (ni canvas, ni FileReader) alors que l'envoi, lui,
+    fonctionne. Le serveur renvoie donc une URL https qui sert d'aperçu, et
+    un jeton que la publication réutilise : la story part ensuite sans
+    renvoyer le média.
+    """
+    import uuid
+    media_file = request.FILES.get('media')
+    if not media_file:
+        return JsonResponse({'error': 'Aucun fichier.'}, status=400)
+    if media_file.size > 50 * 1024 * 1024:
+        return JsonResponse({'error': 'Fichier trop volumineux (max 50 Mo).'}, status=400)
+    mime = (media_file.content_type or '').split(';')[0].strip().lower()
+    if mime in _IMAGE_MIME:
+        media_type = 'image'
+        from post.media_utils import compress_image
+        media_file = compress_image(media_file)
+    elif mime in _VIDEO_MIME:
+        media_type = 'video'
+    else:
+        return JsonResponse({'error': 'Format de fichier non supporté.'}, status=400)
+    token = uuid.uuid4().hex
+    orig = getattr(media_file, 'name', '') or ''
+    ext = ('.' + orig.rsplit('.', 1)[-1].lower()) if '.' in orig else ('.webp' if media_type == 'image' else '.mp4')
+    name = default_storage.save(f'stories/{request.user.id}/tmp_{token}{ext[:6]}', media_file)
+    cache.set(_tmp_key(token), {'name': name, 'media_type': media_type, 'user': request.user.id}, _TMP_TTL)
+    return JsonResponse({'ok': True, 'token': token, 'url': default_storage.url(name), 'media_type': media_type})
+
+
+@login_required(login_url='login')
+@require_POST
+def discard_story_media(request):
+    """POST /stories/upload/discard/ — le créateur a été fermé sans publier."""
+    token = request.POST.get('token', '')
+    info = cache.get(_tmp_key(token)) if token else None
+    if info and info.get('user') == request.user.id:
+        cache.delete(_tmp_key(token))
+        try:
+            default_storage.delete(info['name'])
+        except Exception:
+            pass
+    return JsonResponse({'ok': True})
+
+
 # ── CREATE ────────────────────────────────────────────────────────────────────
 @login_required(login_url='login')
 @require_POST
@@ -315,6 +374,13 @@ def create_story(request):
     link_label  = request.POST.get('link_label', '').strip()[:60]
     media_file  = request.FILES.get('media')
     audio_file  = request.FILES.get('audio')
+    # Média déjà envoyé via /stories/upload/ : on reprend le fichier stocké
+    media_token = request.POST.get('media_token', '').strip()
+    tmp_info = None
+    if media_token and not media_file:
+        tmp_info = cache.get(_tmp_key(media_token))
+        if not tmp_info or tmp_info.get('user') != request.user.id:
+            return JsonResponse({'error': 'Média expiré, choisissez-le à nouveau.'}, status=400)
     audio_url_input = request.POST.get('audio_url', '').strip()  # URL externe
     try:
         audio_trim_start = max(0.0, float(request.POST.get('audio_trim_start', 0)))
@@ -328,7 +394,7 @@ def create_story(request):
         text_x, text_y = 50.0, 50.0
 
     # Validation
-    if story_type in ('image', 'video', 'image_text') and not media_file:
+    if story_type in ('image', 'video', 'image_text') and not media_file and not tmp_info:
         return JsonResponse({'error': 'Média requis pour ce type de story.'}, status=400)
     if story_type == 'text' and not caption:
         return JsonResponse({'error': 'Le texte ne peut pas être vide.'}, status=400)
@@ -356,7 +422,10 @@ def create_story(request):
 
     # Détecter le type média
     media_type = ''
-    if media_file:
+    if tmp_info:
+        media_type = tmp_info['media_type']
+        media_file = tmp_info['name']          # nom déjà présent dans le stockage
+    elif media_file:
         mime = (media_file.content_type or '').split(';')[0].strip().lower()
         if mime in _IMAGE_MIME:
             media_type = 'image'
@@ -367,7 +436,7 @@ def create_story(request):
 
     # Image : redimensionnée et convertie en WebP (comme les posts) ; une
     # story de 8 Mo était servie telle quelle dans la barre du fil.
-    if media_file and media_type == 'image':
+    if media_file and media_type == 'image' and not tmp_info:
         from post.media_utils import compress_image
         media_file = compress_image(media_file)
 
@@ -392,6 +461,8 @@ def create_story(request):
             link        = link,
             link_label  = link_label,
         )
+        if tmp_info:
+            cache.delete(_tmp_key(media_token))
     except Exception as e:
         _logger.exception("create_story FAILED: %s", e)
         return JsonResponse({'error': f'Erreur lors de la publication : {e}'}, status=500)
