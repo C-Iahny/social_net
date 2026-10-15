@@ -79,9 +79,10 @@
 .gd-actions { display: flex; gap: .6rem; flex-wrap: wrap; padding: 0 1.4rem 1.2rem; }
 .gd-action {
     display: inline-flex; align-items: center; gap: .4rem;
-    padding: .55rem 1.1rem; border-radius: 11px; border: none; cursor: pointer;
+    padding: .55rem 1.1rem; border-radius: var(--radius); border: none; cursor: pointer;
     font-weight: 700; font-size: .88rem; text-decoration: none; font-family: inherit;
     transition: opacity .15s, background .15s;
+  min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .gd-action .material-icons { font-size: 1.05rem; }
 .gd-join { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
@@ -312,9 +313,10 @@
 }
 .pc-footer-btn {
     width: 100%; display: flex; align-items: center; justify-content: center; gap: .38rem;
-    padding: .5rem; border-radius: 11px; border: none; background: none;
-    color: var(--text-muted); font-size: .81rem; font-weight: 600;
+    padding: .5rem; border-radius: var(--radius-sm); border: none; background: none;
+    color: var(--text-muted); font-size: .88rem; font-weight: 700;
     cursor: pointer; transition: background .13s, color .13s; font-family: inherit;
+  min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .pc-footer-btn:hover { background: var(--btn-bg); color: var(--text); }
 .pc-footer-btn .material-icons { font-size: 1.1rem; }

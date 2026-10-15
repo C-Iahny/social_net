@@ -4224,3 +4224,66 @@ msgstr "Fiandohan'ny clip"
 
 msgid "Charger"
 msgstr "Alaivo"
+
+msgid "Envoyer ma demande"
+msgstr "Alefaso ny fangatahako"
+
+msgid "Proposer ce lieu"
+msgstr "Atolory ity toerana ity"
+
+msgid "Bannière de la boutique"
+msgstr "Sora-baventin'ny fivarotana"
+
+msgid "Bonjour, je suis intéressé(e) par votre annonce : "
+msgstr "Salama, liana amin'ny dokam-barotrao aho : "
+
+msgid "Clique sur l'icône 🔖 d'un post pour le retrouver ici."
+msgstr "Tsindrio ny 🔖 eo amin'ny lahatsoratra raha te hahita azy eto."
+
+msgid "Demander le statut Boutique Pro"
+msgstr "Hangataka ny sata Boutique Pro"
+
+msgid "Devenez Vendeur Vérifié ou Boutique Pro"
+msgstr "Ho Mpivarotra voamarina na Boutique Pro"
+
+msgid "Informations de votre boutique"
+msgstr "Mombamomba ny fivarotanao"
+
+msgid "Je vends des articles personnels de temps en temps."
+msgstr "Mivarotra entana manokana indraindray aho."
+
+msgid "Je vends régulièrement à titre professionnel ou commercial."
+msgstr "Mivarotra tsy tapaka amin'ny maha-mpandraharaha aho."
+
+msgid "Jusqu'à 12 photos par annonce"
+msgstr "Hatramin'ny sary 12 isaky ny dokam-barotra"
+
+msgid "Jusqu'à 20 photos par annonce"
+msgstr "Hatramin'ny sary 20 isaky ny dokam-barotra"
+
+msgid "Page boutique publique dédiée"
+msgstr "Pejin'ny fivarotana manokana"
+
+msgid "Priorité dans les résultats"
+msgstr "Laharam-pahamehana amin'ny valiny"
+
+msgid "Priorité maximale dans les résultats"
+msgstr "Laharam-pahamehana ambony indrindra"
+
+msgid "Précédent"
+msgstr "Teo aloha"
+
+msgid "Vendez à vos voisins, pas à des inconnus."
+msgstr "Mivarota amin'ny mpiara-monina, fa tsy amin'ny olona tsy fantatra."
+
+msgid "Visible pour les acheteurs (appel ou WhatsApp)."
+msgstr "Hitan'ny mpividy (antso na WhatsApp)."
+
+msgid "Votre page boutique est visible par tous les acheteurs."
+msgstr "Hitan'ny mpividy rehetra ny pejin'ny fivarotanao."
+
+msgid "Vérification vendeur / Boutique Pro"
+msgstr "Fanamarinana mpivarotra / Boutique Pro"
+
+msgid "« En pause » masque votre annonce sans la supprimer."
+msgstr "« Miato » manafina ny dokam-barotrao nefa tsy mamafa azy."

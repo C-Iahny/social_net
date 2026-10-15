@@ -77,3 +77,20 @@ class UiCoreTests(TestCase):
             src = (BASE / tpl).read_text()
             self.assertNotIn('/post/hashtag/', src, tpl)
             self.assertIn('{% url "post:hashtag" tag="__TAG__" %}', src, tpl)
+
+
+class LanguageChoiceTests(TestCase):
+    """L'anglais est de nouveau sélectionnable ; le français reste la langue par défaut."""
+    def test_default_is_french_without_cookie(self):
+        r = Client().get('/legal/confidentialite/')
+        self.assertEqual(r.cookies.get('zoot_language').value, 'fr')
+
+    def test_english_cookie_is_respected(self):
+        c = Client(); c.cookies['zoot_language'] = 'en'
+        html = c.get('/login/').content.decode()
+        self.assertIn('lang="en"', html)
+        self.assertNotIn('zoot_language=fr', str(c.cookies))
+
+    def test_malagasy_cookie_is_respected(self):
+        c = Client(); c.cookies['zoot_language'] = 'mg'
+        self.assertIn('lang="mg"', c.get('/login/').content.decode())

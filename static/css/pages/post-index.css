@@ -210,9 +210,10 @@
 .sidebar-cta p { font-size: .88rem; color: var(--text-muted); margin-bottom: .85rem; line-height: 1.5; }
 .sidebar-cta-btn {
     display: block; padding: .55rem;
-    border-radius: 10px; font-weight: 700; font-size: .9rem;
+    border-radius: var(--radius); font-weight: 700; font-size: .9rem;
     text-decoration: none; text-align: center;
     margin-bottom: .5rem; transition: background .15s, transform .12s;
+  min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .sidebar-cta-btn:hover { transform: translateY(-1px); text-decoration: none; }
 .cta-primary { background: var(--accent); color: #fff; }
@@ -378,8 +379,9 @@
 .explore-cta-btn {
     display: inline-flex; align-items: center; gap: .45rem;
     padding: .65rem 1.8rem;
-    border-radius: 12px; font-weight: 700; font-size: .95rem;
+    border-radius: var(--radius); font-weight: 700; font-size: .95rem;
     text-decoration: none; transition: background .15s, transform .12s;
+  min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .explore-cta-btn:hover { transform: translateY(-2px); text-decoration: none; }
 .explore-cta-primary { background: var(--accent); color: #fff; }

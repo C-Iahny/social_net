@@ -227,8 +227,8 @@
     justify-content: center;
     gap: .35rem;
     height: 36px;
-    border-radius: 22px;
-    font-size: .82rem;
+    border-radius: var(--radius-pill);
+    font-size: .88rem;
     font-weight: 700;
     border: none;
     cursor: pointer;

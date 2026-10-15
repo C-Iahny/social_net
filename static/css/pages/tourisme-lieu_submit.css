@@ -129,10 +129,11 @@
 .ls-submit-btn {
     display: inline-flex; align-items: center; gap: .5rem;
     background: var(--accent); color: #fff;
-    border: none; border-radius: 11px;
+    border: none; border-radius: var(--radius);
     padding: .75rem 2rem; font-size: .95rem; font-weight: 700;
     cursor: pointer; transition: opacity .18s; width: 100%;
     justify-content: center; margin-top: .5rem;
+  min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .ls-submit-btn:hover { opacity: .88; }
 .ls-submit-btn .material-icons { font-size: 1.15rem; }

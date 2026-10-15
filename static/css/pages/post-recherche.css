@@ -79,9 +79,10 @@ body { background: var(--bg); }
 .rech-user-actions { display: flex; gap: .4rem; flex-shrink: 0; }
 .rech-btn {
     display: inline-flex; align-items: center; gap: .3rem;
-    padding: .38rem .85rem; border-radius: 22px; font-size: .8rem; font-weight: 700;
+    padding: .38rem .85rem; border-radius: var(--radius-pill); font-size: .8rem; font-weight: 700;
     text-decoration: none; transition: opacity .2s;
     border: 1px solid var(--border); color: var(--text); background: var(--btn-bg);
+  min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .rech-btn-accent {
     background: linear-gradient(135deg, var(--accent), var(--accent2));

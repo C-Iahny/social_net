@@ -126,11 +126,12 @@
 .btn-submit {
     flex: 1; padding: .6rem 1.5rem;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; border: none; border-radius: 22px;
+    color: #fff; border: none; border-radius: var(--radius-pill);
     font-size: 1rem; font-weight: 700; cursor: pointer;
     transition: opacity .2s, transform .1s, box-shadow .2s;
     display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
     box-shadow: 0 4px 16px rgba(0,207,255,.25);
+  min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 [data-theme="dark"] .btn-submit { color: #000; }
 .btn-submit:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(0,207,255,.35); }

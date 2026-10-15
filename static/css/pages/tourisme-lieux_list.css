@@ -219,7 +219,7 @@
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 36px; height: 36px; padding: 0 .7rem;
     border: 1.5px solid var(--border);
-    border-radius: 8px; font-size: .85rem; font-weight: 600;
+    border-radius: var(--radius); font-size: .88rem; font-weight: 700;
     color: var(--text-muted); text-decoration: none; background: var(--bg-card);
     transition: all .15s;
 }

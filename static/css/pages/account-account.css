@@ -161,11 +161,12 @@ body { background: var(--bg); }
 [data-theme="dark"] .profile-actions { border-top-color: rgba(255,255,255,.05); }
 .btn-p {
     display: inline-flex; align-items: center; gap: .4rem;
-    padding: .44rem 1.05rem; border-radius: 12px;
-    font-weight: 600; font-size: .88rem; border: none;
+    padding: .44rem 1.05rem; border-radius: var(--radius);
+    font-weight: 700; font-size: .88rem; border: none;
     cursor: pointer; text-decoration: none;
     transition: opacity .15s, transform .12s;
     font-family: inherit;
+  min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .btn-p:hover { opacity: .88; transform: translateY(-1px); text-decoration: none; }
 .btn-p .material-icons { font-size: .95rem; }
@@ -684,9 +685,10 @@ body { background: var(--bg); }
 }
 .pc-footer-btn {
     width: 100%; display: flex; align-items: center; justify-content: center; gap: .38rem;
-    padding: .5rem .5rem; border-radius: 11px; border: none; background: none;
-    color: var(--text-muted); font-size: .81rem; font-weight: 600; cursor: pointer;
+    padding: .5rem .5rem; border-radius: var(--radius-sm); border: none; background: none;
+    color: var(--text-muted); font-size: .88rem; font-weight: 700; cursor: pointer;
     text-decoration: none; transition: background .13s, color .13s; letter-spacing: .01em; font-family: inherit;
+  min-height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .pc-footer-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
 .pc-footer-btn .material-icons { font-size: 1.1rem; }

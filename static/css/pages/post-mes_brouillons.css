@@ -53,8 +53,9 @@ body { background: var(--bg); }
 .draft-actions { display:flex;gap:.4rem;margin-top:.65rem;flex-wrap:wrap; }
 .draft-btn {
     display:inline-flex;align-items:center;gap:.25rem;
-    padding:.3rem .75rem;border-radius:8px;border:none;cursor:pointer;
-    font-size:.82rem;font-weight:600;text-decoration:none;transition:background .15s;
+    padding:.3rem .75rem;border-radius: var(--radius-sm);border:none;cursor:pointer;
+    font-size: .88rem;font-weight: 700;text-decoration:none;transition:background .15s;
+  min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .draft-btn-edit    { background:var(--btn-bg);color:var(--text); }
 .draft-btn-publish { background:var(--accent);color:#fff; }

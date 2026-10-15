@@ -4097,3 +4097,129 @@ msgstr "Clip start"
 
 msgid "Charger"
 msgstr "Load"
+
+msgid "Envoyer ma demande"
+msgstr "Send my request"
+
+msgid "Proposer ce lieu"
+msgstr "Suggest this place"
+
+msgid "Badge ✓ Vérifié sur vos annonces"
+msgstr "✓ Verified badge on your listings"
+
+msgid "Badge ✓ actif, 12 photos par annonce."
+msgstr "✓ badge active, 12 photos per listing."
+
+msgid "Badge ⭐ Boutique Pro doré"
+msgstr "Golden ⭐ Pro Shop badge"
+
+msgid "Badge, priorité dans les résultats, plus de photos — et une page boutique dédiée pour les pros."
+msgstr "Badge, priority in results, more photos — and a dedicated shop page for professionals."
+
+msgid "Bannière de la boutique"
+msgstr "Shop banner"
+
+msgid "Bonjour, je suis intéressé(e) par votre annonce : "
+msgstr "Hello, I am interested in your listing: "
+
+msgid "Clique sur l'icône 🔖 d'un post pour le retrouver ici."
+msgstr "Tap the 🔖 icon on a post to find it here."
+
+msgid "Construit pour d'ici, pas adapté depuis ailleurs."
+msgstr "Built for here, not adapted from elsewhere."
+
+msgid "Créez votre compte en une minute. C'est gratuit, et vous pouvez publier tout de suite."
+msgstr "Create your account in a minute. It's free, and you can post right away."
+
+msgid "Demander le statut Boutique Pro"
+msgstr "Request Pro Shop status"
+
+msgid "Des communautés par passion ou par région, et le direct depuis le navigateur — sans rien installer."
+msgstr "Communities by interest or region, and live video from the browser — nothing to install."
+
+msgid "Devenez Vendeur Vérifié ou Boutique Pro"
+msgstr "Become a Verified Seller or Pro Shop"
+
+msgid "Facilite le filtre « Près de chez moi »"
+msgstr "Makes the “Near me” filter work"
+
+msgid "Image horizontale recommandée (ex : 1200×300 px). Formats : JPG, PNG, WebP."
+msgstr "Landscape image recommended (e.g. 1200×300 px). Formats: JPG, PNG, WebP."
+
+msgid "Informations de votre boutique"
+msgstr "Your shop details"
+
+msgid "Je vends des articles personnels de temps en temps."
+msgstr "I sell personal items from time to time."
+
+msgid "Je vends régulièrement à titre professionnel ou commercial."
+msgstr "I sell regularly as a professional or business."
+
+msgid "Jusqu'à 12 photos par annonce"
+msgstr "Up to 12 photos per listing"
+
+msgid "Jusqu'à 20 photos par annonce"
+msgstr "Up to 20 photos per listing"
+
+msgid "Kabary numérique"
+msgstr "Digital Kabary"
+
+msgid "La position du livreur apparaîtra ici dès qu\\'il partagera son GPS."
+msgstr "The courier's position will appear here once they share their GPS."
+
+msgid "Les lieux région par région, les avis de ceux qui y sont allés, et des guides locaux à contacter."
+msgstr "Places region by region, reviews from those who went, and local guides to contact."
+
+msgid "Les régions de Madagascar structurent la recherche, les prix sont en ariary, et un mode économie charge les médias à la demande pour que le site reste utilisable quand le réseau ne suit pas."
+msgstr "Madagascar's regions structure the search, prices are in ariary, and a data-saver mode loads media on demand so the site stays usable when the network lags."
+
+msgid "Page boutique publique dédiée"
+msgstr "Dedicated public shop page"
+
+msgid "Priorité dans les résultats"
+msgstr "Priority in results"
+
+msgid "Priorité maximale dans les résultats"
+msgstr "Top priority in results"
+
+msgid "Précédent"
+msgstr "Previous"
+
+msgid "Présentez votre boutique, vos produits, votre expérience…"
+msgstr "Introduce your shop, your products, your experience…"
+
+msgid "Présentez-vous, décrivez votre activité, expliquez pourquoi vous méritez d'être vérifié…"
+msgstr "Introduce yourself, describe your activity, explain why you deserve verification…"
+
+msgid "Textes, photos, vidéos. Stories qui disparaissent en 24 h, réactions et messages privés en temps réel."
+msgstr "Text, photos, videos. Stories that vanish after 24 h, reactions and real-time private messages."
+
+msgid "Un compte vérifié renforce la confiance des acheteurs. Choisissez le profil qui correspond à votre activité."
+msgstr "A verified account builds buyers' trust. Choose the profile that matches your activity."
+
+msgid "Une annonce en quelques minutes, filtrée par catégorie et par région. Les commerçants sérieux portent un badge vérifié."
+msgstr "A listing in minutes, filtered by category and region. Serious sellers carry a verified badge."
+
+msgid "Vendez à vos voisins, pas à des inconnus."
+msgstr "Sell to your neighbours, not to strangers."
+
+msgid "Visible pour les acheteurs (appel ou WhatsApp)."
+msgstr "Visible to buyers (call or WhatsApp)."
+
+msgid "Visible sur votre annonce pour que les acheteurs vous contactent directement par appel ou WhatsApp."
+msgstr "Shown on your listing so buyers can reach you directly by call or WhatsApp."
+
+msgid "Votre activité a grandi ? Passez au niveau supérieur : page boutique dédiée, badge doré, 20 photos par annonce, priorité maximale dans les résultats."
+msgstr "Has your business grown? Step up: dedicated shop page, golden badge, 20 photos per listing, top priority in results."
+
+msgid "Votre page boutique est visible par tous les acheteurs."
+msgstr "Your shop page is visible to all buyers."
+
+msgid "Vérification vendeur / Boutique Pro"
+msgstr "Seller verification / Pro Shop"
+
+msgid "badge doré ⭐, page boutique publique, 20 photos par annonce."
+msgstr "golden ⭐ badge, public shop page, 20 photos per listing."
+
+msgid "« En pause » masque votre annonce sans la supprimer."
+msgstr "“Paused” hides your listing without deleting it."
