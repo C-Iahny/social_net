@@ -278,76 +278,63 @@
 </div>
 </div>
 
-<!-- Modal audio -->
+<!-- Modal audio : catalogue affiché directement (tendances, genres, recherche, pré-écoute) -->
 <div id="zsc-audio-modal" onclick="if(event.target===this)zscCloseAudio()">
-<div id="zsc-audio-panel">
-  <h3><span class="material-icons">music_note</span> {% trans "Ajouter de la musique" %}</h3>
-
-  <div class="zsc-atabs">
-    <div class="zsc-atab active" data-p="local" onclick="zscAudioTab('local',this)">
-      <span class="material-icons">upload_file</span> Local
-    </div>
-    <div class="zsc-atab" data-p="url" onclick="zscAudioTab('url',this)">
-      <span class="material-icons">link</span> URL
-    </div>
-    <div class="zsc-atab" data-p="lib" onclick="zscAudioTab('lib',this)">
-      <span class="material-icons">library_music</span> Bibliothèque
-    </div>
+<div id="zsc-audio-panel" role="dialog" aria-modal="true" aria-label="{% trans 'Musique' %}">
+  <div class="zsc-sheet-handle"></div>
+  <div class="zsc-music-head">
+    <h3><span class="material-icons">music_note</span> {% trans "Musique" %}</h3>
+    <button type="button" class="zsc-music-close" onclick="zscCloseAudio()" aria-label="{% trans 'Fermer' %}"><span class="material-icons">close</span></button>
   </div>
-
-  <div class="zsc-apanel active" id="zsc-ap-local">
-    <label class="zsc-file-lbl" for="zsc-audio-in">
-      <span class="material-icons">audio_file</span>
-      {% trans "Choisir un fichier (MP3, OGG, WAV…)" %}
+  <div class="zsc-music-search">
+    <span class="material-icons">search</span>
+    <input type="search" id="zsc-search-inp" placeholder="{% trans 'Rechercher un titre ou un artiste…' %}"
+           autocomplete="off" oninput="zscMusicInput(this.value)"
+           onkeydown="if(event.key==='Enter'){event.preventDefault();zscSearchMusic();}">
+  </div>
+  <div class="zsc-music-chips" id="zsc-music-chips">
+    <button type="button" class="zsc-mchip active" data-tag="tendances" onclick="zscMusicTag('tendances',this)">🔥 {% trans "Tendances" %}</button>
+    <button type="button" class="zsc-mchip" data-tag="gasy"   onclick="zscMusicTag('gasy',this)">🇲🇬 Gasy</button>
+    <button type="button" class="zsc-mchip" data-tag="afro"   onclick="zscMusicTag('afro',this)">Afro</button>
+    <button type="button" class="zsc-mchip" data-tag="love"   onclick="zscMusicTag('love',this)">{% trans "Amour" %}</button>
+    <button type="button" class="zsc-mchip" data-tag="gospel" onclick="zscMusicTag('gospel',this)">Gospel</button>
+    <button type="button" class="zsc-mchip" data-tag="hiphop" onclick="zscMusicTag('hiphop',this)">Hip-hop</button>
+    <button type="button" class="zsc-mchip" data-tag="dance"  onclick="zscMusicTag('dance',this)">Dance</button>
+    <button type="button" class="zsc-mchip" data-tag="chill"  onclick="zscMusicTag('chill',this)">Chill</button>
+    <button type="button" class="zsc-mchip" data-tag="rnb"    onclick="zscMusicTag('rnb',this)">R&amp;B</button>
+    <button type="button" class="zsc-mchip" data-tag="rock"   onclick="zscMusicTag('rock',this)">Rock</button>
+    <button type="button" class="zsc-mchip" data-tag="pop"    onclick="zscMusicTag('pop',this)">Pop</button>
+  </div>
+  <div class="zsc-music-list" id="zsc-results" aria-live="polite"></div>
+  <div class="zsc-music-foot">
+    <label class="zsc-music-alt">
+      <span class="material-icons">upload_file</span>{% trans "Importer un son" %}
+      <input type="file" id="zsc-audio-in" accept="audio/*" class="input-file-hidden" onchange="zscOnAudioFile(this)">
     </label>
-    <input type="file" id="zsc-audio-in" accept="audio/*" style="display:none"
-           onchange="zscOnAudioFile(this)">
+    <button type="button" class="zsc-music-alt" onclick="zscMusicUrlToggle()"><span class="material-icons">link</span>{% trans "Coller un lien" %}</button>
+    <span class="zsc-music-credit">{% trans "Extraits de 30 s · Deezer" %}</span>
+  </div>
+  <div class="zsc-url-row" id="zsc-url-row" style="display:none;">
+    <input type="url" class="zsc-url-inp" id="zsc-url-inp" placeholder="https://…/musique.mp3">
+    <button class="zsc-url-btn" onclick="zscLoadAudioUrl()" type="button" aria-label="{% trans 'Charger' %}"><span class="material-icons">download</span></button>
   </div>
 
-  <div class="zsc-apanel" id="zsc-ap-url">
-    <div class="zsc-url-row">
-      <input type="url" class="zsc-url-inp" id="zsc-url-inp" placeholder="https://…/musique.mp3">
-      <button class="zsc-url-btn" onclick="zscLoadAudioUrl()" type="button">
-        <span class="material-icons">download</span>
-      </button>
+  <!-- Titre choisi : pré-écoute, début du clip (fichiers longs), utiliser -->
+  <div class="zsc-music-sel" id="zsc-trim">
+    <img id="zsc-sel-cover" src="" alt="" onerror="this.style.visibility='hidden'">
+    <div class="zsc-sel-info">
+      <b id="zsc-sel-name">—</b>
+      <small id="zsc-sel-artist"></small>
+      <div class="zsc-trim-row" id="zsc-trim-row">
+        <input type="range" id="zsc-trim-range" min="0" max="100" step="0.5" value="0" oninput="zscTrimInput(this.value)" aria-label="{% trans 'Début du clip' %}">
+        <span id="zsc-trim-time">0 s → 30 s</span>
+      </div>
     </div>
-    <div style="font-size:.68rem;color:var(--text-muted);margin-top:.25rem;">
-      {% trans "Lien direct vers un fichier audio public" %}
-    </div>
+    <button class="zsc-sel-play" onclick="zscTrimToggle()" type="button" aria-label="{% trans 'Pré-écouter' %}">
+      <span class="material-icons" id="zsc-trim-icon">play_arrow</span>
+    </button>
+    <button class="zsc-sel-use vz-btn vz-btn--primary vz-btn--sm vz-btn--pill" onclick="zscMusicUse()" type="button">{% trans "Utiliser" %}</button>
   </div>
-
-  <div class="zsc-apanel" id="zsc-ap-lib">
-    <div class="zsc-search-row">
-      <input type="text" class="zsc-search-inp" id="zsc-search-inp"
-             placeholder="afrobeats, malagasy, chill…"
-             onkeydown="if(event.key==='Enter')zscSearchMusic()">
-      <button class="zsc-search-btn" onclick="zscSearchMusic()" type="button" aria-label="{% trans 'Rechercher' %}">
-        <span class="material-icons">search</span>
-      </button>
-    </div>
-    <div class="zsc-results" id="zsc-results"></div>
-    <div style="font-size:.66rem;color:var(--text-muted);margin-top:.3rem;">
-      {% trans "Musique libre de droits via" %} <strong>Jamendo</strong>
-    </div>
-  </div>
-
-  <!-- Trim slider -->
-  <div class="zsc-trim" id="zsc-trim">
-    <div class="zsc-trim-lbl">
-      <span class="material-icons">content_cut</span>
-      {% trans "Début du clip (30 s max)" %}
-    </div>
-    <div class="zsc-trim-row">
-      <button class="zsc-trim-play" onclick="zscTrimToggle()" type="button" aria-label="{% trans 'Lecture' %}">
-        <span class="material-icons" id="zsc-trim-icon">play_arrow</span>
-      </button>
-      <input type="range" id="zsc-trim-range" min="0" max="100" step="0.5" value="0"
-             oninput="zscTrimInput(this.value)">
-      <span id="zsc-trim-time">0 s → 30 s</span>
-    </div>
-  </div>
-
-  <button class="zsc-acancel" onclick="zscCloseAudio()" type="button">{% trans "Annuler" %}</button>
 </div>
 </div>
 
@@ -1107,6 +1094,8 @@ function zscOpen(){
   _txtOver().style.display='none'; _txtP().textContent='';
   document.getElementById('zsc-pub-btn').disabled=true;
   document.getElementById('zsc-audio-pill').style.display='none';
+  document.getElementById('zsc-tool-music').classList.remove('active');
+  var trimBox=document.getElementById('zsc-trim'); if(trimBox) trimBox.classList.remove('visible');
   document.getElementById('zsc-tool-fit').style.display='none';
   document.getElementById('zsc-upbar').style.display='none';
   document.getElementById('zsc-upbar-fill').style.width='0%';
@@ -1421,99 +1410,152 @@ window.zscPublish = function(){
 };
 
 /* ═══════════════════════════════════════════════════
-   AUDIO (créateur)
+   AUDIO (créateur) — feuille façon Facebook : le catalogue s'affiche tout
+   de suite (tendances), pastilles de genre, recherche, pré-écoute, puis
+   « Utiliser ». Fichier local et lien direct restent possibles en bas.
    ═══════════════════════════════════════════════════ */
-window.zscOpenAudio = function(){ document.getElementById('zsc-audio-modal').classList.add('open'); };
+var _music = { loaded:false, tag:'tendances', q:'', tracks:[], sel:null, timer:null, playingIdx:-1 };
+var _prevAudio = null;
+function _previewAudio(){
+  if(!_prevAudio){ _prevAudio=document.createElement('audio'); _prevAudio.preload='none'; document.body.appendChild(_prevAudio);
+    _prevAudio.addEventListener('ended', function(){ _musicMarkPlaying(-1); }); }
+  return _prevAudio;
+}
+window.zscOpenAudio = function(){
+  document.getElementById('zsc-audio-modal').classList.add('open');
+  if(window.vzLayers) vzLayers.push(window.zscCloseAudio);
+  if(!_music.loaded){ _music.loaded=true; _musicLoad(); }
+};
 window.zscCloseAudio = function(){
-  document.getElementById('zsc-audio-modal').classList.remove('open');
-  document.getElementById('zsc-trim-audio').pause();
+  var m=document.getElementById('zsc-audio-modal'); if(!m.classList.contains('open')) return;
+  m.classList.remove('open');
+  if(window.vzLayers) vzLayers.remove(window.zscCloseAudio);
+  document.getElementById('zsc-trim-audio').pause(); zscTrimStop();
+  if(_prevAudio){ _prevAudio.pause(); } _musicMarkPlaying(-1);
 };
-
-window.zscAudioTab = function(panel, el){
-  document.querySelectorAll('.zsc-atab').forEach(function(t){ t.classList.remove('active'); });
-  document.querySelectorAll('.zsc-apanel').forEach(function(p){ p.classList.remove('active'); });
-  if(el) el.classList.add('active');
-  document.getElementById('zsc-ap-'+panel).classList.add('active');
+window.zscMusicTag = function(tag, el){
+  _music.tag=tag; _music.q=''; document.getElementById('zsc-search-inp').value='';
+  document.querySelectorAll('.zsc-mchip').forEach(function(c){ c.classList.toggle('active', c===el); });
+  _musicLoad();
 };
-
-window.zscOnAudioFile = function(inp){
-  var f=inp.files&&inp.files[0]; if(!f) return;
-  _sc.audioFile=f; _sc.audioName=f.name;
-  _zscSetAudioChosen(f.name);
-  _zscLoadTrim(URL.createObjectURL(f));
+window.zscMusicInput = function(v){
+  clearTimeout(_music.timer);
+  _music.q=(v||'').trim();
+  _music.timer=setTimeout(function(){ _musicLoad(); }, 350);
 };
-
-window.zscLoadAudioUrl = function(){
-  var url=document.getElementById('zsc-url-inp').value.trim(); if(!url) return;
-  _sc.audioFile=null; _sc.audioUrlExternal=url; _sc.audioName=url.split('/').pop()||'audio';
-  _zscSetAudioChosen(_sc.audioName);
+window.zscSearchMusic = function(){ clearTimeout(_music.timer); _music.q=document.getElementById('zsc-search-inp').value.trim(); _musicLoad(); };
+function _musicLoad(){
+  var res=document.getElementById('zsc-results');
+  res.innerHTML='<div class="zsc-music-loading"><span class="zsc-spin"></span>{% trans "Chargement…"|escapejs %}</div>';
+  var url = URLS.music + (_music.q ? '?q='+encodeURIComponent(_music.q) : '?tag='+encodeURIComponent(_music.tag)) + '&limit=25';
+  var mine = ++_musicLoad.seq;
+  fetch(url, {credentials:'same-origin', headers:{'X-Requested-With':'XMLHttpRequest'}})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(mine!==_musicLoad.seq) return;
+      _music.tracks = d.tracks||[];
+      if(!_music.tracks.length){ res.innerHTML='<p class="zsc-music-empty">{% trans "Aucun titre trouvé. Essayez un autre mot ou importez un son."|escapejs %}</p>'; return; }
+      res.innerHTML = _music.tracks.map(function(t,i){
+        var dur = t.full_duration ? (Math.floor(t.full_duration/60)+':'+('0'+Math.floor(t.full_duration%60)).slice(-2)) : '';
+        return '<div class="zsc-track" data-i="'+i+'" onclick="zscPickTrackIdx('+i+')">' +
+          '<button type="button" class="zsc-track-play" onclick="event.stopPropagation();zscMusicPreview('+i+')" aria-label="{% trans "Pré-écouter"|escapejs %}">' +
+            (t.image ? '<img src="'+_esc(t.image)+'" alt="" loading="lazy">' : '<span class="material-icons">music_note</span>') +
+            '<span class="material-icons zsc-track-ico">play_arrow</span></button>' +
+          '<div class="zsc-track-info"><b>'+_esc(t.name)+'</b><small>'+_esc(t.artist)+(dur?' · '+dur:'')+'</small></div>' +
+          '<span class="material-icons zsc-track-add">add_circle_outline</span></div>';
+      }).join('');
+    }).catch(function(){ if(mine===_musicLoad.seq) res.innerHTML='<p class="zsc-music-empty">{% trans "Catalogue indisponible pour le moment."|escapejs %}</p>'; });
+}
+_musicLoad.seq = 0;
+function _musicMarkPlaying(i){
+  _music.playingIdx=i;
+  document.querySelectorAll('.zsc-track').forEach(function(el){
+    var on = parseInt(el.dataset.i,10)===i; el.classList.toggle('playing', on);
+    var ico=el.querySelector('.zsc-track-ico'); if(ico) ico.textContent = on ? 'pause' : 'play_arrow';
+  });
+}
+window.zscMusicPreview = function(i){
+  var t=_music.tracks[i]; if(!t) return;
+  var a=_previewAudio();
+  if(_music.playingIdx===i && !a.paused){ a.pause(); _musicMarkPlaying(-1); return; }
+  a.src=t.audio_url; a.currentTime=0; a.play().then(function(){ _musicMarkPlaying(i); }).catch(function(){ _musicMarkPlaying(-1); });
+};
+window.zscPickTrackIdx = function(i){ var t=_music.tracks[i]; if(t) zscPickTrack(t.audio_url, t.name, t); };
+window.zscPickTrack = function(url, name, meta){
+  if(_prevAudio){ _prevAudio.pause(); } _musicMarkPlaying(-1);
+  _sc.audioFile=null; _sc._audioUrl=url; _sc.audioUrlExternal=''; _sc.audioName=name;
+  _music.sel = meta || {name:name, artist:'', image:''};
+  _zscShowSelection(_music.sel);
   _zscLoadTrim(url);
 };
-
-function _zscSetAudioChosen(name){
-  document.getElementById('zsc-audio-name').textContent=name.substring(0,30);
-  document.getElementById('zsc-audio-pill').style.display='flex';
-  document.getElementById('zsc-audio-modal').classList.remove('open');
+function _zscShowSelection(m){
+  document.getElementById('zsc-sel-name').textContent=m.name||'';
+  document.getElementById('zsc-sel-artist').textContent=m.artist||'';
+  var cov=document.getElementById('zsc-sel-cover'); cov.style.visibility=''; cov.src=m.image||''; if(!m.image) cov.style.visibility='hidden';
+  document.getElementById('zsc-trim').classList.add('visible');
+  document.getElementById('zsc-audio-panel').scrollTop = 0;
 }
-
+window.zscMusicUse = function(){
+  if(!_sc.audioName){ return; }
+  _zscSetAudioChosen(_sc.audioName);
+};
+window.zscMusicUrlToggle = function(){
+  var r=document.getElementById('zsc-url-row'); var show = r.style.display==='none';
+  r.style.display = show ? 'flex' : 'none'; if(show) document.getElementById('zsc-url-inp').focus();
+};
+window.zscOnAudioFile = function(inp){
+  var f=inp.files&&inp.files[0]; if(!f) return;
+  _sc.audioFile=f; _sc._audioUrl=''; _sc.audioUrlExternal=''; _sc.audioName=f.name;
+  _music.sel={name:f.name, artist:'{% trans "Fichier importé"|escapejs %}', image:''};
+  _zscShowSelection(_music.sel);
+  try { _zscLoadTrim(URL.createObjectURL(f)); } catch(e){}
+};
+window.zscLoadAudioUrl = function(){
+  var url=document.getElementById('zsc-url-inp').value.trim(); if(!url) return;
+  _sc.audioFile=null; _sc._audioUrl=''; _sc.audioUrlExternal=url; _sc.audioName=url.split('/').pop()||'audio';
+  _music.sel={name:_sc.audioName, artist:'{% trans "Lien"|escapejs %}', image:''};
+  _zscShowSelection(_music.sel);
+  _zscLoadTrim(url);
+};
+function _zscSetAudioChosen(name){
+  document.getElementById('zsc-audio-name').textContent=(name||'').substring(0,34);
+  document.getElementById('zsc-audio-pill').style.display='flex';
+  document.getElementById('zsc-tool-music').classList.add('active');
+  zscCloseAudio();
+}
 function _zscLoadTrim(url){
   var audio=document.getElementById('zsc-trim-audio');
+  var row=document.getElementById('zsc-trim-row');
+  row.style.display='none'; _sc.audioTrimStart=0;
   audio.src=url; audio.load();
   audio.onloadedmetadata=function(){
-    var dur=audio.duration||60;
-    var slider=document.getElementById('zsc-trim-range');
-    slider.max=Math.max(0,dur-30); slider.value=0; _sc.audioTrimStart=0;
-    document.getElementById('zsc-trim-time').textContent='0 s → 30 s';
-    document.getElementById('zsc-trim').classList.add('visible');
+    var dur=audio.duration||0;
+    if(dur>31){   /* fichier long : choisir le début du clip de 30 s */
+      var slider=document.getElementById('zsc-trim-range');
+      slider.max=Math.max(0,dur-30); slider.value=0;
+      document.getElementById('zsc-trim-time').textContent='0 s → 30 s';
+      row.style.display='flex';
+    }
   };
 }
-
 window.zscTrimInput = function(val){
   _sc.audioTrimStart=parseFloat(val)||0;
-  var end=_sc.audioTrimStart+30;
-  document.getElementById('zsc-trim-time').textContent=Math.round(_sc.audioTrimStart)+' s → '+Math.round(end)+' s';
-  var audio=document.getElementById('zsc-trim-audio');
-  if(!audio.paused){ audio.currentTime=_sc.audioTrimStart; }
+  document.getElementById('zsc-trim-time').textContent=Math.round(_sc.audioTrimStart)+' s → '+Math.round(_sc.audioTrimStart+30)+' s';
+  var audio=document.getElementById('zsc-trim-audio'); if(!audio.paused){ audio.currentTime=_sc.audioTrimStart; }
 };
-
 window.zscTrimToggle = function(){
-  var audio=document.getElementById('zsc-trim-audio');
-  var icon=document.getElementById('zsc-trim-icon');
+  var audio=document.getElementById('zsc-trim-audio'); var icon=document.getElementById('zsc-trim-icon');
+  if(_prevAudio){ _prevAudio.pause(); _musicMarkPlaying(-1); }
   if(audio.paused){ audio.currentTime=_sc.audioTrimStart; audio.play().catch(function(){}); icon.textContent='pause'; }
   else { audio.pause(); icon.textContent='play_arrow'; }
 };
 window.zscTrimStop = function(){ document.getElementById('zsc-trim-icon').textContent='play_arrow'; };
-
 window.zscRemoveAudio = function(){
-  _sc.audioFile=null; _sc.audioName=''; _sc.audioTrimStart=0; _sc._audioUrl=''; _sc.audioUrlExternal='';
+  _sc.audioFile=null; _sc.audioName=''; _sc.audioTrimStart=0; _sc._audioUrl=''; _sc.audioUrlExternal=''; _music.sel=null;
   document.getElementById('zsc-audio-pill').style.display='none';
+  document.getElementById('zsc-tool-music').classList.remove('active');
   document.getElementById('zsc-trim').classList.remove('visible');
   document.getElementById('zsc-trim-audio').pause();
-};
-
-window.zscSearchMusic = function(){
-  var q=document.getElementById('zsc-search-inp').value.trim(); if(!q) return;
-  var res=document.getElementById('zsc-results');
-  res.innerHTML='<p style="color:var(--text-muted);font-size:.82rem;padding:.4rem;">Recherche…</p>';
-  fetch(URLS.music+'?q='+encodeURIComponent(q)+'&limit=10')
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      if(!d.tracks||!d.tracks.length){ res.innerHTML='<p style="color:var(--text-muted);font-size:.82rem;padding:.4rem;">Aucun résultat.</p>'; return; }
-      res.innerHTML=d.tracks.map(function(t){
-        var dur=Math.floor(t.duration/60)+':'+(('0'+Math.floor(t.duration%60)).slice(-2));
-        return '<div class="zsc-result" onclick="zscPickTrack('+JSON.stringify(t.audio_url)+','+JSON.stringify(t.name)+')">' +
-          '<img src="'+_esc(t.image)+'" onerror="this.style.display=\'none\'" alt="">' +
-          '<div class="zsc-result-info"><div class="zsc-rname">'+_esc(t.name)+'</div>' +
-          '<div class="zsc-rartist">'+_esc(t.artist)+'</div></div>' +
-          '<div class="zsc-rdur">'+dur+'</div></div>';
-      }).join('');
-    }).catch(function(){ res.innerHTML='<p style="color:var(--text-muted);font-size:.82rem;padding:.4rem;">Erreur.</p>'; });
-};
-
-window.zscPickTrack = function(url, name){
-  _sc.audioFile=null; _sc._audioUrl=url; _sc.audioName=name;
-  _zscSetAudioChosen(name);
-  _zscLoadTrim(url);
 };
 
 /* ═══════════════════════════════════════════════════

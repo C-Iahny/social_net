@@ -4058,3 +4058,42 @@ msgstr "Error"
 
 msgid "Erreur réseau"
 msgstr "Network error"
+
+msgid "Amour"
+msgstr "Love"
+
+msgid "Importer un son"
+msgstr "Import a sound"
+
+msgid "Coller un lien"
+msgstr "Paste a link"
+
+msgid "Extraits de 30 s · Deezer"
+msgstr "30-second clips · Deezer"
+
+msgid "Utiliser"
+msgstr "Use"
+
+msgid "Pré-écouter"
+msgstr "Preview"
+
+msgid "Rechercher un titre ou un artiste…"
+msgstr "Search for a song or an artist…"
+
+msgid "Aucun titre trouvé. Essayez un autre mot ou importez un son."
+msgstr "No track found. Try another word or import a sound."
+
+msgid "Catalogue indisponible pour le moment."
+msgstr "Catalogue unavailable right now."
+
+msgid "Fichier importé"
+msgstr "Imported file"
+
+msgid "Lien"
+msgstr "Link"
+
+msgid "Début du clip"
+msgstr "Clip start"
+
+msgid "Charger"
+msgstr "Load"

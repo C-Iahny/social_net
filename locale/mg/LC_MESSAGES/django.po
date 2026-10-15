@@ -4185,3 +4185,42 @@ msgstr "Olana"
 
 msgid "Erreur réseau"
 msgstr "Olana amin'ny tambajotra"
+
+msgid "Amour"
+msgstr "Fitiavana"
+
+msgid "Importer un son"
+msgstr "Hampiditra feo"
+
+msgid "Coller un lien"
+msgstr "Hametaka rohy"
+
+msgid "Extraits de 30 s · Deezer"
+msgstr "Sombiny 30 s · Deezer"
+
+msgid "Utiliser"
+msgstr "Ampiasao"
+
+msgid "Pré-écouter"
+msgstr "Henoy mialoha"
+
+msgid "Rechercher un titre ou un artiste…"
+msgstr "Hitady hira na mpihira…"
+
+msgid "Aucun titre trouvé. Essayez un autre mot ou importez un son."
+msgstr "Tsy nisy hira hita. Andramo teny hafa na ampidiro feo."
+
+msgid "Catalogue indisponible pour le moment."
+msgstr "Tsy azo ampiasaina ny lisitra amin'izao."
+
+msgid "Fichier importé"
+msgstr "Rakitra nampidirina"
+
+msgid "Lien"
+msgstr "Rohy"
+
+msgid "Début du clip"
+msgstr "Fiandohan'ny clip"
+
+msgid "Charger"
+msgstr "Alaivo"

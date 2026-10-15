@@ -88,6 +88,7 @@ _AUDIO_MAX_BYTES = 8 * 1024 * 1024  # 8 Mo
 # La fonctionnalité ne sert qu'à récupérer les pistes proposées par la
 # recherche Jamendo : toute autre destination est refusée.
 _AUDIO_URL_ALLOWED_HOSTS = (
+    'dzcdn.net',             # extraits Deezer (cdnt-preview.dzcdn.net, cdns-preview-*.dzcdn.net)
     'jamendo.com',
     'api.jamendo.com',
     'storage-new.newjamendo.com',
@@ -570,54 +571,134 @@ def get_my_stories(request):
 @login_required(login_url='login')
 @require_GET
 def music_search(request):
-    """
-    Proxy vers l'API Jamendo pour rechercher de la musique libre de droits.
-    Paramètres GET : q (recherche), limit (défaut 10)
+    """GET /stories/music-search/ — catalogue de musique pour les stories.
 
-    Réservé aux utilisateurs connectés : ouvert à tous, l'endpoint permettait
-    de consommer le quota de la clé API Jamendo du projet depuis l'extérieur.
+    Paramètres : q (recherche libre), tag (tendances | gasy | afro | gospel |
+    love | hiphop | dance | chill | rnb | rock), limit (≤ 30).
+
+    Source : l'API publique Deezer (sans clé) — extraits de 30 s avec
+    pochette, artiste et durée, dont les artistes malgaches (Jaojoby,
+    Ambondrona, Bodo…). À l'ouverture de la feuille on renvoie les tendances
+    sans rien saisir, comme Facebook. L'ancien catalogue Jamendo ne renvoyait
+    plus aucun titre (clé de démonstration vide) ; il reste un repli si une
+    vraie clé JAMENDO_CLIENT_ID est configurée.
+    Réservé aux connectés et mis en cache une heure : le quota et la latence
+    de l'API externe ne pèsent pas sur chaque ouverture.
     """
-    query = request.GET.get('q', '').strip()
-    # ?limit=abc levait une ValueError non interceptée (500).
+    query = request.GET.get('q', '').strip()[:80]
+    tag = request.GET.get('tag', '').strip().lower()[:20]
     try:
-        limit = min(max(int(request.GET.get('limit', 10)), 1), 20)
+        limit = min(max(int(request.GET.get('limit', 20)), 1), 30)
     except (TypeError, ValueError):
-        limit = 10
-    client_id = getattr(settings, 'JAMENDO_CLIENT_ID', 'b6747d04')
+        limit = 20
+    key = 'music:' + (('q:' + query.lower()) if query else ('tag:' + (tag or 'tendances'))) + f':{limit}'
+    cached = cache.get(key)
+    if cached is not None:
+        return JsonResponse({'tracks': cached, 'source': 'deezer', 'cached': True})
+    try:
+        tracks = _deezer_tracks(query, tag, limit)
+    except Exception as exc:
+        _logger.warning('[music_search] Deezer indisponible : %s', exc)
+        tracks = []
+    if not tracks and query:
+        tracks = _jamendo_tracks(query, limit)
+    cache.set(key, tracks, (6 * 3600 if tag == 'gasy' else 3600) if tracks else 120)
+    return JsonResponse({'tracks': tracks, 'source': 'deezer'})
 
-    if not query:
-        return JsonResponse({'tracks': []})
 
+# Pastilles de genre → classement éditorial Deezer (id de genre) ou playlist
+_MUSIC_GENRE_CHARTS = {'afro': 2, 'hiphop': 116, 'rnb': 165, 'dance': 113, 'rock': 152, 'pop': 132}
+_MUSIC_PLAYLISTS = {'gospel': 'afro gospel', 'love': 'love songs', 'chill': 'chill'}
+# « Gasy » : artistes malgaches populaires, mélangés
+_GASY_ARTISTS = ('Jaojoby', 'Ambondrona', 'Bodo', 'Shyn', 'Denise', 'Mage 4', 'Njakatiana',
+                 'Big MJ', 'Black Nadia', 'Tence Mena', 'Rak Roots', 'Wawa', 'Lola', 'Mahaleo')
+
+
+def _deezer_get(path, params):
+    r = http_requests.get('https://api.deezer.com/' + path, params=params, timeout=8,
+                          headers={'User-Agent': 'Vazimba/1.0'})
+    r.raise_for_status()
+    data = r.json()
+    if isinstance(data, dict) and data.get('error'):
+        raise ValueError(data['error'])
+    return data.get('data', []) if isinstance(data, dict) else []
+
+
+def _deezer_norm(items):
+    out, seen = [], set()
+    for t in items:
+        if not t.get('preview') or t.get('id') in seen:
+            continue
+        seen.add(t.get('id'))
+        out.append({
+            'id':        t.get('id'),
+            'name':      t.get('title_short') or t.get('title', ''),
+            'artist':    (t.get('artist') or {}).get('name', ''),
+            'duration':  30,                                    # extrait de 30 s
+            'full_duration': t.get('duration', 0),
+            'audio_url': t.get('preview'),
+            'image':     (t.get('album') or {}).get('cover_medium') or (t.get('album') or {}).get('cover') or '',
+            'explicit':  bool(t.get('explicit_lyrics')),
+        })
+    return out
+
+
+def _deezer_tracks(query, tag, limit):
+    if query:
+        return _deezer_norm(_deezer_get('search', {'q': query, 'limit': limit, 'order': 'RANKING'}))[:limit]
+    if tag == 'gasy':
+        return _deezer_gasy(limit)
+    if tag in _MUSIC_GENRE_CHARTS:
+        r = http_requests.get(f'https://api.deezer.com/editorial/{_MUSIC_GENRE_CHARTS[tag]}/charts',
+                              params={'limit': limit}, timeout=8, headers={'User-Agent': 'Vazimba/1.0'})
+        r.raise_for_status()
+        return _deezer_norm(((r.json() or {}).get('tracks') or {}).get('data', []))[:limit]
+    if tag in _MUSIC_PLAYLISTS:
+        pls = _deezer_get('search/playlist', {'q': _MUSIC_PLAYLISTS[tag], 'limit': 1})
+        if pls:
+            return _deezer_norm(_deezer_get(f"playlist/{pls[0]['id']}/tracks", {'limit': limit}))[:limit]
+        return _deezer_norm(_deezer_get('search', {'q': _MUSIC_PLAYLISTS[tag], 'limit': limit}))[:limit]
+    return _deezer_norm(_deezer_get('chart/0/tracks', {'limit': limit}))[:limit]
+
+
+def _deezer_gasy(limit):
+    """Artistes malgaches : une recherche par artiste, en parallèle, filtrée sur
+    le nom d'artiste (la recherche Deezer mélange des homonymes), mélangée."""
+    import random
+    from concurrent.futures import ThreadPoolExecutor
+    def one(name):
+        try:
+            items = _deezer_get('search', {'q': name, 'limit': 6, 'order': 'RANKING'})
+        except Exception:
+            return []
+        key = name.lower()
+        return [t for t in items if key in ((t.get('artist') or {}).get('name', '')).lower()][:4]
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        groups = list(ex.map(one, _GASY_ARTISTS))
+    items = [t for g in groups for t in g]
+    random.shuffle(items)
+    return _deezer_norm(items)[:limit]
+
+
+def _jamendo_tracks(query, limit):
+    client_id = getattr(settings, 'JAMENDO_CLIENT_ID', '')
+    if not client_id:
+        return []
     try:
         resp = http_requests.get(
             'https://api.jamendo.com/v3.0/tracks/',
-            params={
-                'client_id':    client_id,
-                'format':       'json',
-                'limit':        limit,
-                'search':       query,
-                'audioformat':  'mp31',   # 128 kbps MP3 = léger
-                'include':      'musicinfo',
-                'groupby':      'artist_id',
-            },
+            params={'client_id': client_id, 'format': 'json', 'limit': limit, 'search': query,
+                    'audioformat': 'mp31', 'include': 'musicinfo', 'groupby': 'artist_id'},
             timeout=10,
         )
         resp.raise_for_status()
-        data = resp.json()
-        tracks = []
-        for t in data.get('results', []):
-            tracks.append({
-                'id':         t.get('id'),
-                'name':       t.get('name', ''),
-                'artist':     t.get('artist_name', ''),
-                'duration':   t.get('duration', 0),
-                'audio_url':  t.get('audio', ''),
-                'image':      t.get('image', ''),
-            })
-        return JsonResponse({'tracks': tracks})
+        return [{'id': t.get('id'), 'name': t.get('name', ''), 'artist': t.get('artist_name', ''),
+                 'duration': t.get('duration', 0), 'full_duration': t.get('duration', 0),
+                 'audio_url': t.get('audio', ''), 'image': t.get('image', ''), 'explicit': False}
+                for t in resp.json().get('results', [])]
     except Exception as exc:
         _logger.warning('[music_search] Erreur Jamendo : %s', exc)
-        return JsonResponse({'tracks': [], 'error': str(exc)}, status=200)
+        return []
 
 
 # ── STORIES D'UN PROFIL ───────────────────────────────────────────────────────

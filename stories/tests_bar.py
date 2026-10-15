@@ -136,3 +136,60 @@ class StoryPreUploadTests(TestCase):
         self.assertIn('function _zscUploadNow(file)', html)
         self.assertIn("fd.append('media_token', _sc.token)", html)
         self.assertIn('/stories/upload/', html)
+
+
+class MusicCatalogueTests(TestCase):
+    """Catalogue musique : tendances sans saisie, genres, recherche — API Deezer simulée."""
+    def setUp(self):
+        self.me = Account.objects.create_user(email='mus@test.mg', username='mus', password='pw12345678')
+        self.c = Client()
+        self.c.force_login(self.me)
+        from django.core.cache import cache
+        cache.clear()
+
+    def _fake(self, *a, **kw):
+        class R:
+            status_code = 200
+            def raise_for_status(self): pass
+            def json(self_inner):
+                data = [{'id': 1, 'title': 'E tiako', 'title_short': 'E tiako', 'duration': 329,
+                                   'preview': 'https://cdnt-preview.dzcdn.net/x.mp3', 'explicit_lyrics': False,
+                                   'artist': {'name': 'Jaojoby'}, 'album': {'cover_medium': 'https://cdn-images.dzcdn.net/c.jpg'}},
+                                  {'id': 2, 'title': 'Sans extrait', 'duration': 100, 'preview': '', 'artist': {'name': 'X'}, 'album': {}}]
+                return {'data': data, 'tracks': {'data': data}}
+        self.calls.append((a, kw))
+        return R()
+
+    def test_trending_genre_and_search(self):
+        from unittest import mock
+        import stories.views as sv
+        self.calls = []
+        with mock.patch.object(sv.http_requests, 'get', side_effect=self._fake):
+            d = self.c.get(reverse('stories:music-search')).json()
+            self.assertEqual(len(d['tracks']), 1)                      # le titre sans extrait est écarté
+            t = d['tracks'][0]
+            self.assertEqual((t['name'], t['artist'], t['duration'], t['full_duration']), ('E tiako', 'Jaojoby', 30, 329))
+            self.assertIn('chart/0/tracks', self.calls[-1][0][0])
+            self.c.get(reverse('stories:music-search') + '?tag=hiphop')
+            self.assertIn('editorial/116/charts', self.calls[-1][0][0])
+            self.c.get(reverse('stories:music-search') + '?q=bodo')
+            self.assertEqual(self.calls[-1][1]['params']['q'], 'bodo')
+            n = len(self.calls)
+            self.c.get(reverse('stories:music-search') + '?q=bodo')     # servi depuis le cache
+            self.assertEqual(len(self.calls), n)
+
+    def test_requires_login(self):
+        r = Client().get(reverse('stories:music-search'))
+        self.assertIn(r.status_code, (302, 401, 403))
+
+    def test_deezer_preview_allowed_for_download(self):
+        import stories.views as sv
+        self.assertEqual(sv._check_audio_url('https://cdnt-preview.dzcdn.net/api/1/x.mp3'), 'https://cdnt-preview.dzcdn.net/api/1/x.mp3')
+        with self.assertRaises(ValueError):
+            sv._check_audio_url('https://evil.example.com/x.mp3')
+
+    def test_music_sheet_markup(self):
+        html = self.c.get(reverse('post:post-view') + '?tab=feed').content.decode()
+        for needle in ['id="zsc-music-chips"', 'data-tag="gasy"', 'zscMusicPreview(', 'id="zsc-trim"', 'function _musicLoad()']:
+            self.assertIn(needle, html)
+        self.assertNotIn('zscAudioTab', html)
