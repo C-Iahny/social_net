@@ -22,6 +22,7 @@ User = get_user_model()
 from account.models import Account
 from django.http import JsonResponse
 from .forms import PostForm, EditForm, CommentForm
+from .templatetags.vz_tags import relative_label
 from .models import Post, Repost, Continent, Country, Follow, Comment, Reaction, PostMedia
 from friend.models import FriendList
 from personal.models import HeroSettings
@@ -789,7 +790,7 @@ def _broadcast_comment(post, comment):
                 "post_author_id": post.author_id,
                 "avatar":         avatar,
                 "body":           comment.body,
-                "created_at":     comment.created_at.strftime("%d %b %Y, %H:%M"),
+                "created_at":     relative_label(comment.created_at),
                 "parent_id":      comment.parent_id,
             },
         })
@@ -983,7 +984,7 @@ def add_comment(request, post_id):
             "avatar":     comment.author.profile_image.url,
             "author_id":  comment.author.id,
             "body":       comment.body,
-            "created_at": comment.created_at.strftime("%d %b %Y, %H:%M"),
+            "created_at": relative_label(comment.created_at),
             "can_delete": True,
             "parent_id":  comment.parent_id,
         })
@@ -1015,7 +1016,7 @@ def new_comments(request, post_id):
             "author_id": c.author.id,
             "avatar":    c.author.profile_image.url,
             "body":      c.body,
-            "created_at": c.created_at.strftime("%d %b %Y, %H:%M"),
+            "created_at": relative_label(c.created_at),
             "can_delete": can_delete,
             "parent_id": c.parent_id,
         })
@@ -1603,6 +1604,25 @@ def bookmark_post(request):
         bk.delete()
     count = post.bookmarks.count()
     return JsonResponse({'ok': True, 'saved': created, 'count': count})
+
+
+@login_required(login_url="login")
+@require_POST
+def hide_post(request):
+    """Masque un post du fil pour l'utilisateur courant (toggle). POST {post_id}."""
+    from .models import PostHide
+    post_id = request.POST.get('post_id')
+    if request.POST.get('undo') == '1':
+        # Le post masqué n'est plus « visible » : on ne passe pas par visible_posts()
+        PostHide.objects.filter(user=request.user, post_id=post_id).delete()
+        return JsonResponse({'ok': True, 'hidden': False})
+    post = get_visible_post_or_404(request.user, post_id)
+    if post.author_id == request.user.id:
+        return JsonResponse({'ok': False, 'error': 'own_post'}, status=400)
+    PostHide.objects.get_or_create(user=request.user, post=post)
+    from .foryou import invalidate_rank
+    invalidate_rank(request.user)
+    return JsonResponse({'ok': True, 'hidden': True})
 
 
 # ──────────────────────────────────────────────

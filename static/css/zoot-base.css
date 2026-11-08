@@ -29,6 +29,8 @@
     --accent:       #0f766e;
     --accent2:      #0891b2;
     --accent3:      #f59e0b;
+    --vintana:      #7c3aed;   /* capsules Vintana : seul violet autorisé, via ce jeton */
+    --vintana-rgb:  124,58,237;
     --accent-dark:  #115e59;
     --accent-rgb:   15,118,110;
     --accent-glow:  rgba(15,118,110,0.16);
@@ -84,6 +86,8 @@
     --accent:       #2dd4bf;
     --accent2:      #22d3ee;
     --accent3:      #fbbf24;
+    --vintana:      #a78bfa;
+    --vintana-rgb:  167,139,250;
     --accent-dark:  #14b8a6;
     --accent-rgb:   45,212,191;
     --accent-glow:  rgba(45,212,191,0.14);
@@ -1571,3 +1575,160 @@ body.vz-lock { overflow: hidden !important; }
 
 /* ── Texte réservé aux lecteurs d'écran (titres de page, libellés) ── */
 .vz-sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* ============================================================
+   COMPOSANTS PARTAGÉS 2026-11 — menu d'actions, dates relatives,
+   onglets segmentés, puces, squelettes. Tout passe par les jetons.
+   ============================================================ */
+
+/* ── Date relative (filtre vz_since / vzTimeAgo) ── */
+.vz-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ── Menu d'actions (vzMenu) : popover bureau, feuille mobile ── */
+.vz-menu-overlay { position: fixed; inset: 0; z-index: 2147482500; }
+.vz-menu-overlay--sheet {
+    background: rgba(0,0,0,.45);
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; transition: opacity .18s;
+}
+.vz-menu-overlay--sheet.open { opacity: 1; }
+.vz-menu {
+    min-width: 220px; max-width: 320px;
+    padding: .4rem;
+    background: var(--bg-card); color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    opacity: 0; transform: translateY(-4px) scale(.98);
+    transition: opacity .14s, transform .14s;
+}
+.vz-menu-overlay.open .vz-menu { opacity: 1; transform: none; }
+.vz-menu--sheet {
+    width: 100%; max-width: 520px;
+    padding: .5rem .6rem calc(.6rem + env(safe-area-inset-bottom, 0px));
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    box-shadow: 0 -8px 40px rgba(0,0,0,.25);
+    transform: translateY(24px);
+    transition: transform .22s cubic-bezier(.32,1,.23,1), opacity .18s;
+}
+.vz-menu-title { font-size: .8rem; font-weight: 700; color: var(--text-muted); padding: .2rem .8rem .5rem; }
+.vz-menu-item {
+    display: flex; align-items: center; gap: .75rem;
+    width: 100%; min-height: var(--tap);
+    padding: .55rem .8rem;
+    background: none; border: 0; border-radius: var(--radius-sm);
+    color: var(--text); font: inherit; font-size: .92rem; font-weight: 600;
+    text-align: left; text-decoration: none; cursor: pointer;
+}
+.vz-menu-item:hover, .vz-menu-item:focus-visible { background: var(--bg-hover); color: var(--text); text-decoration: none; outline: none; }
+.vz-menu-item .material-icons { font-size: 1.3rem; color: var(--text-muted); flex-shrink: 0; }
+.vz-menu-item--danger, .vz-menu-item--danger .material-icons { color: var(--danger); }
+.vz-menu-item--danger:hover { background: rgba(var(--danger-rgb), .08); color: var(--danger); }
+.vz-menu-label { flex: 1; min-width: 0; }
+.vz-menu-hint { font-size: .75rem; color: var(--text-subtle); font-weight: 500; }
+.vz-menu-sep { height: 1px; background: var(--border); margin: .35rem .4rem; }
+.vz-menu-cancel { justify-content: center; margin-top: .3rem; background: var(--btn-bg); color: var(--text-muted); }
+[data-theme="dark"] .vz-menu-item--danger:hover { background: rgba(var(--danger-rgb), .14); }
+
+/* ── Onglets segmentés (fil, profil, listes) ── */
+.vz-segmented {
+    display: inline-flex; gap: .25rem;
+    padding: .25rem;
+    background: var(--btn-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    max-width: 100%; overflow-x: auto; scrollbar-width: none;
+}
+.vz-segmented::-webkit-scrollbar { display: none; }
+.vz-segmented--block { display: flex; }
+.vz-segmented--block .vz-seg { flex: 1; }
+.vz-seg {
+    display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
+    min-height: 38px; padding: 0 .95rem;
+    border: 0; border-radius: var(--radius-pill);
+    background: transparent; color: var(--text-muted);
+    font: inherit; font-size: .88rem; font-weight: 700; white-space: nowrap;
+    text-decoration: none; cursor: pointer;
+    transition: background .15s, color .15s, box-shadow .15s;
+}
+.vz-seg .material-icons { font-size: 1.1rem; }
+.vz-seg:hover { color: var(--text); text-decoration: none; }
+.vz-seg.active, .vz-seg[aria-selected="true"] {
+    background: var(--bg-card); color: var(--accent);
+    box-shadow: var(--shadow-sm);
+}
+.vz-seg:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ── Puces (filtres, étiquettes) ── */
+.vz-chip {
+    display: inline-flex; align-items: center; gap: .3rem;
+    min-height: 32px; padding: 0 .75rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border); background: var(--bg-card);
+    color: var(--text-muted); font-size: .8rem; font-weight: 700;
+    text-decoration: none; white-space: nowrap; cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+}
+.vz-chip .material-icons { font-size: 1rem; }
+.vz-chip:hover { background: var(--bg-hover); color: var(--text); text-decoration: none; }
+.vz-chip.active { background: rgba(var(--accent-rgb), .12); border-color: rgba(var(--accent-rgb), .35); color: var(--accent); }
+.vz-chip--accent { background: rgba(var(--accent-rgb), .10); border-color: transparent; color: var(--accent); }
+.vz-chip--danger { background: rgba(var(--danger-rgb), .10); border-color: transparent; color: var(--danger); }
+.vz-chip--success { background: rgba(var(--success-rgb), .10); border-color: transparent; color: var(--success); }
+.vz-chip-row { display: flex; gap: .4rem; overflow-x: auto; scrollbar-width: none; padding: .15rem 0; }
+.vz-chip-row::-webkit-scrollbar { display: none; }
+
+/* ── Squelettes de chargement (shimmer unique) ── */
+.vz-skel {
+    position: relative; overflow: hidden;
+    background: var(--btn-bg); border-radius: var(--radius-sm);
+}
+.vz-skel::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent);
+    transform: translateX(-100%);
+    animation: vzShimmer 1.4s infinite;
+}
+[data-theme="dark"] .vz-skel::after { background: linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent); }
+@keyframes vzShimmer { to { transform: translateX(100%); } }
+.vz-skel--text   { height: 12px; margin: .3rem 0; }
+.vz-skel--title  { height: 14px; width: 45%; }
+.vz-skel--avatar { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
+.vz-skel--media  { aspect-ratio: 4/3; border-radius: var(--radius); }
+.vz-skel--btn    { height: 32px; width: 80px; border-radius: var(--radius-pill); }
+.vz-skel-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1rem; margin-bottom: .85rem;
+}
+.vz-skel-row { display: flex; align-items: center; gap: .75rem; margin-bottom: .75rem; }
+.vz-skel-row > div:last-child { flex: 1; }
+@media (prefers-reduced-motion: reduce) { .vz-skel::after { animation: none; } }
+
+/* ── Bouton d'icône discret (⋯, fermer, options) ── */
+.vz-icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 0; background: transparent; color: var(--text-muted); cursor: pointer;
+    transition: background .15s, color .15s;
+}
+.vz-icon-btn:hover, .vz-icon-btn[aria-expanded="true"] { background: var(--bg-hover); color: var(--text); }
+.vz-icon-btn .material-icons { font-size: 1.35rem; }
+
+/* ── Code langue (remplace les drapeaux emoji, illisibles sur Windows) ── */
+.lang-code-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 22px; padding: 0 .4rem; border-radius: 6px;
+    background: var(--btn-bg); color: var(--text-muted);
+    font-size: .68rem !important; font-weight: 800; letter-spacing: .04em;
+}
+.lang-option.active .lang-code-badge { background: rgba(var(--accent-rgb), .14); color: var(--accent); }
+
+/* ── Afficher / masquer le mot de passe (ajouté par vz-core.js) ── */
+.vz-pw-toggle {
+    flex-shrink: 0; width: 40px; height: 40px; margin-right: -.4rem;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: none; border: 0; border-radius: 50%; color: var(--text-muted); cursor: pointer;
+}
+.vz-pw-toggle:hover { background: var(--bg-hover); color: var(--text); }
+.vz-pw-toggle .material-icons { font-size: 1.25rem; }

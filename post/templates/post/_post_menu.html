@@ -1,0 +1,22 @@
+{% load i18n %}
+{% comment %} Bouton ⋯ d'une carte de post : ouvre vzPostMenu (static/js/vz-post-card.js).
+   Toutes les actions passent par des data-* pour que la même carte serve au
+   fil, au profil, aux groupes et aux pages chargées en AJAX. {% endcomment %}
+<div class="pc-owner-menu">
+    <button type="button" class="vz-icon-btn pc-more-btn"
+            aria-label="{% trans 'Options' %}" aria-haspopup="menu" aria-expanded="false"
+            data-post-id="{{ post.id }}"
+            data-post-url="{% url 'post:post-detail' post.id %}"
+            data-post-title="{{ post.title|default:''|truncatechars:80 }}"
+            data-owner="{% if request.user.id == post.author.id %}1{% else %}0{% endif %}"
+            data-bookmarked="{% if post.is_bookmarked %}1{% else %}0{% endif %}"
+            data-reposted="{% if post.user_reposted %}1{% else %}0{% endif %}"
+            data-edit-url="{% url 'post:edit-post' post.pk %}"
+            data-delete-url="{% url 'post:delete-post' post.pk %}"
+            data-author-id="{{ post.author.id }}"
+            data-author-name="{{ post.author.username }}"
+            data-block-url="{% url 'account:block' post.author.id %}"
+            onclick="vzPostMenu(this)">
+        <span class="material-icons">more_horiz</span>
+    </button>
+</div>

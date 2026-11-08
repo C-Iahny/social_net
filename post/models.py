@@ -63,6 +63,10 @@ class Post(models.Model):
     body         = models.TextField(blank=True, null=True)
     snippet      = models.CharField(max_length=255, blank=True, default='click the link above.')
     post_date    = models.DateField(auto_now_add=True)
+    # Horodatage complet : post_date (DateField) ne permettait ni « il y a 5 min »
+    # ni un ordre fiable dans la même journée. Rempli pour l'historique par la
+    # migration 0025 (minuit du post_date).
+    created_at   = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     category     = models.CharField(max_length=255, blank=True, null=True, default='Category')
     file         = models.FileField(upload_to='files/', blank=True, null=True)
     video        = models.FileField(upload_to='videos/', blank=True, null=True)
@@ -390,3 +394,18 @@ class PostBookmark(models.Model):
 
     def __str__(self):
         return f"{self.user} ⊳ {self.post_id}"
+
+
+# ── Post masqué (« Masquer ce post » dans le menu ⋯) ─────────────────────────
+class PostHide(models.Model):
+    user       = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='hidden_posts')
+    post       = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='hides')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'post')
+        verbose_name = 'Post masqué'
+        verbose_name_plural = 'Posts masqués'
+
+    def __str__(self):
+        return f"{self.user} ⊘ {self.post_id}"

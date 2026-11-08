@@ -43,6 +43,9 @@ def visible_posts(qs, viewer, author=None):
         hidden = UserBlock.hidden_user_ids(viewer)
         if hidden:
             qs = qs.exclude(author_id__in=hidden)
+        # Posts masqués individuellement (menu ⋯ → Masquer)
+        from .models import PostHide
+        qs = qs.exclude(id__in=PostHide.objects.filter(user=viewer).values('post_id'))
     else:
         qs = qs.filter(public_or_none)
 

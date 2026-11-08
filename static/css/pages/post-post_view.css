@@ -360,11 +360,13 @@ body { background: var(--bg); }
 #new-posts-banner {
     display: none;
     position: sticky; top: 78px; z-index: 100;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; border-radius: 12px;
-    padding: .6rem 1rem; margin-bottom: 1rem;
+    width: max-content; max-width: 100%; margin-left: auto; margin-right: auto;
+    border: 0; font-family: inherit;
+    background: var(--accent);
+    color: var(--on-accent); border-radius: var(--radius-pill);
+    padding: .55rem 1.1rem; margin-bottom: 1rem;
     cursor: pointer; font-size: .88rem; font-weight: 700;
-    box-shadow: 0 4px 18px rgba(0,207,255,.3);
+    box-shadow: 0 6px 20px rgba(var(--accent-rgb),.35);
     align-items: center; justify-content: center; gap: .45rem;
     animation: bannerPop .3s ease;
 }
@@ -539,8 +541,7 @@ body { background: var(--bg); }
 }
 .pc-menu-btn .material-icons { font-size: 1rem; }
 .pc-menu-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
-.pc-menu-btn.danger:hover { background: rgba(229,57,53,.1); color: var(--danger); }
-[data-theme="dark"] .pc-menu-btn.danger:hover { color: #f28b82; }
+.pc-menu-btn.danger:hover { background: rgba(var(--danger-rgb),.1); color: var(--danger); }
 
 /* ── Card body ── */
 .pc-title {
@@ -622,7 +623,7 @@ body { background: var(--bg); }
     padding: .4rem 1.1rem; font-size: .78rem; font-weight: 600;
     color: var(--text-muted); border-bottom: 1px solid var(--border);
 }
-.pc-video-label .material-icons { font-size: .95rem; color: #7c3aed; }
+.pc-video-label .material-icons { font-size: .95rem; color: var(--vintana); }
 
 /* ── Multi-media gallery ── */
 .pc-gallery {
@@ -802,8 +803,17 @@ body { background: var(--bg); }
 .pc-footer-btn.liked .material-icons { color: var(--accent); }
 .pc-footer-btn.active { color: var(--accent); }
 .pc-footer-btn.active .material-icons { color: var(--accent); }
-.pc-footer-btn.bookmarked { color: #f59e0b; }
-.pc-footer-btn.bookmarked .material-icons { color: #f59e0b; }
+.pc-footer-btn.bookmarked { color: var(--accent3); }
+.pc-footer-btn.bookmarked .material-icons { color: var(--accent3); }
+.pc-footer-count { font-size: .76rem; margin-left: .15rem; color: var(--text-muted); }
+.pc-more-btn { width: 34px; height: 34px; }
+.pc-more-btn .material-icons { font-size: 1.25rem; }
+.pc-hiding { opacity: 0; transform: scale(.98); transition: opacity .2s, transform .2s; }
+.pc-vintana-logo {
+    width: 52px; height: 52px; border-radius: 13px; object-fit: contain; padding: 3px;
+    background: var(--bg-card);
+    box-shadow: 0 0 0 2px rgba(var(--vintana-rgb), .3), 0 4px 16px rgba(var(--vintana-rgb), .2);
+}
 
 /* Reaction picker — position:fixed pour échapper aux overflow:auto/hidden des parents
    (feed-main scrollable, post-card overflow-x:hidden...).
@@ -1420,3 +1430,8 @@ body { background: var(--bg); }
         #cb-submit-bar { display: none; }
         #cb-submit-bar.open { display: flex; }
         
+
+
+/* ── Onglets du fil (contrôle segmenté partagé, zoot-base.css) ── */
+.feed-tabs { margin: .6rem .5rem .75rem; }
+@media (min-width: 768px) { .feed-tabs { margin: .25rem 0 .9rem; } }

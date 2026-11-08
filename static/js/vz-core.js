@@ -9,6 +9,12 @@
    • garde anti double-soumission sur tous les formulaires POST
    • data-vz-confirm="…"     : confirmation avant soumission d'un formulaire
    • messages Django (#vz-flash) rendus en toasts
+   • vzTimeAgo(date)         : « à l'instant · 5 min · 3 h · 2 j · 8 nov. » ; les
+                               <time data-vz-since> sont rafraîchis chaque minute
+   • vzCopy(text)            : presse-papiers + toast « Lien copié »
+   • vzShare({title,url})    : partage natif, repli sur vzCopy
+   • vzMenu(anchor, items)   : menu d'actions contextuel (feuille sur mobile,
+                               popover sur bureau), items = [{icon,label,onClick,danger,href}]
    Libellés traduits fournis par base.html dans window.VZ_I18N.
    ════════════════════════════════════════════════════════════════════════ */
 (function () {
@@ -254,6 +260,218 @@
     window.addEventListener('pageshow', function () {
         document.querySelectorAll('form[data-vz-submitting="1"]').forEach(_release);
     });
+
+
+    /* ── Dates relatives ──────────────────────────────────────────────── */
+    var MONTHS = {
+        fr: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
+        en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        mg: ['Jan', 'Feb', 'Mar', 'Apr', 'Mey', 'Jon', 'Jol', 'Aog', 'Sep', 'Okt', 'Nov', 'Des']
+    };
+    var UNITS = {
+        fr: { m: ' min', h: ' h', d: ' j' },
+        en: { m: ' min', h: ' h', d: ' d' },
+        mg: { m: ' min', h: ' ora', d: ' andro' }
+    };
+    function _lang() { return (I18N.lang || document.documentElement.lang || 'fr').slice(0, 2); }
+    window.vzTimeAgo = function (value, now) {
+        var d = (value instanceof Date) ? value : new Date(value);
+        if (isNaN(d.getTime())) return '';
+        now = now || new Date();
+        var lang = _lang(), u = UNITS[lang] || UNITS.fr, mo = MONTHS[lang] || MONTHS.fr;
+        var s = Math.round((now - d) / 1000);
+        if (s < 45) return t('justNow', "à l'instant");
+        var m = Math.floor(s / 60);
+        if (m < 60) return Math.max(m, 1) + u.m;
+        var h = Math.floor(m / 60);
+        if (h < 24) return h + u.h;
+        var days = Math.floor(h / 24);
+        if (days < 7) return days + u.d;
+        var label = d.getDate() + ' ' + mo[d.getMonth()];
+        return d.getFullYear() === now.getFullYear() ? label : label + ' ' + d.getFullYear();
+    };
+    function _refreshTimes() {
+        var now = new Date();
+        var nodes = document.querySelectorAll('time[data-vz-since]');
+        for (var i = 0; i < nodes.length; i++) {
+            var iso = nodes[i].getAttribute('datetime');
+            if (!iso) continue;
+            var label = window.vzTimeAgo(iso, now);
+            if (label && nodes[i].textContent !== label) nodes[i].textContent = label;
+        }
+    }
+    setInterval(_refreshTimes, 60000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) _refreshTimes(); });
+
+    /* ── Presse-papiers et partage ───────────────────────────────────── */
+    window.vzCopy = function (text, msg) {
+        function ok() { window.vzToast(msg || t('copied', 'Lien copié'), 'success'); return true; }
+        function legacy() {
+            try {
+                var ta = document.createElement('textarea');
+                ta.value = text; ta.setAttribute('readonly', '');
+                ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+                document.body.appendChild(ta); ta.select();
+                var done = document.execCommand('copy');
+                document.body.removeChild(ta);
+                return done ? ok() : false;
+            } catch (e) { return false; }
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text).then(ok, legacy);
+        }
+        return Promise.resolve(legacy());
+    };
+    window.vzShare = function (data) {
+        data = data || {};
+        var url = data.url || location.href;
+        try { url = new URL(url, location.href).href; } catch (e) {}
+        if (navigator.share) {
+            return navigator.share({ title: data.title || document.title, text: data.text || '', url: url })
+                .then(function () { return true; })
+                .catch(function (err) {
+                    if (err && err.name === 'AbortError') return false;
+                    return window.vzCopy(url);
+                });
+        }
+        if (window.ZootShare && window.ZootShare.open) { window.ZootShare.open(url, data.title || ''); return Promise.resolve(true); }
+        return window.vzCopy(url);
+    };
+
+    /* ── Menu d'actions contextuel ───────────────────────────────────── */
+    var _menuOpen = null;
+    function _closeMenu() {
+        var m = _menuOpen; if (!m) return;
+        _menuOpen = null;
+        window.vzLayers.remove(_closeMenu);
+        m.overlay.classList.remove('open');
+        if (m.sheet) window.vzUnlock();
+        document.removeEventListener('click', m.onDoc, true);
+        window.removeEventListener('resize', _closeMenu);
+        window.removeEventListener('scroll', m.onScroll, true);
+        setTimeout(function () { if (m.overlay.parentNode) m.overlay.parentNode.removeChild(m.overlay); }, 180);
+        try { m.anchor && m.anchor.setAttribute('aria-expanded', 'false'); } catch (e) {}
+        try { m.anchor && m.anchor.focus && m.anchor.focus(); } catch (e) {}
+    }
+    window.vzMenu = function (anchor, items, opts) {
+        opts = opts || {};
+        if (_menuOpen) { var same = _menuOpen.anchor === anchor; _closeMenu(); if (same) return; }
+        items = (items || []).filter(Boolean);
+        if (!items.length) return;
+        var sheet = window.matchMedia('(max-width: 639px)').matches;
+        var overlay = _el('div', 'vz-menu-overlay' + (sheet ? ' vz-menu-overlay--sheet' : ''));
+        var menu = _el('div', 'vz-menu' + (sheet ? ' vz-menu--sheet' : ''));
+        menu.setAttribute('role', 'menu');
+        if (sheet) {
+            menu.appendChild(_el('div', 'vz-dialog-handle'));
+            if (opts.title) menu.appendChild(_el('div', 'vz-menu-title', opts.title));
+        }
+        items.forEach(function (it) {
+            if (it === 'sep' || it.sep) { menu.appendChild(_el('div', 'vz-menu-sep')); return; }
+            var row = _el(it.href ? 'a' : 'button', 'vz-menu-item' + (it.danger ? ' vz-menu-item--danger' : ''));
+            if (it.href) row.href = it.href; else row.type = 'button';
+            row.setAttribute('role', 'menuitem');
+            if (it.icon) row.appendChild(_el('span', 'material-icons', it.icon));
+            var txt = _el('span', 'vz-menu-label', it.label);
+            row.appendChild(txt);
+            if (it.hint) row.appendChild(_el('span', 'vz-menu-hint', it.hint));
+            row.addEventListener('click', function (e) {
+                if (!it.href) e.preventDefault();
+                _closeMenu();
+                try { it.onClick && it.onClick(e); } catch (err) { console.error(err); }
+            });
+            menu.appendChild(row);
+        });
+        if (sheet) {
+            var cancel = _el('button', 'vz-menu-item vz-menu-cancel', t('cancel', 'Annuler'));
+            cancel.type = 'button'; cancel.onclick = _closeMenu;
+            menu.appendChild(cancel);
+        }
+        overlay.appendChild(menu);
+        document.body.appendChild(overlay);
+
+        if (!sheet && anchor && anchor.getBoundingClientRect) {
+            var r = anchor.getBoundingClientRect();
+            menu.style.position = 'fixed';
+            menu.style.visibility = 'hidden';
+            menu.style.display = 'block';
+            var mw = menu.offsetWidth, mh = menu.offsetHeight;
+            var left = Math.min(Math.max(8, r.right - mw), window.innerWidth - mw - 8);
+            var top = r.bottom + 6;
+            if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 6);
+            menu.style.left = left + 'px'; menu.style.top = top + 'px';
+            menu.style.visibility = '';
+        }
+        var state = {
+            overlay: overlay, anchor: anchor, sheet: sheet,
+            onDoc: function (e) { if (!menu.contains(e.target)) { e.preventDefault(); e.stopPropagation(); _closeMenu(); } },
+            onScroll: function () { if (!sheet) _closeMenu(); }
+        };
+        _menuOpen = state;
+        if (sheet) window.vzLock();
+        window.vzLayers.push(_closeMenu);
+        setTimeout(function () {
+            document.addEventListener('click', state.onDoc, true);
+            window.addEventListener('resize', _closeMenu);
+            window.addEventListener('scroll', state.onScroll, true);
+        }, 0);
+        try { anchor && anchor.setAttribute('aria-expanded', 'true'); } catch (e) {}
+        overlay.getBoundingClientRect();
+        overlay.classList.add('open');
+        menu.addEventListener('keydown', function (e) {
+            var focusables = menu.querySelectorAll('.vz-menu-item');
+            var idx = Array.prototype.indexOf.call(focusables, document.activeElement);
+            if (e.key === 'ArrowDown') { e.preventDefault(); (focusables[idx + 1] || focusables[0]).focus(); }
+            if (e.key === 'ArrowUp') { e.preventDefault(); (focusables[idx - 1] || focusables[focusables.length - 1]).focus(); }
+        });
+        setTimeout(function () { var f = menu.querySelector('.vz-menu-item'); f && f.focus(); }, 30);
+        return _closeMenu;
+    };
+    /* Déclencheur déclaratif : <button data-vz-menu="id-du-template"> où le
+       template contient des <a>/<button data-icon data-danger>. */
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest && e.target.closest('[data-vz-menu]');
+        if (!btn) return;
+        var tpl = document.getElementById(btn.getAttribute('data-vz-menu'));
+        if (!tpl) return;
+        e.preventDefault();
+        var items = [];
+        Array.prototype.forEach.call(tpl.content ? tpl.content.children : tpl.children, function (node) {
+            if (node.tagName === 'HR') { items.push('sep'); return; }
+            var clone = node;
+            items.push({
+                icon: node.getAttribute('data-icon'),
+                label: node.textContent.trim(),
+                danger: node.hasAttribute('data-danger'),
+                href: node.tagName === 'A' ? node.getAttribute('href') : null,
+                onClick: function () { if (node.tagName !== 'A') { var fn = node.getAttribute('data-onclick'); if (fn) { try { (new Function(fn)).call(btn); } catch (err) { console.error(err); } } } }
+            });
+        });
+        window.vzMenu(btn, items, { title: btn.getAttribute('data-vz-menu-title') || '' });
+    });
+
+    /* ── Afficher / masquer le mot de passe ──────────────────────────── */
+    function _pwToggles() {
+        document.querySelectorAll('.auth-input-wrap > input[type="password"], .vz-field input[type="password"], .edit-input-wrap > input[type="password"]').forEach(function (inp) {
+            if (inp.dataset.vzPw === '1') return;
+            inp.dataset.vzPw = '1';
+            var b = _el('button', 'vz-pw-toggle');
+            b.type = 'button';
+            b.setAttribute('aria-label', t('showPassword', 'Afficher le mot de passe'));
+            b.setAttribute('aria-pressed', 'false');
+            b.appendChild(_el('span', 'material-icons', 'visibility'));
+            b.addEventListener('click', function () {
+                var show = inp.type === 'password';
+                inp.type = show ? 'text' : 'password';
+                b.firstChild.textContent = show ? 'visibility_off' : 'visibility';
+                b.setAttribute('aria-pressed', show ? 'true' : 'false');
+                b.setAttribute('aria-label', show ? t('hidePassword', 'Masquer le mot de passe') : t('showPassword', 'Afficher le mot de passe'));
+                inp.focus();
+            });
+            inp.parentNode.insertBefore(b, inp.nextSibling);
+        });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _pwToggles); else _pwToggles();
 
     /* ── Messages Django → toasts ─────────────────────────────────────── */
     function _flash() {

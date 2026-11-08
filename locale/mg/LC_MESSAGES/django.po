@@ -4287,3 +4287,16 @@ msgstr "Fanamarinana mpivarotra / Boutique Pro"
 
 msgid "« En pause » masque votre annonce sans la supprimer."
 msgstr "« Miato » manafina ny dokam-barotrao nefa tsy mamafa azy."
+
+# ── Dates relatives et partage (2026-11-08) ──
+msgid "à l'instant"
+msgstr "vao izao"
+
+msgid "%(n)d min"
+msgstr "%(n)d min"
+
+msgid "%(n)d h"
+msgstr "%(n)d ora"
+
+msgid "%(n)d j"
+msgstr "%(n)d andro"

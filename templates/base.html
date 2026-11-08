@@ -62,12 +62,34 @@
          de façon synchrone : les scripts des pages s'appuient dessus. -->
     <script>
     {% trans "Annuler" as vzc_cancel %}{% trans "Confirmer" as vzc_confirm %}{% trans "Fermer" as vzc_close %}{% trans "Êtes-vous sûr ?" as vzc_title %}
+    {% trans "à l'instant" as vzc_now %}{% trans "Lien copié" as vzc_copied %}{% trans "Copier le lien" as vzc_copy %}{% trans "Partager" as vzc_share %}
     window.VZ_I18N = {
         cancel: "{{ vzc_cancel|escapejs }}", confirm: "{{ vzc_confirm|escapejs }}",
-        close: "{{ vzc_close|escapejs }}", confirmTitle: "{{ vzc_title|escapejs }}"
+        close: "{{ vzc_close|escapejs }}", confirmTitle: "{{ vzc_title|escapejs }}",
+        justNow: "{{ vzc_now|escapejs }}", copied: "{{ vzc_copied|escapejs }}",
+        copyLink: "{{ vzc_copy|escapejs }}", share: "{{ vzc_share|escapejs }}",
+        lang: "{{ HTML_LANG|default:'fr'|escapejs }}",
+        postSave: "{% trans 'Sauvegarder'|escapejs %}", postUnsave: "{% trans 'Retirer des sauvegardes'|escapejs %}",
+        postSaved: "{% trans 'Post sauvegardé'|escapejs %}", postUnsaved: "{% trans 'Retiré des sauvegardes'|escapejs %}",
+        postHide: "{% trans 'Masquer ce post'|escapejs %}", postHidden: "{% trans 'Post masqué'|escapejs %}",
+        repost: "{% trans 'Republier'|escapejs %}", unrepost: "{% trans 'Annuler la republication'|escapejs %}",
+        reposted: "{% trans 'Republié sur votre profil'|escapejs %}", unreposted: "{% trans 'Republication annulée'|escapejs %}",
+        report: "{% trans 'Signaler'|escapejs %}", block: "{% trans 'Bloquer'|escapejs %}",
+        blockConfirm: "{% trans 'Bloquer cette personne ? Vous ne verrez plus ses publications.'|escapejs %}",
+        edit: "{% trans 'Modifier'|escapejs %}", delete: "{% trans 'Supprimer'|escapejs %}",
+        deleteConfirm: "{% trans 'Supprimer ce post ?'|escapejs %}",
+        undo: "{% trans 'Annuler'|escapejs %}", view: "{% trans 'Voir'|escapejs %}",
+        error: "{% trans 'Une erreur est survenue'|escapejs %}", now: "{% trans 'maintenant !'|escapejs %}",
+        showPassword: "{% trans 'Afficher le mot de passe'|escapejs %}", hidePassword: "{% trans 'Masquer le mot de passe'|escapejs %}"
     };
+    window.VZ_URLS = {
+        bookmark: "{% url 'post:bookmark' %}", bookmarks: "{% url 'post:mes-favoris-posts' %}",
+        hide: "{% url 'post:hide' %}", repost: "{% url 'post:repost' %}"
+    };
+    {% if request.user.is_authenticated %}window.VZ_CSRF = "{{ csrf_token }}";{% endif %}
     </script>
     <script src="{% static 'js/vz-core.js' %}"></script>
+    <script src="{% static 'js/vz-post-card.js' %}" defer></script>
 
     <!-- ④ Fonctions thème globales -->
     <script>
@@ -202,7 +224,6 @@
      sauter la barre de navigation au clavier ou au lecteur d'écran.
      Visible uniquement au focus. -->
 <a href="#contenu-principal" class="zoot-skip-link">{% trans "Aller au contenu" %}</a>
-<link rel="stylesheet" href="{% static 'css/pages/base-base.css' %}">
 
 <!---------------HEADER ------------------->
         {% include 'snippets/header.html' %}
@@ -352,7 +373,7 @@
 
                 <!-- Post -->
                 <a class="cs-item" href="{% url 'post:addPost' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
                         <span class="material-icons" style="color:#fff;">edit_note</span>
                     </div>
                     <span class="cs-label">Post</span>
@@ -368,7 +389,7 @@
 
                 <!-- Kabary -->
                 <a class="cs-item" href="{% url 'post:kabary-create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#f59e0b,var(--danger));">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent3),var(--danger));">
                         <span class="material-icons" style="color:#fff;">campaign</span>
                     </div>
                     <span class="cs-label">Kabary</span>
@@ -376,7 +397,7 @@
 
                 <!-- Vintana -->
                 <a class="cs-item" href="{% url 'post:vintana-create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#0ea5e9,#6366f1);">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent2),var(--vintana));">
                         <span class="material-icons" style="color:#fff;">auto_awesome</span>
                     </div>
                     <span class="cs-label">Vintana</span>
@@ -386,7 +407,7 @@
                      sinon navigue vers /stories/ (pages sans story_bar.html) -->
                 <a class="cs-item" href="{% url 'stories:page' %}"
                    onclick="if(typeof zsMyTap==='function'){event.preventDefault();closeCreateSheet();setTimeout(zsMyTap,220);}else{closeCreateSheet();}">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#ec4899,#f59e0b);">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--vintana),var(--accent3));">
                         <span class="material-icons" style="color:#fff;">add_circle</span>
                     </div>
                     <span class="cs-label">Story</span>
@@ -394,7 +415,7 @@
 
                 <!-- Bazar -->
                 <a class="cs-item" href="{% url 'bazar:create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--success),#0ea5e9);">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--success),var(--accent2));">
                         <span class="material-icons" style="color:#fff;">sell</span>
                     </div>
                     <span class="cs-label">Bazar</span>
@@ -402,7 +423,7 @@
 
                 <!-- Resto : commander un repas -->
                 <a class="cs-item" href="{% url 'resto:index' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#f97316,var(--danger));">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--warning),var(--danger));">
                         <span class="material-icons" style="color:#fff;">restaurant</span>
                     </div>
                     <span class="cs-label">Resto</span>
@@ -410,7 +431,7 @@
 
                 <!-- Groupe -->
                 <a class="cs-item" href="{% url 'group:create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,#6366f1,var(--success));">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent),var(--success));">
                         <span class="material-icons" style="color:#fff;">group_add</span>
                     </div>
                     <span class="cs-label">Groupe</span>
@@ -419,7 +440,7 @@
                 <!-- Live -->
                 <button class="cs-item" type="button" onclick="closeCreateSheet();_submitLiveCreate();"
                         style="background:none;border:none;cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;gap:.35rem;text-decoration:none;color:inherit;">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--danger),#f59e0b);">
+                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--danger),var(--accent3));">
                         <span class="material-icons" style="color:#fff;">videocam</span>
                     </div>
                     <span class="cs-label">Live</span>
@@ -546,34 +567,7 @@
     <!-- ── Grille multi-photos (post-cards) ── -->
     <link rel="stylesheet" href="{% static 'css/zoot-tail.css' %}">
 
-    <!-- ── Global image lightbox with multi-image navigation ── -->
-    <div id="zoot-lightbox" style="
-        display:none; position:fixed; inset:0; z-index:9999;
-        background:rgba(0,0,0,.9); backdrop-filter:blur(10px);
-        -webkit-backdrop-filter:blur(10px);
-        align-items:center; justify-content:center; flex-direction:column;"
-        onclick="if(event.target===this)zootCloseImg()">
-        <button onclick="zootCloseImg()" style="
-            position:fixed;top:1rem;right:1rem;width:40px;height:40px;
-            border-radius:50%;background:rgba(255,255,255,.12);
-            border:1.5px solid rgba(255,255,255,.2);color:#fff;cursor:pointer;
-            display:flex;align-items:center;justify-content:center;z-index:10001;" type="button" aria-label="{% trans 'Fermer' %}">
-            <span class="material-icons" style="font-size:1.2rem;">close</span>
-        </button>
-        <span id="zoot-lb-counter"></span>
-        <img id="zoot-lb-img" src="" alt="" style="
-            max-width:min(88vw,960px);max-height:82vh;
-            border-radius:12px;object-fit:contain;
-            box-shadow:0 8px 48px rgba(0,0,0,.7);
-            transition:opacity .15s;opacity:0;display:block;">
-        <p id="zoot-lb-cap" style="
-            color:rgba(255,255,255,.6);font-size:.85rem;
-            margin-top:.75rem;text-align:center;max-width:600px;padding:0 1rem;"></p>
-    </div>
-    <button id="zoot-lb-prev" class="zoot-lb-nav" onclick="_zootLbNav(-1)" type="button">&#8249;</button>
-    <button id="zoot-lb-next" class="zoot-lb-nav" onclick="_zootLbNav(1)" type="button">&#8250;</button>
-
-    <script src="{% static 'js/vz-lightbox-legacy.js' %}"></script>
+    <!-- L'ancienne lightbox (#zoot-lightbox, vz-lightbox-legacy.js) n'avait plus aucun appelant : retirée. -->
 
 <!-- ══════════════════════════════════════════════════════════════════
      PWA — Bannière offline + Install prompt + Service Worker + IndexedDB

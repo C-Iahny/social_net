@@ -113,7 +113,7 @@
                 <div class="post-result-body">
                     <div class="post-result-title">{{ post.title|truncatechars:80 }}</div>
                     <div class="post-result-author">
-                        @{{ post.author.username }} &nbsp;·&nbsp; {{ post.post_date|date:"d M Y" }}
+                        @{{ post.author.username }} &nbsp;·&nbsp; {{ post.created_at|default:post.post_date|vz_since }}
                     </div>
                 </div>
                 <span class="material-icons" style="color:var(--accent2);font-size:1.1rem;flex-shrink:0;">chevron_right</span>

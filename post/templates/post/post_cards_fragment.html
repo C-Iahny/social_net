@@ -26,50 +26,26 @@
             </a>
             <span class="pc-sub">
                 <span class="material-icons">schedule</span>
-                {{ post.post_date|date:"d M Y" }}
+                {{ post.created_at|default:post.post_date|vz_since }}
             </span>
         </div>
-        {% if request.user.id == post.author.id %}
-        <div class="pc-owner-menu">
-            <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="Supprimer">
-                <span class="material-icons">delete_outline</span>
-            </a>
-        </div>
-        {% endif %}
+        {% include 'post/_post_menu.html' %}
     </div>
     <div class="pc-vintana-locked">
         <div class="pc-vintana-lock-icon">
             <img src="{% static 'logo/vazimba_icon.png' %}" alt="Vazimba"
-                 style="width:52px;height:52px;border-radius:13px;object-fit:contain;
-                        box-shadow:0 0 0 2px rgba(191,95,255,.3),0 4px 16px rgba(191,95,255,.2);
-                        background:var(--bg-card);padding:3px;">
+                 class="pc-vintana-logo">
         </div>
         <div class="pc-vintana-lock-title">{{ post.title|default:"Capsule Vintana" }}</div>
         <p class="pc-vintana-lock-sub">
-            Ce message est scellé et sera révélé le<br>
-            <strong>{{ post.reveal_date|date:"d F Y à H\hi" }}</strong>.
+            {% trans "Ce message est scellé et sera révélé le" %}<br>
+            <strong>{{ post.reveal_date|date:"DATETIME_FORMAT" }}</strong>.
         </p>
     </div>
     <div class="pc-vintana-lock-band">
         <span class="material-icons">hourglass_top</span>
-        <span>Révélation dans : <strong id="vt-cntdwn-{{ post.id }}">…</strong></span>
+        <span>{% trans "Révélation dans :" %} <strong class="vt-cntdwn" data-target="{{ post.reveal_date|date:'c' }}">…</strong></span>
     </div>
-    <script>
-    (function() {
-        var target = new Date('{{ post.reveal_date|date:"c" }}');
-        function tick() {
-            var diff = target - new Date();
-            if (diff <= 0) { document.getElementById('vt-cntdwn-{{ post.id }}').textContent = 'maintenant !'; return; }
-            var d = Math.floor(diff/86400000);
-            var h = Math.floor((diff%86400000)/3600000);
-            var m = Math.floor((diff%3600000)/60000);
-            var s = Math.floor((diff%60000)/1000);
-            document.getElementById('vt-cntdwn-{{ post.id }}').textContent =
-                (d > 0 ? d + 'j ' : '') + (h > 0 ? h + 'h ' : '') + (m > 0 ? m + 'min ' : '') + s + 's';
-        }
-        tick(); setInterval(tick, 1000);
-    })();
-    </script>
 
     {% else %}
     <!-- ══ CONTENU NORMAL ══ -->
@@ -102,19 +78,10 @@
                 <a class="pc-sub-user-link" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
                 <span class="pc-dot">·</span>
                 <span class="material-icons">schedule</span>
-                {{ post.post_date|date:"d M Y" }}
+                {{ post.created_at|default:post.post_date|vz_since }}
             </span>
         </div>
-        {% if request.user.id == post.author.id %}
-        <div class="pc-owner-menu">
-            <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="{% trans 'Edit' %}">
-                <span class="material-icons">edit</span>
-            </a>
-            <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="{% trans 'Delete' %}">
-                <span class="material-icons">delete_outline</span>
-            </a>
-        </div>
-        {% endif %}
+        {% include 'post/_post_menu.html' %}
     </div>
     {% else %}
     {# ── Post normal : avatar utilisateur ── #}
@@ -128,23 +95,14 @@
             </a>
             <span class="pc-sub">
                 <span class="material-icons">schedule</span>
-                {{ post.post_date|date:"d M Y" }}
+                {{ post.created_at|default:post.post_date|vz_since }}
                 {% if post.category and post.category != 'Category' %}
                 <span class="pc-dot">·</span>
                 <span class="pc-category-tag">{{ post.category }}</span>
                 {% endif %}
             </span>
         </div>
-        {% if request.user.id == post.author.id %}
-        <div class="pc-owner-menu">
-            <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="{% trans 'Edit' %}">
-                <span class="material-icons">edit</span>
-            </a>
-            <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="{% trans 'Delete' %}">
-                <span class="material-icons">delete_outline</span>
-            </a>
-        </div>
-        {% endif %}
+        {% include 'post/_post_menu.html' %}
     </div>
     {% endif %}
 
@@ -186,7 +144,7 @@
             <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
                     id="react-btn-{{ post.id }}"
                     onclick="quickReact({{ post.id }})"
-                    title="Réagir" type="button">
+                    aria-label="{% trans 'Réagir' %}" type="button">
                 <span id="react-icon-{{ post.id }}" style="font-size:1.05rem;line-height:1;">
                     {% if post.user_reaction == 'like' %}👍
                     {% elif post.user_reaction == 'heart' %}❤️
@@ -228,13 +186,20 @@
             </span>
         </button>
 
-        <button class="pc-footer-btn" onclick="sharePost({{ post.id }}, '{{ post.title|escapejs }}')" style="flex:1;"
-                data-post-id="{{ post.id }}" data-reposted="{{ post.user_reposted|yesno:'true,false' }}" type="button">
-            <span class="material-icons" style="{% if post.user_reposted %}color:var(--accent){% endif %}">repeat</span>
-            <span id="repost-count-{{ post.id }}"
-                  style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.repost_count %}display:none{% endif %}">
-                {% if post.repost_count %}{{ post.repost_count }}{% endif %}
-            </span>
+        <button class="pc-footer-btn" type="button" style="flex:1;"
+                onclick="vzShare({title:'{{ post.title|escapejs }}', url:'{% url 'post:post-detail' post.id %}'})"
+                aria-label="{% trans 'Partager' %}">
+            <span class="material-icons">share</span>
+            <span id="repost-count-{{ post.id }}" class="pc-footer-count"
+                  {% if not post.repost_count %}style="display:none"{% endif %}>{% if post.repost_count %}{{ post.repost_count }}{% endif %}</span>
+        </button>
+
+        <button class="pc-footer-btn{% if post.is_bookmarked %} bookmarked{% endif %}" type="button" style="flex:1;"
+                id="bk-btn-{{ post.id }}"
+                onclick="vzPostBookmark({{ post.id }}, this)"
+                aria-pressed="{% if post.is_bookmarked %}true{% else %}false{% endif %}"
+                aria-label="{% if post.is_bookmarked %}{% trans 'Retirer des sauvegardes' %}{% else %}{% trans 'Sauvegarder' %}{% endif %}">
+            <span class="material-icons">{% if post.is_bookmarked %}bookmark{% else %}bookmark_border{% endif %}</span>
         </button>
     </div>
 
@@ -244,7 +209,7 @@
             {% for c in post.page_comments %}
             <div class="pc-comment-item" id="comment-item-{{ c.id }}">
                 <a href="{% url 'account:view' user_id=c.author.id %}">
-                    <img class="cmt-avatar" src="{{ c.author.profile_image.url }}" alt="{{ c.author.username }}">
+                    <img class="cmt-avatar" src="{{ c.author.profile_image.url }}" alt="{{ c.author.username }}" loading="lazy" decoding="async">
                 </a>
                 <div class="pc-comment-right">
                     <div class="pc-comment-bubble">
@@ -252,7 +217,7 @@
                         <p class="pc-comment-body">{{ c.body }}</p>
                     </div>
                     <div class="pc-comment-footer">
-                        <span class="pc-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
+                        <span class="pc-comment-time">{{ c.created_at|vz_since }}</span>
                         <button class="pc-comment-reply-btn"
                                 onclick="toggleReplyForm({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')" type="button">
                             {% trans "Reply" %}
@@ -262,6 +227,8 @@
                                 onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')" type="button">
                             {% trans "Delete" %}
                         </button>
+                        {% else %}
+                        <button type="button" class="pc-comment-del" onclick="openReportModal('comment','{{ c.id }}')">{% trans "Signaler" %}</button>
                         {% endif %}
                     </div>
 
@@ -270,7 +237,7 @@
                         {% for reply in c.reply_list %}
                         <div class="pc-comment-reply-item" id="comment-item-{{ reply.id }}">
                             <a href="{% url 'account:view' user_id=reply.author.id %}">
-                                <img class="reply-avatar" src="{{ reply.author.profile_image.url }}" alt="{{ reply.author.username }}">
+                                <img class="reply-avatar" src="{{ reply.author.profile_image.url }}" alt="{{ reply.author.username }}" loading="lazy" decoding="async">
                             </a>
                             <div class="pc-comment-right">
                                 <div class="pc-comment-bubble">
@@ -278,12 +245,14 @@
                                     <p class="pc-comment-body">{{ reply.body }}</p>
                                 </div>
                                 <div class="pc-comment-footer">
-                                    <span class="pc-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
+                                    <span class="pc-comment-time">{{ reply.created_at|vz_since }}</span>
                                     {% if request.user == reply.author or request.user == post.author %}
                                     <button class="pc-comment-del"
                                             onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')" type="button">
                                         {% trans "Delete" %}
                                     </button>
+                                    {% else %}
+                                    <button type="button" class="pc-comment-del" onclick="openReportModal('comment','{{ reply.id }}')">{% trans "Signaler" %}</button>
                                     {% endif %}
                                 </div>
                             </div>
@@ -320,7 +289,7 @@
             <div class="pc-comment-input-wrap">
                 <textarea class="pc-comment-textarea"
                           id="comment-input-{{ post.id }}"
-                          placeholder="Écrire un commentaire…"
+                          placeholder="{% trans "Écrire un commentaire…" %}"
                           rows="1" maxlength="1000"
                           onkeydown="handleCommentKey(event, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
                           oninput="autoResize(this)"
@@ -336,4 +305,7 @@
 
     {% endif %}{# end is_locked #}
 </article>
+{% if show_suggestions %}{% if forloop.counter == 2 or forloop.last and forloop.counter < 2 %}
+    {% include 'post/_suggested_profiles.html' %}
+{% endif %}{% endif %}
 {% endfor %}

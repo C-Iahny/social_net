@@ -153,6 +153,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',
             ],
+            # Filtres disponibles partout sans {% load %} : dates relatives, prix Ariary
+            'builtins': ['post.templatetags.vz_tags'],
         },
     },
 ]

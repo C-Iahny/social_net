@@ -21,13 +21,17 @@
     {% endif %}
     {% else %}
     {% if m.url %}
-    <div class="pc-gal-item" onclick="openPostMedia(this)" style="cursor:zoom-in;">
+    <div class="pc-gal-item" role="button" tabindex="0" aria-label="{% trans 'Agrandir la photo' %}"
+         onclick="openPostMedia(this)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPostMedia(this);}">
         <img class="pc-gal-img"
              src="{{ m.url }}"
-             alt=""
+             alt="{% blocktrans with name=post.author.username %}Photo publiée par {{ name }}{% endblocktrans %}"
              loading="lazy"
              decoding="async"
              onerror="this.closest('.pc-gal-item').style.display='none'">
+        {% if forloop.counter == 4 and post.media_list|length > 4 %}
+        <span class="pc-gal-more" aria-hidden="true">+{{ post.media_list|length|add:"-4" }}</span>
+        {% endif %}
     </div>
     {% endif %}
     {% endif %}

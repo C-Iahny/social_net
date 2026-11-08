@@ -136,7 +136,7 @@
                 <div style="flex:1;min-width:0;">
                     <div class="rech-post-title">{{ post.title|truncatechars:80 }}</div>
                     <div class="rech-post-meta">
-                        @{{ post.author.username }} &nbsp;·&nbsp; {{ post.post_date|date:"d M Y" }}
+                        @{{ post.author.username }} &nbsp;·&nbsp; {{ post.created_at|default:post.post_date|vz_since }}
                     </div>
                 </div>
                 <span class="material-icons" style="color:var(--accent2);font-size:1.1rem;flex-shrink:0;">chevron_right</span>

@@ -72,11 +72,18 @@ def ranked_feed_post_ids(user):
     return ids
 
 
+def invalidate_rank(user):
+    """À appeler quand la visibilité change pour `user` (post masqué, blocage)."""
+    cache.delete(f'ff:rank:{user.pk}')
+
+
 def foryou_page(user, page_number, per_page=5):
     """Page Django (has_next, next_page_number…) dont object_list est la liste de posts ordonnée."""
     ids = ranked_feed_post_ids(user)
     page = Paginator(ids, per_page).get_page(page_number)
     page_ids = list(page.object_list)
-    by_id = {p.id: p for p in Post.objects.filter(id__in=page_ids).select_related('author', 'group')}
+    # Re-filtrer : un post masqué ou un auteur bloqué entre deux calculs du
+    # classement (cache 2 min) ne doit pas réapparaître.
+    by_id = {p.id: p for p in visible_posts(Post.objects.filter(id__in=page_ids), user).select_related('author', 'group')}
     page.object_list = [by_id[i] for i in page_ids if i in by_id]
     return page

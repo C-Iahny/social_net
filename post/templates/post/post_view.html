@@ -88,7 +88,6 @@
                 <a href="{% url 'video:live-list' %}" style="font-size:.72rem;font-weight:700;color:var(--accent);text-decoration:none;">Voir tout</a>
             </div>
             <div id="feed-live-list" style="padding:.45rem 0;"></div>
-            <link rel="stylesheet" href="{% static 'css/pages/post-post_view.css' %}">
         </div>
 
         <!-- Stories sidebar widget -->
@@ -137,34 +136,29 @@
         {% include 'stories/story_bar.html' %}
 
         <!-- ── Onglets : Mon fil · Pour toi · Ma région ── -->
-        <div class="feed-region-tabs" style="display:flex;gap:.5rem;padding:.6rem .5rem .1rem;margin-bottom:.25rem;overflow-x:auto;scrollbar-width:none;">
-            <a href="{% url 'post:post-view' %}?tab=feed"
-               class="feed-tab-pill {% if active_tab == 'feed' %}active{% endif %}"
-               style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s;
-                      {% if active_tab == 'feed' %}background:var(--accent,#6366f1);color:#fff;{% else %}background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);color:var(--text-primary,#111);{% endif %}">
-                🏠 {% trans "Mon fil" %}
+        <!-- ── Onglets : Mon fil · Pour toi · Ma région (contrôle segmenté partagé) ── -->
+        <nav class="vz-segmented vz-segmented--block feed-tabs" aria-label="{% trans "Onglets du fil" %}">
+            <a href="{% url 'post:post-view' %}?tab=feed" class="vz-seg{% if active_tab == 'feed' %} active{% endif %}"
+               {% if active_tab == 'feed' %}aria-current="page"{% endif %}>
+                <span class="material-icons">home</span> {% trans "Mon fil" %}
             </a>
-            <a href="{% url 'post:post-view' %}?tab=foryou"
-               class="feed-tab-pill {% if active_tab == 'foryou' %}active{% endif %}"
-               style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s;
-                      {% if active_tab == 'foryou' %}background:var(--accent,#6366f1);color:#fff;{% else %}background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);color:var(--text-primary,#111);{% endif %}">
-                   {% trans "Pour toi" %}
+            <a href="{% url 'post:post-view' %}?tab=foryou" class="vz-seg{% if active_tab == 'foryou' %} active{% endif %}"
+               {% if active_tab == 'foryou' %}aria-current="page"{% endif %}>
+                <span class="material-icons">auto_awesome</span> {% trans "Pour toi" %}
             </a>
             {% if user_region %}
-            <a href="{% url 'post:post-view' %}?tab=region"
-               class="feed-tab-pill {% if active_tab == 'region' %}active{% endif %}"
-               style="display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;font-size:.85rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s;
-                      {% if active_tab == 'region' %}background:var(--accent,#6366f1);color:#fff;{% else %}background:var(--card-bg,#fff);border:1px solid var(--border,#e5e7eb);color:var(--text-primary,#111);{% endif %}">
-                📍 {{ user_region_label|default:"Ma région" }}
+            <a href="{% url 'post:post-view' %}?tab=region" class="vz-seg{% if active_tab == 'region' %} active{% endif %}"
+               {% if active_tab == 'region' %}aria-current="page"{% endif %}>
+                <span class="material-icons">place</span> {{ user_region_label|default:_("Ma région") }}
             </a>
             {% endif %}
-        </div>
+        </nav>
 
         <!-- New-posts banner -->
-        <div id="new-posts-banner" onclick="window.location.reload()">
-            <span class="material-icons" style="font-size:1rem;">fiber_new</span>
-            <span id="new-posts-banner-text">{% trans "New Post — Click to refresh" %}</span>
-        </div>
+        <button type="button" id="new-posts-banner" onclick="vzFeedLoadNew()">
+            <span class="material-icons" style="font-size:1rem;">arrow_upward</span>
+            <span id="new-posts-banner-text">{% trans "Nouveaux posts" %}</span>
+        </button>
 
 
         <!-- ══ Create post box — inline ══ -->
@@ -237,14 +231,13 @@
                     <span class="material-icons">record_voice_over</span><span class="btn-label"> Kabary</span>
                 </a>
                 <a class="create-box-action" href="{% url 'post:vintana-create' %}"
-                   style="background:linear-gradient(135deg,rgba(191,95,255,.1),rgba(0,207,255,.07));
-                           border:1px solid rgba(191,95,255,.4);color:#bf5fff;">
+                   style="background:linear-gradient(135deg,rgba(var(--vintana-rgb),.1),rgba(var(--accent-rgb),.07));
+                           border:1px solid rgba(var(--vintana-rgb),.4);color:var(--vintana);">
                     <span class="material-icons">lock_clock</span><span class="btn-label"> Vintana</span>
                 </a>
             </div>
         </div>
 
-        <link rel="stylesheet" href="{% static 'css/pages/post-post_view.css' %}">
 
         <script>
         (function() {
@@ -435,306 +428,8 @@
 
         <!-- ── Post list ── -->
         {% if posts_of_the_page %}
-            {% for post in posts_of_the_page %}
-            <article class="post-card" id="post-{{ post.id }}">
-
-                <!-- Header -->
-                {% if post.group %}
-                {# ── Post de groupe dans le feed global : cover + badge utilisateur ── #}
-                <div class="pc-header">
-                    <div class="pc-gp-avatar-wrap">
-                        <a href="{% url 'group:detail' post.group.slug %}" class="pc-gp-cover-link" title="{{ post.group.name }}">
-                            {% if post.group.cover_url %}
-                            <img class="pc-gp-cover" src="{{ post.group.cover_url }}" alt="{{ post.group.name }}" loading="lazy">
-                            {% else %}
-                            <span class="pc-gp-cover pc-gp-cover-fallback">
-                                <span class="material-icons">groups</span>
-                            </span>
-                            {% endif %}
-                        </a>
-                        <a href="{% url 'account:view' user_id=post.author.id %}" class="pc-gp-user-badge-link" title="{{ post.author.username }}">
-                            <img class="pc-gp-user-badge" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy">
-                        </a>
-                    </div>
-                    <div class="pc-meta">
-                        <a class="pc-author" href="{% url 'group:detail' post.group.slug %}">
-                            {{ post.group.name }}
-                        </a>
-                        <span class="pc-sub">
-                            <a class="pc-sub-user-link" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
-                            <span class="pc-dot">·</span>
-                            <span class="material-icons">schedule</span>
-                            {{ post.post_date|date:"d M Y" }}
-                        </span>
-                    </div>
-                    {% if request.user.id == post.author.id %}
-                    <div class="pc-owner-menu">
-                        <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="{% trans 'Edit' %}">
-                            <span class="material-icons">edit</span>
-                        </a>
-                        <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="{% trans 'Delete' %}">
-                            <span class="material-icons">delete_outline</span>
-                        </a>
-                    </div>
-                    {% elif request.user.is_authenticated %}
-                    <div class="pc-owner-menu">
-                        <button class="pc-menu-btn" onclick="openReportModal('post','{{ post.pk }}')" title="Signaler" style="background:none;border:none;cursor:pointer;padding:0;" type="button">
-                            <span class="material-icons" style="font-size:1.1rem;color:var(--text-muted);">flag</span>
-                        </button>
-                    </div>
-                    {% endif %}
-                </div>
-                {% else %}
-                {# ── Post normal : avatar auteur ── #}
-                <div class="pc-header">
-                    <a class="pc-avatar-ring" href="{% url 'account:view' user_id=post.author.id %}">
-                        <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
-                    </a>
-                    <div class="pc-meta">
-                        <a class="pc-author" href="{% url 'account:view' user_id=post.author.id %}">
-                            {{ post.author.username }}
-                        </a>
-                        <span class="pc-sub">
-                            <span class="material-icons">schedule</span>
-                            {{ post.post_date|date:"d M Y" }}
-                            {% if post.category and post.category != 'Category' %}
-                            <span class="pc-dot">·</span>
-                            <span class="pc-category-tag">{{ post.category }}</span>
-                            {% endif %}
-                        </span>
-                    </div>
-                    {% if request.user.id == post.author.id %}
-                    <div class="pc-owner-menu">
-                        <a class="pc-menu-btn" href="{% url 'post:edit-post' post.pk %}" title="{% trans 'Edit' %}">
-                            <span class="material-icons">edit</span>
-                        </a>
-                        <a class="pc-menu-btn danger" href="{% url 'post:delete-post' post.pk %}" title="{% trans 'Delete' %}">
-                            <span class="material-icons">delete_outline</span>
-                        </a>
-                    </div>
-                    {% elif request.user.is_authenticated %}
-                    <div class="pc-owner-menu">
-                        <button class="pc-menu-btn" onclick="openReportModal('post','{{ post.pk }}')" title="Signaler" style="background:none;border:none;cursor:pointer;padding:0;" type="button">
-                            <span class="material-icons" style="font-size:1.1rem;color:var(--text-muted);">flag</span>
-                        </button>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- Title -->
-                {% if post.title %}
-                <div class="pc-title">{{ post.title }}</div>
-                {% endif %}
-
-                <!-- Body -->
-                {% if post.body %}
-                <div class="pc-body" onclick="expandBody(this)">{{ post.body|safe_html }}</div>
-                <span class="pc-read-more"
-                      data-more="{% trans 'See more'|escapejs %}"
-                      data-less="{% trans 'See less'|escapejs %}"
-                      onclick="expandBodyBtn(this)">{% trans "See more" %}</span>
-                {% endif %}
-
-                {% include 'post/_post_media.html' %}
-
-                <!-- Reaction summary bar -->
-                <div class="pc-reaction-bar" id="reaction-bar-{{ post.id }}"
-                     onclick="rwOpen({{ post.id }})"
-                     title="Voir les réactions"
-                     {% if not post.total_reactions %}style="display:none"{% endif %}>
-                    <div class="rc-emoji-group" id="reaction-summary-{{ post.id }}">
-                        {% for rtype, cnt in post.reaction_counts.items %}
-                        <span class="rc-emoji" data-type="{{ rtype }}">
-                            {% if rtype == 'like' %}👍{% elif rtype == 'heart' %}❤️{% elif rtype == 'laugh' %}😂{% elif rtype == 'wow' %}😮{% elif rtype == 'sad' %}😢{% endif %}
-                        </span>
-                        {% endfor %}
-                    </div>
-                    <span class="rc-count" id="reaction-total-{{ post.id }}">{{ post.total_reactions }}</span>
-                </div>
-
-                <!-- Action bar -->
-                <div class="pc-footer">
-                    <!-- Reactions -->
-                    <div class="reaction-wrap" id="reaction-wrap-{{ post.id }}"
-                         onmouseenter="openPicker({{ post.id }})"
-                         onmouseleave="closePicker({{ post.id }})">
-                        <button class="pc-footer-btn {% if post.user_reaction %}liked{% endif %}"
-                                id="react-btn-{{ post.id }}"
-                                onclick="quickReact({{ post.id }})"
-                                title="Réagir" type="button">
-                            <span id="react-icon-{{ post.id }}" style="font-size:1.05rem;line-height:1;">
-                                {% if post.user_reaction == 'like' %}👍
-                                {% elif post.user_reaction == 'heart' %}❤️
-                                {% elif post.user_reaction == 'laugh' %}😂
-                                {% elif post.user_reaction == 'wow' %}😮
-                                {% elif post.user_reaction == 'sad' %}😢
-                                {% else %}<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>
-                                {% endif %}
-                            </span>
-                            <span id="react-label-{{ post.id }}">
-                                {% if post.user_reaction == 'like' %}{% trans "Like" %}
-                                {% elif post.user_reaction == 'heart' %}{% trans "Love" %}
-                                {% elif post.user_reaction == 'laugh' %}{% trans "Haha" %}
-                                {% elif post.user_reaction == 'wow' %}{% trans "Wow" %}
-                                {% elif post.user_reaction == 'sad' %}{% trans "Sad" %}
-                                {% else %}{% trans "Like" %}{% endif %}
-                            </span>
-                        </button>
-                        <!-- Picker -->
-                        <div class="reaction-picker" id="picker-{{ post.id }}">
-                            <button class="reaction-emoji-btn {% if post.user_reaction == 'like' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'like')" data-label="{% trans "J'aime" %}" type="button">👍</button>
-                            <button class="reaction-emoji-btn {% if post.user_reaction == 'heart' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'heart')" data-label="{% trans "J'adore" %}" type="button">❤️</button>
-                            <button class="reaction-emoji-btn {% if post.user_reaction == 'laugh' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'laugh')" data-label="{% trans "Haha" %}" type="button">😂</button>
-                            <button class="reaction-emoji-btn {% if post.user_reaction == 'wow' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'wow')" data-label="{% trans "Wow" %}" type="button">😮</button>
-                            <button class="reaction-emoji-btn {% if post.user_reaction == 'sad' %}selected{% endif %}"
-                                    onclick="sendReaction({{ post.id }}, 'sad')" data-label="{% trans "Triste" %}" type="button">😢</button>
-                        </div>
-                    </div>
-
-                    <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
-                            onclick="toggleComments({{ post.id }})"
-                            style="flex:1;" type="button">
-                        <span class="material-icons">chat_bubble_outline</span>
-                        <span id="comment-count-{{ post.id }}"
-                              style="font-size:.76rem;margin-left:.15rem;color:var(--text-muted);{% if not post.total_comments %}display:none{% endif %}">
-                            {% if post.total_comments %}{{ post.total_comments }}{% endif %}
-                        </span>
-                    </button>
-
-                    <button class="pc-footer-btn" onclick="sharePost({{ post.id }}, '{{ post.title|escapejs }}')" style="flex:1;" type="button" aria-label="{% trans 'Partager' %}">
-                        <span class="material-icons">share</span>
-                    </button>
-
-                    <button class="pc-footer-btn {% if post.is_bookmarked %}bookmarked{% endif %}"
-                            id="bk-btn-{{ post.id }}"
-                            onclick="toggleBookmark({{ post.id }}, this)"
-                            style="flex:1;"
-                            title="{% if post.is_bookmarked %}{% trans 'Retirer des sauvegardes' %}{% else %}{% trans 'Sauvegarder' %}{% endif %}" type="button">
-                        <span class="material-icons">{% if post.is_bookmarked %}bookmark{% else %}bookmark_border{% endif %}</span>
-                    </button>
-                </div>
-
-                <!-- Comment Panel -->
-                <div class="pc-comment-panel" id="comment-panel-{{ post.id }}">
-                    <div class="pc-comment-list" id="comment-list-{{ post.id }}">
-                        {% for c in post.page_comments %}
-
-                        <div class="pc-comment-item" id="comment-item-{{ c.id }}">
-                            <a href="{% url 'account:view' user_id=c.author.id %}">
-                                <img class="cmt-avatar" src="{{ c.author.profile_image.url }}" alt="{{ c.author.username }}">
-                            </a>
-                            <div class="pc-comment-right">
-                                <div class="pc-comment-bubble">
-                                    <a class="pc-comment-author" href="{% url 'account:view' user_id=c.author.id %}">{{ c.author.username }}</a>
-                                    <p class="pc-comment-body">{{ c.body }}</p>
-                                </div>
-                                <div class="pc-comment-footer">
-                                    <span class="pc-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
-                                    <button class="pc-comment-reply-btn"
-                                            onclick="toggleReplyForm({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')" type="button">
-                                        {% trans "Reply" %}
-                                    </button>
-                                    {% if request.user == c.author or request.user == post.author %}
-                                    <button class="pc-comment-del"
-                                            onclick="deleteComment({{ c.id }}, '{% url 'post:delete-comment' c.id %}')" type="button">
-                                        {% trans "Delete" %}
-                                    </button>
-                                    {% else %}
-                                    <button type="button" class="pc-comment-del" onclick="openReportModal('comment','{{ c.id }}')">{% trans "Signaler" %}</button>
-                                    {% endif %}
-                                </div>
-
-                                <!-- Replies -->
-                                {% if c.reply_list %}
-                                <div class="pc-comment-replies" id="replies-{{ c.id }}">
-                                    {% for reply in c.reply_list %}
-                                    <div class="pc-comment-reply-item" id="comment-item-{{ reply.id }}">
-                                        <a href="{% url 'account:view' user_id=reply.author.id %}">
-                                            <img class="reply-avatar" src="{{ reply.author.profile_image.url }}" alt="{{ reply.author.username }}">
-                                        </a>
-                                        <div class="pc-comment-right">
-                                            <div class="pc-comment-bubble">
-                                                <a class="pc-comment-author" href="{% url 'account:view' user_id=reply.author.id %}">{{ reply.author.username }}</a>
-                                                <p class="pc-comment-body">{{ reply.body }}</p>
-                                            </div>
-                                            <div class="pc-comment-footer">
-                                                <span class="pc-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
-                                                {% if request.user == reply.author or request.user == post.author %}
-                                                <button class="pc-comment-del"
-                                                        onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')" type="button">
-                                                    {% trans "Delete" %}
-                                                </button>
-                                                {% else %}
-                                                <button type="button" class="pc-comment-del" onclick="openReportModal('comment','{{ reply.id }}')">{% trans "Signaler" %}</button>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                {% else %}
-                                <div class="pc-comment-replies" id="replies-{{ c.id }}" style="display:none;"></div>
-                                {% endif %}
-
-                                <!-- Inline reply form -->
-                                <div class="pc-reply-form-wrap" id="reply-form-{{ c.id }}">
-                                    <img class="reply-form-avatar" src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
-                                    <div class="pc-reply-input-wrap">
-                                        <textarea class="pc-reply-textarea"
-                                                  id="reply-input-{{ c.id }}"
-                                                  placeholder="Écrire une réponse à {{ c.author.username }}…"
-                                                  rows="1" maxlength="1000"
-                                                  onkeydown="handleReplyKey(event, {{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
-                                                  oninput="autoResize(this)"></textarea>
-                                    </div>
-                                    <button class="pc-comment-send"
-                                            onclick="submitReply({{ c.id }}, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
-                                            title="Répondre" type="button">
-                                        <span class="material-icons">send</span>
-                                    </button>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        {% endfor %}
-                    </div>
-
-                    <!-- Main comment form -->
-                    <div class="pc-comment-form">
-                        <img class="cmt-form-avatar" src="{{ request.user.profile_image.url }}" alt="{{ request.user.username }}">
-                        <div class="pc-comment-input-wrap">
-                            <textarea class="pc-comment-textarea"
-                                      id="comment-input-{{ post.id }}"
-                                      placeholder="Écrire un commentaire…"
-                                      rows="1" maxlength="1000"
-                                      onkeydown="handleCommentKey(event, {{ post.id }}, '{% url 'post:add-comment' post.id %}')"
-                                      oninput="autoResize(this)"
-                                      onclick="this.focus()"></textarea>
-                        </div>
-                        <button class="pc-comment-send" id="comment-send-{{ post.id }}"
-                                onclick="submitComment({{ post.id }}, '{% url 'post:add-comment' post.id %}')"
-                                title="Envoyer" type="button">
-                            <span class="material-icons">send</span>
-                        </button>
-                    </div>
-                </div>
-
-            </article>
-
-            {% comment %}
-                Carrousel « Suggestions pour vous » : intercale apres le 2e post
-                (ou apres le dernier si le feed en compte moins).
-            {% endcomment %}
-            {% if forloop.counter == 2 or forloop.last and forloop.counter < 2 %}
-                {% include 'post/_suggested_profiles.html' %}
-            {% endif %}
-            {% endfor %}
+            {# Carte de post unique : la même pour la 1re page, les pages AJAX, le profil et les groupes #}
+            {% include 'post/post_cards_fragment.html' with show_suggestions=True %}
 
             <!-- Infinite scroll sentinel -->
             <div id="feed-sentinel"></div>
@@ -1006,45 +701,7 @@
 </div><!-- /feed-wrapper -->
 
 <!-- Share modal -->
-<div class="share-modal-overlay" id="share-modal-overlay" onclick="if(event.target===this)closeShareModal()">
-    <div class="share-modal">
-        <div class="share-modal-title" id="share-modal-title">{% trans "Share" %}</div>
-        <div class="share-grid">
-            <a class="share-btn whatsapp" id="share-wa" href="#" target="_blank" rel="noopener">
-                <span class="sb-icon">💬</span>
-                <span class="sb-label">WhatsApp</span>
-            </a>
-            <a class="share-btn twitter" id="share-tw" href="#" target="_blank" rel="noopener">
-                <span class="sb-icon">𝕏</span>
-                <span class="sb-label">X / Twitter</span>
-            </a>
-            <a class="share-btn facebook" id="share-fb" href="#" target="_blank" rel="noopener">
-                <span class="sb-icon">📘</span>
-                <span class="sb-label">Facebook</span>
-            </a>
-            <button class="share-btn copy" onclick="copyShareLink()" type="button">
-                <span class="sb-icon">🔗</span>
-                <span class="sb-label">{% trans "Copy link" %}</span>
-            </button>
-        </div>
-        {% if request.user.is_authenticated %}
-        <button class="share-btn" id="share-repost-btn" onclick="doRepost()" style="width:100%;flex-direction:row;gap:.6rem;margin-bottom:.75rem;" type="button">
-            <span class="sb-icon" style="font-size:1.2rem;">🔁</span>
-            <span style="font-size:.9rem;font-weight:700;" id="share-repost-label">{% trans "Repost" %}</span>
-        </button>
-        {% endif %}
-        <div class="share-copylink" onclick="copyShareLink()">
-            <span class="material-icons">link</span>
-            <span class="share-copylink-text" id="share-url-display"></span>
-        </div>
-        <button class="share-cancel" onclick="closeShareModal()" type="button">{% trans "Cancel" %}</button>
-    </div>
-</div>
-<!-- Copy toast -->
-<div id="share-toast">
-    <span class="material-icons">check_circle</span>
-    {% trans "Link copied to clipboard!" %}
-</div>
+{# Partage : feuille native via vzShare (vz-core.js) ; l'ancienne modale maison a été retirée. #}
 
 <script>
 /* ── Token CSRF injecté par Django — ne dépend pas du cookie (fiable en PWA/Safari) */
@@ -1567,108 +1224,8 @@ document.addEventListener('DOMContentLoaded', function() {
 /* ══════════════════════════════════════
    SHARE MODAL
    ══════════════════════════════════════ */
-var _shareUrl = '';
-var _shareTimer = null;
-
-function sharePost(postId, postTitle) {
-    _shareUrl = window.location.origin + '/feed/' + postId + '/';
-    var title = postTitle || document.title;
-
-    /* Sur iOS / Android → feuille native (inclut WhatsApp, Messenger, etc.) */
-    if (navigator.share) {
-        navigator.share({ title: title, url: _shareUrl }).catch(function(){});
-        return;
-    }
-
-    /* Desktop → modal existant (WhatsApp + Facebook + Twitter + Repost) */
-    var encodedUrl   = encodeURIComponent(_shareUrl);
-    var encodedTitle = encodeURIComponent(title);
-    document.getElementById('share-url-display').textContent = _shareUrl;
-    document.getElementById('share-modal-title').textContent = title ? title.substring(0, 60) : '{% trans "Share"|escapejs %}';
-    document.getElementById('share-wa').href =
-        'https://wa.me/?text=' + encodedTitle + '%20' + encodedUrl;
-    document.getElementById('share-tw').href =
-        'https://x.com/intent/tweet?url=' + encodedUrl + '&text=' + encodedTitle;
-    document.getElementById('share-fb').href =
-        'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl;
-    document.getElementById('share-modal-overlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-}
-function closeShareModal() {
-    document.getElementById('share-modal-overlay').classList.remove('open');
-    document.body.style.overflow = '';
-}
-function copyShareLink() {
-    if (!_shareUrl) return;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(_shareUrl).then(showShareToast);
-    } else {
-        var tmp = document.createElement('textarea');
-        tmp.value = _shareUrl; tmp.style.cssText = 'position:fixed;opacity:0';
-        document.body.appendChild(tmp); tmp.select();
-        try { document.execCommand('copy'); } catch(e){}
-        document.body.removeChild(tmp);
-        showShareToast();
-    }
-    closeShareModal();
-}
-function showShareToast() {
-    var t = document.getElementById('share-toast');
-    if (!t) return;
-    t.classList.add('show');
-    clearTimeout(_shareTimer);
-    _shareTimer = setTimeout(function(){ t.classList.remove('show'); }, 2800);
-}
 
 
-/* ══════════════════════════════════════
-   REPOST
-   ══════════════════════════════════════ */
-var _sharePostId = null;
-var _originalSharePost = sharePost;
-sharePost = function(postId, postTitle) {
-    _sharePostId = postId;
-    // Update repost button state
-    var btn = document.getElementById('share-repost-btn');
-    if (btn) {
-        var isReposted = btn.dataset.reposted === 'true';
-        var label = document.getElementById('share-repost-label');
-        if (label) {
-            label.textContent = isReposted ? '{% trans "Undo Repost"|escapejs %}' : '{% trans "Repost"|escapejs %}';
-        }
-    }
-    _originalSharePost(postId, postTitle);
-};
-
-function doRepost() {
-    if (!_sharePostId) return;
-    var formData = new FormData();
-    formData.append('post_id', _sharePostId);
-    formData.append('csrfmiddlewaretoken', _ZF_CSRF);
-    fetch('{% url "post:repost" %}', { method: 'POST', body: formData })
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-        // Update repost count in the card
-        var countEl = document.getElementById('repost-count-' + _sharePostId);
-        if (countEl) {
-            countEl.textContent = data.repost_count > 0 ? data.repost_count : '';
-            countEl.style.display = data.repost_count > 0 ? '' : 'none';
-        }
-        var btn = document.getElementById('share-repost-btn');
-        if (btn) btn.dataset.reposted = data.reposted ? 'true' : 'false';
-        var label = document.getElementById('share-repost-label');
-        if (label) label.textContent = data.reposted ? '{% trans "Undo Repost"|escapejs %}' : '{% trans "Repost"|escapejs %}';
-        // Show toast
-        var t = document.getElementById('share-toast');
-        if (t) {
-            t.querySelector('.material-icons').textContent = 'repeat';
-            t.childNodes[1].textContent = data.reposted ? ' {% trans "Reposted!"|escapejs %}' : ' {% trans "Repost removed"|escapejs %}';
-            t.classList.add('show');
-            setTimeout(function(){ t.classList.remove('show'); }, 2500);
-        }
-        closeShareModal();
-    });
-}
 
 /* ══════════════════════════════════════
    NEW-POSTS BANNER
@@ -1682,10 +1239,42 @@ function showNewPostsBanner(username) {
     var text   = document.getElementById('new-posts-banner-text');
     if (banner) {
         text.textContent = _newPostsCount === 1
-            ? _newPostsNames[0] + ' a publié un nouveau post — cliquer pour actualiser'
-            : _newPostsCount + ' nouveaux posts — cliquer pour actualiser';
+            ? interpolate('{% trans "%s a publié un nouveau post"|escapejs %}', [_newPostsNames[0]])
+            : interpolate('{% trans "%s nouveaux posts"|escapejs %}', [_newPostsCount]);
         banner.classList.add('visible');
     }
+}
+function interpolate(fmt, args) { var i = 0; return fmt.replace(/%s/g, function () { return args[i++]; }); }
+
+/* Charge la première page du fil en AJAX et insère uniquement les cartes
+   absentes du DOM, au-dessus du fil. Plus de rechargement complet. */
+function vzFeedLoadNew() {
+    var banner = document.getElementById('new-posts-banner');
+    var anchor = document.getElementById('cb-post-list-anchor');
+    var feedMain = document.querySelector('.feed-main');
+    if (!anchor || !feedMain) { location.reload(); return; }
+    if (banner) banner.classList.add('is-loading');
+    fetch("{% url 'post:feed-more' %}?page=1&tab={{ active_tab|escapejs }}", { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+        var tmp = document.createElement('div');
+        tmp.innerHTML = data.html || '';
+        var fresh = [];
+        Array.prototype.slice.call(tmp.querySelectorAll('article.post-card')).forEach(function (a) {
+            if (!document.getElementById(a.id)) fresh.push(a);
+        });
+        var first = feedMain.querySelector('article.post-card');
+        fresh.reverse().forEach(function (a) {
+            a.classList.add('anim-fade-up');
+            if (first && first.parentNode) first.parentNode.insertBefore(a, first); else anchor.appendChild(a);
+            first = a;
+            if (typeof processHashtagsAndMentions === 'function') processHashtagsAndMentions(a);
+        });
+        _newPostsCount = 0; _newPostsNames = [];
+        if (banner) { banner.classList.remove('visible', 'is-loading'); }
+        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+    .catch(function () { location.reload(); });
 }
 
 /* ══════════════════════════════════════
@@ -1804,27 +1393,7 @@ document.addEventListener('click', function(e) {
 /* ══════════════════════════════════════
    BOOKMARK
    ══════════════════════════════════════ */
-var _BK_URL = "{% url 'post:bookmark' %}";
-function toggleBookmark(postId, btn) {
-    var fd = new FormData();
-    fd.append('post_id', postId);
-    fd.append('csrfmiddlewaretoken', _ZF_CSRF);
-    fetch(_BK_URL, { method: 'POST', body: fd })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-        if (!d.ok) return;
-        var icon = btn.querySelector('.material-icons');
-        if (d.saved) {
-            btn.classList.add('bookmarked');
-            if (icon) icon.textContent = 'bookmark';
-            btn.title = '{% trans "Retirer des sauvegardes"|escapejs %}';
-        } else {
-            btn.classList.remove('bookmarked');
-            if (icon) icon.textContent = 'bookmark_border';
-            btn.title = '{% trans "Sauvegarder"|escapejs %}';
-        }
-    });
-}
+/* Sauvegarder : vzPostBookmark (static/js/vz-post-card.js) */
 function getCsrfToken() {
     var name = 'csrftoken';
     var v = null;

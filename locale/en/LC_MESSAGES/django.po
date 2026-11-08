@@ -4223,3 +4223,16 @@ msgstr "golden ⭐ badge, public shop page, 20 photos per listing."
 
 msgid "« En pause » masque votre annonce sans la supprimer."
 msgstr "“Paused” hides your listing without deleting it."
+
+# ── Dates relatives et partage (2026-11-08) ──
+msgid "à l'instant"
+msgstr "just now"
+
+msgid "%(n)d min"
+msgstr "%(n)d min"
+
+msgid "%(n)d h"
+msgstr "%(n)d h"
+
+msgid "%(n)d j"
+msgstr "%(n)d d"

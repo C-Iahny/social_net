@@ -29,7 +29,7 @@
                     <a class="pc-author" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
                     <span class="pc-sub">
                         <span class="material-icons">schedule</span>
-                        {{ post.post_date|date:"d M Y" }}
+                        {{ post.created_at|default:post.post_date|vz_since }}
                     </span>
                 </div>
             </div>

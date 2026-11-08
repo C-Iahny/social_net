@@ -40,7 +40,7 @@
                 <a class="pd-author" href="{% url 'account:view' user_id=post.author.id %}">{{ post.author.username }}</a>
                 <div class="pd-date">
                     <span class="material-icons">schedule</span>
-                    {{ post.post_date|date:"d M Y" }}
+                    {{ post.created_at|default:post.post_date|vz_since }}
                     {% if post.category and post.category != 'Category' %}
                     <span style="opacity:.4">·</span>
                     <span style="background:var(--btn-bg);border-radius:8px;padding:.1rem .5rem;font-size:.72rem;font-weight:700;color:var(--accent);">{{ post.category }}</span>
@@ -161,7 +161,7 @@
                             <p class="pc-comment-body">{{ c.body }}</p>
                         </div>
                         <div class="pc-comment-footer">
-                            <span class="pc-comment-time">{{ c.created_at|date:"d M Y, H:i" }}</span>
+                            <span class="pc-comment-time">{{ c.created_at|vz_since }}</span>
                             <button class="pc-comment-reply-btn"
                                     onclick="pdToggleReply({{ c.id }})" type="button">{% trans "Reply" %}</button>
                             {% if request.user == c.author or request.user == post.author %}
@@ -185,7 +185,7 @@
                                         <p class="pc-comment-body">{{ reply.body }}</p>
                                     </div>
                                     <div class="pc-comment-footer">
-                                        <span class="pc-comment-time">{{ reply.created_at|date:"d M Y, H:i" }}</span>
+                                        <span class="pc-comment-time">{{ reply.created_at|vz_since }}</span>
                                         {% if request.user == reply.author or request.user == post.author %}
                                         <button class="pc-comment-del"
                                                 onclick="deleteComment({{ reply.id }}, '{% url 'post:delete-comment' reply.id %}')" type="button">{% trans "Delete" %}</button>

@@ -238,7 +238,7 @@
                             {{ post.total_likes }}
                         {% endif %}
                     </span>
-                    <span class="epc-date">{{ post.post_date|date:"d M Y" }}</span>
+                    <span class="epc-date">{{ post.created_at|default:post.post_date|vz_since }}</span>
                 </div>
 
             </a>
