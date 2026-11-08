@@ -12,7 +12,9 @@
 
 <script type="text/javascript">
 
-	const GENERAL_NOTIFICATION_INTERVAL = 4000
+	/* Le WebSocket pousse déjà les nouveautés (types 3/4/13/14) : ce poll n'est
+	   qu'un filet de sécurité. 4 s vidait la batterie et le forfait data. */
+	const GENERAL_NOTIFICATION_INTERVAL = 60000
 	const GENERAL_NOTIFICATION_TIMEOUT = 5000
 
 	// Keep track of what notifications are currently visible to the user.

@@ -150,7 +150,7 @@
 .td-bar {
     height: 100%;
     border-radius: 4px;
-    background: linear-gradient(90deg, var(--accent), #7c3aed);
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
     transition: width .4s ease;
 }
 

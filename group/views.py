@@ -2,6 +2,7 @@ import re
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.http import HttpResponseForbidden, JsonResponse
@@ -498,6 +499,7 @@ def group_leave(request, slug):
 
 
 @login_required
+@require_POST
 def group_pin_post(request, slug, post_id):
     """Épingler / désépingler un post (admin ou modérateur)."""
     group = get_object_or_404(Group, slug=slug)
@@ -512,6 +514,7 @@ def group_pin_post(request, slug, post_id):
 
 
 @login_required
+@require_POST
 def group_promote_member(request, slug, user_id):
     """Promouvoir un membre en modérateur (admin seulement)."""
     group = get_object_or_404(Group, slug=slug)
@@ -528,6 +531,7 @@ def group_promote_member(request, slug, user_id):
 
 
 @login_required
+@require_POST
 def group_demote_member(request, slug, user_id):
     """Rétrograder un modérateur en membre (admin seulement)."""
     group = get_object_or_404(Group, slug=slug)

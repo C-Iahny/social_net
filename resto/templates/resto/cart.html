@@ -22,10 +22,10 @@
                     {% if l.included %}<small>✅ {% trans "Avec" %} : {{ l.included }}</small>{% endif %}
                     {% if l.removed %}<small>🚫 {% trans "Sans" %} : {{ l.removed }}</small>{% endif %}
                     {% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}
-                    <small>{{ l.unit_price }} Ar × <span class="q">{{ l.quantity }}</span></small>
+                    <small>{{ l.unit_price|vz_ariary }} × <span class="q">{{ l.quantity }}</span></small>
                 </div>
                 <div style="text-align:right;">
-                    <div class="rs-price lt">{{ l.line_total }} Ar</div>
+                    <div class="rs-price lt">{{ l.line_total|vz_ariary }}</div>
                     <div class="rs-qty" style="margin-top:.3rem;">
                         <button type="button" onclick="rsLine({{ l.id }}, -1)">−</button><span class="q">{{ l.quantity }}</span><button type="button" onclick="rsLine({{ l.id }}, 1)">+</button>
                     </div>
@@ -34,12 +34,12 @@
         {% endfor %}
         </div>
         <div style="margin-top:.8rem;font-size:.9rem;">
-            <div style="display:flex;justify-content:space-between;"><span>{% trans "Sous-total" %}</span><span id="rs-sub">{{ cart_summary.subtotal }} Ar</span></div>
+            <div style="display:flex;justify-content:space-between;"><span>{% trans "Sous-total" %}</span><span id="rs-sub">{{ cart_summary.subtotal|vz_ariary }}</span></div>
             <div style="display:flex;justify-content:space-between;" class="rs-muted"><span>{% trans "Livraison (si livraison)" %}</span><span>{{ cart.restaurant.formatted_delivery_fee }}</span></div>
-            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;margin-top:.3rem;"><span>{% trans "Total" %}</span><span id="rs-total">{{ cart_summary.total }} Ar</span></div>
+            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;margin-top:.3rem;"><span>{% trans "Total" %}</span><span id="rs-total">{{ cart_summary.total|vz_ariary }}</span></div>
         </div>
         {% if cart.restaurant.min_order and cart_summary.subtotal < cart.restaurant.min_order %}
-        <p class="rs-form err" style="margin:.6rem 0 0;">{% blocktrans with m=cart.restaurant.min_order|floatformat:0 %}Commande minimum : {{ m }} Ar{% endblocktrans %}</p>
+        <p class="rs-form err" style="margin:.6rem 0 0;">{% blocktrans with m=cart.restaurant.min_order|floatformat:0 %}Commande minimum : {{ m|vz_ariary }}{% endblocktrans %}</p>
         {% endif %}
         <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap;">
             <a class="rs-btn" href="{% url 'resto:checkout' %}" style="flex:1;">{% trans "Commander" %} →</a>

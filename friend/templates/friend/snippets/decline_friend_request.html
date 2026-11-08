@@ -1,3 +1,4 @@
+{% load i18n %}
 <script type="text/javascript">
 
 	// POST + jeton CSRF : la vue n'accepte plus le GET (une requête GET
@@ -12,7 +13,7 @@
 			timeout: 5000,
 			success: function(data) {
 				if(data['response'] == "Friend request declined."){
-					// ui is updated
+					vzToast('{% trans "Demande refusée"|escapejs %}', 'success')
 				}
 				else if(data['response'] != null){
 					vzAlert(data['response'])
@@ -20,7 +21,7 @@
 			},
 			error: function(xhr) {
 				console.error("ERROR...", xhr)
-				var msg = "Something went wrong."
+				var msg = "{% trans "Une erreur est survenue"|escapejs %}"
 				try { msg = JSON.parse(xhr.responseText)['response'] || msg } catch(e) {}
 				vzAlert(msg)
 			},

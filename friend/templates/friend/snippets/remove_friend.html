@@ -1,3 +1,4 @@
+{% load i18n %}
 <script type="text/javascript">
 	
 	function removeFriend(id, uiUpdateFunction){
@@ -14,6 +15,7 @@
 			success: function(data) {
 				console.log("SUCCESS", data)
 				if(data['response'] == "Successfully removed that friend."){
+					vzToast('{% trans "Ami retiré"|escapejs %}', 'success')
 					// UI gets updated
 				}
 				else if(data['response'] != null){

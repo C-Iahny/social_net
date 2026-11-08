@@ -87,7 +87,7 @@
                 <p class="rs-resto-meta" style="margin-top:.4rem;">
                     <span>🛵 {{ r.formatted_delivery_fee }}</span>
                     <span>⏱ ~{{ r.avg_prep_minutes }} min</span>
-                    {% if r.min_order %}<span>{% trans "min." %} {{ r.min_order|floatformat:0 }} Ar</span>{% endif %}
+                    {% if r.min_order %}<span>{% trans "min." %} {{ r.min_order|vz_ariary }}</span>{% endif %}
                 </p>
             </div>
         </a>
@@ -118,7 +118,7 @@
 <a href="{% url 'resto:cart' %}" class="rs-cartbar show">
     <span class="material-icons">shopping_basket</span>
     <span>{{ cart_summary.count }} {% trans "article" %}{{ cart_summary.count|pluralize }} · {{ cart_summary.restaurant.name }}</span>
-    <span>{{ cart_summary.total }} Ar →</span>
+    <span>{{ cart_summary.total|vz_ariary }} →</span>
 </a>
 {% endif %}
 {% endblock %}

@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate
 
@@ -18,7 +19,7 @@ class RegistrationForm(UserCreationForm):
             account = Account.objects.exclude(pk=self.instance.pk).get(email=email)
         except Account.DoesNotExist:
             return email
-        raise forms.ValidationError('Email "%s" is already in use.' % account.email)
+        raise forms.ValidationError(_('Cette adresse e-mail est déjà utilisée.'))
 
     def clean_username(self):
         username = self.cleaned_data['username']
@@ -26,13 +27,13 @@ class RegistrationForm(UserCreationForm):
             account = Account.objects.exclude(pk=self.instance.pk).get(username=username)
         except Account.DoesNotExist:
             return username
-        raise forms.ValidationError('Username "%s" is already in use.' % username)
+        raise forms.ValidationError(_('Ce nom d’utilisateur est déjà pris.'))
 
 
 
 class AccountAuthenticationForm(forms.ModelForm):
 
-    password = forms.CharField(label='Password', widget=forms.PasswordInput)
+    password = forms.CharField(label=_('Mot de passe'), widget=forms.PasswordInput)
 
     class Meta:
         model = Account
@@ -43,7 +44,7 @@ class AccountAuthenticationForm(forms.ModelForm):
             email = self.cleaned_data['email']
             password = self.cleaned_data['password']
             if not authenticate(email=email, password=password):
-                raise forms.ValidationError("Invalid login")
+                raise forms.ValidationError(_("E-mail ou mot de passe incorrect."))
 
 
 ACCEPTED_IMAGE_TYPES = (
@@ -93,7 +94,7 @@ class AccountUpdateForm(forms.ModelForm):
             account = Account.objects.exclude(pk=self.instance.pk).get(email=email)
         except Account.DoesNotExist:
             return email
-        raise forms.ValidationError('Email "%s" is already in use.' % account.email)
+        raise forms.ValidationError(_('Cette adresse e-mail est déjà utilisée.'))
 
     def clean_username(self):
         username = self.cleaned_data['username']
@@ -101,7 +102,7 @@ class AccountUpdateForm(forms.ModelForm):
             account = Account.objects.exclude(pk=self.instance.pk).get(username=username)
         except Account.DoesNotExist:
             return username
-        raise forms.ValidationError('Username "%s" is already in use.' % username)
+        raise forms.ValidationError(_('Ce nom d’utilisateur est déjà pris.'))
 
     def save(self, commit=True):
         account = super(AccountUpdateForm, self).save(commit=False)

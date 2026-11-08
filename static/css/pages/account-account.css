@@ -661,7 +661,7 @@ body { background: var(--bg); }
 .pc-video-wrap { margin: .4rem 0 0; background: #000; overflow: hidden; }
 .pc-video { width: 100%; max-height: 460px; display: block; background: #000; outline: none; }
 .pc-video-label { display: flex; align-items: center; gap: .4rem; padding: .4rem 1.1rem; font-size: .78rem; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); }
-.pc-video-label .material-icons { font-size: .95rem; color: #7c3aed; }
+.pc-video-label .material-icons { font-size: .95rem; color: var(--vintana); }
 /* Reaction summary */
 .pc-reaction-bar { display: flex; align-items: center; gap: .45rem; padding: .3rem 1.1rem; font-size: .8rem; color: var(--text-muted); }
 .rc-emoji-group { display: flex; }

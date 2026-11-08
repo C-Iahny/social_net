@@ -27,7 +27,7 @@
                 {% if restaurant.offers_delivery %}🛵 {{ restaurant.formatted_delivery_fee }} · {% endif %}
                 {% if restaurant.offers_pickup %}🏪 {% trans "Retrait sur place" %} · {% endif %}
                 ⏱ ~{{ restaurant.avg_prep_minutes }} min
-                {% if restaurant.min_order %} · {% trans "Commande min." %} {{ restaurant.min_order|floatformat:0 }} Ar{% endif %}
+                {% if restaurant.min_order %} · {% trans "Commande min." %} {{ restaurant.min_order|vz_ariary }}{% endif %}
                 {% if restaurant.phone %} · 📞 <a href="tel:{{ restaurant.phone }}" style="color:var(--accent);">{{ restaurant.phone }}</a>{% endif %}
             </p>
             {% if is_owner %}
@@ -89,7 +89,7 @@
 <a href="{% url 'resto:cart' %}" class="rs-cartbar {% if cart_summary.count %}show{% endif %}" id="rs-cartbar">
     <span class="material-icons">shopping_basket</span>
     <span id="rs-cartbar-count">{{ cart_summary.count }} {% trans "article(s)" %}</span>
-    <span id="rs-cartbar-total">{{ cart_summary.total }} Ar</span> →
+    <span id="rs-cartbar-total">{{ cart_summary.total|vz_ariary }}</span> →
 </a>
 
 <!-- ── Modale d'options ── -->

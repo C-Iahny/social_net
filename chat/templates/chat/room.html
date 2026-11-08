@@ -820,11 +820,34 @@ window._CT = {
                 setupWebSocket(roomId);
             }
         });
-        setInterval(function(){
-            if(roomId && (!chatSocket || chatSocket.readyState === WebSocket.CLOSED)){
-                setupWebSocket(roomId);
-            }
-        }, 8000); // vérification toutes les 8 secondes
+        /* Reconnexion à délai croissant (1 s → 30 s) pilotée par onclose,
+           au lieu d'un poll de 8 s jamais arrêté. Remise à zéro dès qu'une
+           connexion s'ouvre. */
+        var _wsRetryDelay = 1000, _wsRetryTimer = null;
+        function scheduleReconnect(){
+            if(_wsRetryTimer || !roomId) return;
+            _wsRetryTimer = setTimeout(function(){
+                _wsRetryTimer = null;
+                if(roomId && (!chatSocket || chatSocket.readyState === WebSocket.CLOSED)) setupWebSocket(roomId);
+            }, _wsRetryDelay);
+            _wsRetryDelay = Math.min(_wsRetryDelay * 2, 30000);
+        }
+        window._vzChatScheduleReconnect = scheduleReconnect;
+        window._vzChatResetBackoff = function(){ _wsRetryDelay = 1000; if(_wsRetryTimer){ clearTimeout(_wsRetryTimer); _wsRetryTimer = null; } };
+
+        /* Filtre des conversations : la boîte de recherche était inerte */
+        (function(){
+            var input = document.getElementById('sb-search-input');
+            if(!input) return;
+            input.addEventListener('input', function(){
+                var q = input.value.trim().toLowerCase();
+                document.querySelectorAll('#friends-list-container .friend-container').forEach(function(c){
+                    var name = (c.querySelector('.friend-name') || {}).textContent || '';
+                    var prev = (c.querySelector('.friend-preview') || {}).textContent || '';
+                    c.style.display = (!q || name.toLowerCase().indexOf(q) >= 0 || prev.toLowerCase().indexOf(q) >= 0) ? '' : 'none';
+                });
+            });
+        })();
 
         /* ── Fix clavier virtuel mobile ─────────────────────────────────
            Comportement selon le navigateur :
@@ -1358,12 +1381,14 @@ window._CT = {
 
         chatSocket.addEventListener("open", function(e){
             setWsIndicator(true);
+            if(window._vzChatResetBackoff) window._vzChatResetBackoff();
             if("{{ request.user.is_authenticated }}"){
                 chatSocket.send(JSON.stringify({ "command": "join", "room": roomId }))
             }
         })
         chatSocket.onclose = function(e){
             setWsIndicator(false);
+            if(window._vzChatScheduleReconnect) window._vzChatScheduleReconnect();
         };
         chatSocket.onerror = function(e){
             setWsIndicator(false);

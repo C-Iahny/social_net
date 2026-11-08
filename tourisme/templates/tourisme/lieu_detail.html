@@ -187,7 +187,7 @@
                     {% endif %}
                     {% if guide.prix_jour %}
                     <div style="font-size:.75rem;color:var(--accent);font-weight:700;margin-top:.2rem;">
-                        {{ guide.prix_jour|floatformat:0 }} Ar/jour
+                        {{ guide.prix_jour|vz_ariary }}/{% trans "jour" %}
                     </div>
                     {% endif %}
                 </div>

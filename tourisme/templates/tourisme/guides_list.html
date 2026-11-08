@@ -112,7 +112,7 @@
                     {% if guide.prix_jour %}
                     <div class="guide-prix">
                         <span class="material-icons">payments</span>
-                        {{ guide.prix_jour|floatformat:0 }} Ar/jour
+                        {{ guide.prix_jour|vz_ariary }}/{% trans "jour" %}
                     </div>
                     {% endif %}
                 </div>

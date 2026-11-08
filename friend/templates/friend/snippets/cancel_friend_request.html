@@ -1,3 +1,4 @@
+{% load i18n %}
 
 
 <script type="text/javascript">
@@ -16,7 +17,7 @@
 			success: function(data) {
 				console.log("SUCCESS", data)
 				if(data['response'] == "Friend request canceled."){
-					// ui is updated
+					vzToast('{% trans "Demande annulée"|escapejs %}', 'success')
 				}
 				else if(data['response'] != null){
 					vzAlert(data['response'])

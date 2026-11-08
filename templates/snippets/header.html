@@ -5,7 +5,6 @@
 <div id="zoot-post-toast"></div>
 
 <!-- ── Navbar premium ─────────────────────────────────────────────── -->
-<link rel="stylesheet" href="{% static 'css/pages/base-header.css' %}">
 
 <!-- ── Header HTML ─────────────────────────────────────────────────── -->
 <nav id="header" class="{% if not request.user.is_authenticated %}zoot-anon{% endif %}">
@@ -121,8 +120,8 @@
                 <a class="dropdown-item" href="{% url 'post:kabary-create' %}" style="color:var(--accent);">
                     <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
                 </a>
-                <a class="dropdown-item" href="{% url 'post:vintana-create' %}" style="color:#bf5fff;">
-                    <span class="material-icons" style="color:#bf5fff;">lock_clock</span> Vintana
+                <a class="dropdown-item" href="{% url 'post:vintana-create' %}" style="color:var(--vintana);">
+                    <span class="material-icons" style="color:var(--vintana);">lock_clock</span> Vintana
                 </a>
 
             </div>
@@ -175,8 +174,8 @@
         {% get_current_language as CURRENT_LANG %}
         <div style="position:relative;">
             <button class="zoot-lang-btn" id="zoot-lang-toggle" onclick="document.getElementById('zoot-lang-dd').classList.toggle('open');event.stopPropagation();" title="{% trans 'Language' %}" type="button">
-                <span class="lang-flag">{% if CURRENT_LANG == 'mg' %}🇲🇬{% elif CURRENT_LANG == 'en' %}🇬🇧{% else %}🇫🇷{% endif %}</span>
-                <span class="lang-code zoot-lang-code-hide-mobile">{{ CURRENT_LANG|upper }}</span>
+                <span class="material-icons" style="font-size:1.1rem;" aria-hidden="true">translate</span>
+                <span class="lang-code">{{ CURRENT_LANG|upper }}</span>
                 <span class="material-icons" style="font-size:.85rem;opacity:.6">expand_more</span>
             </button>
             <div class="zoot-lang-dropdown" id="zoot-lang-dd">
@@ -187,7 +186,7 @@
                     <input type="hidden" name="language" value="{{ lang_code }}">
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
                     <button type="submit" class="lang-option {% if CURRENT_LANG == lang_code %}active{% endif %}">
-                        <span class="lang-flag">{% if lang_code == 'mg' %}🇲🇬{% elif lang_code == 'en' %}🇬🇧{% else %}🇫🇷{% endif %}</span>
+                        <span class="lang-flag lang-code-badge">{{ lang_code|upper }}</span>
                         <span>{% if lang_code == 'fr' %}Français{% elif lang_code == 'en' %}English{% else %}Malagasy{% endif %}</span>
                         {% if CURRENT_LANG == lang_code %}<span class="material-icons" style="font-size:.9rem;margin-left:auto;color:var(--accent)">check</span>{% endif %}
                     </button>
@@ -214,7 +213,7 @@
                  data-toggle="dropdown"
                  data-display="static"
                  aria-haspopup="true"
-                 aria-expanded="false">
+                 aria-expanded="false" role="button" tabindex="0" aria-label="{% trans 'Messages' %}">
                 <span id="id_chat_notifications_count" class="zoot-badge"></span>
                 <span class="material-icons">chat_bubble_outline</span>
             </div>
@@ -232,8 +231,7 @@
                  data-toggle="dropdown"
                  data-display="static"
                  aria-haspopup="true"
-                 aria-expanded="false"
-                 onclick="setGeneralNotificationsAsRead()">
+                 aria-expanded="false" role="button" tabindex="0" aria-label="Notifications">
                 <span id="id_general_notifications_count" class="zoot-badge"></span>
                 <span class="material-icons">notifications_none</span>
             </div>
@@ -246,6 +244,9 @@
                         <span class="material-icons">notifications</span>
                         Notifications
                     </span>
+                    <button type="button" class="zoot-dropdown-header-link" onclick="setGeneralNotificationsAsRead();event.stopPropagation();" style="background:none;border:0;padding:0;font:inherit;cursor:pointer;">
+                        {% trans "Tout marquer lu" %}
+                    </button>
                     <a href="{% url 'notification:journal' %}" class="zoot-dropdown-header-link">
                         {% trans "See all" %}
                     </a>
@@ -325,8 +326,8 @@
                     <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
                 </a>
                 <a class="dropdown-item" href="{% url 'post:vintana-create' %}"
-                   style="color:#bf5fff;">
-                    <span class="material-icons" style="color:#bf5fff;">lock_clock</span> Vintana
+                   style="color:var(--vintana);">
+                    <span class="material-icons" style="color:var(--vintana);">lock_clock</span> Vintana
                 </a>
                 <!-- Live -->
                 <a class="dropdown-item" href="{% url 'video:live-list' %}"
@@ -348,7 +349,7 @@
                         onclick="togglePushNotif()" type="button"
                         style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
                     <span class="material-icons" id="push-notif-icon">notifications_none</span>
-                    <span id="push-notif-label">Activer les notifications</span>
+                    <span id="push-notif-label">{% trans "Activer les notifications" %}</span>
                 </button>
                 <a class="dropdown-item danger" href="{% url 'logout' %}">
                     <span class="material-icons">logout</span> {% trans "Logout" %}
@@ -384,8 +385,7 @@
                             color:{% if CURRENT_LANG == lang_code %}var(--accent){% else %}var(--text){% endif %};
                             display:inline-flex;align-items:center;gap:.3rem;font-family:inherit;
                         ">
-                            <span>{% if lang_code == 'mg' %}🇲🇬{% elif lang_code == 'en' %}🇬🇧{% else %}🇫🇷{% endif %}</span>
-                            <span>{% if lang_code == 'fr' %}FR{% elif lang_code == 'en' %}EN{% else %}MG{% endif %}</span>
+                            <span>{% if lang_code == 'fr' %}Français{% elif lang_code == 'en' %}English{% else %}Malagasy{% endif %}</span>
                         </button>
                     </form>
                     {% endfor %}
@@ -466,16 +466,16 @@
     <a href="{% url 'post:kabary-create' %}" class="zoot-mobile-link" style="color:var(--accent);">
         <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
     </a>
-    <a href="{% url 'post:vintana-create' %}" class="zoot-mobile-link" style="color:#bf5fff;">
-        <span class="material-icons" style="color:#bf5fff;">lock_clock</span> Vintana
+    <a href="{% url 'post:vintana-create' %}" class="zoot-mobile-link" style="color:var(--vintana);">
+        <span class="material-icons" style="color:var(--vintana);">lock_clock</span> Vintana
     </a>
 
     <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
         <span class="material-icons">person_outline</span> {% trans "My profile" %}
     </a>
-    <a href="{% url 'logout' %}" class="zoot-mobile-link" style="color:#e0245e;">
-        <span class="material-icons" style="color:#e0245e;">logout</span> {% trans "Logout" %}
+    <a href="{% url 'logout' %}" class="zoot-mobile-link" style="color:var(--danger);">
+        <span class="material-icons" style="color:var(--danger);">logout</span> {% trans "Logout" %}
     </a>
 </div>
 {% else %}
@@ -702,7 +702,9 @@
         .catch(function() {});
     }
     document.addEventListener('DOMContentLoaded', refreshLiveCount);
-    setInterval(refreshLiveCount, 20000);
+    /* 20 s sur chaque page était coûteux en 3G : 90 s, et uniquement onglet visible */
+    setInterval(function(){ if (!document.hidden) refreshLiveCount(); }, 90000);
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) refreshLiveCount(); });
 })();
 </script>
 {% endif %}
@@ -1057,7 +1059,6 @@ document.addEventListener('click', function(e) {
     </div>
 </div>
 
-<link rel="stylesheet" href="{% static 'css/pages/base-header.css' %}">
 
 <script>
 (function(){

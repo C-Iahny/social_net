@@ -51,9 +51,8 @@
                 <h1 class="profile-username" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
                     {{ username }}
                     {% if profile_user.phone_verified %}
-                    <span title="Numéro de téléphone vérifié par SMS"
-                          style="display:inline-flex;align-items:center;gap:.2rem;background:var(--accent-glow);color:var(--accent);font-size:.62rem;font-weight:700;padding:.15rem .55rem;border-radius:20px;letter-spacing:.04em;border:1px solid rgba(var(--accent-rgb),.3);vertical-align:middle;">
-                        📱 {% trans "Tél. vérifié" %}
+                    <span class="vz-chip vz-chip--accent" style="min-height:24px;font-size:.66rem;" title="{% trans 'Numéro de téléphone vérifié par SMS' %}">
+                        <span class="material-icons" style="font-size:.9rem;">verified</span> {% trans "Tél. vérifié" %}
                     </span>
                     {% endif %}
                 </h1>
@@ -72,6 +71,11 @@
                         <span class="material-icons">place</span>
                         {{ location }}
                     </span>
+                    {% endif %}
+                    {% if region_label %}
+                    <a class="vz-chip" href="{% url 'post:post-view' %}?tab=region" title="{% trans 'Région' %}">
+                        <span class="material-icons">map</span> {{ region_label }}
+                    </a>
                     {% endif %}
                     <span class="fihav-stat"
                           title="Score Fihavanana — solidarité &amp; engagement communautaire">
@@ -99,7 +103,7 @@
                     {% if friend_requests %}
                     <a class="btn-p btn-p-primary" href="{% url 'friend:friend-requests' user_id=id %}">
                         <span class="material-icons">notifications</span>
-                        {{ friend_requests|length }} {% trans "demande" %}
+                        {% blocktrans count n=friend_requests|length %}{{ n }} demande{% plural %}{{ n }} demandes{% endblocktrans %}
                     </a>
                     {% endif %}
 
@@ -107,7 +111,7 @@
                     {% if request_sent == 0 %}
                     <div class="fr-banner">
                         <span class="material-icons">person_add</span>
-                        <span class="fr-text">{{ username }} a envoyé une demand d'ami.</span>
+                        <span class="fr-text">{% blocktrans %}{{ username }} vous a envoyé une demande d’ami.{% endblocktrans %}</span>
                         <button class="btn-p btn-p-success" onclick='triggerAcceptFriendRequest("{{ pending_friend_request_id }}")' type="button">
                             <span class="material-icons">check</span> {% trans "Accept" %}
                         </button>
@@ -152,6 +156,11 @@
                     <span class="material-icons">login</span> {% trans "Login" %}
                 </a>
             {% endif %}
+            <button type="button" class="vz-btn vz-btn--muted vz-btn--sm vz-btn--pill"
+                    onclick="vzShare({title:'{{ username|escapejs }} · Vazimba', url:'{% url 'account:view' user_id=id %}'})"
+                    aria-label="{% trans 'Partager le profil' %}">
+                <span class="material-icons">share</span>{% trans "Partager" %}
+            </button>
             {% if request.user.is_authenticated and not is_self %}
             <button type="button" class="vz-btn vz-btn--muted vz-btn--sm vz-btn--pill" onclick="openReportModal('account','{{ id }}')" title="{% trans 'Signaler ce profil' %}">
                 <span class="material-icons">flag</span>{% trans "Signaler" %}
@@ -167,8 +176,8 @@
     <!-- ══════════════════════════════════
          TABS
          ══════════════════════════════════ -->
-    <div class="profile-tabs" id="profile-tabs">
-        <button class="tab-btn active" data-tab="posts" type="button">
+    <div class="profile-tabs" id="profile-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="posts" type="button" role="tab" id="tabbtn-posts" aria-controls="tab-posts" aria-selected="true">
             <span class="material-icons">article</span> {% trans "Posts" %}
         </button>
         <button class="tab-btn" data-tab="photos" type="button">
@@ -794,9 +803,9 @@
 document.querySelectorAll('.tab-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
         var target = this.dataset.tab;
-        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
         document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active'); });
-        this.classList.add('active');
+        this.classList.add('active'); this.setAttribute('aria-selected', 'true');
         var pane = document.getElementById('tab-' + target);
         if (pane) pane.classList.add('active');
         try { sessionStorage.setItem('profile_tab_{{ id }}', target); } catch(e){}

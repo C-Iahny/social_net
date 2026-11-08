@@ -49,11 +49,11 @@
         <div class="rs-card" style="padding:1rem;">
             <p style="margin:0 0 .5rem;font-weight:700;">{{ restaurant.name }}</p>
             {% for l in cart_summary.lines %}
-            <div class="rs-order-line"><div>{{ l.quantity }} × {{ l.name }}{% if l.options %}<small>{{ l.options }}</small>{% endif %}{% if l.included %}<small>✅ {% trans "Avec" %} : {{ l.included }}</small>{% endif %}{% if l.removed %}<small>🚫 {% trans "Sans" %} : {{ l.removed }}</small>{% endif %}{% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}</div><div>{{ l.line_total }} Ar</div></div>
+            <div class="rs-order-line"><div>{{ l.quantity }} × {{ l.name }}{% if l.options %}<small>{{ l.options }}</small>{% endif %}{% if l.included %}<small>✅ {% trans "Avec" %} : {{ l.included }}</small>{% endif %}{% if l.removed %}<small>🚫 {% trans "Sans" %} : {{ l.removed }}</small>{% endif %}{% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}</div><div>{{ l.line_total|vz_ariary }}</div></div>
             {% endfor %}
-            <div style="display:flex;justify-content:space-between;margin-top:.6rem;"><span>{% trans "Sous-total" %}</span><span>{{ cart_summary.subtotal }} Ar</span></div>
+            <div style="display:flex;justify-content:space-between;margin-top:.6rem;"><span>{% trans "Sous-total" %}</span><span>{{ cart_summary.subtotal|vz_ariary }}</span></div>
             <div style="display:flex;justify-content:space-between;" class="rs-muted" id="rs-fee-row"><span>{% trans "Livraison" %}</span><span>{{ restaurant.formatted_delivery_fee }}</span></div>
-            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;margin-top:.3rem;"><span>{% trans "Total" %}</span><span id="rs-total">{{ cart_summary.total }} Ar</span></div>
+            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;margin-top:.3rem;"><span>{% trans "Total" %}</span><span id="rs-total">{{ cart_summary.total|vz_ariary }}</span></div>
             <p class="rs-muted" style="margin:.4rem 0 0;">⏱ {% trans "Délai estimé" %} : ~{{ restaurant.avg_prep_minutes }} min {% trans "de préparation" %}</p>
             <button class="rs-btn" type="submit" style="width:100%;margin-top:1rem;">{% trans "Envoyer la commande" %} 🍽️</button>
         </div>

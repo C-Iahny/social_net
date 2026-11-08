@@ -1,3 +1,4 @@
+{% load i18n %}
 
 <script type="text/javascript">
 	
@@ -15,7 +16,7 @@
 			success: function(data) {
 				console.log("SUCCESS:" + data)
 				if(data['response'] == "Friend request sent."){
-					// ui is updated
+					vzToast('{% trans "Demande d\'ami envoyée"|escapejs %}', 'success')
 				}
 				else if(data['response'] != null){
 					vzAlert(data['response'])

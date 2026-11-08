@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import F, Q
 
 from .models import LieuTouristique, GuideTouristique, LieuImage, LieuAvis, LIEU_CATEGORY_CHOICES, REGION_CHOICES
 
@@ -74,7 +74,7 @@ def lieu_detail(request, slug):
         raise Http404
 
     if lieu.is_approved:
-        LieuTouristique.objects.filter(pk=lieu.pk).update(views_count=lieu.views_count + 1)
+        LieuTouristique.objects.filter(pk=lieu.pk).update(views_count=F('views_count') + 1)
 
     # Guides qui couvrent ce lieu
     guides = lieu.guides.filter(is_verified=True, is_active=True).select_related('user')[:4]

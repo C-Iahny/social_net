@@ -361,6 +361,7 @@ def edit_account_view(request, *args, **kwargs):
 				'bio':        account.bio,
 				'location':   account.location,
 				'region':     account.region,
+				'region_label': __import__('regions').REGION_LABELS.get(account.region or '', ''),
 			}
 		)
 	context['form'] = form
