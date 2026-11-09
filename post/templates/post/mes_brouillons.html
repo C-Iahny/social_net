@@ -17,15 +17,15 @@
         {% for post in posts %}
         <div class="draft-card">
             <div class="draft-body">
-                <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;flex-wrap:wrap;">
+                <div class="draft-head">
                     {% if post.status == 'draft' %}
                     <span class="draft-badge badge-draft">
-                        <span class="material-icons" style="font-size:.85rem;">edit</span>
+                        <span class="material-icons">edit</span>
                         {% trans "Brouillon" %}
                     </span>
                     {% else %}
                     <span class="draft-badge badge-scheduled">
-                        <span class="material-icons" style="font-size:.85rem;">schedule</span>
+                        <span class="material-icons">schedule</span>
                         {% trans "Programmé" %}
                     </span>
                     {% endif %}
@@ -40,22 +40,22 @@
                 </div>
                 <div class="draft-actions">
                     <a href="{% url 'post:edit-post' post.pk %}" class="draft-btn draft-btn-edit">
-                        <span class="material-icons" style="font-size:.9rem;">edit</span>
+                        <span class="material-icons">edit</span>
                         {% trans "Modifier" %}
                     </a>
                     {% if post.status == 'draft' %}
-                    <form method="post" action="{% url 'post:edit-post' post.pk %}" style="display:inline;">
+                    <form method="post" action="{% url 'post:edit-post' post.pk %}" class="draft-inline-form">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="publish">
                         <button type="submit" class="draft-btn draft-btn-publish">
-                            <span class="material-icons" style="font-size:.9rem;">send</span>
+                            <span class="material-icons">send</span>
                             {% trans "Publier maintenant" %}
                         </button>
                     </form>
                     {% endif %}
                     <a href="{% url 'post:delete-post' post.pk %}" class="draft-btn draft-btn-delete"
                        data-vz-confirm="{% trans 'Supprimer ce brouillon ?' %}" data-vz-danger>
-                        <span class="material-icons" style="font-size:.9rem;">delete</span>
+                        <span class="material-icons">delete</span>
                         {% trans "Supprimer" %}
                     </a>
                 </div>
@@ -66,8 +66,8 @@
     <div class="draft-empty">
         <span class="material-icons">drafts</span>
         <p>{% trans "Aucun brouillon pour l'instant." %}</p>
-        <a href="{% url 'post:addPost' %}" class="draft-btn draft-btn-publish" style="display:inline-flex;margin-top:.5rem;">
-            <span class="material-icons" style="font-size:.9rem;">add</span>
+        <a href="{% url 'post:addPost' %}" class="draft-btn draft-btn-publish">
+            <span class="material-icons">add</span>
             {% trans "Créer un post" %}
         </a>
     </div>

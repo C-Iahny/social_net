@@ -5,9 +5,9 @@
 {% block content %}
 {% include 'resto/_style.html' %}
 <link rel="stylesheet" href="{% static 'css/pages/resto-signup.css' %}">
-<div class="rs-wrap" style="max-width:720px;">
-    <h1 style="font-size:1.4rem;font-weight:800;margin:.5rem 0 .3rem;">🛵 {% if courier %}{% trans "Mon profil livreur" %}{% else %}{% trans "Devenir livreur" %}{% endif %}</h1>
-    <div class="rs-card" style="padding:.8rem 1rem;margin-bottom:1rem;font-size:.85rem;">
+<div class="rs-wrap rs-wrap--narrow">
+    <h1 class="rs-h1 rs-h1--signup"><i class="material-icons" aria-hidden="true">delivery_dining</i> {% if courier %}{% trans "Mon profil livreur" %}{% else %}{% trans "Devenir livreur" %}{% endif %}</h1>
+    <div class="rs-card rs-intro-card">
         <strong>{% trans "Ce qui rend un profil fiable" %}</strong> : {% trans "photo réelle" %}, {% trans "CIN contrôlée" %}, {% trans "téléphone vérifié" %}, {% trans "garant joignable" %}, {% trans "avis positifs" %}.
         {% if courier %}<span class="rs-muted">{% trans "Profil de confiance" %} : <strong>{{ courier.profile_completion }} %</strong></span>{% endif %}
     </div>
@@ -16,21 +16,21 @@
         {% if form.non_field_errors %}<p class="err">{{ form.non_field_errors|join:" " }}</p>{% endif %}
 
         <div class="rs-card rs-sec">
-            <h2>🪪 {% trans "Identité" %}</h2>
+            <h2><i class="material-icons rs-ico" aria-hidden="true">badge</i> {% trans "Identité" %}</h2>
             <p class="intro">{% trans "Ces informations servent à vérifier qui vous êtes. Le numéro et les photos de CIN ne sont jamais publiés : seule l'équipe Vazimba les voit." %}</p>
             {% for f in form %}{% if f.name in 'full_name phone bio cin_number' %}
             <div class="f"><label>{{ f.label }}</label>{{ f }}{% if f.help_text %}<p class="help">{{ f.help_text }}</p>{% endif %}{% if f.errors %}<p class="err">{{ f.errors|join:" " }}</p>{% endif %}</div>
             {% endif %}{% endfor %}
             <div class="rs-row">
                 <div class="f"><label>{{ form.photo.label }}</label>{{ form.photo }}{% if courier and courier.photo %}<img class="rs-thumb" src="{{ courier.photo.url }}" alt="">{% endif %}{% if form.photo.errors %}<p class="err">{{ form.photo.errors|join:" " }}</p>{% endif %}</div>
-                <div class="f"><label>{{ form.cin_front.label }}</label>{{ form.cin_front }}{% if courier and courier.cin_front %}<span class="rs-muted">✓ {% trans "reçue" %}</span>{% endif %}</div>
-                <div class="f"><label>{{ form.cin_back.label }}</label>{{ form.cin_back }}{% if courier and courier.cin_back %}<span class="rs-muted">✓ {% trans "reçue" %}</span>{% endif %}</div>
+                <div class="f"><label>{{ form.cin_front.label }}</label>{{ form.cin_front }}{% if courier and courier.cin_front %}<span class="rs-muted"><i class="material-icons rs-ico" aria-hidden="true">check</i> {% trans "reçue" %}</span>{% endif %}</div>
+                <div class="f"><label>{{ form.cin_back.label }}</label>{{ form.cin_back }}{% if courier and courier.cin_back %}<span class="rs-muted"><i class="material-icons rs-ico" aria-hidden="true">check</i> {% trans "reçue" %}</span>{% endif %}</div>
             </div>
-            {% if courier %}<p class="rs-muted" style="margin:0;">{% if courier.cin_verified %}✅ {% trans "Identité vérifiée par Vazimba" %}{% else %}⏳ {% trans "Identité pas encore contrôlée par Vazimba" %}{% endif %}</p>{% endif %}
+            {% if courier %}<p class="rs-muted rs-m0">{% if courier.cin_verified %}<i class="material-icons rs-ico" aria-hidden="true">verified_user</i> {% trans "Identité vérifiée par Vazimba" %}{% else %}<i class="material-icons rs-ico" aria-hidden="true">hourglass_empty</i> {% trans "Identité pas encore contrôlée par Vazimba" %}{% endif %}</p>{% endif %}
         </div>
 
         <div class="rs-card rs-sec">
-            <h2>🛵 {% trans "Véhicule" %}</h2>
+            <h2><i class="material-icons rs-ico" aria-hidden="true">two_wheeler</i> {% trans "Véhicule" %}</h2>
             <div class="rs-row">
                 {% for f in form %}{% if f.name in 'vehicle vehicle_plate vehicle_photo' %}
                 <div class="f"><label>{{ f.label }}</label>{{ f }}{% if f.name == 'vehicle_photo' and courier and courier.vehicle_photo %}<img class="rs-thumb" src="{{ courier.vehicle_photo.url }}" alt="">{% endif %}{% if f.errors %}<p class="err">{{ f.errors|join:" " }}</p>{% endif %}</div>
@@ -39,14 +39,14 @@
         </div>
 
         <div class="rs-card rs-sec">
-            <h2>📍 {% trans "Zone & disponibilités" %}</h2>
+            <h2><i class="material-icons rs-ico" aria-hidden="true">place</i> {% trans "Zone & disponibilités" %}</h2>
             {% for f in form %}{% if f.name in 'region zones hours languages years_experience' %}
             <div class="f"><label>{{ f.label }}</label>{{ f }}{% if f.help_text %}<p class="help">{{ f.help_text }}</p>{% endif %}{% if f.errors %}<p class="err">{{ f.errors|join:" " }}</p>{% endif %}</div>
             {% endif %}{% endfor %}
         </div>
 
         <div class="rs-card rs-sec">
-            <h2>💳 {% trans "Paiement des frais de livraison" %}</h2>
+            <h2><i class="material-icons rs-ico" aria-hidden="true">payments</i> {% trans "Paiement des frais de livraison" %}</h2>
             <div class="rs-row">
                 {% for f in form %}{% if f.name in 'mm_provider mm_number' %}
                 <div class="f"><label>{{ f.label }}</label>{{ f }}{% if f.errors %}<p class="err">{{ f.errors|join:" " }}</p>{% endif %}</div>
@@ -55,7 +55,7 @@
         </div>
 
         <div class="rs-card rs-sec">
-            <h2>🤝 {% trans "Garant" %}</h2>
+            <h2><i class="material-icons rs-ico" aria-hidden="true">handshake</i> {% trans "Garant" %}</h2>
             <p class="intro">{% trans "Le garant est une pratique de confiance courante à Madagascar : une personne joignable qui répond de vous en cas de problème." %}</p>
             <div class="rs-row">
                 {% for f in form %}{% if f.name in 'guarantor_name guarantor_phone' %}
@@ -64,8 +64,8 @@
             </div>
         </div>
 
-        <button class="rs-btn" type="submit" style="width:100%;">{% trans "Enregistrer mon profil" %}</button>
+        <button class="vz-btn vz-btn--primary vz-btn--block" type="submit">{% trans "Enregistrer mon profil" %}</button>
     </form>
-    <p class="rs-muted" style="margin-top:.8rem;">{% trans "Un restaurant peut vous rattacher directement (vous êtes alors validé aussitôt). Les livreurs indépendants sont validés par l'équipe Vazimba." %}</p>
+    <p class="rs-muted rs-mt-m">{% trans "Un restaurant peut vous rattacher directement (vous êtes alors validé aussitôt). Les livreurs indépendants sont validés par l'équipe Vazimba." %}</p>
 </div>
 {% endblock %}

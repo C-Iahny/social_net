@@ -11,7 +11,26 @@
     color: #fff;
     padding: 2.5rem 1.5rem 2rem;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .8rem;
 }
+.lieux-hero-cta {
+    display: inline-flex; align-items: center; gap: .4rem;
+    min-height: 44px; padding: .6rem 1.3rem;
+    background: #fff; color: var(--accent-dark);
+    border-radius: var(--radius-pill);
+    font-weight: 700; font-size: .86rem;
+    text-decoration: none; white-space: nowrap; flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    transition: transform .2s, box-shadow .2s;
+}
+.lieux-hero-cta:hover { transform: translateY(-2px); color: var(--accent-dark); text-decoration: none; }
+.lieux-hero-cta .material-icons { font-size: 1.05rem; }
+[data-theme="dark"] .lieux-hero-cta,
+[data-theme="dark"] .lieux-hero-cta:hover { background: var(--accent); color: var(--on-accent); }
 [data-theme="dark"] .lieux-hero {
     background:
         linear-gradient(120deg, rgba(var(--accent-rgb), .28) 0%, transparent 100%),
@@ -98,7 +117,7 @@
 
 .lieux-search-submit {
     background: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
     border: none;
     border-radius: 50px;
     padding: .5rem 1.4rem;
@@ -109,6 +128,7 @@
     flex-shrink: 0;
 }
 .lieux-search-submit:hover { opacity: .88; }
+.lieux-search-submit .material-icons { font-size: 1rem; vertical-align: middle; }
 
 /* ── Chips catégories ── */
 .cat-chips {
@@ -177,7 +197,35 @@
 .lieux-empty {
     text-align: center; padding: 4rem 1rem; color: var(--text-muted);
 }
-.lieux-empty .material-icons { font-size: 4rem; opacity: .25; display: block; margin-bottom: .8rem; }
+.lieux-empty > .material-icons { font-size: 4rem; opacity: .25; display: block; margin-bottom: .8rem; }
+.lieux-empty-title { font-size: 1.05rem; font-weight: 700; margin-bottom: .4rem; }
+.lieux-empty-text  { font-size: .88rem; }
+.lieux-link { color: var(--accent); }
+.lieux-container { max-width: 1100px; padding: 1.5rem 1rem 3rem; }
+.tour-page-btn .material-icons { font-size: 1rem; }
+
+/* ── Autocomplétion (liste injectée par le script de la page) ── */
+.lieux-ac {
+    position: fixed; z-index: 9999;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    max-height: 340px; overflow-y: auto; min-width: 260px;
+}
+.lieux-ac-item {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .65rem 1rem;
+    text-decoration: none; color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+.lieux-ac-item:hover { background: var(--bg-hover); color: var(--text); text-decoration: none; }
+.lieux-ac-item:last-child { border-bottom: 0; }
+.lieux-ac-icon { font-size: 1.5rem; color: var(--accent); flex-shrink: 0; }
+.lieux-ac-body { flex: 1; min-width: 0; }
+.lieux-ac-name { font-weight: 700; font-size: .9rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.lieux-ac-region { font-size: .75rem; color: var(--text-muted); }
+.lieux-ac-region .material-icons { font-size: .8rem; vertical-align: middle; }
 
 @media (max-width: 575px) {
     .lieux-hero { padding: 2rem 1rem 1.5rem; }

@@ -77,9 +77,9 @@
 
             <div class="ls-field">
                 <label class="ls-label" for="id_description">{% trans "Description" %} <span class="req">*</span></label>
-                <textarea class="ls-textarea" id="id_description" name="description"
+                <textarea class="ls-textarea ls-textarea--tall" id="id_description" name="description"
                           placeholder="{% trans 'Décrivez ce lieu : paysage, histoire, ce qui le rend unique…' %}"
-                          required style="min-height:140px;"></textarea>
+                          required></textarea>
             </div>
 
             <!-- Infos pratiques -->
@@ -109,9 +109,9 @@
 
             <div class="ls-field">
                 <label class="ls-label" for="id_tips">{% trans "Conseils pratiques" %}</label>
-                <textarea class="ls-textarea" id="id_tips" name="tips"
+                <textarea class="ls-textarea ls-textarea--short" id="id_tips" name="tips"
                           placeholder="{% trans 'Conseils pour les visiteurs : transport, hébergement, précautions…' %}"
-                          style="min-height:80px;"></textarea>
+></textarea>
             </div>
 
             <!-- Photos -->
@@ -125,7 +125,7 @@
                        accept="image/*" multiple
                        onchange="previewImages(this)">
                 <div class="ls-upload-icon">
-                    <span class="material-icons" style="font-size:2.5rem;color:var(--accent);">add_photo_alternate</span>
+                    <span class="material-icons" aria-hidden="true">add_photo_alternate</span>
                 </div>
                 <div class="ls-upload-label">{% trans "Cliquez ou glissez vos photos ici" %}</div>
                 <div class="ls-upload-hint">{% trans "JPG, PNG, WEBP — max 8 photos. La première sera la photo principale." %}</div>

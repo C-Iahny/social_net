@@ -1,5 +1,6 @@
 /* Généré depuis bazar/templates/bazar/verification.html — styles de page servis en statique (cache navigateur + service worker)
-   au lieu d'être renvoyés dans chaque réponse HTML. Modifier ICI, plus dans le gabarit. */
+   au lieu d'être renvoyés dans chaque réponse HTML. Modifier ICI, plus dans le gabarit.
+   Champs : composant partagé .vz-field (zoot-base.css) ; boutons : .vz-btn. */
 
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 .verif-wrap {
@@ -7,17 +8,27 @@
     margin: 2.5rem auto 5rem;
     padding: 0 1rem;
 }
+/* ── Fil d'Ariane ── */
+.bazar-crumb {
+    display: flex; align-items: center; gap: .3rem; flex-wrap: wrap;
+    font-size: .8rem; color: var(--text-muted); margin-bottom: 1.25rem;
+}
+.bazar-crumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.bazar-crumb a:hover { text-decoration: underline; }
+
 .verif-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
     padding: 2rem;
 }
 .verif-title {
     font-size: 1.45rem;
     font-weight: 800;
     margin-bottom: .35rem;
+    display: flex; align-items: center; gap: .5rem;
 }
+.verif-title .material-icons { font-size: 1.6rem; color: var(--accent); }
 .verif-sub {
     font-size: .88rem;
     color: var(--text-muted);
@@ -36,7 +47,7 @@
 
 .verif-type-card {
     border: 2px solid var(--border);
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     padding: 1.1rem 1rem;
     cursor: pointer;
     transition: border-color .18s, background .18s;
@@ -47,13 +58,15 @@
 .verif-type-card:hover { border-color: var(--accent); }
 .verif-type-card.active-verified {
     border-color: var(--success);
-    background: rgba(16,185,129,.07);
+    background: rgba(var(--success-rgb), .07);
 }
 .verif-type-card.active-pro {
-    border-color: #d97706;
+    border-color: var(--warning);
     background: rgba(217,119,6,.07);
 }
-.verif-type-icon { font-size: 1.8rem; margin-bottom: .5rem; display: block; }
+.verif-type-icon { font-size: 1.8rem; margin-bottom: .5rem; display: block; color: var(--text-subtle); }
+.verif-type-card.active-verified .verif-type-icon { color: var(--success); }
+.verif-type-card.active-pro .verif-type-icon { color: var(--warning); }
 .verif-type-name {
     font-weight: 800;
     font-size: .95rem;
@@ -79,82 +92,81 @@
 }
 .verif-type-perk::before { content: '✓'; font-size: .7rem; }
 .verif-type-card.active-verified .verif-type-perk::before { color: var(--success); }
-.verif-type-card.active-pro .verif-type-perk::before { color: #d97706; }
+.verif-type-card.active-pro .verif-type-perk::before { color: var(--warning); }
 
-/* ── Statut badge ─────────────────────────────────────────────────────────── */
+/* ── Statut (jetons : lisibles en clair et en sombre) ───────────────────── */
 .verif-status-box {
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     padding: 1.1rem 1.3rem;
     margin-bottom: 1.5rem;
     display: flex;
     align-items: flex-start;
     gap: 1rem;
+    border: 1px solid transparent;
+    color: var(--text);
 }
 .verif-status-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
-.verif-status-pending  { background: rgba(217,119,6,.10); border: 1px solid rgba(217,119,6,.35); color: var(--warning); }
-.verif-status-approved { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
-.verif-status-rejected { background: #fff1f2; border: 1px solid #fca5a5; color: #9f1239; }
-.verif-status-pro-approved { background: #fffbeb; border: 1px solid #fcd34d; color: #78350f; }
-[data-theme="dark"] .verif-status-pending  { background: rgba(217,119,6,.12); border-color: rgba(217,119,6,.45); color: var(--warning); }
-[data-theme="dark"] .verif-status-approved { background: rgba(6,95,70,.12); border-color: #065f46; color: #6ee7b7; }
-[data-theme="dark"] .verif-status-rejected { background: rgba(159,18,57,.12); border-color: #9f1239; color: #fca5a5; }
-[data-theme="dark"] .verif-status-pro-approved { background: rgba(217,119,6,.15); border-color: rgba(217,119,6,.45); color: var(--warning); }
-.verif-status-label  { font-weight: 700; font-size: 1rem; margin-bottom: .2rem; }
-.verif-status-detail { font-size: .83rem; opacity: .85; }
-
-/* ── Formulaire ──────────────────────────────────────────────────────────── */
-.verif-label {
-    font-size: .82rem;
-    font-weight: 700;
-    color: var(--text-secondary);
-    margin-bottom: .4rem;
-    display: block;
+.verif-status-pending      { background: rgba(217,119,6,.10); border-color: rgba(217,119,6,.35); }
+.verif-status-pro-approved { background: rgba(217,119,6,.12); border-color: rgba(217,119,6,.35); }
+.verif-status-approved     { background: rgba(var(--success-rgb), .10); border-color: rgba(var(--success-rgb), .35); }
+.verif-status-rejected     { background: rgba(var(--danger-rgb), .10); border-color: rgba(var(--danger-rgb), .35); }
+.verif-status-pending .verif-status-icon, .verif-status-pending .verif-status-label,
+.verif-status-pro-approved .verif-status-icon, .verif-status-pro-approved .verif-status-label { color: var(--warning); }
+.verif-status-approved .verif-status-icon, .verif-status-approved .verif-status-label { color: var(--success); }
+.verif-status-rejected .verif-status-icon, .verif-status-rejected .verif-status-label { color: var(--danger); }
+.verif-status-label  { font-weight: 700; font-size: 1rem; margin-bottom: .2rem; display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
+.verif-status-label .material-icons { font-size: 1.1rem; }
+.verif-status-detail { font-size: .83rem; color: var(--text-muted); }
+.verif-status-more { margin-top: .6rem; }
+.verif-status-link {
+    display: inline-flex; align-items: center; gap: .4rem;
+    color: var(--warning); font-weight: 700; font-size: .83rem; text-decoration: none;
 }
-.verif-label .req { color: var(--danger); margin-left: .2rem; }
+.verif-status-link:hover { text-decoration: underline; color: var(--warning); }
+.verif-status-link .material-icons { font-size: 1.1rem; }
 
-.verif-input, .verif-select, .verif-textarea {
-    width: 100%;
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    padding: .7rem 1rem;
-    font-size: .9rem;
+/* ── Encart « Évoluer vers Boutique Pro » ──────────────────────────────── */
+.verif-upgrade {
+    background: rgba(217,119,6,.12);
+    border: 1.5px solid rgba(217,119,6,.35);
+    border-radius: var(--radius-lg);
+    padding: 1.1rem 1.3rem;
+    margin-bottom: 1.5rem;
+}
+.verif-upgrade-title {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: 1.1rem; font-weight: 800; color: var(--warning); margin-bottom: .35rem;
+}
+.verif-upgrade-title .material-icons { font-size: 1.3rem; }
+.verif-upgrade-text { font-size: .83rem; color: var(--text); margin-bottom: 1rem; line-height: 1.55; }
+.verif-resubmit-hint { font-size: .88rem; color: var(--text-secondary); margin-bottom: 1rem; }
+
+/* ── Formulaire : .vz-field gère libellés, saisies et aides ────────────── */
+.verif-card .vz-field input:focus,
+.verif-card .vz-field textarea:focus,
+.verif-card .vz-field select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .12);
     outline: none;
-    font-family: inherit;
-    box-sizing: border-box;
-    transition: border-color .18s;
 }
-.verif-textarea { min-height: 110px; resize: vertical; }
-.verif-input:focus, .verif-select:focus, .verif-textarea:focus { border-color: var(--accent); }
-
-.verif-row { margin-bottom: 1rem; }
+.verif-card .vz-field textarea { min-height: 110px; }
+.verif-file-input {
+    width: 100%;
+    padding: .4rem .6rem;
+    font-size: .9rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--input-bg);
+    color: var(--text);
+}
 .verif-row-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: .85rem;
-    margin-bottom: 1rem;
+    gap: 0 .85rem;
 }
 @media (max-width: 480px) { .verif-row-2 { grid-template-columns: 1fr; } }
 
-.verif-submit {
-    display: inline-flex;
-    align-items: center;
-    gap: .5rem;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: .65rem 1.5rem;
-    font-weight: 700;
-    font-size: .92rem;
-    cursor: pointer;
-    transition: opacity .18s;
-    margin-top: 1rem;
-}
-[data-theme="dark"] .verif-submit { color: var(--on-accent); }
-.verif-submit:hover { opacity: .85; }
-.verif-hint { font-size: .78rem; color: var(--text-muted); margin-top: .35rem; }
+.verif-submit { margin-top: 1rem; }
 .verif-section-title {
     font-size: .82rem;
     font-weight: 800;
@@ -166,6 +178,7 @@
     align-items: center;
     gap: .5rem;
 }
+.verif-section-title .material-icons { font-size: 1.1rem; }
 .verif-section-title::after {
     content: '';
     flex: 1;
@@ -183,7 +196,7 @@ hr.verif-sep { border: none; border-top: 1px solid var(--border); margin: 1.5rem
 .banner-preview {
     width: 100%;
     height: 80px;
-    border-radius: 10px;
+    border-radius: var(--radius);
     object-fit: cover;
     margin-top: .5rem;
     display: none;

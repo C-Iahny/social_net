@@ -14,7 +14,16 @@
     flex-wrap: wrap;
     gap: .75rem;
 }
-.bazar-fav-title { font-size: 1.5rem; font-weight: 800; }
+/* ── Fil d'Ariane ── */
+.bazar-crumb {
+    display: flex; align-items: center; gap: .3rem; flex-wrap: wrap;
+    font-size: .8rem; color: var(--text-muted); margin-bottom: .4rem;
+}
+.bazar-crumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.bazar-crumb a:hover { text-decoration: underline; }
+.bazar-fav-title { font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: .5rem; margin: 0; }
+.bazar-fav-title .material-icons { font-size: 1.6rem; color: var(--danger); }
+.bazar-fav-count { font-size: .85rem; font-weight: 400; color: var(--text-muted); margin-left: .4rem; }
 
 /* Grille annonces : colonnes gérées par .vz-grid, cartes = .vz-card (zoot-base.css) */
 .bazar-fav-grid { margin-bottom: 2rem; }
@@ -34,15 +43,10 @@
 .bazar-fav-remove .material-icons { font-size: 1rem; }
 .bazar-fav-remove:hover { background: var(--danger); }
 
-/* État vide */
-.bazar-fav-empty {
-    text-align: center;
-    padding: 4rem 1rem;
-    color: var(--text-muted);
-}
-.bazar-fav-empty .bazar-fav-empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
-.bazar-fav-empty h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; color: var(--text); }
-.bazar-fav-empty p { font-size: .9rem; margin-bottom: 1.5rem; }
+/* État vide : composant partagé .vz-empty (zoot-base.css) */
+.bazar-fav-empty { padding: 4rem 1rem; }
+.bazar-fav-empty h3 { margin: 0; }
+.bazar-fav-empty p { margin-bottom: 1rem; }
 
 /* Pagination */
 .bazar-pagination {

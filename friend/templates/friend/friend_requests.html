@@ -87,7 +87,7 @@
             <h3>{% trans "No requests" %}</h3>
             <p>{% trans "When someone sends you a friend request, it will appear here." %}</p>
             <a class="fr-empty-cta" href="{% url 'search' %}?q=">
-                <span class="material-icons" style="font-size:.95rem;">person_search</span>
+                <span class="material-icons">person_search</span>
                 {% trans "Find people" %}
             </a>
         </div>
@@ -144,7 +144,7 @@ function checkEmpty() {
             '<h3>{% trans "No requests"|escapejs %}</h3>' +
             '<p>{% trans "When someone sends you a friend request, it will appear here."|escapejs %}</p>' +
             '<a class="fr-empty-cta" href="/search/?q=">' +
-            '<span class="material-icons" style="font-size:.95rem;">person_search</span>{% trans "Find people"|escapejs %}</a>' +
+            '<span class="material-icons">person_search</span>{% trans "Find people"|escapejs %}</a>' +
             '</div>';
     }
 }

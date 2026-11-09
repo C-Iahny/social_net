@@ -418,8 +418,7 @@
 .zoot-nav-right .dropdown-item:hover .material-icons { color: var(--accent); }
 .zoot-nav-right .dropdown-item.danger { color: var(--danger); }
 .zoot-nav-right .dropdown-item.danger .material-icons { color: var(--danger); }
-.zoot-nav-right .dropdown-item.danger:hover { background: #fdecea; color: #c62828; }
-[data-theme="dark"] .zoot-nav-right .dropdown-item.danger:hover { background: #3e1a1a; }
+.zoot-nav-right .dropdown-item.danger:hover { background: rgba(var(--danger-rgb),.1); color: var(--danger); }
 
 .zoot-nav-right .dropdown-divider {
     border-color: var(--border);
@@ -435,7 +434,7 @@
     flex-shrink: 0;
 }
 [data-theme="dark"] .zoot-profile-banner {
-    background: linear-gradient(135deg, #2a1000 0%, #1a0800 100%);
+    background: var(--bg-secondary);
     border-bottom: 1px solid var(--border);
 }
 [data-theme="dark"] .zoot-profile-banner::after {
@@ -815,3 +814,159 @@
     from { transform:translateY(0);   }
     to   { transform:translateY(-5px); }
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   Styles sortis des attributs style="" de header.html (2026-11)
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Logo : survol (anciens onmouseover/onmouseout) */
+.zoot-logo-desktop:hover { transform: scale(1.05); opacity: .88; }
+
+/* Teintes des entrées de menu (dropdown « Plus », profil, menu mobile) */
+.dropdown-item.zoot-tint-accent,
+.zoot-mobile-link.zoot-tint-accent,
+.zoot-nav-right .dropdown-item.zoot-tint-accent .material-icons,
+.zoot-nav-center .dropdown-item.zoot-tint-accent .material-icons,
+.zoot-mobile-link.zoot-tint-accent .material-icons { color: var(--accent); }
+.dropdown-item.zoot-tint-vintana,
+.zoot-mobile-link.zoot-tint-vintana,
+.zoot-nav-right .dropdown-item.zoot-tint-vintana .material-icons,
+.zoot-nav-center .dropdown-item.zoot-tint-vintana .material-icons,
+.zoot-mobile-link.zoot-tint-vintana .material-icons { color: var(--vintana); }
+.dropdown-item.zoot-tint-danger,
+.zoot-mobile-link.zoot-tint-danger,
+.zoot-nav-right .dropdown-item.zoot-tint-danger .material-icons,
+.zoot-nav-center .dropdown-item.zoot-tint-danger .material-icons,
+.zoot-mobile-link.zoot-tint-danger .material-icons { color: var(--danger); }
+.zoot-mobile-signup { font-weight: 700; }
+
+/* Compteur de lives dans le menu « Plus » (affiché par JS : display inline-block) */
+.zoot-live-count {
+    display: none;
+    background: var(--danger); color: var(--on-accent);
+    font-size: .65rem; font-weight: 800;
+    padding: 0 5px; border-radius: 8px; min-width: 16px;
+    text-align: center; margin-left: auto;
+}
+
+/* Recherche desktop : suggestions en direct (ouvert/fermé par JS) */
+.zoot-search-wrap { position: relative; }
+#zoot-search-dd {
+    display: none;
+    position: absolute; top: calc(100% + 6px); left: 0;
+    min-width: 280px; max-width: 360px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; box-shadow: var(--shadow-lg);
+    z-index: 5000; overflow: hidden;
+    animation: dropIn .18s ease;
+}
+.srdd-body  { padding: .5rem 0; }
+.srdd-label {
+    font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-muted); padding: .4rem .9rem .2rem;
+}
+.srdd-item {
+    display: flex; align-items: center; gap: .65rem;
+    padding: .4rem .9rem; text-decoration: none; color: var(--text);
+    transition: background .1s;
+}
+.srdd-item:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
+.srdd-avatar-wrap { width: 32px; height: 32px; flex-shrink: 0; overflow: hidden; border-radius: 50%; }
+.srdd-avatar { border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+.srdd-avatar-ph { font-size: 1.6rem; color: var(--text-muted); }
+.srdd-text  { flex: 1; min-width: 0; }
+.srdd-title { font-size: .87rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.srdd-title--user { font-size: .88rem; font-weight: 700; }
+.srdd-sub   { font-size: .75rem; color: var(--text-muted); }
+.srdd-price { font-size: .75rem; color: var(--accent); font-weight: 700; }
+.srdd-thumb { border-radius: 8px; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
+.srdd-thumb-ph { font-size: 1.4rem; color: var(--text-muted); flex-shrink: 0; }
+.srdd-post-icon { font-size: 1.1rem; color: var(--accent2); }
+.srdd-tags { display: flex; flex-wrap: wrap; gap: .35rem; padding: .2rem .9rem .45rem; }
+.srdd-tag {
+    display: inline-flex; align-items: center; gap: .25rem;
+    padding: .25rem .65rem; background: var(--btn-bg); border: 1px solid var(--border);
+    border-radius: 20px; text-decoration: none; color: var(--accent);
+    font-weight: 700; font-size: .82rem; transition: background .12s, color .12s;
+}
+.srdd-tag:hover { background: var(--accent); color: var(--on-accent); text-decoration: none; }
+.srdd-tag-count { font-size: .72rem; opacity: .7; }
+.srdd-foot { border-top: 1px solid var(--border); padding: .45rem .9rem .35rem; }
+.srdd-all  { font-size: .82rem; font-weight: 700; color: var(--accent); text-decoration: none; }
+.srdd-all .material-icons { font-size: .9rem; vertical-align: middle; }
+
+/* Sélecteur de langue (barre) */
+.zoot-lang-wrap { position: relative; }
+.zoot-lang-btn .material-icons { font-size: 1.1rem; }
+.zoot-lang-btn .zoot-lang-caret { font-size: .85rem; opacity: .6; }
+.zoot-lang-form { margin: 0; padding: 0; }
+.lang-option .lang-check { font-size: .9rem; margin-left: auto; color: var(--accent); }
+
+/* Recherche mobile : masquée sur desktop, affichée par la media query plus haut */
+.zoot-mobile-search-btn { display: none; }
+#theme-toggle-btn .material-icons { font-size: 1.2rem; line-height: 1; }
+
+/* Boutons déguisés en liens dans les menus */
+button.zoot-dropdown-header-link { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.zoot-nav-right button.dropdown-item { background: none; border: none; width: 100%; text-align: left; cursor: pointer; }
+.zoot-profile-menu { min-width: 260px; }
+
+/* Langues compactes dans le menu profil */
+.zoot-dd-langs { display: flex; gap: .4rem; padding: .3rem .85rem .65rem; flex-wrap: wrap; }
+.zoot-dd-lang-btn {
+    display: inline-flex; align-items: center; gap: .3rem;
+    border: 1.5px solid var(--border); border-radius: 20px; padding: .28rem .65rem;
+    background: var(--btn-bg); color: var(--text);
+    font-size: .82rem; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.zoot-dd-lang-btn.active { border-color: var(--accent); background: var(--accent-glow); color: var(--accent); }
+
+/* Visiteur non connecté */
+.zoot-anon-login { text-transform: none; font-size: .9rem; min-width: auto; }
+.zoot-anon-signup {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: var(--on-accent); border: none; border-radius: 22px;
+    padding: .45rem 1.2rem; font-size: .9rem; font-weight: 700;
+    text-decoration: none; white-space: nowrap;
+    transition: opacity .2s, box-shadow .2s;
+    font-family: var(--font-primary, 'Space Grotesk', sans-serif);
+}
+.zoot-anon-signup:hover { color: var(--on-accent); text-decoration: none; opacity: .9; }
+
+/* Menu mobile */
+.zoot-mobile-search button .material-icons { font-size: 1.1rem; color: var(--text-muted); }
+.zoot-mobile-sep { border-top: 1px solid var(--border); margin: .3rem 0; }
+.zoot-mobile-label {
+    font-size: .68rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-muted); padding: .2rem .8rem 0; margin: 0;
+}
+
+/* Toast « est en live » */
+.zoot-toast-user--live { display: flex; align-items: center; gap: 6px; }
+.zoot-live-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); flex-shrink: 0; }
+@keyframes livePulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(var(--danger-rgb),.7); }
+    50%      { box-shadow: 0 0 0 5px rgba(var(--danger-rgb),0); }
+}
+
+/* Overlay d'appel entrant (fond noir fixe : blanc légitime) — ouvert/fermé par JS */
+#gco-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.88); z-index: 999999;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 1.8rem; padding: 2rem;
+}
+.gco-avatar-wrap { position: relative; width: 96px; height: 96px; display: flex; align-items: center; justify-content: center; }
+#gco-pulse { position: absolute; inset: 0; border-radius: 50%; background: rgba(255,255,255,.12); animation: gcoPulse 1.4s ease-out infinite; }
+#gco-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; position: relative; z-index: 1; }
+.gco-info { text-align: center; color: #fff; }
+#gco-name { font-size: 1.25rem; font-weight: 800; margin: 0 0 .3rem; }
+#gco-type { font-size: .9rem; color: rgba(255,255,255,.8); margin: 0; display: flex; align-items: center; justify-content: center; gap: .35rem; }
+#gco-type .material-icons { font-size: 1.1rem; }
+.gco-actions { display: flex; gap: 2.5rem; align-items: center; }
+.gco-action  { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
+.gco-action .vz-btn .material-icons { font-size: 1.8rem; }
+.gco-action-label { color: rgba(255,255,255,.8); font-size: .75rem; }
+.gco-reject { box-shadow: 0 4px 18px rgba(var(--danger-rgb),.5); }
+.gco-accept { box-shadow: 0 4px 18px rgba(var(--success-rgb),.5); animation: gcoBounce .6s ease-in-out infinite alternate; }

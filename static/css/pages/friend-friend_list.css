@@ -354,3 +354,7 @@
     background: rgba(0,207,255,.08);
     box-shadow: 0 0 8px rgba(0,207,255,.15);
 }
+
+/* ── Styles sortis des attributs style="" de friend_list.html (2026-11) ── */
+.fl-head-actions { display: flex; align-items: center; gap: .75rem; }
+.fl-empty-cta .material-icons { font-size: 1rem; }

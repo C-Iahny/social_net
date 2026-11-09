@@ -7,11 +7,11 @@
 <div class="bazar-mes-wrap">
     <div class="bazar-mes-header">
         <div>
-            <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.4rem;">
-                <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
+            <nav class="bazar-crumb">
+                <a href="{% url 'bazar:index' %}">{% trans "Bazar" %}</a>
                 <span> › </span>{% trans "Mes annonces" %}
             </nav>
-            <h1 class="bazar-mes-title">🗂️ {% trans "Mes annonces" %}</h1>
+            <h1 class="bazar-mes-title"><i class="material-icons" aria-hidden="true">inventory_2</i> {% trans "Mes annonces" %}</h1>
         </div>
         <a href="{% url 'bazar:create' %}" class="vz-btn vz-btn--primary vz-btn--sm">
             <i class="material-icons" aria-hidden="true">add</i>
@@ -37,43 +37,42 @@
 
     <!-- Bannière vérification vendeur -->
     {% if not verification %}
-    <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fcd34d;border-radius:14px;padding:1rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-        <span style="font-size:1.6rem;flex-shrink:0;">🛡️</span>
-        <div style="flex:1;min-width:0;">
-            <div style="font-weight:700;font-size:.92rem;color:#78350f;">{% trans "Devenez Vendeur Vérifié ou Boutique Pro" %}</div>
-            <div style="font-size:.8rem;color:#92400e;margin-top:.15rem;">{% trans "Badge, priorité dans les résultats, plus de photos — et une page boutique dédiée pour les pros." %}</div>
+    <div class="bazar-notice bazar-notice--warning">
+        <i class="material-icons bazar-notice__icon" aria-hidden="true">verified_user</i>
+        <div class="bazar-notice__body">
+            <div class="bazar-notice__title">{% trans "Devenez Vendeur Vérifié ou Boutique Pro" %}</div>
+            <div class="bazar-notice__text">{% trans "Badge, priorité dans les résultats, plus de photos — et une page boutique dédiée pour les pros." %}</div>
         </div>
-        <a href="{% url 'bazar:request_verification' %}" style="background:#d97706;color:#fff;font-weight:700;font-size:.82rem;border-radius:8px;padding:.5rem 1rem;text-decoration:none;white-space:nowrap;flex-shrink:0;">
+        <a href="{% url 'bazar:request_verification' %}" class="vz-btn vz-btn--primary vz-btn--sm bazar-notice__btn">
             {% trans "Faire une demande →" %}
         </a>
     </div>
     {% elif verification.status == 'pending' %}
-    <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:14px;padding:.85rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#92400e;">
-        <span style="font-size:1.4rem;">⏳</span>
-        <span><strong>{% trans "Demande de vérification en attente" %}</strong> — {% trans "l'admin examinera votre compte prochainement." %}</span>
-        <a href="{% url 'bazar:request_verification' %}" style="margin-left:auto;font-size:.78rem;color:#92400e;font-weight:600;text-decoration:underline;flex-shrink:0;">{% trans "Voir" %}</a>
+    <div class="bazar-notice bazar-notice--warning bazar-notice--compact">
+        <i class="material-icons bazar-notice__icon" aria-hidden="true">schedule</i>
+        <span class="bazar-notice__body"><strong>{% trans "Demande de vérification en attente" %}</strong> — {% trans "l'admin examinera votre compte prochainement." %}</span>
+        <a href="{% url 'bazar:request_verification' %}" class="bazar-notice__link">{% trans "Voir" %}</a>
     </div>
     {% elif verification.status == 'approved' %}
     {% if verification.seller_type == 'pro' %}
-    <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fcd34d;border-radius:14px;padding:.85rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#78350f;flex-wrap:wrap;">
-        <span style="font-size:1.4rem;">⭐</span>
-        <span style="flex:1;"><strong>{% trans "Boutique Pro active" %}</strong> — {% trans "badge doré ⭐, page boutique publique, 20 photos par annonce." %}</span>
-        <a href="{% url 'bazar:boutique' username=request.user.username %}"
-           style="background:#d97706;color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:.4rem .9rem;text-decoration:none;white-space:nowrap;flex-shrink:0;">
-            🏪 {% trans "Ma boutique" %}
+    <div class="bazar-notice bazar-notice--warning bazar-notice--compact">
+        <i class="material-icons bazar-notice__icon" aria-hidden="true">star</i>
+        <span class="bazar-notice__body"><strong>{% trans "Boutique Pro active" %}</strong> — {% trans "badge doré, page boutique publique, 20 photos par annonce." %}</span>
+        <a href="{% url 'bazar:boutique' username=request.user.username %}" class="vz-btn vz-btn--primary vz-btn--sm bazar-notice__btn">
+            <i class="material-icons" aria-hidden="true">storefront</i>{% trans "Ma boutique" %}
         </a>
     </div>
     {% else %}
-    <div style="background:#ecfdf5;border:1.5px solid #6ee7b7;border-radius:14px;padding:.85rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#065f46;">
-        <span style="font-size:1.4rem;">✅</span>
-        <span><strong>{% trans "Vendeur vérifié" %}</strong> — {% trans "badge ✓ actif sur toutes vos annonces, 12 photos autorisées." %}</span>
+    <div class="bazar-notice bazar-notice--success bazar-notice--compact">
+        <i class="material-icons bazar-notice__icon" aria-hidden="true">check_circle</i>
+        <span class="bazar-notice__body"><strong>{% trans "Vendeur vérifié" %}</strong> — {% trans "badge vérifié actif sur toutes vos annonces, 12 photos autorisées." %}</span>
     </div>
     {% endif %}
     {% elif verification.status == 'rejected' %}
-    <div style="background:#fff1f2;border:1.5px solid #fca5a5;border-radius:14px;padding:.85rem 1.2rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#9f1239;flex-wrap:wrap;">
-        <span style="font-size:1.4rem;">❌</span>
-        <span style="flex:1;"><strong>{% trans "Demande refusée." %}</strong>{% if verification.admin_notes %} {% trans "Motif :" %} {{ verification.admin_notes }}{% endif %}</span>
-        <a href="{% url 'bazar:request_verification' %}" style="background:var(--danger);color:#fff;font-weight:700;font-size:.78rem;border-radius:8px;padding:.4rem .9rem;text-decoration:none;flex-shrink:0;">
+    <div class="bazar-notice bazar-notice--danger bazar-notice--compact">
+        <i class="material-icons bazar-notice__icon" aria-hidden="true">cancel</i>
+        <span class="bazar-notice__body"><strong>{% trans "Demande refusée." %}</strong>{% if verification.admin_notes %} {% trans "Motif :" %} {{ verification.admin_notes }}{% endif %}</span>
+        <a href="{% url 'bazar:request_verification' %}" class="vz-btn vz-btn--danger vz-btn--sm bazar-notice__btn">
             {% trans "Réessayer" %}
         </a>
     </div>
@@ -82,7 +81,7 @@
     <!-- Messages -->
     {% if messages %}
     {% for msg in messages %}
-    <div class="alert alert-{{ msg.tags }} mb-3" style="border-radius:10px;">{{ msg }}</div>
+    <div class="alert alert-{{ msg.tags }} mb-3 bazar-alert">{{ msg }}</div>
     {% endfor %}
     {% endif %}
 
@@ -139,7 +138,7 @@
             <!-- Bump / Rafraîchir -->
             <button type="button"
                     class="bazar-action-btn bazar-action-accent"
-                    title="{% trans '🔝 Remonter en tête (1×/24h)' %}"
+                    title="{% trans 'Remonter en tête (1×/24h)' %}"
                     onclick="bumpAnnonce({{ annonce.pk }}, this)">
                 <i class="material-icons" aria-hidden="true">keyboard_double_arrow_up</i>
             </button>
@@ -163,10 +162,10 @@
     </div>
 
     {% else %}
-    <div class="bazar-mes-empty">
-        <div class="bazar-mes-empty-icon">📦</div>
-        <h4>{% trans "Vous n'avez aucune annonce" %}</h4>
-        <p style="font-size:.9rem;">{% trans "Publiez votre première annonce et touchez des milliers de Malgaches." %}</p>
+    <div class="vz-empty bazar-mes-empty">
+        <i class="material-icons" aria-hidden="true">inventory_2</i>
+        <h4 class="vz-empty-title">{% trans "Vous n'avez aucune annonce" %}</h4>
+        <p class="vz-empty-text">{% trans "Publiez votre première annonce et touchez des milliers de Malgaches." %}</p>
         <a href="{% url 'bazar:create' %}" class="vz-btn vz-btn--primary mt-2">
             {% trans "Publier maintenant" %}
         </a>
@@ -228,12 +227,12 @@ function bumpAnnonce(pk, btn) {
             return;
         }
         // Succès : changer l'apparence du bouton
-        btn.title = '✓ Remontée !';
+        btn.title = 'Remontée !';
         btn.classList.add('bazar-action-ok');
         btn.style.opacity = '1';
         btn.innerHTML = '<i class="material-icons" aria-hidden="true">check</i>';
         setTimeout(() => {
-            btn.title = '🔝 Remonter en tête (1×/24h)';
+            btn.title = 'Remonter en tête (1×/24h)';
             btn.classList.remove('bazar-action-ok');
             btn.innerHTML = '<i class="material-icons" aria-hidden="true">keyboard_double_arrow_up</i>';
             // Désactiver pendant 24h (pas de reload pour l'UX)

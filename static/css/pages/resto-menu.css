@@ -8,3 +8,21 @@
 .rs-og input { margin-bottom: .3rem; }
 .rs-og .opt { display: flex; gap: .4rem; margin-bottom: .3rem; }
 .rs-og .opt input:first-child { flex: 2; } .rs-og .opt input:nth-child(2) { flex: 1; }
+.rs-og .opt .vz-btn { flex: none; }
+.rs-og-limits { display: flex; gap: .4rem; margin-bottom: .4rem; }
+.rs-og-limits label { font-size: .75rem; flex: 1; }
+.rs-og-actions { display: flex; gap: .4rem; }
+/* Ex-styles en ligne du gabarit */
+.rs-mi-ph { width: 56px; height: 56px; border-radius: var(--radius-sm); background: var(--btn-bg); display: flex; align-items: center; justify-content: center; color: var(--text-subtle); flex: none; }
+.rs-mi-actions { flex: none; }
+.rs-items-title { margin: 0; padding: .8rem .8rem 0; }
+.rs-cat-form { display: inline-flex; gap: .3rem; align-items: center; }
+.rs-cat-name { width: 150px; padding: .3rem .5rem; font-size: .85rem; }
+.rs-row--center { align-items: center; }
+.rs-opt-intro { margin: .3rem 0 .8rem; }
+.rs-form .err.rs-opt-err { margin: .5rem 0 0; }
+/* Lignes d'ingrédients (générées en JS) */
+.rs-ing-row { display: flex; gap: .4rem; align-items: center; margin-bottom: .3rem; flex-wrap: wrap; }
+.rs-ing-row .ing-name { flex: 2 1 140px; }
+.rs-ing-row .ing-price { flex: 1 1 90px; max-width: 120px; }
+.rs-ing-row label { display: flex; align-items: center; gap: .3rem; margin: 0; font-size: .78rem; white-space: nowrap; }

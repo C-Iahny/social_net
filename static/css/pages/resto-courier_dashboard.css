@@ -1,0 +1,6 @@
+/* Styles de page resto/courier/dashboard.html — servis en statique (cache navigateur + service worker). */
+
+.rs-section-title--first { margin-top: .4rem; }
+.rs-progress { height: 6px; background: var(--border); border-radius: 4px; margin-top: .2rem; max-width: 260px; overflow: hidden; }
+.rs-progress-bar { height: 6px; background: var(--accent); border-radius: 4px; }
+.rs-body-sm .rs-ico, .rs-body-xs .rs-ico { color: var(--text-subtle); }

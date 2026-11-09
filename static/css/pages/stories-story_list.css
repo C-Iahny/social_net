@@ -1,9 +1,10 @@
 /* Généré depuis stories/templates/stories/story_list.html — styles de page servis en statique (cache navigateur + service worker)
    au lieu d'être renvoyés dans chaque réponse HTML. Modifier ICI, plus dans le gabarit. */
 
-/* ── Page fond sombre ─────────────────────────────────── */
-body { background: #0a0a0a !important; }
-[data-theme="dark"] body { background: #000 !important; }
+/* ── Page : fond du site (en-tête et navigation restent ceux du site).
+   Les vignettes sont des médias plein cadre : elles gardent un fond sombre
+   local (--sl-media-bg) dans les deux thèmes, le texte posé dessus est blanc. */
+.sl-wrapper { --sl-media-bg: #1c1c1e; }
 
 /* ── Wrapper ──────────────────────────────────────────── */
 .sl-wrapper {
@@ -14,7 +15,7 @@ body { background: #0a0a0a !important; }
 
 /* ── Titre ────────────────────────────────────────────── */
 .sl-title {
-    color: #fff; font-size: 1.6rem; font-weight: 800;
+    color: var(--text); font-size: 1.6rem; font-weight: 800;
     padding: .9rem 1rem .6rem; margin: 0;
     letter-spacing: -.01em;
 }
@@ -23,8 +24,8 @@ body { background: #0a0a0a !important; }
 .sl-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 3px;
-    padding: 0 3px;
+    gap: .5rem;
+    padding: 0 .75rem;
 }
 
 /* ── Carte générique ──────────────────────────────────── */
@@ -34,7 +35,8 @@ body { background: #0a0a0a !important; }
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    background: #1c1c1e;
+    background: var(--sl-media-bg);
+    box-shadow: var(--shadow-sm);
     -webkit-tap-highlight-color: transparent;
     transition: transform .15s;
 }
@@ -48,13 +50,13 @@ body { background: #0a0a0a !important; }
     object-fit: cover; display: block;
 }
 
-/* Fond gradient (story texte) */
-.sl-card.grad_cyan    { background: linear-gradient(160deg,#00bcd4,#2196f3); }
-.sl-card.grad_purple  { background: linear-gradient(160deg,#9c27b0,#e91e63); }
-.sl-card.grad_sunset  { background: linear-gradient(160deg,#ff9800,#f44336); }
-.sl-card.grad_forest  { background: linear-gradient(160deg,var(--success),#00bcd4); }
-.sl-card.grad_night   { background: linear-gradient(160deg,#1a237e,#7b1fa2); }
-.sl-card.grad_gold    { background: linear-gradient(160deg,#ffc107,#ff9800); }
+/* Fond gradient (story texte) : palette de la story, identique dans les deux thèmes */
+.sl-card.grad_cyan,   .sl-create-bg.grad_cyan    { background: linear-gradient(160deg,#00bcd4,#2196f3); }
+.sl-card.grad_purple, .sl-create-bg.grad_purple  { background: linear-gradient(160deg,#9c27b0,#e91e63); }
+.sl-card.grad_sunset, .sl-create-bg.grad_sunset  { background: linear-gradient(160deg,#ff9800,#f44336); }
+.sl-card.grad_forest, .sl-create-bg.grad_forest  { background: linear-gradient(160deg,var(--success),#00bcd4); }
+.sl-card.grad_night,  .sl-create-bg.grad_night   { background: linear-gradient(160deg,#1a237e,#7b1fa2); }
+.sl-card.grad_gold,   .sl-create-bg.grad_gold    { background: linear-gradient(160deg,#ffc107,#ff9800); }
 
 /* Vignette bas */
 .sl-card::after {
@@ -69,10 +71,10 @@ body { background: #0a0a0a !important; }
     position: absolute; top: .55rem; left: .55rem;
     width: 36px; height: 36px; border-radius: 50%;
     object-fit: cover; z-index: 2;
-    box-shadow: 0 0 0 2.5px #4f8ef7, 0 0 0 4px rgba(0,0,0,.5);
+    box-shadow: 0 0 0 2.5px var(--accent), 0 0 0 4px rgba(0,0,0,.5);
 }
 .sl-card-avatar.seen {
-    box-shadow: 0 0 0 2.5px #555, 0 0 0 4px rgba(0,0,0,.5);
+    box-shadow: 0 0 0 2.5px var(--text-subtle), 0 0 0 4px rgba(0,0,0,.5);
 }
 
 /* Texte story texte centré */
@@ -114,11 +116,14 @@ body { background: #0a0a0a !important; }
     border-radius: 12px;
     overflow: hidden;
     cursor: pointer;
-    background: #1c1c1e;
+    background: var(--sl-media-bg);
+    box-shadow: var(--shadow-sm);
     -webkit-tap-highlight-color: transparent;
     transition: transform .15s;
 }
 .sl-create-card:active { transform: scale(.97); }
+/* Fond de « Ma story » quand la dernière story est un texte */
+.sl-create-bg { position: absolute; inset: 0; background: var(--sl-media-bg); filter: brightness(.5); }
 .sl-create-card > img,
 .sl-create-card > video {
     position: absolute; inset: 0;
@@ -140,12 +145,12 @@ body { background: #0a0a0a !important; }
 }
 .sl-create-plus-circle {
     width: 52px; height: 52px; border-radius: 50%;
-    background: #fff;
+    background: var(--accent);
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 4px 20px rgba(0,0,0,.4);
 }
 .sl-create-plus-circle .material-icons {
-    font-size: 2rem; color: #111; font-weight: 900;
+    font-size: 2rem; color: var(--on-accent); font-weight: 900;
 }
 /* Nom "Ma story" en bas */
 .sl-create-name {
@@ -157,7 +162,7 @@ body { background: #0a0a0a !important; }
 
 /* ── Vide ─────────────────────────────────────────────── */
 .sl-empty {
-    text-align: center; padding: 4rem 1.5rem; color: rgba(255,255,255,.45);
+    text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);
     grid-column: span 2;
 }
-.sl-empty .material-icons { font-size: 3.5rem; color: rgba(255,255,255,.15); display: block; margin-bottom: .8rem; }
+.sl-empty .material-icons { font-size: 3.5rem; color: var(--text-subtle); display: block; margin-bottom: .8rem; }

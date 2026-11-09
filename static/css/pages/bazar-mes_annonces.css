@@ -14,7 +14,42 @@
     flex-wrap: wrap;
     gap: .75rem;
 }
-.bazar-mes-title { font-size: 1.5rem; font-weight: 800; }
+/* ── Fil d'Ariane ── */
+.bazar-crumb {
+    display: flex; align-items: center; gap: .3rem; flex-wrap: wrap;
+    font-size: .8rem; color: var(--text-muted); margin-bottom: .4rem;
+}
+.bazar-crumb a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.bazar-crumb a:hover { text-decoration: underline; }
+.bazar-mes-title { font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: .5rem; margin: 0; }
+.bazar-mes-title .material-icons { font-size: 1.6rem; color: var(--accent); }
+.bazar-alert { border-radius: var(--radius); }
+
+/* ── Bannières statut vendeur (jetons : lisibles en clair et en sombre) ── */
+.bazar-notice {
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+    padding: 1rem 1.2rem; margin-bottom: 1.25rem;
+    border: 1.5px solid transparent; border-radius: var(--radius-lg);
+    font-size: .85rem; color: var(--text);
+}
+.bazar-notice--compact { padding: .85rem 1.2rem; gap: .75rem; }
+.bazar-notice__icon { font-size: 1.6rem; flex-shrink: 0; }
+.bazar-notice__body { flex: 1; min-width: 0; }
+.bazar-notice__title { font-weight: 700; font-size: .92rem; }
+.bazar-notice__text { font-size: .8rem; margin-top: .15rem; color: var(--text-muted); }
+.bazar-notice__btn { flex-shrink: 0; }
+.bazar-notice__link { margin-left: auto; flex-shrink: 0; font-size: .78rem; font-weight: 600; text-decoration: underline; }
+.bazar-notice--warning { background: rgba(217,119,6,.12); border-color: rgba(217,119,6,.35); }
+.bazar-notice--warning .bazar-notice__icon,
+.bazar-notice--warning .bazar-notice__title,
+.bazar-notice--warning .bazar-notice__link,
+.bazar-notice--warning strong { color: var(--warning); }
+.bazar-notice--success { background: rgba(var(--success-rgb), .10); border-color: rgba(var(--success-rgb), .35); }
+.bazar-notice--success .bazar-notice__icon,
+.bazar-notice--success strong { color: var(--success); }
+.bazar-notice--danger { background: rgba(var(--danger-rgb), .10); border-color: rgba(var(--danger-rgb), .35); }
+.bazar-notice--danger .bazar-notice__icon,
+.bazar-notice--danger strong { color: var(--danger); }
 /* Stats pills */
 .bazar-stats {
     display: flex;
@@ -96,14 +131,9 @@ a.vz-card__title:hover { color: var(--accent); text-decoration: none; }
 .bazar-row-status.toggleable { cursor: pointer; }
 .bazar-row-status.toggleable:hover { opacity: .8; }
 
-/* Empty */
-.bazar-mes-empty {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text-muted);
-}
-.bazar-mes-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .5; }
-.bazar-mes-empty h4 { color: var(--text); font-weight: 700; }
+/* État vide : composant partagé .vz-empty (zoot-base.css) */
+.bazar-mes-empty { padding: 3rem 1rem; }
+.bazar-mes-empty h4 { margin: 0; }
 
 @media (max-width: 575px) {
     .bazar-annonce-row .vz-card__avatar { width: 56px; height: 56px; }

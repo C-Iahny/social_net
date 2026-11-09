@@ -6,15 +6,15 @@
 
 <div class="verif-wrap">
     <!-- Fil d'Ariane -->
-    <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:1.25rem;">
-        <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
+    <nav class="bazar-crumb">
+        <a href="{% url 'bazar:index' %}">{% trans "Bazar" %}</a>
         <span> › </span>
-        <a href="{% url 'bazar:mes_annonces' %}" style="color:var(--accent);text-decoration:none;">{% trans "Mes annonces" %}</a>
+        <a href="{% url 'bazar:mes_annonces' %}">{% trans "Mes annonces" %}</a>
         <span> › </span>{% trans "Vérification vendeur" %}
     </nav>
 
     <div class="verif-card">
-        <h1 class="verif-title">🛡️ {% trans "Vérification vendeur" %}</h1>
+        <h1 class="verif-title"><i class="material-icons" aria-hidden="true">verified_user</i> {% trans "Vérification vendeur" %}</h1>
         <p class="verif-sub">
             {% trans "Un compte vérifié renforce la confiance des acheteurs. Choisissez le profil qui correspond à votre activité." %}
         </p>
@@ -23,10 +23,10 @@
 
             {% if verification.status == 'pending' %}
             <div class="verif-status-box verif-status-pending">
-                <span class="verif-status-icon">⏳</span>
+                <i class="material-icons verif-status-icon" aria-hidden="true">schedule</i>
                 <div>
                     <div class="verif-status-label">
-                        {% if verification.seller_type == 'pro' %}⭐{% else %}✓{% endif %}
+                        {% if verification.seller_type == 'pro' %}<i class="material-icons" aria-hidden="true">star</i>{% else %}<i class="material-icons" aria-hidden="true">verified</i>{% endif %}
                         {% trans "Demande en attente d'examen" %}
                     </div>
                     <div class="verif-status-detail">
@@ -38,17 +38,16 @@
 
             {% elif verification.status == 'approved' and verification.seller_type == 'pro' %}
             <div class="verif-status-box verif-status-pro-approved">
-                <span class="verif-status-icon">⭐</span>
+                <i class="material-icons verif-status-icon" aria-hidden="true">star</i>
                 <div>
                     <div class="verif-status-label">{% trans "Boutique Pro active" %}</div>
                     <div class="verif-status-detail">
                         {% blocktrans with date=verification.reviewed_at|date:"d/m/Y" %}Approuvée le {{ date }}.{% endblocktrans %}
                         {% trans "Votre page boutique est visible par tous les acheteurs." %}
                     </div>
-                    <div style="margin-top:.6rem;">
-                        <a href="{% url 'bazar:boutique' username=request.user.username %}"
-                           style="display:inline-flex;align-items:center;gap:.4rem;color:#d97706;font-weight:700;font-size:.83rem;text-decoration:none;">
-                            🏪 {% trans "Voir ma page boutique" %} →
+                    <div class="verif-status-more">
+                        <a href="{% url 'bazar:boutique' username=request.user.username %}" class="verif-status-link">
+                            <i class="material-icons" aria-hidden="true">storefront</i>{% trans "Voir ma page boutique" %} →
                         </a>
                     </div>
                 </div>
@@ -56,30 +55,29 @@
 
             {% elif verification.status == 'approved' and verification.seller_type == 'verified' %}
             <div class="verif-status-box verif-status-approved">
-                <span class="verif-status-icon">✅</span>
+                <i class="material-icons verif-status-icon" aria-hidden="true">check_circle</i>
                 <div>
                     <div class="verif-status-label">{% trans "Compte vérifié" %}</div>
                     <div class="verif-status-detail">
                         {% blocktrans with date=verification.reviewed_at|date:"d/m/Y" %}Approuvé le {{ date }}.{% endblocktrans %}
-                        {% trans "Badge ✓ actif, 12 photos par annonce." %}
+                        {% trans "Badge vérifié actif, 12 photos par annonce." %}
                     </div>
                 </div>
             </div>
 
             <!-- Upgrade vers Pro -->
             <hr class="verif-sep">
-            <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1.5px solid #fcd34d;border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1.5rem;">
-                <div style="font-size:1.1rem;font-weight:800;color:#78350f;margin-bottom:.35rem;">⭐ {% trans "Évoluer vers Boutique Pro" %}</div>
-                <div style="font-size:.83rem;color:#92400e;margin-bottom:1rem;line-height:1.55;">
+            <div class="verif-upgrade">
+                <div class="verif-upgrade-title"><i class="material-icons" aria-hidden="true">star</i>{% trans "Évoluer vers Boutique Pro" %}</div>
+                <div class="verif-upgrade-text">
                     {% trans "Votre activité a grandi ? Passez au niveau supérieur : page boutique dédiée, badge doré, 20 photos par annonce, priorité maximale dans les résultats." %}
                 </div>
-                <button type="button" onclick="showUpgradeForm()"
-                        style="display:inline-flex;align-items:center;gap:.45rem;background:#d97706;color:#fff;border:none;border-radius:10px;padding:.6rem 1.3rem;font-weight:700;font-size:.88rem;cursor:pointer;">
-                    ⭐ {% trans "Demander le statut Boutique Pro" %}
+                <button type="button" onclick="showUpgradeForm()" class="vz-btn vz-btn--primary">
+                    <i class="material-icons" aria-hidden="true">star</i>{% trans "Demander le statut Boutique Pro" %}
                 </button>
             </div>
 
-            <!-- Formulaire upgrade (caché par défaut) -->
+            <!-- Formulaire upgrade (caché par défaut ; display basculé par showUpgradeForm) -->
             <div id="upgrade-form-wrap" style="display:none;">
                 <form method="post" enctype="multipart/form-data" id="verif-form">
                     {% csrf_token %}
@@ -103,7 +101,7 @@
 
             {% elif verification.status == 'rejected' %}
             <div class="verif-status-box verif-status-rejected">
-                <span class="verif-status-icon">❌</span>
+                <i class="material-icons verif-status-icon" aria-hidden="true">cancel</i>
                 <div>
                     <div class="verif-status-label">{% trans "Demande refusée" %}</div>
                     <div class="verif-status-detail">
@@ -116,7 +114,7 @@
             </div>
 
             <hr class="verif-sep">
-            <p style="font-size:.88rem;color:var(--text-secondary);margin-bottom:1rem;">
+            <p class="verif-resubmit-hint">
                 {% trans "Vous pouvez soumettre une nouvelle demande en corrigeant les points signalés." %}
             </p>
 

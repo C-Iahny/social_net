@@ -11,7 +11,7 @@
         <h2>{{ group.name }}</h2>
         <p>{% trans "This group is private. You need to be a member to view its content." %}</p>
         {% if join_pending %}
-        <p class="gp-private-btn" style="cursor:default;opacity:.75;">
+        <p class="gp-private-btn gp-private-btn--static">
             <span class="material-icons">hourglass_top</span>
             {% trans "Request pending" %}
         </p>

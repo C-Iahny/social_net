@@ -5,25 +5,19 @@
 .delete-card {
     background: var(--bg-card); border: 1px solid var(--border);
     border-radius: 20px;
-    box-shadow:
-        0 1px 3px rgba(0,0,0,.05),
-        0 4px 14px rgba(0,0,0,.06),
-        0 0 0 .5px rgba(0,0,0,.04);
+    box-shadow: var(--shadow);
     overflow: hidden; transition: background .3s;
     text-align: center;
 }
 .delete-card-icon {
     padding: 2rem 1.5rem 1rem;
-    background: #fdecea;
-    border-bottom: 1px solid #f5c6c6;
+    background: rgba(var(--danger-rgb),.08);
+    border-bottom: 1px solid rgba(var(--danger-rgb),.25);
 }
-[data-theme="dark"] .delete-card-icon { background: #3b1212; border-color: #5a2020; }
 .delete-card-icon .material-icons {
-    font-size: 3.2rem; color: #c62828; display: block; margin-bottom: .5rem;
+    font-size: 3.2rem; color: var(--danger); display: block; margin-bottom: .5rem;
 }
-[data-theme="dark"] .delete-card-icon .material-icons { color: #f28b82; }
-.delete-card-icon h4 { color: #c62828; font-weight: 800; margin: 0; }
-[data-theme="dark"] .delete-card-icon h4 { color: #f28b82; }
+.delete-card-icon h4 { color: var(--danger); font-weight: 800; margin: 0; }
 
 .delete-card-body { padding: 1.5rem; }
 .delete-card-body p { color: var(--text-muted); font-size: .95rem; margin-bottom: 1rem; }
@@ -37,12 +31,13 @@
 
 .delete-actions { display: flex; gap: .7rem; justify-content: center; padding: 1rem 1.5rem; border-top: 1px solid var(--border); }
 .btn-confirm-delete {
-    flex: 1; padding: .65rem 1.2rem; background: #c62828; color: #fff;
+    flex: 1; padding: .65rem 1.2rem; background: var(--danger); color: #fff;
     border: none; border-radius: 10px; font-size: .95rem; font-weight: 700;
     cursor: pointer; transition: background .2s;
     display: inline-flex; align-items: center; justify-content: center; gap: .35rem;
 }
-.btn-confirm-delete:hover { background: #b71c1c; }
+.btn-confirm-delete:hover { filter: brightness(.92); }
+.delete-actions .material-icons { font-size: 1rem; }
 .btn-cancel-delete {
     flex: 1; padding: .65rem 1.2rem; border: 1.5px solid var(--border); border-radius: 10px;
     background: none; color: var(--text); font-size: .95rem; font-weight: 600;

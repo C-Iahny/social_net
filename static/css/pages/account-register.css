@@ -219,3 +219,9 @@
     background: rgba(255,77,77,.08); border-color: rgba(255,77,77,.25);
     color: #ff6b6b;
 }
+
+/* ── Styles sortis des attributs style="" de register.html (2026-11) ── */
+.auth-sub-icon { font-size: 1rem; vertical-align: -3px; color: var(--accent); }
+.auth-errors .material-icons { font-size: 1rem; flex-shrink: 0; }
+.auth-terms-error .material-icons { font-size: .9rem; vertical-align: middle; }
+#pw-strength-wrap { display: none; }   /* passé en flex par le JS dès la saisie */

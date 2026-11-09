@@ -135,3 +135,19 @@
 .kbr-famaranana { font-style: italic; color: var(--text-muted); font-size: .9rem; border-left: 3px solid var(--accent2); padding-left: .8rem; }
 .kbr-label { display: block; font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); margin-bottom: .2rem; opacity: .8; }
 .kbr-body p { margin: 0; line-height: 1.7; }
+
+/* ── Sections : pastilles d'icône ── */
+.kbr-section-icon--vato       { background: linear-gradient(135deg, var(--vintana), var(--accent2)); }
+.kbr-section-icon--ohabolana  { background: linear-gradient(135deg, var(--accent3), var(--danger)); }
+.kbr-section-icon--famaranana { background: linear-gradient(135deg, var(--success), var(--accent2)); }
+
+/* ── Boîte d'erreur (display basculé par kbrShowError / kbrHideError) ── */
+#kbr-error-box {
+    display: none;
+    background: rgba(var(--danger-rgb),.08);
+    border: 1.5px solid rgba(var(--danger-rgb),.3);
+    border-radius: 10px; padding: .7rem 1rem;
+    color: var(--danger); font-size: .88rem; margin-bottom: 1rem;
+}
+@keyframes kbr-spin { to { transform: rotate(360deg); } }
+.kbr-spin { animation: kbr-spin .8s linear infinite; display: inline-block; }

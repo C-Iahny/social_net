@@ -10,11 +10,11 @@
     <div class="verif-type-card {% if initial_type == 'verified' %}active-verified{% endif %}"
          id="type-card-verified"
          onclick="selectType('verified')">
-        <span class="verif-type-icon">👤</span>
+        <i class="material-icons verif-type-icon" aria-hidden="true">person</i>
         <div class="verif-type-name">{% trans "Vendeur Vérifié" %}</div>
         <div class="verif-type-desc">{% trans "Je vends des articles personnels de temps en temps." %}</div>
         <div class="verif-type-perks">
-            <span class="verif-type-perk">{% trans "Badge ✓ Vérifié sur vos annonces" %}</span>
+            <span class="verif-type-perk">{% trans "Badge Vérifié sur vos annonces" %}</span>
             <span class="verif-type-perk">{% trans "Priorité dans les résultats" %}</span>
             <span class="verif-type-perk">{% trans "Jusqu'à 12 photos par annonce" %}</span>
         </div>
@@ -24,11 +24,11 @@
     <div class="verif-type-card {% if initial_type == 'pro' %}active-pro{% endif %}"
          id="type-card-pro"
          onclick="selectType('pro')">
-        <span class="verif-type-icon">⭐</span>
+        <i class="material-icons verif-type-icon" aria-hidden="true">star</i>
         <div class="verif-type-name">{% trans "Concessionnaire / Boutique Pro" %}</div>
         <div class="verif-type-desc">{% trans "Je vends régulièrement à titre professionnel ou commercial." %}</div>
         <div class="verif-type-perks">
-            <span class="verif-type-perk">{% trans "Badge ⭐ Boutique Pro doré" %}</span>
+            <span class="verif-type-perk">{% trans "Badge Boutique Pro doré" %}</span>
             <span class="verif-type-perk">{% trans "Page boutique publique dédiée" %}</span>
             <span class="verif-type-perk">{% trans "Jusqu'à 20 photos par annonce" %}</span>
             <span class="verif-type-perk">{% trans "Priorité maximale dans les résultats" %}</span>
@@ -38,21 +38,21 @@
 
 <!-- ── Champs boutique (type='pro') ──────────────────────────────────────── -->
 <div id="verif-boutique-fields" class="{% if initial_type == 'pro' %}visible{% endif %}">
-    <div class="verif-section-title">🏪 {% trans "Informations de votre boutique" %}</div>
+    <div class="verif-section-title"><i class="material-icons" aria-hidden="true">storefront</i>{% trans "Informations de votre boutique" %}</div>
 
-    <div class="verif-row">
-        <label class="verif-label" for="boutique-name">
-            {% trans "Nom de la boutique" %}<span class="req">*</span>
+    <div class="vz-field">
+        <label for="boutique-name">
+            {% trans "Nom de la boutique" %}<span class="vz-req">*</span>
         </label>
-        <input type="text" class="verif-input" id="boutique-name" name="boutique_name"
+        <input type="text" id="boutique-name" name="boutique_name"
                maxlength="120"
                placeholder="{% trans "Ex : AutoShop Tana, BoutiqueElec Fianarantsoa…" %}"
                value="{{ verification.boutique_name|default:'' }}">
     </div>
 
-    <div class="verif-row">
-        <label class="verif-label" for="boutique-cat">{% trans "Catégorie principale" %}<span class="req">*</span></label>
-        <select class="verif-select" id="boutique-cat" name="boutique_category">
+    <div class="vz-field">
+        <label for="boutique-cat">{% trans "Catégorie principale" %}<span class="vz-req">*</span></label>
+        <select id="boutique-cat" name="boutique_category">
             <option value="">— {% trans "Choisir une catégorie" %} —</option>
             <option value="auto"         {% if verification.boutique_category == 'auto' %}selected{% endif %}>{% trans "Automobile & Moto" %}</option>
             <option value="electronique" {% if verification.boutique_category == 'electronique' %}selected{% endif %}>{% trans "Électronique & Informatique" %}</option>
@@ -67,64 +67,64 @@
         </select>
     </div>
 
-    <div class="verif-row">
-        <label class="verif-label" for="boutique-desc">{% trans "Description de votre boutique" %}</label>
-        <textarea class="verif-textarea" id="boutique-desc" name="boutique_description"
+    <div class="vz-field">
+        <label for="boutique-desc">{% trans "Description de votre boutique" %}</label>
+        <textarea id="boutique-desc" name="boutique_description"
                   maxlength="2000"
                   placeholder="{% trans "Présentez votre boutique, vos produits, votre expérience…" %}">{{ verification.boutique_description|default:'' }}</textarea>
     </div>
 
     <div class="verif-row-2">
-        <div>
-            <label class="verif-label" for="boutique-phone">{% trans "Téléphone / WhatsApp" %}</label>
-            <input type="tel" class="verif-input" id="boutique-phone" name="boutique_phone"
+        <div class="vz-field">
+            <label for="boutique-phone">{% trans "Téléphone / WhatsApp" %}</label>
+            <input type="tel" id="boutique-phone" name="boutique_phone"
                    maxlength="30"
                    placeholder="+261 34 00 000 00"
                    value="{{ verification.boutique_phone|default:'' }}">
         </div>
-        <div>
-            <label class="verif-label" for="boutique-hours">{% trans "Horaires d'ouverture" %}</label>
-            <input type="text" class="verif-input" id="boutique-hours" name="boutique_hours"
+        <div class="vz-field">
+            <label for="boutique-hours">{% trans "Horaires d'ouverture" %}</label>
+            <input type="text" id="boutique-hours" name="boutique_hours"
                    maxlength="250"
                    placeholder="{% trans "Ex : Lun–Sam 8h–18h" %}"
                    value="{{ verification.boutique_hours|default:'' }}">
         </div>
     </div>
 
-    <div class="verif-row">
-        <label class="verif-label" for="boutique-address">{% trans "Adresse / Localisation" %}</label>
-        <input type="text" class="verif-input" id="boutique-address" name="boutique_address"
+    <div class="vz-field">
+        <label for="boutique-address">{% trans "Adresse / Localisation" %}</label>
+        <input type="text" id="boutique-address" name="boutique_address"
                maxlength="250"
                placeholder="{% trans "Ex : Analakely, Antananarivo" %}"
                value="{{ verification.boutique_address|default:'' }}">
     </div>
 
-    <div class="verif-row">
-        <label class="verif-label" for="boutique-banner">{% trans "Bannière de la boutique" %}</label>
+    <div class="vz-field">
+        <label for="boutique-banner">{% trans "Bannière de la boutique" %}</label>
         {% if verification.boutique_banner %}
         <img src="{{ verification.boutique_banner.url }}" class="banner-preview visible" id="banner-preview" alt="">
         {% else %}
         <img src="" class="banner-preview" id="banner-preview" alt="">
         {% endif %}
-        <input type="file" class="verif-input" id="boutique-banner" name="boutique_banner"
-               accept="image/*" style="padding:.4rem .6rem;"
+        <input type="file" class="verif-file-input" id="boutique-banner" name="boutique_banner"
+               accept="image/*"
                onchange="previewBanner(this)">
-        <div class="verif-hint">{% trans "Image horizontale recommandée (ex : 1200×300 px). Formats : JPG, PNG, WebP." %}</div>
+        <div class="vz-field-help">{% trans "Image horizontale recommandée (ex : 1200×300 px). Formats : JPG, PNG, WebP." %}</div>
     </div>
 </div>
 
 <!-- ── Message libre (tous types) ────────────────────────────────────────── -->
-<div class="verif-section-title">✉️ {% trans "Message" %}</div>
-<div class="verif-row">
-    <label class="verif-label" for="msg">{% trans "Votre message (facultatif)" %}</label>
-    <textarea id="msg" name="message" class="verif-textarea"
+<div class="verif-section-title"><i class="material-icons" aria-hidden="true">mail</i>{% trans "Message" %}</div>
+<div class="vz-field">
+    <label for="msg">{% trans "Votre message (facultatif)" %}</label>
+    <textarea id="msg" name="message"
               maxlength="2000"
               placeholder="{% trans "Présentez-vous, décrivez votre activité, expliquez pourquoi vous méritez d'être vérifié…" %}">{{ verification.message|default:'' }}</textarea>
-    <div class="verif-hint">{% trans "Maximum 2 000 caractères." %}</div>
+    <div class="vz-field-help">{% trans "Maximum 2 000 caractères." %}</div>
 </div>
 
-<button type="submit" class="verif-submit">
-    🛡️ {% trans "Envoyer ma demande" %}
+<button type="submit" class="vz-btn vz-btn--primary verif-submit">
+    <i class="material-icons" aria-hidden="true">verified_user</i>{% trans "Envoyer ma demande" %}
 </button>
 
 <script>

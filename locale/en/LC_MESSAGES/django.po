@@ -4236,3 +4236,43 @@ msgstr "%(n)d h"
 
 msgid "%(n)d j"
 msgstr "%(n)d d"
+
+#: notification/verbs.py
+msgid "%(name)s vous a envoyé une demande d’ami"
+msgstr "%(name)s sent you a friend request"
+
+#: notification/verbs.py
+msgid "Vous êtes maintenant ami(e) avec %(name)s"
+msgstr "You are now friends with %(name)s"
+
+#: notification/verbs.py
+msgid "Vous n’êtes plus ami(e) avec %(name)s"
+msgstr "You are no longer friends with %(name)s"
+
+#: notification/verbs.py
+msgid "Vous avez accepté la demande d’ami de %(name)s"
+msgstr "You accepted %(name)s’s friend request"
+
+#: notification/verbs.py
+msgid "%(name)s a accepté votre demande d’ami"
+msgstr "%(name)s accepted your friend request"
+
+#: notification/verbs.py
+msgid "Vous avez refusé la demande d’ami de %(name)s"
+msgstr "You declined %(name)s’s friend request"
+
+#: notification/verbs.py
+msgid "%(name)s a refusé votre demande d’ami"
+msgstr "%(name)s declined your friend request"
+
+#: notification/verbs.py
+msgid "Vous avez annulé votre demande d’ami à %(name)s"
+msgstr "You cancelled your friend request to %(name)s"
+
+#: notification/verbs.py
+msgid "%(name)s a annulé sa demande d’ami"
+msgstr "%(name)s cancelled their friend request"
+
+#: notification/verbs.py
+msgid "Votre activité récente"
+msgstr "Your recent activity"

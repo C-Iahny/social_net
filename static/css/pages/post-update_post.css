@@ -126,15 +126,14 @@
 .btn-submit {
     flex: 1; padding: .6rem 1.5rem;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; border: none; border-radius: var(--radius-pill);
+    color: var(--on-accent); border: none; border-radius: var(--radius-pill);
     font-size: 1rem; font-weight: 700; cursor: pointer;
     transition: opacity .2s, transform .1s, box-shadow .2s;
     display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
-    box-shadow: 0 4px 16px rgba(0,207,255,.25);
+    box-shadow: 0 4px 16px rgba(var(--accent-rgb),.25);
   min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
-[data-theme="dark"] .btn-submit { color: #000; }
-.btn-submit:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(0,207,255,.35); }
+.btn-submit:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 6px 22px rgba(var(--accent-rgb),.35); }
 .btn-cancel {
     padding: .6rem 1.2rem; border: 1.5px solid var(--border); border-radius: 22px;
     background: none; color: var(--text-muted); font-size: .95rem; font-weight: 600;
@@ -143,3 +142,19 @@
     display: inline-flex; align-items: center; gap: .35rem;
 }
 .btn-cancel:hover { background: var(--btn-bg); color: var(--text); border-color: var(--accent); text-decoration: none; }
+
+/* ── Icônes des libellés et des boutons ── */
+.form-field label .material-icons { font-size: 1rem; vertical-align: middle; }
+.btn-cancel .material-icons, .btn-submit .material-icons { font-size: 1rem; }
+
+/* ── Champs : obligatoire, erreurs, aide ── */
+.form-required { color: var(--danger); }
+.form-error { color: var(--danger); font-size: .83rem; margin-top: .3rem; }
+.form-error--block { font-size: .88rem; }
+.form-subfield { margin-top: .4rem; }
+.upload-sub { font-size: .78rem; margin-top: .2rem; }
+.upload-hint { font-size: .82rem; color: var(--text-muted); margin-top: .3rem; }
+.upload-hint a { color: var(--accent); }
+.pp-optional { font-weight: 400; color: var(--text-muted); font-size: .8rem; }
+/* Input fichier masqué sans display:none (le label doit rester cliquable en WebView) */
+.input-file-hidden { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; pointer-events: none; }

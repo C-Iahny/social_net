@@ -48,7 +48,7 @@
                 placeholder="Cher moi du futur… Que veux-tu te dire dans quelques mois ou années ?"
                 oninput="vtUpdatePreview()"
             ></textarea>
-            <div style="text-align:right;font-size:.72rem;color:var(--text-muted);margin-top:.25rem;">
+            <div class="vt-counter">
                 <span id="vt-msg-count">0</span> / 3000
             </div>
         </div>
@@ -87,7 +87,7 @@
             </div>
             <div class="vt-preview-card" id="vt-preview-card">
                 <div class="vt-locked" id="vt-preview-locked">
-                    <span class="lock-icon">🔮</span>
+                    <span class="material-icons lock-icon" aria-hidden="true">auto_awesome</span>
                     <div class="lock-title" id="vt-preview-title-text">Capsule Vintana</div>
                     <p class="lock-sub">Ce message sera révélé à la date choisie.</p>
                 </div>
@@ -217,7 +217,7 @@ function vtSubmit() {
     if (!revealDate) { vtShowError('La date de révélation est obligatoire.'); return; }
 
     btn.disabled = true;
-    btn.innerHTML = '<span class="material-icons" style="animation:spin .8s linear infinite;">autorenew</span> Scellement…';
+    btn.innerHTML = '<span class="material-icons vt-spin">autorenew</span> Scellement…';
 
     fetch(VT_CREATE_URL, {
         method: 'POST',

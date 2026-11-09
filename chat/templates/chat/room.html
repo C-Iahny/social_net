@@ -50,8 +50,8 @@
                 <span class="friend-unread{% if x.unread %} has-unread{% endif %}">{% if x.unread %}{{ x.unread }}{% endif %}</span>
             </div>
             {% empty %}
-            <div style="padding:1.2rem .8rem;text-align:center;color:var(--text-muted);font-size:.82rem;">
-                <span class="material-icons" style="font-size:1.8rem;display:block;margin-bottom:.4rem;opacity:.35">people_outline</span>
+            <div class="chat-side-empty">
+                <span class="material-icons" aria-hidden="true">people_outline</span>
                 {% trans "Aucun ami pour l'instant" %}
             </div>
             {% endfor %}
@@ -67,7 +67,7 @@
             <button class="chat-header-btn chat-back-btn" id="chat-back-btn" title="{% trans 'Conversations' %}" type="button">
                 <span class="material-icons">arrow_back</span>
             </button>
-            <a class="d-flex align-items-center" style="gap:.65rem;" id="id_user_info_container" target="_blank">
+            <a class="d-flex align-items-center" id="id_user_info_container" target="_blank">
                 <div id="chat-header-avatar-wrap">
                 <img class="d-none" id="id_other_user_profile_image"
                      src="{% static 'images/profile_pic.png' %}"
@@ -75,7 +75,7 @@
                 <span id="chat-header-presence-dot"></span>
                 </div>
                 <div>
-                    <h3 id="id_other_username" style="margin:0;font-size:.95rem;font-weight:700;color:var(--text);"></h3>
+                    <h3 id="id_other_username"></h3>
                     <div class="chat-header-status" id="chat-header-sub" style="display:none;">
                         <span class="status-dot"></span>{% trans "En ligne" %}
                     </div>
@@ -98,14 +98,14 @@
             </div>
 
             <!-- No conversation selected placeholder -->
-            <div id="chat-no-selection" style="color:var(--text-muted);font-size:.87rem;position:absolute;right:1rem;">
-                <span class="material-icons" style="vertical-align:middle;font-size:1.05rem;margin-right:5px;">touch_app</span>
+            <div id="chat-no-selection">
+                <span class="material-icons" aria-hidden="true">touch_app</span>
                 {% trans "Sélectionnez une conversation" %}
             </div>
         </div>
 
         <!-- Messages + input wrapper -->
-        <div class="d-flex flex-column" id="id_chat_log_container" style="flex:1;overflow:hidden;">
+        <div class="d-flex flex-column" id="id_chat_log_container">
 
             <!-- Loading spinner -->
             <div class="d-flex justify-content-center" id="id_chatroom_loading_spinner_container">
@@ -120,7 +120,7 @@
 
             <!-- Page number (hidden) -->
             <span class="{% if not debug %}d-none{% endif %} page-number"
-                  id="id_page_number" style="display:none !important;">1</span>
+                  id="id_page_number" hidden>1</span>
 
             <!-- File preview bar (shown when a file is selected) -->
             <div id="file-preview-container">
@@ -128,17 +128,17 @@
                     <span class="material-icons">attach_file</span>
                     <span class="file-preview-name" id="file-preview-name"></span>
                     <button class="file-preview-remove" onclick="clearFileSelection()" title="Supprimer" type="button">
-                        <span class="material-icons" style="font-size:.9rem;">close</span>
+                        <span class="material-icons" aria-hidden="true">close</span>
                     </button>
                 </div>
             </div>
 
             <!-- Upload progress bar -->
             <div id="chat-upload-progress">
-                <span class="material-icons" style="font-size:1rem;">upload</span>
+                <span class="material-icons" aria-hidden="true">upload</span>
                 <span id="upload-progress-label">Envoi…</span>
                 <div class="progress"><div id="chat-upload-bar"></div></div>
-                <span id="upload-progress-pct" style="font-size:.78rem;min-width:32px;">0%</span>
+                <span id="upload-progress-pct">0%</span>
             </div>
 
             <!-- Référence annonce bazar (si venu depuis une fiche bazar) -->
@@ -148,7 +148,7 @@
                 {% if img %}
                 <img class="bazar-ref-thumb" src="{{ img.image.url }}" alt="{{ bazar_annonce.title }}">
                 {% else %}
-                <div class="bazar-ref-no-img">🏷️</div>
+                <div class="bazar-ref-no-img"><span class="material-icons" aria-hidden="true">sell</span></div>
                 {% endif %}
                 {% endwith %}
                 <div class="bazar-ref-info">
@@ -160,7 +160,7 @@
                     {% endif %}
                 </div>
                 <button class="bazar-ref-close" onclick="closeBazarRef()" title="Fermer" type="button">
-                    <span class="material-icons" style="font-size:1.1rem;">close</span>
+                    <span class="material-icons" aria-hidden="true">close</span>
                 </button>
             </div>
             {% endif %}
@@ -180,13 +180,13 @@
                         <span id="reply-preview-author"></span>
                         <div id="reply-preview-body"></div>
                     </div>
-                    <button id="reply-cancel-btn" onclick="cancelReply()" title="Annuler" type="button">✕</button>
+                    <button id="reply-cancel-btn" onclick="cancelReply()" title="Annuler" aria-label="Annuler" type="button"><span class="material-icons" aria-hidden="true">close</span></button>
                 </div>
-                <div class="chat-input-inner" style="position:relative;">
+                <div class="chat-input-inner">
                     <!-- Indicateur enregistrement vocal -->
                     <div id="rec-indicator"><span id="rec-duration">0:00</span></div>
                     <!-- Hidden file input -->
-                    <input type="file" id="chat-file-input" style="display:none;"
+                    <input type="file" id="chat-file-input" hidden
                            accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,.7z,.txt,.csv">
                     <!-- Attach button -->
                     <button type="button" class="chat-attach-btn" onclick="document.getElementById('chat-file-input').click()" title="{% trans 'Joindre un fichier' %}">
@@ -198,7 +198,7 @@
                               inputmode="text"
                               enterkeyhint="send"></textarea>
                     <!-- Bouton annuler enregistrement (caché par défaut) -->
-                    <button type="button" id="rec-cancel-btn" class="chat-mic-btn" title="{% trans 'Annuler' %}" style="display:none;color:var(--danger);">
+                    <button type="button" id="rec-cancel-btn" class="chat-mic-btn chat-mic-btn--danger" title="{% trans 'Annuler' %}" style="display:none;">
                         <span class="material-icons">delete</span>
                     </button>
                     <!-- Bouton micro (visible quand input vide ET pas en train d'enregistrer) -->
@@ -287,34 +287,34 @@
                 <!-- Indicateur état ICE (connexion réseau) — utile pour diagnostiquer -->
                 <div id="call-ice-status" class="call-ice-status"></div>
                 <!-- Indicateur candidats ICE — affiché pendant la connexion pour diagnostic -->
-                <div id="call-ice-debug" style="font-size:10px;color:#aaa;letter-spacing:1px;min-height:14px;text-align:center;"></div>
+                <div id="call-ice-debug"></div>
                 <div class="call-ctrl-row">
-                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <div class="call-ctrl-wrap">
                         <button class="call-ctrl-btn" id="call-btn-mic" onclick="toggleMic()" title="{% trans 'Micro' %}" type="button">
                             <span class="material-icons" id="call-mic-icon">mic</span>
                         </button>
                         <span class="call-ctrl-lbl">{% trans "Micro" %}</span>
                     </div>
                     <!-- Bouton haut-parleur (toggle écouteur ↔ haut-parleur) -->
-                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <div class="call-ctrl-wrap">
                         <button class="call-ctrl-btn" id="call-btn-speaker" onclick="toggleSpeaker()" title="Haut-parleur" type="button">
                             <span class="material-icons" id="call-speaker-icon">volume_up</span>
                         </button>
                         <span class="call-ctrl-lbl">HP</span>
                     </div>
-                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <div class="call-ctrl-wrap">
                         <button class="call-ctrl-btn call-ctrl-hangup" onclick="hangUp()" title="{% trans 'Raccrocher' %}" type="button">
                             <span class="material-icons">call_end</span>
                         </button>
                         <span class="call-ctrl-lbl">{% trans "Fin" %}</span>
                     </div>
-                    <div id="call-cam-wrap" style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <div id="call-cam-wrap" class="call-ctrl-wrap">
                         <button class="call-ctrl-btn" id="call-btn-cam" onclick="toggleCam()" title="{% trans 'Caméra' %}" type="button">
                             <span class="material-icons" id="call-cam-icon">videocam</span>
                         </button>
                         <span class="call-ctrl-lbl">{% trans "Caméra" %}</span>
                     </div>
-                    <div id="call-flip-wrap" style="display:none;flex-direction:column;align-items:center;gap:4px;">
+                    <div id="call-flip-wrap" class="call-ctrl-wrap" style="display:none;">
                         <button class="call-ctrl-btn" id="call-btn-flip" onclick="flipCallCamera()" title="Retourner la caméra" type="button">
                             <span class="material-icons">camera_front</span>
                         </button>
@@ -365,11 +365,8 @@
 </div>
 
 <!-- ── Lightbox pour images agrandies ────────────────────────── -->
-<div id="chat-lightbox"
-     style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);
-            align-items:center;justify-content:center;cursor:zoom-out;"
-     onclick="this.style.display='none'">
-    <img id="chat-lightbox-img" style="max-width:92vw;max-height:90vh;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.6);" src="" alt="">
+<div id="chat-lightbox" style="display:none;" onclick="this.style.display='none'">
+    <img id="chat-lightbox-img" src="" alt="">
 </div>
 
 <!-- Auto-resize textarea + misc init -->
@@ -459,15 +456,16 @@ function fileIconClass(fname, ftype){
     if(['zip','rar','7z'].includes(ext)) return 'icon-zip';
     return 'icon-gen';
 }
-function fileIconEmoji(fname, ftype){
-    if(ftype === 'image') return '🖼️';
-    if(ftype === 'video') return '🎬';
+/* Nom d'icône Material selon le type de fichier (remplace les emojis) */
+function fileIconName(fname, ftype){
+    if(ftype === 'image') return 'image';
+    if(ftype === 'video') return 'movie';
     var ext = (fname || '').split('.').pop().toLowerCase();
-    if(ext === 'pdf')  return '📄';
-    if(['doc','docx'].includes(ext))  return '📝';
-    if(['ppt','pptx'].includes(ext))  return '📊';
-    if(['zip','rar','7z'].includes(ext)) return '🗜️';
-    return '📎';
+    if(ext === 'pdf')  return 'picture_as_pdf';
+    if(['doc','docx'].includes(ext))  return 'description';
+    if(['ppt','pptx'].includes(ext))  return 'slideshow';
+    if(['zip','rar','7z'].includes(ext)) return 'folder_zip';
+    return 'attach_file';
 }
 
 /* ── Upload + broadcast ────────────────────────────────────── */
@@ -748,8 +746,7 @@ window._CT = {
             if(old) old.remove();
             var errDiv = document.createElement('div');
             errDiv.className = 'chat-err-toast';
-            errDiv.style.cssText = 'text-align:center;color:var(--danger);font-size:.78rem;padding:.4rem .6rem;margin:.3rem 0;background:rgba(229,57,53,.08);border-radius:8px;';
-            errDiv.textContent = '⚠ ' + msg;
+            errDiv.textContent = msg;
             chatLog.appendChild(errDiv);
             chatLog.scrollTop = chatLog.scrollHeight;
             setTimeout(function(){ if(errDiv.parentNode) errDiv.remove(); }, 4000);
@@ -1180,7 +1177,7 @@ window._CT = {
             });
         }
 
-        /* Bouton annuler (🗑) → stop + jeter */
+        /* Bouton annuler (corbeille) → stop + jeter */
         if(cancelBtn){
             cancelBtn.addEventListener('click', function(){
                 _stopRec(false);
@@ -1601,7 +1598,7 @@ window._CT = {
             var reactBtn = document.createElement("button");
             reactBtn.classList.add("msg-react-btn");
             reactBtn.title = "Réagir";
-            reactBtn.innerHTML = '😊';
+            reactBtn.innerHTML = '<span class="material-icons" aria-hidden="true">add_reaction</span>';
             (function(id){ reactBtn.addEventListener("click", function(e){ e.stopPropagation(); openEmojiPicker(id, reactBtn, e); }); })(msg_id);
             row.appendChild(reactBtn);
         }
@@ -1610,7 +1607,7 @@ window._CT = {
         var replyBtn = document.createElement("button");
         replyBtn.classList.add("msg-reply-btn");
         replyBtn.title = "Répondre";
-        replyBtn.innerHTML = '<span class="material-icons" style="font-size:.9rem;">reply</span>';
+        replyBtn.innerHTML = '<span class="material-icons" aria-hidden="true">reply</span>';
         (function(id, name, txt){
             replyBtn.addEventListener("click", function(e){
                 e.stopPropagation();
@@ -1696,7 +1693,11 @@ window._CT = {
 
             var iconWrap = document.createElement("div");
             iconWrap.classList.add("file-icon", fileIconClass(fname, ftype));
-            iconWrap.textContent = fileIconEmoji(fname, ftype);
+            var iconEl = document.createElement("i");
+            iconEl.className = "material-icons";
+            iconEl.setAttribute("aria-hidden", "true");
+            iconEl.textContent = fileIconName(fname, ftype);
+            iconWrap.appendChild(iconEl);
             link.appendChild(iconWrap);
 
             var info = document.createElement("div");
@@ -1716,8 +1717,8 @@ window._CT = {
 
             // Download icon
             var dlIcon = document.createElement("span");
-            dlIcon.classList.add("material-icons");
-            dlIcon.style.cssText = "font-size:.95rem;color:var(--text-muted);margin-left:auto;";
+            dlIcon.classList.add("material-icons", "file-dl-icon");
+            dlIcon.setAttribute("aria-hidden", "true");
             dlIcon.textContent = "download";
             link.appendChild(dlIcon);
 
@@ -2071,7 +2072,7 @@ window._CT = {
             } else {
                 /* Fin du gathering — si pas de candidat TURN (R), signaler */
                 var _dbg2 = document.getElementById('call-ice-debug');
-                if(_dbg2) _dbg2.textContent += _hasRelayCandidate ? ' ✓TURN' : ' ⚠no-TURN';
+                if(_dbg2) _dbg2.textContent += _hasRelayCandidate ? ' TURN' : ' no-TURN';
             }
         };
         /* ── ontrack : accumuler les pistes dans UN seul MediaStream ──────────────
@@ -2112,16 +2113,16 @@ window._CT = {
                 var _iceLabels = {
                     'new':          '',
                     'checking':     'Connexion en cours…',
-                    'connected':    '✓ Connecté',
-                    'completed':    '✓ Connecté',
-                    'disconnected': '⟳ Reconnexion…',
-                    'failed':       '✗ Échec réseau',
+                    'connected':    'Connecté',
+                    'completed':    'Connecté',
+                    'disconnected': 'Reconnexion…',
+                    'failed':       'Échec réseau',
                     'closed':       ''
                 };
                 iceEl.textContent = _iceLabels[state] || state;
-                iceEl.style.color = (state==='connected'||state==='completed') ? '#4caf50'
-                                  : (state==='failed')                          ? '#f44336'
-                                  : '#ff9800';
+                iceEl.style.color = (state==='connected'||state==='completed') ? 'var(--success)'
+                                  : (state==='failed')                          ? 'var(--danger)'
+                                  : 'var(--warning)';
             }
             if(state === 'failed'){
                 // Court délai pour ne pas raccrocher sur un échec transitoire
@@ -2167,12 +2168,9 @@ window._CT = {
         if(!overlay) return;
         var btn = document.createElement('button');
         btn.id = 'call-unmute-btn';
-        btn.innerHTML = '<span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">volume_off</span>&nbsp;' +
+        btn.type = 'button';
+        btn.innerHTML = '<span class="material-icons" aria-hidden="true">volume_off</span>&nbsp;' +
                         'Son coupé — appuyez pour activer';
-        btn.style.cssText = 'position:absolute;top:18%;left:50%;transform:translateX(-50%);' +
-            'padding:.6rem 1.2rem;background:rgba(229,57,53,.92);color:#fff;border:none;' +
-            'border-radius:22px;font-size:.85rem;font-weight:700;cursor:pointer;z-index:60;' +
-            'display:flex;align-items:center;white-space:nowrap;font-family:inherit;';
         btn.onclick = function(){
             btn.remove();
             rv.muted = false;
@@ -2222,8 +2220,8 @@ window._CT = {
                 if(rx === 0){
                     var iceEl = document.getElementById('call-ice-status');
                     if(iceEl){
-                        iceEl.textContent = '⚠ Aucun média reçu — réseau/VPN/pare-feu bloque le flux';
-                        iceEl.style.color = '#f44336';
+                        iceEl.textContent = 'Aucun média reçu — réseau/VPN/pare-feu bloque le flux';
+                        iceEl.style.color = 'var(--danger)';
                     }
                 }
             }).catch(function(){});
@@ -2244,9 +2242,9 @@ window._CT = {
         if(iceEl){
             var _curState = _peerConn && _peerConn.iceConnectionState;
             if(_curState === 'connected' || _curState === 'completed'){
-                iceEl.textContent = '✓ Connecté'; iceEl.style.color = '#4caf50';
+                iceEl.textContent = 'Connecté'; iceEl.style.color = 'var(--success)';
             } else {
-                iceEl.textContent = 'Connexion en cours…'; iceEl.style.color = '#ff9800';
+                iceEl.textContent = 'Connexion en cours…'; iceEl.style.color = 'var(--warning)';
             }
         }
         var rv  = _callEl('call-remote-video');
@@ -2308,7 +2306,7 @@ window._CT = {
         var n = (err && err.name) || '';
         var dev = wantVideo ? 'micro / caméra' : 'micro';
         if(n === 'NotAllowedError' || n === 'PermissionDeniedError' || n === 'SecurityError')
-            return 'Accès au ' + dev + ' refusé. Autorisez-le dans les réglages du navigateur (icône 🔒 dans la barre d\'adresse), puis réessayez.';
+            return 'Accès au ' + dev + ' refusé. Autorisez-le dans les réglages du navigateur (icône cadenas dans la barre d\'adresse), puis réessayez.';
         if(n === 'NotFoundError' || n === 'DevicesNotFoundError')
             return 'Aucun micro détecté sur cet appareil.';
         if(n === 'NotReadableError' || n === 'TrackStartError' || n === 'AbortError')

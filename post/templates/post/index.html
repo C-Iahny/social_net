@@ -28,9 +28,7 @@
 
 <div class="explore-hero">
     <div class="explore-hero-content">
-        <img src="{% static 'logo/vazimba_icon.png' %}" alt="Vazimba"
-             style="width:64px;height:64px;object-fit:contain;
-                    margin-bottom:.9rem;display:block;filter:invert(1);">
+        <img src="{% static 'logo/vazimba_icon.png' %}" alt="Vazimba" class="explore-hero-logo">
         <h1>{{ hero.title }}</h1>
         <p>{{ hero.subtitle }}</p>
         <div class="hero-search-wrap">
@@ -99,7 +97,7 @@
                 <span class="country-tag">{{ country.name }}</span>
                 {% endfor %}
                 {% if countries|length > 24 %}
-                <span class="country-tag" style="opacity:.6;">{% blocktrans with n=countries|length|add:"-24" %}+{{ n }} more{% endblocktrans %}</span>
+                <span class="country-tag country-tag--more">{% blocktrans with n=countries|length|add:"-24" %}+{{ n }} more{% endblocktrans %}</span>
                 {% endif %}
             </div>
         </div>
@@ -111,7 +109,7 @@
                 {% if user.is_authenticated %}
                 <p>{% trans "Want to share something with the community?" %}</p>
                 <a class="sidebar-cta-btn cta-primary" href="{% url 'post:addPost' %}">
-                    <span class="material-icons" style="font-size:.9rem;vertical-align:middle;">add</span>
+                    <span class="material-icons">add</span>
                     {% trans "Create a post" %}
                 </a>
                 <a class="sidebar-cta-btn cta-secondary" href="{% url 'post:post-view' %}">
@@ -215,11 +213,7 @@
                              onerror="this.onerror=null;this.src='{% static 'images/profile_pic.png' %}'">
                         <span class="epc-author-name">{{ post.author.username }}</span>
                         {% if post.category and post.category != 'Category' %}
-                        <span style="margin-left:auto;font-size:.72rem;background:var(--btn-bg);
-                                     border-radius:10px;padding:.1rem .5rem;color:var(--text-muted);
-                                     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;">
-                            {{ post.category }}
-                        </span>
+                        <span class="epc-cat">{{ post.category }}</span>
                         {% endif %}
                     </div>
                     <div class="epc-title">{{ post.title }}</div>
@@ -274,8 +268,7 @@
             <h5>{% trans "No posts to explore yet" %}</h5>
             <p>{% trans "Be the first to share something." %}</p>
             {% if user.is_authenticated %}
-            <a href="{% url 'post:addPost' %}" class="explore-cta-btn explore-cta-primary"
-               style="display:inline-flex;margin-top:1rem;">
+            <a href="{% url 'post:addPost' %}" class="explore-cta-btn explore-cta-primary">
                 <span class="material-icons">add</span> {% trans "Create the first post" %}
             </a>
             {% endif %}

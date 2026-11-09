@@ -69,8 +69,8 @@
 
             <div class="ls-field">
                 <label class="ls-label" for="id_description">{% trans "Description" %} <span class="req">*</span></label>
-                <textarea class="ls-textarea" id="id_description" name="description"
-                          required style="min-height:140px;">{{ lieu.description }}</textarea>
+                <textarea class="ls-textarea ls-textarea--tall" id="id_description" name="description"
+                          required>{{ lieu.description }}</textarea>
             </div>
 
             <div class="ls-section-label">
@@ -99,8 +99,7 @@
 
             <div class="ls-field">
                 <label class="ls-label" for="id_tips">{% trans "Conseils pratiques" %}</label>
-                <textarea class="ls-textarea" id="id_tips" name="tips"
-                          style="min-height:80px;">{{ lieu.tips }}</textarea>
+                <textarea class="ls-textarea ls-textarea--short" id="id_tips" name="tips">{{ lieu.tips }}</textarea>
             </div>
 
             <!-- Photos existantes -->
@@ -126,7 +125,7 @@
                 {% endfor %}
             </div>
             {% else %}
-            <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.8rem;">{% trans "Aucune photo pour le moment." %}</p>
+            <p class="delete-hint">{% trans "Aucune photo pour le moment." %}</p>
             {% endif %}
 
             <!-- Ajouter des photos -->
@@ -143,8 +142,8 @@
             </div>
             <div class="ls-preview-grid" id="newPreviewGrid"></div>
 
-            <button type="submit" class="ls-submit-btn" style="margin-top:1.2rem;">
-                <span class="material-icons" style="font-size:1.1rem;">save</span>
+            <button type="submit" class="ls-submit-btn ls-submit-btn--spaced">
+                <span class="material-icons" aria-hidden="true">save</span>
                 {% trans "Enregistrer les modifications" %}
             </button>
         </form>

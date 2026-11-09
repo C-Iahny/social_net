@@ -357,7 +357,16 @@
 .pc-comment-submit .material-icons { font-size: 1rem; color: #fff; }
 [data-theme="dark"] .pc-comment-submit .material-icons { color: #000; }
 
+.pd-dot { opacity: .4; }
+.pd-cat {
+    background: var(--btn-bg); border-radius: var(--radius-sm);
+    padding: .1rem .5rem; font-size: .72rem; font-weight: 700; color: var(--accent);
+}
+.pd-react-icon { font-size: 1.1rem; line-height: 1; }
+.pd-count { font-size: .75rem; opacity: .65; }
+
 /* Share toast */
+#pd-share-toast .material-icons { font-size: 1rem; vertical-align: -3px; margin-right: .2rem; color: var(--success); }
 #pd-share-toast {
     position: fixed; bottom: 5.5rem; left: 50%; transform: translateX(-50%);
     background: var(--bg-card); border: 1px solid var(--border);

@@ -1,0 +1,4 @@
+/* Styles de page resto/vendor/restaurant_form.html — servis en statique (cache navigateur + service worker). */
+
+#rs-pickmap { height: 260px; border-radius: var(--radius); border: 1px solid var(--border); margin-top: .5rem; }
+.rs-form > div { margin-bottom: .8rem; }

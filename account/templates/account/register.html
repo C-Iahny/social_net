@@ -21,18 +21,18 @@
         </a>
 
         <h1 class="auth-heading">{% trans "Create account" %}</h1>
-        <p class="auth-sub">{% trans "Join the VAZIMBA community" %} ✦</p>
+        <p class="auth-sub">{% trans "Join the VAZIMBA community" %} <i class="material-icons auth-sub-icon" aria-hidden="true">auto_awesome</i></p>
 
         <!-- Errors -->
         {% if registration_form.non_field_errors %}
         <div class="auth-errors">
-            <span class="material-icons" style="font-size:1rem;flex-shrink:0;">error_outline</span>
+            <span class="material-icons">error_outline</span>
             <span>{{ registration_form.non_field_errors }}</span>
         </div>
         {% endif %}
         {% for field in registration_form %}{% for error in field.errors %}
         <div class="auth-errors">
-            <span class="material-icons" style="font-size:1rem;flex-shrink:0;">warning_amber</span>
+            <span class="material-icons">warning_amber</span>
             <span>{{ error }}</span>
         </div>
         {% endfor %}{% endfor %}
@@ -66,7 +66,7 @@
                            placeholder="••••••••" required autocomplete="new-password">
                 </div>
                 <!-- Barre de force -->
-                <div class="pw-strength" id="pw-strength-wrap" style="display:none;">
+                <div class="pw-strength" id="pw-strength-wrap">
                     <div class="pw-bar" id="pw-bar-1"></div>
                     <div class="pw-bar" id="pw-bar-2"></div>
                     <div class="pw-bar" id="pw-bar-3"></div>
@@ -88,7 +88,7 @@
             <div class="auth-terms-wrap">
                 {% if terms_error %}
                 <div class="auth-terms-error">
-                    <span class="material-icons" style="font-size:.9rem;vertical-align:middle;">warning_amber</span>
+                    <span class="material-icons">warning_amber</span>
                     Tu dois accepter les CGU et la politique de confidentialité pour continuer.
                 </div>
                 {% endif %}

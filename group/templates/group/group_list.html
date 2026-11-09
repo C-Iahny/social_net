@@ -21,9 +21,9 @@
         {% if tab != 'all' %}<input type="hidden" name="tab" value="{{ tab }}">{% endif %}
         {% if category %}<input type="hidden" name="cat" value="{{ category }}">{% endif %}
         <input type="text" name="q" value="{{ query }}" placeholder="{% trans 'Search a group…' %}">
-        <button type="submit" aria-label="{% trans 'Rechercher' %}"><span class="material-icons" style="font-size:1.1rem;">search</span></button>
+        <button type="submit" aria-label="{% trans 'Rechercher' %}"><span class="material-icons">search</span></button>
         {% if query %}
-        <a href="?tab={{ tab }}&cat={{ category }}" class="gp-tab" style="align-self:center;margin:0;">✕</a>
+        <a href="?tab={{ tab }}&cat={{ category }}" class="gp-tab gp-search-clear" aria-label="{% trans 'Effacer' %}"><i class="material-icons" aria-hidden="true">close</i></a>
         {% endif %}
     </form>
 
@@ -41,7 +41,7 @@
         {% if user_region %}
         <a href="?tab=local{% if query %}&q={{ query }}{% endif %}{% if category %}&cat={{ category }}{% endif %}"
            class="gp-tab {% if tab == 'local' %}active{% endif %}">
-            <i class="material-icons" aria-hidden="true" style="font-size:1rem;vertical-align:-3px;">place</i> {{ user_region_label|default:"Ma région" }}
+            <i class="material-icons gp-tab-icon" aria-hidden="true">place</i> {{ user_region_label|default:"Ma région" }}
         </a>
         {% endif %}
         <a href="?tab=recommended{% if query %}&q={{ query }}{% endif %}{% if category %}&cat={{ category }}{% endif %}"
@@ -67,7 +67,7 @@
         {% if category %}
         <span class="gp-cat-active-badge">
             {% for cat_key, cat_label in category_choices %}{% if cat_key == category %}{{ cat_label }}{% endif %}{% endfor %}
-            <a href="?tab={{ tab }}{% if query %}&q={{ query }}{% endif %}" title="{% trans 'Effacer' %}">✕</a>
+            <a href="?tab={{ tab }}{% if query %}&q={{ query }}{% endif %}" title="{% trans 'Effacer' %}" aria-label="{% trans 'Effacer' %}"><i class="material-icons" aria-hidden="true">close</i></a>
         </span>
         {% endif %}
     </div>
@@ -129,16 +129,16 @@
         <span class="material-icons">groups</span>
         {% if query or category %}
         <p>{% trans "No group matches your search." %}</p>
-        <a class="gp-btn" href="?tab={{ tab }}" style="margin-top:1rem;">{% trans "Clear filters" %}</a>
+        <a class="gp-btn gp-btn--spaced" href="?tab={{ tab }}">{% trans "Clear filters" %}</a>
         {% elif tab == 'mine' %}
         <p>{% trans "You haven't joined any group yet." %}</p>
-        <a class="gp-btn" href="{% url 'group:create' %}" style="margin-top:1rem;">
+        <a class="gp-btn gp-btn--spaced" href="{% url 'group:create' %}">
             <span class="material-icons">add</span> {% trans "Create a group" %}
         </a>
         {% else %}
         <p>{% trans "No groups yet. Be the first to create one!" %}</p>
         {% if user.is_authenticated %}
-        <a class="gp-btn" href="{% url 'group:create' %}" style="margin-top:1rem;">
+        <a class="gp-btn gp-btn--spaced" href="{% url 'group:create' %}">
             <span class="material-icons">add</span> {% trans "Create a group" %}
         </a>
         {% endif %}

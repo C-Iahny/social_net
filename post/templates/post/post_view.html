@@ -67,27 +67,16 @@
             </a>
         </div>
 
-        <!-- 🔴 Lives en cours widget -->
-        <div id="feed-live-widget" style="
-            background:var(--bg-card);
-            border:1px solid rgba(255,59,59,.2);
-            border-radius:16px;
-            overflow:hidden;
-            margin-bottom:.85rem;
-            display:none;
-        ">
-            <div style="
-                padding:.6rem .9rem;
-                display:flex;align-items:center;justify-content:space-between;
-                border-bottom:1px solid rgba(255,59,59,.1);
-            ">
-                <span style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:800;color:var(--danger);">
-                    <span style="width:7px;height:7px;background:var(--danger);border-radius:50%;animation:livePulse2 1.4s infinite;"></span>
+        <!-- Lives en cours widget (affiché par le JS quand il y a des lives) -->
+        <div id="feed-live-widget">
+            <div class="feed-live-head">
+                <span class="feed-live-title">
+                    <span class="feed-live-dot"></span>
                     Lives en cours
                 </span>
-                <a href="{% url 'video:live-list' %}" style="font-size:.72rem;font-weight:700;color:var(--accent);text-decoration:none;">Voir tout</a>
+                <a href="{% url 'video:live-list' %}" class="feed-live-all">Voir tout</a>
             </div>
-            <div id="feed-live-list" style="padding:.45rem 0;"></div>
+            <div id="feed-live-list"></div>
         </div>
 
         <!-- Stories sidebar widget -->
@@ -117,10 +106,9 @@
             </a>
             {% endfor %}
             {% if friends|length > 10 %}
-            <a class="lsb-friend" href="{% url 'friend:list' user_id=request.user.id %}"
-               style="color:var(--accent);font-weight:700;">
-                <span class="material-icons" style="font-size:1rem;width:34px;height:34px;display:flex;align-items:center;justify-content:center;">more_horiz</span>
-                <span class="lsb-friend-name" style="color:var(--accent);">Voir tous ({{ friends|length }})</span>
+            <a class="lsb-friend lsb-friend--more" href="{% url 'friend:list' user_id=request.user.id %}">
+                <span class="material-icons">more_horiz</span>
+                <span class="lsb-friend-name">Voir tous ({{ friends|length }})</span>
             </a>
             {% endif %}
         </div>
@@ -144,7 +132,7 @@
             </a>
             <a href="{% url 'post:post-view' %}?tab=foryou" class="vz-seg{% if active_tab == 'foryou' %} active{% endif %}"
                {% if active_tab == 'foryou' %}aria-current="page"{% endif %}>
-                <span class="material-icons">auto_awesome</span> {% trans "Pour toi" %}
+                <span class="material-icons"></span> {% trans "Pour toi" %}
             </a>
             {% if user_region %}
             <a href="{% url 'post:post-view' %}?tab=region" class="vz-seg{% if active_tab == 'region' %} active{% endif %}"
@@ -156,7 +144,7 @@
 
         <!-- New-posts banner -->
         <button type="button" id="new-posts-banner" onclick="vzFeedLoadNew()">
-            <span class="material-icons" style="font-size:1rem;">arrow_upward</span>
+            <span class="material-icons">arrow_upward</span>
             <span id="new-posts-banner-text">{% trans "Nouveaux posts" %}</span>
         </button>
 
@@ -165,12 +153,12 @@
         <div class="create-box" id="create-box">
 
             {# Inputs fichiers cachés #}
-            <input type="file" id="cb-media-input" multiple accept="image/*,video/*" style="display:none">
-            <input type="file" id="cb-file-input"  multiple style="display:none">
+            <input type="file" id="cb-media-input" multiple accept="image/*,video/*" hidden>
+            <input type="file" id="cb-file-input"  multiple hidden>
 
             {# Formulaire caché (token CSRF + champs hidden) #}
             <form id="cb-form" method="post" enctype="multipart/form-data"
-                  action="{% url 'post:addPost' %}" style="display:none;">
+                  action="{% url 'post:addPost' %}" hidden>
                 {% csrf_token %}
                 <input type="hidden" name="ajax" value="1">
                 <textarea name="body" id="cb-body-hidden"></textarea>
@@ -188,21 +176,15 @@
                 {# État OUVERT : textarea (remplace le pill) #}
                 <textarea id="cb-body" rows="2"
                     placeholder="{% trans "What's on your mind?" %}"
-                    style="display:none;flex:1;resize:none;background:var(--btn-bg);
-                           border:1.5px solid var(--accent);border-radius:14px;
-                           padding:.58rem 1rem;color:var(--text);font-size:.9rem;
-                           line-height:1.5;outline:none;font-family:inherit;
-                           min-height:40px;max-height:260px;box-sizing:border-box;
-                           transition:border-color .15s,background .15s;"
                     oninput="cbResize(this)"></textarea>
             </div>
 
             {# Mosaïque prévisualisation (visible uniquement si fichiers) #}
-            <div id="cb-preview-grid" style="display:none;margin:.1rem 1.1rem .5rem;"></div>
+            <div id="cb-preview-grid"></div>
 
             {# Pied formulaire : Annuler + Publier (visible uniquement si ouvert) #}
-            <div id="cb-submit-bar" style="padding:.35rem 1.1rem .6rem;align-items:center;justify-content:flex-end;gap:.5rem;">
-                <span id="cb-file-count" style="flex:1;font-size:.79rem;color:var(--text-muted);"></span>
+            <div id="cb-submit-bar">
+                <span id="cb-file-count"></span>
                 <button type="button" id="cb-cancel-btn" class="vz-btn vz-btn--muted vz-btn--sm">
                     {% trans "Cancel" %}
                 </button>
@@ -225,14 +207,10 @@
                 <button class="create-box-action post" type="button" id="cb-write-btn">
                     <span class="material-icons">edit_note</span><span class="btn-label"> {% trans "Write" %}</span>
                 </button>
-                <a class="create-box-action" href="{% url 'post:kabary-create' %}"
-                   style="background:linear-gradient(135deg,var(--accent-glow),transparent);
-                           border:1px solid var(--accent);color:var(--accent);">
+                <a class="create-box-action kabary" href="{% url 'post:kabary-create' %}">
                     <span class="material-icons">record_voice_over</span><span class="btn-label"> Kabary</span>
                 </a>
-                <a class="create-box-action" href="{% url 'post:vintana-create' %}"
-                   style="background:linear-gradient(135deg,rgba(var(--vintana-rgb),.1),rgba(var(--accent-rgb),.07));
-                           border:1px solid rgba(var(--vintana-rgb),.4);color:var(--vintana);">
+                <a class="create-box-action vintana" href="{% url 'post:vintana-create' %}">
                     <span class="material-icons">lock_clock</span><span class="btn-label"> Vintana</span>
                 </a>
             </div>
@@ -316,7 +294,7 @@
                     if(n===3&&i===0) it.style.gridRow='1/3';
                     var rm=document.createElement('button');
                     rm.type='button';
-                    rm.innerHTML='<span class="material-icons" style="font-size:.85rem;line-height:1;">close</span>';
+                    rm.innerHTML='<span class="material-icons cb-prev-rm-icon">close</span>';
                     rm.style.cssText='position:absolute;top:5px;right:5px;z-index:3;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
                     rm.onclick=function(e){e.stopPropagation();removeFile(i);};
                     it.appendChild(rm);
@@ -335,12 +313,12 @@
                         vid.src=URL.createObjectURL(f); vid.muted=true; vid.preload='metadata';
                         var pOv=document.createElement('div');
                         pOv.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1;';
-                        pOv.innerHTML='<span class="material-icons" style="font-size:2.2rem;color:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.7));">play_circle_filled</span>';
+                        pOv.innerHTML='<span class="material-icons cb-prev-play">play_circle_filled</span>';
                         it.appendChild(vid); it.appendChild(pOv);
                     } else {
                         var ic=document.createElement('div');
                         ic.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:110px;gap:.4rem;padding:1rem;';
-                        ic.innerHTML='<span class="material-icons" style="font-size:2rem;color:var(--accent);">insert_drive_file</span><span style="font-size:.73rem;color:var(--text-muted);word-break:break-all;text-align:center;">'+f.name+'</span>';
+                        ic.innerHTML='<span class="material-icons cb-prev-file-icon">insert_drive_file</span><span class="cb-prev-file-name">'+f.name+'</span>';
                         it.appendChild(ic);
                     }
                     prevGrid.appendChild(it);
@@ -366,11 +344,11 @@
         /* ── Soumission AJAX ── */
         submitBtn.addEventListener('click', async function(){
             if (!bodyTA.value.trim() && !selectedFiles.length) {
-                bodyTA.focus(); bodyTA.style.borderColor='#e53935';
+                bodyTA.focus(); bodyTA.style.borderColor='var(--danger)';
                 setTimeout(function(){ bodyTA.style.borderColor=''; },2000); return;
             }
             submitBtn.disabled=true;
-            submitBtn.innerHTML='<span class="material-icons cb-spinning" style="font-size:.95rem;">refresh</span> Publication…';
+            submitBtn.innerHTML='<span class="material-icons cb-spinning">refresh</span> Publication…';
 
             /* Copier le body dans le champ hidden du formulaire */
             bodyHidden.value = bodyTA.value;
@@ -410,7 +388,7 @@
             } catch(err) { console.error('cb-form:',err); vzAlert('Erreur réseau.'); }
             finally {
                 submitBtn.disabled=false;
-                submitBtn.innerHTML='<span class="material-icons" style="font-size:.95rem;">send</span> {% trans "Publish"|escapejs %}';
+                submitBtn.innerHTML='<span class="material-icons">send</span> {% trans "Publish"|escapejs %}';
             }
         });
         })();
@@ -459,7 +437,7 @@
             </div>
 
             <div id="feed-end-message">
-                <span class="material-icons" style="display:block;font-size:1.8rem;margin-bottom:.4rem;color:var(--border);">check_circle_outline</span>
+                <span class="material-icons">check_circle_outline</span>
                 {% trans "You've seen all posts!" %}
             </div>
 
@@ -488,47 +466,27 @@
         
 
         <!-- Groups shortcut -->
-        <div class="rsb-card" style="padding:.85rem 1rem .9rem;">
-            <p class="rsb-section-label" style="margin-bottom:.75rem;">
+        <div class="rsb-card rsb-card--pad">
+            <p class="rsb-section-label rsb-section-label--gap">
                 <span class="material-icons">groups</span> {% trans "Groups" %}
             </p>
             {% if my_groups %}
             {% for g in my_groups|slice:":4" %}
-            <a href="{% url 'group:detail' g.slug %}"
-               style="display:flex;align-items:center;gap:.65rem;
-                      padding:.42rem .1rem;text-decoration:none;
-                      border-radius:10px;transition:background .13s;"
-               onmouseover="this.style.background='var(--btn-bg)'"
-               onmouseout="this.style.background=''">
-                <span style="width:34px;height:34px;border-radius:10px;
-                             background:linear-gradient(135deg,var(--accent),var(--accent2));
-                             display:flex;align-items:center;justify-content:center;flex-shrink:0;
-                             {% if g.cover_url %}background-image:url('{{ g.cover_url }}');background-size:cover;{% endif %}">
-                    {% if not g.cover_url %}<span class="material-icons" style="font-size:.9rem;color:#fff;">groups</span>{% endif %}
+            <a href="{% url 'group:detail' g.slug %}" class="rsb-row">
+                <span class="rsb-row-thumb rsb-row-thumb--grad"{% if g.cover_url %} style="background-image:url('{{ g.cover_url }}');"{% endif %}>
+                    {% if not g.cover_url %}<span class="material-icons">groups</span>{% endif %}
                 </span>
-                <span style="font-size:.84rem;font-weight:600;color:var(--text);
-                             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ g.name }}</span>
+                <span class="rsb-row-title">{{ g.name }}</span>
             </a>
             {% endfor %}
             {% endif %}
-            <div style="display:flex;gap:.5rem;margin-top:.75rem;">
-                <a href="{% url 'group:list' %}"
-                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;
-                          padding:.4rem .6rem;border:1.5px solid var(--border);border-radius:10px;
-                          color:var(--text-muted);font-size:.78rem;font-weight:600;
-                          text-decoration:none;transition:border-color .15s,color .15s;"
-                   onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-                   onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
-                    <span class="material-icons" style="font-size:.9rem;">explore</span>
+            <div class="rsb-btn-row">
+                <a href="{% url 'group:list' %}" class="rsb-btn rsb-btn--outline">
+                    <span class="material-icons">explore</span>
                     {% trans "Explore" %}
                 </a>
-                <a href="{% url 'group:create' %}"
-                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;
-                          padding:.4rem .6rem;background:linear-gradient(135deg,var(--accent),var(--accent2));
-                          border:none;border-radius:10px;color:#fff;font-size:.78rem;font-weight:700;
-                          text-decoration:none;transition:opacity .15s;"
-                   onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-                    <span class="material-icons" style="font-size:.9rem;">add</span>
+                <a href="{% url 'group:create' %}" class="rsb-btn rsb-btn--grad">
+                    <span class="material-icons">add</span>
                     {% trans "Create" %}
                 </a>
             </div>
@@ -536,51 +494,33 @@
 
         {% if recent_bazar %}
         <div class="rsb-card">
-            <p class="rsb-section-label" style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="display:flex;align-items:center;gap:.3rem;">
+            <p class="rsb-section-label rsb-section-label--spread">
+                <span class="rsb-label-inner">
                     <span class="material-icons">storefront</span> {% trans "Marketplace" %}
                 </span>
-                <a href="{% url 'bazar:index' %}"
-                   style="font-size:.75rem;font-weight:700;color:var(--accent);text-decoration:none;opacity:.85;">
+                <a href="{% url 'bazar:index' %}" class="rsb-see-all">
                     {% trans "See all" %} →
                 </a>
             </p>
             {% for annonce in recent_bazar %}
             {% with img=annonce.get_primary_image %}
-            <a href="{% url 'bazar:detail' annonce.pk %}"
-               style="display:flex;align-items:center;gap:.65rem;padding:.45rem .1rem;
-                      text-decoration:none;border-radius:10px;transition:background .13s;"
-               onmouseover="this.style.background='var(--btn-bg)'"
-               onmouseout="this.style.background=''">
-                <div style="width:46px;height:46px;border-radius:10px;flex-shrink:0;overflow:hidden;
-                            background:var(--btn-bg);display:flex;align-items:center;justify-content:center;">
+            <a href="{% url 'bazar:detail' annonce.pk %}" class="rsb-row rsb-row--bazar">
+                <div class="rsb-row-thumb rsb-row-thumb--lg">
                     {% if img %}
-                    <img src="{{ img.image.url }}" alt="{{ annonce.title }}"
-                         style="width:100%;height:100%;object-fit:cover;">
+                    <img src="{{ img.image.url }}" alt="{{ annonce.title }}">
                     {% else %}
-                    <span class="material-icons" style="font-size:1.2rem;color:var(--text-muted);">image</span>
+                    <span class="material-icons">image</span>
                     {% endif %}
                 </div>
-                <div style="flex:1;min-width:0;">
-                    <div style="font-size:.83rem;font-weight:600;color:var(--text);
-                                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                        {{ annonce.title }}
-                    </div>
-                    <div style="font-size:.76rem;color:var(--accent);font-weight:700;">
-                        {{ annonce.formatted_price }}
-                    </div>
+                <div class="rsb-row-body">
+                    <div class="rsb-row-title">{{ annonce.title }}</div>
+                    <div class="rsb-row-price">{{ annonce.formatted_price }}</div>
                 </div>
             </a>
             {% endwith %}
             {% endfor %}
-            <a href="{% url 'bazar:create' %}"
-               style="display:flex;align-items:center;justify-content:center;gap:.35rem;
-                      margin-top:.6rem;padding:.4rem .6rem;
-                      background:linear-gradient(135deg,var(--accent),var(--accent2));
-                      border-radius:10px;color:#fff;font-size:.78rem;font-weight:700;
-                      text-decoration:none;transition:opacity .15s;"
-               onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
-                <span class="material-icons" style="font-size:.9rem;">add</span>
+            <a href="{% url 'bazar:create' %}" class="rsb-btn rsb-btn--grad rsb-btn--cta">
+                <span class="material-icons">add</span>
                 {% trans "Sell something" %}
             </a>
         </div>
@@ -589,12 +529,11 @@
         <!-- Trending hashtags -->
         {% if trending_hashtags %}
         <div class="rsb-card">
-            <p class="rsb-section-label" style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="display:flex;align-items:center;gap:.3rem;">
+            <p class="rsb-section-label rsb-section-label--spread">
+                <span class="rsb-label-inner">
                     <span class="material-icons">trending_up</span> {% trans "Trends" %}
                 </span>
-                <a href="{% url 'post:tendances' %}"
-                   style="font-size:.75rem;font-weight:700;color:var(--accent);text-decoration:none;opacity:.85;">
+                <a href="{% url 'post:tendances' %}" class="rsb-see-all">
                     Voir tout →
                 </a>
             </p>
@@ -605,34 +544,26 @@
                 <span class="rsb-trending-count">{{ ht.count }}</span>
             </a>
             {% endfor %}
-            <a href="{% url 'post:tendances' %}"
-               style="display:block;text-align:center;padding:.55rem .5rem .4rem;font-size:.79rem;font-weight:700;color:var(--accent);text-decoration:none;border-top:1px solid var(--border);margin-top:.25rem;">
-                🔥 Toutes les tendances
+            <a href="{% url 'post:tendances' %}" class="rsb-all-link">
+                <i class="material-icons" aria-hidden="true">local_fire_department</i> Toutes les tendances
             </a>
         </div>
         {% endif %}
 
         <!-- Quick stats -->
-        <div class="rsb-card" style="padding:.85rem 1rem .9rem;">
-            <div style="display:flex;flex-direction:column;gap:.3rem;">
-                <span style="font-size:.84rem;color:var(--text);">
-                    <span class="material-icons" style="font-size:.9rem;vertical-align:middle;color:var(--accent);">article</span>
+        <div class="rsb-card rsb-card--pad">
+            <div class="rsb-stats">
+                <span class="rsb-stat">
+                    <span class="material-icons">article</span>
                     &nbsp;{% trans "My posts" %}: <strong>{{ my_post_count|default:"0" }}</strong>
                 </span>
-                <span style="font-size:.84rem;color:var(--text);">
-                    <span class="material-icons" style="font-size:.9rem;vertical-align:middle;color:var(--accent2);">group</span>
+                <span class="rsb-stat">
+                    <span class="material-icons rsb-stat-icon--alt">group</span>
                     &nbsp;{% trans "Friends" %}: <strong>{{ friends_count|default:"0" }}</strong>
                 </span>
             </div>
-            <a href="{% url 'account:edit' user_id=request.user.id %}"
-               style="display:flex;align-items:center;gap:.35rem;
-                      margin-top:.75rem;padding:.4rem .7rem;
-                      border:1.5px solid var(--border);border-radius:10px;
-                      color:var(--text-muted);font-size:.8rem;font-weight:600;
-                      text-decoration:none;transition:border-color .15s,color .15s;"
-               onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)';"
-               onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)';">
-                <span class="material-icons" style="font-size:.9rem;">settings</span>
+            <a href="{% url 'account:edit' user_id=request.user.id %}" class="rsb-btn rsb-btn--outline rsb-btn--left">
+                <span class="material-icons">settings</span>
                 {% trans "Edit profile" %}
             </a>
         </div>
@@ -640,48 +571,28 @@
         <!-- Annonces & Actualités -->
         {% get_active_announcements 4 as feed_announcements %}
         {% if feed_announcements %}
-        <div class="rsb-card" style="overflow:visible;">
-            <p class="rsb-section-label" style="margin-bottom:.5rem;">
+        <div class="rsb-card rsb-card--visible">
+            <p class="rsb-section-label rsb-section-label--gap-sm">
                 <span class="material-icons">campaign</span> {% trans "Announcements" %}
             </p>
             {% for ann in feed_announcements %}
-            <div style="
-                margin: .35rem .75rem;
-                padding: .65rem .75rem;
-                border-radius: 10px;
-                border-left: 3px solid
-                    {% if ann.priority == 'danger' %}#d93025
-                    {% elif ann.priority == 'warning' %}#b45309
-                    {% elif ann.priority == 'success' %}#1a7f37
-                    {% else %}var(--accent){% endif %};
-                background: var(--btn-bg);
-                transition: background .15s;
-            ">
-                <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;">
-                    <span style="font-size:.82rem;font-weight:700;color:var(--text);
-                                 flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                        {% if ann.priority == 'danger' %}🔴{% elif ann.priority == 'warning' %}🟡{% elif ann.priority == 'success' %}🟢{% else %}🔵{% endif %}
+            <div class="rsb-ann rsb-ann--{{ ann.priority|default:'info' }}">
+                <div class="rsb-ann-head">
+                    <span class="rsb-ann-title">
+                        <i class="material-icons rsb-ann-dot" aria-hidden="true">circle</i>
                         {{ ann.title }}
                     </span>
                 </div>
-                <div style="font-size:.78rem;color:var(--text-muted);line-height:1.45;
-                             display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                <div class="rsb-ann-body">
                     {{ ann.content }}
                 </div>
-                <div style="font-size:.7rem;color:var(--text-muted);margin-top:.3rem;opacity:.7;">
+                <div class="rsb-ann-date">
                     {{ ann.start_date|date:"d/m/Y" }}
                 </div>
             </div>
             {% endfor %}
-            <a href="{% url 'landing' %}#announcements"
-               style="display:flex;align-items:center;justify-content:center;gap:.3rem;
-                      margin:.5rem .75rem .75rem;padding:.4rem;
-                      border:1.5px solid var(--border);border-radius:10px;
-                      color:var(--text-muted);font-size:.77rem;font-weight:600;
-                      text-decoration:none;transition:border-color .15s,color .15s;"
-               onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
-               onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">
-                <span class="material-icons" style="font-size:.85rem;">open_in_new</span>
+            <a href="{% url 'landing' %}#announcements" class="rsb-btn rsb-btn--outline rsb-btn--ann">
+                <span class="material-icons">open_in_new</span>
                 {% trans "See all" %}
             </a>
         </div>
@@ -693,7 +604,7 @@
             <a class="rsb-link" href="#">{% trans "Rules" %}</a>
             <a class="rsb-link" href="#">{% trans "About" %}</a>
             <br><br>
-            <span style="font-size:.72rem;color:var(--text-muted);">VAZIMBA © 2026</span>
+            <span class="rsb-copy">VAZIMBA © 2026</span>
         </div>
 
     </aside>
@@ -930,7 +841,7 @@ function sendReaction(postId, reactionType) {
                 icon.textContent = _REACT_EMOJIS[data.user_reaction];
                 icon.style.fontSize = '1.05rem';
             } else {
-                icon.innerHTML = '<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>';
+                icon.innerHTML = '<span class="material-icons">thumb_up_off_alt</span>';
             }
         }
         if (label) label.textContent = data.user_reaction ? (_REACT_LABELS[data.user_reaction] || _REACT_LABELS.like) : _REACT_LABELS.like;
@@ -1627,7 +1538,7 @@ function escHtml(str) {
                 a.className = 'feed-live-item';
                 var avatarHtml = r.host_avatar
                     ? '<img src="' + escH(r.host_avatar) + '" alt="">'
-                    : '<span class="material-icons" style="font-size:1.8rem;color:rgba(255,59,59,.4);flex-shrink:0;">account_circle</span>';
+                    : '<span class="material-icons feed-live-avatar-ph">account_circle</span>';
                 a.innerHTML = avatarHtml +
                     '<div class="feed-live-item-body">' +
                     '<div class="feed-live-item-user">' + escH(r.host) + '</div>' +
@@ -1661,7 +1572,7 @@ function escHtml(str) {
       </button>
     </div>
     <div id="rw-tabs"></div>
-    <div id="rw-list"><p style="color:var(--text-muted);font-size:.88rem;padding:.8rem .4rem;">Chargement…</p></div>
+    <div id="rw-list"><p class="rw-hint">Chargement…</p></div>
   </div>
 </div>
 
@@ -1679,7 +1590,7 @@ function escHtml(str) {
         _rwActive = '';
         document.getElementById('rw-modal').classList.add('open');
         document.getElementById('rw-list').innerHTML =
-            '<p style="color:var(--text-muted);font-size:.88rem;padding:.8rem .4rem;">Chargement…</p>';
+            '<p class="rw-hint">Chargement…</p>';
         document.getElementById('rw-tabs').innerHTML = '';
 
         fetch('/feed/' + postId + '/reactions/')
@@ -1696,7 +1607,7 @@ function escHtml(str) {
             .catch(function(err){
                 console.error('[reactions_who] fetch error:', err);
                 document.getElementById('rw-list').innerHTML =
-                    '<p style="color:var(--text-muted);padding:.8rem .4rem;">Erreur de chargement.</p>';
+                    '<p class="rw-hint">Erreur de chargement.</p>';
             });
     };
 
@@ -1730,7 +1641,7 @@ function escHtml(str) {
         var rows = type ? _rwRows.filter(function(r){ return r.reaction_type === type; }) : _rwRows;
 
         if (!rows.length) {
-            list.innerHTML = '<p style="color:var(--text-muted);font-size:.88rem;padding:.8rem .4rem;">Aucune réaction.</p>';
+            list.innerHTML = '<p class="rw-hint">Aucune réaction.</p>';
             return;
         }
 

@@ -134,3 +134,12 @@
     background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px;
 }
 .gp-empty .material-icons { font-size: 3rem; color: var(--border); display: block; margin-bottom: .8rem; }
+
+
+/* ── Styles sortis des attributs style="" de group_list.html (2026-11) ── */
+.gp-search-bar button .material-icons { font-size: 1.1rem; }
+.gp-search-clear { align-self: center; margin: 0; display: inline-flex; align-items: center; }
+.gp-search-clear .material-icons { font-size: 1rem; }
+.gp-tab-icon { font-size: 1rem; vertical-align: -3px; }
+.gp-cat-active-badge a .material-icons { font-size: .9rem; vertical-align: -2px; }
+.gp-btn--spaced { margin-top: 1rem; }

@@ -35,7 +35,7 @@ REGION_CHOICES = [
     ('diana',             'Diana · Antsiranana'),
     ('sava',              'Sava · Sambava'),
     # ── Hors Madagascar ─────────────────────────────────────────────────────
-    ('diaspora',          '🌍 Diaspora malgache'),
+    ('diaspora',          'Diaspora malgache'),
 ]
 
 # Dictionnaire slug → label (pour les templates et les vues)

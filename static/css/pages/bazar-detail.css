@@ -291,7 +291,15 @@
     top: 16px; right: 20px;
     color: #fff; font-size: 2rem; cursor: pointer; line-height: 1;
     background: none; border: none;
+    display: flex; align-items: center; justify-content: center;
 }
+#lightbox-close .material-icons { font-size: 2rem; }
+/* Message « image non disponible » (display basculé en JS) */
+.lb-error {
+    color: #fff; flex-direction: column; align-items: center;
+    gap: .75rem; font-size: .95rem; opacity: .7;
+}
+.lb-error-icon { font-size: 2.5rem; }
 .lb-nav-btn {
     position: absolute;
     top: 50%; transform: translateY(-50%);

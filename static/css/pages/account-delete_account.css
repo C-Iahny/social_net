@@ -1,0 +1,12 @@
+/* Page de suppression de compte (delete_account.html) et confirmation (delete_account_done.html).
+   Styles sortis des attributs style="" des gabarits (2026-11). */
+.del-page { max-width: 560px; margin: 5rem auto 3rem; padding: 0 1rem; }
+.del-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.6rem 1.4rem; box-shadow: var(--shadow);
+}
+.del-card .vz-dialog-head { margin-bottom: .8rem; }
+.del-card .vz-dialog-head .material-icons { color: var(--danger); }
+.del-card .vz-dialog-title { font-size: 1.25rem; }
+.del-card .vz-field-error { margin-bottom: .8rem; }
+.del-done { margin-top: 6rem; }

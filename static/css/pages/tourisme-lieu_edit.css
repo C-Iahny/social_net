@@ -39,24 +39,26 @@
     outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
 }
 .ls-textarea { resize: vertical; min-height: 100px; }
+.ls-textarea--tall  { min-height: 140px; }
+.ls-textarea--short { min-height: 80px; }
 .ls-row { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
 @media (max-width: 520px) { .ls-row { grid-template-columns: 1fr; } }
 .ls-error {
-    background: #fde8e8; color: var(--danger); border-radius: 9px;
+    background: rgba(var(--danger-rgb), .10); color: var(--danger); border-radius: var(--radius-sm);
     padding: .65rem .9rem; font-size: .85rem; margin-bottom: 1rem;
     display: flex; align-items: center; gap: .4rem;
 }
-[data-theme="dark"] .ls-error { background: #2d0a0a; color: #f87171; }
 .ls-error .material-icons { font-size: 1rem; }
 .ls-submit-btn {
     display: inline-flex; align-items: center; gap: .5rem;
-    background: var(--accent); color: #fff; border: none; border-radius: var(--radius);
+    background: var(--accent); color: var(--on-accent); border: none; border-radius: var(--radius);
     padding: .75rem 2rem; font-size: .95rem; font-weight: 700;
     cursor: pointer; transition: opacity .18s; width: 100%;
     justify-content: center; margin-top: .5rem;
   min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .ls-submit-btn:hover { opacity: .88; }
+.ls-submit-btn--spaced { margin-top: 1.2rem; }
 
 /* Photos existantes */
 .existing-images-grid {
@@ -78,7 +80,7 @@
 }
 .existing-img-item input[type=checkbox] { display: none; }
 .existing-img-item input[type=checkbox]:checked + label {
-    background: rgba(220,38,38,.6);
+    background: rgba(var(--danger-rgb), .6);
 }
 .existing-img-item input[type=checkbox]:checked + label .del-icon { opacity: 1; }
 .del-icon {
@@ -88,7 +90,7 @@
 .existing-img-item label:hover .del-icon { opacity: .7; }
 .existing-img-primary {
     position: absolute; top: 3px; left: 3px;
-    background: var(--accent); color: #fff;
+    background: var(--accent); color: var(--on-accent);
     font-size: .55rem; font-weight: 700; border-radius: 4px;
     padding: 1px 4px; line-height: 1.4;
 }

@@ -579,6 +579,8 @@
   border: 1.5px solid var(--border); background: var(--btn-bg); color: var(--text); font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer; white-space: nowrap;
 }
 .zsc-mchip.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.zsc-mchip { display: inline-flex; align-items: center; gap: .3rem; }
+.zsc-mchip .material-icons { font-size: 1rem; }
 .zsc-music-list { flex: 1; overflow-y: auto; min-height: 180px; padding: 0 .5rem .5rem; -webkit-overflow-scrolling: touch; }
 .zsc-track {
   display: flex; align-items: center; gap: .7rem; padding: .45rem .5rem; border-radius: 14px; cursor: pointer;
@@ -628,3 +630,49 @@
 /* ── Animations ───────────────────────────────────── */
 @keyframes zsSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes zsFadeIn  { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Barre : conteneur des vignettes ── */
+#zs-items { display: contents; }
+
+/* ── Viewer : bouton Signaler (display basculé par le JS) ── */
+#zsv-report-btn {
+  position: absolute; right: 56px; top: calc(14px + env(safe-area-inset-top, 0px)); z-index: 6;
+  background: rgba(0,0,0,.35); align-items: center; justify-content: center;
+}
+
+/* ── Viewer : liste des vues ── */
+.zsv-vhint { color: var(--text-muted); font-size: .88rem; margin: 0; }
+.zsv-vrow-body { flex: 1; min-width: 0; }
+.zsv-vrow-reply-icon .material-icons { font-size: 1rem; }
+
+/* ── Créateur : pastilles musique / produit (display basculé par le JS) ── */
+#zsc-audio-pill, #zsc-shop-chip { display: none; }
+
+/* ── Feuilles « groupe déjà vu » et « ma story » (construites en JS) ── */
+.zs-sheet-overlay {
+  position: fixed; inset: 0; z-index: 30000;
+  background: rgba(0,0,0,.55);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.zs-sheet {
+  background: var(--bg-card); color: var(--text);
+  border-radius: 22px 22px 0 0; width: min(100vw, 480px);
+  padding: 1.1rem 1.4rem calc(1.6rem + env(safe-area-inset-bottom, 0px));
+  animation: zsSlideUp .22s ease;
+}
+.zs-sheet-head { display: flex; align-items: center; gap: .7rem; margin-bottom: 1rem; }
+.zs-sheet-head b { display: block; }
+.zs-sheet-head small { color: var(--text-muted); }
+.zs-sheet-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border); }
+.zs-sheet-btn {
+  width: 100%; padding: .8rem; border: none; border-radius: 14px;
+  font-size: .95rem; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: .55rem;
+  font-family: var(--font-primary, sans-serif); margin-bottom: .65rem;
+  background: var(--btn-bg); color: var(--text);
+}
+.zs-sheet-btn--primary { background: var(--accent); color: var(--on-accent); }
+.zs-sheet-cancel {
+  width: 100%; padding: .55rem; background: none; color: var(--text-muted);
+  border: none; font-size: .88rem; cursor: pointer; font-family: var(--font-primary, sans-serif);
+}

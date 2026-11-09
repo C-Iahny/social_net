@@ -1,0 +1,4 @@
+/* Styles de page resto/vendor/dashboard.html — servis en statique (cache navigateur + service worker). */
+
+.rs-rname { font-size: 1.05rem; }
+.rs-pending-count { background: var(--on-accent); color: var(--accent); border-radius: var(--radius-pill); padding: 0 .45rem; margin-left: .2rem; font-size: .78rem; }

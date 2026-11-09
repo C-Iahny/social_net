@@ -19,8 +19,6 @@
         <!-- Logo desktop -->
         <img src="{% static 'logo/vazimba_v2_full.png' %}" alt="Vazimba"
              class="zoot-logo-desktop"
-             onmouseover="this.style.transform='scale(1.05)';this.style.opacity='.88'"
-             onmouseout="this.style.transform='';this.style.opacity='1'"
              onerror="this.remove();document.getElementById('zoot-wordmark').style.display='inline'">
         <!-- Logo mobile (compact) -->
         <img src="{% static 'logo/vazimba_v2_icon.png' %}" alt="Vazimba"
@@ -107,21 +105,21 @@
                 <a class="dropdown-item" href="{% url 'group:list' %}">
                     <span class="material-icons">groups</span> {% trans "Groupes" %}
                 </a>
-                <a class="dropdown-item" href="{% url 'video:live-list' %}" style="color:var(--danger);">
-                    <span class="material-icons" style="color:var(--danger);">radio_button_checked</span>
+                <a class="dropdown-item zoot-tint-danger" href="{% url 'video:live-list' %}">
+                    <span class="material-icons">radio_button_checked</span>
                     Live
-                    <span id="nav-live-count" style="background:var(--danger);color:#fff;font-size:.65rem;font-weight:800;padding:0 5px;border-radius:8px;min-width:16px;text-align:center;margin-left:auto;display:none;"></span>
+                    <span id="nav-live-count" class="zoot-live-count"></span>
                 </a>
 
                 <div class="dropdown-divider"></div>
 
                 <!-- Créer -->
                 <p class="zoot-dropdown-label">{% trans "Créer" %}</p>
-                <a class="dropdown-item" href="{% url 'post:kabary-create' %}" style="color:var(--accent);">
-                    <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
+                <a class="dropdown-item zoot-tint-accent" href="{% url 'post:kabary-create' %}">
+                    <span class="material-icons">record_voice_over</span> Kabary
                 </a>
-                <a class="dropdown-item" href="{% url 'post:vintana-create' %}" style="color:var(--vintana);">
-                    <span class="material-icons" style="color:var(--vintana);">lock_clock</span> Vintana
+                <a class="dropdown-item zoot-tint-vintana" href="{% url 'post:vintana-create' %}">
+                    <span class="material-icons">lock_clock</span> Vintana
                 </a>
 
             </div>
@@ -136,7 +134,7 @@
         {% if request.user.is_authenticated %}
 
         <!-- Search bar (desktop) + Live Dropdown -->
-        <div class="zoot-search-wrap d-none d-lg-flex" style="position:relative;">
+        <div class="zoot-search-wrap d-none d-lg-flex">
             <form class="zoot-search-form" method="GET" action="{% url 'recherche' %}" id="zoot-search-form" autocomplete="off">
                 <input type="text" name="q" id="zoot-search-input"
                        placeholder="{% trans 'Search...' %}" autocomplete="off"
@@ -146,49 +144,28 @@
                 <button type="submit" aria-label="{% trans 'Rechercher' %}"><span class="material-icons">search</span></button>
             </form>
             <!-- Live suggestion dropdown -->
-            <div id="zoot-search-dd" style="
-                display:none;
-                position:absolute;
-                top:calc(100% + 6px);
-                left:0;
-                min-width:280px;
-                max-width:360px;
-                background:var(--bg-card);
-                border:1px solid var(--border);
-                border-radius:14px;
-                box-shadow:0 12px 40px rgba(0,0,0,.2);
-                z-index:5000;
-                overflow:hidden;
-                animation:dropIn .18s ease;
-            "></div>
+            <div id="zoot-search-dd"></div>
         </div>
-
-        <style>
-        @keyframes livePulse {
-            0%,100% { box-shadow:0 0 0 0 rgba(255,59,59,.7); }
-            50%      { box-shadow:0 0 0 5px rgba(255,59,59,0); }
-        }
-        </style>
 
         <!-- Language switcher -->
         {% get_current_language as CURRENT_LANG %}
-        <div style="position:relative;">
+        <div class="zoot-lang-wrap">
             <button class="zoot-lang-btn" id="zoot-lang-toggle" onclick="document.getElementById('zoot-lang-dd').classList.toggle('open');event.stopPropagation();" title="{% trans 'Language' %}" type="button">
-                <span class="material-icons" style="font-size:1.1rem;" aria-hidden="true">translate</span>
+                <span class="material-icons" aria-hidden="true">translate</span>
                 <span class="lang-code">{{ CURRENT_LANG|upper }}</span>
-                <span class="material-icons" style="font-size:.85rem;opacity:.6">expand_more</span>
+                <span class="material-icons zoot-lang-caret" aria-hidden="true">expand_more</span>
             </button>
             <div class="zoot-lang-dropdown" id="zoot-lang-dd">
                 {% get_available_languages as LANGUAGES %}
                 {% for lang_code, lang_name in LANGUAGES %}
-                <form method="post" action="{% url 'set_language' %}" style="margin:0;padding:0;">
+                <form method="post" action="{% url 'set_language' %}" class="zoot-lang-form">
                     {% csrf_token %}
                     <input type="hidden" name="language" value="{{ lang_code }}">
                     <input type="hidden" name="next" value="{{ request.get_full_path }}">
                     <button type="submit" class="lang-option {% if CURRENT_LANG == lang_code %}active{% endif %}">
                         <span class="lang-flag lang-code-badge">{{ lang_code|upper }}</span>
                         <span>{% if lang_code == 'fr' %}Français{% elif lang_code == 'en' %}English{% else %}Malagasy{% endif %}</span>
-                        {% if CURRENT_LANG == lang_code %}<span class="material-icons" style="font-size:.9rem;margin-left:auto;color:var(--accent)">check</span>{% endif %}
+                        {% if CURRENT_LANG == lang_code %}<span class="material-icons lang-check" aria-hidden="true">check</span>{% endif %}
                     </button>
                 </form>
                 {% endfor %}
@@ -197,13 +174,13 @@
 
         <!-- Recherche (mobile uniquement — masqué sur desktop par CSS) -->
         <a href="{% url 'search' %}?q=" class="zoot-icon-btn zoot-mobile-search-btn"
-           style="display:none;" title="{% trans 'Search' %}">
+           title="{% trans 'Search' %}">
             <span class="material-icons">search</span>
         </a>
 
         <!-- Theme toggle (desktop — masqué sur mobile par CSS) -->
         <button id="theme-toggle-btn" onclick="toggleTheme()" class="zoot-icon-btn" title="{% trans 'Dark mode' %}" type="button">
-            <span class="material-icons" style="font-size:1.25rem">dark_mode</span>
+            <span class="material-icons">dark_mode</span>
         </button>
 
         <!-- Chat notifications -->
@@ -244,7 +221,7 @@
                         <span class="material-icons">notifications</span>
                         Notifications
                     </span>
-                    <button type="button" class="zoot-dropdown-header-link" onclick="setGeneralNotificationsAsRead();event.stopPropagation();" style="background:none;border:0;padding:0;font:inherit;cursor:pointer;">
+                    <button type="button" class="zoot-dropdown-header-link" onclick="setGeneralNotificationsAsRead();event.stopPropagation();">
                         {% trans "Tout marquer lu" %}
                     </button>
                     <a href="{% url 'notification:journal' %}" class="zoot-dropdown-header-link">
@@ -265,7 +242,7 @@
                 <img src="{{ request.user.profile_image.url }}" alt="profil">
                 <span class="material-icons zoot-avatar-caret">expand_more</span>
             </div>
-            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="id_profile_links" style="min-width:260px;">
+            <div class="dropdown-menu dropdown-menu-right zoot-profile-menu" aria-labelledby="id_profile_links">
 
                 <!-- Bandeau gradient + avatar -->
                 <div class="zoot-profile-banner"></div>
@@ -321,19 +298,16 @@
 
                 <!-- Créer -->
                 <p class="zoot-dropdown-label">{% trans "Créer" %}</p>
-                <a class="dropdown-item" href="{% url 'post:kabary-create' %}"
-                   style="color:var(--accent);">
-                    <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
+                <a class="dropdown-item zoot-tint-accent" href="{% url 'post:kabary-create' %}">
+                    <span class="material-icons">record_voice_over</span> Kabary
                 </a>
-                <a class="dropdown-item" href="{% url 'post:vintana-create' %}"
-                   style="color:var(--vintana);">
-                    <span class="material-icons" style="color:var(--vintana);">lock_clock</span> Vintana
+                <a class="dropdown-item zoot-tint-vintana" href="{% url 'post:vintana-create' %}">
+                    <span class="material-icons">lock_clock</span> Vintana
                 </a>
                 <!-- Live -->
-                <a class="dropdown-item" href="{% url 'video:live-list' %}"
-                   id="nav-live-btn"
-                   style="color:var(--danger);">
-                    <span class="material-icons" style="color:var(--danger);">radio_button_checked</span>
+                <a class="dropdown-item zoot-tint-danger" href="{% url 'video:live-list' %}"
+                   id="nav-live-btn">
+                    <span class="material-icons">radio_button_checked</span>
                     Live
                 </a>
 
@@ -346,8 +320,7 @@
                 </a>
                 <!-- Push notifications toggle -->
                 <button class="dropdown-item" id="push-notif-btn"
-                        onclick="togglePushNotif()" type="button"
-                        style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
+                        onclick="togglePushNotif()" type="button">
                     <span class="material-icons" id="push-notif-icon">notifications_none</span>
                     <span id="push-notif-label">{% trans "Activer les notifications" %}</span>
                 </button>
@@ -359,32 +332,23 @@
 
                 <!-- Affichage & Langue (accessibles ici car masqués de la top nav sur mobile) -->
                 <p class="zoot-dropdown-label">{% trans "Display" %} &amp; {% trans "Language" %}</p>
-                <button class="dropdown-item" onclick="_vzb_closeDropdown(this); toggleTheme();" type="button"
-                        style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
+                <button class="dropdown-item" onclick="_vzb_closeDropdown(this); toggleTheme();" type="button">
                     <span class="material-icons" id="dd-theme-icon">dark_mode</span>
                     <span id="dd-theme-label">{% trans "Dark mode" %}</span>
                 </button>
                 <!-- Mode économie de données -->
-                <button class="dropdown-item" onclick="_vzb_closeDropdown(this); toggleDataSaver()" type="button"
-                        style="background:none;border:none;width:100%;text-align:left;cursor:pointer;">
-                    <span class="material-icons" id="dd-datasaver-icon" style="color:var(--text-muted);">data_saver_off</span>
+                <button class="dropdown-item" onclick="_vzb_closeDropdown(this); toggleDataSaver()" type="button">
+                    <span class="material-icons" id="dd-datasaver-icon">data_saver_off</span>
                     <span id="dd-datasaver-label">{% trans "Mode économie" %}</span>
                 </button>
                 <!-- Sélecteur de langue compact -->
-                <div style="display:flex;gap:.4rem;padding:.3rem .85rem .65rem;flex-wrap:wrap;">
+                <div class="zoot-dd-langs">
                     {% for lang_code, lang_name in LANGUAGES %}
-                    <form method="post" action="{% url 'set_language' %}" style="margin:0;padding:0;">
+                    <form method="post" action="{% url 'set_language' %}" class="zoot-lang-form">
                         {% csrf_token %}
                         <input type="hidden" name="language" value="{{ lang_code }}">
                         <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                        <button type="submit" style="
-                            border:1.5px solid {% if CURRENT_LANG == lang_code %}var(--accent){% else %}var(--border){% endif %};
-                            border-radius:20px;padding:.28rem .65rem;
-                            background:{% if CURRENT_LANG == lang_code %}var(--accent-glow){% else %}var(--btn-bg){% endif %};
-                            font-size:.82rem;font-weight:700;cursor:pointer;
-                            color:{% if CURRENT_LANG == lang_code %}var(--accent){% else %}var(--text){% endif %};
-                            display:inline-flex;align-items:center;gap:.3rem;font-family:inherit;
-                        ">
+                        <button type="submit" class="zoot-dd-lang-btn{% if CURRENT_LANG == lang_code %} active{% endif %}">
                             <span>{% if lang_code == 'fr' %}Français{% elif lang_code == 'en' %}English{% else %}Malagasy{% endif %}</span>
                         </button>
                     </form>
@@ -401,11 +365,10 @@
 
         {% else %}
         <!-- Visiteur non connecté -->
-        <a class="zoot-nav-link zoot-anon-login" href="{% url 'login' %}" style="text-transform:none;font-size:.9rem;min-width:auto;">
+        <a class="zoot-nav-link zoot-anon-login" href="{% url 'login' %}">
             {% trans "Connexion" %}
         </a>
-        <a href="{% url 'register' %}" class="zoot-anon-signup"
-           style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:22px;padding:.45rem 1.2rem;font-size:.9rem;font-weight:700;text-decoration:none;white-space:nowrap;transition:opacity .2s,box-shadow .2s;font-family:var(--font-primary,'Space Grotesk',sans-serif);">
+        <a href="{% url 'register' %}" class="zoot-anon-signup">
             {% trans "S'inscrire" %}
         </a>
 
@@ -426,7 +389,7 @@
 <div class="zoot-mobile-menu" id="zoot-mobile-menu">
     <form class="zoot-mobile-search" method="GET" action="{% url 'search' %}">
         <input type="text" name="q" placeholder="{% trans 'Search...' %}" autocomplete="off">
-        <button type="submit" aria-label="{% trans 'Rechercher' %}"><span class="material-icons" style="font-size:1.1rem;color:var(--text-muted)">search</span></button>
+        <button type="submit" aria-label="{% trans 'Rechercher' %}"><span class="material-icons">search</span></button>
     </form>
 
     <!-- Accueil & Bazar -->
@@ -440,8 +403,8 @@
         <span class="material-icons">restaurant</span> Resto
     </a>
 
-    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
-    <p style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.2rem .8rem 0;margin:0;">{% trans "Découvrir" %}</p>
+    <div class="zoot-mobile-sep"></div>
+    <p class="zoot-mobile-label">{% trans "Découvrir" %}</p>
     <a href="{% url 'post:index' %}" class="zoot-mobile-link">
         <span class="material-icons">explore</span> {% trans "Explore" %}
     </a>
@@ -452,30 +415,30 @@
         <span class="material-icons">map</span> {% trans "Tourisme" %}
     </a>
 
-    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
-    <p style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.2rem .8rem 0;margin:0;">{% trans "Communauté" %}</p>
+    <div class="zoot-mobile-sep"></div>
+    <p class="zoot-mobile-label">{% trans "Communauté" %}</p>
     <a href="{% url 'group:list' %}" class="zoot-mobile-link">
         <span class="material-icons">groups</span> {% trans "Groupes" %}
     </a>
-    <a href="{% url 'video:live-list' %}" class="zoot-mobile-link" style="color:var(--danger);">
-        <span class="material-icons" style="color:var(--danger);">radio_button_checked</span> Live
+    <a href="{% url 'video:live-list' %}" class="zoot-mobile-link zoot-tint-danger">
+        <span class="material-icons">radio_button_checked</span> Live
     </a>
 
-    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
-    <p style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.2rem .8rem 0;margin:0;">{% trans "Créer" %}</p>
-    <a href="{% url 'post:kabary-create' %}" class="zoot-mobile-link" style="color:var(--accent);">
-        <span class="material-icons" style="color:var(--accent);">record_voice_over</span> Kabary
+    <div class="zoot-mobile-sep"></div>
+    <p class="zoot-mobile-label">{% trans "Créer" %}</p>
+    <a href="{% url 'post:kabary-create' %}" class="zoot-mobile-link zoot-tint-accent">
+        <span class="material-icons">record_voice_over</span> Kabary
     </a>
-    <a href="{% url 'post:vintana-create' %}" class="zoot-mobile-link" style="color:var(--vintana);">
-        <span class="material-icons" style="color:var(--vintana);">lock_clock</span> Vintana
+    <a href="{% url 'post:vintana-create' %}" class="zoot-mobile-link zoot-tint-vintana">
+        <span class="material-icons">lock_clock</span> Vintana
     </a>
 
-    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
+    <div class="zoot-mobile-sep"></div>
     <a href="{% url 'account:view' user_id=request.user.id %}" class="zoot-mobile-link">
         <span class="material-icons">person_outline</span> {% trans "My profile" %}
     </a>
-    <a href="{% url 'logout' %}" class="zoot-mobile-link" style="color:var(--danger);">
-        <span class="material-icons" style="color:var(--danger);">logout</span> {% trans "Logout" %}
+    <a href="{% url 'logout' %}" class="zoot-mobile-link zoot-tint-danger">
+        <span class="material-icons">logout</span> {% trans "Logout" %}
     </a>
 </div>
 {% else %}
@@ -495,13 +458,13 @@
         <span class="material-icons">groups</span> {% trans "Groupes" %}
     </a>
 
-    <div style="border-top:1px solid var(--border);margin:.3rem 0;"></div>
+    <div class="zoot-mobile-sep"></div>
 
     <a href="{% url 'login' %}" class="zoot-mobile-link">
         <span class="material-icons">login</span> {% trans "Connexion" %}
     </a>
-    <a href="{% url 'register' %}" class="zoot-mobile-link" style="color:var(--accent);font-weight:700;">
-        <span class="material-icons" style="color:var(--accent);">person_add</span> {% trans "S'inscrire" %}
+    <a href="{% url 'register' %}" class="zoot-mobile-link zoot-tint-accent zoot-mobile-signup">
+        <span class="material-icons">person_add</span> {% trans "S'inscrire" %}
     </a>
 </div>
 {% endif %}
@@ -652,8 +615,8 @@
             toast.innerHTML =
                 '<img class="zoot-toast-avatar" src="' + hostImage + '" alt="">' +
                 '<div class="zoot-toast-body">' +
-                    '<div class="zoot-toast-user" style="display:flex;align-items:center;gap:6px;">' +
-                        '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f44336;flex-shrink:0;"></span>' +
+                    '<div class="zoot-toast-user zoot-toast-user--live">' +
+                        '<span class="zoot-live-dot"></span>' +
                         '<strong>' + hostUsername + '</strong> est en live !' +
                     '</div>' +
                     '<div class="zoot-toast-msg">' + liveTitle + '</div>' +
@@ -778,36 +741,31 @@ document.addEventListener('click', function(e) {
 
         if (!hasResults) { dd.style.display = 'none'; return; }
 
-        var html = '<div style="padding:.5rem 0;">';
+        var html = '<div class="srdd-body">';
 
         // Users
         if (data.users && data.users.length) {
-            html += '<div style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.3rem .9rem .2rem;">Utilisateurs</div>';
+            html += '<div class="srdd-label">Utilisateurs</div>';
             data.users.forEach(function(u) {
                 var avatarHtml = u.avatar
-                    ? '<img src="' + u.avatar + '" width="32" height="32" style="border-radius:50%;object-fit:cover;border:2px solid var(--border);" loading="lazy" alt="">'
-                    : '<span class="material-icons" style="font-size:1.6rem;color:var(--text-muted);">account_circle</span>';
-                html += '<a href="/account/' + u.id + '/" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.45rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
-                      + ' onmouseover="this.style.background=\'var(--btn-bg)\'"'
-                      + ' onmouseout="this.style.background=\'none\'">'
-                      + '<div style="width:32px;height:32px;flex-shrink:0;overflow:hidden;border-radius:50%;">' + avatarHtml + '</div>'
+                    ? '<img src="' + u.avatar + '" width="32" height="32" class="srdd-avatar" loading="lazy" alt="">'
+                    : '<span class="material-icons srdd-avatar-ph">account_circle</span>';
+                html += '<a href="/account/' + u.id + '/" class="srdd-item">'
+                      + '<div class="srdd-avatar-wrap">' + avatarHtml + '</div>'
                       + '<div>'
-                      + '<div style="font-weight:700;font-size:.88rem;">@' + escH(u.username) + '</div>'
+                      + '<div class="srdd-title srdd-title--user">@' + escH(u.username) + '</div>'
                       + '</div></a>';
             });
         }
 
         // Hashtags
         if (data.hashtags && data.hashtags.length) {
-            html += '<div style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.5rem .9rem .2rem;">Hashtags</div>';
-            html += '<div style="display:flex;flex-wrap:wrap;gap:.35rem;padding:.2rem .9rem .45rem;">';
+            html += '<div class="srdd-label">Hashtags</div>';
+            html += '<div class="srdd-tags">';
             data.hashtags.forEach(function(ht) {
-                html += '<a href="/feed/hashtag/' + encodeURIComponent(ht.tag.slice(1)) + '/"'
-                      + ' style="display:inline-flex;align-items:center;gap:.25rem;padding:.25rem .65rem;background:var(--btn-bg);border:1px solid var(--border);border-radius:20px;text-decoration:none;color:var(--accent);font-weight:700;font-size:.82rem;"'
-                      + ' onmouseover="this.style.background=\'var(--accent)\';this.style.color=\'#fff\'"'
-                      + ' onmouseout="this.style.background=\'var(--btn-bg)\';this.style.color=\'var(--accent)\'">'
+                html += '<a href="/feed/hashtag/' + encodeURIComponent(ht.tag.slice(1)) + '/" class="srdd-tag">'
                       + escH(ht.tag)
-                      + '<span style="font-size:.72rem;opacity:.7;">' + ht.count + '</span>'
+                      + '<span class="srdd-tag-count">' + ht.count + '</span>'
                       + '</a>';
             });
             html += '</div>';
@@ -815,41 +773,37 @@ document.addEventListener('click', function(e) {
 
         // Annonces bazar
         if (data.annonces && data.annonces.length) {
-            html += '<div style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.4rem .9rem .2rem;">Bazar</div>';
+            html += '<div class="srdd-label">Bazar</div>';
             data.annonces.forEach(function(a) {
                 var thumb = a.img
-                    ? '<img src="' + a.img + '" width="36" height="36" style="border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;" loading="lazy" alt="">'
-                    : '<span class="material-icons" style="font-size:1.4rem;color:var(--text-muted);flex-shrink:0;">storefront</span>';
-                html += '<a href="/bazar/' + a.id + '/" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
-                      + ' onmouseover="this.style.background=\'var(--btn-bg)\'"'
-                      + ' onmouseout="this.style.background=\'none\'">'
+                    ? '<img src="' + a.img + '" width="36" height="36" class="srdd-thumb" loading="lazy" alt="">'
+                    : '<span class="material-icons srdd-thumb-ph">storefront</span>';
+                html += '<a href="/bazar/' + a.id + '/" class="srdd-item">'
                       + thumb
-                      + '<div style="flex:1;min-width:0;">'
-                      + '<div style="font-size:.87rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escH(a.title) + '</div>'
-                      + (a.price ? '<div style="font-size:.75rem;color:var(--accent);font-weight:700;">' + escH(a.price) + '</div>' : '')
+                      + '<div class="srdd-text">'
+                      + '<div class="srdd-title">' + escH(a.title) + '</div>'
+                      + (a.price ? '<div class="srdd-price">' + escH(a.price) + '</div>' : '')
                       + '</div></a>';
             });
         }
 
         // Posts
         if (data.posts && data.posts.length) {
-            html += '<div style="font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:.4rem .9rem .2rem;">Publications</div>';
+            html += '<div class="srdd-label">Publications</div>';
             data.posts.forEach(function(p) {
-                html += '<a href="/feed/' + p.id + '/" class="_srdd-item" style="display:flex;align-items:center;gap:.65rem;padding:.4rem .9rem;text-decoration:none;color:var(--text);transition:background .1s;"'
-                      + ' onmouseover="this.style.background=\'var(--btn-bg)\'"'
-                      + ' onmouseout="this.style.background=\'none\'">'
-                      + '<span class="material-icons" style="font-size:1.1rem;color:var(--accent2);">article</span>'
-                      + '<div style="flex:1;min-width:0;">'
-                      + '<div style="font-size:.87rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escH(p.title) + '</div>'
-                      + '<div style="font-size:.75rem;color:var(--text-muted);">@' + escH(p.author) + '</div>'
+                html += '<a href="/feed/' + p.id + '/" class="srdd-item">'
+                      + '<span class="material-icons srdd-post-icon">article</span>'
+                      + '<div class="srdd-text">'
+                      + '<div class="srdd-title">' + escH(p.title) + '</div>'
+                      + '<div class="srdd-sub">@' + escH(p.author) + '</div>'
                       + '</div></a>';
             });
         }
 
         // View all link
-        html += '<div style="border-top:1px solid var(--border);padding:.45rem .9rem .35rem;">'
-              + '<a href="/recherche/?q=' + encodeURIComponent(q) + '" style="font-size:.82rem;font-weight:700;color:var(--accent);text-decoration:none;">'
-              + '<span class="material-icons" style="font-size:.9rem;vertical-align:middle;">search</span>'
+        html += '<div class="srdd-foot">'
+              + '<a href="/recherche/?q=' + encodeURIComponent(q) + '" class="srdd-all">'
+              + '<span class="material-icons">search</span>'
               + ' Voir tous les résultats</a></div>';
 
         html += '</div>';
@@ -953,7 +907,7 @@ document.addEventListener('click', function(e) {
         } else if (Notification.permission === 'denied') {
             if (icon)  icon.textContent  = 'notifications_off';
             if (label) label.textContent = 'Notifications bloquées';
-            icon.style.color = '#e53935';
+            icon.style.color = 'var(--danger)';
         } else {
             if (icon)  icon.textContent  = 'notifications_none';
             if (label) label.textContent = 'Activer les notifications';
@@ -1016,45 +970,33 @@ document.addEventListener('click', function(e) {
      Activé par le NotificationConsumer quand msg_type == 5 (CALL_OFFER)
      et que l'utilisateur n'est pas déjà dans la chat room.
      ══════════════════════════════════════════════════════════════════════ -->
-<div id="gco-overlay" style="
-    display:none; position:fixed; inset:0;
-    background:rgba(0,0,0,.88);
-    z-index:999999;
-    flex-direction:column; align-items:center; justify-content:center;
-    gap:1.8rem; padding:2rem;
-">
+<div id="gco-overlay">
     <!-- Cercles pulsants derrière l'avatar -->
-    <div style="position:relative;width:96px;height:96px;display:flex;align-items:center;justify-content:center;">
-        <div id="gco-pulse" style="
-            position:absolute;inset:0;border-radius:50%;
-            background:rgba(255,255,255,.12);
-            animation:gcoPulse 1.4s ease-out infinite;
-        "></div>
-        <img id="gco-img" src="" alt=""
-             style="width:80px;height:80px;border-radius:50%;object-fit:cover;
-                    border:3px solid #fff;position:relative;z-index:1;">
+    <div class="gco-avatar-wrap">
+        <div id="gco-pulse"></div>
+        <img id="gco-img" src="" alt="">
     </div>
     <!-- Infos appelant -->
-    <div style="text-align:center;color:#fff;">
-        <p id="gco-name" style="font-size:1.25rem;font-weight:800;margin:0 0 .3rem;"></p>
-        <p id="gco-type" style="font-size:.9rem;color:#ccc;margin:0;display:flex;align-items:center;justify-content:center;gap:.35rem;">
-            <span id="gco-icon" class="material-icons" style="font-size:1.1rem;">call</span>
+    <div class="gco-info">
+        <p id="gco-name"></p>
+        <p id="gco-type">
+            <span id="gco-icon" class="material-icons">call</span>
             <span id="gco-type-text">Appel entrant</span>
         </p>
     </div>
     <!-- Boutons Rejeter / Accepter -->
-    <div style="display:flex;gap:2.5rem;align-items:center;">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem;">
-            <button type="button" onclick="_gcoReject()" class="vz-btn vz-btn--icon vz-btn--lg vz-btn--danger" aria-label="{% trans 'Refuser' %}" style="box-shadow:0 4px 18px rgba(var(--danger-rgb),.5);">
-                <span class="material-icons" style="font-size:1.8rem;">call_end</span>
+    <div class="gco-actions">
+        <div class="gco-action">
+            <button type="button" onclick="_gcoReject()" class="vz-btn vz-btn--icon vz-btn--lg vz-btn--danger gco-reject" aria-label="{% trans 'Refuser' %}">
+                <span class="material-icons">call_end</span>
             </button>
-            <span style="color:#ccc;font-size:.75rem;">{% trans "Refuser" %}</span>
+            <span class="gco-action-label">{% trans "Refuser" %}</span>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem;">
-            <button type="button" onclick="_gcoAccept()" class="vz-btn vz-btn--icon vz-btn--lg vz-btn--success" aria-label="{% trans 'Répondre' %}" style="box-shadow:0 4px 18px rgba(var(--success-rgb),.5);animation:gcoBounce .6s ease-in-out infinite alternate;">
-                <span id="gco-accept-icon" class="material-icons" style="font-size:1.8rem;">call</span>
+        <div class="gco-action">
+            <button type="button" onclick="_gcoAccept()" class="vz-btn vz-btn--icon vz-btn--lg vz-btn--success gco-accept" aria-label="{% trans 'Répondre' %}">
+                <span id="gco-accept-icon" class="material-icons">call</span>
             </button>
-            <span style="color:#ccc;font-size:.75rem;">{% trans "Répondre" %}</span>
+            <span class="gco-action-label">{% trans "Répondre" %}</span>
         </div>
     </div>
 </div>

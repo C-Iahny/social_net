@@ -4,50 +4,51 @@
 
 {% block content %}
 {% include 'resto/_style.html' %}
-<div class="rs-wrap" style="max-width:820px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0 1rem;">
-        <h1 style="font-size:1.4rem;font-weight:800;margin:0;">🛵 {% trans "Espace livreur" %}</h1>
-        <a class="rs-btn sm ghost" href="{% url 'resto:courier_signup' %}">⚙️ {% trans "Mon profil" %}</a>
+<link rel="stylesheet" href="{% static 'css/pages/resto-courier_dashboard.css' %}">
+<div class="rs-wrap rs-wrap--lg">
+    <div class="rs-page-head">
+        <h1 class="rs-h1"><i class="material-icons" aria-hidden="true">delivery_dining</i> {% trans "Espace livreur" %}</h1>
+        <a class="vz-btn vz-btn--sm vz-btn--muted" href="{% url 'resto:courier_signup' %}"><i class="material-icons" aria-hidden="true">settings</i> {% trans "Mon profil" %}</a>
     </div>
 
-    <div class="rs-card" style="padding:1rem;margin-bottom:1rem;">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;">
+    <div class="rs-card rs-card--pad rs-card--mb">
+        <div class="rs-between">
             <div>
                 <strong>{{ courier.display_name }}</strong> {% include 'resto/_courier_badge.html' with level=level %} {% include 'resto/_rating.html' with r=rating show_empty=1 %} · {{ courier.get_vehicle_display }}
-                {% if courier.restaurant %}· 🏪 {{ courier.restaurant.name }}{% else %}· {% trans "Indépendant" %}{% endif %}
-                {% if not courier.is_approved %}<span class="rs-badge pending">{% trans "En attente de validation" %}</span>{% endif %}
-                <div class="rs-muted" id="rs-gps-status">📍 {% trans "GPS inactif" %}</div>
+                {% if courier.restaurant %}· <i class="material-icons rs-ico" aria-hidden="true">storefront</i> {{ courier.restaurant.name }}{% else %}· {% trans "Indépendant" %}{% endif %}
+                {% if not courier.is_approved %}<span class="vz-chip vz-chip--sm vz-chip--static vz-chip--warning">{% trans "En attente de validation" %}</span>{% endif %}
+                <div class="rs-muted" id="rs-gps-status"><i class="material-icons rs-ico" aria-hidden="true">place</i> {% trans "GPS inactif" %}</div>
                 {% if courier.profile_completion < 100 %}
-                <div style="margin-top:.4rem;font-size:.82rem;">
+                <div class="rs-small-block">
                     <span class="rs-muted">{% trans "Profil de confiance" %} : <strong>{{ courier.profile_completion }} %</strong></span>
-                    <div style="height:6px;background:var(--border);border-radius:4px;margin-top:.2rem;max-width:260px;"><div style="height:6px;width:{{ courier.profile_completion }}%;background:var(--accent);border-radius:4px;"></div></div>
-                    <a href="{% url 'resto:courier_signup' %}" style="color:var(--accent);">{% trans "Compléter mon profil (photo, CIN, garant…) pour être vérifié" %} →</a>
+                    <div class="rs-progress"><div class="rs-progress-bar" style="width:{{ courier.profile_completion }}%"></div></div>
+                    <a href="{% url 'resto:courier_signup' %}" class="rs-link">{% trans "Compléter mon profil (photo, CIN, garant…) pour être vérifié" %} <i class="material-icons rs-ico" aria-hidden="true">arrow_forward</i></a>
                 </div>
                 {% endif %}
-                <a href="{% url 'resto:courier_profile' courier.user.username %}" class="rs-muted" style="display:inline-block;margin-top:.3rem;text-decoration:underline;">👁 {% trans "Voir mon profil public" %}</a>
+                <a href="{% url 'resto:courier_profile' courier.user.username %}" class="rs-muted rs-link--muted"><i class="material-icons rs-ico" aria-hidden="true">visibility</i> {% trans "Voir mon profil public" %}</a>
             </div>
             <form method="post" action="{% url 'resto:courier_toggle' %}">{% csrf_token %}
-                <button class="rs-btn {% if courier.is_available %}ghost{% endif %}" type="submit">{% if courier.is_available %}⏸ {% trans "Me mettre indisponible" %}{% else %}▶ {% trans "Je suis disponible" %}{% endif %}</button>
+                <button class="vz-btn {% if courier.is_available %}vz-btn--muted{% else %}vz-btn--primary{% endif %}" type="submit">{% if courier.is_available %}<i class="material-icons" aria-hidden="true">pause</i> {% trans "Me mettre indisponible" %}{% else %}<i class="material-icons" aria-hidden="true">play_arrow</i> {% trans "Je suis disponible" %}{% endif %}</button>
             </form>
         </div>
     </div>
 
-    <h2 class="rs-section-title" style="margin-top:.4rem;">🔥 {% trans "Mes livraisons en cours" %}</h2>
+    <h2 class="rs-section-title rs-section-title--first"><i class="material-icons" aria-hidden="true">local_fire_department</i> {% trans "Mes livraisons en cours" %}</h2>
     {% for o in orders %}
-    <div class="rs-card" style="padding:.9rem;margin-bottom:.7rem;border-color:var(--accent);">
-        <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
-            <a href="{% url 'resto:order' o.number %}" style="font-weight:800;color:var(--accent);">{{ o.number }}</a>
-            <span class="rs-badge status">{{ o.get_status_display }}</span>
+    <div class="rs-card rs-card--pad-sm rs-card--mb-sm rs-card--hl">
+        <div class="rs-between">
+            <a href="{% url 'resto:order' o.number %}" class="rs-link--xb">{{ o.number }}</a>
+            <span class="vz-chip vz-chip--sm vz-chip--static vz-chip--soft">{{ o.get_status_display }}</span>
         </div>
-        <div style="font-size:.88rem;margin:.4rem 0;">
-            <div>🏪 <strong>{{ o.restaurant.name }}</strong> — {{ o.pickup_address }}{% if o.restaurant.phone %} · 📞 <a href="tel:{{ o.restaurant.phone }}">{{ o.restaurant.phone }}</a>{% endif %}</div>
-            <div>🏠 <strong>{{ o.customer_name }}</strong> {% include 'resto/_rating.html' with r=o.customer_rating %} — {{ o.delivery_address }} · 📞 <a href="tel:{{ o.customer_phone }}">{{ o.customer_phone }}</a></div>
+        <div class="rs-body-sm">
+            <div><i class="material-icons rs-ico" aria-hidden="true">storefront</i> <strong>{{ o.restaurant.name }}</strong> — {{ o.pickup_address }}{% if o.restaurant.phone %} · <i class="material-icons rs-ico" aria-hidden="true">call</i> <a href="tel:{{ o.restaurant.phone }}">{{ o.restaurant.phone }}</a>{% endif %}</div>
+            <div><i class="material-icons rs-ico" aria-hidden="true">home</i> <strong>{{ o.customer_name }}</strong> {% include 'resto/_rating.html' with r=o.customer_rating %} — {{ o.delivery_address }} · <i class="material-icons rs-ico" aria-hidden="true">call</i> <a href="tel:{{ o.customer_phone }}">{{ o.customer_phone }}</a></div>
             <div class="rs-muted">{{ o.items.count }} {% trans "article(s)" %} · {{ o.formatted_total }} · {{ o.get_payment_method_display }}</div>
         </div>
-        <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
-            {% if o.delivery_latitude %}<a class="rs-btn sm secondary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination={{ o.delivery_latitude }},{{ o.delivery_longitude }}">🧭 {% trans "Itinéraire" %}</a>{% endif %}
+        <div class="rs-actions rs-actions--sm">
+            {% if o.delivery_latitude %}<a class="vz-btn vz-btn--sm vz-btn--secondary" target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination={{ o.delivery_latitude }},{{ o.delivery_longitude }}"><i class="material-icons" aria-hidden="true">directions</i> {% trans "Itinéraire" %}</a>{% endif %}
             {% for code, label in o.next_steps %}
-            <form method="post" action="{% url 'resto:order_set_status' o.number %}" {% if code == 'delivered' %}data-vz-confirm="{% trans 'Confirmer : la commande a bien été remise ?' %}"{% endif %}>{% csrf_token %}<input type="hidden" name="status" value="{{ code }}"><input type="hidden" name="next" value="{% url 'resto:courier_dashboard' %}"><button class="rs-btn {% if code == 'delivering' %}secondary{% endif %}" type="submit">{{ label }}</button></form>
+            <form method="post" action="{% url 'resto:order_set_status' o.number %}" {% if code == 'delivered' %}data-vz-confirm="{% trans 'Confirmer : la commande a bien été remise ?' %}"{% endif %}>{% csrf_token %}<input type="hidden" name="status" value="{{ code }}"><input type="hidden" name="next" value="{% url 'resto:courier_dashboard' %}"><button class="vz-btn {% if code == 'delivering' %}vz-btn--secondary{% else %}vz-btn--primary{% endif %}" type="submit">{{ label }}</button></form>
             {% endfor %}
         </div>
     </div>
@@ -55,22 +56,22 @@
     <p class="rs-muted">{% trans "Aucune livraison en cours." %}</p>
     {% endfor %}
 
-    <h2 class="rs-section-title">🆕 {% trans "Commandes prêtes à récupérer" %}</h2>
+    <h2 class="rs-section-title"><i class="material-icons" aria-hidden="true">fiber_new</i> {% trans "Commandes prêtes à récupérer" %}</h2>
     {% for o in available %}
-    <div class="rs-card" style="padding:.9rem;margin-bottom:.7rem;">
-        <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
+    <div class="rs-card rs-card--pad-sm rs-card--mb-sm">
+        <div class="rs-between">
             <strong>{{ o.restaurant.name }}</strong><span class="rs-muted">{{ o.ready_at|date:"H:i" }}</span>
         </div>
-        <div style="font-size:.88rem;margin:.3rem 0;">📍 {{ o.pickup_address }} → 🏠 {{ o.delivery_address }} · {{ o.items.count }} {% trans "article(s)" %} · {{ o.formatted_total }} · 👤 {{ o.customer_name }} {% include 'resto/_rating.html' with r=o.customer_rating %}</div>
-        <form method="post" action="{% url 'resto:courier_take' o.number %}">{% csrf_token %}<button class="rs-btn sm" type="submit">✋ {% trans "Je prends cette livraison" %}</button></form>
+        <div class="rs-body-xs"><i class="material-icons rs-ico" aria-hidden="true">place</i> {{ o.pickup_address }} <i class="material-icons rs-ico" aria-hidden="true">arrow_forward</i> <i class="material-icons rs-ico" aria-hidden="true">home</i> {{ o.delivery_address }} · {{ o.items.count }} {% trans "article(s)" %} · {{ o.formatted_total }} · <i class="material-icons rs-ico" aria-hidden="true">person</i> {{ o.customer_name }} {% include 'resto/_rating.html' with r=o.customer_rating %}</div>
+        <form method="post" action="{% url 'resto:courier_take' o.number %}">{% csrf_token %}<button class="vz-btn vz-btn--sm vz-btn--primary" type="submit"><i class="material-icons" aria-hidden="true">front_hand</i> {% trans "Je prends cette livraison" %}</button></form>
     </div>
     {% empty %}
     <p class="rs-muted">{% if courier.is_approved %}{% trans "Rien à récupérer pour le moment. La page se rafraîchit toute seule." %}{% else %}{% trans "Votre profil doit être validé pour voir les commandes." %}{% endif %}</p>
     {% endfor %}
 
     {% if history %}
-    <h2 class="rs-section-title">✅ {% trans "Dernières livraisons" %}</h2>
-    {% for o in history %}<div class="rs-muted" style="padding:.3rem 0;border-bottom:1px dashed var(--border);">{{ o.delivered_at|date:"d/m H:i" }} · {{ o.restaurant.name }} · {{ o.number }} · {{ o.formatted_total }}</div>{% endfor %}
+    <h2 class="rs-section-title"><i class="material-icons" aria-hidden="true">check_circle</i> {% trans "Dernières livraisons" %}</h2>
+    {% for o in history %}<div class="rs-muted rs-hist-row">{{ o.delivered_at|date:"d/m H:i" }} · {{ o.restaurant.name }} · {{ o.number }} · {{ o.formatted_total }}</div>{% endfor %}
     {% endif %}
 </div>
 
@@ -81,6 +82,8 @@
   const AVAILABLE = {{ courier.is_available|yesno:"true,false" }};
   const el = document.getElementById('rs-gps-status');
   const I18N = {on:"{% trans 'GPS partagé'|escapejs %}", off:"{% trans 'GPS inactif'|escapejs %}", err:"{% trans 'GPS refusé ou indisponible'|escapejs %}"};
+  const PIN = '<i class="material-icons rs-ico" aria-hidden="true">place</i> ';
+  const setStatus = txt => { el.innerHTML = PIN; el.appendChild(document.createTextNode(txt)); };
   // Partage de position : seulement quand le livreur est disponible ou a une livraison en cours
   if((HAS_ACTIVE || AVAILABLE) && navigator.geolocation){
     let last = 0;
@@ -89,10 +92,10 @@
       try{
         const r = await fetch("{% url 'resto:courier_position' %}", {method:'POST', credentials:'same-origin',
           headers:{'Content-Type':'application/json','X-CSRFToken':CSRF}, body: JSON.stringify({lat: p.coords.latitude, lng: p.coords.longitude})});
-        el.textContent = '📍 ' + I18N.on + ' · ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
-        if(!r.ok) el.textContent = '📍 ' + I18N.err;
-      }catch(e){ el.textContent = '📍 ' + I18N.err; }
-    }, () => { el.textContent = '📍 ' + I18N.err; }, {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
+        setStatus(I18N.on + ' · ' + new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}));
+        if(!r.ok) setStatus(I18N.err);
+      }catch(e){ setStatus(I18N.err); }
+    }, () => { setStatus(I18N.err); }, {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
   }
   // Nouvelles commandes prêtes : rafraîchissement toutes les 20 s quand disponible
   if(AVAILABLE) setTimeout(() => window.location.reload(), 20000);

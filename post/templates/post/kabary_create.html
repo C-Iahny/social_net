@@ -70,7 +70,7 @@
     <!-- Vato misaina -->
     <div class="kbr-card">
         <div class="kbr-section-head">
-            <div class="kbr-section-icon" style="background:linear-gradient(135deg,#8b5cf6,#3b82f6);">
+            <div class="kbr-section-icon kbr-section-icon--vato">
                 <span class="material-icons">format_quote</span>
             </div>
             <div>
@@ -87,7 +87,7 @@
     <!-- Ohabolana -->
     <div class="kbr-card">
         <div class="kbr-section-head">
-            <div class="kbr-section-icon" style="background:linear-gradient(135deg,#f59e0b,var(--danger));">
+            <div class="kbr-section-icon kbr-section-icon--ohabolana">
                 <span class="material-icons">auto_stories</span>
             </div>
             <div>
@@ -104,7 +104,7 @@
     <!-- Famaranana -->
     <div class="kbr-card">
         <div class="kbr-section-head">
-            <div class="kbr-section-icon" style="background:linear-gradient(135deg,var(--success),#06b6d4);">
+            <div class="kbr-section-icon kbr-section-icon--famaranana">
                 <span class="material-icons">check_circle</span>
             </div>
             <div>
@@ -125,12 +125,7 @@
     </div>
 
     <!-- Boîte d'erreur visible -->
-    <div id="kbr-error-box" style="
-        display:none; background:rgba(229,57,53,.08);
-        border:1.5px solid rgba(229,57,53,.3);
-        border-radius:10px; padding:.7rem 1rem;
-        color:var(--danger); font-size:.88rem; margin-bottom:1rem;
-    "></div>
+    <div id="kbr-error-box" role="alert"></div>
 
     <!-- Actions -->
     <div class="kbr-actions">
@@ -211,7 +206,7 @@ function kbrSubmit() {
         return;
     }
     kbrHideError();
-    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-icons" style="animation:kbr-spin .8s linear infinite">autorenew</span> Publication…'; }
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-icons kbr-spin">autorenew</span> Publication…'; }
 
     var fd = new FormData();
     fd.append('csrfmiddlewaretoken', KBR_CSRF);

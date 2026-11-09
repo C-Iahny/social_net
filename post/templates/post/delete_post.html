@@ -26,10 +26,10 @@
             {% csrf_token %}
             <div class="delete-actions">
                 <a class="btn-cancel-delete" href="{% url 'post:post-view' %}">
-                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> {% trans "Cancel" %}
+                    <span class="material-icons">arrow_back</span> {% trans "Cancel" %}
                 </a>
                 <button class="btn-confirm-delete" type="submit">
-                    <span class="material-icons" style="font-size:1rem;">delete</span> {% trans "Yes, delete" %}
+                    <span class="material-icons">delete</span> {% trans "Yes, delete" %}
                 </button>
             </div>
         </form>

@@ -17,7 +17,7 @@
                 <h1>{% trans "My friends" %}</h1>
             </div>
         </div>
-        <div class="d-flex align-items-center gap-2" style="gap:.75rem;display:flex;">
+        <div class="fl-head-actions">
             {% if friends %}
             <span class="fl-count-badge">{{ friends|length }} {% trans "friends" %}</span>
             {% endif %}
@@ -104,7 +104,7 @@
             <h3>{% trans "No friends yet" %}</h3>
             <p>{% trans "Looking for friends? Search here and start connecting!" %}</p>
             <a href="{% url 'search' %}?q=" class="fl-empty-cta">
-                <span class="material-icons" style="font-size:1rem;">person_search</span>
+                <span class="material-icons">person_search</span>
                 {% trans "Find people" %}
             </a>
         </div>

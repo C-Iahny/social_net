@@ -4,33 +4,33 @@
 
 {% block content %}
 {% include 'resto/_style.html' %}
-<div class="rs-wrap" style="max-width:760px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;margin:.5rem 0 1rem;">
-        <h1 style="font-size:1.4rem;font-weight:800;margin:0;">🛵 {% trans "Livreurs" %} · {{ restaurant.name }}</h1>
-        <a class="rs-btn sm secondary" href="{% url 'resto:vendor_dashboard' %}">← {% trans "Mes restaurants" %}</a>
+<div class="rs-wrap rs-wrap--md">
+    <div class="rs-page-head">
+        <h1 class="rs-h1"><i class="material-icons" aria-hidden="true">delivery_dining</i> {% trans "Livreurs" %} · {{ restaurant.name }}</h1>
+        <a class="vz-btn vz-btn--sm vz-btn--secondary" href="{% url 'resto:vendor_dashboard' %}"><i class="material-icons" aria-hidden="true">arrow_back</i> {% trans "Mes restaurants" %}</a>
     </div>
 
-    <div class="rs-card rs-form" style="padding:1rem;margin-bottom:1rem;">
-        <p style="margin:0 0 .5rem;">{% trans "Ajoutez vos livreurs par leur nom d'utilisateur Vazimba. Ils recevront vos commandes prêtes et partageront leur position avec le client." %}</p>
-        <form method="post" style="display:flex;gap:.4rem;flex-wrap:wrap;">{% csrf_token %}
-            <input class="form-control" name="username" placeholder="{% trans "Nom d'utilisateur" %}" required style="flex:1;min-width:200px;">
-            <button class="rs-btn" type="submit">+ {% trans "Ajouter" %}</button>
+    <div class="rs-card rs-form rs-card--pad rs-card--mb">
+        <p class="rs-mb-s">{% trans "Ajoutez vos livreurs par leur nom d'utilisateur Vazimba. Ils recevront vos commandes prêtes et partageront leur position avec le client." %}</p>
+        <form method="post" class="rs-inline-form rs-inline-form--wrap">{% csrf_token %}
+            <input class="form-control rs-grow" name="username" placeholder="{% trans "Nom d'utilisateur" %}" required>
+            <button class="vz-btn vz-btn--primary" type="submit"><i class="material-icons" aria-hidden="true">add</i> {% trans "Ajouter" %}</button>
         </form>
     </div>
 
     <div class="rs-card">
         {% for c in couriers %}
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.8rem;{% if not forloop.first %}border-top:1px solid var(--border);{% endif %}">
+        <div class="rs-list-row">
             <div>
-                <a href="{% url 'resto:courier_profile' c.user.username %}" style="font-weight:700;color:var(--accent);">{{ c.display_name }}</a> {% include 'resto/_rating.html' with r=c.rating %}
+                <a href="{% url 'resto:courier_profile' c.user.username %}" class="rs-link--b">{{ c.display_name }}</a> {% include 'resto/_rating.html' with r=c.rating %}
                 {% with lv=c.trust_level %}{% include 'resto/_courier_badge.html' with level=lv.0 %}{% endwith %}
-                <span class="rs-badge {% if c.is_available %}open{% else %}closed{% endif %}">{% if c.is_available %}{% trans "Disponible" %}{% else %}{% trans "Indisponible" %}{% endif %}</span>
-                <div class="rs-muted">{{ c.get_vehicle_display }} · 📞 {{ c.phone|default:"—" }}{% if c.position_updated_at %} · 📍 {{ c.position_updated_at|date:"d/m H:i" }}{% endif %}</div>
+                <span class="vz-chip vz-chip--sm vz-chip--static {% if c.is_available %}vz-chip--success{% else %}vz-chip--danger{% endif %}">{% if c.is_available %}{% trans "Disponible" %}{% else %}{% trans "Indisponible" %}{% endif %}</span>
+                <div class="rs-muted">{{ c.get_vehicle_display }} · <i class="material-icons rs-ico" aria-hidden="true">call</i> {{ c.phone|default:"—" }}{% if c.position_updated_at %} · <i class="material-icons rs-ico" aria-hidden="true">place</i> {{ c.position_updated_at|date:"d/m H:i" }}{% endif %}</div>
             </div>
-            <form method="post" data-vz-confirm="{% trans 'Retirer ce livreur ?' %}" data-vz-danger>{% csrf_token %}<input type="hidden" name="remove" value="{{ c.pk }}"><button class="rs-btn sm ghost" type="submit">✕</button></form>
+            <form method="post" data-vz-confirm="{% trans 'Retirer ce livreur ?' %}" data-vz-danger>{% csrf_token %}<input type="hidden" name="remove" value="{{ c.pk }}"><button class="vz-btn vz-btn--sm vz-btn--muted vz-btn--icon" type="submit" aria-label="{% trans 'Retirer ce livreur ?' %}" title="{% trans 'Retirer' %}"><i class="material-icons" aria-hidden="true">close</i></button></form>
         </div>
         {% empty %}
-        <p class="rs-muted" style="padding:1rem;margin:0;">{% trans "Aucun livreur rattaché. Sans livreur, vos commandes « prêtes » sont proposées aux livreurs indépendants de votre région." %}</p>
+        <p class="rs-muted rs-pad-l rs-m0">{% trans "Aucun livreur rattaché. Sans livreur, vos commandes « prêtes » sont proposées aux livreurs indépendants de votre région." %}</p>
         {% endfor %}
     </div>
 </div>

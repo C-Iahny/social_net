@@ -85,8 +85,13 @@
         font-size: 3.5rem;
         margin: .5rem 0 1rem;
         display: block;
+        color: var(--accent);
         animation: float 3s ease-in-out infinite;
     }
+    .error-logo-wrap { margin-bottom: 1rem; }
+    .error-logo { width: 64px; height: 64px; object-fit: contain; }
+    .btn-error-primary .material-icons,
+    .btn-error-secondary .material-icons { font-size: 1.1rem; }
 
     @keyframes float {
         0%,100% { transform: translateY(0); }
@@ -120,7 +125,7 @@
         gap: .45rem;
         padding: .65rem 1.6rem;
         background: linear-gradient(135deg, var(--accent), var(--accent2));
-        color: #fff;
+        color: var(--on-accent);
         border: none;
         border-radius: 12px;
         font-weight: 700;
@@ -134,12 +139,11 @@
         opacity: .88;
         transform: translateY(-2px);
         box-shadow: 0 8px 24px var(--accent-glow);
-        color: #fff;
+        color: var(--on-accent);
         text-decoration: none;
     }
     [data-theme="dark"] .btn-error-primary {
         box-shadow: 0 0 20px rgba(var(--accent-rgb),.2);
-        color: #000;
     }
 
     .btn-error-secondary {
@@ -193,9 +197,11 @@
     }
     .error-sugg-link:hover {
         background: var(--accent);
-        color: #fff;
+        color: var(--on-accent);
         text-decoration: none;
     }
+    .error-sugg-link { display: inline-flex; align-items: center; gap: .3rem; }
+    .error-sugg-link .material-icons { font-size: 1rem; }
 
     /* Grille déco dark */
     [data-theme="dark"] body {
@@ -210,13 +216,11 @@
 <div class="error-page">
     <div class="error-card">
 
-        <div style="margin-bottom:1rem;">
-            <img src="{% static 'logo/vazimba_icon.png' %}" alt="Vazimba"
-                 style="width:64px;height:64px;object-fit:contain;"
-                 id="err-logo">
+        <div class="error-logo-wrap">
+            <img src="{% static 'logo/vazimba_icon.png' %}" alt="Vazimba" class="error-logo" id="err-logo">
         </div>
         <span class="error-code">404</span>
-        <span class="error-icon">🌌</span>
+        <span class="error-icon material-icons" aria-hidden="true">rocket_launch</span>
 
         <h1 class="error-title">Page introuvable</h1>
         <p class="error-subtitle">
@@ -227,17 +231,17 @@
         <div class="error-actions">
             {% if user.is_authenticated %}
             <a href="{% url 'post:post-view' %}" class="btn-error-primary">
-                <span class="material-icons" style="font-size:1.1rem">home</span>
+                <span class="material-icons">home</span>
                 Retour au fil
             </a>
             {% else %}
             <a href="/" class="btn-error-primary">
-                <span class="material-icons" style="font-size:1.1rem">home</span>
+                <span class="material-icons">home</span>
                 Page d'accueil
             </a>
             {% endif %}
             <button onclick="history.back()" class="btn-error-secondary" type="button">
-                <span class="material-icons" style="font-size:1.1rem">arrow_back</span>
+                <span class="material-icons">arrow_back</span>
                 Retour
             </button>
         </div>
@@ -246,10 +250,10 @@
         <div class="error-suggestions">
             <p>Ou explore une de ces sections :</p>
             <div class="error-sugg-links">
-                <a href="{% url 'post:index' %}" class="error-sugg-link">🔭 Explorer</a>
-                <a href="{% url 'friend:list' user_id=user.id %}" class="error-sugg-link">👥 Amis</a>
-                <a href="{% url 'chat:private-chat-room' %}" class="error-sugg-link">💬 Messages</a>
-                <a href="{% url 'account:view' user_id=user.id %}" class="error-sugg-link">👤 Profil</a>
+                <a href="{% url 'post:index' %}" class="error-sugg-link"><i class="material-icons" aria-hidden="true">explore</i> Explorer</a>
+                <a href="{% url 'friend:list' user_id=user.id %}" class="error-sugg-link"><i class="material-icons" aria-hidden="true">group</i> Amis</a>
+                <a href="{% url 'chat:private-chat-room' %}" class="error-sugg-link"><i class="material-icons" aria-hidden="true">chat_bubble_outline</i> Messages</a>
+                <a href="{% url 'account:view' user_id=user.id %}" class="error-sugg-link"><i class="material-icons" aria-hidden="true">person</i> Profil</a>
             </div>
         </div>
         {% endif %}

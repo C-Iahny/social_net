@@ -63,9 +63,10 @@
     flex-wrap: wrap;
 }
 .boutique-pro-badge {
+    display: inline-flex; align-items: center; gap: .2rem;
     font-size: .68rem;
     font-weight: 700;
-    background: linear-gradient(135deg, #d97706, #f59e0b);
+    background: linear-gradient(135deg, var(--warning), var(--accent3));
     color: #fff;
     padding: .18rem .6rem;
     border-radius: 20px;
@@ -104,6 +105,8 @@
     font-size: .83rem;
     color: var(--text-muted);
 }
+.boutique-stat .material-icons { font-size: 1rem; }
+.boutique-pro-badge .material-icons { font-size: .85rem; }
 .boutique-wa-btn {
     margin-left: auto;
     display: inline-flex;
@@ -220,10 +223,6 @@
 [data-theme="dark"] .bazar-page-btn.active { color: var(--on-accent); }
 
 /* ── Vide ─────────────────────────────────────────────────────────────────── */
-.boutique-empty {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: var(--text-muted);
-    font-size: .92rem;
-}
-.boutique-empty-icon { font-size: 2.8rem; margin-bottom: .75rem; }
+/* État vide : composant partagé .vz-empty (zoot-base.css) */
+.boutique-empty { padding: 3rem 1rem; }
+.boutique-empty p { margin: 0; }

@@ -4300,3 +4300,43 @@ msgstr "%(n)d ora"
 
 msgid "%(n)d j"
 msgstr "%(n)d andro"
+
+#: notification/verbs.py
+msgid "%(name)s vous a envoyé une demande d’ami"
+msgstr "Nandefa fangatahana finamanana taminao i %(name)s"
+
+#: notification/verbs.py
+msgid "Vous êtes maintenant ami(e) avec %(name)s"
+msgstr "Mpinamana amin’i %(name)s ianao izao"
+
+#: notification/verbs.py
+msgid "Vous n’êtes plus ami(e) avec %(name)s"
+msgstr "Tsy mpinamana amin’i %(name)s intsony ianao"
+
+#: notification/verbs.py
+msgid "Vous avez accepté la demande d’ami de %(name)s"
+msgstr "Nekenao ny fangatahana finamanan’i %(name)s"
+
+#: notification/verbs.py
+msgid "%(name)s a accepté votre demande d’ami"
+msgstr "Nanaiky ny fangatahana finamananao i %(name)s"
+
+#: notification/verbs.py
+msgid "Vous avez refusé la demande d’ami de %(name)s"
+msgstr "Nolavinao ny fangatahana finamanan’i %(name)s"
+
+#: notification/verbs.py
+msgid "%(name)s a refusé votre demande d’ami"
+msgstr "Nandà ny fangatahana finamananao i %(name)s"
+
+#: notification/verbs.py
+msgid "Vous avez annulé votre demande d’ami à %(name)s"
+msgstr "Nofoananao ny fangatahana finamanana ho an’i %(name)s"
+
+#: notification/verbs.py
+msgid "%(name)s a annulé sa demande d’ami"
+msgstr "Nofoanan’i %(name)s ny fangatahana finamananany"
+
+#: notification/verbs.py
+msgid "Votre activité récente"
+msgstr "Ny hetsikao farany"

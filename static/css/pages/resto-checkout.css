@@ -6,3 +6,5 @@
 .rs-radio input { accent-color: var(--accent); }
 .rs-radio label:has(input:checked) { border-color: var(--accent); background: var(--accent-glow); }
 #rs-pickmap { height: 240px; border-radius: 12px; border: 1px solid var(--border); margin-top: .5rem; }
+.rs-radio label .material-icons { color: var(--accent); }
+.rs-order-line small .material-icons { color: var(--text-subtle); }

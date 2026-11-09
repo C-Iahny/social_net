@@ -87,7 +87,12 @@ body { background: var(--bg); }
     background: var(--bg-card); border: 1px solid var(--border);
     border-radius: 14px; color: var(--text-muted);
 }
-.empty-ht .ef-icon { font-size: 3.5rem; display: block; margin-bottom: 1rem; }
+.empty-ht .ef-icon { font-size: 3.5rem; display: block; margin: 0 auto 1rem; color: var(--text-subtle); }
+.empty-ht strong { color: var(--text); }
+.empty-ht p { margin-top: .5rem; }
+.pc-footer-view { padding: .5rem 1rem; color: var(--accent); font-size: .85rem; font-weight: 700; text-decoration: none; }
+.pc-footer-view:hover { color: var(--accent-dark); text-decoration: none; }
+.pc-body a.mention { color: var(--accent2); font-weight: 700; text-decoration: none; }
 
 /* Pagination */
 .ht-pagination {
@@ -104,3 +109,4 @@ body { background: var(--bg); }
 .page-btn:hover { background: var(--btn-bg); color: var(--text); text-decoration: none; }
 .page-btn .material-icons { font-size: .95rem; }
 .page-info { font-size: .83rem; color: var(--text-muted); align-self: center; }
+.pc-footer-count { font-size: .76rem; margin-left: .15rem; color: var(--text-muted); }

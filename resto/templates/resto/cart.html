@@ -4,14 +4,14 @@
 
 {% block content %}
 {% include 'resto/_style.html' %}
-<div class="rs-wrap" style="max-width:720px;">
-    <h1 style="font-size:1.4rem;font-weight:800;margin:.5rem 0 1rem;">🧺 {% trans "Mon panier" %}</h1>
+<div class="rs-wrap rs-wrap--narrow">
+    <h1 class="rs-h1 rs-h1--top"><i class="material-icons" aria-hidden="true">shopping_basket</i> {% trans "Mon panier" %}</h1>
 
     {% if cart and cart_summary.count %}
-    <div class="rs-card" style="padding:1rem;">
-        <p style="margin:0 0 .6rem;">
+    <div class="rs-card rs-card--pad">
+        <p class="rs-mb">
             <strong>{{ cart.restaurant.name }}</strong>
-            <a href="{% url 'resto:restaurant' cart.restaurant.slug %}" style="color:var(--accent);font-size:.85rem;margin-left:.5rem;">{% trans "Ajouter d'autres plats" %} →</a>
+            <a href="{% url 'resto:restaurant' cart.restaurant.slug %}" class="rs-link rs-text-sm rs-ml">{% trans "Ajouter d'autres plats" %} <i class="material-icons rs-ico" aria-hidden="true">arrow_forward</i></a>
         </p>
         <div id="rs-lines" class="vz-stack">
         {% for l in cart_summary.lines %}
@@ -33,24 +33,24 @@
             </div>
         {% endfor %}
         </div>
-        <div style="margin-top:.8rem;font-size:.9rem;">
-            <div style="display:flex;justify-content:space-between;"><span>{% trans "Sous-total" %}</span><span id="rs-sub">{{ cart_summary.subtotal|vz_ariary }}</span></div>
-            <div style="display:flex;justify-content:space-between;" class="rs-muted"><span>{% trans "Livraison (si livraison)" %}</span><span>{{ cart.restaurant.formatted_delivery_fee }}</span></div>
-            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;margin-top:.3rem;"><span>{% trans "Total" %}</span><span id="rs-total">{{ cart_summary.total|vz_ariary }}</span></div>
+        <div class="rs-totals">
+            <div class="rs-total-row"><span>{% trans "Sous-total" %}</span><span id="rs-sub">{{ cart_summary.subtotal|vz_ariary }}</span></div>
+            <div class="rs-total-row rs-muted"><span>{% trans "Livraison (si livraison)" %}</span><span>{{ cart.restaurant.formatted_delivery_fee }}</span></div>
+            <div class="rs-total-row rs-total-row--grand"><span>{% trans "Total" %}</span><span id="rs-total">{{ cart_summary.total|vz_ariary }}</span></div>
         </div>
         {% if cart.restaurant.min_order and cart_summary.subtotal < cart.restaurant.min_order %}
-        <p class="rs-form err" style="margin:.6rem 0 0;">{% blocktrans with m=cart.restaurant.min_order|floatformat:0 %}Commande minimum : {{ m|vz_ariary }}{% endblocktrans %}</p>
+        <p class="rs-form err rs-mt">{% blocktrans with m=cart.restaurant.min_order|floatformat:0 %}Commande minimum : {{ m|vz_ariary }}{% endblocktrans %}</p>
         {% endif %}
-        <div style="display:flex;gap:.6rem;margin-top:1rem;flex-wrap:wrap;">
-            <a class="rs-btn" href="{% url 'resto:checkout' %}" style="flex:1;">{% trans "Commander" %} →</a>
+        <div class="rs-actions rs-mt-l">
+            <a class="vz-btn vz-btn--primary rs-grow" href="{% url 'resto:checkout' %}">{% trans "Commander" %} <i class="material-icons" aria-hidden="true">arrow_forward</i></a>
             <form method="post" action="{% url 'resto:cart_clear' %}" data-vz-confirm="{% trans 'Vider le panier ?' %}" data-vz-danger>{% csrf_token %}
-                <button class="rs-btn ghost" type="submit">{% trans "Vider" %}</button>
+                <button class="vz-btn vz-btn--muted" type="submit">{% trans "Vider" %}</button>
             </form>
         </div>
     </div>
     {% else %}
-    <div class="rs-empty"><div class="ico">🧺</div><p>{% trans "Votre panier est vide." %}</p>
-        <a class="rs-btn" href="{% url 'resto:index' %}">{% trans "Voir les restaurants" %}</a></div>
+    <div class="vz-empty"><i class="material-icons" aria-hidden="true">shopping_basket</i><p class="vz-empty-text">{% trans "Votre panier est vide." %}</p>
+        <a class="vz-btn vz-btn--primary" href="{% url 'resto:index' %}">{% trans "Voir les restaurants" %}</a></div>
     {% endif %}
 </div>
 

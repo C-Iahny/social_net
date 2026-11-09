@@ -8,37 +8,37 @@
 
 {% block content %}
 {% include 'resto/_style.html' %}
-<style>#rs-pickmap { height: 260px; border-radius: 12px; border: 1px solid var(--border); margin-top: .5rem; } .rs-form > div { margin-bottom: .8rem; }</style>
-<div class="rs-wrap" style="max-width:760px;">
-    <h1 style="font-size:1.4rem;font-weight:800;margin:.5rem 0 1rem;">{% if restaurant %}⚙️ {{ restaurant.name }}{% else %}🏪 {% trans "Créer mon restaurant" %}{% endif %}</h1>
+<link rel="stylesheet" href="{% static 'css/pages/resto-restaurant_form.css' %}">
+<div class="rs-wrap rs-wrap--md">
+    <h1 class="rs-h1 rs-h1--top">{% if restaurant %}<i class="material-icons" aria-hidden="true">settings</i> {{ restaurant.name }}{% else %}<i class="material-icons" aria-hidden="true">storefront</i> {% trans "Créer mon restaurant" %}{% endif %}</h1>
 
-    <form method="post" enctype="multipart/form-data" class="rs-form rs-card" style="padding:1rem;" novalidate>{% csrf_token %}
+    <form method="post" enctype="multipart/form-data" class="rs-form rs-card rs-card--pad" novalidate>{% csrf_token %}
         {% if form.non_field_errors %}<p class="err">{{ form.non_field_errors|join:" " }}</p>{% endif %}
         {% for field in form.visible_fields %}
         {% if field.name in 'offers_delivery offers_pickup' %}
-        <div style="display:flex;align-items:center;gap:.5rem;">{{ field }} <label style="margin:0;">{{ field.label }}</label></div>
+        <div class="rs-check-row">{{ field }} <label>{{ field.label }}</label></div>
         {% else %}
         <div>
             <label>{{ field.label }}{% if field.field.required %} *{% endif %}</label>
             {{ field }}
-            {% if field.help_text %}<p class="help" style="margin:.2rem 0 0;">{{ field.help_text }}</p>{% endif %}
+            {% if field.help_text %}<p class="help rs-mt-xxs">{{ field.help_text }}</p>{% endif %}
             {% if field.errors %}<p class="err">{{ field.errors|join:" " }}</p>{% endif %}
         </div>
         {% if field.name == 'address' %}
         <div>
             <label>{% trans "Position sur la carte" %}</label>
-            <p class="help" style="margin:0 0 .3rem;">{% trans "Touchez la carte pour placer votre restaurant : les livreurs et les clients le verront sur le plan de livraison." %}</p>
-            <button type="button" class="rs-btn sm secondary" onclick="rsLocate()">📍 {% trans "Ma position" %}</button>
+            <p class="help rs-mb-xs">{% trans "Touchez la carte pour placer votre restaurant : les livreurs et les clients le verront sur le plan de livraison." %}</p>
+            <button type="button" class="vz-btn vz-btn--sm vz-btn--secondary" onclick="rsLocate()"><i class="material-icons" aria-hidden="true">my_location</i> {% trans "Ma position" %}</button>
             <div id="rs-pickmap"></div>
         </div>
         {% endif %}
         {% endif %}
         {% endfor %}
         {{ form.latitude }}{{ form.longitude }}
-        <button class="rs-btn" type="submit" style="width:100%;">{% if restaurant %}{% trans "Enregistrer" %}{% else %}{% trans "Créer et passer au menu" %} →{% endif %}</button>
+        <button class="vz-btn vz-btn--primary vz-btn--block" type="submit">{% if restaurant %}{% trans "Enregistrer" %}{% else %}{% trans "Créer et passer au menu" %} <i class="material-icons" aria-hidden="true">arrow_forward</i>{% endif %}</button>
     </form>
     {% if not restaurant %}
-    <p class="rs-muted" style="margin-top:.8rem;">{% trans "Après création, votre page reste invisible au public jusqu'à validation par l'équipe Vazimba. Vous pouvez déjà préparer votre menu." %}</p>
+    <p class="rs-muted rs-mt-m">{% trans "Après création, votre page reste invisible au public jusqu'à validation par l'équipe Vazimba. Vous pouvez déjà préparer votre menu." %}</p>
     {% endif %}
 </div>
 

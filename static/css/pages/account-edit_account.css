@@ -81,9 +81,9 @@
 
 /* Crop confirm buttons */
 #id_image_crop_confirm {
-    display: none;
+    display: none;   /* passé en flex par le JS de recadrage */
     gap: .75rem;
-    margin-bottom: .5rem;
+    margin-bottom: .75rem;
 }
 #id_confirm, #id_cancel {
     width: 36px; height: 36px;
@@ -93,8 +93,8 @@
     font-size: 1.2rem !important;
     transition: transform .15s;
 }
-#id_confirm { color: #4caf7d; background: rgba(76,175,125,.12); border: 1.5px solid rgba(76,175,125,.3); }
-#id_cancel  { color: #e0245e; background: rgba(224,36,94,.12);  border: 1.5px solid rgba(224,36,94,.3); }
+#id_confirm { color: var(--success); background: rgba(var(--success-rgb),.12); border: 1.5px solid rgba(var(--success-rgb),.3); }
+#id_cancel  { color: var(--danger);  background: rgba(var(--danger-rgb),.12);  border: 1.5px solid rgba(var(--danger-rgb),.3); }
 #id_confirm:hover, #id_cancel:hover { transform: scale(1.1); }
 
 /* ── Form body ── */
@@ -124,7 +124,7 @@
 }
 .edit-input-wrap:focus-within {
     border-color: var(--accent); background: var(--bg-card);
-    box-shadow: 0 0 0 3px rgba(24,119,242,.12);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.12);
 }
 .edit-input-wrap .material-icons { font-size: 1.05rem; color: var(--text-muted); margin-right: .6rem; flex-shrink: 0; }
 .edit-input-wrap input {
@@ -140,7 +140,7 @@
 }
 .edit-textarea-wrap:focus-within {
     border-color: var(--accent); background: var(--bg-card);
-    box-shadow: 0 0 0 3px rgba(24,119,242,.12);
+    box-shadow: 0 0 0 3px rgba(var(--accent-rgb),.12);
 }
 .edit-textarea-wrap .material-icons { font-size: 1.05rem; color: var(--text-muted); margin-top: 2px; flex-shrink: 0; }
 .edit-textarea-wrap textarea {
@@ -162,11 +162,10 @@
 }
 .edit-checkbox-wrap span { font-size: .9rem; color: var(--text); font-weight: 500; cursor: pointer; }
 .edit-errors {
-    background: rgba(224,36,94,.1); border: 1px solid rgba(224,36,94,.25);
+    background: rgba(var(--danger-rgb),.1); border: 1px solid rgba(var(--danger-rgb),.25);
     border-radius: 10px; padding: .6rem .9rem; margin-bottom: .75rem;
     font-size: .84rem; color: var(--danger);
 }
-[data-theme="dark"] .edit-errors { color: #f28b82; }
 .edit-save-btn {
     display: flex; align-items: center; justify-content: center; gap: .5rem;
     width: 100%; height: 50px;
@@ -179,3 +178,65 @@
 }
 .edit-save-btn:hover { opacity: .92; transform: translateY(-1px); }
 .edit-save-btn .material-icons { font-size: 1.1rem; }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   Styles sortis des attributs style="" de edit_account.html (2026-11)
+   ══════════════════════════════════════════════════════════════════ */
+#id_text .material-icons { font-size: .95rem; }
+.edit-section-title .material-icons { font-size: 1rem; vertical-align: -3px; margin-right: .25rem; }
+
+/* Sélecteur région */
+.edit-input-wrap--select { padding: 0; }
+.edit-input-wrap--select .material-icons { padding-left: .75rem; margin-right: 0; }
+.edit-input-wrap select {
+    flex: 1; border: none; background: transparent; padding: .6rem .75rem;
+    font-size: .95rem; color: var(--text); outline: none; cursor: pointer; font-family: inherit;
+}
+.edit-input-wrap select option { color: var(--text); background: var(--bg-card); }
+.edit-help { display: block; color: var(--text-muted); font-size: .78rem; margin-top: .3rem; }
+.edit-label-hint { font-weight: 400; color: var(--text-muted); }
+
+/* Section téléphone (vérification OTP) */
+#phone-section { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+#phone-section .edit-section-title { margin-top: 0; }
+.phone-verified-box {
+    display: flex; align-items: center; gap: .6rem;
+    background: rgba(var(--success-rgb),.1); border: 1px solid rgba(var(--success-rgb),.3);
+    border-radius: 12px; padding: .65rem .9rem; margin-bottom: .85rem;
+}
+.phone-verified-box--flush { margin-bottom: 0; }
+.phone-verified-icon { font-size: 1.3rem; color: var(--success); }
+.phone-verified-title { font-size: .88rem; font-weight: 700; color: var(--success); }
+.phone-verified-num { font-size: .82rem; color: var(--text-muted); }
+.edit-link-btn {
+    background: none; border: none; padding: 0; color: var(--accent);
+    cursor: pointer; font-size: .78rem; text-decoration: underline; font-family: inherit;
+}
+.phone-change-btn { margin-left: auto; }
+.edit-row { display: flex; gap: .5rem; }
+.edit-input-wrap--grow { flex: 1; }
+.edit-row-btn { height: 48px; flex-shrink: 0; white-space: nowrap; }
+#otp-input { font-size: 1.1rem; letter-spacing: .3em; font-weight: 700; }
+#otp-input-group { display: none; }   /* affiché par le JS après envoi du code */
+#phone-msg { display: none; border-radius: 10px; padding: .55rem .85rem; font-size: .84rem; margin-top: .5rem; }
+#phone-msg.phone-msg--error   { background: rgba(var(--danger-rgb),.1);  border: 1px solid rgba(var(--danger-rgb),.25);  color: var(--danger); }
+#phone-msg.phone-msg--success { background: rgba(var(--success-rgb),.1); border: 1px solid rgba(var(--success-rgb),.25); color: var(--success); }
+
+/* Zone sensible : comptes bloqués, suppression */
+.edit-zone { max-width: 640px; margin: 1.5rem auto 3rem; padding: 0 1rem; }
+.edit-zone-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 1.2rem 1.3rem;
+}
+.edit-zone-card--danger { border-color: rgba(var(--danger-rgb),.35); margin-top: 1rem; }
+.edit-zone-title { font-size: 1rem; font-weight: 800; margin: 0 0 .8rem; display: flex; align-items: center; gap: .5rem; color: var(--text); }
+.edit-zone-title .material-icons { color: var(--text-muted); }
+.edit-zone-card--danger .edit-zone-title { color: var(--danger); margin-bottom: .4rem; }
+.edit-zone-card--danger .edit-zone-title .material-icons { color: var(--danger); }
+.edit-zone-list { display: flex; flex-direction: column; gap: .5rem; }
+.edit-zone-row { display: flex; align-items: center; gap: .7rem; }
+.edit-zone-avatar { border-radius: 50%; object-fit: cover; }
+.edit-zone-name { flex: 1; font-weight: 700; color: var(--text); }
+.edit-zone-text { font-size: .9rem; color: var(--text-muted); margin: 0; }
+.edit-zone-text--spaced { margin-bottom: .9rem; }

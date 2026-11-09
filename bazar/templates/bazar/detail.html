@@ -326,13 +326,14 @@
 
 <!-- Lightbox -->
 <div id="lightbox" onclick="closeLightbox()">
-    <button id="lightbox-close" onclick="closeLightbox()" type="button">✕</button>
+    <button id="lightbox-close" onclick="closeLightbox()" type="button" aria-label="{% trans 'Fermer' %}"><i class="material-icons" aria-hidden="true">close</i></button>
     {% if images|length > 1 %}
     <button class="lb-nav-btn" id="lightbox-prev" onclick="event.stopPropagation(); lightboxNav(-1)" type="button">&#8249;</button>
     {% endif %}
     <img id="lightbox-img" src="" alt="Aperçu">
-    <div id="lb-error" style="display:none;color:#fff;flex-direction:column;align-items:center;gap:.75rem;font-size:.95rem;opacity:.7;">
-        <span style="font-size:2.5rem;">🖼️</span>
+    {# display:none basculé en JS (openLightbox / lightboxNav) : style dynamique conservé #}
+    <div id="lb-error" class="lb-error" style="display:none;">
+        <i class="material-icons lb-error-icon" aria-hidden="true">broken_image</i>
         <span>{% trans "Image non disponible" %}</span>
     </div>
     {% if images|length > 1 %}
@@ -346,7 +347,7 @@ var VZB_I18N = {
     confirmSold: "{% trans 'Marquer cette annonce comme vendue ?'|escapejs %}",
     confirmDelete: "{% trans 'Supprimer définitivement cette annonce ?'|escapejs %}",
     copyLink: "{% trans 'Copier le lien'|escapejs %}",
-    copied: "{% trans '✓ Copié !'|escapejs %}"
+    copied: "{% trans 'Copié !'|escapejs %}"
 };
 </script>
 <script>

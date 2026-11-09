@@ -22,16 +22,8 @@
                 {# Fond = ma dernière story #}
                 {% with s=my_group.stories.0 %}
                 {% if s.story_type == 'text' %}
-                    {# Gradient seul, pas d'image #}
-                    <div style="position:absolute;inset:0;background:
-                        {% if s.bg_gradient == 'grad_cyan' %}linear-gradient(160deg,#00bcd4,#2196f3)
-                        {% elif s.bg_gradient == 'grad_purple' %}linear-gradient(160deg,#9c27b0,#e91e63)
-                        {% elif s.bg_gradient == 'grad_sunset' %}linear-gradient(160deg,#ff9800,#f44336)
-                        {% elif s.bg_gradient == 'grad_forest' %}linear-gradient(160deg,var(--success),#00bcd4)
-                        {% elif s.bg_gradient == 'grad_night' %}linear-gradient(160deg,#1a237e,#7b1fa2)
-                        {% elif s.bg_gradient == 'grad_gold' %}linear-gradient(160deg,#ffc107,#ff9800)
-                        {% else %}#222{% endif %};filter:brightness(.5);">
-                    </div>
+                    {# Gradient seul, pas d'image : même palette que les cartes .sl-card.grad_* #}
+                    <div class="sl-create-bg {{ s.bg_gradient }}"></div>
                 {% elif s.media %}
                     {% if s.media_type == 'video' %}
                     <video src="{{ s.media.url }}" muted playsinline preload="none"></video>

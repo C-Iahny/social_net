@@ -10,8 +10,8 @@
 <div class="lieu-detail-wrap">
 
     {% if not lieu.is_approved and is_owner %}
-    <div style="background:#fff3e0;border-left:4px solid #f57c00;border-radius:0 12px 12px 0;padding:.75rem 1rem;margin-bottom:1rem;font-size:.86rem;color:#e65100;display:flex;align-items:center;gap:.5rem;">
-        <span class="material-icons" style="font-size:1.1rem;">hourglass_top</span>
+    <div class="lieu-pending" role="status">
+        <span class="material-icons" aria-hidden="true">hourglass_top</span>
         {% trans "Ce lieu est en attente de validation par un administrateur. Il n'est visible que par vous." %}
     </div>
     {% endif %}
@@ -42,7 +42,7 @@
             {% else %}
                 <div class="lieu-main-img-ph">
                     <span class="material-icons">landscape</span>
-                    <span style="font-size:.85rem;">{% trans "Pas d'image disponible" %}</span>
+                    <span class="lieu-main-img-ph-text">{% trans "Pas d'image disponible" %}</span>
                 </div>
             {% endif %}
         </div>
@@ -64,7 +64,7 @@
     <div class="lieu-header">
         <div class="lieu-header-main">
             <h1 class="lieu-name">{{ lieu.name }}
-                {% if request.user.is_authenticated %}<button type="button" class="vz-btn vz-btn--icon vz-btn--sm vz-btn--muted" style="border:0;vertical-align:middle;" onclick="openReportModal('lieu','{{ lieu.pk }}')" aria-label="{% trans 'Signaler ce lieu' %}" title="{% trans 'Signaler' %}"><span class="material-icons">flag</span></button>{% endif %}
+                {% if request.user.is_authenticated %}<button type="button" class="vz-btn vz-btn--icon vz-btn--sm vz-btn--muted lieu-report-btn" onclick="openReportModal('lieu','{{ lieu.pk }}')" aria-label="{% trans 'Signaler ce lieu' %}" title="{% trans 'Signaler' %}"><span class="material-icons">flag</span></button>{% endif %}
             </h1>
             <div class="lieu-meta-row">
                 <span class="lieu-cat-pill">{{ lieu.get_category_display }}</span>
@@ -78,7 +78,7 @@
                 <span class="lieu-rating-pill">
                     <span class="material-icons">star</span>
                     {{ avg_rating }}/5
-                    <span style="font-weight:400;color:var(--text-muted);">({{ avis_count }})</span>
+                    <span class="lieu-rating-count">({{ avis_count }})</span>
                 </span>
                 {% endif %}
                 <span class="lieu-views">
@@ -87,17 +87,15 @@
                 </span>
             </div>
         </div>
-        <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
+        <div class="lieu-header-actions">
             {% if is_owner %}
-            <a href="{% url 'tourisme:lieu_edit' lieu.slug %}"
-               style="display:inline-flex;align-items:center;gap:.3rem;background:var(--btn-bg);border:1.5px solid var(--border);color:var(--text);border-radius:50px;padding:.45rem 1rem;font-size:.82rem;font-weight:600;text-decoration:none;">
-                <span class="material-icons" style="font-size:.95rem">edit</span>
+            <a href="{% url 'tourisme:lieu_edit' lieu.slug %}" class="vz-btn vz-btn--secondary vz-btn--sm vz-btn--pill">
+                <span class="material-icons" aria-hidden="true">edit</span>
                 {% trans "Modifier" %}
             </a>
             {% endif %}
-            <a href="{% url 'tourisme:lieux_list' %}?cat={{ lieu.category }}"
-               style="color:var(--accent);font-size:.82rem;font-weight:600;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:.2rem;">
-                <span class="material-icons" style="font-size:1rem">filter_list</span>
+            <a href="{% url 'tourisme:lieux_list' %}?cat={{ lieu.category }}" class="lieu-more-link">
+                <span class="material-icons" aria-hidden="true">filter_list</span>
                 Plus de {{ lieu.get_category_display|lower }}
             </a>
         </div>
@@ -159,7 +157,7 @@
 
     <!-- ── Guides associés ── -->
     {% if guides %}
-    <section style="margin-bottom:2rem;">
+    <section class="lieu-section">
         <h2 class="lieu-section-title">
             <span class="material-icons">person_pin</span>
             {% trans "Guides pour ce lieu" %}
@@ -196,7 +194,7 @@
 
     <!-- ── Posts liés à ce lieu ── -->
     {% if lieu_posts %}
-    <section style="margin-bottom:2rem;">
+    <section class="lieu-section">
         <h2 class="lieu-section-title">
             <span class="material-icons">article</span>
             {% trans "Publications sur ce lieu" %}
@@ -238,12 +236,12 @@
     {% endif %}
 
     <!-- ── Avis des visiteurs ── -->
-    <section style="margin-bottom:2rem;" id="avis">
+    <section class="lieu-section" id="avis">
         <h2 class="lieu-section-title">
             <span class="material-icons">rate_review</span>
             Avis des visiteurs
             {% if avis_count %}
-            <span style="font-size:.85rem;font-weight:600;color:var(--text-muted);">({{ avis_count }})</span>
+            <span class="lieu-section-count">({{ avis_count }})</span>
             {% endif %}
         </h2>
 
@@ -251,9 +249,9 @@
         <div class="lieu-avis-summary">
             <div class="lieu-avis-big-score">{{ avg_rating }}</div>
             <div>
-                <div class="lieu-avis-stars-big">
+                <div class="lieu-avis-stars-big" aria-label="{{ avg_rating }}/5">
                     {% with r=avg_rating|floatformat:"0" %}
-                    {% for i in "12345" %}★{% endfor %}
+                    {% for i in "12345" %}<i class="material-icons" aria-hidden="true">{% if forloop.counter <= r|add:"0" %}star{% else %}star_border{% endif %}</i>{% endfor %}
                     {% endwith %}
                 </div>
                 <div class="lieu-avis-count-label">{{ avis_count }} avis</div>
@@ -274,25 +272,25 @@
                     {% for v in "54321" %}
                     <input type="radio" name="rating" id="star{{ v }}" value="{{ v }}"
                         {% if user_avis and user_avis.rating|stringformat:"s" == v %}checked{% elif not user_avis and v == "5" %}checked{% endif %}>
-                    <label for="star{{ v }}">★</label>
+                    <label for="star{{ v }}" aria-label="{{ v }}/5"><i class="material-icons" aria-hidden="true">star</i></label>
                     {% endfor %}
                 </div>
                 <textarea class="avis-comment-input" name="comment" placeholder="{% trans 'Décrivez votre expérience...' %}" required>{% if user_avis %}{{ user_avis.comment }}{% endif %}</textarea>
                 <div class="avis-visited-row">
-                    <span class="material-icons" style="font-size:1rem;">event</span>
+                    <span class="material-icons" aria-hidden="true">event</span>
                     {% trans "Date de visite (optionnel) :" %}
                     <input type="date" name="visited_at"
                            value="{% if user_avis and user_avis.visited_at %}{{ user_avis.visited_at|date:'Y-m-d' }}{% endif %}">
                 </div>
                 <button type="submit" class="avis-submit-btn">
-                    <span class="material-icons" style="font-size:1rem;">send</span>
+                    <span class="material-icons" aria-hidden="true">send</span>
                     {% if user_avis %}Mettre à jour{% else %}Publier{% endif %}
                 </button>
             </form>
         </div>
         {% else %}
-        <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1rem;">
-            <a href="{% url 'login' %}" style="color:var(--accent);font-weight:600;">{% trans "Connectez-vous" %}</a>
+        <p class="avis-login-note">
+            <a href="{% url 'login' %}">{% trans "Connectez-vous" %}</a>
             {% trans "pour laisser un avis." %}
         </p>
         {% endif %}
@@ -313,7 +311,7 @@
                             <div class="avis-date">{{ avis.created_at|vz_since }}</div>
                         </div>
                     </div>
-                    <div class="avis-stars" aria-label="{{ avis.rating }}/5">{{ avis.stars }}</div>
+                    <div class="avis-stars" aria-label="{{ avis.rating }}/5">{% for i in "12345" %}<i class="material-icons" aria-hidden="true">{% if forloop.counter <= avis.rating %}star{% else %}star_border{% endif %}</i>{% endfor %}</div>
                     <div class="avis-comment-text">{{ avis.comment }}</div>
                     {% if avis.visited_at %}
                     <div class="vz-card__meta">
@@ -328,7 +326,7 @@
             {% endfor %}
         </div>
         {% else %}
-        <p style="font-size:.87rem;color:var(--text-muted);">
+        <p class="avis-none">
             {% trans "Soyez le premier à laisser un avis sur ce lieu !" %}
         </p>
         {% endif %}

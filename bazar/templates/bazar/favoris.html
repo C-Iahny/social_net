@@ -9,12 +9,12 @@
     <!-- En-tête -->
     <div class="bazar-fav-header">
         <div>
-            <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.4rem;">
-                <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
+            <nav class="bazar-crumb">
+                <a href="{% url 'bazar:index' %}">{% trans "Bazar" %}</a>
                 <span> › </span>{% trans "Mes favoris" %}
             </nav>
-            <h1 class="bazar-fav-title">❤️ {% trans "Mes favoris" %}
-                {% if total %}<span style="font-size:.85rem;font-weight:400;color:var(--text-muted);margin-left:.4rem;">({{ total }})</span>{% endif %}
+            <h1 class="bazar-fav-title"><i class="material-icons" aria-hidden="true">favorite</i> {% trans "Mes favoris" %}
+                {% if total %}<span class="bazar-fav-count">({{ total }})</span>{% endif %}
             </h1>
         </div>
         <a href="{% url 'bazar:index' %}" class="vz-btn vz-btn--secondary vz-btn--sm">
@@ -80,10 +80,10 @@
     {% endif %}
 
     {% else %}
-    <div class="bazar-fav-empty">
-        <div class="bazar-fav-empty-icon">🤍</div>
-        <h3>{% trans "Aucun favori pour l'instant" %}</h3>
-        <p>{% trans "Sauvegardez des annonces qui vous intéressent pour les retrouver facilement ici." %}</p>
+    <div class="vz-empty bazar-fav-empty">
+        <i class="material-icons" aria-hidden="true">favorite_border</i>
+        <h3 class="vz-empty-title">{% trans "Aucun favori pour l'instant" %}</h3>
+        <p class="vz-empty-text">{% trans "Sauvegardez des annonces qui vous intéressent pour les retrouver facilement ici." %}</p>
         <a href="{% url 'bazar:index' %}" class="vz-btn vz-btn--primary">
             {% trans "Parcourir le Bazar" %}
         </a>

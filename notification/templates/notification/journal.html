@@ -9,7 +9,7 @@
         <div class="nj-header-icon"><span class="material-icons">notifications</span></div>
         <div>
             <h1 class="nj-title">{% trans "Notifications" %}</h1>
-            <p class="nj-subtitle">{% trans "Your recent activity" %}</p>
+            <p class="nj-subtitle">{% trans "Votre activité récente" %}</p>
         </div>
     </div>
 
@@ -29,7 +29,7 @@
                 </span>
             </div>
             <div class="vz-card__body">
-                <h3 class="vz-card__title nj-verb">{{ notif.verb }}</h3>
+                <h3 class="vz-card__title nj-verb">{{ notif.verb|vz_notif_verb }}</h3>
                 <p class="vz-card__subtitle">{{ notif.timestamp|vz_since }}</p>
             </div>
             {% if not notif.read %}<span class="nj-unread-dot" aria-hidden="true"></span>{% endif %}

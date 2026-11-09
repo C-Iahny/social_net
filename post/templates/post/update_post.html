@@ -22,10 +22,10 @@
 
                 <!-- Titre -->
                 <div class="form-field">
-                    <label for="id_title">{% trans "Title" %} <span style="color:var(--badge-danger-t,red)">*</span></label>
+                    <label for="id_title">{% trans "Title" %} <span class="form-required">*</span></label>
                     {{ form.title }}
                     {% if form.title.errors %}
-                    <p style="color:var(--badge-danger-t,red);font-size:.83rem;margin-top:.3rem;">{{ form.title.errors|join:", " }}</p>
+                    <p class="form-error">{{ form.title.errors|join:", " }}</p>
                     {% endif %}
                 </div>
 
@@ -39,7 +39,7 @@
                 {% if existing_media %}
                 <div class="form-field">
                     <label>
-                        <span class="material-icons" style="font-size:1rem;vertical-align:middle;">perm_media</span>
+                        <span class="material-icons">perm_media</span>
                         {% trans "Current media" %}
                     </label>
                     <p class="del-hint">{% trans "Check to delete" %}</p>
@@ -65,25 +65,25 @@
                             <img src="{{ object.header_image_url }}" alt="">
                         </div>
                     </div>
-                    <div style="margin-top:.4rem;">{{ form.header_image }}</div>
+                    <div class="form-subfield">{{ form.header_image }}</div>
                 </div>
                 {% endif %}
 
                 <!-- Ajouter de nouveaux médias -->
                 <div class="form-field">
                     <label>
-                        <span class="material-icons" style="font-size:1rem;vertical-align:middle;">add_photo_alternate</span>
+                        <span class="material-icons">add_photo_alternate</span>
                         {% trans "Add media" %}
                     </label>
                     <label for="id_media_files" class="upload-zone" id="media-upload-zone">
                         <input type="file" name="media_files" id="id_media_files"
                                accept="image/*,video/mp4,video/webm,video/ogg,video/quicktime,.mov,.mkv,.avi,.m4v,.3gp"
                                multiple
-                               style="display:none;"
+                               class="input-file-hidden"
                                onchange="addToSelection(this.files); this.value=null;">
                         <span class="material-icons">add_photo_alternate</span>
                         <p id="media-zone-label"><span class="upload-label">{% trans "Click to add" %}</span> {% trans "or drag and drop" %}</p>
-                        <p style="font-size:.78rem;margin-top:.2rem;">{% trans "Images & Videos — multiple selections" %}</p>
+                        <p class="upload-sub">{% trans "Images & Videos — multiple selections" %}</p>
                     </label>
                     <div class="media-preview-grid" id="media-preview-grid"></div>
                 </div>
@@ -93,8 +93,8 @@
                     <label>{% trans "Attachment" %}</label>
                     {{ form.file }}
                     {% if object.file %}
-                    <p class="upload-hint" style="font-size:.82rem;color:var(--text-muted);margin-top:.3rem;">
-                        {% trans "Current file:" %} <a href="{{ object.file.url }}" target="_blank" style="color:var(--accent);">{% trans "view" %}</a>
+                    <p class="upload-hint">
+                        {% trans "Current file:" %} <a href="{{ object.file.url }}" target="_blank">{% trans "view" %}</a>
                     </p>
                     {% endif %}
                 </div>
@@ -102,17 +102,17 @@
                 {% include 'post/_product_picker.html' %}
 
                 {% if form.non_field_errors %}
-                <p style="color:var(--badge-danger-t,red);font-size:.88rem;">{{ form.non_field_errors }}</p>
+                <p class="form-error form-error--block">{{ form.non_field_errors }}</p>
                 {% endif %}
 
             </div>
 
             <div class="post-form-actions">
                 <a class="btn-cancel" href="{% url 'post:post-view' %}">
-                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> {% trans "Cancel" %}
+                    <span class="material-icons">arrow_back</span> {% trans "Cancel" %}
                 </a>
                 <button class="btn-submit" type="submit">
-                    <span class="material-icons" style="font-size:1rem;">save</span> {% trans "Save" %}
+                    <span class="material-icons">save</span> {% trans "Save" %}
                 </button>
             </div>
         </form>

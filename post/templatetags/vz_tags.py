@@ -85,3 +85,18 @@ def vz_ariary(value):
     except (TypeError, ValueError):
         return ''
     return f"{amount:,}".replace(',', ' ') + ' Ar'
+
+
+@register.filter(name='vz_notif_verb')
+def vz_notif_verb(value):
+    """Libellé de notification dans la langue active (voir notification/verbs.py)."""
+    from notification.verbs import localize_verb
+    return localize_verb(value)
+
+
+@register.filter(name='vz_group_icon')
+def vz_group_icon(category):
+    """Nom de Material Icon d'une catégorie de groupe (remplace l'emoji du libellé)."""
+    from group.models import Group
+    return Group.CATEGORY_ICONS.get(category, 'forum')
+

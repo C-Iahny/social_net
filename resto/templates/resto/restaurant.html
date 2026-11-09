@@ -10,31 +10,31 @@
 <div class="rs-rhead">{% if restaurant.banner %}<img src="{{ restaurant.banner.url }}" alt="">{% endif %}</div>
 <div class="rs-rinfo">
     <div class="rs-card">
-        <div class="rs-rlogo">{% if restaurant.logo %}<img src="{{ restaurant.logo.url }}" alt="">{% else %}🍲{% endif %}</div>
-        <div style="flex:1;min-width:0;">
-            <h1 style="font-size:1.35rem;font-weight:800;margin:0;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+        <div class="rs-rlogo">{% if restaurant.logo %}<img src="{{ restaurant.logo.url }}" alt="">{% else %}<i class="material-icons" aria-hidden="true">ramen_dining</i>{% endif %}</div>
+        <div class="rs-fill">
+            <h1 class="rs-h1 rs-h1--sm rs-rtitle">
                 {{ restaurant.name }}
-                <span class="rs-badge {% if restaurant.is_open %}open{% else %}closed{% endif %}">{% if restaurant.is_open %}{% trans "Ouvert" %}{% else %}{% trans "Fermé" %}{% endif %}</span>
-                {% if not restaurant.is_approved %}<span class="rs-badge pending">{% trans "En attente de validation" %}</span>{% endif %}
+                <span class="vz-chip vz-chip--sm vz-chip--static {% if restaurant.is_open %}vz-chip--success{% else %}vz-chip--danger{% endif %}">{% if restaurant.is_open %}{% trans "Ouvert" %}{% else %}{% trans "Fermé" %}{% endif %}</span>
+                {% if not restaurant.is_approved %}<span class="vz-chip vz-chip--sm vz-chip--static vz-chip--warning">{% trans "En attente de validation" %}</span>{% endif %}
                 {% include 'resto/_rating.html' with r=rating %}
                 {% if request.user.is_authenticated and not is_owner %}
-                <button type="button" class="vz-btn vz-btn--icon vz-btn--sm vz-btn--muted" style="border:0;" onclick="openReportModal('restaurant','{{ restaurant.pk }}')" aria-label="{% trans 'Signaler ce restaurant' %}" title="{% trans 'Signaler' %}"><span class="material-icons">flag</span></button>
+                <button type="button" class="vz-btn vz-btn--icon vz-btn--sm vz-btn--muted rs-report" onclick="openReportModal('restaurant','{{ restaurant.pk }}')" aria-label="{% trans 'Signaler ce restaurant' %}" title="{% trans 'Signaler' %}"><span class="material-icons">flag</span></button>
                 {% endif %}
             </h1>
-            <p class="rs-muted" style="margin:.2rem 0 0;">{{ restaurant.get_category_display }} · 📍 {{ restaurant.address }}{% if restaurant.opening_hours %} · 🕒 {{ restaurant.opening_hours }}{% endif %}</p>
-            {% if restaurant.description %}<p style="margin:.4rem 0 0;font-size:.9rem;">{{ restaurant.description }}</p>{% endif %}
-            <p class="rs-muted" style="margin:.4rem 0 0;">
-                {% if restaurant.offers_delivery %}🛵 {{ restaurant.formatted_delivery_fee }} · {% endif %}
-                {% if restaurant.offers_pickup %}🏪 {% trans "Retrait sur place" %} · {% endif %}
-                ⏱ ~{{ restaurant.avg_prep_minutes }} min
+            <p class="rs-muted rs-rmeta">{{ restaurant.get_category_display }} · <i class="material-icons rs-ico" aria-hidden="true">place</i> {{ restaurant.address }}{% if restaurant.opening_hours %} · <i class="material-icons rs-ico" aria-hidden="true">schedule</i> {{ restaurant.opening_hours }}{% endif %}</p>
+            {% if restaurant.description %}<p class="rs-rdesc">{{ restaurant.description }}</p>{% endif %}
+            <p class="rs-muted rs-rmeta rs-rmeta--mt">
+                {% if restaurant.offers_delivery %}<i class="material-icons rs-ico" aria-hidden="true">delivery_dining</i> {{ restaurant.formatted_delivery_fee }} · {% endif %}
+                {% if restaurant.offers_pickup %}<i class="material-icons rs-ico" aria-hidden="true">storefront</i> {% trans "Retrait sur place" %} · {% endif %}
+                <i class="material-icons rs-ico" aria-hidden="true">timer</i> ~{{ restaurant.avg_prep_minutes }} min
                 {% if restaurant.min_order %} · {% trans "Commande min." %} {{ restaurant.min_order|vz_ariary }}{% endif %}
-                {% if restaurant.phone %} · 📞 <a href="tel:{{ restaurant.phone }}" style="color:var(--accent);">{{ restaurant.phone }}</a>{% endif %}
+                {% if restaurant.phone %} · <i class="material-icons rs-ico" aria-hidden="true">call</i> <a href="tel:{{ restaurant.phone }}" class="rs-link">{{ restaurant.phone }}</a>{% endif %}
             </p>
             {% if is_owner %}
-            <div style="margin-top:.6rem;display:flex;gap:.4rem;flex-wrap:wrap;">
-                <a class="rs-btn sm secondary" href="{% url 'resto:menu_manage' restaurant.slug %}">✏️ {% trans "Gérer le menu" %}</a>
-                <a class="rs-btn sm secondary" href="{% url 'resto:vendor_orders' restaurant.slug %}">📋 {% trans "Commandes" %}</a>
-                <a class="rs-btn sm secondary" href="{% url 'resto:restaurant_edit' restaurant.slug %}">⚙️ {% trans "Infos" %}</a>
+            <div class="rs-actions rs-actions--sm rs-mt">
+                <a class="vz-btn vz-btn--sm vz-btn--secondary" href="{% url 'resto:menu_manage' restaurant.slug %}"><i class="material-icons" aria-hidden="true">edit</i> {% trans "Gérer le menu" %}</a>
+                <a class="vz-btn vz-btn--sm vz-btn--secondary" href="{% url 'resto:vendor_orders' restaurant.slug %}"><i class="material-icons" aria-hidden="true">list_alt</i> {% trans "Commandes" %}</a>
+                <a class="vz-btn vz-btn--sm vz-btn--secondary" href="{% url 'resto:restaurant_edit' restaurant.slug %}"><i class="material-icons" aria-hidden="true">settings</i> {% trans "Infos" %}</a>
             </div>
             {% endif %}
         </div>
@@ -43,15 +43,15 @@
 
 <div class="rs-wrap">
     {% if other_cart %}
-    <div class="rs-card" style="padding:.7rem .9rem;margin:.8rem 0;font-size:.85rem;border-color:var(--accent);">
-        🧺 {% blocktrans with r=other_cart.restaurant.name %}Votre panier contient déjà des plats de <strong>{{ r }}</strong>. Ajouter un plat d'ici le videra.{% endblocktrans %}
-        <a href="{% url 'resto:cart' %}" style="color:var(--accent);font-weight:700;">{% trans "Voir le panier" %}</a>
+    <div class="rs-card rs-card--hl rs-other-cart">
+        <i class="material-icons rs-ico" aria-hidden="true">shopping_basket</i> {% blocktrans with r=other_cart.restaurant.name %}Votre panier contient déjà des plats de <strong>{{ r }}</strong>. Ajouter un plat d'ici le videra.{% endblocktrans %}
+        <a href="{% url 'resto:cart' %}" class="rs-link--b">{% trans "Voir le panier" %}</a>
     </div>
     {% endif %}
 
     {% if sections %}
     <div class="rs-menu-nav">
-        {% for s in sections %}<a class="rs-chip" href="#sec-{{ forloop.counter }}">{{ s.name }}</a>{% endfor %}
+        {% for s in sections %}<a class="vz-chip" href="#sec-{{ forloop.counter }}">{{ s.name }}</a>{% endfor %}
     </div>
     {% for s in sections %}
     <h2 class="rs-section-title" id="sec-{{ forloop.counter }}">{{ s.name }}</h2>
@@ -73,14 +73,14 @@
     </div>
     {% endfor %}
     {% else %}
-    <div class="rs-empty"><div class="ico">🍛</div><p>{% trans "Le menu n'est pas encore publié." %}</p></div>
+    <div class="vz-empty"><i class="material-icons" aria-hidden="true">restaurant_menu</i><p class="vz-empty-text">{% trans "Le menu n'est pas encore publié." %}</p></div>
     {% endif %}
 
     {% if reviews %}
-    <h2 class="rs-section-title">⭐ {% trans "Avis des clients" %} <span class="rs-muted" style="font-size:.9rem;">{% include 'resto/_rating.html' with r=rating %}</span></h2>
-    <div class="rs-card" style="padding:.2rem 1rem;">
+    <h2 class="rs-section-title"><i class="material-icons" aria-hidden="true">star</i> {% trans "Avis des clients" %} <span class="rs-muted rs-text">{% include 'resto/_rating.html' with r=rating %}</span></h2>
+    <div class="rs-card rs-reviews">
         {% for r in reviews %}
-        <div class="rs-review"><span class="rs-rating">{{ r.stars }}</span> <span class="who">{{ r.author.username }}</span> <span class="rs-muted">· {{ r.created_at|date:"d/m/Y" }}</span>{% if r.comment %}<div>{{ r.comment }}</div>{% endif %}</div>
+        <div class="rs-review">{% include 'resto/_stars.html' with n=r.rating %} <span class="who">{{ r.author.username }}</span> <span class="rs-muted">· {{ r.created_at|date:"d/m/Y" }}</span>{% if r.comment %}<div>{{ r.comment }}</div>{% endif %}</div>
         {% endfor %}
     </div>
     {% endif %}
@@ -90,30 +90,30 @@
 <a href="{% url 'resto:cart' %}" class="rs-cartbar {% if cart_summary.count %}show{% endif %}" id="rs-cartbar">
     <span class="material-icons">shopping_basket</span>
     <span id="rs-cartbar-count">{{ cart_summary.count }} {% trans "article(s)" %}</span>
-    <span id="rs-cartbar-total">{{ cart_summary.total|vz_ariary }}</span> →
+    <span id="rs-cartbar-total">{{ cart_summary.total|vz_ariary }}</span> <i class="material-icons rs-ico" aria-hidden="true">arrow_forward</i>
 </a>
 
 <!-- ── Modale d'options ── -->
 <div class="rs-modal-bg" id="rs-modal-bg" onclick="if(event.target===this)rsCloseItem()">
     <div class="rs-modal" role="dialog" aria-modal="true">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.6rem;">
-            <div><h3 id="rs-m-name"></h3><p class="rs-muted" id="rs-m-desc" style="margin:.2rem 0 0;"></p></div>
-            <button class="rs-btn sm ghost" type="button" onclick="rsCloseItem()">✕</button>
+        <div class="rs-between rs-between--top">
+            <div><h3 id="rs-m-name"></h3><p class="rs-muted rs-m-desc" id="rs-m-desc"></p></div>
+            <button class="vz-btn vz-btn--sm vz-btn--muted vz-btn--icon" type="button" onclick="rsCloseItem()" aria-label="{% trans 'Fermer' %}"><i class="material-icons" aria-hidden="true">close</i></button>
         </div>
-        <img id="rs-m-img" alt="" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:.6rem;display:none;">
-        <div id="rs-m-prep" class="rs-opt-group" style="display:none;"><h4>👩‍🍳 {% trans "Préparation" %}</h4><p class="rs-muted" id="rs-m-prep-text" style="margin:0;white-space:pre-line;"></p></div>
+        <img id="rs-m-img" class="rs-m-img" alt="" style="display:none;">
+        <div id="rs-m-prep" class="rs-opt-group" style="display:none;"><h4><i class="material-icons rs-ico" aria-hidden="true">soup_kitchen</i> {% trans "Préparation" %}</h4><p class="rs-muted rs-m-prep-text" id="rs-m-prep-text"></p></div>
         <div id="rs-m-ingredients"></div>
         <div id="rs-m-groups"></div>
         <div class="rs-opt-group">
             <h4>{% trans "Instructions" %} <span class="rs-muted">{% trans "facultatif" %}</span></h4>
             <input id="rs-m-note" class="form-control" maxlength="200" placeholder="{% trans 'Ex : sans oignons, bien cuit…' %}">
         </div>
-        <p class="rs-form err" id="rs-m-err" style="margin:.6rem 0 0;"></p>
-        <div style="display:flex;align-items:center;gap:.8rem;margin-top:1rem;">
+        <p class="rs-form err rs-mt" id="rs-m-err"></p>
+        <div class="rs-m-foot">
             <div class="rs-qty">
                 <button type="button" onclick="rsQty(-1)">−</button><span id="rs-m-qty">1</span><button type="button" onclick="rsQty(1)">+</button>
             </div>
-            <button class="rs-btn" id="rs-m-add" type="button" style="flex:1;" onclick="rsAdd()">
+            <button class="vz-btn vz-btn--primary rs-grow" id="rs-m-add" type="button" onclick="rsAdd()">
                 {% trans "Ajouter" %} · <span id="rs-m-total"></span>
             </button>
         </div>
@@ -136,6 +136,7 @@
   };
   let item = null, qty = 1;
   const fmt = n => n.toLocaleString('fr-FR').replace(/ | /g, ' ') + ' Ar';
+  const ico = name => `<i class="material-icons rs-ico" aria-hidden="true">${name}</i>`;
 
   window.rsOpenItem = async function(pk){
     if(!LOGGED){ window.location = "{% url 'login' %}?next=" + encodeURIComponent(window.location.pathname); return; }
@@ -158,17 +159,17 @@
     const ing = document.getElementById('rs-m-ingredients'); ing.innerHTML = '';
     if(item.ingredients && item.ingredients.length){
       const base = item.ingredients.filter(i => i.default_on), extras = item.ingredients.filter(i => !i.default_on);
-      let h = `<div class="rs-opt-group"><h4>🥗 ${I18N.ingredients} <span class="rs-muted">${I18N.ingHint}</span></h4>`;
+      let h = `<div class="rs-opt-group"><h4>${ico('eco')} ${I18N.ingredients} <span class="rs-muted">${I18N.ingHint}</span></h4>`;
       base.forEach(i => {
         if(i.locked){
-          h += `<div class="rs-opt" style="cursor:default;"><span style="width:18px;text-align:center;">✓</span><span>${esc(i.name)}</span><span class="extra">${I18N.fixed}</span></div>`;
+          h += `<div class="rs-opt rs-opt--fixed"><span class="rs-opt-mark">${ico('check')}</span><span>${esc(i.name)}</span><span class="extra">${I18N.fixed}</span></div>`;
         } else {
           // case « Enlever » : décochée = l'ingrédient reste dans le plat
           h += `<label class="rs-opt"><input type="checkbox" class="ing-rm" value="${esc(i.name)}" data-price="${i.price}"><span>${esc(i.name)}</span><span class="extra">${I18N.remove}</span></label>`;
         }
       });
       if(extras.length){
-        h += `<div class="rs-muted" style="margin:.5rem 0 .2rem;font-size:.8rem;">➕ ${I18N.extras}</div>`;
+        h += `<div class="rs-muted rs-extras-title">${ico('add_circle_outline')} ${I18N.extras}</div>`;
         extras.forEach(i => {
           h += `<label class="rs-opt"><input type="checkbox" class="ing-add" value="${esc(i.name)}" data-price="${i.price}"><span>${esc(i.name)}</span><span class="extra">${I18N.addIt}${i.price ? ' · +' + fmt(i.price) : ''}</span></label>`;
         });

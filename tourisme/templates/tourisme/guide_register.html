@@ -11,7 +11,7 @@
 
     <!-- Hero -->
     <div class="guide-reg-hero">
-        <span class="material-icons" style="font-size:2.5rem;margin-bottom:.5rem;display:block;">explore</span>
+        <span class="material-icons" aria-hidden="true">explore</span>
         <h1>{% if guide %}Modifier mon profil guide{% else %}Devenir guide touristique{% endif %}</h1>
         <p>
             {% if guide %}
@@ -57,7 +57,7 @@
                     </label>
                     <input type="file" name="photo" id="id_photo"
                            accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff,.heic,.heif,.avif,.svg">
-                    <div style="font-size:.75rem;color:var(--text-subtle);margin-top:.3rem;">
+                    <div class="photo-help">
                         {% trans "Tous formats image (JPG, PNG, HEIC, GIF…) — max 10 Mo" %}
                     </div>
                 </div>
@@ -205,8 +205,8 @@
             {% if guide %}Enregistrer les modifications{% else %}Soumettre mon profil{% endif %}
         </button>
 
-        <p style="text-align:center;font-size:.8rem;color:var(--text-subtle);margin-top:.9rem;">
-            <span class="material-icons" style="font-size:.9rem;vertical-align:middle;">info</span>
+        <p class="guide-reg-note">
+            <span class="material-icons" aria-hidden="true">info</span>
             {% trans "Votre profil sera examiné par un administrateur avant d'être publié." %}
         </p>
     </form>
@@ -222,7 +222,7 @@ document.getElementById('id_photo').addEventListener('change', function(e) {
     var reader = new FileReader();
     reader.onload = function(ev) {
         var preview = document.getElementById('photoPreview');
-        preview.innerHTML = '<img src="' + ev.target.result + '" alt="Preview" style="width:100%;height:100%;object-fit:cover;">';
+        preview.innerHTML = '<img src="' + ev.target.result + '" alt="Preview">';
     };
     reader.readAsDataURL(file);
 });

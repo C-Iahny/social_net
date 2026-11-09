@@ -1,0 +1,5 @@
+/* Styles de page resto/index.html — servis en statique (cache navigateur + service worker). */
+
+.rs-hero h1 .material-icons { font-size: 1.6rem; vertical-align: -.2em; }
+.rs-count { margin: .3rem 0 .8rem; }
+.rs-pager .vz-seg.active { cursor: default; }

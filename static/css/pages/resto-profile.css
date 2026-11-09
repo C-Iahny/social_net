@@ -11,3 +11,16 @@
 .rs-cp-row { display: flex; gap: .6rem; padding: .45rem 0; border-top: 1px dashed var(--border); font-size: .9rem; }
 .rs-cp-row .k { color: var(--text-muted); min-width: 120px; flex: none; }
 .rs-check { color: var(--success); font-weight: 700; } .rs-cross { color: var(--text-subtle); }
+/* Ex-styles en ligne du gabarit */
+.rs-cp-card { padding: 1.1rem; }
+.rs-cp-photo img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.rs-cp-photo .material-icons { font-size: 2.4rem; color: var(--text-subtle); }
+.rs-cp-tags { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; margin-top: .3rem; }
+.rs-cp-bio { margin: .8rem 0 0; font-size: .92rem; }
+.rs-cp-stat b .material-icons { font-size: 1.1rem; vertical-align: -.15em; }
+.rs-form .err.rs-cp-warn { margin: .8rem 0 0; font-size: .82rem; }
+.rs-cp-row--first { border-top: none; }
+.rs-cp-row .k .material-icons { color: var(--text-subtle); }
+.rs-cp-vehicle { max-height: 180px; border-radius: 10px; margin: .2rem 0 .4rem; }
+.rs-cp-zone { margin: .15rem .15rem 0 0; }
+.rs-cp-note { margin: .5rem 0 0; font-size: .78rem; }

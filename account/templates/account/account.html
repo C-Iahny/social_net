@@ -13,8 +13,7 @@
     <div class="profile-cover" id="profile-cover-wrap">
         {% if cover_image_url %}
         <img src="{{ cover_image_url }}" class="profile-cover-img" id="cover-img" alt="Couverture" loading="lazy" decoding="async"
-             onclick="openPhotoDirectLb('{{ cover_image_url }}', '{% trans "Photo de couverture" %}')"
-             style="cursor:zoom-in;">
+             onclick="openPhotoDirectLb('{{ cover_image_url }}', '{% trans "Photo de couverture" %}')">
         {% else %}
         <div class="profile-cover-bg"></div>
         <div class="profile-cover-noise"></div>
@@ -27,7 +26,7 @@
             {% trans "Change cover" %}
         </button>
         {# Input caché #}
-        <input type="file" id="cover-file-input" accept="image/*" style="display:none"
+        <input type="file" id="cover-file-input" class="d-none" accept="image/*"
                onchange="uploadCoverImage(this)">
         {% endif %}
     </div>
@@ -36,8 +35,7 @@
         <div class="avatar-area">
             <div class="avatar-ring-wrap" id="profile-avatar-wrap">
                 <span id="profile-story-ring-el"></span>
-                <img src="{{ profile_image }}" alt="{{ username }}"
-                     style="position:relative;z-index:1;cursor:zoom-in;"
+                <img src="{{ profile_image }}" alt="{{ username }}" class="profile-avatar-img"
                      onclick="openPhotoDirectLb('{{ profile_image }}', '{{ username|escapejs }}'); event.stopPropagation();">
                 {% if is_self %}
                 <a class="avatar-edit-fab" href="{% url 'account:edit' user_id=id %}"
@@ -48,11 +46,11 @@
             </div>
 
             <div class="profile-name-area">
-                <h1 class="profile-username" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+                <h1 class="profile-username">
                     {{ username }}
                     {% if profile_user.phone_verified %}
-                    <span class="vz-chip vz-chip--accent" style="min-height:24px;font-size:.66rem;" title="{% trans 'Numéro de téléphone vérifié par SMS' %}">
-                        <span class="material-icons" style="font-size:.9rem;">verified</span> {% trans "Tél. vérifié" %}
+                    <span class="vz-chip vz-chip--accent profile-verified-chip" title="{% trans 'Numéro de téléphone vérifié par SMS' %}">
+                        <span class="material-icons">verified</span> {% trans "Tél. vérifié" %}
                     </span>
                     {% endif %}
                 </h1>
@@ -80,11 +78,11 @@
                     <span class="fihav-stat"
                           title="Score Fihavanana — solidarité &amp; engagement communautaire">
                         <span class="fihav-badge-inline">
-                            <span class="material-icons" style="font-size:.75rem;">favorite</span>
+                            <span class="material-icons">favorite</span>
                             Fihavanana&nbsp;
                             <span class="fihav-stat-val">{{ profile_user.score_fihavanana }}</span>
                         </span>
-                        <span style="font-size:.8rem;">{{ profile_user.fihavanana_level.0 }}&nbsp;{{ profile_user.fihavanana_level.1 }}</span>
+                        <span class="fihav-level-txt">{{ profile_user.fihavanana_level.0 }}&nbsp;{{ profile_user.fihavanana_level.1 }}</span>
                     </span>
                 </div>
             </div>
@@ -126,12 +124,10 @@
                         <button class="btn-p btn-p-secondary dropdown-toggle" data-toggle="dropdown" id="friends-drop" type="button">
                             <span class="material-icons">how_to_reg</span> {% trans "Ami" %}
                         </button>
-                        <div class="dropdown-menu" aria-labelledby="friends-drop"
-                             style="border-radius:12px;border-color:var(--border);background:var(--bg-card);box-shadow:0 8px 28px rgba(0,0,0,.18);padding:.4rem;">
-                            <a class="dropdown-item" href="#"
-                               style="border-radius:8px;color:var(--danger);font-size:.88rem;padding:.5rem .85rem;"
+                        <div class="dropdown-menu profile-dd-menu" aria-labelledby="friends-drop">
+                            <a class="dropdown-item profile-dd-danger" href="#"
                                onclick="removeFriend('{{ id }}', onFriendRemoved)">
-                                <span class="material-icons mr-1" style="font-size:.95rem;vertical-align:middle;">person_remove</span>
+                                <span class="material-icons mr-1">person_remove</span>
                                 {% trans "Remove friend" %}
                             </a>
                         </div>
@@ -246,44 +242,44 @@
                         {% endwith %}
                     {% else %}
                         <div class="fihav-progress-wrap">
-                            <div class="fihav-progress-bar" style="width:100%;"></div>
+                            <div class="fihav-progress-bar is-full"></div>
                         </div>
-                        <p class="fihav-next-level" style="text-align:center;font-weight:700;color:var(--accent);">
-                            🌟 {% trans "Niveau maximum atteint !" %}
+                        <p class="fihav-next-level fihav-next-level--max">
+                            <i class="material-icons" aria-hidden="true">star</i> {% trans "Niveau maximum atteint !" %}
                         </p>
                     {% endif %}
                     {% endwith %}
 
                     <div class="fihav-breakdown">
-                        <p style="font-size:.68rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.35rem;">
+                        <p class="fihav-breakdown-title">
                             {% trans "Comment gagner des points" %}
                         </p>
                         <div class="fihav-breakdown-row">
-                            <span>📝 {% trans "Post standard" %}</span>
+                            <span><i class="material-icons" aria-hidden="true">edit_note</i> {% trans "Post standard" %}</span>
                             <span class="fihav-breakdown-val">+5</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>🎙️ Kabary</span>
+                            <span><i class="material-icons" aria-hidden="true">record_voice_over</i> Kabary</span>
                             <span class="fihav-breakdown-val">+10</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>💬 {% trans "Commentaire" %}</span>
+                            <span><i class="material-icons" aria-hidden="true">chat_bubble_outline</i> {% trans "Commentaire" %}</span>
                             <span class="fihav-breakdown-val">+2</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>❤️ {% trans "Réaction reçue" %}</span>
+                            <span><i class="material-icons" aria-hidden="true">favorite</i> {% trans "Réaction reçue" %}</span>
                             <span class="fihav-breakdown-val">+3</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>🔁 {% trans "Repost reçu" %}</span>
+                            <span><i class="material-icons" aria-hidden="true">repeat</i> {% trans "Repost reçu" %}</span>
                             <span class="fihav-breakdown-val">+4</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>👤 {% trans "Ami" %}</span>
+                            <span><i class="material-icons" aria-hidden="true">person</i> {% trans "Ami" %}</span>
                             <span class="fihav-breakdown-val">+3</span>
                         </div>
                         <div class="fihav-breakdown-row">
-                            <span>👥 {% trans "Groupe rejoint" %}</span>
+                            <span><i class="material-icons" aria-hidden="true">groups</i> {% trans "Groupe rejoint" %}</span>
                             <span class="fihav-breakdown-val">+2</span>
                         </div>
                     </div>
@@ -329,8 +325,7 @@
                         {% endfor %}
                     </div>
                     {% if friends_count > 9 %}
-                    <a href="{% url 'friend:list' user_id=id %}" class="btn-p btn-p-secondary"
-                       style="width:100%;margin-top:.75rem;justify-content:center;">
+                    <a href="{% url 'friend:list' user_id=id %}" class="btn-p btn-p-secondary pc-sidebar-cta">
                         {% trans "My friends" %}
                     </a>
                     {% endif %}
@@ -343,7 +338,7 @@
                     <p class="pc-sidebar-label">{% trans "Photos" %}</p>
                     <div class="mini-friends-grid">
                         {% for photo in photos|slice:":9" %}
-                        <div class="mini-friend" style="cursor:zoom-in;"
+                        <div class="mini-friend mini-photo"
                              onclick="openGalleryLightbox([{% for p in photos|slice:':9' %}'{{ p.url }}'{% if not forloop.last %},{% endif %}{% endfor %}], {{ forloop.counter0 }})"
                              title="{{ photo.title }}">
                             <img src="{{ photo.url }}" alt="{{ photo.title }}" loading="lazy" decoding="async">
@@ -360,9 +355,9 @@
 
                 <!-- Stories des amis -->
                 {% if request.user.is_authenticated %}
-                <div id="pf-friends-stories-wrap" style="display:none;">
+                <div id="pf-friends-stories-wrap">
                     <div class="pf-stories-header">
-                        <span class="material-icons" style="color:var(--accent);font-size:1rem;">groups</span>
+                        <span class="material-icons">groups</span>
                         <span class="pf-stories-label">{% trans "Friends' stories" %}</span>
                     </div>
                     {% include 'stories/story_bar.html' %}
@@ -370,34 +365,33 @@
                 {% endif %}
 
                 <!-- Stories section -->
-                <div id="profile-stories-section" style="display:none;margin-bottom:1rem;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;">
-                        <div style="display:flex;align-items:center;gap:.45rem;">
-                            <span class="material-icons" style="color:var(--accent);font-size:1rem;">auto_stories</span>
-                            <span style="font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);">
+                <div id="profile-stories-section">
+                    <div class="pf-stories-head">
+                        <div class="pf-stories-head-left">
+                            <span class="material-icons">auto_stories</span>
+                            <span class="pf-stories-title">
                                 {% if is_self %}{% trans "Mes stories" %}{% else %}{% trans "Stories" %}{% endif %}
                             </span>
                         </div>
                         {% if is_self %}
-                        <button onclick="openStoryCreator()"
-                            style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:20px;padding:.3rem .85rem;font-size:.74rem;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:.3rem;" type="button">
-                            <span class="material-icons" style="font-size:.85rem;">add</span> {% trans "New" %}
+                        <button onclick="openStoryCreator()" class="vz-btn vz-btn--primary vz-btn--sm vz-btn--pill" type="button">
+                            <span class="material-icons">add</span> {% trans "New" %}
                         </button>
                         {% endif %}
                     </div>
-                    <div id="profile-stories-grid" style="display:flex;gap:.7rem;flex-wrap:wrap;"></div>
+                    <div id="profile-stories-grid"></div>
                 </div>
 
                 <!-- Create post inline (own profile) -->
                 {% if is_self %}
                 <div id="pf-create-box">
                     <!-- Inputs fichiers cachés -->
-                    <input type="file" id="pf-cb-media-input" multiple accept="image/*,video/*" style="display:none">
-                    <input type="file" id="pf-cb-file-input"  multiple style="display:none">
+                    <input type="file" id="pf-cb-media-input" class="d-none" multiple accept="image/*,video/*">
+                    <input type="file" id="pf-cb-file-input" class="d-none" multiple>
 
                     <!-- Formulaire caché -->
-                    <form id="pf-cb-form" method="post" enctype="multipart/form-data"
-                          action="{% url 'post:addPost' %}" style="display:none;">
+                    <form id="pf-cb-form" class="d-none" method="post" enctype="multipart/form-data"
+                          action="{% url 'post:addPost' %}">
                         {% csrf_token %}
                         <input type="hidden" name="ajax" value="1">
                         <textarea name="body" id="pf-cb-body-hidden"></textarea>
@@ -411,19 +405,15 @@
                         </button>
                         <textarea id="pf-cb-body" rows="2"
                             placeholder="{% trans "What's new" %} {{ username }} ?"
-                            style="display:none;flex:1;background:var(--btn-bg);border:1.5px solid var(--accent);
-                                   border-radius:14px;padding:.55rem 1rem;color:var(--text);font-size:.9rem;
-                                   resize:none;outline:none;line-height:1.5;min-height:42px;"
                             oninput="pfCbResize(this)"></textarea>
                     </div>
 
                     <!-- Mosaïque aperçu -->
-                    <div id="pf-cb-preview-grid" style="display:none;margin:.1rem 1.1rem .5rem;"></div>
+                    <div id="pf-cb-preview-grid"></div>
 
                     <!-- Barre soumission -->
-                    <div id="pf-cb-submit-bar"
-                         style="padding:.35rem 1.1rem .6rem;align-items:center;justify-content:flex-end;gap:.5rem;">
-                        <span id="pf-cb-file-count" style="flex:1;font-size:.79rem;color:var(--text-muted);"></span>
+                    <div id="pf-cb-submit-bar">
+                        <span id="pf-cb-file-count"></span>
                         <button type="button" id="pf-cb-cancel-btn" class="vz-btn vz-btn--muted vz-btn--sm">
                             {% trans "Cancel" %}
                         </button>
@@ -433,7 +423,7 @@
                         </button>
                     </div>
 
-                    <hr style="border:none;border-top:1px solid var(--border);margin:0;">
+                    <hr class="pf-cb-sep">
 
                     <!-- Boutons action -->
                     <div class="create-box-actions">
@@ -446,21 +436,14 @@
                         <button class="create-box-action post" type="button" id="pf-cb-write-btn">
                             <span class="material-icons">edit_note</span><span class="btn-label">{% trans "Write" %}</span>
                         </button>
-                        <a class="create-box-action" href="{% url 'post:kabary-create' %}"
-                           style="color:var(--text-muted);text-decoration:none;">
+                        <a class="create-box-action" href="{% url 'post:kabary-create' %}">
                             <span class="material-icons">record_voice_over</span><span class="btn-label">Kabary</span>
                         </a>
-                        <a class="create-box-action" href="{% url 'post:vintana-create' %}"
-                           style="color:var(--text-muted);text-decoration:none;">
+                        <a class="create-box-action" href="{% url 'post:vintana-create' %}">
                             <span class="material-icons">auto_stories</span><span class="btn-label">Vintana</span>
                         </a>
                     </div>
                 </div>
-
-                <style>
-                @keyframes pf-cb-spin { to { transform: rotate(360deg); } }
-                .pf-cb-spinning { animation: pf-cb-spin .8s linear infinite; display:inline-block; }
-                </style>
 
                 <script>
                 (function() {
@@ -579,11 +562,11 @@
 
                 submitBtn.addEventListener('click', async function(){
                     if (!bodyTA.value.trim() && !selectedFiles.length) {
-                        bodyTA.focus(); bodyTA.style.borderColor='#e53935';
+                        bodyTA.focus(); bodyTA.style.borderColor='var(--danger)';
                         setTimeout(function(){ bodyTA.style.borderColor='var(--accent)'; },2000); return;
                     }
                     submitBtn.disabled=true;
-                    submitBtn.innerHTML='<span class="material-icons pf-cb-spinning" style="font-size:.95rem;">refresh</span> Publication…';
+                    submitBtn.innerHTML='<span class="material-icons pf-cb-spinning">refresh</span> Publication…';
 
                     bodyHidden.value = bodyTA.value;
                     var fd=new FormData(form);
@@ -627,7 +610,7 @@
                     } catch(err) { console.error('pf-cb-form:',err); vzAlert('Erreur réseau.'); }
                     finally {
                         submitBtn.disabled=false;
-                        submitBtn.innerHTML='<span class="material-icons" style="font-size:.95rem;">send</span> {% trans "Publish"|escapejs %}';
+                        submitBtn.innerHTML='<span class="material-icons">send</span> {% trans "Publish"|escapejs %}';
                     }
                 });
                 })();
@@ -643,11 +626,10 @@
                     {% if posts_has_next %}
                     <div id="profile-posts-sentinel"
                          data-next="{{ posts_next_page }}"
-                         data-url="{% url 'account:profile-posts-more' user_id=id %}"
-                         style="height:1px;margin-bottom:2rem;">
+                         data-url="{% url 'account:profile-posts-more' user_id=id %}">
                     </div>
-                    <div id="profile-posts-loader" style="display:none;text-align:center;padding:1.2rem 0;">
-                        <div class="spinner-border text-primary" role="status" style="width:1.6rem;height:1.6rem;"></div>
+                    <div id="profile-posts-loader">
+                        <div class="spinner-border text-primary" role="status"></div>
                     </div>
                     {% endif %}
                 {% else %}
@@ -655,7 +637,7 @@
                         <span class="material-icons">article</span>
                         <p>{% trans "No posts yet." %}</p>
                         {% if is_self %}
-                        <a class="btn-p btn-p-primary" href="{% url 'post:addPost' %}" style="margin-top:.75rem;">
+                        <a class="btn-p btn-p-primary pf-empty-cta" href="{% url 'post:addPost' %}">
                             <span class="material-icons">add</span> {% trans "First Post" %}
                         </a>
                         {% endif %}
@@ -686,7 +668,7 @@
             <span class="material-icons">photo_library</span>
             <p>{% trans "No photos yet." %}</p>
             {% if is_self %}
-            <a class="btn-p btn-p-primary" href="{% url 'post:addPost' %}" style="margin-top:.75rem;">
+            <a class="btn-p btn-p-primary pf-empty-cta" href="{% url 'post:addPost' %}">
                 <span class="material-icons">add_photo_alternate</span> {% trans "Publish Photo" %}
             </a>
             {% endif %}
@@ -719,23 +701,23 @@
          TAB: ABOUT
          ══════════════════════════════════ -->
     <div class="tab-pane" id="tab-about">
-        <div class="pc-sidebar-card" style="max-width:600px;">
+        <div class="pc-sidebar-card pc-about-card">
             <p class="pc-sidebar-label">{% trans "About" %}</p>
 
             <div class="info-row">
                 <span class="material-icons">person</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Name" %}</div>
+                    <div class="info-label">{% trans "Name" %}</div>
                     <strong>{{ username }}</strong>
                 </div>
             </div>
             <div class="info-row">
                 <span class="material-icons">mail</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Email" %}</div>
+                    <div class="info-label">{% trans "Email" %}</div>
                     <div>
                         {% if is_self %}{{ email }}
-                        {% elif hide_email %}<em style="color:var(--text-muted)">{% trans "Hidden by user" %}</em>
+                        {% elif hide_email %}<em class="info-muted">{% trans "Hidden by user" %}</em>
                         {% else %}{{ email }}{% endif %}
                     </div>
                 </div>
@@ -744,7 +726,7 @@
             <div class="info-row">
                 <span class="material-icons">notes</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Bio" %}</div>
+                    <div class="info-label">{% trans "Bio" %}</div>
                     <div>{{ bio }}</div>
                 </div>
             </div>
@@ -753,7 +735,7 @@
             <div class="info-row">
                 <span class="material-icons">place</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Location" %}</div>
+                    <div class="info-label">{% trans "Location" %}</div>
                     <div>{{ location }}</div>
                 </div>
             </div>
@@ -761,27 +743,27 @@
             <div class="info-row">
                 <span class="material-icons">calendar_today</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Member since" %}</div>
+                    <div class="info-label">{% trans "Member since" %}</div>
                     <div>{{ date_joined|date:"d F Y" }}</div>
                 </div>
             </div>
             <div class="info-row">
                 <span class="material-icons">article</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Posts" %}</div>
+                    <div class="info-label">{% trans "Posts" %}</div>
                     <div>{{ post_count }}</div>
                 </div>
             </div>
             <div class="info-row">
                 <span class="material-icons">group</span>
                 <div>
-                    <div style="font-size:.75rem;color:var(--text-muted);">{% trans "Friends" %}</div>
+                    <div class="info-label">{% trans "Friends" %}</div>
                     <div>{{ friends_count }}</div>
                 </div>
             </div>
 
             {% if is_self %}
-            <div style="margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap;">
+            <div class="pc-about-actions">
                 <a class="btn-p btn-p-primary" href="{% url 'account:edit' user_id=id %}">
                     <span class="material-icons">edit</span> {% trans "Edit profile" %}
                 </a>
@@ -861,15 +843,15 @@ function onFriendRequestSent() {
     btn.classList.add('btn-p-pending');
     btn.disabled = true;
     btn.style.pointerEvents = 'none';
-    btn.innerHTML = '<span class="material-icons" style="font-size:.95rem;">schedule</span> {% trans "Request sent"|escapejs %}';
+    btn.innerHTML = '<span class="material-icons">schedule</span> {% trans "Request sent"|escapejs %}';
 
     /* Ajouter un lien "Annuler" discret juste après le bouton */
     if (!document.getElementById('id_inline_cancel_link')) {
         var cancelLink = document.createElement('button');
         cancelLink.id = 'id_inline_cancel_link';
         cancelLink.className = 'btn-p btn-p-secondary';
-        cancelLink.style.fontSize = '.82rem';
-        cancelLink.innerHTML = '<span class="material-icons" style="font-size:.85rem;">close</span> {% trans "Cancel"|escapejs %}';
+        cancelLink.classList.add('btn-p-cancel-inline');
+        cancelLink.innerHTML = '<span class="material-icons">close</span> {% trans "Cancel"|escapejs %}';
         cancelLink.onclick = function() {
             cancelFriendRequest("{{ id }}", onFriendRequestCancelled);
         };
@@ -885,7 +867,7 @@ function onFriendRequestCancelled() {
         btn.classList.add('btn-p-primary');
         btn.disabled = false;
         btn.style.pointerEvents = '';
-        btn.innerHTML = '<span class="material-icons" style="font-size:.95rem;">person_add</span> {% trans "Add friend"|escapejs %}';
+        btn.innerHTML = '<span class="material-icons">person_add</span> {% trans "Add friend"|escapejs %}';
     }
     var cancelLink = document.getElementById('id_inline_cancel_link');
     if (cancelLink) cancelLink.remove();
@@ -1349,7 +1331,7 @@ document.addEventListener('zootStoriesLoaded', function(e) {
                 inner.style.background = GRAD_MAP[s.bg_gradient] || GRAD_MAP.grad_cyan;
                 inner.innerHTML = '<div class="profile-story-thumb-text"><p>' + (s.caption || '') + '</p></div>';
             } else if (s.story_type === 'video' && s.media_url) {
-                inner.innerHTML = '<video src="' + s.media_url + '" muted preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>';
+                inner.innerHTML = '<video src="' + s.media_url + '" muted preload="metadata" class="pf-story-video"></video>';
             } else if (s.media_url) {
                 inner.innerHTML = '<img src="' + s.media_url + '" alt="" loading="lazy">';
             } else {

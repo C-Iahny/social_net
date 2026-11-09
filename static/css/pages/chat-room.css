@@ -518,7 +518,9 @@
 #reply-cancel-btn {
     flex-shrink:0; background:none; border:none; cursor:pointer;
     color:var(--text-muted,#888); font-size:1.1rem; padding:0 2px; line-height:1;
+    display:flex; align-items:center;
 }
+#reply-cancel-btn .material-icons { font-size: 1.1rem; }
 
 /* ── Bouton reply sur chaque bulle ─────────────────────────────── */
 .msg-reply-btn {
@@ -543,6 +545,8 @@
     display: flex; align-items: center;
     font-size: .85rem;
 }
+.msg-react-btn .material-icons { font-size: 1rem; }
+.msg-reply-btn .material-icons { font-size: .9rem; }
 .message-container:hover .msg-react-btn { opacity: 1; }
 @media (hover: none) { .msg-react-btn { opacity: .45; } }
 /* own-msg : bouton react passe à GAUCHE aussi (côté intérieur, près de la bulle) */
@@ -808,20 +812,15 @@
     flex-shrink: 0;
     font-size: 1.3rem;
 }
-.file-icon.icon-pdf  { background: #fdecea; color: var(--danger); }
-.file-icon.icon-word { background: #e3f2fd; color: #1565c0; }
-.file-icon.icon-ppt  { background: #fff3e0; color: #e65100; }
-.file-icon.icon-img  { background: #f3e5f5; color: #7b1fa2; }
-.file-icon.icon-vid  { background: #e8f5e9; color: var(--success); }
-.file-icon.icon-zip  { background: #fafafa; color: #616161; }
-.file-icon.icon-gen  { background: #e8eaf6; color: #3949ab; }
-[data-theme="dark"] .file-icon.icon-pdf  { background: #3b1010; color: #ff6b6b; }
-[data-theme="dark"] .file-icon.icon-word { background: #0d1e30; color: #64b5f6; }
-[data-theme="dark"] .file-icon.icon-ppt  { background: #2a1800; color: #ffa040; }
-[data-theme="dark"] .file-icon.icon-img  { background: #1e0a2a; color: #ce93d8; }
-[data-theme="dark"] .file-icon.icon-vid  { background: #0a2010; color: #66bb6a; }
-[data-theme="dark"] .file-icon.icon-zip  { background: #1a1a1a; color: #9e9e9e; }
-[data-theme="dark"] .file-icon.icon-gen  { background: #0d1030; color: #7986cb; }
+.msg-file-doc .file-icon .material-icons { font-size: 1.3rem; }
+.file-icon.icon-pdf  { background: rgba(var(--danger-rgb), .12);  color: var(--danger); }
+.file-icon.icon-word { background: var(--bg-secondary);            color: var(--info); }
+.file-icon.icon-ppt  { background: rgba(217,119,6,.12);            color: var(--warning); }
+.file-icon.icon-img  { background: rgba(var(--vintana-rgb), .12); color: var(--vintana); }
+.file-icon.icon-vid  { background: rgba(var(--success-rgb), .12); color: var(--success); }
+.file-icon.icon-zip  { background: var(--bg-secondary);            color: var(--text-muted); }
+.file-icon.icon-gen  { background: rgba(var(--accent-rgb), .12);  color: var(--accent); }
+.file-dl-icon { font-size: .95rem; color: var(--text-muted); margin-left: auto; }
 .msg-file-doc .file-info { flex: 1; min-width: 0; }
 .msg-file-doc .file-name {
     font-size: .83rem;
@@ -937,7 +936,7 @@
     border-radius: 8px;
     background: var(--bg-secondary);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.4rem; flex-shrink: 0;
+    font-size: 1.4rem; flex-shrink: 0; color: var(--text-muted);
 }
 .bazar-ref-info { flex: 1; min-width: 0; }
 .bazar-ref-title {
@@ -1379,3 +1378,39 @@
     /* Le hint clavier est inutile sur mobile */
     .input-hint { display: none; }
 }
+
+
+/* ── Styles sortis du gabarit (2026-11) : plus de style= en ligne sauf les
+      display:none basculés par le JS (boutons d'appel, micro, lightbox…) ── */
+.chat-side-empty { padding: 1.2rem .8rem; text-align: center; color: var(--text-muted); font-size: .82rem; }
+.chat-side-empty .material-icons { font-size: 1.8rem; display: block; margin-bottom: .4rem; opacity: .35; }
+#id_user_info_container { gap: .65rem; }
+#chat-no-selection { color: var(--text-muted); font-size: .87rem; position: absolute; right: 1rem; }
+#chat-no-selection .material-icons { vertical-align: middle; font-size: 1.05rem; margin-right: 5px; }
+#id_chat_log_container { flex: 1; overflow: hidden; }
+#id_page_number[hidden] { display: none !important; }
+.file-preview-remove .material-icons { font-size: .9rem; }
+#chat-upload-progress > .material-icons { font-size: 1rem; }
+#upload-progress-pct { font-size: .78rem; min-width: 32px; }
+.bazar-ref-close .material-icons { font-size: 1.1rem; }
+.chat-input-inner { position: relative; }
+.chat-mic-btn--danger { color: var(--danger); }
+.chat-err-toast {
+    text-align: center; color: var(--danger); font-size: .78rem;
+    padding: .4rem .6rem; margin: .3rem 0;
+    background: rgba(var(--danger-rgb), .08); border-radius: var(--radius-sm);
+}
+#call-ice-debug { font-size: 10px; color: rgba(255,255,255,.55); letter-spacing: 1px; min-height: 14px; text-align: center; }
+.call-ctrl-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+#call-unmute-btn {
+    position: absolute; top: 18%; left: 50%; transform: translateX(-50%);
+    padding: .6rem 1.2rem; background: rgba(var(--danger-rgb), .92); color: #fff; border: none;
+    border-radius: var(--radius-pill); font-size: .85rem; font-weight: 700; cursor: pointer; z-index: 60;
+    display: flex; align-items: center; white-space: nowrap; font-family: inherit;
+}
+#call-unmute-btn .material-icons { font-size: 1.1rem; vertical-align: middle; }
+#chat-lightbox {
+    position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.88);
+    align-items: center; justify-content: center; cursor: zoom-out;
+}
+#chat-lightbox-img { max-width: 92vw; max-height: 90vh; border-radius: var(--radius-sm); box-shadow: 0 8px 40px rgba(0,0,0,.6); }

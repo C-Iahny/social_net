@@ -53,7 +53,7 @@
                     <span class="material-icons">chat_bubble_outline</span>
                     {{ post.n_comments }} commentaire{{ post.n_comments|pluralize }}
                 </div>
-                <a href="{% url 'post:post-view' %}" style="padding:.5rem 1rem; color:var(--accent); font-size:.85rem; font-weight:700; text-decoration:none;">
+                <a href="{% url 'post:post-view' %}" class="pc-footer-view">
                     {% trans "View" %}
                 </a>
             </div>
@@ -76,9 +76,9 @@
 
     {% else %}
         <div class="empty-ht">
-            <span class="ef-icon">🔍</span>
-            <strong style="color:var(--text);">Aucun post trouvé pour {{ tag }}</strong>
-            <p style="margin-top:.5rem;">{% trans "Be the first to post with this hashtag!" %}</p>
+            <span class="material-icons ef-icon" aria-hidden="true">search</span>
+            <strong>Aucun post trouvé pour {{ tag }}</strong>
+            <p>{% trans "Be the first to post with this hashtag!" %}</p>
         </div>
     {% endif %}
 
@@ -106,7 +106,7 @@ function processHashtagsAndMentions(container) {
                 return '<a class="hashtag" href="' + '{% url "post:hashtag" tag="__TAG__" %}'.replace('__TAG__', encodeURIComponent(tag.toLowerCase())) + '">' + m + '</a>';
             })
             .replace(/@([a-zA-Z0-9_]{2,30})/g, function(m, user) {
-                return '<a class="mention" href="/account/search/?q=' + encodeURIComponent(user) + '" style="color:var(--accent2);font-weight:700;text-decoration:none;">' + m + '</a>';
+                return '<a class="mention" href="/account/search/?q=' + encodeURIComponent(user) + '">' + m + '</a>';
             });
         if (html !== n.textContent.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')) {
             var span = document.createElement('span');

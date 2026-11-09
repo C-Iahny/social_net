@@ -43,29 +43,29 @@
             </a>
             {% endif %}
             <button type="submit" class="guides-filter-btn" aria-label="{% trans 'Filtrer' %}">
-                <span class="material-icons" style="font-size:1rem;vertical-align:middle">filter_list</span>
+                <span class="material-icons" aria-hidden="true">filter_list</span>
             </button>
         </div>
     </form>
 </div>
 
-<div class="container" style="max-width:1100px;padding:1.5rem 1rem 3rem;">
+<div class="container guides-container">
 
     <!-- CTA Devenir guide -->
     <div class="become-guide-banner">
-        <span class="material-icons" style="font-size:2.5rem;color:var(--accent);flex-shrink:0">explore</span>
+        <span class="material-icons become-guide-icon" aria-hidden="true">explore</span>
         <div class="text-wrap">
             <h3>{% trans "Vous guidez des voyageurs à Madagascar ?" %}</h3>
             <p>{% trans "Inscrivez-vous gratuitement et soyez trouvé par des milliers de voyageurs." %}</p>
         </div>
         {% if user.is_authenticated %}
         <a href="{% url 'tourisme:guide_register' %}" class="btn-become">
-            <span class="material-icons" style="font-size:1.1rem">add</span>
+            <span class="material-icons" aria-hidden="true">add</span>
             {% trans "Devenir guide" %}
         </a>
         {% else %}
         <a href="{% url 'login' %}?next={% url 'tourisme:guide_register' %}" class="btn-become">
-            <span class="material-icons" style="font-size:1.1rem">login</span>
+            <span class="material-icons" aria-hidden="true">login</span>
             {% trans "S'inscrire comme guide" %}
         </a>
         {% endif %}
@@ -154,7 +154,7 @@
         {% if page_obj.has_previous %}
         <a href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if sel_region %}&region={{ sel_region }}{% endif %}{% if verified_only %}&verified=1{% endif %}"
            class="tour-page-btn">
-            <span class="material-icons" style="font-size:1rem">chevron_left</span>
+            <span class="material-icons" aria-hidden="true">chevron_left</span>
         </a>
         {% endif %}
 
@@ -170,7 +170,7 @@
         {% if page_obj.has_next %}
         <a href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if sel_region %}&region={{ sel_region }}{% endif %}{% if verified_only %}&verified=1{% endif %}"
            class="tour-page-btn">
-            <span class="material-icons" style="font-size:1rem">chevron_right</span>
+            <span class="material-icons" aria-hidden="true">chevron_right</span>
         </a>
         {% endif %}
     </nav>
@@ -179,10 +179,10 @@
     {% else %}
     <div class="guides-empty">
         <span class="material-icons">person_search</span>
-        <div style="font-size:1.05rem;font-weight:700;margin-bottom:.4rem;">{% trans "Aucun guide trouvé" %}</div>
-        <div style="font-size:.88rem;">
+        <div class="guides-empty-title">{% trans "Aucun guide trouvé" %}</div>
+        <div class="guides-empty-text">
             {% trans "Essayez d'autres termes ou" %}
-            <a href="{% url 'tourisme:guides_list' %}" style="color:var(--accent);">{% trans "réinitialisez les filtres" %}</a>.
+            <a href="{% url 'tourisme:guides_list' %}" class="guides-link">{% trans "réinitialisez les filtres" %}</a>.
         </div>
     </div>
     {% endif %}
@@ -198,18 +198,8 @@
 
     /* Dropdown positionné en position:fixed pour bypasser overflow:hidden */
     var drop = document.createElement('div');
-    drop.style.cssText = [
-        'position:fixed',
-        'z-index:9999',
-        'background:var(--bg-card)',
-        'border:1.5px solid var(--border)',
-        'border-radius:12px',
-        'box-shadow:0 8px 32px rgba(0,0,0,.22)',
-        'max-height:340px',
-        'overflow-y:auto',
-        'display:none',
-        'min-width:260px',
-    ].join(';');
+    drop.className = 'guides-ac';
+    drop.style.display = 'none';
     document.body.appendChild(drop);
 
     function pos() {
@@ -233,29 +223,22 @@
                 if (!d.results || d.results.length === 0) { drop.style.display = 'none'; return; }
                 var html = '';
                 d.results.forEach(function(g) {
-                    html += '<a href="/tourisme/guides/' + g.id + '/" '
-                          + 'style="display:flex;align-items:center;gap:.75rem;padding:.65rem 1rem;'
-                          + 'text-decoration:none;color:var(--text);border-bottom:1px solid var(--border);"'
-                          + 'onmouseover="this.style.background=\'var(--bg-hover)\'" '
-                          + 'onmouseout="this.style.background=\'\'">';
-                    html += '<img src="' + esc(g.avatar) + '" '
-                          + 'style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;" '
+                    html += '<a href="/tourisme/guides/' + g.id + '/" class="guides-ac-item">';
+                    html += '<img src="' + esc(g.avatar) + '" class="guides-ac-avatar" '
                           + 'onerror="this.style.display=\'none\'" alt="">';
-                    html += '<div style="flex:1;min-width:0;">';
-                    html += '<div style="font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:.35rem;">'
+                    html += '<div class="guides-ac-body">';
+                    html += '<div class="guides-ac-name">'
                           + esc(g.name);
                     if (g.is_verified) {
                         html += '<span class="vz-chip vz-chip--sm vz-chip--success"><span class="material-icons">verified</span>Vérifié</span>';
                     }
                     html += '</div>';
                     if (g.specialities) {
-                        html += '<div style="font-size:.75rem;color:var(--text-muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">'
-                              + esc(g.specialities) + '</div>';
+                        html += '<div class="guides-ac-spec">' + esc(g.specialities) + '</div>';
                     }
                     html += '</div>';
                     if (g.prix_jour) {
-                        html += '<div style="font-size:.78rem;color:var(--accent);font-weight:700;flex-shrink:0;white-space:nowrap;">'
-                              + esc(g.prix_jour) + ' Ar/j</div>';
+                        html += '<div class="guides-ac-price">' + esc(g.prix_jour) + ' Ar/j</div>';
                     }
                     html += '</a>';
                 });

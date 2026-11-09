@@ -1,0 +1,13 @@
+/* Styles de page resto/order.html (suivi de commande) — servis en statique (cache navigateur + service worker). */
+
+.rs-page-head--order { margin: .5rem 0 .8rem; }
+.rs-parties { margin-top: .8rem; font-size: .88rem; }
+.rs-parties .rs-muted .material-icons { color: var(--text-subtle); }
+.rs-map-hint { margin: .3rem 0 0; font-size: .78rem; }
+.rs-hint { margin: .6rem 0 0; font-size: .8rem; }
+.rs-card-title--sm { margin-bottom: .4rem; }
+.rs-review-form { margin-top: .5rem; }
+.rs-review-form summary { cursor: pointer; font-weight: 600; }
+.rs-review .rs-star-row { vertical-align: -.25em; }
+.rs-order-line small .material-icons { color: var(--text-subtle); }
+.rs-form .err .material-icons { color: var(--danger); }

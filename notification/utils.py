@@ -1,5 +1,6 @@
 from django.core.serializers.python import Serializer
 from django.contrib.humanize.templatetags.humanize import naturaltime
+from .verbs import localize_verb
 
 
 def _safe_img_url(user):
@@ -36,7 +37,7 @@ class LazyNotificationEncoder(Serializer):
 				is_active = 'False'
 			dump_object.update({'notification_type': ctype})
 			dump_object.update({'notification_id': str(obj.pk)})
-			dump_object.update({'verb': obj.verb})
+			dump_object.update({'verb': localize_verb(obj.verb)})
 			dump_object.update({'is_active': is_active})
 			dump_object.update({'is_read': str(obj.read)})
 			dump_object.update({'natural_timestamp': str(naturaltime(obj.timestamp))})
@@ -52,7 +53,7 @@ class LazyNotificationEncoder(Serializer):
 		if ctype == "FriendList":
 			dump_object.update({'notification_type': ctype})
 			dump_object.update({'notification_id': str(obj.pk)})
-			dump_object.update({'verb': obj.verb})
+			dump_object.update({'verb': localize_verb(obj.verb)})
 			dump_object.update({'natural_timestamp': str(naturaltime(obj.timestamp))})
 			dump_object.update({'is_read': str(obj.read)})
 			dump_object.update({'timestamp': str(obj.timestamp)})
@@ -67,7 +68,7 @@ class LazyNotificationEncoder(Serializer):
 		if ctype == "UnreadChatRoomMessages":
 			dump_object.update({'notification_type': ctype})
 			dump_object.update({'notification_id': str(obj.pk)})
-			dump_object.update({'verb': obj.verb})
+			dump_object.update({'verb': localize_verb(obj.verb)})
 			dump_object.update({'natural_timestamp': str(naturaltime(obj.timestamp))})
 			dump_object.update({'timestamp': str(obj.timestamp)})
 			try:
@@ -89,7 +90,7 @@ class LazyNotificationEncoder(Serializer):
 		if ctype == "Post":
 			dump_object.update({'notification_type': 'Post'})
 			dump_object.update({'notification_id': str(obj.pk)})
-			dump_object.update({'verb': obj.verb})
+			dump_object.update({'verb': localize_verb(obj.verb)})
 			dump_object.update({'natural_timestamp': str(naturaltime(obj.timestamp))})
 			dump_object.update({'timestamp': str(obj.timestamp)})
 			dump_object.update({'is_read': str(obj.read)})
@@ -106,7 +107,7 @@ class LazyNotificationEncoder(Serializer):
 			# Resto Vazimba : commande (statut, nouvelle commande) ou restaurant (rattachement livreur)
 			dump_object.update({'notification_type': 'Post'})   # rendu générique (verbe + lien) côté JS
 			dump_object.update({'notification_id': str(obj.pk)})
-			dump_object.update({'verb': obj.verb or ''})
+			dump_object.update({'verb': localize_verb(obj.verb)})
 			dump_object.update({'natural_timestamp': str(naturaltime(obj.timestamp))})
 			dump_object.update({'timestamp': str(obj.timestamp)})
 			dump_object.update({'is_read': str(obj.read)})
@@ -122,7 +123,7 @@ class LazyNotificationEncoder(Serializer):
 		if ctype == "Live":
 			dump_object.update({'notification_type': 'Live'})
 			dump_object.update({'notification_id': str(obj.pk)})
-			dump_object.update({'verb': obj.verb or ''})
+			dump_object.update({'verb': localize_verb(obj.verb)})
 			dump_object.update({'natural_timestamp': str(naturaltime(obj.timestamp))})
 			dump_object.update({'timestamp': str(obj.timestamp)})
 			dump_object.update({'is_read': str(obj.read)})

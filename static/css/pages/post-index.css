@@ -423,3 +423,14 @@
     color: var(--accent);
     border-color: rgba(var(--accent-rgb),0.28);
 }
+
+/* ── Héros : logo ── */
+.explore-hero-logo { width: 64px; height: 64px; object-fit: contain; margin-bottom: .9rem; display: block; filter: invert(1); }
+.country-tag--more { opacity: .6; }
+.sidebar-cta-btn .material-icons { font-size: .9rem; vertical-align: middle; }
+.epc-cat {
+    margin-left: auto; font-size: .72rem; background: var(--btn-bg);
+    border-radius: 10px; padding: .1rem .5rem; color: var(--text-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px;
+}
+.explore-empty .explore-cta-btn { display: inline-flex; margin-top: 1rem; }

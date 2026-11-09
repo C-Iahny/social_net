@@ -32,7 +32,9 @@
     letter-spacing: -.03em;
     margin-bottom: .4rem;
     position: relative;
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
 }
+.bazar-hero-title .material-icons { font-size: 2rem; }
 .bazar-hero-sub {
     font-size: .92rem;
     opacity: .85;
@@ -63,6 +65,25 @@
     background: var(--accent);
     color: var(--on-accent);
 }
+/* Lien secondaire du hero (vérification vendeur) */
+.bazar-hero-extra { margin-top: .85rem; position: relative; }
+.bazar-hero-link {
+    display: inline-flex; align-items: center; gap: .4rem;
+    color: rgba(255,255,255,.82); font-size: .8rem; font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,.35); border-radius: var(--radius-pill);
+    padding: .32rem .9rem;
+    transition: background .18s;
+}
+.bazar-hero-link:hover { background: rgba(255,255,255,.12); color: #fff; text-decoration: none; }
+.bazar-hero-link .material-icons { font-size: 1rem; }
+
+/* Raccourci « Près de chez moi » */
+.bazar-near {
+    display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+    padding: .5rem 1rem .1rem;
+}
+.bazar-near-label { font-size: .82rem; color: var(--text-muted); }
 
 /* ── Barre de recherche hero ── */
 .bazar-search-wrap {
@@ -148,6 +169,13 @@
     margin-left: auto;
     white-space: nowrap;
 }
+.bazar-filter-reset {
+    display: flex; align-items: center; gap: .25rem;
+    margin-left: .25rem;
+    font-size: .82rem; color: var(--text-muted); text-decoration: none;
+}
+.bazar-filter-reset:hover { color: var(--danger); text-decoration: none; }
+.bazar-filter-reset .material-icons { font-size: .95rem; }
 
 /* ── Résultats info ── */
 .bazar-results-bar {
@@ -163,6 +191,8 @@
     color: var(--text-muted);
 }
 .bazar-results-count strong { color: var(--accent); }
+.bazar-results-link { font-size: .82rem; color: var(--accent); text-decoration: none; font-weight: 600; }
+.bazar-results-link:hover { text-decoration: underline; }
 
 /* ── Grid des annonces ── */
 .bazar-grid {
@@ -179,20 +209,9 @@
    Les règles locales (fond, bordure, rayon, ombre, survol, badge état,
    compteur photos, voile « vendue », badge Pro/Vérifié) ont été retirées. */
 
-/* ── Empty state ── */
-.bazar-empty {
-    max-width: 420px;
-    margin: 3rem auto;
-    text-align: center;
-    color: var(--text-muted);
-    padding: 0 1rem;
-}
-.bazar-empty-icon {
-    font-size: 3.5rem;
-    margin-bottom: 1rem;
-    opacity: .5;
-}
-.bazar-empty h4 { color: var(--text); font-weight: 700; }
+/* ── État vide : composant partagé .vz-empty (zoot-base.css) ── */
+.bazar-empty { max-width: 420px; margin: 3rem auto; }
+.bazar-empty h4 { margin: 0; }
 
 /* ── Pagination ── */
 .bazar-pagination {

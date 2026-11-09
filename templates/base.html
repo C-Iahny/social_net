@@ -56,6 +56,8 @@
 
     <!-- ③ Variables CSS + styles de base (après Bootstrap pour avoir priorité) -->
     <link rel="stylesheet" href="{% static 'css/zoot-base.css' %}">
+    <!-- Styles de la coquille (lightbox, menu créer, bannières PWA, signalement) sortis de base.html -->
+    <link rel="stylesheet" href="{% static 'css/base-shell.css' %}">
 
     <!-- ③ bis — Socle d'interface commun : toasts, confirmation, garde des
          formulaires, pile des calques pour le bouton Retour. Chargé tôt et
@@ -95,8 +97,8 @@
     <script>
         function _syncThemeIcons(theme) {
             var icon = (theme === 'dark')
-                ? '<span class="material-icons" style="font-size:1.2rem;line-height:1">light_mode</span>'
-                : '<span class="material-icons" style="font-size:1.2rem;line-height:1">dark_mode</span>';
+                ? '<span class="material-icons">light_mode</span>'
+                : '<span class="material-icons">dark_mode</span>';
             ['theme-toggle-btn', 'theme-toggle-btn-mobile'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (el) el.innerHTML = icon;
@@ -265,7 +267,7 @@
 
 <!-- Bannière : proposée automatiquement sur connexion lente -->
 <div id="ds-slow-banner" style="display:none;" role="alert" aria-live="polite">
-    <span class="ds-banner-icon">📶</span>
+    <span class="ds-banner-icon material-icons" aria-hidden="true">network_check</span>
     <div class="ds-banner-text">
         <div class="ds-banner-title">{% trans "Connexion lente détectée" %}</div>
         <div class="ds-banner-sub">{% trans "Activer le mode économie pour réduire la consommation de données ?" %}</div>
@@ -282,51 +284,28 @@
      LIGHTBOX GLOBAL — ouvert par openGalleryLightbox(srcs, idx)
      ou openLightbox(src, title, idx) depuis la page profil.
      ══════════════════════════════════════════════════════════ -->
+{# display:none inline conservé : vz-lightbox.js lit et écrit g-lightbox.style.display #}
 <div id="g-lightbox"
      onclick="if(event.target===this)gLbClose()"
-     style="display:none;position:fixed;inset:0;z-index:99999;
-            background:rgba(0,0,0,.92);backdrop-filter:blur(6px);
-            -webkit-backdrop-filter:blur(6px);
-            align-items:center;justify-content:center;flex-direction:column;">
+     style="display:none;">
     <!-- Close -->
-    <button onclick="gLbClose()"
-            style="position:fixed;top:1rem;right:1rem;width:42px;height:42px;
-                   border-radius:50%;background:rgba(255,255,255,.14);
-                   border:1.5px solid rgba(255,255,255,.2);color:#fff;
-                   cursor:pointer;display:flex;align-items:center;justify-content:center;
-                   transition:background .18s;z-index:1;" type="button" aria-label="{% trans 'Fermer' %}">
-        <span class="material-icons" style="font-size:1.25rem;">close</span>
+    <button onclick="gLbClose()" class="g-lb-close" type="button" aria-label="{% trans 'Fermer' %}">
+        <span class="material-icons">close</span>
     </button>
-    <!-- Prev -->
-    <button id="g-lb-prev" onclick="gLbNav(-1)"
-            style="position:fixed;left:1rem;top:50%;transform:translateY(-50%);
-                   width:46px;height:46px;border-radius:50%;
-                   background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);
-                   color:#fff;cursor:pointer;display:none;align-items:center;justify-content:center;
-                   transition:background .18s;" type="button" aria-label="{% trans 'Précédent' %}">
+    <!-- Prev (display:none inline basculé en flex par vz-lightbox.js) -->
+    <button id="g-lb-prev" class="g-lb-nav g-lb-nav--prev" onclick="gLbNav(-1)"
+            style="display:none;" type="button" aria-label="{% trans 'Précédent' %}">
         <span class="material-icons">chevron_left</span>
     </button>
     <!-- Image -->
-    <img id="g-lb-img" src="" alt=""
-         style="max-width:92vw;max-height:88vh;border-radius:14px;
-                object-fit:contain;box-shadow:0 8px 48px rgba(0,0,0,.7);
-                transition:opacity .18s;
-                touch-action:none;user-select:none;-webkit-user-select:none;
-                transform-origin:center center;cursor:grab;will-change:transform;">
+    <img id="g-lb-img" src="" alt="">
     <!-- Next -->
-    <button id="g-lb-next" onclick="gLbNav(1)"
-            style="position:fixed;right:1rem;top:50%;transform:translateY(-50%);
-                   width:46px;height:46px;border-radius:50%;
-                   background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);
-                   color:#fff;cursor:pointer;display:none;align-items:center;justify-content:center;
-                   transition:background .18s;" type="button" aria-label="{% trans 'Suivant' %}">
+    <button id="g-lb-next" class="g-lb-nav g-lb-nav--next" onclick="gLbNav(1)"
+            style="display:none;" type="button" aria-label="{% trans 'Suivant' %}">
         <span class="material-icons">chevron_right</span>
     </button>
     <!-- Counter -->
-    <span id="g-lb-counter"
-          style="position:fixed;top:1.1rem;left:50%;transform:translateX(-50%);
-                 color:rgba(255,255,255,.55);font-size:.8rem;font-weight:600;
-                 pointer-events:none;"></span>
+    <span id="g-lb-counter"></span>
 </div>
 <script src="{% static 'js/vz-lightbox.js' %}"></script>
 
@@ -373,32 +352,32 @@
 
                 <!-- Post -->
                 <a class="cs-item" href="{% url 'post:addPost' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
-                        <span class="material-icons" style="color:#fff;">edit_note</span>
+                    <div class="cs-icon cs-icon--post">
+                        <span class="material-icons">edit_note</span>
                     </div>
                     <span class="cs-label">Post</span>
                 </a>
 
                 <!-- Vidéo courte -->
                 <a class="cs-item" href="{% url 'post:addPost' %}?video=1" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent),var(--accent2));">
-                        <span class="material-icons" style="color:#fff;">videocam</span>
+                    <div class="cs-icon cs-icon--video">
+                        <span class="material-icons">videocam</span>
                     </div>
                     <span class="cs-label">{% trans "Vidéo" %}</span>
                 </a>
 
                 <!-- Kabary -->
                 <a class="cs-item" href="{% url 'post:kabary-create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent3),var(--danger));">
-                        <span class="material-icons" style="color:#fff;">campaign</span>
+                    <div class="cs-icon cs-icon--kabary">
+                        <span class="material-icons">campaign</span>
                     </div>
                     <span class="cs-label">Kabary</span>
                 </a>
 
                 <!-- Vintana -->
                 <a class="cs-item" href="{% url 'post:vintana-create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent2),var(--vintana));">
-                        <span class="material-icons" style="color:#fff;">auto_awesome</span>
+                    <div class="cs-icon cs-icon--vintana">
+                        <span class="material-icons">auto_awesome</span>
                     </div>
                     <span class="cs-label">Vintana</span>
                 </a>
@@ -407,46 +386,45 @@
                      sinon navigue vers /stories/ (pages sans story_bar.html) -->
                 <a class="cs-item" href="{% url 'stories:page' %}"
                    onclick="if(typeof zsMyTap==='function'){event.preventDefault();closeCreateSheet();setTimeout(zsMyTap,220);}else{closeCreateSheet();}">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--vintana),var(--accent3));">
-                        <span class="material-icons" style="color:#fff;">add_circle</span>
+                    <div class="cs-icon cs-icon--story">
+                        <span class="material-icons">add_circle</span>
                     </div>
                     <span class="cs-label">Story</span>
                 </a>
 
                 <!-- Bazar -->
                 <a class="cs-item" href="{% url 'bazar:create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--success),var(--accent2));">
-                        <span class="material-icons" style="color:#fff;">sell</span>
+                    <div class="cs-icon cs-icon--bazar">
+                        <span class="material-icons">sell</span>
                     </div>
                     <span class="cs-label">Bazar</span>
                 </a>
 
                 <!-- Resto : commander un repas -->
                 <a class="cs-item" href="{% url 'resto:index' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--warning),var(--danger));">
-                        <span class="material-icons" style="color:#fff;">restaurant</span>
+                    <div class="cs-icon cs-icon--resto">
+                        <span class="material-icons">restaurant</span>
                     </div>
                     <span class="cs-label">Resto</span>
                 </a>
 
                 <!-- Groupe -->
                 <a class="cs-item" href="{% url 'group:create' %}" onclick="closeCreateSheet()">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--accent),var(--success));">
-                        <span class="material-icons" style="color:#fff;">group_add</span>
+                    <div class="cs-icon cs-icon--group">
+                        <span class="material-icons">group_add</span>
                     </div>
                     <span class="cs-label">Groupe</span>
                 </a>
 
                 <!-- Live -->
-                <button class="cs-item" type="button" onclick="closeCreateSheet();_submitLiveCreate();"
-                        style="background:none;border:none;cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;gap:.35rem;text-decoration:none;color:inherit;">
-                    <div class="cs-icon" style="background:linear-gradient(135deg,var(--danger),var(--accent3));">
-                        <span class="material-icons" style="color:#fff;">videocam</span>
+                <button class="cs-item" type="button" onclick="closeCreateSheet();_submitLiveCreate();">
+                    <div class="cs-icon cs-icon--live">
+                        <span class="material-icons">videocam</span>
                     </div>
                     <span class="cs-label">Live</span>
                 </button>
                 <!-- Formulaire caché POST pour créer le live -->
-                <form id="live-create-form" method="POST" action="{% url 'video:live-create' %}" style="display:none;">
+                <form id="live-create-form" class="d-none" method="POST" action="{% url 'video:live-create' %}">
                     {% csrf_token %}
                 </form>
 
@@ -575,12 +553,12 @@
 
 <!-- Bannière offline/online -->
 <div id="pwa-offline-banner">
-    <span id="pwa-banner-text">📡 Vous êtes hors ligne — contenu mis en cache disponible</span>
+    <span id="pwa-banner-text"><i class="material-icons" aria-hidden="true">wifi_off</i> Vous êtes hors ligne — contenu mis en cache disponible</span>
 </div>
 
 <!-- Prompt installation PWA -->
 <div id="pwa-install-prompt">
-    <h4>📱 {% trans "Installer Vazimba" %}</h4>
+    <h4><i class="material-icons" aria-hidden="true">add_to_home_screen</i> {% trans "Installer Vazimba" %}</h4>
     <p>{% trans "Accédez à l’app directement depuis votre écran d’accueil, même hors ligne." %}</p>
     <div class="pwa-install-actions">
         <button type="button" class="pwa-btn-install" onclick="pwaInstall()">{% trans "Installer" %}</button>
@@ -648,12 +626,12 @@ var _bannerText = document.getElementById('pwa-banner-text');
 function pwaUpdateBanner() {
     if (!navigator.onLine) {
         _banner.className = '';
-        _bannerText.textContent = '📡 Hors ligne — contenu mis en cache disponible';
+        _bannerText.innerHTML = '<i class="material-icons" aria-hidden="true">wifi_off</i> Hors ligne — contenu mis en cache disponible';
         _banner.style.display = 'block';
     } else {
         // Montrer brièvement "reconnecté" puis cacher
         _banner.className = 'online';
-        _bannerText.textContent = '✓ Connexion rétablie';
+        _bannerText.innerHTML = '<i class="material-icons" aria-hidden="true">wifi</i> Connexion rétablie';
         _banner.style.display = 'block';
         setTimeout(function() { _banner.style.display = 'none'; }, 2500);
     }
@@ -795,17 +773,17 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="vz-dialog-head">
             <span class="material-icons" aria-hidden="true">flag</span>
             <h3 class="vz-dialog-title" id="report-modal-title">{% trans "Signaler un contenu" %}</h3>
-            <button type="button" class="vz-btn vz-btn--icon vz-btn--sm vz-btn--muted" onclick="closeReportModal()" aria-label="{% trans 'Fermer' %}" style="border:0;"><span class="material-icons">close</span></button>
+            <button type="button" class="vz-btn vz-btn--icon vz-btn--sm vz-btn--muted report-close" onclick="closeReportModal()" aria-label="{% trans 'Fermer' %}"><span class="material-icons">close</span></button>
         </div>
         <p class="vz-dialog-text">{% trans "Sélectionnez la raison du signalement. Notre équipe examinera ce contenu." %}</p>
         <input type="hidden" id="report-ct" value="">
         <input type="hidden" id="report-oid" value="">
-        <div id="report-reasons-wrap" style="display:flex;flex-direction:column;gap:.25rem;margin-bottom:1rem;"></div>
+        <div id="report-reasons-wrap"></div>
         <div class="vz-field">
             <label for="report-comment">{% trans "Précision (facultatif)" %}</label>
-            <textarea id="report-comment" rows="2" style="min-height:72px;"></textarea>
+            <textarea id="report-comment" rows="2"></textarea>
         </div>
-        <div id="report-feedback" role="status" style="font-size:.85rem;font-weight:600;min-height:1.2rem;margin-bottom:.5rem;color:var(--text-muted);"></div>
+        <div id="report-feedback" role="status"></div>
         <div class="vz-dialog-actions">
             <button type="button" class="vz-btn vz-btn--secondary" onclick="closeReportModal()">{% trans "Annuler" %}</button>
             <button type="button" class="vz-btn vz-btn--danger" id="report-submit-btn" onclick="submitReport()">{% trans "Envoyer" %}</button>

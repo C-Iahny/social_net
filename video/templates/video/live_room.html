@@ -40,9 +40,8 @@
                 <button class="lr-react-btn" onclick="sendReaction('😮')" type="button">😮</button>
                 <button class="lr-react-btn" onclick="sendReaction('🎉')" type="button">🎉</button>
             </div>
-            <a href="{% url 'video:live-list' %}"
-               style="color:rgba(255,255,255,.45);font-size:.82rem;text-decoration:none;display:flex;align-items:center;gap:.2rem;">
-                <span class="material-icons" style="font-size:1rem;">arrow_back</span>
+            <a href="{% url 'video:live-list' %}" class="lr-leave-link">
+                <span class="material-icons" aria-hidden="true">arrow_back</span>
                 {% trans "Quitter" %}
             </a>
         </div>
@@ -56,20 +55,14 @@
             <video id="lr-video" autoplay playsinline muted></video>
 
             <!-- Bouton plein écran -->
-            <button id="lr-fullscreen-btn" onclick="toggleFullscreen()" title="{% trans 'Plein écran' %}"
-                    style="position:absolute;top:.75rem;right:.75rem;z-index:15;
-                           width:38px;height:38px;border-radius:10px;
-                           background:rgba(0,0,0,.55);border:1.5px solid rgba(255,255,255,.2);
-                           color:#fff;cursor:pointer;display:flex;align-items:center;
-                           justify-content:center;backdrop-filter:blur(4px);
-                           transition:background .2s,transform .15s;" type="button">
-                <span class="material-icons" style="font-size:1.3rem;">fullscreen</span>
+            <button id="lr-fullscreen-btn" class="lr-fullscreen-btn" onclick="toggleFullscreen()" title="{% trans 'Plein écran' %}" aria-label="{% trans 'Plein écran' %}" type="button">
+                <span class="material-icons" aria-hidden="true">fullscreen</span>
             </button>
 
             {% if is_host %}
             <!-- Host: source chooser overlay -->
             <div class="lr-status-overlay" id="lr-source-overlay">
-                <div class="lr-status-title">{% trans "🎬 Choisir la source de diffusion" %}</div>
+                <div class="lr-status-title"><i class="material-icons" aria-hidden="true">movie</i> {% trans "Choisir la source de diffusion" %}</div>
                 <div class="lr-status-sub">{% trans "Partage ton écran pour diffuser le match, ou utilise ta caméra." %}</div>
                 <div class="lr-source-btns">
                     <button class="lr-source-btn" id="btn-screen" onclick="startSource('screen')" type="button">
@@ -129,7 +122,7 @@
             <span class="material-icons">mic</span>
             {% trans "Micro" %}
         </button>
-        <form method="post" action="{% url 'video:live-end' room_id=room.pk %}" style="display:inline;"
+        <form method="post" action="{% url 'video:live-end' room_id=room.pk %}" class="lr-end-form"
               data-vz-confirm="{% trans 'Terminer le live ?' %}" data-vz-danger>
             {% csrf_token %}
             <button type="submit" class="lr-ctrl-btn danger">
@@ -294,7 +287,7 @@ function connect() {
 window.startSource = function(src) {
     /* Partage d'écran non disponible sur cet appareil */
     if (src === 'screen' && !hasDisplayMedia) {
-        appendSystemMsg('⚠️ Le partage d\'écran n\'est pas disponible sur mobile. Utilise la caméra.');
+        appendSystemMsg('Le partage d\'écran n\'est pas disponible sur mobile. Utilise la caméra.');
         return;
     }
     if (sourceOverlay) sourceOverlay.classList.add('hidden');
@@ -330,7 +323,7 @@ window.startSource = function(src) {
                 var _title = sourceOverlay.querySelector('.lr-status-title');
                 var _sub   = sourceOverlay.querySelector('.lr-status-sub');
                 var _btns  = sourceOverlay.querySelector('.lr-source-btns');
-                if (_title) _title.textContent = '🎬 Choisir la source de diffusion';
+                if (_title) _title.innerHTML = '<i class="material-icons" aria-hidden="true">movie</i> Choisir la source de diffusion';
                 if (_sub)   _sub.textContent   = 'Partage ton écran pour diffuser le match, ou utilise ta caméra.';
                 if (_btns)  _btns.style.display = '';
                 sourceOverlay.classList.remove('hidden');
@@ -386,7 +379,7 @@ function startRecording(stream) {
     if (sourceOverlay) {
         var _title = sourceOverlay.querySelector('.lr-status-title');
         var _sub   = sourceOverlay.querySelector('.lr-status-sub');
-        if (_title) _title.textContent = '🔴 En direct !';
+        if (_title) _title.innerHTML = '<i class="material-icons lr-ic-live" aria-hidden="true">fiber_manual_record</i> En direct !';
         if (_sub)   _sub.textContent   = 'Le stream est actif. Les spectateurs peuvent vous voir.';
         var _btns = sourceOverlay.querySelector('.lr-source-btns');
         if (_btns) _btns.style.display = 'none';
@@ -495,8 +488,8 @@ function initMediaSource(mime) {
             if (sp2)  sp2.style.display = 'none';
             if (txt2) {
                 if (isIOS) {
-                    txt2.innerHTML = '⚠️ Lecture non supportée sur cet appareil.<br>' +
-                        '<span style="font-size:.85em;opacity:.75">Le flux vidéo envoyé par l\'hôte (' + (mime || 'webm') + ') n\'est pas lisible ici.<br>' +
+                    txt2.innerHTML = '<i class="material-icons lr-ic-inline" aria-hidden="true">warning</i> Lecture non supportée sur cet appareil.<br>' +
+                        '<span class="lr-waiting-note">Le flux vidéo envoyé par l\'hôte (' + (mime || 'webm') + ') n\'est pas lisible ici.<br>' +
                         'Mets à jour vers <b>iOS 17.1+</b> ou essaie <b>Chrome sur Android / ordinateur</b>.</span>';
                 } else {
                     txt2.textContent = 'Format non supporté par ce navigateur — essaie Chrome, Firefox ou Edge.';
@@ -541,7 +534,7 @@ function initMediaSource(mime) {
                     var sp = waitingOverlay.querySelector('.lr-waiting-spinner');
                     var tx = waitingOverlay.querySelector('.lr-waiting-text');
                     waitingOverlay.classList.remove('hidden');
-                    if (sp) { sp.style.display = ''; sp.style.borderTopColor = '#f59e0b'; }
+                    if (sp) { sp.style.display = ''; sp.style.borderTopColor = 'var(--warning)'; }
                     if (tx) tx.textContent = 'Resynchronisation du flux…';
                 }
                 /* Auto-retry : re-demander le ring buffer jusqu'à 10 fois (≈ 5 s max) */
@@ -658,16 +651,11 @@ function showPlayButton() {
     if (document.getElementById('lr-play-btn')) return;
     var btn = document.createElement('button');
     btn.id = 'lr-play-btn';
+    btn.className = 'lr-play-btn';
+    btn.type = 'button';
     btn.innerHTML =
-        '<span class="material-icons" style="font-size:3.5rem;display:block">play_circle</span>' +
-        '<span style="font-size:.85rem;margin-top:.3rem;display:block">Appuie pour lire</span>';
-    btn.style.cssText = [
-        'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);',
-        'background:rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.35);border-radius:16px;',
-        'padding:1rem 1.6rem;cursor:pointer;color:#fff;z-index:25;',
-        'display:flex;flex-direction:column;align-items:center;',
-        'backdrop-filter:blur(4px);font-family:inherit;'
-    ].join('');
+        '<span class="material-icons" aria-hidden="true">play_circle</span>' +
+        '<span class="lr-play-btn-label">Appuie pour lire</span>';
     btn.onclick = function() {
         btn.remove();
         /* Débloquer l'autoplay : jouer en muet d'abord (contourne la politique
@@ -727,7 +715,7 @@ function onHostDisconnected() {
         waitingOverlay.classList.remove('hidden');
         var sp  = waitingOverlay.querySelector('.lr-waiting-spinner');
         var txt = waitingOverlay.querySelector('.lr-waiting-text');
-        if (sp)  sp.style.borderTopColor = '#f59e0b';
+        if (sp)  sp.style.borderTopColor = 'var(--warning)';
         if (txt) txt.textContent = "L'hôte se reconnecte…";
     }
     /* Reset état MediaSource pour le prochain flux */
@@ -742,7 +730,7 @@ function onHostReconnected() {
         waitingOverlay.classList.remove('hidden');
         var sp  = waitingOverlay.querySelector('.lr-waiting-spinner');
         var txt = waitingOverlay.querySelector('.lr-waiting-text');
-        if (sp)  sp.style.borderTopColor = '#ff3b3b';
+        if (sp)  sp.style.borderTopColor = 'var(--danger)';
         if (txt) txt.textContent = 'Reconnexion…';
     }
     /* Re-rejoindre → le serveur envoie le chunk d'init caché */
@@ -790,15 +778,9 @@ function showUnmuteBtn() {
     if (document.getElementById('lr-unmute-btn')) return;
     var btn = document.createElement('button');
     btn.id = 'lr-unmute-btn';
-    btn.innerHTML = '<span class="material-icons" style="font-size:1.1rem;vertical-align:middle;">volume_off</span>&nbsp;Son coupé — Appuie pour activer';
-    btn.style.cssText = [
-        'position:absolute;bottom:1.2rem;left:50%;transform:translateX(-50%);',
-        'padding:.55rem 1.2rem;background:rgba(0,0,0,.78);color:#fff;',
-        'border:1.5px solid rgba(255,255,255,.28);border-radius:20px;',
-        'font-size:.85rem;font-weight:700;cursor:pointer;z-index:20;',
-        'display:flex;align-items:center;gap:.4rem;font-family:inherit;',
-        'white-space:nowrap;backdrop-filter:blur(6px);'
-    ].join('');
+    btn.className = 'lr-unmute-btn';
+    btn.type = 'button';
+    btn.innerHTML = '<span class="material-icons" aria-hidden="true">volume_off</span>&nbsp;Son coupé — Appuie pour activer';
     btn.onclick = function() {
         videoEl.muted = false;
         /* Sauter au live edge et relancer la lecture */
@@ -834,7 +816,7 @@ function appendChat(username, avatar, text) {
     msg.className = 'lr-chat-msg';
     var av = avatar
         ? '<img class="lr-chat-msg-avatar" src="' + avatar + '" alt="">'
-        : '<span class="material-icons" style="font-size:1.5rem;color:rgba(255,255,255,.3);margin-top:2px;">account_circle</span>';
+        : '<span class="material-icons lr-chat-msg-avatar-ph" aria-hidden="true">account_circle</span>';
     msg.innerHTML = av + '<div class="lr-chat-msg-body"><div class="lr-chat-msg-user">' +
         escH(username) + '</div><div class="lr-chat-msg-text">' + escH(text) + '</div></div>';
     chatMsgs.appendChild(msg);
@@ -884,8 +866,8 @@ if (!IS_HOST) {
         var _tx = waitingOverlay.querySelector('.lr-waiting-text');
         if (_sp) _sp.style.display = 'none';
         if (_tx) _tx.innerHTML =
-            '⚠️ iPhone / iPad non supporté.<br>' +
-            '<span style="font-size:.85em;opacity:.75">Le live utilise WebM/VP9 incompatible avec iOS.<br>' +
+            '<i class="material-icons lr-ic-inline" aria-hidden="true">warning</i> iPhone / iPad non supporté.<br>' +
+            '<span class="lr-waiting-note">Le live utilise WebM/VP9 incompatible avec iOS.<br>' +
             'Utilise <b>Chrome ou Firefox sur ordinateur</b> ou Android.</span>';
     /* Safety net : si la vidéo est en pause alors qu'il y a des données bufférisées,
        on relance toutes les 2 secondes (corrige Firefox qui ne reprend pas seul). */
@@ -904,8 +886,8 @@ if (!IS_HOST) {
             if (!hasPlayed && waitingOverlay && !waitingOverlay.classList.contains('hidden')) {
                 var txt = waitingOverlay.querySelector('.lr-waiting-text');
                 if (txt) txt.innerHTML =
-                    "⏳ L'hôte n'a pas encore démarré.<br>" +
-                    "<span style='font-size:.85em;opacity:.7'>Demandez-lui de <b>rafraîchir la page</b> (F5)<br>" +
+                    "<i class='material-icons lr-ic-inline' aria-hidden='true'>hourglass_top</i> L'hôte n'a pas encore démarré.<br>" +
+                    "<span class='lr-waiting-note'>Demandez-lui de <b>rafraîchir la page</b> (F5)<br>" +
                     "puis de cliquer « Partager l'écran ».</span>";
             }
         }, 30000);
@@ -983,10 +965,10 @@ if (IS_HOST) {
 
     /* ── Cas 2 : Pas de MediaRecorder du tout (iOS < 14.3 ou navigateur ancien) ── */
     if (!MIME) {
-        if (sourceTitle) sourceTitle.textContent = '⚠️ Diffusion non supportée';
+        if (sourceTitle) sourceTitle.innerHTML = '<i class="material-icons" aria-hidden="true">warning</i> Diffusion non supportée';
         if (sourceSubtitle) sourceSubtitle.innerHTML =
             'Ton navigateur ne supporte pas l\'enregistrement vidéo nécessaire pour le live.<br>' +
-            '<span style="font-size:.85em;opacity:.75">Utilise <b>Chrome sur ordinateur ou Android</b> pour héberger un live.</span>';
+            '<span class="lr-waiting-note">Utilise <b>Chrome sur ordinateur ou Android</b> pour héberger un live.</span>';
         if (btnScreen) btnScreen.style.display = 'none';
         if (btnCamera) { btnCamera.disabled = true; btnCamera.style.opacity = '.38'; }
         return;

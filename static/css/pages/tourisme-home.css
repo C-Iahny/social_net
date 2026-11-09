@@ -224,3 +224,35 @@
     .tour-hero-stats { gap: 1.5rem; }
     .tour-hero-title { font-size: 1.9rem; }
 }
+
+/* ── Styles sortis du gabarit (2026-11) : plus de style= en ligne ── */
+.tour-container { max-width: 1100px; padding: 0 1rem; }
+.tour-section--flush { padding-bottom: 0; }
+.tour-hero-badge .material-icons { font-size: .8rem; vertical-align: middle; }
+.tour-btn-primary .material-icons,
+.tour-btn-outline .material-icons { font-size: 1.1rem; }
+.tour-see-all .material-icons { font-size: 1rem; }
+
+/* Icônes de catégorie : une teinte sémantique par jeton (lisible en sombre) */
+.cat-chip__icon { font-size: .9rem; }
+.cat-chip__icon--nature   { color: var(--success); }
+.cat-chip__icon--plage    { color: var(--info); }
+.cat-chip__icon--histoire { color: var(--accent-dark); }
+.cat-chip__icon--faune    { color: var(--warning); }
+.cat-chip__icon--montagne { color: var(--text-muted); }
+.cat-chip__icon--circuit  { color: var(--vintana); }
+.cat-chip__icon--ville    { color: var(--danger); }
+.cat-chip__icon--autre    { color: var(--accent); }
+
+/* Appel « Devenir guide » */
+.tour-cta {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+}
+.tour-cta-icon { font-size: 2.5rem; color: var(--accent); display: block; margin-bottom: .5rem; }
+.tour-cta-title { font-weight: 700; font-size: 1.05rem; color: var(--text); margin-bottom: .4rem; }
+.tour-cta-text { font-size: .88rem; color: var(--text-muted); margin-bottom: 1.2rem; }

@@ -25,7 +25,7 @@
         <div class="boutique-meta">
             <h1 class="boutique-name">
                 {{ verif.boutique_display_name }}
-                <span class="boutique-pro-badge">⭐ {% trans "Boutique Pro" %}</span>
+                <span class="boutique-pro-badge"><i class="material-icons" aria-hidden="true">star</i>{% trans "Boutique Pro" %}</span>
             </h1>
             {% if verif.boutique_category %}
             <span class="boutique-cat-badge">{{ verif.get_boutique_category_display }}</span>
@@ -38,16 +38,16 @@
 <div class="boutique-stats-bar">
     <div class="boutique-stats-inner">
         <span class="boutique-stat">
-            🏷️ <strong>{{ total }}</strong> {% trans "annonce" %}{{ total|pluralize }}
+            <i class="material-icons" aria-hidden="true">sell</i><strong>{{ total }}</strong> {% trans "annonce" %}{{ total|pluralize }}
         </span>
         {% if verif.boutique_address %}
         <span class="boutique-stat">
-            📍 {{ verif.boutique_address }}
+            <i class="material-icons" aria-hidden="true">place</i>{{ verif.boutique_address }}
         </span>
         {% endif %}
         {% if verif.boutique_hours %}
         <span class="boutique-stat">
-            🕐 {{ verif.boutique_hours }}
+            <i class="material-icons" aria-hidden="true">schedule</i>{{ verif.boutique_hours }}
         </span>
         {% endif %}
         {% if verif.boutique_phone %}
@@ -139,9 +139,9 @@
 {% endif %}
 
 {% else %}
-<div class="boutique-empty">
-    <div class="boutique-empty-icon">🏷️</div>
-    <p>{% trans "Aucune annonce disponible pour le moment." %}</p>
+<div class="vz-empty boutique-empty">
+    <i class="material-icons" aria-hidden="true">sell</i>
+    <p class="vz-empty-text">{% trans "Aucune annonce disponible pour le moment." %}</p>
 </div>
 {% endif %}
 

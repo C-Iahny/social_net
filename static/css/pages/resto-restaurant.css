@@ -15,3 +15,22 @@
 .rs-dish { cursor: pointer; }
 .rs-dish .vz-card__body { gap: .2rem; }
 .rs-dish .vz-card__price { margin-top: .15rem; padding-top: 0; }
+
+/* En-tête du restaurant (ex-styles en ligne) */
+.rs-rlogo .material-icons { font-size: 2rem; color: var(--text-subtle); }
+.rs-rtitle { gap: .5rem; }
+.rs-report.vz-btn { border: 0; }
+.rs-rmeta { margin: .2rem 0 0; }
+.rs-rmeta--mt { margin-top: .4rem; }
+.rs-rdesc { margin: .4rem 0 0; font-size: .9rem; }
+.rs-other-cart { padding: .7rem .9rem; margin: .8rem 0; font-size: .85rem; }
+.rs-reviews { padding: .2rem 1rem; }
+/* Modale d'options */
+.rs-m-desc { margin: .2rem 0 0; }
+.rs-m-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: var(--radius); margin-top: .6rem; }
+.rs-m-prep-text { margin: 0; white-space: pre-line; }
+.rs-m-foot { display: flex; align-items: center; gap: .8rem; margin-top: 1rem; }
+.rs-opt--fixed { cursor: default; }
+.rs-opt-mark { width: 18px; text-align: center; color: var(--success); }
+.rs-opt-mark .material-icons { font-size: 1rem; vertical-align: -.2em; }
+.rs-extras-title { margin: .5rem 0 .2rem; font-size: .8rem; }

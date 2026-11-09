@@ -29,10 +29,7 @@
                      onerror="this.remove(); document.getElementById('guide-avatar-fallback').style.display='flex';">
             {% endif %}
             {# Fallback lettre initiale — visible si aucune photo ou photo cassée #}
-            <span id="guide-avatar-fallback"
-                  style="display:{% if guide.photo or guide.user.profile_image %}none{% else %}flex{% endif %};
-                         width:100%;height:100%;align-items:center;justify-content:center;
-                         font-size:2.2rem;font-weight:800;color:#fff;">
+            <span id="guide-avatar-fallback" class="guide-avatar-fallback"{% if guide.photo or guide.user.profile_image %} style="display:none"{% endif %}>
                 {{ guide.display_name|first|upper }}
             </span>
         </div>
@@ -86,22 +83,21 @@
                 {% if guide.phone %}
                 <a href="https://wa.me/{{ guide.phone|cut:' '|cut:'+'|cut:'-' }}"
                    target="_blank" rel="noopener" class="btn-contact">
-                    <span class="material-icons" style="font-size:1.1rem">chat</span>
+                    <span class="material-icons" aria-hidden="true">chat</span>
                     {% trans "Contacter sur WhatsApp" %}
                 </a>
-                <a href="tel:{{ guide.phone }}" style="display:inline-flex;align-items:center;gap:.3rem;background:var(--btn-bg);border:1.5px solid var(--border);color:var(--text);border-radius:50px;padding:.6rem 1.2rem;font-weight:600;font-size:.88rem;text-decoration:none;">
-                    <span class="material-icons" style="font-size:1rem">call</span>
+                <a href="tel:{{ guide.phone }}" class="btn-edit">
+                    <span class="material-icons" aria-hidden="true">call</span>
                     {{ guide.phone }}
                 </a>
                 {% endif %}
                 {% if is_owner %}
                 <a href="{% url 'tourisme:guide_register' %}" class="btn-edit">
-                    <span class="material-icons" style="font-size:1rem">edit</span>
+                    <span class="material-icons" aria-hidden="true">edit</span>
                     {% trans "Modifier mon profil" %}
                 </a>
-                <a href="{% url 'tourisme:lieu_submit' %}"
-                   style="display:inline-flex;align-items:center;gap:.35rem;background:var(--accent);color:#fff;border-radius:50px;padding:.55rem 1.2rem;font-weight:700;font-size:.85rem;text-decoration:none;">
-                    <span class="material-icons" style="font-size:1rem">add_location_alt</span>
+                <a href="{% url 'tourisme:lieu_submit' %}" class="vz-btn vz-btn--primary vz-btn--pill">
+                    <span class="material-icons" aria-hidden="true">add_location_alt</span>
                     {% trans "Proposer un lieu" %}
                 </a>
                 {% endif %}
@@ -175,7 +171,7 @@
             </div>
             {% endif %}
             {% if guide.regions_covered %}
-            <div class="gp-info-row" style="grid-column: 1 / -1;">
+            <div class="gp-info-row gp-info-row--full">
                 <div class="gp-info-label">
                     <span class="material-icons">map</span>
                     {% trans "Régions couvertes" %}
@@ -237,9 +233,9 @@
 
     <!-- ── CTA contact si pas de téléphone ── -->
     {% if not guide.phone %}
-    <div style="text-align:center;padding:1.5rem;background:var(--bg-card);border-radius:14px;border:1px solid var(--border);">
-        <span class="material-icons" style="font-size:2rem;color:var(--text-muted);display:block;margin-bottom:.4rem">phone_disabled</span>
-        <div style="font-size:.88rem;color:var(--text-muted);">{% trans "Ce guide n'a pas renseigné de numéro de contact." %}</div>
+    <div class="gp-nophone">
+        <span class="material-icons" aria-hidden="true">phone_disabled</span>
+        <div class="gp-nophone-text">{% trans "Ce guide n'a pas renseigné de numéro de contact." %}</div>
     </div>
     {% endif %}
 

@@ -10,14 +10,17 @@
 
 /* ── Hero ── */
 .guide-reg-hero {
-    background: linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%);
-    border-radius: 18px; color: #fff;
+    background: linear-gradient(135deg, var(--accent-dark) 0%, var(--accent2) 100%);
+    border-radius: var(--radius-lg); color: #fff;
     padding: 2rem 1.5rem 1.8rem; margin-bottom: 1.8rem;
     text-align: center;
 }
 [data-theme="dark"] .guide-reg-hero {
-    background: linear-gradient(135deg, #061525 0%, #0d2d4a 100%);
+    background:
+        linear-gradient(135deg, rgba(var(--accent-rgb), .28) 0%, transparent 100%),
+        var(--bg-card);
 }
+.guide-reg-hero > .material-icons { font-size: 2.5rem; margin-bottom: .5rem; display: block; }
 .guide-reg-hero h1 {
     font-size: 1.6rem; font-weight: 800;
     letter-spacing: -.03em; margin: 0 0 .35rem;
@@ -26,13 +29,10 @@
 
 /* ── Messages ── */
 .alert-success {
-    background: #e8f5e9; border-left: 4px solid var(--success);
-    border-radius: 0 10px 10px 0; padding: .9rem 1.1rem;
-    font-size: .9rem; color: #1b5e20; margin-bottom: 1.2rem;
+    background: rgba(var(--success-rgb), .12); border-left: 4px solid var(--success);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: .9rem 1.1rem;
+    font-size: .9rem; color: var(--success); margin-bottom: 1.2rem;
     display: flex; align-items: center; gap: .5rem;
-}
-[data-theme="dark"] .alert-success {
-    background: #0a2e0f; color: #81c784; border-left-color: #388e3c;
 }
 
 /* ── Sections de formulaire ── */
@@ -97,6 +97,7 @@ textarea.form-control { resize: vertical; min-height: 100px; line-height: 1.6; }
 }
 .photo-input-btn:hover { border-color: var(--accent); color: var(--accent); }
 .photo-input-btn .material-icons { font-size: 1rem; }
+.photo-help { font-size: .75rem; color: var(--text-subtle); margin-top: .3rem; }
 /* Caché visuellement mais accessible via <label> sur mobile/Capacitor WebView.
    display:none empêche le déclenchement par label sur certains Android WebView. */
 #id_photo {
@@ -119,6 +120,8 @@ textarea.form-control { resize: vertical; min-height: 100px; line-height: 1.6; }
 }
 .guide-reg-submit:hover { opacity: .9; transform: translateY(-2px); }
 .guide-reg-submit .material-icons { font-size: 1.2rem; }
+.guide-reg-note { text-align: center; font-size: .8rem; color: var(--text-subtle); margin-top: .9rem; }
+.guide-reg-note .material-icons { font-size: .9rem; vertical-align: middle; }
 
 @media (max-width: 575px) {
     .form-row { grid-template-columns: 1fr; }

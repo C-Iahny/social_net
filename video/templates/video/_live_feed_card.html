@@ -8,7 +8,7 @@
     {% if live.host.profile_image %}
       <div class="lfc-bg" style="background-image:url('{{ live.host.profile_image.url }}')"></div>
     {% else %}
-      <div class="lfc-bg" style="background:linear-gradient(135deg,var(--danger),#b71c1c)"></div>
+      <div class="lfc-bg lfc-bg--plain"></div>
     {% endif %}
     <div class="lfc-overlay"></div>
 
@@ -18,7 +18,7 @@
       {# Badge LIVE + host #}
       <div class="lfc-top">
         <span class="lfc-live-badge">
-          <span class="material-icons" style="font-size:10px;vertical-align:middle;">circle</span>
+          <span class="material-icons" aria-hidden="true">circle</span>
           {% trans "LIVE" %}
         </span>
         <div class="lfc-host">
@@ -30,7 +30,7 @@
           <span class="lfc-username">{{ live.host.username }}</span>
         </div>
         <span class="lfc-viewers">
-          <span class="material-icons" style="font-size:16px;vertical-align:middle;">visibility</span>
+          <span class="material-icons" aria-hidden="true">visibility</span>
           {{ live.viewer_count }}
         </span>
       </div>
@@ -40,16 +40,13 @@
 
       {# Bouton rejoindre #}
       <a href="{% url 'video:live-room' live.id %}" class="lfc-join-btn">
-        <span class="material-icons" style="vertical-align:middle;margin-right:4px;">play_circle_filled</span>
+        <span class="material-icons" aria-hidden="true">play_circle_filled</span>
         {% trans "Rejoindre le live" %}
       </a>
 
       {% if live.replay_available and live.replay_url %}
-      <a href="{{ live.replay_url }}" target="_blank" rel="noopener"
-         style="display:inline-flex;align-items:center;gap:.4rem;margin-top:.5rem;
-                padding:.4rem .9rem;background:rgba(0,0,0,.7);color:#fff;
-                border-radius:20px;font-size:.82rem;text-decoration:none;">
-          <span class="material-icons" style="font-size:1rem;">play_circle</span>
+      <a href="{{ live.replay_url }}" target="_blank" rel="noopener" class="lfc-replay-btn">
+          <span class="material-icons" aria-hidden="true">play_circle</span>
           {% trans "Voir le replay" %}
       </a>
       {% endif %}

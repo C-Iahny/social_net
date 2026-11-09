@@ -340,3 +340,6 @@
     color: #fff;
 }
 [data-theme="dark"] .fr-empty-cta:hover { color: #000; }
+
+/* ── Styles sortis des attributs style="" de friend_requests.html (2026-11) ── */
+.fr-empty-cta .material-icons { font-size: .95rem; }

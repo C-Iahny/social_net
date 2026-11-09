@@ -25,24 +25,33 @@ class Group(models.Model):
     CAT_FAMILLE    = 'famille'
     CAT_RELIGION   = 'religion'
     CAT_AUTRE      = 'autre'
+    # Libellés sans emoji : l'icône de catégorie vient de CATEGORY_ICONS
+    # (Material Icons) et se rend via le filtre `vz_group_icon`.
     CATEGORY_CHOICES = [
-        (CAT_SPORT,      '🏃 Sport'),
-        (CAT_MUSIQUE,    '🎵 Musique'),
-        (CAT_CUISINE,    '🍳 Cuisine'),
-        (CAT_TECH,       '💻 Technologie'),
-        (CAT_ART,        '🎨 Art & Culture'),
-        (CAT_EDUCATION,  '📚 Éducation'),
-        (CAT_VOYAGE,     '✈️ Voyage'),
-        (CAT_BUSINESS,   '💼 Business'),
-        (CAT_GAMING,     '🎮 Gaming'),
-        (CAT_BIENETRE,   '🧘 Bien-être'),
-        (CAT_NATURE,     '🌱 Nature'),
-        (CAT_HUMOUR,     '😄 Humour'),
-        (CAT_MADAGASCAR, '🇲🇬 Madagascar'),
-        (CAT_FAMILLE,    '👨‍👩‍👧 Famille'),
-        (CAT_RELIGION,   '🙏 Religion & Spiritualité'),
-        (CAT_AUTRE,      '💬 Autre'),
+        (CAT_SPORT,      'Sport'),
+        (CAT_MUSIQUE,    'Musique'),
+        (CAT_CUISINE,    'Cuisine'),
+        (CAT_TECH,       'Technologie'),
+        (CAT_ART,        'Art & Culture'),
+        (CAT_EDUCATION,  'Éducation'),
+        (CAT_VOYAGE,     'Voyage'),
+        (CAT_BUSINESS,   'Business'),
+        (CAT_GAMING,     'Gaming'),
+        (CAT_BIENETRE,   'Bien-être'),
+        (CAT_NATURE,     'Nature'),
+        (CAT_HUMOUR,     'Humour'),
+        (CAT_MADAGASCAR, 'Madagascar'),
+        (CAT_FAMILLE,    'Famille'),
+        (CAT_RELIGION,   'Religion & Spiritualité'),
+        (CAT_AUTRE,      'Autre'),
     ]
+    CATEGORY_ICONS = {
+        CAT_SPORT: 'directions_run', CAT_MUSIQUE: 'music_note', CAT_CUISINE: 'restaurant',
+        CAT_TECH: 'computer', CAT_ART: 'palette', CAT_EDUCATION: 'school', CAT_VOYAGE: 'flight',
+        CAT_BUSINESS: 'work', CAT_GAMING: 'sports_esports', CAT_BIENETRE: 'self_improvement',
+        CAT_NATURE: 'eco', CAT_HUMOUR: 'mood', CAT_MADAGASCAR: 'public', CAT_FAMILLE: 'family_restroom',
+        CAT_RELIGION: 'volunteer_activism', CAT_AUTRE: 'forum',
+    }
 
     name        = models.CharField(max_length=100)
     slug        = models.SlugField(max_length=110, unique=True, blank=True)

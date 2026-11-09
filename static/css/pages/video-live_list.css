@@ -15,20 +15,20 @@
 /* ── Hero create card ── */
 .live-create-card {
     background: linear-gradient(135deg, #1a0a2e 0%, #0d1a2e 50%, #0a1a1a 100%);
-    border: 1px solid rgba(255,59,59,.25);
+    border: 1px solid rgba(var(--danger-rgb),.25);
     border-radius: 24px;
     padding: 2rem 2rem 1.75rem;
     margin-bottom: 2rem;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 8px 40px rgba(255,59,59,.12);
+    box-shadow: 0 8px 40px rgba(var(--danger-rgb),.12);
 }
 .live-create-card::before {
     content: '';
     position: absolute;
     top: -40px; right: -40px;
     width: 180px; height: 180px;
-    background: radial-gradient(circle, rgba(255,59,59,.18) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(var(--danger-rgb),.18) 0%, transparent 70%);
     pointer-events: none;
 }
 .live-create-card::after {
@@ -60,8 +60,8 @@
     animation: pulse-red 1.8s ease-in-out infinite;
 }
 @keyframes pulse-red {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(255,59,59,.6); }
-    50%       { box-shadow: 0 0 0 8px rgba(255,59,59,0); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(var(--danger-rgb),.6); }
+    50%       { box-shadow: 0 0 0 8px rgba(var(--danger-rgb),0); }
 }
 .live-badge-big .dot {
     width: 7px; height: 7px;
@@ -75,7 +75,9 @@
     font-weight: 800;
     color: #fff;
     margin: 0;
+    display: inline-flex; align-items: center; gap: .4rem;
 }
+.live-create-title .material-icons { font-size: 1.4rem; color: var(--accent3); }
 .live-create-sub {
     color: rgba(255,255,255,.55);
     font-size: .9rem;
@@ -117,14 +119,14 @@
     font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
-    box-shadow: 0 4px 20px rgba(255,59,59,.45);
+    box-shadow: 0 4px 20px rgba(var(--danger-rgb),.45);
     transition: opacity .2s, transform .15s, box-shadow .2s;
     font-family: inherit;
 }
 .live-btn-start:hover {
     opacity: .88;
     transform: translateY(-2px);
-    box-shadow: 0 8px 28px rgba(255,59,59,.55);
+    box-shadow: 0 8px 28px rgba(var(--danger-rgb),.55);
 }
 .live-btn-start .material-icons { font-size: 1.1rem; }
 
@@ -140,6 +142,11 @@
     padding-top: .5rem;
 }
 .live-section-title .material-icons { color: var(--accent); font-size: 1.2rem; }
+.live-count-badge {
+    background: rgba(var(--danger-rgb), .12); color: var(--danger);
+    font-size: .75rem; font-weight: 800;
+    padding: .15rem .55rem; border-radius: var(--radius-pill);
+}
 
 /* ── Live room card grid ── */
 .live-grid {

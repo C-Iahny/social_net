@@ -9,53 +9,53 @@
 {% block content %}
 {% include 'resto/_style.html' %}
 <link rel="stylesheet" href="{% static 'css/pages/resto-checkout.css' %}">
-<div class="rs-wrap" style="max-width:760px;">
-    <h1 style="font-size:1.4rem;font-weight:800;margin:.5rem 0 1rem;">✅ {% trans "Finaliser la commande" %}</h1>
+<div class="rs-wrap rs-wrap--md">
+    <h1 class="rs-h1 rs-h1--top"><i class="material-icons" aria-hidden="true">check_circle</i> {% trans "Finaliser la commande" %}</h1>
 
     <form method="post" class="rs-form" novalidate>{% csrf_token %}
         {% if form.non_field_errors %}<p class="err">{{ form.non_field_errors|join:" " }}</p>{% endif %}
 
-        <div class="rs-card" style="padding:1rem;margin-bottom:1rem;">
+        <div class="rs-card rs-card--pad rs-card--mb">
             <label>{% trans "Comment recevoir la commande ?" %}</label>
             <div class="rs-radio" id="rs-modes">
-                {% for radio in form.mode %}<label>{{ radio.tag }} {% if radio.choice_value == 'delivery' %}🛵{% else %}🏪{% endif %} {{ radio.choice_label }}</label>{% endfor %}
+                {% for radio in form.mode %}<label>{{ radio.tag }} <i class="material-icons rs-ico" aria-hidden="true">{% if radio.choice_value == 'delivery' %}delivery_dining{% else %}storefront{% endif %}</i> {{ radio.choice_label }}</label>{% endfor %}
             </div>
             {% if form.mode.errors %}<p class="err">{{ form.mode.errors|join:" " }}</p>{% endif %}
 
-            <div class="rs-row" style="margin-top:.9rem;">
+            <div class="rs-row rs-mt-m">
                 <div><label>{% trans "Votre nom" %}</label>{{ form.customer_name }}{% if form.customer_name.errors %}<p class="err">{{ form.customer_name.errors|join:" " }}</p>{% endif %}</div>
                 <div><label>{% trans "Téléphone (le livreur vous appellera)" %}</label>{{ form.customer_phone }}{% if form.customer_phone.errors %}<p class="err">{{ form.customer_phone.errors|join:" " }}</p>{% endif %}</div>
             </div>
 
-            <div id="rs-delivery-block" style="margin-top:.9rem;">
+            <div id="rs-delivery-block" class="rs-mt-m">
                 <label>{% trans "Adresse de livraison" %}</label>
                 {{ form.delivery_address }}
                 {% if form.delivery_address.errors %}<p class="err">{{ form.delivery_address.errors|join:" " }}</p>{% endif %}
-                <p class="help" style="margin:.3rem 0 0;">{% trans "Placez le repère sur la carte pour guider le livreur (touchez la carte ou utilisez « Ma position »)." %}</p>
-                <button type="button" class="rs-btn sm secondary" style="margin-top:.4rem;" onclick="rsLocate()">📍 {% trans "Ma position" %}</button>
+                <p class="help rs-mt-xs">{% trans "Placez le repère sur la carte pour guider le livreur (touchez la carte ou utilisez « Ma position »)." %}</p>
+                <button type="button" class="vz-btn vz-btn--sm vz-btn--secondary rs-mt-s" onclick="rsLocate()"><i class="material-icons" aria-hidden="true">my_location</i> {% trans "Ma position" %}</button>
                 <div id="rs-pickmap"></div>
                 {{ form.delivery_latitude }}{{ form.delivery_longitude }}
             </div>
 
-            <div style="margin-top:.9rem;">
+            <div class="rs-mt-m">
                 <label>{% trans "Paiement" %}</label>
                 <div class="rs-radio">{% for radio in form.payment_method %}<label>{{ radio.tag }} {{ radio.choice_label }}</label>{% endfor %}</div>
-                <p class="help" style="margin:.3rem 0 0;">{% trans "Le paiement se fait directement avec le restaurant ou le livreur. Vazimba ne prélève rien." %}</p>
+                <p class="help rs-mt-xs">{% trans "Le paiement se fait directement avec le restaurant ou le livreur. Vazimba ne prélève rien." %}</p>
             </div>
 
-            <div style="margin-top:.9rem;"><label>{% trans "Message au restaurant" %}</label>{{ form.note }}</div>
+            <div class="rs-mt-m"><label>{% trans "Message au restaurant" %}</label>{{ form.note }}</div>
         </div>
 
-        <div class="rs-card" style="padding:1rem;">
-            <p style="margin:0 0 .5rem;font-weight:700;">{{ restaurant.name }}</p>
+        <div class="rs-card rs-card--pad">
+            <p class="rs-card-title">{{ restaurant.name }}</p>
             {% for l in cart_summary.lines %}
-            <div class="rs-order-line"><div>{{ l.quantity }} × {{ l.name }}{% if l.options %}<small>{{ l.options }}</small>{% endif %}{% if l.included %}<small>✅ {% trans "Avec" %} : {{ l.included }}</small>{% endif %}{% if l.removed %}<small>🚫 {% trans "Sans" %} : {{ l.removed }}</small>{% endif %}{% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}</div><div>{{ l.line_total|vz_ariary }}</div></div>
+            <div class="rs-order-line"><div>{{ l.quantity }} × {{ l.name }}{% if l.options %}<small>{{ l.options }}</small>{% endif %}{% if l.included %}<small><i class="material-icons rs-ico" aria-hidden="true">check_circle</i> {% trans "Avec" %} : {{ l.included }}</small>{% endif %}{% if l.removed %}<small><i class="material-icons rs-ico" aria-hidden="true">block</i> {% trans "Sans" %} : {{ l.removed }}</small>{% endif %}{% if l.note %}<small><i class="material-icons rs-ico" aria-hidden="true">edit_note</i> {{ l.note }}</small>{% endif %}</div><div>{{ l.line_total|vz_ariary }}</div></div>
             {% endfor %}
-            <div style="display:flex;justify-content:space-between;margin-top:.6rem;"><span>{% trans "Sous-total" %}</span><span>{{ cart_summary.subtotal|vz_ariary }}</span></div>
-            <div style="display:flex;justify-content:space-between;" class="rs-muted" id="rs-fee-row"><span>{% trans "Livraison" %}</span><span>{{ restaurant.formatted_delivery_fee }}</span></div>
-            <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;margin-top:.3rem;"><span>{% trans "Total" %}</span><span id="rs-total">{{ cart_summary.total|vz_ariary }}</span></div>
-            <p class="rs-muted" style="margin:.4rem 0 0;">⏱ {% trans "Délai estimé" %} : ~{{ restaurant.avg_prep_minutes }} min {% trans "de préparation" %}</p>
-            <button class="rs-btn" type="submit" style="width:100%;margin-top:1rem;">{% trans "Envoyer la commande" %} 🍽️</button>
+            <div class="rs-total-row rs-total-row--mt"><span>{% trans "Sous-total" %}</span><span>{{ cart_summary.subtotal|vz_ariary }}</span></div>
+            <div class="rs-total-row rs-muted" id="rs-fee-row"><span>{% trans "Livraison" %}</span><span>{{ restaurant.formatted_delivery_fee }}</span></div>
+            <div class="rs-total-row rs-total-row--grand"><span>{% trans "Total" %}</span><span id="rs-total">{{ cart_summary.total|vz_ariary }}</span></div>
+            <p class="rs-muted rs-mt-s"><i class="material-icons rs-ico" aria-hidden="true">timer</i> {% trans "Délai estimé" %} : ~{{ restaurant.avg_prep_minutes }} min {% trans "de préparation" %}</p>
+            <button class="vz-btn vz-btn--primary vz-btn--block rs-mt-l" type="submit">{% trans "Envoyer la commande" %} <i class="material-icons" aria-hidden="true">restaurant</i></button>
         </div>
     </form>
 </div>

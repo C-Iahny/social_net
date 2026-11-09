@@ -3,9 +3,9 @@
 {{ my_products|json_script:"pp-products-data" }}
 <div class="form-field pp-field">
     <label>
-        <span class="material-icons" style="font-size:1rem;vertical-align:middle;">storefront</span>
+        <span class="material-icons">storefront</span>
         {% trans "Vendre dans ce post" %}
-        <span style="font-weight:400;color:var(--text-muted);font-size:.8rem;"> — {% trans "optionnel" %}</span>
+        <span class="pp-optional"> — {% trans "optionnel" %}</span>
     </label>
     <input type="hidden" name="product" id="pp-input" value="{{ current_product|default:'' }}">
     <div id="pp-selected" class="pp-selected" hidden>

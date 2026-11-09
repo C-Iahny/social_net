@@ -6,17 +6,17 @@
 
 <div class="bazar-form-wrap">
     <div class="bazar-form-header">
-        <nav style="font-size:.8rem;color:var(--text-muted);margin-bottom:.6rem;">
-            <a href="{% url 'bazar:index' %}" style="color:var(--accent);text-decoration:none;">{% trans "Bazar" %}</a>
+        <nav class="bazar-crumb">
+            <a href="{% url 'bazar:index' %}">{% trans "Bazar" %}</a>
             <span> › </span>{% trans "Publier une annonce" %}
         </nav>
-        <h1>📦 {% trans "Publier une annonce" %}</h1>
+        <h1><i class="material-icons" aria-hidden="true">sell</i> {% trans "Publier une annonce" %}</h1>
         <p>{% trans "Votre annonce sera visible par tous les membres Vazimba." %}</p>
     </div>
 
     {% if messages %}
     {% for msg in messages %}
-    <div class="alert alert-{{ msg.tags }} mb-3" style="border-radius:10px;">{{ msg }}</div>
+    <div class="alert alert-{{ msg.tags }} mb-3 bazar-alert">{{ msg }}</div>
     {% endfor %}
     {% endif %}
 
@@ -27,63 +27,63 @@
 
         <!-- Type d'annonce -->
         <div class="bazar-section">
-          <div class="bazar-section-title">🏷️ {% trans "Type d'annonce" %}</div>
+          <div class="bazar-section-title"><i class="material-icons" aria-hidden="true">category</i>{% trans "Type d'annonce" %}</div>
           <div class="type-radio-group">
             <label class="type-radio-btn {% if not request.POST.listing_type or request.POST.listing_type == 'vente' %}selected{% endif %}" id="lbl-vente">
               <input type="radio" name="listing_type" value="vente"
                      {% if not request.POST.listing_type or request.POST.listing_type == 'vente' %}checked{% endif %}>
-              🏷️ <strong>À vendre</strong><br>
+              <i class="material-icons" aria-hidden="true">sell</i>
+              <strong>À vendre</strong>
               <small>Vente d'un objet ou service</small>
             </label>
             <label class="type-radio-btn {% if request.POST.listing_type == 'location' %}selected{% endif %}" id="lbl-location">
               <input type="radio" name="listing_type" value="location"
                      {% if request.POST.listing_type == 'location' %}checked{% endif %}>
-              🔑 <strong>À louer</strong><br>
+              <i class="material-icons" aria-hidden="true">vpn_key</i>
+              <strong>À louer</strong>
               <small>Location de voiture ou appartement</small>
             </label>
           </div>
         </div>
 
-        <!-- Section location (cachée si vente) -->
+        <!-- Section location (cachée si vente ; display basculé par le JS « Toggle champs location ») -->
         <div class="location-fields" id="location-fields" style="display:none;">
-          <div class="loc-fields-header">📋 Conditions de location</div>
-          <div class="row">
-            <div class="col-md-4 form-group">
-              <label>Prix de location (Ar)</label>
+          <div class="loc-fields-header"><i class="material-icons" aria-hidden="true">assignment</i>Conditions de location</div>
+          <div class="bazar-form-grid bazar-form-grid--3">
+            <div class="vz-field">
+              <label for="{{ form.prix_location.id_for_label }}">Prix de location (Ar)</label>
               {{ form.prix_location }}
             </div>
-            <div class="col-md-4 form-group">
-              <label>Période</label>
+            <div class="vz-field">
+              <label for="{{ form.periode_location.id_for_label }}">Période</label>
               {{ form.periode_location }}
             </div>
-            <div class="col-md-4 form-group">
-              <label>Caution (Ar) <small class="text-muted">facultatif</small></label>
+            <div class="vz-field">
+              <label for="{{ form.caution.id_for_label }}">Caution (Ar) <small class="text-muted">facultatif</small></label>
               {{ form.caution }}
             </div>
-          </div>
-          <div class="row">
-            <div class="col-md-4 form-group">
-              <label>Durée minimale (jours)</label>
+            <div class="vz-field">
+              <label for="{{ form.duree_min.id_for_label }}">Durée minimale (jours)</label>
               {{ form.duree_min }}
             </div>
-            <div class="col-md-4 form-group">
-              <label>Nb de pièces <small class="text-muted">appartement</small></label>
+            <div class="vz-field">
+              <label for="{{ form.nb_pieces.id_for_label }}">Nb de pièces <small class="text-muted">appartement</small></label>
               {{ form.nb_pieces }}
             </div>
-            <div class="col-md-4 form-group">
-              <label>Surface (m²)</label>
+            <div class="vz-field">
+              <label for="{{ form.surface_m2.id_for_label }}">Surface (m²)</label>
               {{ form.surface_m2 }}
             </div>
           </div>
-          <div class="row">
-            <div class="col-md-4 form-group form-check mt-3 ml-3">
-              {{ form.meuble }} <label class="form-check-label">Meublé</label>
+          <div class="bazar-check-row">
+            <div class="form-check bazar-check">
+              {{ form.meuble }} <label class="form-check-label bazar-check-label" for="{{ form.meuble.id_for_label }}">Meublé</label>
             </div>
-            <div class="col-md-4 form-group form-check mt-3">
-              {{ form.charges_incluses }} <label class="form-check-label">Charges incluses</label>
+            <div class="form-check bazar-check">
+              {{ form.charges_incluses }} <label class="form-check-label bazar-check-label" for="{{ form.charges_incluses.id_for_label }}">Charges incluses</label>
             </div>
-            <div class="col-md-4 form-group form-check mt-3">
-              {{ form.avec_chauffeur }} <label class="form-check-label">Avec chauffeur</label>
+            <div class="form-check bazar-check">
+              {{ form.avec_chauffeur }} <label class="form-check-label bazar-check-label" for="{{ form.avec_chauffeur.id_for_label }}">Avec chauffeur</label>
             </div>
           </div>
         </div>
@@ -91,12 +91,12 @@
         <!-- Photos -->
         <div class="bazar-section">
             <div class="bazar-section-title">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <i class="material-icons" aria-hidden="true">photo_library</i>
                 {% trans "Photos" %} ({{ max_images }} max)
             </div>
 
-            <label class="bazar-upload-zone" id="upload-zone" for="id_images" style="cursor:pointer;">
-                <div class="bazar-upload-icon">🖼️</div>
+            <label class="bazar-upload-zone" id="upload-zone" for="id_images">
+                <i class="material-icons bazar-upload-icon" aria-hidden="true">add_photo_alternate</i>
                 <div class="bazar-upload-text">{% trans "Cliquer pour ajouter des photos" %}</div>
                 <div class="bazar-upload-hint">{% trans "JPG, PNG, WebP · Max 8 photos · La première = photo principale" %}</div>
             </label>
@@ -106,22 +106,19 @@
 
         <!-- Titre + Catégorie + État -->
         <div class="bazar-section">
-            <div class="bazar-section-title">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                {% trans "Article" %}
-            </div>
-            <div class="form-group mb-3">
-                <label for="{{ form.title.id_for_label }}">{{ form.title.label }} <span style="color:var(--danger);">*</span></label>
+            <div class="bazar-section-title"><i class="material-icons" aria-hidden="true">local_offer</i>{% trans "Article" %}</div>
+            <div class="vz-field">
+                <label for="{{ form.title.id_for_label }}">{{ form.title.label }} <span class="vz-req">*</span></label>
                 {{ form.title }}
                 {% if form.title.errors %}<ul class="errorlist">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
             </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="{{ form.category.id_for_label }}">{{ form.category.label }} <span style="color:var(--danger);">*</span></label>
+            <div class="bazar-form-grid">
+                <div class="vz-field">
+                    <label for="{{ form.category.id_for_label }}">{{ form.category.label }} <span class="vz-req">*</span></label>
                     {{ form.category }}
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="{{ form.condition.id_for_label }}">{{ form.condition.label }} <span style="color:var(--danger);">*</span></label>
+                <div class="vz-field">
+                    <label for="{{ form.condition.id_for_label }}">{{ form.condition.label }} <span class="vz-req">*</span></label>
                     {{ form.condition }}
                 </div>
             </div>
@@ -129,77 +126,65 @@
 
         <!-- Prix -->
         <div class="bazar-section">
-            <div class="bazar-section-title">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
-                {% trans "Prix" %}
-            </div>
-            <div class="bazar-price-row mb-2">
-                <div>
+            <div class="bazar-section-title"><i class="material-icons" aria-hidden="true">payments</i>{% trans "Prix" %}</div>
+            <div class="bazar-price-row">
+                <div class="vz-field">
                     <label for="{{ form.price.id_for_label }}">{{ form.price.label }}</label>
                     {{ form.price }}
-                    <small class="form-text">{% trans "Laisser vide = « Prix à discuter »" %}</small>
+                    <small class="vz-field-help">{% trans "Laisser vide = « Prix à discuter »" %}</small>
                     {% if form.price.errors %}<ul class="errorlist">{% for e in form.price.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
                 </div>
-                <div class="form-check" style="padding-bottom:.65rem;">
+                <div class="form-check bazar-check bazar-price-check">
                     {{ form.price_negotiable }}
-                    <label class="form-check-label" for="{{ form.price_negotiable.id_for_label }}" style="font-size:.85rem;font-weight:500;color:var(--text-primary);">
-                        {{ form.price_negotiable.label }}
-                    </label>
+                    <label class="form-check-label bazar-check-label" for="{{ form.price_negotiable.id_for_label }}">{{ form.price_negotiable.label }}</label>
                 </div>
             </div>
         </div>
 
         <!-- Description -->
         <div class="bazar-section">
-            <div class="bazar-section-title">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
-                {% trans "Description" %}
+            <div class="bazar-section-title"><i class="material-icons" aria-hidden="true">notes</i>{% trans "Description" %}</div>
+            <div class="vz-field">
+                <label for="{{ form.description.id_for_label }}">{{ form.description.label }} <span class="vz-req">*</span></label>
+                {{ form.description }}
+                <small class="vz-field-help">{% trans "Soyez précis : marque, modèle, dimensions, défauts éventuels…" %}</small>
+                {% if form.description.errors %}<ul class="errorlist">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
             </div>
-            <label for="{{ form.description.id_for_label }}">{{ form.description.label }} <span style="color:var(--danger);">*</span></label>
-            {{ form.description }}
-            <small class="form-text">{% trans "Soyez précis : marque, modèle, dimensions, défauts éventuels…" %}</small>
-            {% if form.description.errors %}<ul class="errorlist">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
         </div>
 
         <!-- Localisation + Contact -->
         <div class="bazar-section">
-            <div class="bazar-section-title">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {% trans "Localisation & Contact" %}
-            </div>
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="{{ form.location.id_for_label }}">{{ form.location.label }} <span style="color:var(--danger);">*</span></label>
+            <div class="bazar-section-title"><i class="material-icons" aria-hidden="true">place</i>{% trans "Localisation & Contact" %}</div>
+            <div class="bazar-form-grid">
+                <div class="vz-field">
+                    <label for="{{ form.location.id_for_label }}">{{ form.location.label }} <span class="vz-req">*</span></label>
                     {{ form.location }}
                     {% if form.location.errors %}<ul class="errorlist">{% for e in form.location.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="vz-field">
                     <label for="{{ form.region.id_for_label }}">{{ form.region.label }}</label>
                     {{ form.region }}
-                    <small class="form-text">{% trans "Facilite le filtre « Près de chez moi »" %}</small>
+                    <small class="vz-field-help">{% trans "Facilite le filtre « Près de chez moi »" %}</small>
                 </div>
             </div>
-            <div class="form-group mb-2">
+            <div class="vz-field">
                 <label for="{{ form.contact_phone.id_for_label }}">
-                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-right:.25rem;vertical-align:middle;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.63 3.32a2 2 0 0 1 1.99-2.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.97-.97a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                    {{ form.contact_phone.label }}
+                    <i class="material-icons" aria-hidden="true">call</i>{{ form.contact_phone.label }}
                 </label>
                 {{ form.contact_phone }}
-                <small class="form-text">{% trans "Visible sur votre annonce pour que les acheteurs vous contactent directement par appel ou WhatsApp." %}</small>
+                <small class="vz-field-help">{% trans "Visible sur votre annonce pour que les acheteurs vous contactent directement par appel ou WhatsApp." %}</small>
             </div>
-            <div class="form-check">
+            <div class="form-check bazar-check">
                 {{ form.show_phone }}
-                <label class="form-check-label" for="{{ form.show_phone.id_for_label }}" style="font-size:.85rem;font-weight:500;color:var(--text-primary);">
-                    {{ form.show_phone.label }}
-                </label>
+                <label class="form-check-label bazar-check-label" for="{{ form.show_phone.id_for_label }}">{{ form.show_phone.label }}</label>
             </div>
         </div>
 
         <!-- Boutons -->
         <div class="bazar-submit">
-            <a href="{% url 'bazar:index' %}" class="bazar-btn-cancel">{% trans "Annuler" %}</a>
-            <button type="submit" class="bazar-btn-submit">
-                📢 {% trans "Publier l'annonce" %}
+            <a href="{% url 'bazar:index' %}" class="vz-btn vz-btn--secondary vz-btn--lg">{% trans "Annuler" %}</a>
+            <button type="submit" class="vz-btn vz-btn--primary vz-btn--lg">
+                <i class="material-icons" aria-hidden="true">campaign</i>{% trans "Publier l'annonce" %}
             </button>
         </div>
     </form>
@@ -289,7 +274,7 @@ function renderPreviews() {
             div.innerHTML = `
                 <img src="${ev.target.result}" alt="">
                 ${i === 0 ? '<span class="bazar-preview-badge">PRINCIPALE</span>' : ''}
-                <button type="button" class="bazar-preview-remove" onclick="removeFile(${i})">✕</button>
+                <button type="button" class="bazar-preview-remove" onclick="removeFile(${i})"><i class="material-icons" aria-hidden="true">close</i></button>
             `;
             previewGrid.appendChild(div);
         };

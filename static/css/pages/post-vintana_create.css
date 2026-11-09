@@ -173,7 +173,7 @@ body { background: var(--bg); }
     padding: 2rem 1.5rem;
     text-align: center;
 }
-.vt-locked .lock-icon { font-size: 2.2rem; }
+.vt-locked .lock-icon { font-size: 2.2rem; color: var(--vintana); display: block; margin: 0 auto .35rem; }
 .vt-locked .lock-title {
     font-size: 1rem; font-weight: 700; color: var(--text);
 }
@@ -244,3 +244,7 @@ body { background: var(--bg); }
 .vt-culture-text {
     font-size: .85rem; line-height: 1.65; color: var(--text-muted);
 }
+
+.vt-counter { text-align: right; font-size: .72rem; color: var(--text-muted); margin-top: .25rem; }
+@keyframes vt-spin { to { transform: rotate(360deg); } }
+.vt-spin { animation: vt-spin .8s linear infinite; display: inline-block; }

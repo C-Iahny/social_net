@@ -10,6 +10,17 @@
     padding: 1.5rem 1rem 4rem;
 }
 
+/* ── Bandeau « en attente de validation » (propriétaire) ── */
+.lieu-pending {
+    display: flex; align-items: center; gap: .5rem;
+    background: rgba(217,119,6,.12);
+    border-left: 4px solid var(--warning);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: .75rem 1rem; margin-bottom: 1rem;
+    font-size: .86rem; color: var(--warning);
+}
+.lieu-pending .material-icons { font-size: 1.1rem; }
+
 /* ── Breadcrumb ── */
 .tour-breadcrumb {
     display: flex; align-items: center; gap: .3rem;
@@ -47,6 +58,7 @@
     color: rgba(255,255,255,.45);
 }
 .lieu-main-img-ph .material-icons { font-size: 3.5rem; }
+.lieu-main-img-ph-text { font-size: .85rem; }
 
 /* Flèches nav galerie */
 .gallery-nav-btn {
@@ -104,6 +116,15 @@
     letter-spacing: -.04em; color: var(--text);
     margin: 0 0 .4rem;
 }
+.lieu-report-btn { border: 0; vertical-align: middle; }
+.lieu-header-actions { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.lieu-more-link {
+    display: inline-flex; align-items: center; gap: .2rem;
+    color: var(--accent); font-size: .82rem; font-weight: 600;
+    white-space: nowrap; text-decoration: none;
+}
+.lieu-more-link:hover { color: var(--accent-dark); text-decoration: none; }
+.lieu-more-link .material-icons { font-size: 1rem; }
 .lieu-meta-row {
     display: flex; align-items: center; gap: .8rem; flex-wrap: wrap;
     margin-bottom: .6rem;
@@ -170,6 +191,8 @@
     letter-spacing: -.02em;
 }
 .lieu-section-title .material-icons { color: var(--accent); }
+.lieu-section { margin-bottom: 2rem; }
+.lieu-section-count { font-size: .85rem; font-weight: 600; color: var(--text-muted); }
 
 /* ── Guides, lieux similaires, publications : composant partagé .vz-card / .vz-grid (zoot-base.css) ──
    Reste ici : avatar « lettre initiale » et la mini-pastille auteur des publications. */
@@ -190,8 +213,9 @@
     line-height: 1;
 }
 .lieu-avis-stars-big {
-    font-size: 1.3rem; color: var(--accent3); letter-spacing: .05rem;
+    display: inline-flex; gap: .05rem; color: var(--accent3);
 }
+.lieu-avis-stars-big .material-icons { font-size: 1.3rem; }
 .lieu-avis-count-label {
     font-size: .82rem; color: var(--text-muted); margin-top: .2rem;
 }
@@ -205,9 +229,10 @@
 .star-rating-input { display: flex; flex-direction: row-reverse; gap: .15rem; margin-bottom: .8rem; }
 .star-rating-input input { display: none; }
 .star-rating-input label {
-    font-size: 1.7rem; cursor: pointer; color: var(--border); line-height: 1;
-    transition: color .15s;
+    display: inline-flex; cursor: pointer; color: var(--border); line-height: 1;
+    transition: color .15s; margin: 0;
 }
+.star-rating-input label .material-icons { font-size: 1.7rem; }
 .star-rating-input input:checked ~ label,
 .star-rating-input label:hover,
 .star-rating-input label:hover ~ label { color: var(--accent3); }
@@ -222,25 +247,31 @@
     display: flex; align-items: center; gap: .6rem;
     font-size: .82rem; color: var(--text-muted); margin: .6rem 0 .9rem;
 }
+.avis-visited-row > .material-icons { font-size: 1rem; }
 .avis-visited-row input[type=date] {
     border: 1px solid var(--border); border-radius: 8px;
     background: var(--bg); color: var(--text); padding: .3rem .5rem; font-size: .82rem;
 }
 .avis-submit-btn {
     display: inline-flex; align-items: center; gap: .35rem;
-    background: var(--accent); color: #fff;
-    border: none; border-radius: 9px; padding: .55rem 1.2rem;
+    background: var(--accent); color: var(--on-accent);
+    border: none; border-radius: var(--radius-sm); padding: .55rem 1.2rem;
     font-size: .87rem; font-weight: 700; cursor: pointer;
     transition: opacity .18s;
 }
 .avis-submit-btn:hover { opacity: .87; }
+.avis-submit-btn .material-icons { font-size: 1rem; }
+.avis-login-note { font-size: .88rem; color: var(--text-muted); margin-bottom: 1rem; }
+.avis-login-note a { color: var(--accent); font-weight: 600; }
+.avis-none { font-size: .87rem; color: var(--text-muted); }
 .avis-error { color: var(--danger); font-size: .83rem; margin-bottom: .7rem; }
 /* Liste d'avis : chaque avis est un .vz-card.vz-card--flat (zoot-base.css) */
 .avis-list { display: flex; flex-direction: column; gap: .85rem; }
 .avis-card-header { display: flex; align-items: center; gap: .6rem; margin-bottom: .2rem; }
 .avis-author-name { font-size: .87rem; font-weight: 700; color: var(--text); }
 .avis-date { font-size: .74rem; color: var(--text-muted); }
-.avis-stars { font-size: 1rem; color: var(--accent3); letter-spacing: .04rem; }
+.avis-stars { display: inline-flex; color: var(--accent3); }
+.avis-stars .material-icons { font-size: 1rem; }
 .avis-comment-text { font-size: .88rem; color: var(--text); line-height: 1.6; }
 /* ── Rating pill in header ── */
 .lieu-rating-pill {

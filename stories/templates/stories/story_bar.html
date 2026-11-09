@@ -20,7 +20,7 @@
   </div>
   {% endif %}
 
-  <div id="zs-items" style="display:contents;"></div>
+  <div id="zs-items"></div>
 </div>
 
 <!-- ═══════════════════════════════════════
@@ -79,11 +79,11 @@
   </div>
 
   <!-- Audio caché -->
-  <audio id="zsv-audio" loop style="display:none;"></audio>
+  <audio id="zsv-audio" loop hidden></audio>
 
   <!-- Signaler la story d'un autre utilisateur -->
-  <button type="button" id="zsv-report-btn" class="zsv-ibtn" onclick="zvReportCurrent()" aria-label="{% trans 'Signaler cette story' %}" title="{% trans 'Signaler' %}" style="display:none;position:absolute;right:56px;top:calc(14px + env(safe-area-inset-top, 0px));z-index:6;background:rgba(0,0,0,.35);border:0;color:#fff;width:36px;height:36px;border-radius:50%;align-items:center;justify-content:center;">
-    <span class="material-icons" style="font-size:1.2rem;">flag</span>
+  <button type="button" id="zsv-report-btn" class="zsv-ibtn" onclick="zvReportCurrent()" aria-label="{% trans 'Signaler cette story' %}" title="{% trans 'Signaler' %}" style="display:none;">
+    <span class="material-icons">flag</span>
   </button>
 
   <!-- Barre "mes views" -->
@@ -124,7 +124,7 @@
 <div id="zsv-vmodal" onclick="if(event.target===this)zvCloseViewers()">
   <div id="zsv-vmodal-panel">
     <h3><span class="material-icons">visibility</span> <span id="zsv-vmodal-title">Vues</span></h3>
-    <div id="zsv-vlist"><p style="color:var(--text-muted);font-size:.88rem;">Chargement…</p></div>
+    <div id="zsv-vlist"><p class="zsv-vhint">Chargement…</p></div>
   </div>
 </div>
 
@@ -243,12 +243,12 @@
 
     <!-- Pastilles : musique et produit liés -->
     <div class="zsc-chips">
-      <div id="zsc-audio-pill" class="zsc-pill" style="display:none;">
+      <div id="zsc-audio-pill" class="zsc-pill">
         <span class="material-icons">audiotrack</span>
         <span id="zsc-audio-name">—</span>
         <button class="zsc-pill-rm" onclick="zscRemoveAudio()" type="button" aria-label="{% trans 'Retirer' %}"><span class="material-icons">close</span></button>
       </div>
-      <div id="zsc-shop-chip" class="zsc-pill" style="display:none;">
+      <div id="zsc-shop-chip" class="zsc-pill">
         <span class="material-icons">shopping_bag</span>
         <span id="zsc-shop-chip-txt"></span>
         <button class="zsc-pill-rm" type="button" onclick="zscClearShop()" aria-label="{% trans 'Retirer' %}"><span class="material-icons">close</span></button>
@@ -293,7 +293,7 @@
            onkeydown="if(event.key==='Enter'){event.preventDefault();zscSearchMusic();}">
   </div>
   <div class="zsc-music-chips" id="zsc-music-chips">
-    <button type="button" class="zsc-mchip active" data-tag="tendances" onclick="zscMusicTag('tendances',this)">🔥 {% trans "Tendances" %}</button>
+    <button type="button" class="zsc-mchip active" data-tag="tendances" onclick="zscMusicTag('tendances',this)"><i class="material-icons" aria-hidden="true">local_fire_department</i> {% trans "Tendances" %}</button>
     <button type="button" class="zsc-mchip" data-tag="gasy"   onclick="zscMusicTag('gasy',this)">🇲🇬 Gasy</button>
     <button type="button" class="zsc-mchip" data-tag="afro"   onclick="zscMusicTag('afro',this)">Afro</button>
     <button type="button" class="zsc-mchip" data-tag="love"   onclick="zscMusicTag('love',this)">{% trans "Amour" %}</button>
@@ -342,7 +342,7 @@
      dans #zsc-start (WebView Android). Ne pas les redéclarer ici. -->
 
 <!-- Audio trim caché -->
-<audio id="zsc-trim-audio" style="display:none;" onended="zscTrimStop()"></audio>
+<audio id="zsc-trim-audio" hidden onended="zscTrimStop()"></audio>
 
 <!-- ═══════════════════════════════════════
      JAVASCRIPT
@@ -440,6 +440,11 @@ function _post(url, data){
   if(data) Object.keys(data).forEach(function(k){ fd.append(k, data[k]); });
   return fetch(url,{method:'POST',body:fd,credentials:'same-origin'});
 }
+/* Notification : toast partagé de vz-core quand il est chargé, repli local sinon */
+function _notify(msg, type){
+  if(window.vzToast){ vzToast(msg, type||'info'); return; }
+  _toast(msg, type==='error' ? 'rgba(176,0,32,.9)' : undefined);
+}
 function _toast(msg, color){
   var t = document.getElementById('_zs-toast');
   if(!t){
@@ -509,19 +514,18 @@ function _zsGroupSheet(gi, g){
   var old = document.getElementById('_zs-gsheet'); if(old) old.remove();
   var sh = document.createElement('div');
   sh.id = '_zs-gsheet';
-  sh.style.cssText = 'position:fixed;inset:0;z-index:30000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center';
-  var btnS = 'width:100%;padding:.8rem;border:none;border-radius:14px;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.55rem;font-family:var(--font-primary,sans-serif);margin-bottom:.65rem;';
+  sh.className = 'zs-sheet-overlay';
   {% trans "Déjà vue" as gsSeen %}{% trans "Revoir la story" as gsReplay %}{% trans "Voir la photo de profil" as gsPhoto %}{% trans "Voir le profil" as gsProfile %}{% trans "Annuler" as gsCancel %}
   sh.innerHTML =
-    '<div style="background:var(--bg-card);color:var(--text);border-radius:22px 22px 0 0;width:min(100vw,480px);padding:1.1rem 1.4rem calc(1.6rem + env(safe-area-inset-bottom,0px));animation:zsSlideUp .22s ease;">' +
-      '<div style="display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;">' +
-        '<img src="'+_esc(g.avatar||'')+'" alt="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--border);">' +
-        '<div><b style="display:block;">'+_esc(g.username||'')+'</b><small style="color:var(--text-muted);">{{ gsSeen|escapejs }} · '+g.stories.length+' story</small></div>' +
+    '<div class="zs-sheet">' +
+      '<div class="zs-sheet-head">' +
+        '<img src="'+_esc(g.avatar||'')+'" alt="" class="zs-sheet-avatar">' +
+        '<div><b>'+_esc(g.username||'')+'</b><small>{{ gsSeen|escapejs }} · '+g.stories.length+' story</small></div>' +
       '</div>' +
-      '<button type="button" style="'+btnS+'background:var(--accent);color:var(--on-accent,#fff);" data-act="replay"><span class="material-icons">replay</span> {{ gsReplay|escapejs }}</button>' +
-      '<button type="button" style="'+btnS+'background:var(--btn-bg);color:var(--text);" data-act="photo"><span class="material-icons">account_circle</span> {{ gsPhoto|escapejs }}</button>' +
-      '<button type="button" style="'+btnS+'background:var(--btn-bg);color:var(--text);" data-act="profile"><span class="material-icons">person</span> {{ gsProfile|escapejs }}</button>' +
-      '<button type="button" style="width:100%;padding:.55rem;background:none;color:var(--text-muted);border:none;font-size:.88rem;cursor:pointer;font-family:var(--font-primary,sans-serif);" data-act="cancel">{{ gsCancel|escapejs }}</button>' +
+      '<button type="button" class="zs-sheet-btn zs-sheet-btn--primary" data-act="replay"><span class="material-icons">replay</span> {{ gsReplay|escapejs }}</button>' +
+      '<button type="button" class="zs-sheet-btn" data-act="photo"><span class="material-icons">account_circle</span> {{ gsPhoto|escapejs }}</button>' +
+      '<button type="button" class="zs-sheet-btn" data-act="profile"><span class="material-icons">person</span> {{ gsProfile|escapejs }}</button>' +
+      '<button type="button" class="zs-sheet-cancel" data-act="cancel">{{ gsCancel|escapejs }}</button>' +
     '</div>';
   sh.addEventListener('click', function(e){
     var b = e.target.closest ? e.target.closest('[data-act]') : null;
@@ -579,21 +583,16 @@ function _zsMySheet(gi){
   if(sh){ sh.remove(); return; }
   sh = document.createElement('div');
   sh.id = '_zs-mysheet';
-  sh.style.cssText = [
-    'position:fixed;inset:0;z-index:30000',
-    'background:rgba(0,0,0,.55)',
-    'display:flex;align-items:flex-end;justify-content:center',
-  ].join(';');
-  var btnS = 'width:100%;padding:.8rem;border:none;border-radius:14px;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.55rem;font-family:var(--font-primary,sans-serif);';
+  sh.className = 'zs-sheet-overlay';
   sh.innerHTML =
-    '<div style="background:var(--bg-card);border-radius:22px 22px 0 0;width:min(100vw,480px);padding:1.2rem 1.4rem calc(1.8rem + env(safe-area-inset-bottom,0px));animation:zsSlideUp .22s ease;">' +
-      '<button style="'+btnS+'background:var(--accent);color:#fff;margin-bottom:.65rem;" onclick="_zsMySheetCreate()" type="button">' +
+    '<div class="zs-sheet">' +
+      '<button class="zs-sheet-btn zs-sheet-btn--primary" onclick="_zsMySheetCreate()" type="button">' +
         '<span class="material-icons">add_circle</span> Créer une story' +
       '</button>' +
-      '<button style="'+btnS+'background:var(--btn-bg);color:var(--text);" onclick="_zsMySheetView('+gi+')" type="button">' +
+      '<button class="zs-sheet-btn" onclick="_zsMySheetView('+gi+')" type="button">' +
         '<span class="material-icons">play_circle</span> Voir mes stories' +
       '</button>' +
-      '<button style="width:100%;padding:.55rem;background:none;color:var(--text-muted);border:none;font-size:.88rem;cursor:pointer;margin-top:.4rem;font-family:var(--font-primary,sans-serif);" onclick="document.getElementById(\'_zs-mysheet\').remove()" type="button">Annuler</button>' +
+      '<button class="zs-sheet-cancel" onclick="document.getElementById(\'_zs-mysheet\').remove()" type="button">Annuler</button>' +
     '</div>';
   sh.onclick = function(e){ if(e.target===sh) sh.remove(); };
   document.body.appendChild(sh);
@@ -901,14 +900,14 @@ window.zvSendReply = function(){
     .then(function(r){ return r.json(); })
     .then(function(d){
       if(d.ok){
-        _toast('✅ Message envoyé');
+        _notify('Message envoyé','success');
         inp.value='';
         document.getElementById('zsv-reply-send').disabled=true;
       } else {
-        _toast('❌ ' + (d.error||'Erreur envoi'));
+        _notify(d.error||'Erreur envoi','error');
       }
     })
-    .catch(function(){ _toast('❌ Erreur envoi'); });
+    .catch(function(){ _notify('Erreur envoi','error'); });
 };
 
 window.zvOpenViewers = function(){
@@ -917,7 +916,7 @@ window.zvOpenViewers = function(){
   _zvPause();
   document.getElementById('zsv-vmodal').classList.add('open');
   var list = document.getElementById('zsv-vlist');
-  list.innerHTML='<p style="color:var(--text-muted)">Chargement…</p>';
+  list.innerHTML='<p class="zsv-vhint">Chargement…</p>';
   fetch(URLS.viewers+story.id+'/')
     .then(function(r){ return r.json(); })
     .then(function(d){
@@ -926,7 +925,7 @@ window.zvOpenViewers = function(){
 
       var html = '';
       if(!rows.length){
-        html = '<p style="color:var(--text-muted)">Aucune vue pour l\'instant.</p>';
+        html = '<p class="zsv-vhint">Aucune vue pour l\'instant.</p>';
       } else {
         html = rows.map(function(r){
           var hasReply = !!r.reply_msg;
@@ -934,20 +933,20 @@ window.zvOpenViewers = function(){
             (hasReply ? ' data-uid="'+r.id+'" data-reply="'+_esc(r.reply_msg || '')+'" onclick="zvOpenReplyChat(this)" title="Répondre dans le chat"' : '') +
             '>' +
             '<img src="'+_esc(r.avatar)+'" onerror="this.style.display=\'none\'" alt="">' +
-            '<div style="flex:1;min-width:0;">' +
+            '<div class="zsv-vrow-body">' +
               '<div class="zsv-vrow-name">'+_esc(r.username)+'</div>' +
               (hasReply ? '<div class="zsv-vrow-msg">'+_esc(r.reply_msg)+'</div>' : '') +
               '<div class="zsv-vrow-time">'+(r.reply_at||r.viewed_at||'')+'</div>' +
             '</div>' +
             (r.emoji ? '<span class="zsv-vrow-emoji">'+_esc(r.emoji)+'</span>' : '') +
-            (hasReply ? '<span class="zsv-vrow-reply-icon"><span class="material-icons" style="font-size:1rem;">reply</span></span>' : '') +
+            (hasReply ? '<span class="zsv-vrow-reply-icon"><span class="material-icons">reply</span></span>' : '') +
           '</div>';
         }).join('');
       }
 
       list.innerHTML = html;
     })
-    .catch(function(){ list.innerHTML='<p style="color:var(--text-muted)">Erreur chargement.</p>'; });
+    .catch(function(){ list.innerHTML='<p class="zsv-vhint">Erreur chargement.</p>'; });
 };
 window.zvCloseViewers = function(){
   document.getElementById('zsv-vmodal').classList.remove('open'); _zvResume();
@@ -1391,7 +1390,7 @@ window.zscPublish = function(){
 
   var upbar=document.getElementById('zsc-upbar'), upfill=document.getElementById('zsc-upbar-fill');
   upbar.style.display='block'; upfill.style.width='3%';
-  function fail(msg){ _toast('❌ '+msg,'rgba(176,0,32,.9)'); btn.disabled=false; btn.classList.remove('is-loading'); upbar.style.display='none'; }
+  function fail(msg){ _notify(msg,'error'); btn.disabled=false; btn.classList.remove('is-loading'); upbar.style.display='none'; }
   var xhr = new XMLHttpRequest();
   xhr.open('POST', URLS.create, true);
   xhr.withCredentials = true;
@@ -1401,7 +1400,7 @@ window.zscPublish = function(){
     var d={}; try { d=JSON.parse(xhr.responseText||'{}'); } catch(e){}
     if(xhr.status>=200 && xhr.status<300 && d.ok){
       _sc.published=true; upfill.style.width='100%';
-      if(window.vzToast) vzToast('{% trans "Story publiée !"|escapejs %}','success'); else _toast('✅ Story publiée !');
+      if(window.vzToast) vzToast('{% trans "Story publiée !"|escapejs %}','success'); else _toast('Story publiée !');
       setTimeout(function(){ btn.classList.remove('is-loading'); zscClose(); loadStories(); },400);
     } else fail(d.error||'{% trans "Erreur"|escapejs %}');
   };

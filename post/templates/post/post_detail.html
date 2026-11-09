@@ -42,8 +42,8 @@
                     <span class="material-icons">schedule</span>
                     {{ post.created_at|default:post.post_date|vz_since }}
                     {% if post.category and post.category != 'Category' %}
-                    <span style="opacity:.4">·</span>
-                    <span style="background:var(--btn-bg);border-radius:8px;padding:.1rem .5rem;font-size:.72rem;font-weight:700;color:var(--accent);">{{ post.category }}</span>
+                    <span class="pd-dot">·</span>
+                    <span class="pd-cat">{{ post.category }}</span>
                     {% endif %}
                 </div>
             </div>
@@ -84,7 +84,7 @@
                 {% endfor %}
             </div>
             <span id="pd-reaction-total">{{ post.total_reactions }}</span>
-            <span style="opacity:.4">·</span>
+            <span class="pd-dot">·</span>
             <span>{{ post.total_comments }} commentaire{{ post.total_comments|pluralize }}</span>
         </div>
         {% endif %}
@@ -97,7 +97,7 @@
                         onclick="pdQuickReact()"
                         onmouseenter="openPicker({{ post.id }})"
                         title="Réagir" type="button">
-                    <span id="react-icon-{{ post.id }}" style="font-size:1.1rem;line-height:1;">
+                    <span id="react-icon-{{ post.id }}" class="pd-react-icon">
                         {% if post.user_reaction == 'like' %}👍
                         {% elif post.user_reaction == 'heart' %}❤️
                         {% elif post.user_reaction == 'laugh' %}😂
@@ -133,7 +133,7 @@
                 <span class="material-icons">chat_bubble_outline</span>
                 Commenter
                 {% if post.total_comments %}
-                <span style="font-size:.75rem;opacity:.65;">({{ post.total_comments }})</span>
+                <span class="pd-count">({{ post.total_comments }})</span>
                 {% endif %}
             </button>
 
@@ -244,7 +244,7 @@
 </div>
 
 <!-- Share toast -->
-<div id="pd-share-toast">🔗 {% trans "Link copied!" %}</div>
+<div id="pd-share-toast"><i class="material-icons" aria-hidden="true">link</i> {% trans "Link copied!" %}</div>
 
 <script>
 var POST_ID = {{ post.id }};

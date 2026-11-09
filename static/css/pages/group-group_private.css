@@ -32,3 +32,5 @@
 }
 .gp-back:hover { background: var(--btn-bg); color: var(--accent); text-decoration: none; }
 .gp-back .material-icons { font-size: 1rem; }
+
+.gp-private-btn--static { cursor: default; opacity: .75; }

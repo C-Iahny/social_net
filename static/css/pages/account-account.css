@@ -1086,3 +1086,81 @@ body { background: var(--bg); }
     font-size: .72rem; color: var(--text-muted);
     margin-top: .35rem; text-align: right;
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   Styles sortis des attributs style="" de account.html (2026-11)
+   ══════════════════════════════════════════════════════════════════ */
+.profile-cover-img { cursor: zoom-in; }
+.profile-avatar-img { position: relative; z-index: 1; cursor: zoom-in; }
+.profile-username { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.profile-verified-chip { min-height: 24px; font-size: .66rem; }
+.profile-verified-chip .material-icons { font-size: .9rem; }
+.fihav-badge-inline .material-icons { font-size: .75rem; }
+.fihav-level-txt { font-size: .8rem; }
+
+/* Menu « Ami » (retirer) */
+.profile-dd-menu {
+    border-radius: 12px; border-color: var(--border); background: var(--bg-card);
+    box-shadow: var(--shadow-lg); padding: .4rem;
+}
+.profile-dd-danger { border-radius: 8px; color: var(--danger); font-size: .88rem; padding: .5rem .85rem; }
+.profile-dd-danger:hover { color: var(--danger); background: rgba(var(--danger-rgb),.08); }
+.profile-dd-danger .material-icons { font-size: .95rem; vertical-align: middle; }
+.btn-p-cancel-inline { font-size: .82rem; }
+.btn-p-cancel-inline .material-icons { font-size: .85rem; }
+
+/* Score Fihavanana */
+.fihav-progress-bar.is-full { width: 100%; }
+.fihav-next-level--max { text-align: center; font-weight: 700; color: var(--accent); }
+.fihav-next-level--max .material-icons { font-size: 1rem; vertical-align: -3px; }
+.fihav-breakdown-title {
+    font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: .35rem;
+}
+.fihav-breakdown-row > span:first-child { display: inline-flex; align-items: center; gap: .35rem; }
+.fihav-breakdown-row .material-icons { font-size: 1rem; color: var(--text-muted); }
+
+/* Barre latérale */
+.pc-sidebar-cta { width: 100%; margin-top: .75rem; justify-content: center; }
+.mini-photo { cursor: zoom-in; }
+
+/* Stories (sections affichées par JS : display block) */
+#pf-friends-stories-wrap { display: none; }
+.pf-stories-header .material-icons { color: var(--accent); font-size: 1rem; }
+#profile-stories-section { display: none; margin-bottom: 1rem; }
+.pf-stories-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .7rem; }
+.pf-stories-head-left { display: flex; align-items: center; gap: .45rem; }
+.pf-stories-head-left .material-icons { color: var(--accent); font-size: 1rem; }
+.pf-stories-title {
+    font-size: .72rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--text-muted);
+}
+#profile-stories-grid { display: flex; gap: .7rem; flex-wrap: wrap; }
+.pf-story-video { width: 100%; height: 100%; object-fit: cover; }
+
+/* Création rapide de post (textarea et grille affichées par JS) */
+#pf-cb-body {
+    display: none; flex: 1; background: var(--btn-bg); border: 1.5px solid var(--accent);
+    border-radius: 14px; padding: .55rem 1rem; color: var(--text); font-size: .9rem;
+    resize: none; outline: none; line-height: 1.5; min-height: 42px; font-family: inherit;
+}
+#pf-cb-preview-grid { display: none; margin: .1rem 1.1rem .5rem; }
+#pf-cb-submit-bar { padding: .35rem 1.1rem .6rem; align-items: center; justify-content: flex-end; gap: .5rem; }
+#pf-cb-file-count { flex: 1; font-size: .79rem; color: var(--text-muted); }
+.pf-cb-sep { border: none; border-top: 1px solid var(--border); margin: 0; }
+a.create-box-action { color: var(--text-muted); text-decoration: none; }
+@keyframes pf-cb-spin { to { transform: rotate(360deg); } }
+.pf-cb-spinning { animation: pf-cb-spin .8s linear infinite; display: inline-block; }
+
+/* Fil du profil */
+#profile-posts-sentinel { height: 1px; margin-bottom: 2rem; }
+#profile-posts-loader { display: none; text-align: center; padding: 1.2rem 0; }
+#profile-posts-loader .spinner-border { width: 1.6rem; height: 1.6rem; }
+.pf-empty-cta { margin-top: .75rem; }
+
+/* Onglet À propos */
+.pc-about-card { max-width: 600px; }
+.info-label { font-size: .75rem; color: var(--text-muted); }
+.info-muted { color: var(--text-muted); }
+.pc-about-actions { margin-top: 1rem; display: flex; gap: .6rem; flex-wrap: wrap; }

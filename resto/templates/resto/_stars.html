@@ -1,0 +1,1 @@
+{% load i18n %}{% comment %}Note sur 5 en icônes Material : {% include 'resto/_stars.html' with n=review.rating %}{% endcomment %}<span class="rs-star-row" role="img" aria-label="{{ n }}/5">{% for v in "12345" %}<i class="material-icons rs-star" aria-hidden="true">{% if v|add:0 <= n %}star{% else %}star_border{% endif %}</i>{% endfor %}</span>

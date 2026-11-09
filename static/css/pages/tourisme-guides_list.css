@@ -5,13 +5,15 @@
    TOURISME — LISTE DES GUIDES
    ============================================================ */
 .guides-hero {
-    background: linear-gradient(120deg, #1a3a5c 0%, #2d6a9f 100%);
+    background: linear-gradient(120deg, var(--accent-dark) 0%, var(--accent2) 100%);
     color: #fff;
     padding: 2.5rem 1.5rem 2rem;
     text-align: center;
 }
 [data-theme="dark"] .guides-hero {
-    background: linear-gradient(120deg, #061525 0%, #0d2d4a 100%);
+    background:
+        linear-gradient(120deg, rgba(var(--accent-rgb), .28) 0%, transparent 100%),
+        var(--bg-card);
 }
 .guides-hero h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -.03em; margin: 0 0 .3rem; }
 .guides-hero p { font-size: .9rem; opacity: .8; margin: 0; }
@@ -71,12 +73,14 @@
 .verified-toggle .material-icons { font-size: 1rem; }
 
 .guides-filter-btn {
-    background: var(--accent); color: #fff; border: none;
+    background: var(--accent); color: var(--on-accent); border: none;
     border-radius: 50px; padding: .5rem 1.4rem;
     font-size: .88rem; font-weight: 700; cursor: pointer;
     transition: opacity .18s; flex-shrink: 0;
 }
 .guides-filter-btn:hover { opacity: .88; }
+.guides-filter-btn .material-icons { font-size: 1rem; vertical-align: middle; }
+.guides-container { max-width: 1100px; padding: 1.5rem 1rem 3rem; }
 
 /* ── Grille guides ── : cartes via le composant partagé .vz-card / .vz-grid (zoot-base.css).
    Reste ici le spécifique : en-tête avatar + identité, et l'avatar « lettre initiale ». */
@@ -94,18 +98,20 @@
     display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; justify-content: center;
 }
 .become-guide-banner .text-wrap { text-align: left; }
+.become-guide-icon { font-size: 2.5rem; color: var(--accent); flex-shrink: 0; }
 .become-guide-banner h3 {
     font-size: 1.05rem; font-weight: 800; color: var(--text); margin: 0 0 .3rem;
 }
 .become-guide-banner p { font-size: .85rem; color: var(--text-muted); margin: 0; }
 .btn-become {
     display: inline-flex; align-items: center; gap: .4rem;
-    background: var(--accent); color: #fff; border-radius: 50px;
-    padding: .65rem 1.6rem; font-weight: 700; font-size: .9rem;
+    background: var(--accent); color: var(--on-accent); border-radius: var(--radius-pill);
+    padding: .65rem 1.6rem; font-weight: 700; font-size: .9rem; min-height: 44px;
     text-decoration: none; white-space: nowrap; transition: opacity .18s;
     flex-shrink: 0;
 }
-.btn-become:hover { opacity: .88; text-decoration: none; color: #fff; }
+.btn-become:hover { opacity: .88; text-decoration: none; color: var(--on-accent); }
+.btn-become .material-icons { font-size: 1.1rem; }
 
 /* ── Pagination ── */
 .tour-pagination {
@@ -125,7 +131,34 @@
 
 /* ── Empty ── */
 .guides-empty { text-align: center; padding: 4rem 1rem; color: var(--text-muted); }
-.guides-empty .material-icons { font-size: 4rem; opacity: .25; display: block; margin-bottom: .8rem; }
+.guides-empty > .material-icons { font-size: 4rem; opacity: .25; display: block; margin-bottom: .8rem; }
+.guides-empty-title { font-size: 1.05rem; font-weight: 700; margin-bottom: .4rem; }
+.guides-empty-text  { font-size: .88rem; }
+.guides-link { color: var(--accent); }
+.tour-page-btn .material-icons { font-size: 1rem; }
+
+/* ── Autocomplétion (liste injectée par le script de la page) ── */
+.guides-ac {
+    position: fixed; z-index: 9999;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    max-height: 340px; overflow-y: auto; min-width: 260px;
+}
+.guides-ac-item {
+    display: flex; align-items: center; gap: .75rem;
+    padding: .65rem 1rem;
+    text-decoration: none; color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+.guides-ac-item:hover { background: var(--bg-hover); color: var(--text); text-decoration: none; }
+.guides-ac-item:last-child { border-bottom: 0; }
+.guides-ac-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.guides-ac-body { flex: 1; min-width: 0; }
+.guides-ac-name { font-weight: 700; font-size: .9rem; display: flex; align-items: center; gap: .35rem; }
+.guides-ac-spec { font-size: .75rem; color: var(--text-muted); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.guides-ac-price { font-size: .78rem; color: var(--accent); font-weight: 700; flex-shrink: 0; white-space: nowrap; }
 
 @media (max-width: 575px) {
     .guides-filter-inner { flex-wrap: wrap; }

@@ -31,7 +31,7 @@ body { background: var(--bg); }
     gap:1rem;
     transition:box-shadow .15s;
 }
-.draft-card:hover { box-shadow:0 4px 18px rgba(0,0,0,.1); }
+.draft-card:hover { box-shadow: var(--shadow); }
 .draft-badge {
     display:inline-flex;
     align-items:center;
@@ -43,10 +43,10 @@ body { background: var(--bg); }
     letter-spacing:.04em;
     flex-shrink:0;
 }
-.badge-draft     { background:#f3f4f6;color:#6b7280; }
-.badge-scheduled { background:#fef3c7;color:#b45309; }
-[data-theme="dark"] .badge-draft     { background:#374151;color:#9ca3af; }
-[data-theme="dark"] .badge-scheduled { background:#451a03;color:#fbbf24; }
+.badge-draft     { background: var(--btn-bg); color: var(--text-muted); }
+.badge-scheduled { background: var(--btn-bg); color: var(--warning); }
+.draft-badge .material-icons { font-size: .85rem; }
+.draft-head { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; flex-wrap: wrap; }
 .draft-body { flex:1; min-width:0; }
 .draft-title { font-weight:700;font-size:1rem;margin-bottom:.2rem;color:var(--text); }
 .draft-meta  { font-size:.78rem;color:var(--text-muted); }
@@ -58,9 +58,12 @@ body { background: var(--bg); }
   min-height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
 }
 .draft-btn-edit    { background:var(--btn-bg);color:var(--text); }
-.draft-btn-publish { background:var(--accent);color:#fff; }
-.draft-btn-delete  { background:#fee2e2;color:var(--danger); }
-[data-theme="dark"] .draft-btn-delete { background:#450a0a;color:#fca5a5; }
+.draft-btn-publish { background:var(--accent);color:var(--on-accent); }
+.draft-btn-delete  { background: rgba(var(--danger-rgb),.12); color: var(--danger); }
+.draft-btn .material-icons { font-size: .9rem; }
+.draft-inline-form { display: inline; }
 .draft-btn:hover { opacity:.85; }
 .draft-empty { text-align:center;padding:3rem 1rem;color:var(--text-muted); }
 .draft-empty .material-icons { font-size:3rem;display:block;margin-bottom:.75rem;opacity:.4; }
+.draft-empty .draft-btn { margin-top: .5rem; }
+.draft-empty .draft-btn .material-icons { font-size: .9rem; display: inline; margin: 0; opacity: 1; }

@@ -32,12 +32,12 @@
 
                 <!-- Title -->
                 <div class="form-field">
-                    <label for="id_title">{% trans "Title" %} <span style="color:var(--badge-danger-t,red)">*</span></label>
+                    <label for="id_title">{% trans "Title" %} <span class="form-required">*</span></label>
                     <input type="text" name="title" id="id_title"
                            placeholder="Donnez un titre à votre post…"
                            value="{{ form.title.value|default:'' }}" required>
                     {% if form.title.errors %}
-                    <p style="color:var(--badge-danger-t,red);font-size:.83rem;margin-top:.3rem;">{{ form.title.errors|join:", " }}</p>
+                    <p class="form-error">{{ form.title.errors|join:", " }}</p>
                     {% endif %}
                 </div>
 
@@ -46,14 +46,14 @@
                     <label>{% trans "Content" %}</label>
                     {{ form.body }}
                     {% if form.body.errors %}
-                    <p style="color:var(--badge-danger-t,red);font-size:.83rem;margin-top:.3rem;">{{ form.body.errors|join:", " }}</p>
+                    <p class="form-error">{{ form.body.errors|join:", " }}</p>
                     {% endif %}
                 </div>
 
                 <!-- Photos + Vidéos (multi-upload) -->
                 <div class="form-field">
                     <label>
-                        <span class="material-icons" style="font-size:1rem;vertical-align:middle;">perm_media</span>
+                        <span class="material-icons">perm_media</span>
                         {% trans "Photos & Videos" %}
                     </label>
 
@@ -91,7 +91,7 @@
                     <label for="id_media_files" class="upload-zone" id="media-upload-zone-desktop">
                         <span class="material-icons">add_photo_alternate</span>
                         <p id="media-zone-label"><span class="upload-label">{% trans "Click to add" %}</span> {% trans "or drag and drop" %}</p>
-                        <p style="font-size:.78rem;margin-top:.2rem;">{% trans "Images & Videos — multiple selections" %}</p>
+                        <p class="upload-sub">{% trans "Images & Videos — multiple selections" %}</p>
                     </label>
 
                     <div class="media-preview-grid" id="media-preview-grid"></div>
@@ -110,7 +110,7 @@
                 {% include 'post/_product_picker.html' %}
 
                 {% if form.non_field_errors %}
-                <div style="color:var(--badge-danger-t,red);font-size:.88rem;margin-bottom:.8rem;">
+                <div class="form-error form-error--block">
                     {{ form.non_field_errors }}
                 </div>
                 {% endif %}
@@ -121,42 +121,39 @@
             <input type="hidden" name="action" id="post-action" value="publish">
             <input type="hidden" name="scheduled_at" id="post-scheduled-at" value="">
 
-            <div class="post-form-actions" style="flex-wrap:wrap;gap:.5rem;">
+            <div class="post-form-actions">
                 <a class="btn-cancel" href="{% url 'post:post-view' %}">
-                    <span class="material-icons" style="font-size:1rem;">arrow_back</span> {% trans "Cancel" %}
+                    <span class="material-icons">arrow_back</span> {% trans "Cancel" %}
                 </a>
 
                 <!-- Brouillon -->
-                <button class="btn-cancel" type="button" onclick="submitAs('draft')"
-                        style="color:var(--text-muted);border:1.5px solid var(--border);">
-                    <span class="material-icons" style="font-size:1rem;">drafts</span> {% trans "Brouillon" %}
+                <button class="btn-cancel" type="button" onclick="submitAs('draft')">
+                    <span class="material-icons">drafts</span> {% trans "Brouillon" %}
                 </button>
 
                 <!-- Programmer -->
-                <button class="btn-cancel" type="button" onclick="toggleSchedulePicker()"
-                        id="schedule-toggle-btn"
-                        style="color:var(--accent2);border:1.5px solid var(--accent2);">
-                    <span class="material-icons" style="font-size:1rem;">schedule</span> {% trans "Programmer" %}
+                <button class="btn-cancel btn-schedule" type="button" onclick="toggleSchedulePicker()"
+                        id="schedule-toggle-btn">
+                    <span class="material-icons">schedule</span> {% trans "Programmer" %}
                 </button>
 
                 <!-- Publier -->
                 <button class="btn-submit" type="submit">
-                    <span class="material-icons" style="font-size:1rem;">send</span> {% trans "Publish" %}
+                    <span class="material-icons">send</span> {% trans "Publish" %}
                 </button>
             </div>
 
             <!-- Picker date/heure pour publication programmée (caché par défaut) -->
-            <div id="schedule-picker" style="display:none;padding:.75rem 0 0;border-top:1px solid var(--border);margin-top:.5rem;">
-                <label style="font-size:.88rem;color:var(--text-muted);display:block;margin-bottom:.4rem;">
+            {# display:none conservé en ligne : toggleSchedulePicker() lit p.style.display #}
+            <div id="schedule-picker" class="schedule-picker" style="display:none;">
+                <label>
                     {% trans "Date et heure de publication" %}
                 </label>
-                <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
-                    <input type="datetime-local" id="sched-dt-input"
-                           style="flex:1;min-width:200px;padding:.4rem .6rem;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:.9rem;">
+                <div class="schedule-row">
+                    <input type="datetime-local" id="sched-dt-input">
                     <button type="button" class="btn-submit"
-                            onclick="submitAs('schedule')"
-                            style="white-space:nowrap;">
-                        <span class="material-icons" style="font-size:1rem;">schedule_send</span>
+                            onclick="submitAs('schedule')">
+                        <span class="material-icons">schedule_send</span>
                         {% trans "Programmer" %}
                     </button>
                 </div>
@@ -415,7 +412,7 @@ function _doFetch(extraAction, extraScheduledAt) {
             if (data && data.ok && data.redirect) {
                 /* Succès → redirection */
                 if (data.received !== undefined) {
-                    _diagToast('✓ ' + data.saved + '/' + data.received + ' fichier(s) sauvegardé(s)', 'green');
+                    _diagToast(data.saved + '/' + data.received + ' fichier(s) sauvegardé(s)', 'green');
                     setTimeout(function() { window.location.href = data.redirect; }, 1800);
                 } else {
                     window.location.href = data.redirect;

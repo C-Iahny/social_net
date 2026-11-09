@@ -13,7 +13,7 @@
 
     {% if messages %}
     {% for message in messages %}
-    <div style="margin-bottom:1rem;padding:.7rem 1rem;border-radius:12px;background:var(--btn-bg);border:1px solid var(--border);font-size:.88rem;color:var(--text);">
+    <div class="gd-flash">
         {{ message }}
     </div>
     {% endfor %}
@@ -45,8 +45,8 @@
         <!-- Actions -->
         <div class="gd-actions">
             {% if is_member %}
-            <!-- 🔴 Live dans ce groupe -->
-            <form method="post" action="{% url 'video:live-create' %}" style="display:inline;">
+            <!-- Live dans ce groupe -->
+            <form method="post" action="{% url 'video:live-create' %}" class="gd-inline-form">
                 {% csrf_token %}
                 <input type="hidden" name="group_id" value="{{ group.pk }}">
                 <input type="hidden" name="title"    value="Live dans {{ group.name|escapejs }}">
@@ -58,7 +58,7 @@
             {% endif %}
             {% if is_member %}
                 {% if request.user != group.creator %}
-                <form method="post" action="{% url 'group:leave' group.slug %}" style="display:inline;">
+                <form method="post" action="{% url 'group:leave' group.slug %}" class="gd-inline-form">
                     {% csrf_token %}
                     <button type="submit" class="gd-action gd-secondary">
                         <span class="material-icons">logout</span> {% trans "Leave group" %}
@@ -66,7 +66,7 @@
                 </form>
                 {% endif %}
             {% else %}
-                <form method="post" action="{% url 'group:join' group.slug %}" style="display:inline;">
+                <form method="post" action="{% url 'group:join' group.slug %}" class="gd-inline-form">
                     {% csrf_token %}
                     <button type="submit" class="gd-action gd-join">
                         <span class="material-icons">add</span> {% trans "Join group" %}
@@ -118,16 +118,16 @@
                 <div class="gd-member-info">
                     <div class="gd-member-name">{{ m.user.username }}</div>
                     {% if m.role == 'admin' %}<div class="gd-member-role">{% trans "Admin" %}</div>
-                    {% elif m.role == 'moderator' %}<div class="gd-member-role" style="color:var(--accent2);">{% trans "Moderator" %}</div>{% endif %}
+                    {% elif m.role == 'moderator' %}<div class="gd-member-role gd-member-role--mod">{% trans "Moderator" %}</div>{% endif %}
                     {% if is_admin and m.user != request.user and m.user != group.creator %}
-                    <div style="margin-top:.2rem;display:flex;gap:.3rem;">
+                    <div class="gd-member-admin-actions">
                         {% if m.role == 'member' %}
-                        <form method="post" action="{% url 'group:promote-member' group.slug m.user.id %}" style="display:inline;">
-                            {% csrf_token %}<button type="submit" style="font-size:.65rem;padding:.1rem .35rem;border-radius:5px;background:var(--accent-glow);border:1px solid var(--accent);color:var(--accent);cursor:pointer;font-family:inherit;" title="{% trans 'Promote to moderator' %}">+mod</button>
+                        <form method="post" action="{% url 'group:promote-member' group.slug m.user.id %}" class="gd-inline-form">
+                            {% csrf_token %}<button type="submit" class="gd-mod-btn" title="{% trans 'Promote to moderator' %}">+mod</button>
                         </form>
                         {% elif m.role == 'moderator' %}
-                        <form method="post" action="{% url 'group:demote-member' group.slug m.user.id %}" style="display:inline;">
-                            {% csrf_token %}<button type="submit" style="font-size:.65rem;padding:.1rem .35rem;border-radius:5px;background:var(--btn-bg);border:1px solid var(--border);color:var(--text-muted);cursor:pointer;font-family:inherit;" title="{% trans 'Demote to member' %}">-mod</button>
+                        <form method="post" action="{% url 'group:demote-member' group.slug m.user.id %}" class="gd-inline-form">
+                            {% csrf_token %}<button type="submit" class="gd-mod-btn gd-mod-btn--demote" title="{% trans 'Demote to member' %}">-mod</button>
                         </form>
                         {% endif %}
                     </div>
@@ -157,7 +157,7 @@
         <div class="gd-create-footer">
             <!-- Input fichier caché -->
             <input type="file" id="gd-media-input" multiple
-                   accept="image/*,video/*" style="display:none;"
+                   accept="image/*,video/*" class="d-none"
                    onchange="gdPreviewFiles(this)">
             <button type="button" class="gd-media-btn"
                     onclick="document.getElementById('gd-media-input').click()">
@@ -211,8 +211,8 @@
     <!-- ── Bandeau filtre hashtag actif ── -->
     {% if hashtag_filter %}
     <div class="gd-filter-banner">
-        <span>🔍 {% trans "Filtering by" %} <strong>#{{ hashtag_filter }}</strong></span>
-        <a href="{% url 'group:detail' group.slug %}">✕ {% trans "Clear filter" %}</a>
+        <span><i class="material-icons" aria-hidden="true">search</i> {% trans "Filtering by" %} <strong>#{{ hashtag_filter }}</strong></span>
+        <a href="{% url 'group:detail' group.slug %}"><i class="material-icons" aria-hidden="true">close</i> {% trans "Clear filter" %}</a>
     </div>
     {% endif %}
 
@@ -304,11 +304,11 @@
         {% endif %}
 
         {% if media_videos %}
-        <p class="gd-section-label" style="margin-top:1.5rem;"><span class="material-icons">videocam</span> {% trans "Videos" %} ({{ media_videos|length }})</p>
+        <p class="gd-section-label gd-section-label--spaced"><span class="material-icons">videocam</span> {% trans "Videos" %} ({{ media_videos|length }})</p>
         <div class="gd-media-grid">
             {% for m in media_videos %}
             <div class="gd-media-item gd-media-video">
-                <video src="{{ m.url }}" controls preload="none" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"></video>
+                <video src="{{ m.url }}" controls preload="none"></video>
             </div>
             {% endfor %}
         </div>
@@ -337,7 +337,7 @@
                     <input type="text" name="location" placeholder="{% trans 'Location (optional)' %}" class="gd-event-input" maxlength="200">
                     <textarea name="description" placeholder="{% trans 'Description (optional)' %}" class="gd-event-input" rows="2" maxlength="1000"></textarea>
                 </div>
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.5rem;gap:.5rem;">
+                <div class="gd-form-foot">
                     <div id="gd-ev-create-feedback" class="gd-ev-create-feedback"></div>
                     <button type="submit" class="gd-post-submit">
                         <span class="material-icons">event</span> {% trans "Create" %}
@@ -348,7 +348,7 @@
         {% endif %}
 
         {% if upcoming_events %}
-        <div class="gd-section-label" style="margin-top:1.5rem;">
+        <div class="gd-section-label gd-section-label--spaced">
             <span class="material-icons">upcoming</span> {% trans "Upcoming events" %}
         </div>
         {% for ev in upcoming_events %}
@@ -399,15 +399,12 @@
     <div id="gd-tab-dina" class="gd-tab-pane" style="display:none;">
 
         <!-- En-tête Dina -->
-        <div style="background:linear-gradient(135deg,var(--accent-glow),var(--bg-card));
-                    border:1.5px solid var(--accent);border-radius:18px;
-                    padding:1.4rem 1.5rem 1.5rem;margin-bottom:1.5rem;
-                    box-shadow:0 2px 16px rgba(0,0,0,.06);">
-            <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:1rem;">
-                <span class="material-icons" style="font-size:1.6rem;color:var(--accent);">gavel</span>
+        <div class="gd-dina-card">
+            <div class="gd-dina-head">
+                <span class="material-icons">gavel</span>
                 <div>
-                    <h2 style="margin:0;font-size:1.15rem;font-weight:800;color:var(--text);">Dina — {% trans "Community Charter" %}</h2>
-                    <p style="margin:0;font-size:.8rem;color:var(--text-muted);">
+                    <h2>Dina — {% trans "Community Charter" %}</h2>
+                    <p>
                         {% trans "Agreements, rules and traditions that govern this community." %}
                     </p>
                 </div>
@@ -416,11 +413,9 @@
             <!-- Affichage du Dina actuel -->
             <div id="gd-dina-display">
                 {% if group.dina %}
-                <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
-                            padding:1rem 1.2rem;font-size:.92rem;color:var(--text);
-                            line-height:1.75;white-space:pre-wrap;">{{ group.dina }}</div>
+                <div class="gd-dina-text">{{ group.dina }}</div>
                 {% else %}
-                <div class="gd-empty-state" style="padding:2rem 1rem;">
+                <div class="gd-empty-state gd-empty-state--compact">
                     <span class="material-icons">article</span>
                     <p>{% trans "No Dina defined yet for this group." %}</p>
                     {% if is_admin or request.user == group.creator %}
@@ -432,34 +427,24 @@
 
             <!-- Formulaire d'édition (admin/créateur seulement) -->
             {% if is_admin or request.user == group.creator %}
-            <div style="margin-top:1rem;">
+            <div class="gd-dina-edit-wrap">
                 <button type="button"
                         id="gd-dina-edit-btn"
                         onclick="gdShowDinaEditor()"
-                        style="display:inline-flex;align-items:center;gap:.35rem;
-                               padding:.42rem 1rem;border-radius:10px;
-                               background:var(--btn-bg);border:1.5px solid var(--border);
-                               color:var(--text-muted);font-size:.82rem;font-weight:600;
-                               cursor:pointer;font-family:inherit;transition:background .15s,color .15s;">
-                    <span class="material-icons" style="font-size:.95rem;">edit</span>
+                        class="vz-btn vz-btn--secondary vz-btn--sm">
+                    <span class="material-icons">edit</span>
                     {% trans "Edit Dina" %}
                 </button>
             </div>
 
-            <div id="gd-dina-editor" style="display:none;margin-top:1rem;">
+            {# display:none inline conservé : gdShowDinaEditor()/gdCancelDinaEdit() écrivent style.display #}
+            <div id="gd-dina-editor" style="display:none;">
                 <textarea id="gd-dina-textarea"
-                          style="width:100%;min-height:200px;resize:vertical;
-                                 background:var(--btn-bg);border:1.5px solid var(--border);
-                                 border-radius:12px;padding:.8rem 1rem;
-                                 font-size:.9rem;color:var(--text);line-height:1.7;
-                                 font-family:inherit;outline:none;transition:border-color .2s;"
                           placeholder="{% trans 'Write the Dina — rules, commitments, traditions of your community…' %}"
-                          maxlength="3000"
-                          onfocus="this.style.borderColor='var(--accent)'"
-                          onblur="this.style.borderColor='var(--border)'">{{ group.dina }}</textarea>
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.6rem;gap:.5rem;">
-                    <span id="gd-dina-feedback" style="font-size:.82rem;font-weight:600;flex:1;min-height:1.2em;"></span>
-                    <div style="display:flex;gap:.5rem;">
+                          maxlength="3000">{{ group.dina }}</textarea>
+                <div class="gd-form-foot gd-form-foot--editor">
+                    <span id="gd-dina-feedback"></span>
+                    <div class="gd-btn-row">
                         <button type="button" onclick="gdCancelDinaEdit()" class="vz-btn vz-btn--secondary vz-btn--sm">
                             {% trans "Cancel" %}
                         </button>
@@ -475,12 +460,11 @@
         </div>
 
         <!-- Info culturelle -->
-        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;
-                    padding:1rem 1.2rem;font-size:.84rem;color:var(--text-muted);line-height:1.65;">
-            <p style="margin:0;display:flex;align-items:flex-start;gap:.5rem;">
-                <span class="material-icons" style="font-size:1rem;color:var(--accent);flex-shrink:0;margin-top:.1rem;">info</span>
+        <div class="gd-dina-info">
+            <p>
+                <span class="material-icons">info</span>
                 <span>
-                    <strong style="color:var(--text);">{% trans "What is a Dina?" %}</strong><br>
+                    <strong>{% trans "What is a Dina?" %}</strong><br>
                     {% trans "In Malagasy culture, the Dina is a community agreement — a set of rules and commitments freely accepted by all members of a community to live together with respect and solidarity (Fihavanana)." %}
                 </span>
             </p>
@@ -492,13 +476,13 @@
     <div id="gd-tab-members" class="gd-tab-pane" style="display:none;">
 
         {% if is_mod %}
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;">
-            <p class="gd-section-label" style="margin:0;">
+        <div class="gd-members-head">
+            <p class="gd-section-label">
                 <span class="material-icons">group</span>
                 {% trans "Members" %} ({{ member_count }})
             </p>
-            <button class="gd-action gd-secondary" onclick="gdOpenInviteModal()" type="button" style="padding:.4rem .9rem;font-size:.82rem;">
-                <span class="material-icons" style="font-size:.9rem;">person_add</span> {% trans "Add" %}
+            <button class="gd-action gd-secondary gd-action--sm" onclick="gdOpenInviteModal()" type="button">
+                <span class="material-icons">person_add</span> {% trans "Add" %}
             </button>
         </div>
         {% else %}
@@ -507,7 +491,7 @@
 
         {% if is_mod and join_requests %}
         <p class="gd-section-label"><span class="material-icons">how_to_reg</span> {% trans "Join requests" %} ({{ join_requests|length }})</p>
-        <div class="gd-members-full-grid" style="margin-bottom:1.5rem;">
+        <div class="gd-members-full-grid gd-members-full-grid--spaced">
             {% for jr in join_requests %}
             <div class="vz-card vz-card--link vz-card--flat gd-member-card">
                 <a href="{% url 'account:view' user_id=jr.user.id %}" class="gd-member-card-link">
@@ -588,7 +572,7 @@
 
 
 <!-- ── Modal Inviter un membre ── -->
-<div id="gd-invite-overlay" style="display:none;position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;">
+<div id="gd-invite-overlay">
     <div class="gd-invite-modal">
         <div class="gd-invite-header">
             <h3><span class="material-icons">person_add</span> {% trans "Add a member" %}</h3>
@@ -611,7 +595,7 @@
 </div><!-- /gd-wrapper -->
 
 <!-- Share toast -->
-<div id="gd-share-toast">🔗 {% trans "Link copied!" %}</div>
+<div id="gd-share-toast"><i class="material-icons" aria-hidden="true">link</i> {% trans "Link copied!" %}</div>
 
 <script>
 var GD_CSRF  = '{{ csrf_token }}';
@@ -775,7 +759,7 @@ function sendReaction(pid, rtype) {
         if(btn)  btn.classList.toggle('liked', !!data.user_reaction);
         if(icon) icon.innerHTML = data.user_reaction && EMOJIS[data.user_reaction]
             ? EMOJIS[data.user_reaction]
-            : '<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>';
+            : '<span class="material-icons gd-react-icon">thumb_up_off_alt</span>';
         if(label) label.textContent = data.user_reaction ? (LABELS[data.user_reaction]||'{% trans "Like"|escapejs %}') : '{% trans "Like"|escapejs %}';
         var picker = document.getElementById('picker-'+pid);
         if(picker){
@@ -1059,7 +1043,7 @@ function gdInviteSearch(q) {
             results.innerHTML = data.users.map(function(u) {
                 var avatarHtml = u.avatar
                     ? '<img class="gd-invite-avatar" src="' + u.avatar + '" alt="' + u.username + '">'
-                    : '<span class="gd-invite-avatar material-icons" style="display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--text-muted);">account_circle</span>';
+                    : '<span class="gd-invite-avatar gd-invite-avatar--ph material-icons">account_circle</span>';
                 return '<div class="gd-invite-user-row">'
                     + avatarHtml
                     + '<span class="gd-invite-username">' + u.username + '</span>'
@@ -1128,26 +1112,26 @@ function gdSaveDina() {
     .then(function(data) {
         if (saveBtn) saveBtn.disabled = false;
         if (data.ok) {
-            if (fb) { fb.textContent = data.message || '{% trans "Saved!"|escapejs %}'; fb.style.color = '#22c55e'; }
+            if (fb) { fb.textContent = data.message || '{% trans "Saved!"|escapejs %}'; fb.style.color = 'var(--success)'; }
             // Mettre à jour l'affichage en direct
             var display = document.getElementById('gd-dina-display');
             if (display) {
                 if (dina) {
-                    display.innerHTML = '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;font-size:.92rem;color:var(--text);line-height:1.75;white-space:pre-wrap;">' + gdEscapeHtml(dina) + '</div>';
+                    display.innerHTML = '<div class="gd-dina-text">' + gdEscapeHtml(dina) + '</div>';
                 } else {
-                    display.innerHTML = '<div class="gd-empty-state" style="padding:2rem 1rem;"><span class="material-icons">article</span><p>{% trans "No Dina defined yet for this group."|escapejs %}</p></div>';
+                    display.innerHTML = '<div class="gd-empty-state gd-empty-state--compact"><span class="material-icons">article</span><p>{% trans "No Dina defined yet for this group."|escapejs %}</p></div>';
                 }
             }
             setTimeout(function() {
                 gdCancelDinaEdit();
             }, 1200);
         } else {
-            if (fb) { fb.textContent = data.error || '{% trans "Error."|escapejs %}'; fb.style.color = '#e53935'; }
+            if (fb) { fb.textContent = data.error || '{% trans "Error."|escapejs %}'; fb.style.color = 'var(--danger)'; }
         }
     })
     .catch(function(err) {
         if (saveBtn) saveBtn.disabled = false;
-        if (fb) { fb.textContent = '{% trans "Server error."|escapejs %}'; fb.style.color = '#e53935'; }
+        if (fb) { fb.textContent = '{% trans "Server error."|escapejs %}'; fb.style.color = 'var(--danger)'; }
         console.error('Dina save error:', err);
     });
 }

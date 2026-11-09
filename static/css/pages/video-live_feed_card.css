@@ -5,8 +5,8 @@
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 16px;
-  box-shadow: 0 4px 24px rgba(229,57,53,.25);
-  border: 1.5px solid rgba(229,57,53,.35);
+  box-shadow: 0 4px 24px rgba(var(--danger-rgb),.25);
+  border: 1.5px solid rgba(var(--danger-rgb),.35);
 }
 .lfc-banner {
   position: relative;
@@ -22,10 +22,14 @@
   filter: blur(18px) brightness(.55) saturate(1.5);
   transform: scale(1.08);
 }
+/* Hôte sans photo : aplat dégradé sur le jeton danger */
+.lfc-bg--plain {
+  background: linear-gradient(135deg, var(--danger), rgba(var(--danger-rgb),.7));
+}
 .lfc-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(183,28,28,.55) 0%, rgba(0,0,0,.45) 100%);
+  background: linear-gradient(135deg, rgba(var(--danger-rgb),.55) 0%, rgba(0,0,0,.45) 100%);
 }
 .lfc-inner {
   position: relative;
@@ -53,9 +57,10 @@
   flex-shrink: 0;
   animation: lfc-pulse 2s ease-in-out infinite;
 }
+.lfc-live-badge .material-icons { font-size: 10px; vertical-align: middle; }
 @keyframes lfc-pulse {
-  0%,100% { box-shadow: 0 0 0 0 rgba(229,57,53,.7); }
-  50%      { box-shadow: 0 0 0 5px rgba(229,57,53,0); }
+  0%,100% { box-shadow: 0 0 0 0 rgba(var(--danger-rgb),.7); }
+  50%      { box-shadow: 0 0 0 5px rgba(var(--danger-rgb),0); }
 }
 .lfc-host {
   display: flex;
@@ -80,6 +85,7 @@
   opacity: .85;
   white-space: nowrap;
 }
+.lfc-viewers .material-icons { font-size: 16px; vertical-align: middle; }
 .lfc-title {
   font-size: 16px;
   font-weight: 700;
@@ -103,5 +109,15 @@
 .lfc-join-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0,0,0,.3);
-  color: #c62828;
+  color: var(--danger);
 }
+.lfc-join-btn .material-icons { vertical-align: middle; margin-right: 4px; }
+.lfc-replay-btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  align-self: flex-start; margin-top: .5rem;
+  padding: .4rem .9rem;
+  background: rgba(0,0,0,.7); color: #fff;
+  border-radius: var(--radius-pill); font-size: .82rem; text-decoration: none;
+}
+.lfc-replay-btn:hover { color: #fff; background: rgba(0,0,0,.85); text-decoration: none; }
+.lfc-replay-btn .material-icons { font-size: 1rem; }

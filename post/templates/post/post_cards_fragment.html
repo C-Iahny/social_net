@@ -151,7 +151,7 @@
                     {% elif post.user_reaction == 'laugh' %}😂
                     {% elif post.user_reaction == 'wow' %}😮
                     {% elif post.user_reaction == 'sad' %}😢
-                    {% else %}<span class="material-icons" style="font-size:1.1rem;">thumb_up_off_alt</span>
+                    {% else %}<span class="material-icons">thumb_up_off_alt</span>
                     {% endif %}
                 </span>
                 <span id="react-label-{{ post.id }}">
@@ -180,8 +180,8 @@
         <button class="pc-footer-btn" id="comment-btn-{{ post.id }}"
                 onclick="toggleComments({{ post.id }})" style="flex:1;" type="button">
             <span class="material-icons">chat_bubble_outline</span>
-            <span id="comment-count-{{ post.id }}"
-                  style="font-size:.76rem;margin-left:.15rem;opacity:.7;{% if not post.total_comments %}display:none{% endif %}">
+            <span id="comment-count-{{ post.id }}" class="pc-footer-count"
+                  {% if not post.total_comments %}style="display:none"{% endif %}>
                 {% if post.total_comments %}({{ post.total_comments }}){% endif %}
             </span>
         </button>
