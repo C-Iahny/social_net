@@ -4348,3 +4348,15 @@ msgstr "Pejy teo aloha"
 #: resto
 msgid "Page suivante"
 msgstr "Pejy manaraka"
+
+#: coquille (2026-11)
+msgid "Aucune notification"
+msgstr "Tsy misy famantarana"
+
+#: coquille (2026-11)
+msgid "Aucun nouveau message"
+msgstr "Tsy misy hafatra vaovao"
+
+#: coquille (2026-11)
+msgid "Une erreur est survenue"
+msgstr "Nisy olana nitranga"

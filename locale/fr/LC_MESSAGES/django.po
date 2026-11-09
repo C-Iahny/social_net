@@ -1154,3 +1154,67 @@ msgstr "Retour"
 
 msgid "Créer"
 msgstr "Créer"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "Request sent"
+msgstr "Demande envoyée"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "Remove from group"
+msgstr "Retirer du groupe"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "Remove"
+msgstr "Retirer"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "from the group?"
+msgstr "du groupe ?"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "Search a group…"
+msgstr "Rechercher un groupe…"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "No group matches your search."
+msgstr "Aucun groupe ne correspond à votre recherche."
+
+#: libellés anglais affichés en français (2026-11)
+msgid "You haven't joined any group yet."
+msgstr "Vous n'avez rejoint aucun groupe pour l'instant."
+
+#: libellés anglais affichés en français (2026-11)
+msgid "This group is private. You need to be a member to view its content."
+msgstr "Ce groupe est privé. Vous devez en être membre pour voir son contenu."
+
+#: libellés anglais affichés en français (2026-11)
+msgid "Sign in to join"
+msgstr "Se connecter pour rejoindre"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "Back to groups"
+msgstr "Retour aux groupes"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "No notifications yet"
+msgstr "Aucune notification pour l'instant"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "Suggested for you"
+msgstr "Suggestions pour vous"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "Remove this suggestion"
+msgstr "Retirer cette suggestion"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "Suggested profile"
+msgstr "Profil suggéré"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "Loading stories…"
+msgstr "Chargement des stories…"
+
+#: libellés anglais affichés en français (2026-11)
+msgid "No active stories from your friends yet."
+msgstr "Aucune story active de vos amis pour l'instant."

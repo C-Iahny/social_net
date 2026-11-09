@@ -1,3 +1,4 @@
+{% load i18n %}
 <script type="text/javascript">
 
 function createOrReturnPrivateChat(id){
@@ -18,7 +19,7 @@ function createOrReturnPrivateChat(id){
     })
     .catch(function(err){
         console.error("createOrReturnPrivateChat error:", err);
-        vzAlert("Something went wrong.");
+        vzAlert("{% trans 'Une erreur est survenue'|escapejs %}");
     });
 }
 

@@ -24,7 +24,7 @@
 			},
 			error: function(data) {
 				console.error("ERROR...", data)
-				vzAlert("Something went wrong:" + data)
+				vzAlert("{% trans 'Une erreur est survenue'|escapejs %} : " + data)
 			},
 			complete: function(data){
 				uiUpdateFunction()

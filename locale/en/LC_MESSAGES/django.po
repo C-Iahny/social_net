@@ -4284,3 +4284,19 @@ msgstr "Previous page"
 #: resto
 msgid "Page suivante"
 msgstr "Next page"
+
+#: coquille (2026-11)
+msgid "Aucune notification"
+msgstr "No notifications"
+
+#: coquille (2026-11)
+msgid "Aucun nouveau message"
+msgstr "No new messages"
+
+#: coquille (2026-11)
+msgid "Une erreur est survenue"
+msgstr "Something went wrong"
+
+#: coquille (2026-11)
+msgid "Search by name or email…"
+msgstr "Search by name or email…"

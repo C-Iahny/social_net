@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load static %}
 
 <link rel="stylesheet" href="{% static 'css/pages/base-chat_notifications.css' %}">
@@ -142,7 +143,7 @@
 			var empty = document.createElement("div")
 			empty.id = "id_no_chat_notifications"
 			empty.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;color:var(--text-muted,#65676b);gap:.5rem;"
-			empty.innerHTML = '<span class="material-icons" style="font-size:2.2rem;opacity:.35;">chat_bubble_outline</span><span style="font-size:.85rem;">Tsy misy hafatra vaovao</span>'
+			empty.innerHTML = '<span class="material-icons" style="font-size:2.2rem;opacity:.35;">chat_bubble_outline</span><span style="font-size:.85rem;">{% trans "Aucun nouveau message"|escapejs %}</span>'
 			notificationContainer.appendChild(empty)
 
 			setChatNotificationsCount([])
@@ -431,7 +432,7 @@
 		var empty = document.createElement("div")
 		empty.id = "id_no_chat_notifications"
 		empty.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;color:var(--text-muted,#65676b);gap:.5rem;"
-		empty.innerHTML = '<span class="material-icons" style="font-size:2.2rem;opacity:.35;">chat_bubble_outline</span><span style="font-size:.85rem;">Tsy misy hafatra vaovao</span>'
+		empty.innerHTML = '<span class="material-icons" style="font-size:2.2rem;opacity:.35;">chat_bubble_outline</span><span style="font-size:.85rem;">{% trans "Aucun nouveau message"|escapejs %}</span>'
 		container.appendChild(empty)
 		if(reload) getFirstChatNotificationsPage()
 	}

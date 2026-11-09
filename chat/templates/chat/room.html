@@ -2714,7 +2714,7 @@ window._CT = {
                 vzAlert(data['response']);
             }
         })
-        .catch(function(){ vzAlert("Something went wrong."); });
+        .catch(function(){ vzAlert("{% trans 'Une erreur est survenue'|escapejs %}"); });
     }
 </script>
 

@@ -1,3 +1,4 @@
+{% load i18n %}
 {% load static %}
 
 
@@ -346,7 +347,7 @@
 			var empty = document.createElement("div")
 			empty.id = "id_no_general_notifications"
 			empty.classList.add("notif-empty")
-			empty.innerHTML = '<span class="material-icons">notifications_off</span><span>Tsy misy famantarana</span>'
+			empty.innerHTML = '<span class="material-icons">notifications_off</span><span>{% trans "Aucune notification"|escapejs %}</span>'
 			notificationContainer.appendChild(empty)
 		}
 	}
