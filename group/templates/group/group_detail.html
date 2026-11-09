@@ -509,7 +509,7 @@
         <p class="gd-section-label"><span class="material-icons">how_to_reg</span> {% trans "Join requests" %} ({{ join_requests|length }})</p>
         <div class="gd-members-full-grid" style="margin-bottom:1.5rem;">
             {% for jr in join_requests %}
-            <div class="gd-member-card">
+            <div class="vz-card vz-card--link vz-card--flat gd-member-card">
                 <a href="{% url 'account:view' user_id=jr.user.id %}" class="gd-member-card-link">
                     <img src="{{ jr.user.profile_image.url }}" alt="{{ jr.user.username }}" loading="lazy">
                     <div class="gd-member-card-info">
@@ -535,7 +535,7 @@
 
         <div class="gd-members-full-grid" id="gd-members-full-grid">
             {% for m in members %}
-            <div class="gd-member-card" id="gd-mcard-{{ m.user.id }}">
+            <div class="vz-card vz-card--link vz-card--flat gd-member-card" id="gd-mcard-{{ m.user.id }}">
                 <a href="{% url 'account:view' user_id=m.user.id %}" class="gd-member-card-link">
                     <img src="{{ m.user.profile_image.url }}" alt="{{ m.user.username }}" loading="lazy">
                     <div class="gd-member-card-info">

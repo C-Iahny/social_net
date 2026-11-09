@@ -66,10 +66,7 @@
 }
 .verified-toggle:hover, .verified-toggle.active {
     border-color: var(--success); color: var(--success);
-    background: #e8f5e9; text-decoration: none;
-}
-[data-theme="dark"] .verified-toggle.active {
-    background: #0a2e0f; color: #81c784; border-color: #388e3c;
+    background: rgba(var(--success-rgb), .12); text-decoration: none;
 }
 .verified-toggle .material-icons { font-size: 1rem; }
 
@@ -81,76 +78,12 @@
 }
 .guides-filter-btn:hover { opacity: .88; }
 
-/* ── Grille guides ── */
-.guides-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.2rem;
-}
-.guide-card {
-    background: var(--bg-card); border-radius: 16px; padding: 1.3rem;
-    box-shadow: var(--shadow); border: 1px solid var(--border);
-    text-decoration: none; color: var(--text);
-    transition: transform .2s, box-shadow .2s; display: block;
-}
-.guide-card:hover {
-    transform: translateY(-4px); box-shadow: var(--shadow-lg);
-    text-decoration: none; color: var(--text);
-}
-.guide-card-top {
-    display: flex; gap: 1rem; align-items: flex-start; margin-bottom: .9rem;
-}
-.guide-avatar {
-    width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.5rem; font-weight: 800; color: #fff; overflow: hidden;
-    position: relative;
-}
-.guide-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.guide-verified-dot {
-    position: absolute; bottom: 1px; right: 1px;
-    width: 18px; height: 18px; border-radius: 50%;
-    background: var(--success); border: 2px solid var(--bg-card);
-    display: flex; align-items: center; justify-content: center;
-}
-.guide-verified-dot .material-icons { font-size: .7rem; color: #fff; }
-
-.guide-card-info { flex: 1; min-width: 0; }
-.guide-card-name {
-    font-size: 1rem; font-weight: 800; color: var(--text);
-    margin: 0 0 .2rem; display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
-}
-.badge-verifie {
-    display: inline-flex; align-items: center; gap: .15rem;
-    background: #e8f5e9; color: var(--success); border-radius: 50px;
-    padding: .1rem .5rem; font-size: .66rem; font-weight: 700;
-}
-[data-theme="dark"] .badge-verifie { background: #0a2e0f; color: #81c784; }
-.badge-verifie .material-icons { font-size: .75rem; }
-
-.guide-prix {
-    display: inline-flex; align-items: center; gap: .2rem;
-    font-size: .82rem; font-weight: 700; color: var(--accent);
-    margin-top: .2rem;
-}
-.guide-prix .material-icons { font-size: .9rem; }
-
-/* ── Tags chips ── */
-.guide-tags {
-    display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0;
-}
-.guide-tag {
-    background: var(--bg-hover); border-radius: 50px;
-    padding: .2rem .7rem; font-size: .72rem; font-weight: 600; color: var(--text-muted);
-    display: inline-flex; align-items: center; gap: .2rem;
-}
-.guide-tag .material-icons { font-size: .8rem; }
-
-.guide-bio-preview {
-    font-size: .82rem; color: var(--text-muted); line-height: 1.5;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
+/* ── Grille guides ── : cartes via le composant partagé .vz-card / .vz-grid (zoot-base.css).
+   Reste ici le spécifique : en-tête avatar + identité, et l'avatar « lettre initiale ». */
+.guide-head { display: flex; gap: .9rem; align-items: center; }
+.guide-head-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .2rem; }
+.guide-head-info .vz-card__price { margin-top: .1rem; padding-top: 0; font-size: .95rem; }
+/* avatar lettre initiale : .vz-card__avatar--initial (zoot-base.css) */
 
 /* ── CTA Devenir guide ── */
 .become-guide-banner {
@@ -195,7 +128,6 @@
 .guides-empty .material-icons { font-size: 4rem; opacity: .25; display: block; margin-bottom: .8rem; }
 
 @media (max-width: 575px) {
-    .guides-grid { grid-template-columns: 1fr; }
     .guides-filter-inner { flex-wrap: wrap; }
     .become-guide-banner { flex-direction: column; text-align: center; }
     .become-guide-banner .text-wrap { text-align: center; }

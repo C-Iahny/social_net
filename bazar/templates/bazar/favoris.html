@@ -17,41 +17,43 @@
                 {% if total %}<span style="font-size:.85rem;font-weight:400;color:var(--text-muted);margin-left:.4rem;">({{ total }})</span>{% endif %}
             </h1>
         </div>
-        <a href="{% url 'bazar:index' %}" class="bazar-new-btn" style="background:transparent;border:1.5px solid var(--border);color:var(--text-primary);">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <a href="{% url 'bazar:index' %}" class="vz-btn vz-btn--secondary vz-btn--sm">
+            <i class="material-icons" aria-hidden="true">search</i>
             {% trans "Explorer le Bazar" %}
         </a>
     </div>
 
     {% if page_obj.object_list %}
-    <div class="bazar-fav-grid">
+    <div class="vz-grid bazar-fav-grid">
         {% for fav in page_obj.object_list %}
         {% with a=fav.annonce img=fav.annonce.get_primary_image %}
-        <div class="bazar-fav-card" style="cursor:pointer;" onclick="location.href='{% url 'bazar:detail' a.pk %}'">
+        <div class="vz-card vz-card--link bazar-fav-card" onclick="location.href='{% url 'bazar:detail' a.pk %}'">
             <!-- Bouton retirer -->
-            <button class="bazar-fav-remove"
+            <button class="vz-card__corner bazar-fav-remove"
                     onclick="event.stopPropagation(); retirerFavori({{ a.pk }}, this)"
-                    title="{% trans 'Retirer des favoris' %}" type="button">✕</button>
+                    title="{% trans 'Retirer des favoris' %}" aria-label="{% trans 'Retirer des favoris' %}" type="button"><i class="material-icons" aria-hidden="true">close</i></button>
 
             <!-- Image -->
-            <div class="bazar-fav-img-wrap">
+            <div class="vz-card__media">
                 {% if img %}
                 <img src="{{ img.image.url }}" alt="{{ a.title }}" loading="lazy">
                 {% else %}
-                <div class="bazar-fav-no-img">🏷️</div>
+                <div class="vz-card__media-ph"><i class="material-icons" aria-hidden="true">sell</i></div>
+                {% endif %}
+                {% if a.status == 'vendue' %}
+                <div class="vz-card__overlay">{% trans "VENDUE" %}</div>
                 {% endif %}
             </div>
 
             <!-- Corps -->
-            <div class="bazar-fav-body">
-                <div class="bazar-fav-title-item">{{ a.title }}</div>
-                <div class="bazar-fav-seller">
-                    <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    {{ a.seller.get_full_name|default:a.seller.username }}
+            <div class="vz-card__body">
+                <h3 class="vz-card__title">{{ a.title }}</h3>
+                <div class="vz-card__meta">
+                    <span class="vz-card__meta-item"><i class="material-icons" aria-hidden="true">person</i><span>{{ a.seller.get_full_name|default:a.seller.username }}</span></span>
                 </div>
-                <div class="bazar-fav-price">
-                    {% if a.price %}{{ a.formatted_price }}{% else %}<span style="font-size:.82rem;font-weight:500;color:var(--text-muted);">{% trans "Prix à discuter" %}</span>{% endif %}
-                </div>
+                <span class="vz-card__price">
+                    {% if a.price %}{{ a.formatted_price }}{% else %}<small>{% trans "Prix à discuter" %}</small>{% endif %}
+                </span>
             </div>
         </div>
         {% endwith %}
@@ -82,7 +84,7 @@
         <div class="bazar-fav-empty-icon">🤍</div>
         <h3>{% trans "Aucun favori pour l'instant" %}</h3>
         <p>{% trans "Sauvegardez des annonces qui vous intéressent pour les retrouver facilement ici." %}</p>
-        <a href="{% url 'bazar:index' %}" class="bazar-new-btn">
+        <a href="{% url 'bazar:index' %}" class="vz-btn vz-btn--primary">
             {% trans "Parcourir le Bazar" %}
         </a>
     </div>

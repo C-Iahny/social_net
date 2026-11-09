@@ -13,21 +13,21 @@
             <strong>{{ cart.restaurant.name }}</strong>
             <a href="{% url 'resto:restaurant' cart.restaurant.slug %}" style="color:var(--accent);font-size:.85rem;margin-left:.5rem;">{% trans "Ajouter d'autres plats" %} →</a>
         </p>
-        <div id="rs-lines">
+        <div id="rs-lines" class="vz-stack">
         {% for l in cart_summary.lines %}
-            <div class="rs-order-line" data-line="{{ l.id }}">
-                <div style="flex:1;">
-                    <strong>{{ l.name }}</strong>
-                    {% if l.options %}<small>{{ l.options }}</small>{% endif %}
-                    {% if l.included %}<small>✅ {% trans "Avec" %} : {{ l.included }}</small>{% endif %}
-                    {% if l.removed %}<small>🚫 {% trans "Sans" %} : {{ l.removed }}</small>{% endif %}
-                    {% if l.note %}<small>📝 {{ l.note }}</small>{% endif %}
-                    <small>{{ l.unit_price|vz_ariary }} × <span class="q">{{ l.quantity }}</span></small>
+            <div class="vz-card vz-card--row vz-card--flat rs-line" data-line="{{ l.id }}">
+                <div class="vz-card__body">
+                    <h3 class="vz-card__title">{{ l.name }}</h3>
+                    {% if l.options %}<p class="vz-card__subtitle">{{ l.options }}</p>{% endif %}
+                    {% if l.included %}<p class="vz-card__subtitle rs-line-note"><i class="material-icons" aria-hidden="true">check_circle</i> {% trans "Avec" %} : {{ l.included }}</p>{% endif %}
+                    {% if l.removed %}<p class="vz-card__subtitle rs-line-note"><i class="material-icons" aria-hidden="true">block</i> {% trans "Sans" %} : {{ l.removed }}</p>{% endif %}
+                    {% if l.note %}<p class="vz-card__subtitle rs-line-note"><i class="material-icons" aria-hidden="true">edit_note</i> {{ l.note }}</p>{% endif %}
+                    <p class="vz-card__subtitle">{{ l.unit_price|vz_ariary }} × <span class="q">{{ l.quantity }}</span></p>
                 </div>
-                <div style="text-align:right;">
-                    <div class="rs-price lt">{{ l.line_total|vz_ariary }}</div>
-                    <div class="rs-qty" style="margin-top:.3rem;">
-                        <button type="button" onclick="rsLine({{ l.id }}, -1)">−</button><span class="q">{{ l.quantity }}</span><button type="button" onclick="rsLine({{ l.id }}, 1)">+</button>
+                <div class="vz-card__actions vz-card__actions--end rs-line-end">
+                    <span class="vz-card__price lt">{{ l.line_total|vz_ariary }}</span>
+                    <div class="rs-qty">
+                        <button type="button" onclick="rsLine({{ l.id }}, -1)" aria-label="{% trans 'Retirer un' %}">−</button><span class="q">{{ l.quantity }}</span><button type="button" onclick="rsLine({{ l.id }}, 1)" aria-label="{% trans 'Ajouter un' %}">+</button>
                     </div>
                 </div>
             </div>

@@ -205,27 +205,28 @@
             <span class="material-icons">place</span>
             Lieux couverts ({{ lieux.count }})
         </div>
-        <div class="gp-lieux-grid">
+        <div class="vz-grid">
             {% for lieu in lieux %}
-            <a href="{% url 'tourisme:lieu_detail' lieu.slug %}" class="gp-lieu-card">
-                <div class="gp-lieu-img">
+            <a href="{% url 'tourisme:lieu_detail' lieu.slug %}" class="vz-card vz-card--flat">
+                <div class="vz-card__media vz-card__media--short">
                     {% with img=lieu.get_primary_image %}
                     {% if img %}
+                        {# Si l'image casse, on la retire et on révèle le placeholder #}
                         <img src="{{ img.image.url }}" alt="{{ lieu.name }}" loading="lazy"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="gp-lieu-img-ph" style="display:none;">
-                            <span class="material-icons">landscape</span>
+                             onerror="this.remove(); this.parentElement.querySelector('.vz-card__media-ph').removeAttribute('hidden');">
+                        <div class="vz-card__media-ph vz-card__media-ph--accent" hidden>
+                            <i class="material-icons">landscape</i>
                         </div>
                     {% else %}
-                        <div class="gp-lieu-img-ph">
-                            <span class="material-icons">landscape</span>
+                        <div class="vz-card__media-ph vz-card__media-ph--accent">
+                            <i class="material-icons">landscape</i>
                         </div>
                     {% endif %}
                     {% endwith %}
                 </div>
-                <div class="gp-lieu-body">
-                    <div class="gp-lieu-name">{{ lieu.name }}</div>
-                    <div class="gp-lieu-cat">{{ lieu.get_category_display }}</div>
+                <div class="vz-card__body">
+                    <h3 class="vz-card__title vz-card__title--1">{{ lieu.name }}</h3>
+                    <p class="vz-card__subtitle">{{ lieu.get_category_display }}</p>
                 </div>
             </a>
             {% endfor %}

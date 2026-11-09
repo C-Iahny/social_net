@@ -72,82 +72,78 @@
     </div>
 
     {% if page_obj.object_list %}
-    <div class="guides-grid">
+    <div class="vz-grid vz-grid--wide">
         {% for guide in page_obj %}
-        <a href="{% url 'tourisme:guide_profile' guide.pk %}" class="guide-card">
-            <div class="guide-card-top">
-                <div class="guide-avatar" style="position:relative;">
-                    {# Lettre initiale de secours — masquée si une photo se charge #}
-                    <span class="guide-avatar-initial" style="display:{% if guide.photo or guide.user.profile_image %}none{% else %}flex{% endif %};width:100%;height:100%;align-items:center;justify-content:center;font-weight:800;">{{ guide.display_name|first|upper }}</span>
-                    {% if guide.photo %}
-                        <img src="{{ guide.photo.url }}" alt="{{ guide.display_name }}"
-                             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;"
-                             onerror="this.remove(); this.parentElement.querySelector('.guide-avatar-initial').style.display='flex';">
-                    {% elif guide.user.profile_image %}
-                        <img src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}"
-                             style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit;"
-                             onerror="this.remove(); this.parentElement.querySelector('.guide-avatar-initial').style.display='flex';">
-                    {% endif %}
-                    {% if guide.is_verified %}
-                    <div class="guide-verified-dot">
-                        <span class="material-icons">check</span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="guide-card-info">
-                    <div class="guide-card-name">
-                        {{ guide.display_name }}
+        <a href="{% url 'tourisme:guide_profile' guide.pk %}" class="vz-card">
+            <div class="vz-card__body">
+                <div class="guide-head">
+                    <div class="vz-card__avatar-wrap">
+                        {# Lettre initiale de secours — masquée si une photo se charge, réaffichée par onerror #}
+                        <span class="vz-card__avatar vz-card__avatar--lg vz-card__avatar--initial" aria-hidden="true"{% if guide.photo or guide.user.profile_image %} hidden{% endif %}>{{ guide.display_name|first|upper }}</span>
+                        {% if guide.photo %}
+                            <img class="vz-card__avatar vz-card__avatar--lg" src="{{ guide.photo.url }}" alt="{{ guide.display_name }}" loading="lazy"
+                                 onerror="this.remove(); this.parentElement.querySelector('.vz-card__avatar--initial').removeAttribute('hidden');">
+                        {% elif guide.user.profile_image %}
+                            <img class="vz-card__avatar vz-card__avatar--lg" src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}" loading="lazy"
+                                 onerror="this.remove(); this.parentElement.querySelector('.vz-card__avatar--initial').removeAttribute('hidden');">
+                        {% endif %}
                         {% if guide.is_verified %}
-                        <span class="badge-verifie">
-                            <span class="material-icons">verified</span>
-                            {% trans "Vérifié" %}
-                        </span>
+                        <span class="vz-card__avatar-dot" title="{% trans 'Vérifié' %}"><i class="material-icons">check</i></span>
                         {% endif %}
                     </div>
-                    {% if guide.years_experience %}
-                    <div style="font-size:.78rem;color:var(--text-muted);">
-                        {{ guide.years_experience }} an{{ guide.years_experience|pluralize }} d'expérience
+                    <div class="guide-head-info">
+                        <h3 class="vz-card__title vz-card__title--1">{{ guide.display_name }}</h3>
+                        <div class="vz-card__meta">
+                            {% if guide.is_verified %}
+                            <span class="vz-chip vz-chip--sm vz-chip--success">
+                                <i class="material-icons">verified</i>
+                                {% trans "Vérifié" %}
+                            </span>
+                            {% endif %}
+                            {% if guide.years_experience %}
+                            <span class="vz-card__meta-item">
+                                <i class="material-icons">work_history</i>
+                                <span>{{ guide.years_experience }} an{{ guide.years_experience|pluralize }} d'expérience</span>
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if guide.prix_jour %}
+                        <span class="vz-card__price">{{ guide.prix_jour|vz_ariary }}<small>/ {% trans "jour" %}</small></span>
+                        {% endif %}
                     </div>
+                </div>
+
+                {% if guide.languages or guide.transport_modes or guide.max_group_size %}
+                <div class="vz-card__tags">
+                    {% if guide.languages %}
+                    <span class="vz-chip vz-chip--sm vz-chip--soft">
+                        <i class="material-icons">translate</i>
+                        {{ guide.languages|truncatechars:30 }}
+                    </span>
                     {% endif %}
-                    {% if guide.prix_jour %}
-                    <div class="guide-prix">
-                        <span class="material-icons">payments</span>
-                        {{ guide.prix_jour|vz_ariary }}/{% trans "jour" %}
-                    </div>
+                    {% if guide.transport_modes %}
+                    <span class="vz-chip vz-chip--sm vz-chip--soft">
+                        <i class="material-icons">directions_car</i>
+                        {{ guide.transport_modes|truncatechars:30 }}
+                    </span>
+                    {% endif %}
+                    {% if guide.max_group_size %}
+                    <span class="vz-chip vz-chip--sm vz-chip--soft">
+                        <i class="material-icons">group</i>
+                        Jusqu'à {{ guide.max_group_size }} pers.
+                    </span>
                     {% endif %}
                 </div>
-            </div>
+                {% endif %}
 
-            <div class="guide-tags">
-                {% if guide.languages %}
-                <span class="guide-tag">
-                    <span class="material-icons">translate</span>
-                    {{ guide.languages|truncatechars:30 }}
-                </span>
+                {% if guide.specialities %}
+                <span class="vz-card__eyebrow">{{ guide.specialities|truncatechars:60 }}</span>
                 {% endif %}
-                {% if guide.transport_modes %}
-                <span class="guide-tag">
-                    <span class="material-icons">directions_car</span>
-                    {{ guide.transport_modes|truncatechars:30 }}
-                </span>
-                {% endif %}
-                {% if guide.max_group_size %}
-                <span class="guide-tag">
-                    <span class="material-icons">group</span>
-                    Jusqu'à {{ guide.max_group_size }} pers.
-                </span>
+
+                {% if guide.bio %}
+                <p class="vz-card__text">{{ guide.bio }}</p>
                 {% endif %}
             </div>
-
-            {% if guide.specialities %}
-            <div style="font-size:.78rem;font-weight:700;color:var(--accent);margin-bottom:.4rem;">
-                {{ guide.specialities|truncatechars:60 }}
-            </div>
-            {% endif %}
-
-            {% if guide.bio %}
-            <div class="guide-bio-preview">{{ guide.bio }}</div>
-            {% endif %}
         </a>
         {% endfor %}
     </div>
@@ -249,7 +245,7 @@
                     html += '<div style="font-weight:700;font-size:.9rem;display:flex;align-items:center;gap:.35rem;">'
                           + esc(g.name);
                     if (g.is_verified) {
-                        html += '<span style="color:var(--success);font-size:.75rem;font-weight:800;">✓ Vérifié</span>';
+                        html += '<span class="vz-chip vz-chip--sm vz-chip--success"><span class="material-icons">verified</span>Vérifié</span>';
                     }
                     html += '</div>';
                     if (g.specialities) {

@@ -41,17 +41,15 @@
 }
 .badge-verifie {
     display: inline-flex; align-items: center; gap: .2rem;
-    background: #e8f5e9; color: var(--success); border-radius: 50px;
+    background: rgba(var(--success-rgb), .12); color: var(--success); border-radius: var(--radius-pill);
     padding: .2rem .75rem; font-size: .72rem; font-weight: 700;
 }
-[data-theme="dark"] .badge-verifie { background: #0a2e0f; color: #81c784; }
 .badge-verifie .material-icons { font-size: .85rem; }
 .badge-unavailable {
     display: inline-flex; align-items: center; gap: .2rem;
-    background: #fff3e0; color: #e65100; border-radius: 50px;
+    background: rgba(217,119,6,.14); color: var(--warning); border-radius: var(--radius-pill);
     padding: .2rem .75rem; font-size: .72rem; font-weight: 700;
 }
-[data-theme="dark"] .badge-unavailable { background: #2d1200; color: #ff9800; }
 
 .guide-profile-stats {
     display: flex; gap: 1.5rem; margin: .8rem 0; flex-wrap: wrap;
@@ -65,7 +63,7 @@
 }
 .btn-contact {
     display: inline-flex; align-items: center; gap: .4rem;
-    background: #25d366; color: #fff; border-radius: 50px;
+    background: var(--success); color: #fff; border-radius: var(--radius-pill);
     padding: .6rem 1.5rem; font-weight: 700; font-size: .9rem;
     text-decoration: none; transition: opacity .18s;
 }
@@ -131,37 +129,13 @@
     border-radius: 0 10px 10px 0; padding: .9rem 1.1rem;
 }
 
-/* ── Lieux couverts ── */
-.gp-lieux-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .8rem;
-}
-.gp-lieu-card {
-    background: var(--bg); border-radius: 10px; overflow: hidden;
-    border: 1px solid var(--border); text-decoration: none; color: var(--text);
-    transition: transform .18s, box-shadow .18s; display: block;
-}
-.gp-lieu-card:hover {
-    transform: translateY(-2px); box-shadow: var(--shadow);
-    text-decoration: none; color: var(--text);
-}
-.gp-lieu-img {
-    height: 90px; background: linear-gradient(135deg, #1a7a4a, #0a4a2e);
-    overflow: hidden;
-}
-.gp-lieu-img img { width: 100%; height: 100%; object-fit: cover; }
-.gp-lieu-img-ph {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-}
-.gp-lieu-img-ph .material-icons { font-size: 1.8rem; color: rgba(255,255,255,.4); }
-.gp-lieu-body { padding: .5rem .65rem; }
-.gp-lieu-name { font-size: .8rem; font-weight: 700; }
-.gp-lieu-cat { font-size: .68rem; color: var(--text-muted); }
+/* ── Lieux couverts ── : composant partagé .vz-card / .vz-grid (zoot-base.css).
+   Placeholder masqué tant que l'image se charge ; révélé par onerror si elle casse. */
+.vz-card__media-ph[hidden] { display: none; }
 
 @media (max-width: 575px) {
     .guide-profile-header { flex-direction: column; align-items: center; text-align: center; }
     .guide-profile-stats { justify-content: center; }
     .guide-profile-actions { justify-content: center; }
     .gp-info-grid { grid-template-columns: 1fr; }
-    .gp-lieux-grid { grid-template-columns: 1fr 1fr; }
 }

@@ -15,24 +15,6 @@
     gap: .75rem;
 }
 .bazar-mes-title { font-size: 1.5rem; font-weight: 800; }
-.bazar-new-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: .4rem;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: .55rem 1.2rem;
-    font-weight: 700;
-    font-size: .88rem;
-    text-decoration: none;
-    transition: opacity .2s;
-}
-[data-theme="dark"] .bazar-new-btn { color: #1a0a02; }
-.bazar-new-btn:hover { opacity:.85; text-decoration:none; color:#fff; }
-[data-theme="dark"] .bazar-new-btn:hover { color:#1a0a02; }
-
 /* Stats pills */
 .bazar-stats {
     display: flex;
@@ -52,81 +34,21 @@
     gap: .4rem;
 }
 .bazar-stat-pill .num { color: var(--accent); font-size: 1.05rem; }
+.bazar-stat-pill .num--active { color: var(--success); }
+.bazar-stat-pill .num--sold { color: var(--danger); }
 
-/* Tableau annonces */
-.bazar-annonce-row {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: .9rem 1rem;
-    margin-bottom: .75rem;
-    transition: border-color .2s;
-}
-.bazar-annonce-row:hover { border-color: var(--accent); }
-.bazar-annonce-thumb {
-    width: 72px;
-    height: 72px;
-    border-radius: 10px;
-    object-fit: cover;
-    flex-shrink: 0;
-    background: var(--bg-secondary, #f5ebe0);
-}
+/* Ligne annonce : composant partagé .vz-card.vz-card--row (zoot-base.css).
+   Conteneur, miniature, titre, méta, prix et pastilles de statut viennent de
+   .vz-card__* et .vz-chip ; ne restent ici que les spécificités. */
+.bazar-annonce-row { overflow: visible; } /* l'infobulle des actions dépasse la carte */
+.bazar-annonce-thumb-link { flex-shrink: 0; display: block; line-height: 0; }
 .bazar-annonce-no-thumb {
-    width: 72px;
-    height: 72px;
-    border-radius: 10px;
-    background: var(--bg-secondary, #f5ebe0);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    flex-shrink: 0;
-    color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-subtle);
 }
-.bazar-annonce-info { flex: 1; min-width: 0; }
-.bazar-annonce-title {
-    font-weight: 700;
-    font-size: .95rem;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: var(--text-primary);
-    text-decoration: none;
-}
-.bazar-annonce-title:hover { color: var(--accent); text-decoration: none; }
-.bazar-annonce-meta {
-    font-size: .78rem;
-    color: var(--text-muted);
-    margin-top: .2rem;
-    display: flex;
-    gap: .75rem;
-    flex-wrap: wrap;
-}
-.bazar-annonce-price {
-    font-weight: 800;
-    font-size: .95rem;
-    color: var(--accent);
-    margin-top: .25rem;
-}
-
-/* Status badge */
-.bazar-row-status {
-    font-size: .72rem;
-    font-weight: 700;
-    padding: .2rem .65rem;
-    border-radius: 20px;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.status-active { background: #dcfce7; color: #166534; }
-.status-vendue { background: #fee2e2; color: #991b1b; }
-.status-pause  { background: #fef9c3; color: #854d0e; }
-[data-theme="dark"] .status-active { background: rgba(22,101,52,.25); color: #86efac; }
-[data-theme="dark"] .status-vendue { background: rgba(153,27,27,.25); color: #fca5a5; }
-[data-theme="dark"] .status-pause  { background: rgba(133,77,14,.25); color: #fde68a; }
+.bazar-annonce-no-thumb .material-icons { font-size: 1.6rem; opacity: .6; }
+a.vz-card__title:hover { color: var(--accent); text-decoration: none; }
+.bazar-row-status { flex-shrink: 0; }
 
 /* Actions */
 .bazar-row-actions {
@@ -149,7 +71,10 @@
     transition: all .18s;
     position: relative;
 }
+.bazar-action-btn .material-icons { font-size: 1.1rem; }
 .bazar-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+.bazar-action-accent { border-color: var(--accent); color: var(--accent); }
+.bazar-action-ok, .bazar-action-ok:hover { border-color: var(--success); color: var(--success); }
 .bazar-action-del:hover { border-color: var(--danger); color: var(--danger); }
 /* Tooltip sur les boutons actions */
 .bazar-action-btn[title]:hover::after {
@@ -178,10 +103,9 @@
     color: var(--text-muted);
 }
 .bazar-mes-empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .5; }
+.bazar-mes-empty h4 { color: var(--text); font-weight: 700; }
 
 @media (max-width: 575px) {
-    .bazar-annonce-row { padding: .75rem; gap: .75rem; }
-    .bazar-annonce-thumb, .bazar-annonce-no-thumb { width: 58px; height: 58px; }
-    .bazar-annonce-title { font-size: .88rem; }
+    .bazar-annonce-row .vz-card__avatar { width: 56px; height: 56px; }
     .bazar-row-actions { display: none; } /* Accès via page détail sur mobile */
 }

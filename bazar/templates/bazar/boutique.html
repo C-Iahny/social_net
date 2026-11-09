@@ -91,25 +91,29 @@
 
 <!-- ── Grille annonces ───────────────────────────────────────────────────── -->
 {% if page_obj %}
-<div class="bazar-grid">
+<div class="vz-grid bazar-grid">
     {% for annonce in page_obj %}
-    <a href="{% url 'bazar:detail' annonce.pk %}" class="bazar-card">
-        {% with img=annonce.get_primary_image %}
-        {% if img %}
-        <img class="bazar-card-img" src="{{ img.image.url }}" alt="{{ annonce.title }}" loading="lazy"
-             onerror="this.onerror=null;this.style.display='none'">
-        {% else %}
-        <div class="bazar-card-img-placeholder">🏷️</div>
-        {% endif %}
-        {% endwith %}
-        <div class="bazar-card-body">
-            <span class="bazar-card-cat">{{ annonce.get_category_display }}</span>
-            <span class="bazar-card-title">{{ annonce.title }}</span>
-            <span class="bazar-card-location">
-                <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {{ annonce.location }}
-            </span>
-            <span class="bazar-card-price">{{ annonce.formatted_price }}</span>
+    <a href="{% url 'bazar:detail' annonce.pk %}" class="vz-card">
+        <div class="vz-card__media">
+            {% with img=annonce.get_primary_image %}
+            {% if img %}
+            <img src="{{ img.image.url }}" alt="{{ annonce.title }}" loading="lazy"
+                 onerror="this.onerror=null;this.style.display='none'">
+            {% else %}
+            <div class="vz-card__media-ph"><i class="material-icons" aria-hidden="true">sell</i></div>
+            {% endif %}
+            {% endwith %}
+            {% if annonce.status == 'vendue' %}
+            <div class="vz-card__overlay">{% trans "VENDUE" %}</div>
+            {% endif %}
+        </div>
+        <div class="vz-card__body">
+            <span class="vz-card__eyebrow">{{ annonce.get_category_display }}</span>
+            <h3 class="vz-card__title">{{ annonce.title }}</h3>
+            <div class="vz-card__meta">
+                <span class="vz-card__meta-item"><i class="material-icons" aria-hidden="true">place</i><span>{{ annonce.location }}</span></span>
+            </div>
+            <span class="vz-card__price">{{ annonce.formatted_price }}</span>
         </div>
     </a>
     {% endfor %}

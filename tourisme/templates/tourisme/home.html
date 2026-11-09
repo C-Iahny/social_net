@@ -92,30 +92,32 @@
         </div>
 
         {% if lieux_vedette %}
-        <div class="lieu-grid">
+        <div class="vz-grid">
             {% for lieu in lieux_vedette %}
-            <a href="{% url 'tourisme:lieu_detail' lieu.slug %}" class="lieu-card">
-                <div class="lieu-card-img">
+            <a href="{% url 'tourisme:lieu_detail' lieu.slug %}" class="vz-card">
+                <div class="vz-card__media vz-card__media--short">
                     {% with img=lieu.get_primary_image %}
                     {% if img %}
                         <img src="{{ img.image.url }}" alt="{{ lieu.name }}" loading="lazy">
                     {% else %}
-                        <div class="lieu-card-img-placeholder">
-                            <span class="material-icons">landscape</span>
+                        <div class="vz-card__media-ph vz-card__media-ph--accent">
+                            <i class="material-icons">landscape</i>
                         </div>
                     {% endif %}
                     {% endwith %}
-                    <span class="lieu-cat-badge">{{ lieu.get_category_display }}</span>
+                    <span class="vz-card__badge">{{ lieu.get_category_display }}</span>
                 </div>
-                <div class="lieu-card-body">
-                    <div class="lieu-card-name">{{ lieu.name }}</div>
+                <div class="vz-card__body">
+                    <h3 class="vz-card__title">{{ lieu.name }}</h3>
                     {% if lieu.region %}
-                    <div class="lieu-card-region">
-                        <span class="material-icons">place</span>
-                        {{ lieu.get_region_display }}
+                    <div class="vz-card__meta">
+                        <span class="vz-card__meta-item">
+                            <i class="material-icons">place</i>
+                            <span>{{ lieu.get_region_display }}</span>
+                        </span>
                     </div>
                     {% endif %}
-                    <div class="lieu-card-desc">{{ lieu.description|truncatechars:100 }}</div>
+                    <p class="vz-card__text">{{ lieu.description|truncatechars:100 }}</p>
                 </div>
             </a>
             {% endfor %}
@@ -141,36 +143,39 @@
         </div>
 
         {% if guides %}
-        <div class="guide-grid">
+        <div class="vz-grid vz-grid--wide">
             {% for guide in guides %}
-            <a href="{% url 'tourisme:guide_profile' guide.pk %}" class="guide-card">
-                <div class="guide-avatar">
+            <a href="{% url 'tourisme:guide_profile' guide.pk %}" class="vz-card vz-card--row">
+                <div class="vz-card__avatar-wrap">
                     {% if guide.photo %}
-                        <img src="{{ guide.photo.url }}" alt="{{ guide.display_name }}">
+                        <img class="vz-card__avatar vz-card__avatar--lg" src="{{ guide.photo.url }}" alt="{{ guide.display_name }}" loading="lazy">
                     {% elif guide.user.profile_image %}
-                        <img src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}">
+                        <img class="vz-card__avatar vz-card__avatar--lg" src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}" loading="lazy">
                     {% else %}
-                        <span class="guide-avatar-letter">{{ guide.display_name|first|upper }}</span>
+                        <span class="vz-card__avatar vz-card__avatar--lg vz-card__avatar--initial" aria-hidden="true">{{ guide.display_name|first|upper }}</span>
+                    {% endif %}
+                    {% if guide.is_verified %}
+                    <span class="vz-card__avatar-dot" title="{% trans 'Vérifié' %}"><i class="material-icons">check</i></span>
                     {% endif %}
                 </div>
-                <div class="guide-info">
-                    <div class="guide-name-row">
-                        <span class="guide-name">{{ guide.display_name }}</span>
+                <div class="vz-card__body">
+                    <h3 class="vz-card__title vz-card__title--1">{{ guide.display_name }}</h3>
+                    <div class="vz-card__meta">
                         {% if guide.is_verified %}
-                        <span class="guide-verified-badge">
-                            <span class="material-icons">verified</span>
+                        <span class="vz-chip vz-chip--sm vz-chip--success">
+                            <i class="material-icons">verified</i>
                             {% trans "Vérifié" %}
+                        </span>
+                        {% endif %}
+                        {% if guide.languages %}
+                        <span class="vz-card__meta-item">
+                            <i class="material-icons">translate</i>
+                            <span>{{ guide.languages|truncatechars:40 }}</span>
                         </span>
                         {% endif %}
                     </div>
                     {% if guide.specialities %}
-                    <div class="guide-spec">{{ guide.specialities|truncatechars:60 }}</div>
-                    {% endif %}
-                    {% if guide.languages %}
-                    <div class="guide-langs">
-                        <span class="material-icons">translate</span>
-                        {{ guide.languages|truncatechars:40 }}
-                    </div>
+                    <p class="vz-card__text">{{ guide.specialities|truncatechars:60 }}</p>
                     {% endif %}
                 </div>
             </a>

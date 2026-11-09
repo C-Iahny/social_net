@@ -42,11 +42,11 @@
 <div class="bazar-type-tabs">
   <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}type=vente"
      class="bazar-tab {% if listing_type == 'vente' or not listing_type %}active{% endif %}">
-    🏷️ À vendre
+    <i class="material-icons" aria-hidden="true">sell</i> À vendre
   </a>
   <a href="?{% if q %}q={{ q }}&{% endif %}{% if sel_cat %}cat={{ sel_cat }}&{% endif %}type=location"
      class="bazar-tab {% if listing_type == 'location' %}active{% endif %}">
-    🔑 À louer
+    <i class="material-icons" aria-hidden="true">vpn_key</i> À louer
   </a>
 </div>
 
@@ -56,7 +56,7 @@
     <span style="font-size:.82rem;color:var(--text-muted);">{% trans "Près de chez moi :" %}</span>
     <a href="?region={{ user_region }}"
        style="display:inline-flex;align-items:center;gap:.3rem;padding:.32rem .8rem;border-radius:99px;
-              background:var(--accent,#6366f1);color:#fff;font-size:.82rem;font-weight:600;text-decoration:none;">
+              background:var(--accent);color:#fff;font-size:.82rem;font-weight:600;text-decoration:none;">
         📍 {{ user_region_label }}
     </a>
 </div>
@@ -97,9 +97,9 @@
         </button>
 
         <!-- Vendeurs vérifiés -->
-        <label class="bazar-filter-verified {% if only_verified %}active{% endif %}">
+        <label class="vz-chip bazar-filter-verified {% if only_verified %}active{% endif %}">
             <input type="checkbox" name="verified" value="1" {% if only_verified %}checked{% endif %} onchange="this.form.submit()">
-            ✓ {% trans "Vendeurs vérifiés" %}
+            <i class="material-icons" aria-hidden="true">verified</i> {% trans "Vendeurs vérifiés" %}
         </label>
 
         <!-- Prix min / max -->
@@ -147,57 +147,50 @@
 
 <!-- ── Grille annonces ── -->
 {% if page_obj.object_list %}
-<div class="bazar-grid">
+<div class="vz-grid bazar-grid">
     {% for annonce in page_obj %}
-    <a href="{% url 'bazar:detail' annonce.pk %}" class="bazar-card">
+    <a href="{% url 'bazar:detail' annonce.pk %}" class="vz-card">
 
         <!-- Image -->
         {% with primary=annonce.get_primary_image %}
         {% with nb_photos=annonce.images.all|length %}
-        {% if primary %}
-        <div class="bazar-card-img" style="position:relative;">
+        <div class="vz-card__media">
+            {% if primary %}
             <img src="{{ primary.image.url }}" alt="{{ annonce.title }}" loading="lazy">
-            <span class="bazar-badge-cond">{{ annonce.get_condition_display }}</span>
+            <span class="vz-card__badge">{{ annonce.get_condition_display }}</span>
             {% if nb_photos > 1 %}
-            <span style="position:absolute;bottom:7px;right:7px;background:rgba(0,0,0,.55);color:#fff;
-                         font-size:.65rem;font-weight:700;padding:.12rem .45rem;border-radius:20px;
-                         backdrop-filter:blur(4px);display:inline-flex;align-items:center;gap:.2rem;">
-                📷 {{ nb_photos }}
-            </span>
+            <span class="vz-card__badge vz-card__badge--right vz-card__badge--bottom"><i class="material-icons" aria-hidden="true">photo_camera</i>{{ nb_photos }}</span>
+            {% endif %}
+            {% else %}
+            <div class="vz-card__media-ph"><i class="material-icons" aria-hidden="true">sell</i></div>
+            {% endif %}
+            {% if annonce.listing_type == 'location' %}
+            <span class="vz-card__badge vz-card__badge--bottom vz-card__badge--accent"><i class="material-icons" aria-hidden="true">vpn_key</i>Location</span>
             {% endif %}
             {% if annonce.status == 'vendue' %}
-            <div class="bazar-badge-sold">{% trans "VENDUE" %}</div>
+            <div class="vz-card__overlay">{% trans "VENDUE" %}</div>
             {% endif %}
         </div>
-        {% else %}
-        <div class="bazar-card-no-img" style="position:relative;">
-            🏷️
-            {% if annonce.status == 'vendue' %}
-            <div class="bazar-badge-sold">{% trans "VENDUE" %}</div>
-            {% endif %}
-        </div>
-        {% endif %}
         {% endwith %}
         {% endwith %}
 
         <!-- Infos -->
-        <div class="bazar-card-body">
-            <span class="bazar-card-cat">{{ annonce.get_category_display }}{% if annonce.listing_type == 'location' %}<span class="bazar-location-badge">🔑 Location</span>{% endif %}</span>
-            <span class="bazar-card-title">{{ annonce.title }}</span>
-            <span class="bazar-card-location">
-                <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                {{ annonce.location }}
+        <div class="vz-card__body">
+            <span class="vz-card__eyebrow">{{ annonce.get_category_display }}</span>
+            <h3 class="vz-card__title">{{ annonce.title }}</h3>
+            <div class="vz-card__meta">
+                <span class="vz-card__meta-item"><i class="material-icons" aria-hidden="true">place</i><span>{{ annonce.location }}</span></span>
                 {% if annonce.seller_is_pro %}
-                <span style="margin-left:.3rem;font-size:.62rem;font-weight:700;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;padding:.1rem .4rem;border-radius:10px;white-space:nowrap;">⭐ {% trans "Pro" %}</span>
+                <span class="vz-chip vz-chip--sm vz-chip--warning"><i class="material-icons" aria-hidden="true">star</i>{% trans "Pro" %}</span>
                 {% elif annonce.seller_verified %}
-                <span class="bazar-badge-verified" style="margin-left:.3rem;">✓ {% trans "Vérifié" %}</span>
+                <span class="vz-chip vz-chip--sm vz-chip--success"><i class="material-icons" aria-hidden="true">verified</i>{% trans "Vérifié" %}</span>
                 {% endif %}
-            </span>
-            <span class="bazar-card-price">
+            </div>
+            <span class="vz-card__price">
                 {% if annonce.listing_type == 'location' %}
                   {{ annonce.formatted_prix_location }}
                 {% else %}
-                  {{ annonce.formatted_price }}{% if annonce.price_negotiable and annonce.price %}<small style="font-size:.72rem;font-weight:500;opacity:.7;"> · {% trans "négociable" %}</small>{% endif %}
+                  {{ annonce.formatted_price }}{% if annonce.price_negotiable and annonce.price %}<small>· {% trans "négociable" %}</small>{% endif %}
                 {% endif %}
             </span>
         </div>
@@ -230,14 +223,14 @@
 <!-- État vide -->
 <div class="bazar-empty">
     <div class="bazar-empty-icon">🔍</div>
-    <h4 style="color:var(--text-primary);font-weight:700;">{% trans "Aucune annonce trouvée" %}</h4>
+    <h4>{% trans "Aucune annonce trouvée" %}</h4>
     <p style="font-size:.9rem;">
         {% if q %}{% blocktrans with q=q %}Aucun résultat pour <strong>« {{ q }} »</strong>. Essayez un autre mot-clé.{% endblocktrans %}
         {% elif sel_cat %}{% trans "Aucune annonce dans cette catégorie pour le moment." %}
         {% else %}{% trans "Le bazar est encore vide. Soyez le premier à publier !" %}{% endif %}
     </p>
     {% if request.user.is_authenticated %}
-    <a href="{% url 'bazar:create' %}" class="btn btn-primary mt-2" style="border-radius:50px;background:var(--accent);border:none;padding:.6rem 1.6rem;font-weight:700;">
+    <a href="{% url 'bazar:create' %}" class="vz-btn vz-btn--primary vz-btn--pill mt-2">
         {% trans "Publier une annonce" %}
     </a>
     {% endif %}

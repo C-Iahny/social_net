@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static i18n humanize %}
+{% load static i18n %}
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/pages/notification-journal.css' %}">
@@ -14,25 +14,25 @@
     </div>
 
     {% if notifications %}
-    <div class="nj-list">
+    <div class="vz-stack nj-list">
         {% for notif in notifications %}
         {% with co=notif.content_object %}{% with cname=co.get_cname|default:"" %}
-        <a class="nj-card {% if not notif.read %}unread{% endif %}" href="{{ notif.redirect_url|default:'#' }}">
-            <div class="nj-avatar-wrap">
+        <a class="vz-card vz-card--row {% if not notif.read %}vz-card--unread{% endif %}" href="{{ notif.redirect_url|default:'#' }}">
+            <div class="vz-card__avatar-wrap">
                 {% if notif.from_user %}
-                <img class="nj-avatar" src="{{ notif.from_user.profile_image.url }}" alt="{{ notif.from_user.username }}" onerror="this.src='{% static "images/profile_pic.png" %}'">
+                <img class="vz-card__avatar" src="{{ notif.from_user.profile_image.url }}" alt="{{ notif.from_user.username }}" onerror="this.src='{% static "images/profile_pic.png" %}'">
                 {% else %}
-                <img class="nj-avatar" src="{% static 'images/profile_pic.png' %}" alt="">
+                <img class="vz-card__avatar" src="{% static 'images/profile_pic.png' %}" alt="">
                 {% endif %}
-                <span class="nj-type-badge {% if cname == 'FriendRequest' %}type-friend-req{% elif cname == 'FriendList' %}type-friend-acc{% elif cname == 'Post' %}type-post{% else %}type-chat{% endif %}">
-                    <span class="material-icons">{% if cname == 'FriendRequest' %}person_add{% elif cname == 'FriendList' %}check{% elif cname == 'Post' %}article{% else %}chat{% endif %}</span>
+                <span class="vz-card__avatar-dot">
+                    <i class="material-icons">{% if cname == 'FriendRequest' %}person_add{% elif cname == 'FriendList' %}how_to_reg{% elif cname == 'Post' %}article{% elif cname == 'Live' %}videocam{% else %}chat{% endif %}</i>
                 </span>
             </div>
-            <div class="nj-content">
-                <p class="nj-verb">{{ notif.verb }}</p>
-                <p class="nj-time">{{ notif.timestamp|naturaltime }}</p>
+            <div class="vz-card__body">
+                <h3 class="vz-card__title nj-verb">{{ notif.verb }}</h3>
+                <p class="vz-card__subtitle">{{ notif.timestamp|vz_since }}</p>
             </div>
-            {% if not notif.read %}<div class="nj-unread-dot"></div>{% endif %}
+            {% if not notif.read %}<span class="nj-unread-dot" aria-hidden="true"></span>{% endif %}
         </a>
         {% endwith %}{% endwith %}
         {% endfor %}

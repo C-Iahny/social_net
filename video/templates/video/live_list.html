@@ -90,33 +90,34 @@
     {% if active_rooms %}
     <div class="live-grid" id="live-grid">
         {% for room in active_rooms %}
-        <a href="{% url 'video:live-room' room_id=room.pk %}" class="live-card">
-            <div class="live-card-thumb">
-                <span class="material-icons live-card-thumb-icon">live_tv</span>
-                <span class="live-card-live-badge"><span class="dot"></span> {% trans "LIVE" %}</span>
-                <span class="live-card-viewers">
-                    <span class="material-icons">visibility</span>
+        <a href="{% url 'video:live-room' room_id=room.pk %}" class="vz-card live-card">
+            <div class="vz-card__media vz-card__media--wide live-card-thumb">
+                <span class="material-icons live-card-thumb-icon" aria-hidden="true">live_tv</span>
+                <span class="vz-card__badge vz-card__badge--danger live-card-live-badge"><span class="dot"></span> {% trans "LIVE" %}</span>
+                <span class="vz-card__badge vz-card__badge--right">
+                    <i class="material-icons" aria-hidden="true">visibility</i>
                     {{ room.viewer_count }}
                 </span>
             </div>
-            <div class="live-card-body">
+            <div class="vz-card__body">
                 <div class="live-card-host">
-                    <img class="live-card-avatar"
+                    <img class="vz-card__avatar vz-card__avatar--sm live-card-avatar"
                          src="{{ room.host.profile_image.url }}"
                          alt="{{ room.host.username }}">
                     <span class="live-card-username">{{ room.host.username }}</span>
                 </div>
-                <div class="live-card-title">{{ room.title }}</div>
+                <h3 class="vz-card__title">{{ room.title }}</h3>
                 {% if room.group %}
-                <div class="live-card-group">
-                    <span class="material-icons">groups</span>
-                    {{ room.group.name }}
+                <div class="vz-card__meta">
+                    <span class="vz-card__meta-item"><i class="material-icons" aria-hidden="true">groups</i><span>{{ room.group.name }}</span></span>
                 </div>
                 {% endif %}
-                <button class="live-card-join-btn" onclick="event.preventDefault();window.location.href=this.closest('a').href;" type="button">
-                    <span class="material-icons">play_circle</span>
-                    {% trans "Rejoindre" %}
-                </button>
+                <div class="vz-card__actions">
+                    <button class="vz-btn vz-btn--danger vz-btn--sm vz-btn--block" onclick="event.preventDefault();window.location.href=this.closest('a').href;" type="button">
+                        <i class="material-icons" aria-hidden="true">play_circle</i>
+                        {% trans "Rejoindre" %}
+                    </button>
+                </div>
             </div>
         </a>
         {% endfor %}

@@ -110,9 +110,11 @@ def notification_journal(request):
         .order_by('-timestamp')
     )
 
-    # Mark all as read
+    # On fige la liste AVANT de marquer lu : la page affiche ainsi une
+    # dernière fois les non-lues en surbrillance (.vz-card--unread).
+    items = list(notifications[:100])
     notifications.filter(read=False).update(read=True)
 
     return render(request, 'notification/journal.html', {
-        'notifications': notifications[:100],
+        'notifications': items,
     })

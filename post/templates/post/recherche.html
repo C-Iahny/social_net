@@ -57,35 +57,33 @@
         <div class="rech-section-title">
             <span class="material-icons">group</span> Utilisateurs
         </div>
-        <div class="rech-list">
+        <div class="vz-stack">
             {% for account, is_friend in accounts %}
-            <div class="rech-user-card">
-                <a href="{% url 'account:view' user_id=account.id %}">
-                    <img src="{{ account.profile_image.url }}" alt="{{ account.username }}" loading="lazy">
+            <div class="vz-card vz-card--row">
+                <a class="vz-card__avatar-wrap" href="{% url 'account:view' user_id=account.id %}">
+                    <img class="vz-card__avatar" src="{{ account.profile_image.url }}" alt="{{ account.username }}" loading="lazy">
                 </a>
-                <div class="rech-user-info">
-                    <div class="rech-user-name">{{ account.username }}</div>
-                    <div class="rech-user-handle">@{{ account.username }}</div>
+                <div class="vz-card__body">
+                    <h3 class="vz-card__title vz-card__title--1">{{ account.username }}</h3>
+                    <p class="vz-card__subtitle">@{{ account.username }}</p>
                 </div>
-                <div class="rech-user-actions">
+                <div class="vz-card__actions vz-card__actions--end">
                     {% if account == request.user %}
-                        <a class="rech-btn" href="{% url 'account:view' user_id=account.id %}">
-                            <span class="material-icons" style="font-size:.9rem;">person_pin</span>
-                            Mon profil
+                        <a class="vz-btn vz-btn--secondary vz-btn--sm" href="{% url 'account:view' user_id=account.id %}">
+                            <i class="material-icons">person_pin</i>Mon profil
                         </a>
                     {% elif is_friend %}
-                        <a class="rech-btn" href="{% url 'account:view' user_id=account.id %}">
-                            <span class="material-icons" style="font-size:.9rem;">check</span>
-                            Ami
+                        <a class="vz-btn vz-btn--secondary vz-btn--sm" href="{% url 'account:view' user_id=account.id %}">
+                            <i class="material-icons">check</i>Ami
                         </a>
-                        <a class="rech-btn" href="#"
+                        <a class="vz-btn vz-btn--secondary vz-btn--sm vz-btn--icon" href="#"
+                           aria-label="Message" title="Message"
                            onclick="createOrReturnPrivateChat('{{ account.id }}'); return false;">
-                            <span class="material-icons" style="font-size:.9rem;">chat_bubble_outline</span>
+                            <i class="material-icons">chat_bubble_outline</i>
                         </a>
                     {% else %}
-                        <a class="rech-btn rech-btn-accent" href="{% url 'account:view' user_id=account.id %}">
-                            <span class="material-icons" style="font-size:.9rem;">visibility</span>
-                            Profil
+                        <a class="vz-btn vz-btn--primary vz-btn--sm" href="{% url 'account:view' user_id=account.id %}">
+                            <i class="material-icons">visibility</i>Profil
                         </a>
                     {% endif %}
                 </div>
@@ -99,24 +97,24 @@
         <div class="rech-section-title">
             <span class="material-icons">storefront</span> Annonces Bazar
         </div>
-        <div class="rech-annonce-grid">
+        <div class="vz-grid">
             {% for annonce in annonces %}
-            <a class="rech-annonce-card" href="{% url 'bazar:detail' annonce.pk %}">
-                {% with img=annonce.get_primary_image %}
-                {% if img %}
-                    <img class="rech-annonce-img" src="{{ img.image.url }}" alt="{{ annonce.title }}" loading="lazy">
-                {% else %}
-                    <div class="rech-annonce-img-ph">
-                        <span class="material-icons">image_not_supported</span>
-                    </div>
-                {% endif %}
-                {% endwith %}
-                <div class="rech-annonce-info">
-                    <div class="rech-annonce-title">{{ annonce.title }}</div>
-                    {% if annonce.price %}
-                    <div class="rech-annonce-price">{{ annonce.formatted_price }}</div>
+            <a class="vz-card" href="{% url 'bazar:detail' annonce.pk %}">
+                <div class="vz-card__media">
+                    {% with img=annonce.get_primary_image %}
+                    {% if img %}
+                        <img src="{{ img.image.url }}" alt="{{ annonce.title }}" loading="lazy">
                     {% else %}
-                    <div class="rech-annonce-price" style="color:var(--text-muted);">Prix à négocier</div>
+                        <div class="vz-card__media-ph"><i class="material-icons">image_not_supported</i></div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="vz-card__body">
+                    <h3 class="vz-card__title">{{ annonce.title }}</h3>
+                    {% if annonce.price %}
+                    <span class="vz-card__price">{{ annonce.formatted_price }}</span>
+                    {% else %}
+                    <span class="vz-card__price"><small>Prix à négocier</small></span>
                     {% endif %}
                 </div>
             </a>
@@ -129,17 +127,15 @@
         <div class="rech-section-title">
             <span class="material-icons">article</span> Publications
         </div>
-        <div class="rech-list">
+        <div class="vz-stack">
             {% for post in posts %}
-            <a class="rech-post-card" href="{% url 'post:post-detail' post.id %}">
-                <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy">
-                <div style="flex:1;min-width:0;">
-                    <div class="rech-post-title">{{ post.title|truncatechars:80 }}</div>
-                    <div class="rech-post-meta">
-                        @{{ post.author.username }} &nbsp;·&nbsp; {{ post.created_at|default:post.post_date|vz_since }}
-                    </div>
+            <a class="vz-card vz-card--row" href="{% url 'post:post-detail' post.id %}">
+                <img class="vz-card__avatar vz-card__avatar--sm" src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}" loading="lazy">
+                <div class="vz-card__body">
+                    <h3 class="vz-card__title vz-card__title--1">{{ post.title|truncatechars:80 }}</h3>
+                    <p class="vz-card__subtitle">@{{ post.author.username }} · {{ post.created_at|default:post.post_date|vz_since }}</p>
                 </div>
-                <span class="material-icons" style="color:var(--accent2);font-size:1.1rem;flex-shrink:0;">chevron_right</span>
+                <i class="material-icons rech-chevron" aria-hidden="true">chevron_right</i>
             </a>
             {% endfor %}
         </div>

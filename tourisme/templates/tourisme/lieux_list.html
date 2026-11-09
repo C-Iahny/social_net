@@ -71,30 +71,32 @@
     {% endif %}
 
     {% if page_obj.object_list %}
-    <div class="lieu-grid">
+    <div class="vz-grid">
         {% for lieu in page_obj %}
-        <a href="{% url 'tourisme:lieu_detail' lieu.slug %}" class="lieu-card">
-            <div class="lieu-card-img">
+        <a href="{% url 'tourisme:lieu_detail' lieu.slug %}" class="vz-card">
+            <div class="vz-card__media vz-card__media--short">
                 {% with img=lieu.get_primary_image %}
                 {% if img %}
                     <img src="{{ img.image.url }}" alt="{{ lieu.name }}" loading="lazy">
                 {% else %}
-                    <div class="lieu-card-img-ph">
-                        <span class="material-icons">landscape</span>
+                    <div class="vz-card__media-ph vz-card__media-ph--accent">
+                        <i class="material-icons">landscape</i>
                     </div>
                 {% endif %}
                 {% endwith %}
-                <span class="cat-badge">{{ lieu.get_category_display }}</span>
+                <span class="vz-card__badge">{{ lieu.get_category_display }}</span>
             </div>
-            <div class="lieu-card-body">
-                <div class="lieu-card-name">{{ lieu.name }}</div>
+            <div class="vz-card__body">
+                <h3 class="vz-card__title">{{ lieu.name }}</h3>
                 {% if lieu.region %}
-                <div class="lieu-card-meta">
-                    <span class="material-icons">place</span>
-                    {{ lieu.get_region_display }}
+                <div class="vz-card__meta">
+                    <span class="vz-card__meta-item">
+                        <i class="material-icons">place</i>
+                        <span>{{ lieu.get_region_display }}</span>
+                    </span>
                 </div>
                 {% endif %}
-                <div class="lieu-card-desc">{{ lieu.description|truncatechars:110 }}</div>
+                <p class="vz-card__text">{{ lieu.description|truncatechars:110 }}</p>
             </div>
         </a>
         {% endfor %}

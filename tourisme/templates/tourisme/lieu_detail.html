@@ -112,39 +112,35 @@
     {% if lieu.best_period or lieu.entry_fee or lieu.address %}
     <div class="lieu-info-grid">
         {% if lieu.best_period %}
-        <div class="lieu-info-card">
-            <div class="lieu-info-label">
-                <span class="material-icons">calendar_today</span>
-                {% trans "Meilleure période" %}
+        <div class="vz-card vz-card--flat">
+            <div class="vz-card__body">
+                <span class="vz-card__eyebrow"><i class="material-icons">calendar_today</i>{% trans "Meilleure période" %}</span>
+                <div class="lieu-info-value">{{ lieu.best_period }}</div>
             </div>
-            <div class="lieu-info-value">{{ lieu.best_period }}</div>
         </div>
         {% endif %}
         {% if lieu.entry_fee %}
-        <div class="lieu-info-card">
-            <div class="lieu-info-label">
-                <span class="material-icons">paid</span>
-                {% trans "Tarif d'entrée" %}
+        <div class="vz-card vz-card--flat">
+            <div class="vz-card__body">
+                <span class="vz-card__eyebrow"><i class="material-icons">paid</i>{% trans "Tarif d'entrée" %}</span>
+                <div class="lieu-info-value">{{ lieu.entry_fee }}</div>
             </div>
-            <div class="lieu-info-value">{{ lieu.entry_fee }}</div>
         </div>
         {% endif %}
         {% if lieu.address %}
-        <div class="lieu-info-card">
-            <div class="lieu-info-label">
-                <span class="material-icons">location_on</span>
-                {% trans "Adresse / GPS" %}
+        <div class="vz-card vz-card--flat">
+            <div class="vz-card__body">
+                <span class="vz-card__eyebrow"><i class="material-icons">location_on</i>{% trans "Adresse / GPS" %}</span>
+                <div class="lieu-info-value">{{ lieu.address }}</div>
             </div>
-            <div class="lieu-info-value">{{ lieu.address }}</div>
         </div>
         {% endif %}
         {% if lieu.region %}
-        <div class="lieu-info-card">
-            <div class="lieu-info-label">
-                <span class="material-icons">map</span>
-                {% trans "Région" %}
+        <div class="vz-card vz-card--flat">
+            <div class="vz-card__body">
+                <span class="vz-card__eyebrow"><i class="material-icons">map</i>{% trans "Région" %}</span>
+                <div class="lieu-info-value">{{ lieu.get_region_display }}</div>
             </div>
-            <div class="lieu-info-value">{{ lieu.get_region_display }}</div>
         </div>
         {% endif %}
     </div>
@@ -168,27 +164,28 @@
             <span class="material-icons">person_pin</span>
             {% trans "Guides pour ce lieu" %}
         </h2>
-        <div class="lieu-guides-grid">
+        <div class="vz-grid">
             {% for guide in guides %}
-            <a href="{% url 'tourisme:guide_profile' guide.pk %}" class="lieu-guide-card">
-                <div class="lieu-guide-av">
+            <a href="{% url 'tourisme:guide_profile' guide.pk %}" class="vz-card vz-card--row">
+                <div class="vz-card__avatar-wrap">
                     {% if guide.photo %}
-                        <img src="{{ guide.photo.url }}" alt="{{ guide.display_name }}">
+                        <img class="vz-card__avatar" src="{{ guide.photo.url }}" alt="{{ guide.display_name }}" loading="lazy">
                     {% elif guide.user.profile_image %}
-                        <img src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}">
+                        <img class="vz-card__avatar" src="{{ guide.user.profile_image.url }}" alt="{{ guide.display_name }}" loading="lazy">
                     {% else %}
-                        {{ guide.display_name|first|upper }}
+                        <span class="vz-card__avatar vz-card__avatar--initial" aria-hidden="true">{{ guide.display_name|first|upper }}</span>
+                    {% endif %}
+                    {% if guide.is_verified %}
+                    <span class="vz-card__avatar-dot" title="{% trans 'Vérifié' %}"><i class="material-icons">check</i></span>
                     {% endif %}
                 </div>
-                <div>
-                    <div class="lieu-guide-name">{{ guide.display_name }}</div>
+                <div class="vz-card__body">
+                    <h3 class="vz-card__title vz-card__title--1">{{ guide.display_name }}</h3>
                     {% if guide.specialities %}
-                    <div class="lieu-guide-spec">{{ guide.specialities|truncatechars:50 }}</div>
+                    <p class="vz-card__subtitle">{{ guide.specialities|truncatechars:50 }}</p>
                     {% endif %}
                     {% if guide.prix_jour %}
-                    <div style="font-size:.75rem;color:var(--accent);font-weight:700;margin-top:.2rem;">
-                        {{ guide.prix_jour|vz_ariary }}/{% trans "jour" %}
-                    </div>
+                    <span class="vz-card__price">{{ guide.prix_jour|vz_ariary }}<small>/ {% trans "jour" %}</small></span>
                     {% endif %}
                 </div>
             </a>
@@ -204,34 +201,34 @@
             <span class="material-icons">article</span>
             {% trans "Publications sur ce lieu" %}
         </h2>
-        <div class="lieu-posts-grid">
+        <div class="vz-grid vz-grid--wide">
             {% for post in lieu_posts %}
-            <a href="{% url 'post:post-detail' post.pk %}" class="lieu-post-card">
-                <div class="lieu-post-thumb">
+            <a href="{% url 'post:post-detail' post.pk %}" class="vz-card">
+                <div class="vz-card__media vz-card__media--wide">
                     {% if post.header_image_url %}
                         <img src="{{ post.header_image_url }}" alt="{{ post.title|default:'Post' }}" loading="lazy">
                     {% else %}
-                        <div class="lieu-post-thumb-ph">
-                            <span class="material-icons">image</span>
+                        <div class="vz-card__media-ph">
+                            <i class="material-icons">image</i>
                         </div>
                     {% endif %}
                 </div>
-                <div class="lieu-post-body">
-                    <div class="lieu-post-author">
-                        <div class="lieu-post-av">
+                <div class="vz-card__body">
+                    <div class="vz-card__meta">
+                        <span class="vz-card__meta-item">
                             {% if post.author.profile_image %}
-                                <img src="{{ post.author.profile_image.url }}" alt="{{ post.author.username }}">
+                                <img class="lieu-post-av" src="{{ post.author.profile_image.url }}" alt="" loading="lazy">
                             {% else %}
-                                {{ post.author.username|first|upper }}
+                                <span class="lieu-post-av vz-card__avatar--initial" aria-hidden="true">{{ post.author.username|first|upper }}</span>
                             {% endif %}
-                        </div>
-                        <span class="lieu-post-username">{{ post.author.username }}</span>
+                            <span>{{ post.author.username }}</span>
+                        </span>
                     </div>
                     {% if post.title %}
-                    <div style="font-size:.9rem;font-weight:700;margin-bottom:.25rem;">{{ post.title|truncatechars:60 }}</div>
+                    <h3 class="vz-card__title">{{ post.title|truncatechars:60 }}</h3>
                     {% endif %}
                     {% if post.snippet %}
-                    <div class="lieu-post-snippet">{{ post.snippet }}</div>
+                    <p class="vz-card__text">{{ post.snippet }}</p>
                     {% endif %}
                 </div>
             </a>
@@ -303,28 +300,30 @@
         {% if avis_list %}
         <div class="avis-list">
             {% for avis in avis_list %}
-            <div class="avis-card">
-                <div class="avis-card-header">
-                    <div class="avis-avatar">
+            <div class="vz-card vz-card--flat">
+                <div class="vz-card__body">
+                    <div class="avis-card-header">
                         {% if avis.author.profile_image %}
-                            <img src="{{ avis.author.profile_image.url }}" alt="{{ avis.author.username }}">
+                            <img class="vz-card__avatar vz-card__avatar--sm" src="{{ avis.author.profile_image.url }}" alt="{{ avis.author.username }}" loading="lazy">
                         {% else %}
-                            {{ avis.author.username|first|upper }}
+                            <span class="vz-card__avatar vz-card__avatar--sm vz-card__avatar--initial" aria-hidden="true">{{ avis.author.username|first|upper }}</span>
                         {% endif %}
+                        <div>
+                            <div class="avis-author-name">{{ avis.author.username }}</div>
+                            <div class="avis-date">{{ avis.created_at|vz_since }}</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="avis-author-name">{{ avis.author.username }}</div>
-                        <div class="avis-date">{{ avis.created_at|date:"j N Y" }}</div>
+                    <div class="avis-stars" aria-label="{{ avis.rating }}/5">{{ avis.stars }}</div>
+                    <div class="avis-comment-text">{{ avis.comment }}</div>
+                    {% if avis.visited_at %}
+                    <div class="vz-card__meta">
+                        <span class="vz-card__meta-item">
+                            <i class="material-icons">event</i>
+                            <span>Visité le {{ avis.visited_at|date:"j N Y" }}</span>
+                        </span>
                     </div>
+                    {% endif %}
                 </div>
-                <div class="avis-stars">{{ avis.stars }}</div>
-                <div class="avis-comment-text">{{ avis.comment }}</div>
-                {% if avis.visited_at %}
-                <div class="avis-visited-badge">
-                    <span class="material-icons">event</span>
-                    Visité le {{ avis.visited_at|date:"j N Y" }}
-                </div>
-                {% endif %}
             </div>
             {% endfor %}
         </div>
@@ -342,23 +341,23 @@
             <span class="material-icons">grid_view</span>
             {% trans "Lieux similaires" %}
         </h2>
-        <div class="similaires-grid">
+        <div class="vz-grid">
             {% for sim in similaires %}
-            <a href="{% url 'tourisme:lieu_detail' sim.slug %}" class="sim-card">
-                <div class="sim-card-img">
+            <a href="{% url 'tourisme:lieu_detail' sim.slug %}" class="vz-card">
+                <div class="vz-card__media vz-card__media--short">
                     {% with img=sim.get_primary_image %}
                     {% if img %}
                         <img src="{{ img.image.url }}" alt="{{ sim.name }}" loading="lazy">
                     {% else %}
-                        <div class="sim-card-img-ph">
-                            <span class="material-icons">landscape</span>
+                        <div class="vz-card__media-ph vz-card__media-ph--accent">
+                            <i class="material-icons">landscape</i>
                         </div>
                     {% endif %}
                     {% endwith %}
                 </div>
-                <div class="sim-card-body">
-                    <div class="sim-card-name">{{ sim.name }}</div>
-                    <div class="sim-card-cat">{{ sim.get_category_display }}</div>
+                <div class="vz-card__body">
+                    <h3 class="vz-card__title">{{ sim.name }}</h3>
+                    <p class="vz-card__subtitle">{{ sim.get_category_display }}</p>
                 </div>
             </a>
             {% endfor %}

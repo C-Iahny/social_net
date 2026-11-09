@@ -14,30 +14,32 @@
     </div>
 
     {% if bookmarks %}
+    <div class="vz-stack">
         {% for bk in bookmarks %}
-        <div class="saved-card" id="saved-row-{{ bk.post_id }}">
-            <a href="{% url 'post:post-detail' bk.post_id %}" style="display:contents;text-decoration:none;">
-                <img class="saved-avatar" src="{{ bk.post.author.profile_image.url }}"
-                     alt="{{ bk.post.author.username }}">
-                <div class="saved-body">
-                    <div class="saved-title">{{ bk.post.title }}</div>
-                    <div class="saved-meta">
-                        {{ bk.post.author.username }} · {{ bk.created_at|date:"d/m/Y" }}
-                    </div>
+        <div class="vz-card vz-card--row" id="saved-row-{{ bk.post_id }}">
+            <a class="saved-link" href="{% url 'post:post-detail' bk.post_id %}">
+                <img class="vz-card__avatar vz-card__avatar--sm" src="{{ bk.post.author.profile_image.url }}"
+                     alt="{{ bk.post.author.username }}" loading="lazy">
+                <div class="vz-card__body">
+                    <h3 class="vz-card__title vz-card__title--1">{{ bk.post.title }}</h3>
+                    <p class="vz-card__subtitle">@{{ bk.post.author.username }} · {{ bk.created_at|vz_since }}</p>
                 </div>
             </a>
-            <button class="saved-unbookmark"
-                    onclick="unsavePost({{ bk.post_id }}, this)"
-                    title="{% trans 'Retirer des sauvegardes' %}" type="button">
-                <span class="material-icons">bookmark_remove</span>
-            </button>
+            <div class="vz-card__actions vz-card__actions--end">
+                <button class="vz-btn vz-btn--muted vz-btn--sm vz-btn--icon saved-unbookmark"
+                        onclick="unsavePost({{ bk.post_id }}, this)"
+                        title="{% trans 'Retirer des sauvegardes' %}" aria-label="{% trans 'Retirer des sauvegardes' %}" type="button">
+                    <i class="material-icons">bookmark_remove</i>
+                </button>
+            </div>
         </div>
         {% endfor %}
+    </div>
     {% else %}
     <div class="saved-empty">
         <span class="material-icons">bookmarks</span>
         <p>{% trans "Aucun post sauvegardé pour l'instant." %}</p>
-        <p style="font-size:.88rem;">{% trans "Clique sur l'icône 🔖 d'un post pour le retrouver ici." %}</p>
+        <p class="saved-empty-hint">{% trans "Clique sur l'icône 🔖 d'un post pour le retrouver ici." %}</p>
     </div>
     {% endif %}
 </div>

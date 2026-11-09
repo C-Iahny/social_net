@@ -72,6 +72,18 @@
     --main-padding: 8px;
 }
 
+/* ── Alias de compatibilité : noms rencontrés dans les feuilles de pages
+   (Bazar surtout). Non définis jusqu'ici, ils laissaient le texte hériter
+   d'une couleur imprévisible. Résolus sur <html>, ils suivent le thème. ── */
+:root {
+    --text-primary:   var(--text);
+    --text-secondary: var(--text-muted);
+    --bg-input:       var(--input-bg);
+    --bg-page:        var(--bg);
+    --hover:          var(--bg-hover);
+    --surface:        var(--bg-card);
+}
+
 /* ── PALETTE NUIT LAGON (mode sombre) ── ardoise profonde, jamais noir pur */
 [data-theme="dark"] {
     --bg:           #0f1419;
@@ -343,7 +355,7 @@ code, pre {
 
 [data-theme="dark"] .table { color: var(--text); }
 [data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) { background-color: rgba(255,255,255,.02); }
-[data-theme="dark"] .table-hover tbody tr:hover { background-color: rgba(0,207,255,.04); }
+[data-theme="dark"] .table-hover tbody tr:hover { background-color: rgba(var(--accent-rgb),.04); }
 
 [data-theme="dark"] .list-group-item {
     background: var(--bg-card);
@@ -1037,7 +1049,7 @@ html.data-saver .ds-img-wrap { position: relative; }
                 border-radius: 50%;
                 background: linear-gradient(135deg, var(--accent), var(--accent2));
                 display: flex; align-items: center; justify-content: center;
-                box-shadow: 0 3px 12px rgba(99,102,241,.4);
+                box-shadow: 0 3px 12px rgba(var(--accent-rgb),.4);
                 transition: transform .18s, box-shadow .18s;
                 margin-bottom: 1px;
             }
@@ -1114,7 +1126,7 @@ html.data-saver .ds-img-wrap { position: relative; }
             background: linear-gradient(160deg, var(--accent-glow) 0%, var(--bg-card) 60%) !important;
         }
         [data-theme="dark"] .post-card-kabary {
-            box-shadow: 0 0 0 1px var(--accent), 0 4px 24px rgba(0,207,255,.08) !important;
+            box-shadow: 0 0 0 1px var(--accent), 0 4px 24px rgba(var(--accent-rgb),.08) !important;
         }
         .pc-kabary-badge {
             display: inline-flex; align-items: center; gap: .3rem;
@@ -1147,14 +1159,14 @@ html.data-saver .ds-img-wrap { position: relative; }
             background: linear-gradient(160deg,
                 rgba(191,95,255,.04) 0%,
                 var(--bg-card) 40%,
-                rgba(0,207,255,.03) 100%) !important;
+                rgba(var(--accent-rgb),.03) 100%) !important;
         }
         [data-theme="dark"] .post-card-vintana {
             border-color: rgba(191,95,255,.3) !important;
             background: linear-gradient(160deg,
                 rgba(191,95,255,.07) 0%,
                 var(--bg-card) 40%,
-                rgba(0,207,255,.05) 100%) !important;
+                rgba(var(--accent-rgb),.05) 100%) !important;
         }
         .pc-vintana-badge {
             display: inline-flex; align-items: center; gap: .3rem;
@@ -1732,3 +1744,244 @@ body.vz-lock { overflow: hidden !important; }
 }
 .vz-pw-toggle:hover { background: var(--bg-hover); color: var(--text); }
 .vz-pw-toggle .material-icons { font-size: 1.25rem; }
+
+/* ============================================================
+   CARTES PARTAGÉES (2026-11) — une seule carte pour les grilles et
+   listes : annonces Bazar, restaurants et plats, lieux et guides,
+   résultats de recherche, notifications, favoris, tendances.
+   Gabarit :
+     <a class="vz-card" href="…">
+       <div class="vz-card__media"><img …><span class="vz-card__badge">…</span></div>
+       <div class="vz-card__body">
+         <span class="vz-card__eyebrow">Catégorie</span>
+         <h3 class="vz-card__title">Titre</h3>
+         <div class="vz-card__meta"><span class="vz-card__meta-item"><i class="material-icons">place</i>Ville</span></div>
+         <span class="vz-card__price">12 000 Ar</span>
+       </div>
+     </a>
+   Variante ligne (avatar + texte + action) : .vz-card.vz-card--row
+   ============================================================ */
+.vz-card {
+    position: relative;
+    display: flex; flex-direction: column;
+    min-width: 0;
+    background: var(--bg-card); color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+}
+a.vz-card, .vz-card--link { cursor: pointer; }
+a.vz-card:hover, .vz-card--link:hover, .vz-card--link:focus-within {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+    border-color: rgba(var(--accent-rgb), .35);
+    color: var(--text); text-decoration: none;
+}
+a.vz-card:focus-visible, .vz-card--link:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+}
+a.vz-card:active { transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+    .vz-card, .vz-card__media img { transition: none; }
+    a.vz-card:hover { transform: none; }
+}
+
+/* Ligne : avatar | texte | action (résultats, notifications, favoris) */
+.vz-card--row {
+    flex-direction: row; align-items: center;
+    gap: .85rem; padding: .8rem 1rem;
+}
+.vz-card--row .vz-card__body { padding: 0; gap: .15rem; }
+.vz-card--unread { border-left: 3px solid var(--accent); background: rgba(var(--accent-rgb), .04); }
+.vz-card--muted { opacity: .7; }
+.vz-card--block { display: block; }                 /* surface libre (sections, panneaux) */
+.vz-card--overflow { overflow: visible; }            /* infobulles/menus qui dépassent */
+.vz-card--flat { box-shadow: none; }
+.vz-card--flat:hover { box-shadow: var(--shadow-sm); }
+
+/* Média : image 4/3 par défaut, zoom doux au survol */
+.vz-card__media {
+    position: relative; overflow: hidden;
+    aspect-ratio: 4 / 3; width: 100%;
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+}
+.vz-card__media--wide  { aspect-ratio: 16 / 9; }
+.vz-card__media--square{ aspect-ratio: 1; }
+.vz-card__media--short { aspect-ratio: 3 / 2; }
+.vz-card__media img, .vz-card__media video {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform .35s ease;
+}
+a.vz-card:hover .vz-card__media img { transform: scale(1.04); }
+.vz-card__media-ph {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-subtle);
+    background: linear-gradient(135deg, var(--bg-secondary), var(--bg-hover));
+}
+.vz-card__media-ph .material-icons { font-size: 2.4rem; opacity: .55; }
+.vz-card__media-ph--accent {
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), .55), var(--accent-dark));
+    color: #fff;
+}
+/* Logo/avatar chevauchant la bannière (restaurants, boutiques) */
+.vz-card__float {
+    position: absolute; left: .85rem; bottom: -1.3rem;
+    width: 52px; height: 52px; border-radius: var(--radius);
+    border: 3px solid var(--bg-card); background: var(--bg-card);
+    overflow: hidden; display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-sm); z-index: 1;
+}
+.vz-card__float img { width: 100%; height: 100%; object-fit: cover; }
+.vz-card__float ~ .vz-card__body, .vz-card__media:has(.vz-card__float) + .vz-card__body { padding-top: 1.75rem; }
+
+/* Badges posés sur l'image */
+.vz-card__badge {
+    position: absolute; top: .6rem; left: .6rem; z-index: 1;
+    display: inline-flex; align-items: center; gap: .25rem;
+    max-width: calc(100% - 1.2rem);
+    padding: .22rem .6rem;
+    border-radius: var(--radius-pill);
+    background: rgba(17,24,39,.62); color: #fff;
+    font-size: .68rem; font-weight: 700; letter-spacing: .02em; line-height: 1.2;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+}
+.vz-card__badge .material-icons { font-size: .85rem; }
+.vz-card__badge--right  { left: auto; right: .6rem; }
+.vz-card__badge--bottom { top: auto; bottom: .6rem; }
+.vz-card__badge--success { background: var(--success); }
+.vz-card__badge--danger  { background: var(--danger); }
+.vz-card__badge--warning { background: var(--warning); }
+.vz-card__badge--accent  { background: var(--accent); color: var(--on-accent); }
+.vz-card__overlay {
+    position: absolute; inset: 0; z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(17,24,39,.55); color: #fff;
+    font-weight: 800; font-size: 1.05rem; letter-spacing: .08em; text-transform: uppercase;
+}
+
+/* Corps */
+.vz-card__body {
+    display: flex; flex-direction: column; gap: .3rem;
+    padding: .85rem .95rem .95rem;
+    flex: 1; min-width: 0;
+}
+.vz-card__eyebrow {
+    font-size: .68rem; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--accent);
+    display: flex; align-items: center; gap: .4rem; flex-wrap: wrap;
+}
+.vz-card__title {
+    margin: 0;
+    font-size: .95rem; font-weight: 700; line-height: 1.3; color: var(--text);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    overflow-wrap: anywhere;
+}
+.vz-card__title--1 { -webkit-line-clamp: 1; }
+.vz-card__subtitle { font-size: .8rem; color: var(--text-muted); margin: 0; }
+.vz-card__text {
+    margin: 0; font-size: .82rem; line-height: 1.5; color: var(--text-muted);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.vz-card__meta {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: .2rem .7rem;
+    font-size: .76rem; color: var(--text-muted); min-width: 0;
+}
+.vz-card__meta-item { display: inline-flex; align-items: center; gap: .22rem; min-width: 0; }
+.vz-card__meta-item > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vz-card__meta .material-icons { font-size: .95rem; color: var(--text-subtle); flex-shrink: 0; }
+.vz-card__meta .vz-chip { min-height: 22px; font-size: .66rem; padding: 0 .5rem; }
+.vz-card__price {
+    margin-top: auto; padding-top: .35rem;
+    font-size: 1.02rem; font-weight: 800; color: var(--accent);
+    font-variant-numeric: tabular-nums; display: flex; align-items: baseline; gap: .35rem; flex-wrap: wrap;
+}
+.vz-card__price small, .vz-card__price .vz-card__price-note { font-size: .72rem; font-weight: 500; color: var(--text-muted); }
+.vz-card__price--text { color: var(--text); }
+.vz-card__rating { display: inline-flex; align-items: center; gap: .2rem; font-weight: 700; color: var(--accent3); font-size: .8rem; }
+.vz-card__rating .material-icons { font-size: .95rem; }
+.vz-card__rating small { color: var(--text-muted); font-weight: 500; }
+.vz-card__tags { display: flex; flex-wrap: wrap; gap: .35rem; }
+.vz-card__actions { display: flex; align-items: center; gap: .5rem; margin-top: .55rem; flex-wrap: wrap; }
+.vz-card__actions--end { margin-left: auto; margin-top: 0; }
+.vz-card__corner { position: absolute; top: .55rem; right: .55rem; z-index: 2; }
+/* Chevron de fin de ligne (résultats, journal, tendances) */
+.vz-card__chevron { margin-left: auto; color: var(--text-subtle); flex-shrink: 0; transition: color .15s, transform .15s; }
+.vz-card__chevron .material-icons { font-size: 1.25rem; display: block; }
+a.vz-card:hover .vz-card__chevron, .vz-card--link:hover .vz-card__chevron { color: var(--accent); transform: translateX(2px); }
+
+/* Avatar (variante ligne et cartes profil) */
+.vz-card__avatar {
+    width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+    border: 2px solid var(--border); background: var(--bg-secondary); display: block;
+}
+.vz-card__avatar--sm { width: 40px; height: 40px; }
+.vz-card__avatar--lg { width: 64px; height: 64px; }
+.vz-card__avatar--sq { border-radius: var(--radius); }
+.vz-card__avatar-wrap { position: relative; flex-shrink: 0; }
+.vz-card__avatar-dot {
+    position: absolute; right: -2px; bottom: -2px;
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--bg-card); background: var(--accent); color: var(--on-accent);
+    display: flex; align-items: center; justify-content: center;
+}
+.vz-card__avatar-dot .material-icons { font-size: .7rem; }
+/* Avatar « lettre initiale » quand il n'y a pas de photo */
+.vz-card__avatar--initial {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem; font-weight: 800; line-height: 1; text-transform: uppercase;
+    color: var(--on-accent);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-color: transparent;
+}
+.vz-card__avatar--sm.vz-card__avatar--initial { font-size: 1rem; }
+.vz-card__avatar--lg.vz-card__avatar--initial { font-size: 1.5rem; }
+.vz-card__avatar[hidden], .vz-card__media-ph[hidden], .vz-card__media img[hidden] { display: none; }
+.vz-card__avatar-dot--success { background: var(--success); color: #fff; }
+.vz-card__avatar-dot--warning { background: var(--warning); color: #fff; }
+.vz-card__avatar-dot--info    { background: var(--info); color: #fff; }
+.vz-card__avatar-dot--danger  { background: var(--danger); color: #fff; }
+/* Avatar sans image : icône centrée (restaurant, boutique, membre sans photo) */
+.vz-card__avatar-ph, .vz-card__float-ph {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-subtle); background: var(--bg-secondary);
+}
+.vz-card__avatar-ph .material-icons { font-size: 1.4rem; }
+.vz-card__float-ph .material-icons { font-size: 1.3rem; }
+/* Actions empilées à droite (prix au-dessus d'un contrôle de quantité) */
+.vz-card__actions--col { flex-direction: column; align-items: flex-end; gap: .35rem; }
+/* En variante ligne, le prix ne pousse pas vers le bas */
+.vz-card--row .vz-card__price { margin-top: 0; padding-top: 0; }
+
+/* Puce compacte (langues, options, étiquettes dans une carte) */
+.vz-chip--sm { min-height: 26px; font-size: .72rem; padding: 0 .55rem; }
+.vz-chip--static { cursor: default; }
+.vz-chip--static:hover { background: inherit; color: inherit; border-color: inherit; }
+.vz-chip--wrap { white-space: normal; text-align: center; line-height: 1.2; padding-top: .2rem; padding-bottom: .2rem; }
+.vz-chip--soft { background: var(--btn-bg); border-color: transparent; color: var(--text-muted); }
+.vz-chip--success { background: rgba(var(--success-rgb), .12); border-color: transparent; color: var(--success); }
+.vz-chip--warning { background: rgba(217,119,6,.14); border-color: transparent; color: var(--warning); }
+.vz-chip--danger  { background: rgba(var(--danger-rgb), .12); border-color: transparent; color: var(--danger); }
+
+/* Grille de cartes : 2 colonnes sur mobile, auto-fill au-delà */
+.vz-grid {
+    display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+.vz-grid--wide { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.vz-stack { display: flex; flex-direction: column; gap: .7rem; }
+@media (max-width: 480px) {
+    .vz-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
+    .vz-grid--wide, .vz-grid--1col-mobile { grid-template-columns: minmax(0, 1fr); }
+    .vz-card__body { padding: .65rem .75rem .8rem; gap: .22rem; }
+    .vz-card__title { font-size: .86rem; }
+    .vz-card__price { font-size: .92rem; }
+    .vz-card__meta { font-size: .72rem; }
+    .vz-card--row { padding: .7rem .85rem; gap: .7rem; }
+}

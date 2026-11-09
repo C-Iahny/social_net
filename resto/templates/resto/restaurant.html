@@ -55,18 +55,19 @@
     </div>
     {% for s in sections %}
     <h2 class="rs-section-title" id="sec-{{ forloop.counter }}">{{ s.name }}</h2>
-    <div class="rs-card">
+    <div class="vz-grid vz-grid--wide">
         {% for it in s.items %}
-        <div class="rs-item" onclick="rsOpenItem({{ it.pk }})">
-            <div class="rs-item-body">
-                <p class="rs-item-name">{{ it.name }}</p>
-                {% if it.description %}<p class="rs-item-desc">{{ it.description }}</p>{% endif %}
-                {% if it.ingredients %}<p class="rs-item-desc" style="-webkit-line-clamp:1;">🥗 {% if it.is_composable %}<strong>{% trans "À composer" %}</strong> · {% endif %}{{ it.ingredient_names }}</p>{% endif %}
-                <span class="rs-price">{{ it.formatted_price }}</span>
-                {% if it.option_groups.all %}<span class="rs-muted" style="font-size:.75rem;"> · {% trans "personnalisable" %}</span>{% endif %}
+        <div class="vz-card vz-card--row vz-card--link rs-dish" onclick="rsOpenItem({{ it.pk }})">
+            {% if it.image %}<img class="vz-card__avatar vz-card__avatar--lg vz-card__avatar--sq" src="{{ it.image.url }}" alt="{{ it.name }}" loading="lazy">{% else %}<div class="vz-card__avatar vz-card__avatar--lg vz-card__avatar--sq rs-avatar-ph"><i class="material-icons" aria-hidden="true">restaurant</i></div>{% endif %}
+            <div class="vz-card__body">
+                <h3 class="vz-card__title">{{ it.name }}</h3>
+                {% if it.description %}<p class="vz-card__text">{{ it.description }}</p>{% endif %}
+                {% if it.ingredients %}<div class="vz-card__meta"><span class="vz-card__meta-item"><i class="material-icons" aria-hidden="true">eco</i><span>{% if it.is_composable %}<strong>{% trans "À composer" %}</strong> · {% endif %}{{ it.ingredient_names }}</span></span></div>{% endif %}
+                <span class="vz-card__price">{{ it.formatted_price }}{% if it.option_groups.all %}<small>{% trans "personnalisable" %}</small>{% endif %}</span>
             </div>
-            {% if it.image %}<img class="rs-item-img" src="{{ it.image.url }}" alt="{{ it.name }}" loading="lazy">{% endif %}
-            <button class="rs-item-add" type="button" aria-label="{% trans 'Ajouter' %}">+</button>
+            <div class="vz-card__actions vz-card__actions--end">
+                <button class="vz-btn vz-btn--primary vz-btn--icon vz-btn--sm" type="button" aria-label="{% trans 'Ajouter' %}"><i class="material-icons" aria-hidden="true">add</i></button>
+            </div>
         </div>
         {% endfor %}
     </div>

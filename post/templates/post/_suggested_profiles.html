@@ -19,8 +19,8 @@
 
     <div class="sugg-scroller" id="sugg-scroller">
         {% for account in profile_suggestions %}
-        <article class="sugg-item" id="sugg-item-{{ account.id }}">
-            <button type="button" class="sugg-dismiss"
+        <article class="sugg-item vz-card vz-card--flat" id="sugg-item-{{ account.id }}">
+            <button type="button" class="sugg-dismiss vz-card__corner"
                     data-sugg-dismiss="{{ account.id }}"
                     title="{% trans 'Remove this suggestion' %}"
                     aria-label="{% trans 'Remove this suggestion' %}">
@@ -28,22 +28,22 @@
             </button>
 
             <a class="sugg-avatar" href="{% url 'account:view' user_id=account.id %}">
-                <img src="{{ account.profile_image.url }}" alt="{{ account.username }}" loading="lazy">
+                <img class="vz-card__avatar vz-card__avatar--lg" src="{{ account.profile_image.url }}" alt="{{ account.username }}" loading="lazy">
             </a>
 
-            <a class="sugg-name" href="{% url 'account:view' user_id=account.id %}">{{ account.username }}</a>
+            <a class="sugg-name vz-card__title vz-card__title--1" href="{% url 'account:view' user_id=account.id %}">{{ account.username }}</a>
 
-            <span class="sugg-meta">
+            <span class="sugg-meta vz-card__subtitle">
                 {% if account.mutuals %}
                     {% blocktrans count nb=account.mutuals %}{{ nb }} mutual friend{% plural %}{{ nb }} mutual friends{% endblocktrans %}
                 {% elif account.region_label %}
-                    📍 {{ account.region_label }}
+                    <i class="material-icons">place</i>{{ account.region_label }}
                 {% else %}
                     {% trans "Suggested profile" %}
                 {% endif %}
             </span>
 
-            <button type="button" class="sugg-add"
+            <button type="button" class="sugg-add vz-btn vz-btn--primary vz-btn--sm vz-btn--block"
                     data-sugg-add="{{ account.id }}"
                     data-label-sent="{% trans 'Sent' %}">
                 <span class="material-icons">person_add_alt</span>

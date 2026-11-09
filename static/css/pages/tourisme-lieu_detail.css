@@ -32,7 +32,7 @@
 }
 .lieu-main-img {
     height: 340px;
-    background: linear-gradient(135deg, #1a7a4a, #0d6633);
+    background: linear-gradient(135deg, rgba(var(--accent-rgb), .55), var(--accent-dark));
     position: relative;
     overflow: hidden;
 }
@@ -141,16 +141,7 @@
     gap: .9rem;
     margin-bottom: 1.5rem;
 }
-.lieu-info-card {
-    background: var(--bg-card); border-radius: 12px;
-    padding: 1rem 1.1rem; border: 1px solid var(--border);
-}
-.lieu-info-label {
-    font-size: .72rem; font-weight: 700; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: .06em;
-    display: flex; align-items: center; gap: .3rem; margin-bottom: .35rem;
-}
-.lieu-info-label .material-icons { font-size: .9rem; color: var(--accent); }
+/* Cartes info : .vz-card.vz-card--flat + .vz-card__eyebrow (zoot-base.css) ; seule la valeur reste ici */
 .lieu-info-value {
     font-size: .9rem; font-weight: 600; color: var(--text);
     line-height: 1.4;
@@ -158,21 +149,16 @@
 
 /* ── Conseils ── */
 .lieu-tips {
-    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    background: linear-gradient(135deg, rgba(var(--success-rgb), .12), rgba(var(--success-rgb), .05));
     border-left: 4px solid var(--success);
-    border-radius: 0 12px 12px 0;
+    border-radius: 0 var(--radius) var(--radius) 0;
     padding: 1rem 1.2rem; margin-bottom: 1.5rem;
-}
-[data-theme="dark"] .lieu-tips {
-    background: linear-gradient(135deg, #0a2e0f, #112d0f);
-    border-left-color: var(--success);
 }
 .lieu-tips-title {
     font-size: .8rem; font-weight: 700; color: var(--success);
     text-transform: uppercase; letter-spacing: .06em;
     display: flex; align-items: center; gap: .3rem; margin-bottom: .5rem;
 }
-[data-theme="dark"] .lieu-tips-title { color: #81c784; }
 .lieu-tips-title .material-icons { font-size: .95rem; }
 .lieu-tips-text { font-size: .9rem; color: var(--text); line-height: 1.6; }
 
@@ -185,59 +171,13 @@
 }
 .lieu-section-title .material-icons { color: var(--accent); }
 
-/* ── Guides ── */
-.lieu-guides-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: .9rem; margin-bottom: 2rem;
+/* ── Guides, lieux similaires, publications : composant partagé .vz-card / .vz-grid (zoot-base.css) ──
+   Reste ici : avatar « lettre initiale » et la mini-pastille auteur des publications. */
+/* avatar lettre initiale : .vz-card__avatar--initial (zoot-base.css) */
+.lieu-post-av {
+    width: 22px; height: 22px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+    font-size: .62rem;
 }
-.lieu-guide-card {
-    background: var(--bg-card); border-radius: 12px;
-    padding: 1rem; border: 1px solid var(--border);
-    display: flex; gap: .8rem; align-items: flex-start;
-    text-decoration: none; color: var(--text);
-    transition: box-shadow .2s, transform .2s;
-}
-.lieu-guide-card:hover {
-    box-shadow: var(--shadow-lg); transform: translateY(-2px);
-    text-decoration: none; color: var(--text);
-}
-.lieu-guide-av {
-    width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem; font-weight: 800; color: #fff; overflow: hidden;
-}
-.lieu-guide-av img { width: 100%; height: 100%; object-fit: cover; }
-.lieu-guide-name { font-size: .88rem; font-weight: 700; margin-bottom: .15rem; }
-.lieu-guide-spec { font-size: .76rem; color: var(--text-muted); }
-
-/* ── Similaires ── */
-.similaires-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: .9rem;
-}
-.sim-card {
-    background: var(--bg-card); border-radius: 12px; overflow: hidden;
-    border: 1px solid var(--border); text-decoration: none; color: var(--text);
-    transition: transform .2s, box-shadow .2s; display: block;
-}
-.sim-card:hover {
-    transform: translateY(-3px); box-shadow: var(--shadow-lg);
-    text-decoration: none; color: var(--text);
-}
-.sim-card-img {
-    height: 120px; background: linear-gradient(135deg, #1a7a4a, #0a4a2e);
-    overflow: hidden; position: relative;
-}
-.sim-card-img img { width: 100%; height: 100%; object-fit: cover; }
-.sim-card-img-ph {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-}
-.sim-card-img-ph .material-icons { font-size: 2rem; color: rgba(255,255,255,.4); }
-.sim-card-body { padding: .7rem .8rem; }
-.sim-card-name { font-size: .88rem; font-weight: 700; }
-.sim-card-cat { font-size: .72rem; color: var(--text-muted); margin-top: .15rem; }
 
 /* ── Avis ── */
 .lieu-avis-summary {
@@ -250,7 +190,7 @@
     line-height: 1;
 }
 .lieu-avis-stars-big {
-    font-size: 1.3rem; color: #f59e0b; letter-spacing: .05rem;
+    font-size: 1.3rem; color: var(--accent3); letter-spacing: .05rem;
 }
 .lieu-avis-count-label {
     font-size: .82rem; color: var(--text-muted); margin-top: .2rem;
@@ -265,12 +205,12 @@
 .star-rating-input { display: flex; flex-direction: row-reverse; gap: .15rem; margin-bottom: .8rem; }
 .star-rating-input input { display: none; }
 .star-rating-input label {
-    font-size: 1.7rem; cursor: pointer; color: #d1d5db; line-height: 1;
+    font-size: 1.7rem; cursor: pointer; color: var(--border); line-height: 1;
     transition: color .15s;
 }
 .star-rating-input input:checked ~ label,
 .star-rating-input label:hover,
-.star-rating-input label:hover ~ label { color: #f59e0b; }
+.star-rating-input label:hover ~ label { color: var(--accent3); }
 .avis-comment-input {
     width: 100%; border-radius: 10px; border: 1px solid var(--border);
     background: var(--bg); color: var(--text); padding: .7rem .9rem;
@@ -295,83 +235,23 @@
 }
 .avis-submit-btn:hover { opacity: .87; }
 .avis-error { color: var(--danger); font-size: .83rem; margin-bottom: .7rem; }
+/* Liste d'avis : chaque avis est un .vz-card.vz-card--flat (zoot-base.css) */
 .avis-list { display: flex; flex-direction: column; gap: .85rem; }
-.avis-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 12px; padding: .9rem 1rem;
-}
-.avis-card-header { display: flex; align-items: center; gap: .6rem; margin-bottom: .4rem; }
-.avis-avatar {
-    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: .95rem; color: #fff; overflow: hidden;
-}
-.avis-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.avis-card-header { display: flex; align-items: center; gap: .6rem; margin-bottom: .2rem; }
 .avis-author-name { font-size: .87rem; font-weight: 700; color: var(--text); }
 .avis-date { font-size: .74rem; color: var(--text-muted); }
-.avis-stars { font-size: 1rem; color: #f59e0b; letter-spacing: .04rem; margin-bottom: .3rem; }
+.avis-stars { font-size: 1rem; color: var(--accent3); letter-spacing: .04rem; }
 .avis-comment-text { font-size: .88rem; color: var(--text); line-height: 1.6; }
-.avis-visited-badge {
-    display: inline-flex; align-items: center; gap: .2rem;
-    font-size: .72rem; color: var(--text-muted);
-    margin-top: .35rem;
-}
-.avis-visited-badge .material-icons { font-size: .85rem; }
-
-/* ── Posts liés ── */
-.lieu-posts-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: .9rem; margin-bottom: 2rem;
-}
-.lieu-post-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 12px; overflow: hidden; text-decoration: none; color: var(--text);
-    transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column;
-}
-.lieu-post-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); text-decoration: none; color: var(--text); }
-.lieu-post-thumb {
-    height: 130px; background: linear-gradient(135deg, #1a3a6a, #0d2040);
-    overflow: hidden; flex-shrink: 0;
-}
-.lieu-post-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.lieu-post-thumb-ph {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-}
-.lieu-post-thumb-ph .material-icons { font-size: 2rem; color: rgba(255,255,255,.3); }
-.lieu-post-body { padding: .75rem .9rem; flex: 1; }
-.lieu-post-author {
-    display: flex; align-items: center; gap: .4rem;
-    margin-bottom: .35rem;
-}
-.lieu-post-av {
-    width: 24px; height: 24px; border-radius: 50%;
-    background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: .65rem; font-weight: 800; overflow: hidden; flex-shrink: 0;
-}
-.lieu-post-av img { width: 100%; height: 100%; object-fit: cover; }
-.lieu-post-username { font-size: .76rem; color: var(--text-muted); }
-.lieu-post-snippet {
-    font-size: .85rem; color: var(--text); line-height: 1.5;
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-}
-
 /* ── Rating pill in header ── */
 .lieu-rating-pill {
     display: inline-flex; align-items: center; gap: .2rem;
-    background: #fef3c7; color: #92400e; border-radius: 50px;
+    background: rgba(217,119,6,.14); color: var(--warning); border-radius: var(--radius-pill);
     padding: .2rem .7rem; font-size: .8rem; font-weight: 700;
 }
-[data-theme="dark"] .lieu-rating-pill { background: #3d2c00; color: #fcd34d; }
-.lieu-rating-pill .material-icons { font-size: .9rem; color: #f59e0b; }
+.lieu-rating-pill .material-icons { font-size: .9rem; color: var(--accent3); }
 
 @media (max-width: 575px) {
     .lieu-main-img { height: 220px; }
     .lieu-name { font-size: 1.4rem; }
     .lieu-info-grid { grid-template-columns: 1fr 1fr; }
-    .lieu-guides-grid { grid-template-columns: 1fr; }
-    .similaires-grid { grid-template-columns: 1fr 1fr; }
-    .lieu-posts-grid { grid-template-columns: 1fr; }
 }

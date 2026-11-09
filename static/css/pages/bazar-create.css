@@ -137,7 +137,7 @@
     border-radius: 12px;
     letter-spacing: .04em;
 }
-[data-theme="dark"] .bazar-preview-badge { color: #1a0a02; }
+[data-theme="dark"] .bazar-preview-badge { color: var(--on-accent); }
 .bazar-preview-remove {
     position: absolute;
     top: 4px; right: 4px;
@@ -178,7 +178,7 @@
     cursor: pointer;
     transition: opacity .2s, transform .2s;
 }
-[data-theme="dark"] .bazar-btn-submit { color: #1a0a02; }
+[data-theme="dark"] .bazar-btn-submit { color: var(--on-accent); }
 .bazar-btn-submit:hover { opacity: .88; transform: translateY(-1px); }
 .bazar-btn-cancel {
     background: transparent;

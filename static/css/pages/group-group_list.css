@@ -111,65 +111,22 @@
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
 }
 @media (max-width: 600px) {
-    .gp-grid { grid-template-columns: 1fr; }
+    .gp-grid { grid-template-columns: 1fr; gap: .8rem; }
 }
-.gp-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 16px; overflow: hidden;
-    box-shadow: 0 2px 14px rgba(0,0,0,.05);
-    transition: transform .18s, box-shadow .18s;
-    display: flex; flex-direction: column;
-}
-.gp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(0,0,0,.1); }
+/* Carte de groupe : conteneur partagé .vz-card (zoot-base.css) ; ici
+   seulement la couverture et les quelques spécificités. */
+.gp-cover-link { position: absolute; inset: 0; display: block; }
 .gp-cover {
-    height: 110px;
+    position: absolute; inset: 0;
     background: linear-gradient(130deg, var(--accent), var(--accent2));
     background-size: cover; background-position: center;
+    transition: transform .35s ease;
 }
-.gp-cat-label {
-    position: absolute; top: .55rem; right: .6rem;
-    background: rgba(0,0,0,.45); color: #fff;
-    font-size: .72rem; font-weight: 700; padding: .18rem .55rem;
-    border-radius: 10px; backdrop-filter: blur(4px);
-}
-.gp-cover-wrap { position: relative; }
-.gp-card-body { padding: .9rem 1.1rem 1.1rem; flex: 1; display: flex; flex-direction: column; }
-.gp-card-name {
-    font-size: 1.05rem; font-weight: 700; color: var(--text);
-    text-decoration: none; margin-bottom: .25rem; display: block;
-}
+.gp-card:hover .gp-cover { transform: scale(1.04); }
 .gp-card-name:hover { color: var(--accent); text-decoration: none; }
-.gp-card-meta {
-    display: flex; align-items: center; gap: .8rem;
-    font-size: .8rem; color: var(--text-muted); margin-bottom: .6rem; flex-wrap: wrap;
-}
-.gp-card-meta .material-icons { font-size: .95rem; vertical-align: middle; }
-.gp-badge {
-    display: inline-flex; align-items: center; gap: .2rem;
-    background: var(--btn-bg); border-radius: 7px;
-    padding: .1rem .5rem; font-size: .72rem; font-weight: 700;
-}
-.gp-card-desc {
-    font-size: .85rem; color: var(--text-muted); line-height: 1.5;
-    margin-bottom: .9rem; flex: 1;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-}
-.gp-card-footer {
-    display: flex; align-items: center; justify-content: space-between; gap: .5rem;
-}
-.gp-member-tag {
-    display: inline-flex; align-items: center; gap: .25rem;
-    font-size: .76rem; font-weight: 700; color: var(--accent);
-}
-.gp-member-tag .material-icons { font-size: .9rem; }
-.gp-join-btn {
-    display: inline-flex; align-items: center; gap: .25rem;
-    padding: .35rem .85rem; border-radius: 10px; font-size: .8rem; font-weight: 700;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #fff; border: none; cursor: pointer; text-decoration: none;
-    transition: opacity .15s;
-}
-.gp-join-btn:hover { opacity: .85; color: #fff; text-decoration: none; }
+.gp-card-footer { justify-content: space-between; margin-top: auto; padding-top: .35rem; }
+.gp-card-footer form { margin: 0; }
+.gp-card .vz-card__text { flex: 1; }
 
 /* ── Vide ────────────────────────────────────────────── */
 .gp-empty {

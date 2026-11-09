@@ -91,14 +91,14 @@
     gap: 1rem;
 }
 .verif-status-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
-.verif-status-pending  { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.verif-status-pending  { background: rgba(217,119,6,.10); border: 1px solid rgba(217,119,6,.35); color: var(--warning); }
 .verif-status-approved { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
 .verif-status-rejected { background: #fff1f2; border: 1px solid #fca5a5; color: #9f1239; }
 .verif-status-pro-approved { background: #fffbeb; border: 1px solid #fcd34d; color: #78350f; }
-[data-theme="dark"] .verif-status-pending  { background: rgba(254,243,199,.08); border-color: #92400e; color: #fde68a; }
+[data-theme="dark"] .verif-status-pending  { background: rgba(217,119,6,.12); border-color: rgba(217,119,6,.45); color: var(--warning); }
 [data-theme="dark"] .verif-status-approved { background: rgba(6,95,70,.12); border-color: #065f46; color: #6ee7b7; }
 [data-theme="dark"] .verif-status-rejected { background: rgba(159,18,57,.12); border-color: #9f1239; color: #fca5a5; }
-[data-theme="dark"] .verif-status-pro-approved { background: rgba(120,53,15,.15); border-color: #92400e; color: #fcd34d; }
+[data-theme="dark"] .verif-status-pro-approved { background: rgba(217,119,6,.15); border-color: rgba(217,119,6,.45); color: var(--warning); }
 .verif-status-label  { font-weight: 700; font-size: 1rem; margin-bottom: .2rem; }
 .verif-status-detail { font-size: .83rem; opacity: .85; }
 
@@ -152,7 +152,7 @@
     transition: opacity .18s;
     margin-top: 1rem;
 }
-[data-theme="dark"] .verif-submit { color: #1a0a02; }
+[data-theme="dark"] .verif-submit { color: var(--on-accent); }
 .verif-submit:hover { opacity: .85; }
 .verif-hint { font-size: .78rem; color: var(--text-muted); margin-top: .35rem; }
 .verif-section-title {

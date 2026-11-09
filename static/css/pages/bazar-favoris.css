@@ -16,96 +16,23 @@
 }
 .bazar-fav-title { font-size: 1.5rem; font-weight: 800; }
 
-/* Grille annonces */
-.bazar-fav-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-@media (max-width: 500px) {
-    .bazar-fav-grid { grid-template-columns: repeat(2, 1fr); gap: .65rem; }
-}
+/* Grille annonces : colonnes gérées par .vz-grid, cartes = .vz-card (zoot-base.css) */
+.bazar-fav-grid { margin-bottom: 2rem; }
 
-/* Card */
-.bazar-fav-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    text-decoration: none;
-    color: var(--text-primary);
-    display: flex;
-    flex-direction: column;
-    transition: transform .18s, box-shadow .18s;
-    position: relative;
-}
-.bazar-fav-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0,0,0,.1);
-    text-decoration: none;
-    color: var(--text-primary);
-}
-.bazar-fav-img-wrap {
-    aspect-ratio: 1;
-    background: var(--bg-secondary, #f5ebe0);
-    overflow: hidden;
-}
-.bazar-fav-img-wrap img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: transform .3s;
-}
-.bazar-fav-card:hover .bazar-fav-img-wrap img { transform: scale(1.04); }
-.bazar-fav-no-img {
-    width: 100%; height: 100%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2.5rem; color: var(--text-muted);
-}
-.bazar-fav-body {
-    padding: .75rem .85rem .85rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: .25rem;
-}
-.bazar-fav-title-item {
-    font-size: .88rem;
-    font-weight: 700;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-.bazar-fav-price {
-    font-size: .95rem;
-    font-weight: 800;
-    color: var(--accent);
-    margin-top: auto;
-    padding-top: .3rem;
-}
-.bazar-fav-seller {
-    font-size: .73rem;
-    color: var(--text-muted);
-}
-
-/* Bouton retirer */
+/* Bouton retirer (positionné par .vz-card__corner) */
 .bazar-fav-remove {
-    position: absolute;
-    top: 8px; right: 8px;
-    background: rgba(0,0,0,.55);
+    background: rgba(17,24,39,.62);
     border: none;
     color: #fff;
-    width: 28px; height: 28px;
+    width: 30px; height: 30px;
     border-radius: 50%;
-    font-size: .9rem;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
     transition: background .18s;
-    z-index: 2;
 }
-.bazar-fav-remove:hover { background: #e0325a; }
+.bazar-fav-remove .material-icons { font-size: 1rem; }
+.bazar-fav-remove:hover { background: var(--danger); }
 
 /* État vide */
 .bazar-fav-empty {
@@ -114,7 +41,7 @@
     color: var(--text-muted);
 }
 .bazar-fav-empty .bazar-fav-empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
-.bazar-fav-empty h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; color: var(--text-primary); }
+.bazar-fav-empty h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; color: var(--text); }
 .bazar-fav-empty p { font-size: .9rem; margin-bottom: 1.5rem; }
 
 /* Pagination */
@@ -131,7 +58,7 @@
     border-radius: var(--radius);
     border: 1.5px solid var(--border);
     background: var(--bg-card);
-    color: var(--text-primary);
+    color: var(--text);
     font-size: .88rem; font-weight: 700;
     text-decoration: none;
     transition: all .18s;
@@ -139,4 +66,4 @@
 }
 .bazar-page-btn:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
 .bazar-page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-[data-theme="dark"] .bazar-page-btn.active { color: #1a0a02; }
+[data-theme="dark"] .bazar-page-btn.active { color: var(--on-accent); }
