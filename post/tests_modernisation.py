@@ -45,6 +45,10 @@ class RelativeTimeTests(TestCase):
 @override_settings(STORAGES=STATIC)
 class UnifiedCardTests(TestCase):
     def setUp(self):
+        # Le classement « Pour toi » est mis en cache par pk utilisateur ; les pk
+        # se répètent d'un test à l'autre, on repart donc d'un cache vide.
+        from django.core.cache import cache
+        cache.clear()
         self.me = User.objects.create_user(email='me@test.mg', username='me', password='x')
         self.other = User.objects.create_user(email='o@test.mg', username='other', password='x')
         self.client.force_login(self.me)
@@ -91,3 +95,23 @@ class UnifiedCardTests(TestCase):
         self.assertIn('vz-segmented', html)
         self.assertNotIn('#6366f1', html)
         self.assertNotIn('--card-bg', html)
+
+
+class HashtagAccentTests(TestCase):
+    """Un hashtag accentué ne doit plus faire planter le fil ni sa page."""
+
+    def test_accented_hashtag_renders_in_feed_and_resolves(self):
+        from django.contrib.auth import get_user_model
+        from django.urls import reverse
+        from .models import Post
+        User = get_user_model()
+        u = User.objects.create_user(email='acc@test.mg', username='accent', password='x12345678')
+        Post.objects.create(author=u, title='Sortie', body='Belle #randonnée à Andasibe', status='published')
+        self.client.force_login(u)
+        r = self.client.get(reverse('post:post-view'), HTTP_HOST='127.0.0.1')
+        self.assertEqual(r.status_code, 200)
+        url = reverse('post:hashtag', args=['randonnée'])
+        r = self.client.get(url, HTTP_HOST='127.0.0.1')
+        self.assertEqual(r.status_code, 200)
+        self.assertContains(r, 'randonnée')
+

@@ -722,7 +722,10 @@ var _ZF_CSRF = '{{ csrf_token }}';
     var feedMain  = document.querySelector('.feed-main');
 
     if (!sentinel || !feedMain) return;
-    feedMain.insertBefore(sentinel, indicator);
+    /* Les cartes vivent dans #cb-post-list-anchor, pas directement dans
+       .feed-main : insérer là où se trouve la sentinelle, sinon insertBefore
+       lève NotFoundError et le défilement infini ne démarre jamais. */
+    var listParent = sentinel.parentNode || feedMain;
 
     function loadMore() {
         if (_loading || _nextPage === null) return;
@@ -740,7 +743,7 @@ var _ZF_CSRF = '{{ csrf_token }}';
             if (data.html && data.html.trim()) {
                 var tmp = document.createElement('div');
                 tmp.innerHTML = data.html;
-                while (tmp.firstChild) feedMain.insertBefore(tmp.firstChild, sentinel);
+                while (tmp.firstChild) listParent.insertBefore(tmp.firstChild, sentinel);
             }
 
             if (data.has_next) {

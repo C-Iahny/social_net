@@ -1,6 +1,22 @@
 from ZOOT.ratelimit import ratelimit
 from .video_feed import video_feed_view, video_feed_more
-from django.urls import path
+from django.urls import path, register_converter
+
+
+class HashtagConverter:
+    """Hashtag avec accents (#randonnée, #Fianarantsoa) : le convertisseur
+    `slug` n'accepte que l'ASCII et faisait planter le fil entier dès qu'un
+    post contenait un tag accentué (NoReverseMatch au rendu)."""
+    regex = r'[\w-]{1,40}'
+
+    def to_python(self, value):
+        return value
+
+    def to_url(self, value):
+        return value
+
+
+register_converter(HashtagConverter, 'hashtag')
 
 from .views import (
     Index,
@@ -48,7 +64,7 @@ urlpatterns = [
     path('comment/<int:comment_id>/delete/', delete_comment, name='delete-comment'),
     path('feed/more/',         post_feed_more,        name='feed-more'),
     path('react/',             ratelimit('60/m')(react_post), name='react-post'),
-    path('hashtag/<slug:tag>/', hashtag_view,         name='hashtag'),
+    path('hashtag/<hashtag:tag>/', hashtag_view,         name='hashtag'),
     path('mention/autocomplete/', mention_autocomplete, name='mention-autocomplete'),
     path('bookmark/',          bookmark_post,         name='bookmark'),
     path('hide/',              hide_post,             name='hide'),
