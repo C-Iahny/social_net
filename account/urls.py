@@ -10,10 +10,10 @@ app_name = 'account'
 urlpatterns = [
     path('supprimer/',                 delete_account_view, name="delete"),
     path('bloquer/<int:user_id>/',     toggle_block,        name="block"),
-    path('<user_id>/',                  account_view,        name="view"),
-    path('<user_id>/edit/',             edit_account_view,   name="edit"),
-    path('<user_id>/edit/cropImage',    crop_image,          name="crop_image"),
-    path('<user_id>/posts/more/',       profile_posts_more,  name="profile-posts-more"),
+    path('<int:user_id>/',                  account_view,        name="view"),
+    path('<int:user_id>/edit/',             edit_account_view,   name="edit"),
+    path('<int:user_id>/edit/cropImage',    crop_image,          name="crop_image"),
+    path('<int:user_id>/posts/more/',       profile_posts_more,  name="profile-posts-more"),
     path('search/api/',                 global_search_api,   name="search-api"),
     path('cover/update/',              update_cover_image,  name="update-cover"),
     # ── Vérification téléphone ─────────────────────────────────────────────

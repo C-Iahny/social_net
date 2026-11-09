@@ -32,6 +32,10 @@
                     <span class="material-icons">{% if group.privacy == 'private' %}lock{% else %}public{% endif %}</span>
                     {{ group.get_privacy_display }}
                 </span>
+                <span class="gd-badge gd-badge--cat">
+                    <i class="material-icons" aria-hidden="true">{{ group.category|vz_group_icon }}</i>
+                    {{ group.get_category_display }}
+                </span>
                 <span><span class="material-icons">group</span> {{ group.member_count }} {% trans "members" %}</span>
                 <span><span class="material-icons">schedule</span> {{ group.created_at|date:"d M Y" }}</span>
             </div>

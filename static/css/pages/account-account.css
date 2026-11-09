@@ -1164,3 +1164,6 @@ a.create-box-action { color: var(--text-muted); text-decoration: none; }
 .info-label { font-size: .75rem; color: var(--text-muted); }
 .info-muted { color: var(--text-muted); }
 .pc-about-actions { margin-top: 1rem; display: flex; gap: .6rem; flex-wrap: wrap; }
+
+/* Compteur dans les boutons du pied de carte (fragment de post partagé) */
+.pc-footer-count { font-size: .78rem; font-weight: 600; }

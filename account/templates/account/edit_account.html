@@ -283,7 +283,7 @@
             displayLoadingSpinner(true);
             $.ajax({
                 type: 'POST', dataType: "json",
-                url: "{% url 'account:crop_image' user_id=form.instance.pk %}",
+                url: "{% url 'account:crop_image' user_id=request.user.id %}",
                 data: {
                     "csrfmiddlewaretoken": "{{ csrf_token }}",
                     "image": base64ImageString,

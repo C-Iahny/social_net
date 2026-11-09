@@ -7,7 +7,7 @@
 /* ── Version ─────────────────────────────────────────────────────────────────
    Incrémenter SW_VERSION pour forcer la mise à jour chez tous les clients.
    ─────────────────────────────────────────────────────────────────────────── */
-const SW_VERSION  = 'vazimba-v25';
+const SW_VERSION  = 'vazimba-v26';
 const STATIC_CACHE = SW_VERSION + '-static';
 const PAGES_CACHE  = SW_VERSION + '-pages';
 const IMG_CACHE    = SW_VERSION + '-images';
@@ -21,6 +21,7 @@ const OFFLINE_URL  = '/offline/';
 const PRECACHE_STATIC = [
     '{% static "perso/bootstrap/css/bootstrap.min.css" %}',
     '{% static "css/zoot-base.css" %}',
+    '{% static "css/base-shell.css" %}',
     '{% static "js/vz-core.js" %}',
     '{% static "js/vz-post-card.js" %}',
     '{% static "perso/jquery/jquery-3.5.1.min.js" %}',

@@ -1012,8 +1012,8 @@ msgstr "the admin will review your account shortly."
 msgid "Vendeur vérifié"
 msgstr "Verified Seller"
 
-msgid "badge ✓ actif sur toutes vos annonces, 12 photos autorisées."
-msgstr "✓ badge active on all your ads, 12 photos allowed."
+msgid "badge vérifié actif sur toutes vos annonces, 12 photos autorisées."
+msgstr "verified badge active on all your ads, 12 photos allowed."
 
 msgid "Demande refusée."
 msgstr "Request rejected."
@@ -1337,8 +1337,8 @@ msgstr "Permanently delete this ad?"
 msgid "Copier le lien"
 msgstr "Copy link"
 
-msgid "✓ Copié !"
-msgstr "✓ Copied!"
+msgid "Copié !"
+msgstr "Copied!"
 
 # bazar/index.html
 msgid "Près de chez moi :"
@@ -1384,8 +1384,8 @@ msgstr "active"
 msgid "vendue"
 msgstr "sold"
 
-msgid "🔝 Remonter en tête (1×/24h)"
-msgstr "🔝 Bump to top (1×/24h)"
+msgid "Remonter en tête (1×/24h)"
+msgstr "Bump to top (1×/24h)"
 
 msgid "Marquer vendue"
 msgstr "Mark sold"
@@ -3597,8 +3597,8 @@ msgstr "Search for a guide…"
 msgid "Rechercher un lieu…"
 msgstr "Search for a place…"
 
-msgid "Regardez le match ensemble ⚽"
-msgstr "Watch the match together ⚽"
+msgid "Regardez le match ensemble"
+msgstr "Watch the match together"
 
 msgid "Rejoignez notre réseau de guides touristiques et aidez les voyageurs à découvrir l'île."
 msgstr "Join our network of tour guides and help travellers discover the island."
@@ -3726,8 +3726,8 @@ msgstr "Write a message…"
 msgid "— Choisir —"
 msgstr "— Choose —"
 
-msgid "🎬 Choisir la source de diffusion"
-msgstr "🎬 Choose the broadcast source"
+msgid "Choisir la source de diffusion"
+msgstr "Choose the broadcast source"
 
 msgid "5000 km"
 msgstr "5000 km"
@@ -4104,14 +4104,14 @@ msgstr "Send my request"
 msgid "Proposer ce lieu"
 msgstr "Suggest this place"
 
-msgid "Badge ✓ Vérifié sur vos annonces"
-msgstr "✓ Verified badge on your listings"
+msgid "Badge Vérifié sur vos annonces"
+msgstr "Verified badge on your listings"
 
-msgid "Badge ✓ actif, 12 photos par annonce."
-msgstr "✓ badge active, 12 photos per listing."
+msgid "Badge vérifié actif, 12 photos par annonce."
+msgstr "Verified badge active, 12 photos per listing."
 
-msgid "Badge ⭐ Boutique Pro doré"
-msgstr "Golden ⭐ Pro Shop badge"
+msgid "Badge Boutique Pro doré"
+msgstr "Golden Pro Shop badge"
 
 msgid "Badge, priorité dans les résultats, plus de photos — et une page boutique dédiée pour les pros."
 msgstr "Badge, priority in results, more photos — and a dedicated shop page for professionals."
@@ -4218,8 +4218,8 @@ msgstr "Your shop page is visible to all buyers."
 msgid "Vérification vendeur / Boutique Pro"
 msgstr "Seller verification / Pro Shop"
 
-msgid "badge doré ⭐, page boutique publique, 20 photos par annonce."
-msgstr "golden ⭐ badge, public shop page, 20 photos per listing."
+msgid "badge doré, page boutique publique, 20 photos par annonce."
+msgstr "golden badge, public shop page, 20 photos per listing."
 
 msgid "« En pause » masque votre annonce sans la supprimer."
 msgstr "“Paused” hides your listing without deleting it."
@@ -4276,3 +4276,11 @@ msgstr "%(name)s cancelled their friend request"
 #: notification/verbs.py
 msgid "Votre activité récente"
 msgstr "Your recent activity"
+
+#: resto
+msgid "Page précédente"
+msgstr "Previous page"
+
+#: resto
+msgid "Page suivante"
+msgstr "Next page"

@@ -1287,8 +1287,8 @@ msgstr "ny admin hamaritra ny kaontinao tsy ho ela."
 msgid "Vendeur vérifié"
 msgstr "Mpivarotra voamarina"
 
-msgid "badge ✓ actif sur toutes vos annonces, 12 photos autorisées."
-msgstr "Badge ✓ mavitrika amin'ny fivarotana rehetra, 12 sary azo ampiasaina."
+msgid "badge vérifié actif sur toutes vos annonces, 12 photos autorisées."
+msgstr "Badge mavitrika amin'ny fivarotana rehetra, 12 sary azo ampiasaina."
 
 msgid "Demande refusée."
 msgstr "Fangatahana nolavina."
@@ -1450,8 +1450,8 @@ msgstr "Hamafaina ny famafana ity fivarotana ity ?"
 msgid "Copier le lien"
 msgstr "Adikao ny rohy"
 
-msgid "✓ Copié !"
-msgstr "✓ Voaadika !"
+msgid "Copié !"
+msgstr "Voaadika !"
 
 # bazar/index.html
 msgid "Près de chez moi :"
@@ -1497,8 +1497,8 @@ msgstr "mavitrika"
 msgid "vendue"
 msgstr "namidy"
 
-msgid "🔝 Remonter en tête (1×/24h)"
-msgstr "🔝 Hisandratra eo aloha (1×/24ora)"
+msgid "Remonter en tête (1×/24h)"
+msgstr "Hisandratra eo aloha (1×/24ora)"
 
 msgid "Marquer vendue"
 msgstr "Marihina ho namidy"
@@ -3724,8 +3724,8 @@ msgstr "Hitady mpitari-dalana…"
 msgid "Rechercher un lieu…"
 msgstr "Hitady toerana…"
 
-msgid "Regardez le match ensemble ⚽"
-msgstr "Jereo miaraka ny lalao ⚽"
+msgid "Regardez le match ensemble"
+msgstr "Jereo miaraka ny lalao"
 
 msgid "Rejoignez notre réseau de guides touristiques et aidez les voyageurs à découvrir l'île."
 msgstr "Midira ao amin'ny tambajotran'ny mpitari-dalana ary ampio ny mpandeha hahita ny Nosy."
@@ -3853,8 +3853,8 @@ msgstr "Manorata hafatra…"
 msgid "— Choisir —"
 msgstr "— Safidio —"
 
-msgid "🎬 Choisir la source de diffusion"
-msgstr "🎬 Safidio ny loharanon'ny fandefasana"
+msgid "Choisir la source de diffusion"
+msgstr "Safidio ny loharanon'ny fandefasana"
 
 msgid "5000 km"
 msgstr "5000 km"
@@ -4340,3 +4340,11 @@ msgstr "Nofoanan’i %(name)s ny fangatahana finamananany"
 #: notification/verbs.py
 msgid "Votre activité récente"
 msgstr "Ny hetsikao farany"
+
+#: resto
+msgid "Page précédente"
+msgstr "Pejy teo aloha"
+
+#: resto
+msgid "Page suivante"
+msgstr "Pejy manaraka"

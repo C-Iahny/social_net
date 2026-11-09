@@ -66,6 +66,7 @@
         </div>
         {% if category %}
         <span class="gp-cat-active-badge">
+            <i class="material-icons" aria-hidden="true">{{ category|vz_group_icon }}</i>
             {% for cat_key, cat_label in category_choices %}{% if cat_key == category %}{{ cat_label }}{% endif %}{% endfor %}
             <a href="?tab={{ tab }}{% if query %}&q={{ query }}{% endif %}" title="{% trans 'Effacer' %}" aria-label="{% trans 'Effacer' %}"><i class="material-icons" aria-hidden="true">close</i></a>
         </span>
@@ -91,7 +92,7 @@
                     <div class="gp-cover" {% if group.cover_url %}style="background-image:url('{{ group.cover_url }}')"{% endif %}></div>
                 </a>
                 {% if group.category %}
-                <span class="vz-card__badge vz-card__badge--right">{{ group.get_category_display }}</span>
+                <span class="vz-card__badge vz-card__badge--right"><i class="material-icons" aria-hidden="true">{{ group.category|vz_group_icon }}</i> {{ group.get_category_display }}</span>
                 {% endif %}
             </div>
             <div class="vz-card__body">
