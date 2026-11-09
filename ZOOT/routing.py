@@ -5,6 +5,23 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ZOOT.settings')
 django.setup()
 
+
+def _reset_chat_presence():
+	"""
+	Aucune connexion WebSocket ne survit à un redémarrage (déploiement Railway),
+	mais la table `connected_users` des conversations, elle, gardait les
+	participants « connectés » : leurs nouveaux messages n'étaient alors plus
+	comptés comme non lus. On repart d'une présence vide à chaque démarrage.
+	"""
+	try:
+		from chat.models import PrivateChatRoom
+		PrivateChatRoom.connected_users.through.objects.all().delete()
+	except Exception:
+		pass  # base indisponible ou migrations pas encore passées
+
+
+_reset_chat_presence()
+
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator

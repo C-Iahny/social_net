@@ -56,18 +56,11 @@ def push_unsubscribe(request):
         return JsonResponse({'error': str(e)}, status=400)
 
 
-@login_required(login_url='login')
-@require_GET
-def unread_counts(request):
-    """
-    HTTP fallback for notification badge counts.
-    Returns {"general": N, "chat": N} — used when WebSocket is unavailable.
-    """
+def _badge_counts(user):
+    """Compteurs des badges cloche / messages pour `user`."""
     from notification.models import Notification
     from friend.models import FriendRequest, FriendList
     from chat.models import UnreadChatRoomMessages
-
-    user = request.user
     from post.models import Post as PostModel
     fr_ct   = ContentType.objects.get_for_model(FriendRequest)
     fl_ct   = ContentType.objects.get_for_model(FriendList)
@@ -85,7 +78,17 @@ def unread_counts(request):
         target=user, content_type=chat_ct,
     ).count()
 
-    return JsonResponse({'general': general_count, 'chat': chat_count})
+    return {'general': general_count, 'chat': chat_count}
+
+
+@login_required(login_url='login')
+@require_GET
+def unread_counts(request):
+    """
+    HTTP fallback for notification badge counts.
+    Returns {"general": N, "chat": N} — used when WebSocket is unavailable.
+    """
+    return JsonResponse(_badge_counts(request.user))
 
 
 @login_required(login_url='login')
@@ -118,3 +121,12 @@ def notification_journal(request):
     return render(request, 'notification/journal.html', {
         'notifications': items,
     })
+
+
+@login_required(login_url='login')
+@require_POST
+def mark_read(request, pk):
+    """Marque UNE notification comme lue (clic sur une carte, repli HTTP du WebSocket)."""
+    from notification.models import Notification
+    Notification.objects.filter(pk=pk, target=request.user, read=False).update(read=True)
+    return JsonResponse(_badge_counts(request.user))

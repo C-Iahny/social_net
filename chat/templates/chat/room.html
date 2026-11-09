@@ -1319,7 +1319,7 @@ window._CT = {
                 _showChatError(errMsg);
                 return;
             }
-            if (data.join)  { getUserInfo(); getRoomChatMessages(); enableChatLogScrollListener(); }
+            if (data.join)  { getUserInfo(); getRoomChatMessages(); enableChatLogScrollListener(); if(currentFriendId) clearUnreadBadge(currentFriendId); }
             if (data.leave) { console.log("Leaving room " + data.leave); }
             if (data.user_info) { handleUserInfoPayload(data.user_info) }
             if (data.msg_type == 0) {

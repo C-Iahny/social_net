@@ -174,6 +174,10 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 				await mark_notifications_read(self.scope["user"])
 				# Immediately confirm to the client so the badge resets without waiting for the next poll
 				await self.send_unread_general_notification_count(0)
+			elif command == "mark_notification_read":
+				# Une seule notification (clic sur une carte) : on renvoie le nouveau compteur.
+				await mark_notification_read(self.scope["user"], content.get("notification_id"))
+				await self.send_counts()
 
 			elif command == "get_chat_notifications":
 				payload = await get_chat_notifications(self.scope["user"], content.get("page_number", None))
@@ -398,6 +402,23 @@ class NotificationConsumer(AsyncJsonWebsocketConsumer):
 			"live_url":         event["live_url"],
 		})
 
+	async def send_counts(self):
+		"""Badges cloche + messages recalculés depuis la base."""
+		user = self.scope["user"]
+		if not user.is_authenticated:
+			return
+		try:
+			general = json.loads(await get_unread_general_notification_count(user)).get('count', 0)
+			await self.send_unread_general_notification_count(general)
+			chat = json.loads(await get_unread_chat_notification_count(user)).get('count', 0)
+			await self.send_unread_chat_notification_count(chat)
+		except Exception as e:
+			logger.debug(f"send_counts: {e}")
+
+	async def notif_counts(self, event):
+		"""Channel layer : une notification a été lue/supprimée → rafraîchir les badges."""
+		await self.send_counts()
+
 	async def post_action_notification(self, event):
 		"""Called when someone likes/comments/reposts on this user's post."""
 		# 1. Envoyer la notification dans le dropdown (type 3)
@@ -595,6 +616,17 @@ def get_unread_general_notification_count(user):
 		raise ClientError("AUTH_ERROR", "User must be authenticated to get notifications.")
 	return None
 
+
+
+@database_sync_to_async
+def mark_notification_read(user, notification_id):
+	"""Marque une seule notification comme lue (clic sur sa carte)."""
+	if user.is_authenticated and notification_id:
+		try:
+			Notification.objects.filter(pk=int(notification_id), target=user, read=False).update(read=True)
+		except (TypeError, ValueError):
+			pass
+	return
 
 
 @database_sync_to_async

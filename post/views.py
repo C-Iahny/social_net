@@ -1,5 +1,6 @@
 import logging
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils import timezone
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -853,25 +854,7 @@ def add_comment(request, post_id):
                     body=f"{request.user.username} a commenté votre post : {comment.body[:60]}",
                     url=post_url,
                 )
-                # Real-time WebSocket push
-                channel_layer = get_channel_layer()
-                if channel_layer:
-                    async_to_sync(channel_layer.group_send)(
-                        f"user_{post.author.id}",
-                        {
-                            "type": "post_action_notification",
-                            "notification": {
-                                "notification_type": "Post",
-                                "notification_id": str(notif.pk),
-                                "verb": notif.verb,
-                                "natural_timestamp": str(naturaltime(notif.timestamp)),
-                                "timestamp": str(notif.timestamp),
-                                "is_read": "False",
-                                "actions": {"redirect_url": post_url},
-                                "from": {"image_url": request.user.profile_image.url},
-                            }
-                        }
-                    )
+                # Diffusion temps réel : signal post_save de Notification (notification/signals.py)
             except Exception as e:
                 import traceback; traceback.print_exc()
 
@@ -906,24 +889,7 @@ def add_comment(request, post_id):
                     body=f"{request.user.username} a répondu : {comment.body[:70]}",
                     url=post_url,
                 )
-                channel_layer = get_channel_layer()
-                if channel_layer:
-                    async_to_sync(channel_layer.group_send)(
-                        f"user_{reply_target.id}",
-                        {
-                            "type": "post_action_notification",
-                            "notification": {
-                                "notification_type": "Post",
-                                "notification_id": str(notif.pk),
-                                "verb": notif.verb,
-                                "natural_timestamp": str(naturaltime(notif.timestamp)),
-                                "timestamp": str(notif.timestamp),
-                                "is_read": "False",
-                                "actions": {"redirect_url": post_url},
-                                "from": {"image_url": request.user.profile_image.url},
-                            }
-                        }
-                    )
+                # Diffusion temps réel : signal post_save de Notification (notification/signals.py)
             except Exception:
                 pass
 
@@ -1111,7 +1077,8 @@ def react_post(request):
             if not created:
                 notif.verb = f"{request.user.username} a réagi {emoji} à votre post"
                 notif.read = False
-                notif.save(update_fields=['verb', 'read'])
+                notif.timestamp = timezone.now()
+                notif.save(update_fields=['verb', 'read', 'timestamp'])
 
             # Also keep VAPID push
             from notification.models import PushSubscription
@@ -1121,25 +1088,7 @@ def react_post(request):
                 body=f"{request.user.username} a réagi {emoji} à votre post",
                 url=post_url,
             )
-            # Real-time WebSocket push
-            channel_layer = get_channel_layer()
-            if channel_layer:
-                async_to_sync(channel_layer.group_send)(
-                    f"user_{post.author.id}",
-                    {
-                        "type": "post_action_notification",
-                        "notification": {
-                            "notification_type": "Post",
-                            "notification_id": str(notif.pk),
-                            "verb": notif.verb,
-                            "natural_timestamp": str(naturaltime(notif.timestamp)),
-                            "timestamp": str(notif.timestamp),
-                            "is_read": "False",
-                            "actions": {"redirect_url": post_url},
-                            "from": {"image_url": request.user.profile_image.url},
-                        }
-                    }
-                )
+            # Diffusion temps réel : signal post_save de Notification (notification/signals.py)
         except Exception as e:
             import traceback; traceback.print_exc()
 
@@ -1242,7 +1191,8 @@ def repost_post(request):
             )
             notif.read = False
             notif.redirect_url = post_url
-            notif.save(update_fields=['read', 'redirect_url'])
+            notif.timestamp = timezone.now()
+            notif.save(update_fields=['read', 'redirect_url', 'timestamp'])
 
             PushSubscription.send_notification(
                 user=post.author,
@@ -1251,24 +1201,7 @@ def repost_post(request):
                 url=post_url,
             )
 
-            channel_layer = get_channel_layer()
-            if channel_layer:
-                async_to_sync(channel_layer.group_send)(
-                    f"user_{post.author.id}",
-                    {
-                        "type": "post_action_notification",
-                        "notification": {
-                            "notification_type": "Post",
-                            "notification_id":   str(notif.pk),
-                            "verb":              notif.verb,
-                            "natural_timestamp": str(naturaltime(notif.timestamp)),
-                            "timestamp":         str(notif.timestamp),
-                            "is_read":           "False",
-                            "actions":           {"redirect_url": post_url},
-                            "from":              {"image_url": request.user.profile_image.url},
-                        }
-                    }
-                )
+            # Diffusion temps réel : signal post_save de Notification (notification/signals.py)
         except Exception:
             import traceback; traceback.print_exc()
 

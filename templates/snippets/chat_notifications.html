@@ -415,8 +415,42 @@
 		
 	}
 
+	/*
+		Repartir d'une liste vide (la conversation vient d'être ouverte, ou un
+		nouveau message est arrivé) puis recharger la première page.
+	*/
+	function resetChatNotificationsList(reload){
+		var container = document.getElementById("id_chat_notifications_container")
+		if(container == null) return;
+		Array.prototype.slice.call(container.children).forEach(function(child){
+			if(!child.classList.contains('chat-dropdown-header')) container.removeChild(child)
+		})
+		chatCachedNotifList = new List([])
+		var pn = document.getElementById("id_chat_page_number"); if(pn) pn.innerHTML = "1"
+		var nt = document.getElementById("id_chat_newest_timestamp"); if(nt) nt.innerHTML = ""
+		var empty = document.createElement("div")
+		empty.id = "id_no_chat_notifications"
+		empty.style.cssText = "display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;color:var(--text-muted,#65676b);gap:.5rem;"
+		empty.innerHTML = '<span class="material-icons" style="font-size:2.2rem;opacity:.35;">chat_bubble_outline</span><span style="font-size:.85rem;">Tsy misy hafatra vaovao</span>'
+		container.appendChild(empty)
+		if(reload) getFirstChatNotificationsPage()
+	}
+
+	/*
+		Poussé par le serveur (msg_type 10) : nouveau message reçu ou conversation
+		ouverte ailleurs → badge et liste à jour sans attendre le poll.
+	*/
+	function handleChatUnreadPush(data){
+		getUnreadChatNotificationsCount()
+		resetChatNotificationsList(true)
+	}
+
 	function setChatNotificationsCount(count){
 		var countElement = document.getElementById("id_chat_notifications_count")
+		if(count == 0 && chatCachedNotifList.size() > 0){
+			// Plus rien de non lu : les cartes encore affichées sont périmées
+			resetChatNotificationsList(false)
+		}
 		if(count > 0){
 			var accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent3').trim() || '#e0245e';
 			countElement.style.background = accentColor;

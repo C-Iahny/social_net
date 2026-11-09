@@ -170,53 +170,61 @@ def create_unread_chatroom_messages_obj(sender, instance, created, **kwargs):
 
 
 @receiver(pre_save, sender=UnreadChatRoomMessages)
-def increment_unread_msg_count(sender, instance, **kwargs):
-	"""
-	When the unread message count increases, update the notification. 
-	If one does not exist, create one. (This should never happen)
-	"""
-	if instance.id is None: # new object will be created
-		pass # create_unread_chatroom_messages_obj will handle this scenario
-	else:
-		previous = UnreadChatRoomMessages.objects.get(id=instance.id)
-		if previous.count < instance.count: # if count is incremented
-			content_type = ContentType.objects.get_for_model(instance)
-			if instance.user == instance.room.user1:
-				other_user = instance.room.user2
-			else:
-				other_user = instance.room.user1
-			try:
-				notification = Notification.objects.get(target=instance.user, content_type=content_type, object_id=instance.id)
-				notification.verb = instance.most_recent_message
-				notification.timestamp = timezone.now()
-				notification.save()
-			except Notification.DoesNotExist:
-				instance.notifications.create(
-					target=instance.user,
-					from_user=other_user,
-					redirect_url=reverse('chat:private-chat-room') + f'?room_id={instance.room.id}',
-					verb=instance.most_recent_message,
-					content_type=content_type,
-				)
+def _stash_previous_count(sender, instance, **kwargs):
+	"""Mémorise le compteur en base avant écriture (lu par le post_save ci-dessous)."""
+	instance._prev_count = None
+	if instance.id is not None:
+		instance._prev_count = (UnreadChatRoomMessages.objects
+			.filter(id=instance.id).values_list('count', flat=True).first())
 
 
-@receiver(pre_save, sender=UnreadChatRoomMessages)
-def remove_unread_msg_count_notification(sender, instance, **kwargs):
+@receiver(post_save, sender=UnreadChatRoomMessages)
+def sync_unread_notification(sender, instance, created, **kwargs):
 	"""
-	If the unread messge count decreases, it means the user joined the chat. So delete the notification.
+	Tient la notification « message non lu » de la cloche en phase avec le compteur :
+	- compteur à zéro (conversation ouverte) → plus aucune notification, doublons compris ;
+	- compteur qui monte → notification créée ou rafraîchie (texte, date).
+	En post_save, la ligne est déjà écrite : la diffusion temps réel
+	(notification/signals.py) lit donc le bon compteur.
 	"""
-	if instance.id is None: # new object will be created
-		pass # create_unread_chatroom_messages_obj will handle this scenario
+	content_type = ContentType.objects.get_for_model(instance)
+	existing = Notification.objects.filter(
+		target=instance.user, content_type=content_type, object_id=str(instance.id))
+	if instance.count == 0:
+		if created:
+			return
+		existing.delete()
+		return
+	prev = getattr(instance, '_prev_count', None)
+	if prev is not None and prev >= instance.count:
+		return
+	other_user = instance.room.user2 if instance.user_id == instance.room.user1_id else instance.room.user1
+	notification = existing.first()
+	if notification is not None:
+		notification.verb = instance.most_recent_message
+		notification.timestamp = timezone.now()
+		notification.from_user = other_user
+		notification.save()
 	else:
-		previous = UnreadChatRoomMessages.objects.get(id=instance.id)
-		if previous.count > instance.count: # if count is decremented
-			content_type = ContentType.objects.get_for_model(instance)
-			try:
-				notification = Notification.objects.get(target=instance.user, content_type=content_type, object_id=instance.id)
-				notification.delete()
-			except Notification.DoesNotExist:
-				pass
-				# Do nothing
+		instance.notifications.create(
+			target=instance.user,
+			from_user=other_user,
+			redirect_url=reverse('chat:private-chat-room') + f'?room_id={instance.room.id}',
+			verb=instance.most_recent_message,
+			content_type=content_type,
+		)
+
+
+def reset_unread(room, user):
+	"""
+	Remet à zéro les non-lus de `user` dans `room` (ouverture de la conversation).
+	Le signal ci-dessus supprime alors la notification de la cloche « Messages ».
+	"""
+	unread, _ = UnreadChatRoomMessages.objects.get_or_create(room=room, user_id=user.id)
+	if unread.count != 0 or unread.notifications.exists():
+		unread.count = 0
+		unread.save()
+	return unread
 
 
 

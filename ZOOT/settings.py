@@ -262,7 +262,7 @@ LOCALE_PATHS = [
 LANGUAGE_COOKIE_NAME = 'zoot_language'
 LANGUAGE_COOKIE_AGE  = 365 * 24 * 3600   # 1 an
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Indian/Antananarivo'   # affichage ; la base reste en UTC (USE_TZ)
 
 USE_I18N = True
 

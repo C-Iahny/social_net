@@ -146,7 +146,7 @@
 		card = createGeneralNotificationCard()
 		card.id = assignGeneralCardId(notification)
 		card.addEventListener("click", function(){
-			generalRedirect(notification['actions']['redirect_url'])
+			generalOpen(notification)
 		})
 
 		var div1 = document.createElement("div")
@@ -173,7 +173,7 @@
 		card.id = assignGeneralCardId(notification)
 		card.classList.toggle('unread', notification['is_read'] === 'False')
 		card.addEventListener("click", function(){
-			generalRedirect(notification['actions']['redirect_url'])
+			generalOpen(notification)
 		})
 
 		var div1 = document.createElement("div")
@@ -214,7 +214,7 @@
 		card.id = assignGeneralCardId(notification)
 		card.classList.toggle('unread', notification['is_read'] === 'False')
 		card.addEventListener("click", function(){
-			generalRedirect(notification['actions']['redirect_url'])
+			generalOpen(notification)
 		})
 
 		var div1 = document.createElement("div")
@@ -270,7 +270,7 @@
 		// assign id b/c we need to find this div if they accept/decline the friend request
 		card.id = assignGeneralCardId(notification)
 		card.addEventListener("click", function(){
-			generalRedirect(notification['actions']['redirect_url'])
+			generalOpen(notification)
 		})
 
 		// Is the friend request PENDING? (not answered yet)
@@ -923,6 +923,32 @@
 
 	function generalRedirect(url){
 		window.location.href = url
+	}
+
+	/*
+		Clic sur une carte : la notification est marquée lue (WebSocket, sinon
+		requête HTTP qui survit à la navigation), le badge baisse, puis on suit le lien.
+	*/
+	function generalOpen(notification){
+		var url = notification['actions'] && notification['actions']['redirect_url'] || '/'
+		var id  = notification['notification_id']
+		if(id && notification['is_read'] !== 'True'){
+			notification['is_read'] = 'True'
+			var card = document.getElementById('id_notification_' + id)
+			if(card) card.classList.remove('unread')
+			var countEl = document.getElementById('id_general_notifications_count')
+			var current = parseInt(countEl && countEl.innerHTML || '0', 10) || 0
+			setUnreadGeneralNotificationsCount(Math.max(0, current - 1))
+			var sent = window.notificationSocketSend && window.notificationSocketSend({
+				"command": "mark_notification_read", "notification_id": id })
+			if(!sent){
+				try {
+					var fd = new FormData(); fd.append('csrfmiddlewaretoken', (window.VZ_CSRF || '{{ csrf_token }}'))
+					fetch('/notif/read/' + id + '/', { method: 'POST', body: fd, credentials: 'same-origin', keepalive: true })
+				} catch(e) {}
+			}
+		}
+		generalRedirect(url)
 	}
 
 	function assignGeneralDiv1Id(notification){

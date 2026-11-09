@@ -868,24 +868,7 @@ def story_reply(request, story_id):
             verb=f"{request.user.username} a répondu à votre story",
             read=False,
         )
-        channel_layer = get_channel_layer()
-        if channel_layer:
-            async_to_sync(channel_layer.group_send)(
-                f"user_{story.user.id}",
-                {
-                    "type": "post_action_notification",
-                    "notification": {
-                        "notification_type": "Post",
-                        "notification_id": str(notif.pk),
-                        "verb": notif.verb,
-                        "natural_timestamp": str(naturaltime(notif.timestamp)),
-                        "timestamp": str(notif.timestamp),
-                        "is_read": "False",
-                        "actions": {"redirect_url": stories_url},
-                        "from": {"image_url": request.user.profile_image.url},
-                    }
-                }
-            )
+        # Diffusion temps réel : signal post_save de Notification (notification/signals.py)
     except Exception:
         pass
 
@@ -947,24 +930,7 @@ def story_react(request, story_id):
                 verb=f"{request.user.username} a réagi {emoji} à votre story",
                 read=False,
             )
-            channel_layer = get_channel_layer()
-            if channel_layer:
-                async_to_sync(channel_layer.group_send)(
-                    f"user_{story.user.id}",
-                    {
-                        "type": "post_action_notification",
-                        "notification": {
-                            "notification_type": "Post",
-                            "notification_id": str(notif.pk),
-                            "verb": notif.verb,
-                            "natural_timestamp": str(naturaltime(notif.timestamp)),
-                            "timestamp": str(notif.timestamp),
-                            "is_read": "False",
-                            "actions": {"redirect_url": stories_url},
-                            "from": {"image_url": request.user.profile_image.url},
-                        }
-                    }
-                )
+            # Diffusion temps réel : signal post_save de Notification (notification/signals.py)
         except Exception:
             pass
 

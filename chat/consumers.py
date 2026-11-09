@@ -554,6 +554,22 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 		await self.send_json(event)
 		logger.debug(f"[CALL] chat_call: send_json OK")
 
+	# ── Événements du groupe personnel destinés à la cloche ──────────────
+	# Le ChatConsumer est aussi abonné à user_<id> (appels entrants). Sans ces
+	# handlers, chaque « j'aime » reçu pendant qu'une conversation est ouverte
+	# levait « No handler for message type » et fermait le socket du chat.
+	async def post_action_notification(self, event):
+		pass
+
+	async def new_post_notification(self, event):
+		pass
+
+	async def live_started(self, event):
+		pass
+
+	async def notif_counts(self, event):
+		pass
+
 	async def chat_unread_notif(self, event):
 		"""Notification badge non-lu temps-réel via le groupe personnel."""
 		await self.send_json({
@@ -832,17 +848,9 @@ def append_unread_msg_if_not_connected(room, user, connected_users, message):
 # When a user connects, reset their unread message count.
 @database_sync_to_async
 def on_user_connected(room, user):
-	# confirm they are in the connected users list
-	connected_users = room.connected_users.all()
-	if user in connected_users:
-		try:
-			# reset count
-			unread_msgs = UnreadChatRoomMessages.objects.get(room=room, user=user)
-			unread_msgs.count = 0
-			unread_msgs.save()
-		except UnreadChatRoomMessages.DoesNotExist:
-			UnreadChatRoomMessages(room=room, user=user).save()
-			pass
+	"""L'utilisateur ouvre la conversation : ses non-lus passent à zéro."""
+	from chat.models import reset_unread
+	reset_unread(room, user)
 	return
 
 

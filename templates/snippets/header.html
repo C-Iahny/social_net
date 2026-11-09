@@ -520,6 +520,8 @@
             // msg_type 5 = CALL_OFFER, 8 = CALL_REJECT, 9 = CALL_END
             if(data.msg_type == 5){ _gcoHandleOffer(data); }
             if(data.msg_type == 8 || data.msg_type == 9){ _gcoHide(); }
+            // msg_type 10 = badge messages non lus (nouveau message ou conversation ouverte)
+            if(data.msg_type == 10 && typeof handleChatUnreadPush === 'function'){ handleChatUnreadPush(data); }
         };
 
         _sock.onopen = function(){
@@ -530,6 +532,7 @@
             if(typeof getUnreadGeneralNotificationsCount === 'function') getUnreadGeneralNotificationsCount();
             if(typeof setupChatNotificationsMenu === 'function') setupChatNotificationsMenu();
             if(typeof getFirstChatNotificationsPage === 'function') getFirstChatNotificationsPage();
+            if(typeof getUnreadChatNotificationsCount === 'function') getUnreadChatNotificationsCount();
         };
 
         _sock.onclose = function(){
@@ -578,6 +581,22 @@
     document.addEventListener('DOMContentLoaded', function() {
         _pollBadgesFallback();
         setTimeout(function() { if (!_wsActive) _startHttpFallback(); }, 3000);
+    });
+
+    /* Retour au premier plan (mobile surtout) : badges à jour tout de suite et
+       reconnexion immédiate si le socket est tombé pendant la mise en veille. */
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) return;
+        _pollBadgesFallback();
+        if (!_sock || _sock.readyState === WebSocket.CLOSED) {
+            clearTimeout(_reconnectTimer);
+            _reconnectDelay = 1000;
+            connect();
+        } else if (_sock.readyState === WebSocket.OPEN) {
+            if (typeof getNewGeneralNotifications === 'function') getNewGeneralNotifications();
+            if (typeof getUnreadGeneralNotificationsCount === 'function') getUnreadGeneralNotificationsCount();
+            if (typeof getUnreadChatNotificationsCount === 'function') getUnreadChatNotificationsCount();
+        }
     });
 
         window.handleNewPostNotification = function(data){

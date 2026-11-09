@@ -29,6 +29,9 @@ def calculate_timestamp(timestamp):
     "aujourd'hui"/"hier" en français selon LANGUAGE_CODE.
     On gère les deux pour être robuste.
     """
+    from django.utils import timezone as _tz
+    if _tz.is_aware(timestamp):
+        timestamp = _tz.localtime(timestamp)
     hm = datetime.strftime(timestamp, "%H:%M")
     nd = naturalday(timestamp).lower()          # normalise la casse
     if nd in ("today", "aujourd'hui"):

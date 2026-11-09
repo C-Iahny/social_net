@@ -62,6 +62,15 @@ def private_chat_room_view(request, *args, **kwargs):
 		except Account.DoesNotExist:
 			pass
 
+	# La conversation ouverte est lue : sidebar, cloche et badge repartent de zéro
+	# dès le rendu, sans dépendre du WebSocket.
+	if context.get("room") is not None:
+		from chat.models import reset_unread
+		try:
+			reset_unread(context["room"], user)
+		except Exception:
+			pass
+
 	# Passer la référence annonce au template (pour pré-remplir le message)
 	if annonce_pk:
 		try:
@@ -371,25 +380,7 @@ def send_story_reply(request):
             verb=f"{request.user.username} a répondu à votre story",
             read=False,
         )
-        channel_layer = get_channel_layer()
-        if channel_layer:
-            from django.contrib.humanize.templatetags.humanize import naturaltime
-            async_to_sync(channel_layer.group_send)(
-                f"user_{author.id}",
-                {
-                    "type": "post_action_notification",
-                    "notification": {
-                        "notification_type": "Post",
-                        "notification_id": str(notif.pk),
-                        "verb": notif.verb,
-                        "natural_timestamp": str(naturaltime(notif.timestamp)),
-                        "timestamp": str(notif.timestamp),
-                        "is_read": "False",
-                        "actions": {"redirect_url": chat_url},
-                        "from": {"image_url": request.user.profile_image.url},
-                    }
-                }
-            )
+        # Diffusion temps réel : signal post_save de Notification (notification/signals.py)
     except Exception:
         pass
 
