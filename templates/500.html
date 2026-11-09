@@ -28,7 +28,7 @@
         position: fixed;
         width: 700px; height: 700px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(255,77,166,.07) 0%, transparent 65%);
+        background: radial-gradient(circle, rgba(var(--accent-rgb),.07) 0%, transparent 65%);
         top: -200px; right: -200px;
         pointer-events: none;
     }
@@ -67,16 +67,16 @@
         background-clip: text;
         margin-bottom: .25rem;
         display: block;
-        filter: drop-shadow(0 0 30px rgba(255,77,166,.3));
+        filter: drop-shadow(0 0 30px rgba(var(--accent-rgb),.3));
     }
 
     [data-theme="dark"] .error-code {
-        filter: drop-shadow(0 0 40px rgba(255,77,166,.5));
+        filter: drop-shadow(0 0 40px rgba(var(--accent-rgb),.5));
         animation: pulseGlow 3s ease-in-out infinite;
     }
 
     @keyframes pulseGlow {
-        0%,100% { filter: drop-shadow(0 0 30px rgba(255,77,166,.4)); }
+        0%,100% { filter: drop-shadow(0 0 30px rgba(var(--accent-rgb),.4)); }
         50%      { filter: drop-shadow(0 0 60px rgba(var(--accent-rgb),.6)); }
     }
 
@@ -84,8 +84,13 @@
         font-size: 3.5rem;
         margin: .5rem 0 1rem;
         display: block;
+        color: var(--accent);
         animation: shake 2.5s ease-in-out infinite;
     }
+    .error-logo-wrap { margin-bottom: 1rem; }
+    .error-logo { width: 64px; height: 64px; object-fit: contain; }
+    .btn-error-primary .material-icons,
+    .btn-error-secondary .material-icons { font-size: 1.1rem; }
 
     @keyframes shake {
         0%,100% { transform: rotate(-5deg) scale(1); }
@@ -134,12 +139,12 @@
     .btn-error-primary:hover {
         opacity: .88;
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(255,77,166,.35);
+        box-shadow: 0 8px 24px rgba(var(--accent-rgb),.35);
         color: #fff;
         text-decoration: none;
     }
     [data-theme="dark"] .btn-error-primary {
-        box-shadow: 0 0 20px rgba(255,77,166,.25);
+        box-shadow: 0 0 20px rgba(var(--accent-rgb),.25);
         color: #fff;
     }
 
@@ -182,8 +187,8 @@
 
     [data-theme="dark"] body {
         background-image:
-            linear-gradient(rgba(255,77,166,.015) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,77,166,.015) 1px, transparent 1px);
+            linear-gradient(rgba(var(--accent-rgb),.015) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(var(--accent-rgb),.015) 1px, transparent 1px);
         background-size: 48px 48px;
     }
     </style>
@@ -192,13 +197,11 @@
 <div class="error-page">
     <div class="error-card">
 
-        <div style="margin-bottom:1rem;">
-            <img src="{% static 'logo/vazimba_icon.png' %}" alt="Vazimba"
-                 style="width:64px;height:64px;object-fit:contain;"
-                 id="err-logo">
+        <div class="error-logo-wrap">
+            <img src="{% static 'logo/vazimba_icon.png' %}" alt="Vazimba" class="error-logo" id="err-logo">
         </div>
         <span class="error-code">500</span>
-        <span class="error-icon">⚡</span>
+        <span class="error-icon material-icons" aria-hidden="true">bolt</span>
 
         <h1 class="error-title">Erreur serveur</h1>
         <p class="error-subtitle">
@@ -209,17 +212,17 @@
         <div class="error-actions">
             {% if user.is_authenticated %}
             <a href="{% url 'post:post-view' %}" class="btn-error-primary">
-                <span class="material-icons" style="font-size:1.1rem">home</span>
+                <span class="material-icons">home</span>
                 Retour au fil
             </a>
             {% else %}
             <a href="/" class="btn-error-primary">
-                <span class="material-icons" style="font-size:1.1rem">home</span>
+                <span class="material-icons">home</span>
                 Page d'accueil
             </a>
             {% endif %}
             <button onclick="location.reload()" class="btn-error-secondary" type="button">
-                <span class="material-icons" style="font-size:1.1rem">refresh</span>
+                <span class="material-icons">refresh</span>
                 Réessayer
             </button>
         </div>

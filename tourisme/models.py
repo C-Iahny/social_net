@@ -192,6 +192,3 @@ class LieuAvis(models.Model):
     def __str__(self):
         return f'{self.author.username} → {self.lieu.name} ({self.rating}★)'
 
-    @property
-    def stars(self):
-        return '★' * self.rating + '☆' * (5 - self.rating)
